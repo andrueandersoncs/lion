@@ -1,0 +1,7 @@
+{
+  "name": "lion-monorepo",
+  "private": "true",
+  "workspaces": [
+    "packages/*"
+  ]
+}
