@@ -1,114 +1,137 @@
-export type JsonPrimitive = string | number | boolean | null;
+import { Context, Effect, Match, Ref, Schema, Array, Option, pipe, flow, Predicate, Record } from "effect";
+import {
+  LionArraySchema,
+  LionExpressionSchema,
+  LionRecordSchema,
+  type LionArrayType,
+  type LionExpressionType,
+  type LionRecordType,
+} from "./schemas/lion-expression";
+import { LionValueSchema, type LionValueType } from "./schemas/lion-value";
+import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./schemas/json-primitive";
+import type { NonEmptyReadonlyArray } from "effect/Array";
 
-export type LionExpression = JsonPrimitive | LionExpression[] | { [key: string]: LionExpression };
+// export const evaluate = (environment: Record<string, LionValueType>, expression: LionExpressionType): LionValueType => {
+//   if (Array.isArray(expression)) {
+//     if (expression.length === 0) {
+//       return [];
+//     }
 
-export const isLionExpression = (expression: unknown): expression is LionExpression => {
-  if (
-    typeof expression === "string" ||
-    typeof expression === "number" ||
-    typeof expression === "boolean" ||
-    expression === null
-  ) {
-    return true;
-  }
+//     const [name, ...args] = expression;
 
-  if (Array.isArray(expression)) {
-    return expression.every(isLionExpression);
-  }
+//     switch (name) {
+//       case "quote": {
+//         const [arg] = args;
 
-  if (typeof expression === "object" && expression !== null) {
-    return Object.values(expression).every(isLionExpression);
-  }
+//         if (arg === undefined) {
+//           return (...args: unknown[]) => args[0];
+//         }
 
-  return false;
-};
+//         return arg;
+//       }
+//       case "eval": {
+//         const [arg] = args;
 
-export type LionValue = JsonPrimitive | LionValue[] | { [key: string]: LionValue } | ((...args: unknown[]) => unknown);
+//         // Automatic currying
+//         if (arg === undefined) {
+//           return (...args: unknown[]) => {
+//             const arg = args[0];
+//             if (!isLionExpression(arg)) throw new Error("Invalid expression");
+//             const value = evaluate(environment, arg);
+//             if (!isLionExpression(value)) throw new Error("Invalid expression");
+//             return evaluate(environment, value);
+//           };
+//         }
 
-export const isLionValue = (value: unknown): value is LionValue => {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null) {
-    return true;
-  }
+//         if (!isLionExpression(arg)) throw new Error("Invalid expression");
+//         const value = evaluate(environment, arg);
+//         if (!isLionExpression(value)) throw new Error("Invalid expression");
+//         return evaluate(environment, value);
+//       }
+//       default: {
+//         // The default is applicative-order evaluation: evaluate all arguments first before calling the function
+//         const values = expression.map(evaluate.bind(undefined, environment));
+//         const [fn, ...args] = values;
 
-  if (Array.isArray(value)) {
-    return value.every(isLionValue);
-  }
+//         if (typeof fn === "function") {
+//           const result = fn(...args);
+//           if (!isLionValue(result)) throw new Error("Invalid value");
+//           return result;
+//         }
 
-  if (typeof value === "object" && value !== null) {
-    return Object.values(value).every(isLionValue);
-  }
+//         // If execution reaches this point, the expression is just a regular list of values
+//         return values;
+//       }
+//     }
+//   }
 
-  if (typeof value === "function") {
-    return true;
-  }
+//   if (typeof expression === "object" && expression !== null) {
+//     return Object.fromEntries(Object.entries(expression).map(([key, value]) => [key, evaluate(environment, value)]));
+//   }
 
-  return false;
-};
+//   if (typeof expression === "string") {
+//     const value = environment[expression];
+//     if (value !== undefined) {
+//       return value;
+//     }
+//   }
 
-export const evaluate = (environment: Record<string, LionValue>, expression: LionExpression): LionValue => {
-  if (Array.isArray(expression)) {
-    if (expression.length === 0) {
-      return [];
-    }
+//   return expression;
+// };
 
-    const [name, ...args] = expression;
+// walk creates a stream of expressions to evaluate
+// evaluate creates a stream of evaluated values
 
-    switch (name) {
-      case "quote": {
-        const [arg] = args;
+class LionEnvironment extends Context.Tag("LionEnvironment")<
+  LionEnvironment,
+  Ref.Ref<Record<string, LionValueType>>
+>() {}
 
-        if (arg === undefined) {
-          return (...args: unknown[]) => args[0];
-        }
+const expressionTypeMatch = Match.type<LionExpressionType>();
 
-        return arg;
-      }
-      case "eval": {
-        const [arg] = args;
+/*
+Option.map((name) =>
+  Match.value(name).pipe(
+    Match.when("quote", () => {}),
+    Match.when("eval", () => {}),
+    Match.orElse(() => {})
+  )
+),
+Option.orElseSome(() => [])
+,*/
 
-        // Automatic currying
-        if (arg === undefined) {
-          return (...args: unknown[]) => {
-            const arg = args[0];
-            if (!isLionExpression(arg)) throw new Error("Invalid expression");
-            const value = evaluate(environment, arg);
-            if (!isLionExpression(value)) throw new Error("Invalid expression");
-            return evaluate(environment, value);
-          };
-        }
+/*
+Match.when(Schema.is(LionArraySchema), (expression) =>
+    pipe(
+      Match.value(expression),
+      Match.when(Array.isEmptyReadonlyArray, () => []),
+      Match.when(Array.isNonEmptyReadonlyArray, Array.unprepend)
+    )
+  ),
+*/
 
-        if (!isLionExpression(arg)) throw new Error("Invalid expression");
-        const value = evaluate(environment, arg);
-        if (!isLionExpression(value)) throw new Error("Invalid expression");
-        return evaluate(environment, value);
-      }
-      default: {
-        // The default is applicative-order evaluation: evaluate all arguments first before calling the function
-        const values = expression.map(evaluate.bind(undefined, environment));
-        const [fn, ...args] = values;
+const evaluateArray = Match.type<LionArrayType>().pipe(
+  Match.when(Array.isEmptyReadonlyArray, () => []),
+  Match.when(
+    Array.isNonEmptyReadonlyArray,
+    flow(
+      Array.unprepend,
+      Match.value,
+      Match.when(["quote", () => true], () => true),
+      Match.when(["eval", () => true], () => true),
+      Match.when([Match.string, () => true], () => true)
+    )
+  ),
+  Match.orElseAbsurd
+);
 
-        if (typeof fn === "function") {
-          const result = fn(...args);
-          if (!isLionValue(result)) throw new Error("Invalid value");
-          return result;
-        }
+const evaluateRecord = Match.type<LionRecordType>().pipe(Match.orElseAbsurd);
 
-        // If execution reaches this point, the expression is just a regular list of values
-        return values;
-      }
-    }
-  }
+const evaluatePrimitive = Match.type<JsonPrimitiveType>().pipe(Match.orElseAbsurd);
 
-  if (typeof expression === "object" && expression !== null) {
-    return Object.fromEntries(Object.entries(expression).map(([key, value]) => [key, evaluate(environment, value)]));
-  }
-
-  if (typeof expression === "string") {
-    const value = environment[expression];
-    if (value !== undefined) {
-      return value;
-    }
-  }
-
-  return expression;
-};
+export const evaluate = expressionTypeMatch.pipe(
+  Match.when(Schema.is(LionArraySchema), (expression) => evaluateArray(expression)),
+  Match.when(Schema.is(LionRecordSchema), (expression) => evaluateRecord(expression)),
+  Match.when(Schema.is(JsonPrimitiveSchema), (expression) => evaluatePrimitive(expression)),
+  Match.exhaustive
+);
