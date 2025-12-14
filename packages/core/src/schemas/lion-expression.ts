@@ -6,19 +6,23 @@ type AssumedExpressionType =
   | ReadonlyArray<AssumedExpressionType>
   | { [key: string]: AssumedExpressionType };
 
-export const LionArraySchema = Schema.Array(
+export const LionArrayExpressionSchema = Schema.Array(
   Schema.suspend((): Schema.Schema<AssumedExpressionType> => LionExpressionSchema)
 );
 
-export type LionArrayType = typeof LionArraySchema.Type;
+export type LionArrayExpressionType = typeof LionArrayExpressionSchema.Type;
 
-export const LionRecordSchema = Schema.Record({
+export const LionRecordExpressionSchema = Schema.Record({
   key: Schema.String,
   value: Schema.suspend((): Schema.Schema<AssumedExpressionType> => LionExpressionSchema),
 });
 
-export type LionRecordType = typeof LionRecordSchema.Type;
+export type LionRecordExpressionType = typeof LionRecordExpressionSchema.Type;
 
-export const LionExpressionSchema = Schema.Union(JsonPrimitiveSchema, LionArraySchema, LionRecordSchema);
+export const LionExpressionSchema = Schema.Union(
+  JsonPrimitiveSchema,
+  LionArrayExpressionSchema,
+  LionRecordExpressionSchema
+);
 
 export type LionExpressionType = typeof LionExpressionSchema.Type;

@@ -1,13 +1,27 @@
-import { Context, Effect, Match, Ref, Schema, Array, Option, pipe, flow, Predicate, Record } from "effect";
 import {
-  LionArraySchema,
+  Context,
+  Effect,
+  Match,
+  Ref,
+  Schema,
+  Array,
+  Option,
+  pipe,
+  flow,
+  Predicate,
+  Record,
+  Function,
+  String,
+} from "effect";
+import {
+  LionArrayExpressionSchema,
   LionExpressionSchema,
-  LionRecordSchema,
-  type LionArrayType,
+  LionRecordExpressionSchema,
+  type LionArrayExpressionType,
   type LionExpressionType,
-  type LionRecordType,
+  type LionRecordExpressionType,
 } from "./schemas/lion-expression";
-import { LionValueSchema, type LionValueType } from "./schemas/lion-value";
+import { LionValueSchema, type LionRecordValueType, type LionValueType } from "./schemas/lion-value";
 import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./schemas/json-primitive";
 import type { NonEmptyReadonlyArray } from "effect/Array";
 
@@ -87,51 +101,79 @@ class LionEnvironment extends Context.Tag("LionEnvironment")<
   Ref.Ref<Record<string, LionValueType>>
 >() {}
 
-const expressionTypeMatch = Match.type<LionExpressionType>();
-
-/*
-Option.map((name) =>
-  Match.value(name).pipe(
-    Match.when("quote", () => {}),
-    Match.when("eval", () => {}),
-    Match.orElse(() => {})
-  )
-),
-Option.orElseSome(() => [])
-,*/
-
-/*
-Match.when(Schema.is(LionArraySchema), (expression) =>
-    pipe(
-      Match.value(expression),
-      Match.when(Array.isEmptyReadonlyArray, () => []),
-      Match.when(Array.isNonEmptyReadonlyArray, Array.unprepend)
-    )
-  ),
-*/
-
-const evaluateArray = Match.type<LionArrayType>().pipe(
-  Match.when(Array.isEmptyReadonlyArray, () => []),
-  Match.when(
-    Array.isNonEmptyReadonlyArray,
-    flow(
-      Array.unprepend,
+const evaluateArray = (array: LionArrayExpressionType): Effect.Effect<LionValueType, Error> =>
+  Effect.gen(function* () {
+    return yield* pipe(
+      array,
       Match.value,
-      Match.when(["quote", () => true], () => true),
-      Match.when(["eval", () => true], () => true),
-      Match.when([Match.string, () => true], () => true)
-    )
-  ),
-  Match.orElseAbsurd
-);
+      Match.when(
+        (a) => Array.isEmptyReadonlyArray(a),
+        (emptyArray) => Effect.succeed(emptyArray)
+      ),
+      Match.when(
+        (a) => Array.isNonEmptyReadonlyArray(a),
+        (nonEmptyArray) =>
+          pipe(
+            nonEmptyArray,
+            Array.headNonEmpty,
+            Match.value,
+            Match.when(Match.string, (procedureName) =>
+              pipe(
+                procedureName,
+                Match.value,
+                Match.when("quote", () =>
+                  pipe(
+                    nonEmptyArray,
+                    Match.value,
+                    Match.when(Array.isNonEmptyReadonlyArray, (a) => Effect.succeed(Array.tailNonEmpty(a))),
+                    Match.when(Array.isEmptyReadonlyArray, () =>
+                      Effect.fail(new Error("Invalid quote expression: quote requires exactly one argument"))
+                    ),
+                    Match.orElseAbsurd
+                  )
+                ),
+                Match.when("eval", () =>
+                  pipe(
+                    nonEmptyArray,
+                    Match.value,
+                    Match.when(Array.isNonEmptyReadonlyArray, (c) => evaluate(Array.tailNonEmpty(c))),
+                    Match.when(Array.isEmptyReadonlyArray, () =>
+                      Effect.fail(new Error("Invalid eval expression: eval requires exactly one argument"))
+                    ),
+                    Match.orElseAbsurd
+                  )
+                ),
+                Match.orElseAbsurd
+              )
+            ),
+            Match.orElse((regularList) => Effect.succeed(regularList))
+          )
+      ),
+      Match.orElseAbsurd
+    );
+  });
 
-const evaluateRecord = Match.type<LionRecordType>().pipe(Match.orElseAbsurd);
+const evaluatePrimitive = (a: JsonPrimitiveType): Effect.Effect<LionValueType> =>
+  Effect.gen(function* () {
+    return yield* pipe(
+      a,
+      Match.value,
+      Match.when(String.isString, (a) => Effect.succeed(a)),
+      Match.orElse((_) => Effect.succeed(a))
+    );
+  });
 
-const evaluatePrimitive = Match.type<JsonPrimitiveType>().pipe(Match.orElseAbsurd);
+export const evaluate = (a: LionExpressionType): Effect.Effect<LionValueType, Error> =>
+  Effect.gen(function* () {
+    return yield* pipe(
+      a,
+      Match.value,
+      Match.when(Schema.is(LionArrayExpressionSchema), (a) => evaluateArray(a)),
+      Match.when(Schema.is(LionRecordExpressionSchema), (a) => evaluateRecord(a)),
+      Match.when(Schema.is(JsonPrimitiveSchema), (a) => evaluatePrimitive(a)),
+      Match.exhaustive
+    );
+  });
 
-export const evaluate = expressionTypeMatch.pipe(
-  Match.when(Schema.is(LionArraySchema), (expression) => evaluateArray(expression)),
-  Match.when(Schema.is(LionRecordSchema), (expression) => evaluateRecord(expression)),
-  Match.when(Schema.is(JsonPrimitiveSchema), (expression) => evaluatePrimitive(expression)),
-  Match.exhaustive
-);
+const evaluateRecord = (a: LionRecordExpressionType): Effect.Effect<LionRecordValueType, Error> =>
+  Effect.all(Record.map(evaluate)(a));
