@@ -1,19 +1,13 @@
 {
-  "name": "@lion/core",
+  "name": "@lion/repl",
   "version": "0.0.1",
   "module": "index.ts",
   "type": "module",
-  "scripts": {
-    "test": "bun test"
-  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "effect": "^3.19.9"
   }
 }
