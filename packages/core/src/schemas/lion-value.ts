@@ -1,17 +1,20 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive";
+import type { LionEnvironment } from "../evaluate";
 
 type AssumedValueType =
   | JsonPrimitiveType
   | ReadonlyArray<AssumedValueType>
-  | { [key: string]: AssumedValueType }
-  | ((...args: AssumedValueType[]) => AssumedValueType);
+  | { readonly [key: string]: AssumedValueType }
+  | LionFunctionValueType;
 
-const LionFunctionValueSchema = Schema.declare(
-  (input: unknown): input is (...args: AssumedValueType[]) => AssumedValueType => {
-    return typeof input === "function";
-  }
-);
+export type LionFunctionValueType = (
+  ...args: AssumedValueType[]
+) => Effect.Effect<AssumedValueType, Error, LionEnvironment>;
+
+export const LionFunctionValueSchema = Schema.declare((input: unknown): input is LionFunctionValueType => {
+  return typeof input === "function";
+});
 
 export const LionArrayValueSchema = Schema.Array(
   Schema.suspend((): Schema.Schema<AssumedValueType> => LionValueSchema)

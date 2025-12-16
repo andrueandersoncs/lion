@@ -4,7 +4,7 @@ import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive";
 type AssumedExpressionType =
   | JsonPrimitiveType
   | ReadonlyArray<AssumedExpressionType>
-  | { [key: string]: AssumedExpressionType };
+  | { readonly [key: string]: AssumedExpressionType };
 
 export const LionArrayExpressionSchema = Schema.Array(
   Schema.suspend((): Schema.Schema<AssumedExpressionType> => LionExpressionSchema)
