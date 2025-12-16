@@ -216,16 +216,16 @@ describe("evaluate", () => {
 
   describe("non-function lists", () => {
     it("should return list of evaluated values when first element is not a function", () => {
-      expect(runEvaluate({}, [1, 2, 3])).toEqual([1, [2, 3]]);
-      expect(runEvaluate({}, ["a", "b", "c"])).toBe("a");
+      expect(runEvaluate({}, [1, 2, 3])).toEqual([1, 2, 3]);
+      expect(runEvaluate({}, ["a", "b", "c"])).toEqual(["a", "b", "c"]);
     });
 
     it("should evaluate nested expressions in non-function lists", () => {
-      expect(runEvaluate(stdlib, [1, ["+", 1, 2], 3])).toEqual([1, [["+", 1, 2], 3]]);
+      expect(runEvaluate(stdlib, [1, ["+", 1, 2], 3])).toEqual([1, 3, 3]);
     });
 
     it("should handle mixed types in lists", () => {
-      expect(runEvaluate({}, [1, "hello", true, null])).toEqual([1, ["hello", true, null]]);
+      expect(runEvaluate({}, [1, "hello", true, null])).toEqual([1, "hello", true, null]);
     });
   });
 

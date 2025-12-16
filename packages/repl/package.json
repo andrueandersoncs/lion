@@ -9,5 +9,12 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@effect/cli": "^0.72.1",
+    "@lion/core": "workspace:*",
+    "@effect/platform": "^0.93.8",
+    "@effect/platform-bun": "^0.86.0",
+    "effect": "^3.19.12"
   }
 }

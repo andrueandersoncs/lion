@@ -76,15 +76,15 @@ const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<LionV
                     pipe(
                       Match.value(head),
                       Match.when(Schema.is(LionFunctionValueSchema), (fn) => fn(...tail)),
-                      Match.orElse((_) => Effect.succeed(_))
+                      Match.orElse(() => Effect.succeed([head, ...tail]))
                     )
                   )
                 )
               ),
-              Match.orElse((_) => Effect.succeed(_))
+              Match.exhaustive
             )
           ),
-          Match.orElse((_) => Effect.succeed(_))
+          Match.orElse(() => pipe(nonEmptyArray, Array.map(evaluate), Effect.all))
         )
     ),
     Match.orElseAbsurd
