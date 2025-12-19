@@ -42,16 +42,20 @@ const stdlib: Record<string, LionFunctionValueType> = {
   ">": (a: unknown, b: unknown) => succeed((a as number) > (b as number)),
   "<=": (a: unknown, b: unknown) => succeed((a as number) <= (b as number)),
   ">=": (a: unknown, b: unknown) => succeed((a as number) >= (b as number)),
+  
   not: (a: unknown) => succeed(!a),
   and: (...args: unknown[]) => succeed(args.every(Boolean)),
   or: (...args: unknown[]) => succeed(args.some(Boolean)),
   if: (cond: unknown, then: unknown, else_: unknown) => succeed(cond ? then : else_),
+
   list: (...args: unknown[]) => succeed(args),
   first: (arr: unknown) => succeed((arr as unknown[])[0]),
   rest: (arr: unknown) => succeed((arr as unknown[]).slice(1)),
   length: (arr: unknown) => succeed((arr as unknown[]).length),
   concat: (...args: unknown[]) => succeed((args as unknown[][]).flat()),
+
   identity: (x: unknown) => succeed(x),
+  
   get: (obj: unknown, key: unknown) => succeed((obj as Record<string, unknown>)[key as string]),
   keys: (obj: unknown) => succeed(Object.keys(obj as Record<string, unknown>)),
   values: (obj: unknown) => succeed(Object.values(obj as Record<string, unknown>)),
