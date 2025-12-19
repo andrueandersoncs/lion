@@ -1,32 +1,41 @@
-// Import necessary modules from the libraries
-import { Args, Command } from "@effect/cli";
-import { FileSystem } from "@effect/platform";
-import { BunContext, BunFileSystem, BunRuntime } from "@effect/platform-bun";
-import { Console, Effect, Ref } from "effect";
+import { Terminal } from "@effect/platform";
+import { BunContext, BunRuntime } from "@effect/platform-bun";
+import { Effect, Option, Ref } from "effect";
 import { evaluate, LionEnvironment } from "@lion/core";
+import type { UserInput } from "@effect/platform/Terminal";
 
-const file = Args.file({ name: "file" });
+const program = Effect.gen(function* () {
+  const terminal = yield* Terminal.Terminal;
 
-const command = Command.make(
-  "evaluate",
-  { file },
-  Effect.fn(function* ({ file }) {
-    const fs = yield* FileSystem.FileSystem;
-    const content = yield* fs.readFileString(file);
-    const result = yield* evaluate(JSON.parse(content));
-    yield* Console.log(result);
-    return result;
-  })
-);
+  yield* terminal.display("Lion REPL v0.0.1\n");
+  yield* terminal.display("Type 'exit' to exit\n");
+  yield* terminal.display("> ");
 
-const cli = Command.run(command, {
-  name: "Hello World CLI",
-  version: "v1.0.0",
+  let totalInput = "";
+  let input: UserInput;
+  do {
+    const inputMailbox = yield* terminal.readInput;
+    input = yield* inputMailbox.take;
+    totalInput += yield* input.input;
+    yield* Option.match(input.input, {
+      onSome: (s) => terminal.display(s),
+      onNone: () => Effect.succeed(undefined),
+    });
+  } while (input.key.name !== "Enter");
+
+  if (totalInput === "exit") {
+    yield* Effect.succeed(undefined);
+  }
+
+  const result = yield* evaluate(JSON.parse(totalInput));
+
+  yield* terminal.display(`=> ${JSON.stringify(result, null, 2)}\n`);
 });
 
-cli(process.argv).pipe(
-  Effect.provide(BunContext.layer),
-  Effect.provide(BunFileSystem.layer),
-  Effect.provideServiceEffect(LionEnvironment, Ref.make({})),
-  BunRuntime.runMain
+BunRuntime.runMain(
+  program.pipe(
+    Effect.provide(BunContext.layer),
+    Effect.provideServiceEffect(LionEnvironment, Ref.make({})),
+    Effect.scoped
+  )
 );

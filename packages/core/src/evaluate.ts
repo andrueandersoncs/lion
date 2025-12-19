@@ -10,6 +10,7 @@ import {
 import { LionFunctionValueSchema, type LionRecordValueType, type LionValueType } from "./schemas/lion-value";
 import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./schemas/json-primitive";
 
+// IDEA:
 // walk creates a stream of expressions to evaluate
 // evaluate creates a stream of evaluated values
 
@@ -120,4 +121,4 @@ export const evaluate = (expression: LionExpressionType): Effect.Effect<LionValu
 
 const evaluateRecord = (
   expression: LionRecordExpressionType
-): Effect.Effect<LionRecordValueType, Error, LionEnvironment> => Effect.all(Record.map(evaluate)(expression));
+): Effect.Effect<LionRecordValueType, Error, LionEnvironment> => pipe(expression, Record.map(evaluate), Effect.all);
