@@ -1,16 +1,16 @@
-import { Effect, flow, pipe, Schema, Array } from "effect";
+import { Effect, flow, Schema, Array, Boolean, Equal } from "effect";
 
 export const logic = {
-  not: flow(
-    Schema.decodeUnknown(Schema.Boolean),
-    Effect.map((a) => !a)
+  not: flow((a: unknown) => a, Schema.decodeUnknown(Schema.Boolean), Effect.map(Boolean.not)),
+  and: flow(
+    (a: unknown, b: unknown) => [a, b],
+    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Boolean))),
+    Effect.map(Array.every(Equal.equals(true)))
   ),
-  and: flow(Schema.decodeUnknown(Schema.Array(Schema.Boolean)), Effect.map(Array.every(Boolean))),
-  or: flow(Schema.decodeUnknown(Schema.Array(Schema.Boolean)), Effect.map(Array.some(Boolean))),
-  if: (cond: unknown, then: unknown, else_: unknown) =>
-    pipe(
-      cond,
-      Schema.decodeUnknown(Schema.Boolean),
-      Effect.map((cond) => (cond ? then : else_))
-    ),
+  or: flow(
+    (a: unknown, b: unknown) => [a, b],
+    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Boolean))),
+    Effect.map(Array.some(Equal.equals(true)))
+  ),
+  if: (cond: unknown, then: unknown, else_: unknown) => Effect.succeed(cond ? then : else_),
 };
