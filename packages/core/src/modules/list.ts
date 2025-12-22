@@ -1,10 +1,21 @@
-import { Effect, Array, pipe, Schema, flow } from "effect";
+import { Effect, Array, Schema, flow } from "effect";
 
 export const list = {
-  list: (...args: unknown[]) => Schema.decodeUnknown(Schema.Array(Schema.Unknown))(args),
-  first: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.head)),
-  rest: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.tail)),
-  length: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.length)),
-  concat: (...args: unknown[]) =>
-    pipe(args, Schema.decodeUnknown(Schema.Array(Schema.Array(Schema.Unknown))), Effect.map(Array.flatten)),
+  list: (...args: unknown[]) => args,
+
+  head: <T>(s: Schema.Schema<T>) =>
+    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.head)),
+
+  tail: <T>(s: Schema.Schema<T>) =>
+    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.tail)),
+
+  length: <T>(s: Schema.Schema<T>) =>
+    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.length)),
+
+  concat: <T>(s: Schema.Schema<T>) =>
+    flow(
+      (a: unknown[], b: unknown[]) => [a, b],
+      Schema.decodeUnknown(Schema.Array(Schema.Array(s))),
+      Effect.map(Array.flatten)
+    ),
 };
