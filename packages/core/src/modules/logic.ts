@@ -1,16 +1,36 @@
 import { Effect, flow, Schema, Array, Boolean, Equal } from "effect";
+import { tupled } from "effect/Function";
+
+const not = Boolean.not;
+
+const and = Array.every(Equal.equals(true));
+
+const or = Array.some(Equal.equals(true));
+
+const if_ = (cond: boolean, then: unknown, else_: unknown) => (cond ? then : else_);
 
 export const logic = {
-  not: flow((a: unknown) => a, Schema.decodeUnknown(Schema.Boolean), Effect.map(Boolean.not)),
+  not: flow(
+    (...flowArgs: unknown[]) => flowArgs,
+    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean))),
+    Effect.map(tupled(not))
+  ),
+
   and: flow(
-    (a: unknown, b: unknown) => [a, b],
+    (...flowArgs: unknown[]) => flowArgs,
     Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Boolean))),
-    Effect.map(Array.every(Equal.equals(true)))
+    Effect.map(and)
   ),
+
   or: flow(
-    (a: unknown, b: unknown) => [a, b],
+    (...flowArgs: unknown[]) => flowArgs,
     Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Boolean))),
-    Effect.map(Array.some(Equal.equals(true)))
+    Effect.map(or)
   ),
-  if: (cond: unknown, then: unknown, else_: unknown) => Effect.succeed(cond ? then : else_),
+
+  if: flow(
+    (...flowArgs: unknown[]) => flowArgs,
+    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Any, Schema.Any))),
+    Effect.map(tupled(if_))
+  ),
 };

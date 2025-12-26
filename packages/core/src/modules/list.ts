@@ -1,21 +1,27 @@
-import { Effect, Array, Schema, flow } from "effect";
+import { Effect, Array, Schema, flow, Option } from "effect";
 
 export const list = {
-  list: (...args: unknown[]) => args,
+  list: <T>(...args: T[]) => Effect.succeed(args),
 
-  head: <T>(s: Schema.Schema<T>) =>
-    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.head)),
+  head: flow(
+    <T>(a: T) => a,
+    Schema.decodeUnknown(Schema.Array(Schema.Any)),
+    Effect.map(Array.head),
+    Effect.map(Option.getOrThrow)
+  ),
 
-  tail: <T>(s: Schema.Schema<T>) =>
-    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.tail)),
+  tail: flow(
+    <T>(a: T) => a,
+    Schema.decodeUnknown(Schema.Array(Schema.Any)),
+    Effect.map(Array.tail),
+    Effect.map(Option.getOrThrow)
+  ),
 
-  length: <T>(s: Schema.Schema<T>) =>
-    flow((a: unknown) => a, Schema.decodeUnknown(Schema.Array(s)), Effect.map(Array.length)),
+  length: flow(<T>(a: T) => a, Schema.decodeUnknown(Schema.Array(Schema.Any)), Effect.map(Array.length)),
 
-  concat: <T>(s: Schema.Schema<T>) =>
-    flow(
-      (a: unknown[], b: unknown[]) => [a, b],
-      Schema.decodeUnknown(Schema.Array(Schema.Array(s))),
-      Effect.map(Array.flatten)
-    ),
+  concat: flow(
+    <T>(a: T, b: T) => [a, b],
+    Schema.decodeUnknown(Schema.Array(Schema.Array(Schema.Any))),
+    Effect.map(Array.flatten)
+  ),
 };

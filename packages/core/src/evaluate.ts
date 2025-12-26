@@ -19,7 +19,7 @@ export class LionEnvironment extends Context.Tag("LionEnvironment")<
   Ref.Ref<Record<string, LionValueType>>
 >() {}
 
-const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<LionValueType, Error, LionEnvironment> =>
+const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<unknown, Error, LionEnvironment> =>
   pipe(
     Match.value(expression),
     Match.when(
@@ -110,7 +110,7 @@ const evaluatePrimitive = (expression: JsonPrimitiveType): Effect.Effect<LionVal
     Match.orElse((_) => Effect.succeed(_))
   );
 
-export const evaluate = (expression: LionExpressionType): Effect.Effect<LionValueType, Error, LionEnvironment> =>
+export const evaluate = (expression: LionExpressionType): Effect.Effect<unknown, Error, LionEnvironment> =>
   pipe(
     Match.value(expression),
     Match.when(Schema.is(LionArrayExpressionSchema), (_) => evaluateArray(_)),
@@ -121,4 +121,4 @@ export const evaluate = (expression: LionExpressionType): Effect.Effect<LionValu
 
 const evaluateRecord = (
   expression: LionRecordExpressionType
-): Effect.Effect<LionRecordValueType, Error, LionEnvironment> => pipe(expression, Record.map(evaluate), Effect.all);
+): Effect.Effect<unknown, Error, LionEnvironment> => pipe(expression, Record.map(evaluate), Effect.all);

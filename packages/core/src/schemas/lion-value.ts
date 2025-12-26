@@ -9,8 +9,8 @@ type AssumedValueType =
   | LionFunctionValueType;
 
 export type LionFunctionValueType = (
-  ...args: AssumedValueType[]
-) => Effect.Effect<AssumedValueType, Error, LionEnvironment>;
+  ...args: unknown[]
+) => Effect.Effect<unknown, Error, LionEnvironment>;
 
 export const LionFunctionValueSchema = Schema.declare((input: unknown): input is LionFunctionValueType => {
   return typeof input === "function";
