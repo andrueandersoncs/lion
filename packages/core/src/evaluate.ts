@@ -1,4 +1,4 @@
-import { Context, Effect, Match, Ref, Schema, Array, Option, pipe, Record, String } from "effect";
+import { Context, Effect, Match, Ref, Schema, Array, Option, pipe, Record, String, Data } from "effect";
 import {
   LionArrayExpressionSchema,
   LionExpressionSchema,
@@ -6,9 +6,9 @@ import {
   type LionArrayExpressionType,
   type LionExpressionType,
   type LionRecordExpressionType,
-} from "./schemas/lion-expression";
-import { LionFunctionValueSchema, type LionRecordValueType, type LionValueType } from "./schemas/lion-value";
-import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./schemas/json-primitive";
+} from "./schemas/lion-expression.ts";
+import { LionFunctionValueSchema, type LionValueType } from "./schemas/lion-value.ts";
+import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./schemas/json-primitive.ts";
 
 // IDEA:
 // walk creates a stream of expressions to evaluate
@@ -19,32 +19,55 @@ export class LionEnvironment extends Context.Tag("LionEnvironment")<
   Ref.Ref<Record<string, LionValueType>>
 >() {}
 
+export class TooFewArgumentsGivenError extends Data.TaggedError("TooFewArgumentsGivenError")<{
+  functionName: string;
+  passedArgs: any[];
+  expectedArgs: string[];
+}> {}
+
+export class InvalidArgumentTypeError extends Data.TaggedError("InvalidArgumentTypeError")<{
+  functionName: string;
+  passedArgs: any[];
+  expectedArgs: string[];
+}> {}
+
 const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<unknown, Error, LionEnvironment> =>
   pipe(
     Match.value(expression),
+    // empty array expression: default return empty array
     Match.when(
       (expression) => Array.isEmptyReadonlyArray(expression),
       (emptyArray) => Effect.succeed(emptyArray)
     ),
+    // nonempty array expression: evaluate
     Match.when(
       (expression) => Array.isNonEmptyReadonlyArray(expression),
       (nonEmptyArray) =>
         pipe(
           Array.unprepend(nonEmptyArray),
           Match.value,
+          // function call form: match on correct evaluation order
           Match.when([Match.string, Match.any], ([name, args]) =>
             pipe(
               Match.value(name),
+              // quote special form
               Match.when("quote", () =>
                 pipe(
                   Array.head(args),
                   Option.match({
                     onSome: (quotedValue) => Effect.succeed(quotedValue),
                     onNone: () =>
-                      Effect.fail(new Error("Invalid quote expression: quote requires exactly one argument")),
+                      Effect.fail(
+                        new TooFewArgumentsGivenError({
+                          functionName: "quote",
+                          passedArgs: args,
+                          expectedArgs: ["quotedValue"],
+                        })
+                      ),
                   })
                 )
               ),
+              // eval special form
               Match.when("eval", () =>
                 pipe(
                   Array.head(args),
@@ -56,17 +79,31 @@ const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<unkno
                           pipe(
                             Match.value(value),
                             Match.when(Schema.is(LionFunctionValueSchema), (_) =>
-                              Effect.fail(new Error("Invalid eval expression: given argument must be an expression"))
+                              Effect.fail(
+                                new InvalidArgumentTypeError({
+                                  functionName: "eval",
+                                  passedArgs: args,
+                                  expectedArgs: ["expression"],
+                                })
+                              )
                             ),
                             Match.when(Schema.is(LionExpressionSchema), (_) => evaluate(_)),
                             Match.orElseAbsurd
                           )
                         )
                       ),
-                    onNone: () => Effect.fail(new Error("Invalid eval expression: eval requires exactly one argument")),
+                    onNone: () =>
+                      Effect.fail(
+                        new TooFewArgumentsGivenError({
+                          functionName: "eval",
+                          passedArgs: args,
+                          expectedArgs: ["expression"],
+                        })
+                      ),
                   })
                 )
               ),
+              // function application form
               Match.when(Match.string, () =>
                 pipe(
                   nonEmptyArray,
@@ -85,6 +122,7 @@ const evaluateArray = (expression: LionArrayExpressionType): Effect.Effect<unkno
               Match.exhaustive
             )
           ),
+          // basically a "cons" expression: just evaluate and return the list
           Match.orElse(() => pipe(nonEmptyArray, Array.map(evaluate), Effect.all))
         )
     ),
@@ -119,6 +157,5 @@ export const evaluate = (expression: LionExpressionType): Effect.Effect<unknown,
     Match.exhaustive
   );
 
-const evaluateRecord = (
-  expression: LionRecordExpressionType
-): Effect.Effect<unknown, Error, LionEnvironment> => pipe(expression, Record.map(evaluate), Effect.all);
+const evaluateRecord = (expression: LionRecordExpressionType): Effect.Effect<unknown, Error, LionEnvironment> =>
+  pipe(expression, Record.map(evaluate), Effect.all);

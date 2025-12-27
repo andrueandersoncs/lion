@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive";
+import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive.ts";
 
 type AssumedExpressionType =
   | JsonPrimitiveType

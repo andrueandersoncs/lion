@@ -1,7 +1,14 @@
 {
-  "name": "lion-monorepo",
+  "name": "@lion",
   "private": "true",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "prepare": "effect-language-service patch"
+  },
+  "devDependencies": {
+    "@effect/language-service": "^0.62.5",
+    "typescript": "^5.9.3"
+  }
 }

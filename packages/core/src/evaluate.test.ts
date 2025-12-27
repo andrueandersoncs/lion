@@ -1,13 +1,13 @@
 import { describe, it, expect } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { evaluate, LionEnvironment } from "./evaluate";
-import type { LionFunctionValueType, LionValueType } from "./schemas/lion-value";
-import type { LionExpressionType } from "./schemas/lion-expression";
-import { math } from "./modules/math";
-import { logic } from "./modules/logic";
-import { list } from "./modules/list";
-import { func } from "./modules/func";
-import { object } from "./modules/object";
+import { evaluate, InvalidArgumentTypeError, LionEnvironment, TooFewArgumentsGivenError } from "./evaluate.ts";
+import type { LionValueType } from "./schemas/lion-value.ts";
+import type { LionExpressionType } from "./schemas/lion-expression.ts";
+import { math } from "./modules/math.ts";
+import { logic } from "./modules/logic.ts";
+import { list } from "./modules/list.ts";
+import { func } from "./modules/func.ts";
+import { object } from "./modules/object.ts";
 import { ParseError } from "effect/ParseResult";
 
 const runEffect = (env: Record<string, LionValueType>, eff: Effect.Effect<unknown, Error, LionEnvironment>) =>
@@ -98,11 +98,12 @@ describe("evaluate", () => {
       expect(runEvaluate(stdlib, ["quote", nested])).toEqual(nested);
     });
 
-    it("should return a curried function when called with no arguments", () => {
-      expect(() => runEvaluate(stdlib, ["quote"])).toThrow(
-        "Invalid quote expression: quote requires exactly one argument"
-      );
-    });
+    it.effect("should return a curried function when called with no arguments", () =>
+      Effect.gen(function* () {
+        const result = yield* Effect.flip(evaluate(["quote"]));
+        expect(result).toBeInstanceOf(TooFewArgumentsGivenError);
+      }).pipe(Effect.provide(testEnvLayer))
+    );
   });
 
   describe("eval special form", () => {
@@ -117,22 +118,27 @@ describe("evaluate", () => {
       expect(result).toBe(3);
     });
 
-    it("should return a curried function when called with no arguments", () => {
-      expect(() => runEvaluate(stdlib, ["eval"])).toThrow(
-        "Invalid eval expression: eval requires exactly one argument"
-      );
-    });
+    it.effect("should return a curried function when called with no arguments", () =>
+      Effect.gen(function* () {
+        const result = yield* Effect.flip(evaluate(["eval"]));
+        expect(result).toBeInstanceOf(TooFewArgumentsGivenError);
+      }).pipe(Effect.provide(testEnvLayer))
+    );
 
-    it("should throw for invalid expressions in eval", () => {
-      // Functions are valid LionValues but not valid LionExpressions
-      const env = {
-        ...stdlib,
-        fn: () => succeed(() => succeed(null)),
-      };
-      expect(() => runEvaluate(env, ["eval", ["fn"]])).toThrow(
-        "Invalid eval expression: given argument must be an expression"
-      );
-    });
+    it.effect("should throw for invalid expressions in eval", () =>
+      Effect.gen(function* () {
+        // Functions are valid LionValues but not valid LionExpressions
+        const env: Record<string, LionValueType> = {
+          ...stdlib,
+          fn: () => succeed(() => succeed(null)),
+        };
+        // const result = runEvaluate(env, ["eval", ["fn"]]);
+        const result = yield* Effect.flip(evaluate(["eval", ["fn"]])).pipe(
+          Effect.provideServiceEffect(LionEnvironment, Ref.make(env))
+        );
+        expect(result).toBeInstanceOf(InvalidArgumentTypeError);
+      }).pipe(Effect.provide(testEnvLayer))
+    );
   });
 
   describe("function application", () => {
@@ -290,7 +296,7 @@ describe("evaluate", () => {
 
     it.effect("should reject single element operations", () =>
       Effect.gen(function* () {
-        const result = yield* evaluate(["+", 5]).pipe(Effect.catchAll(Effect.succeed));
+        const result = yield* Effect.flip(evaluate(["+", 5]));
         expect(result).toBeInstanceOf(ParseError);
       }).pipe(Effect.provide(testEnvLayer))
     );
@@ -315,15 +321,18 @@ describe("evaluate", () => {
       expect(runEvaluate(env, ["badFn"])).toBeUndefined();
     });
 
-    it("should throw when eval receives non-expression", () => {
-      const env = {
-        ...stdlib,
-        getFn: () => succeed(() => succeed(null)),
-      };
-      expect(() => runEvaluate(env, ["eval", ["getFn"]])).toThrow(
-        "Invalid eval expression: given argument must be an expression"
-      );
-    });
+    it.effect("should throw when eval receives non-expression", () =>
+      Effect.gen(function* () {
+        const env: Record<string, LionValueType> = {
+          ...stdlib,
+          getFn: () => succeed(() => succeed(null)),
+        };
+        const result = yield* Effect.flip(evaluate(["eval", ["getFn"]])).pipe(
+          Effect.provideServiceEffect(LionEnvironment, Ref.make(env))
+        );
+        expect(result).toBeInstanceOf(InvalidArgumentTypeError);
+      })
+    );
   });
 
   describe("higher-order functions", () => {

@@ -1,6 +1,6 @@
 import { Effect, Schema } from "effect";
-import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive";
-import type { LionEnvironment } from "../evaluate";
+import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive.ts";
+import type { LionEnvironment } from "../evaluate.ts";
 
 type AssumedValueType =
   | JsonPrimitiveType
@@ -8,9 +8,7 @@ type AssumedValueType =
   | { readonly [key: string]: AssumedValueType }
   | LionFunctionValueType;
 
-export type LionFunctionValueType = (
-  ...args: unknown[]
-) => Effect.Effect<unknown, Error, LionEnvironment>;
+export type LionFunctionValueType = (...args: unknown[]) => Effect.Effect<unknown, Error, LionEnvironment>;
 
 export const LionFunctionValueSchema = Schema.declare((input: unknown): input is LionFunctionValueType => {
   return typeof input === "function";
