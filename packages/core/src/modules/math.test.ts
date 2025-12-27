@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { math } from "./math";
+import { math } from "./math.ts";
 import { Effect } from "effect";
 
 describe("math", () => {
