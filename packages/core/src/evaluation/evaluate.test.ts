@@ -1,26 +1,25 @@
 import { describe, it, expect } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { evaluate, InvalidArgumentTypeError, LionEnvironment, TooFewArgumentsGivenError } from "./evaluate.ts";
-import type { LionValueType } from "./schemas/lion-value.ts";
-import type { LionExpressionType } from "./schemas/lion-expression.ts";
-import { math } from "./modules/math.ts";
-import { logic } from "./modules/logic.ts";
-import { list } from "./modules/list.ts";
-import { func } from "./modules/func.ts";
-import { object } from "./modules/object.ts";
+import { evaluate, InvalidArgumentTypeError, LionEnvironment, TooFewArgumentsError } from "./evaluate.ts";
+import type { LionExpressionType } from "../schemas/lion-expression.ts";
+import { math } from "../modules/math.ts";
+import { logic } from "../modules/logic.ts";
+import { list } from "../modules/list.ts";
+import { func } from "../modules/func.ts";
+import { object } from "../modules/object.ts";
 import { ParseError } from "effect/ParseResult";
 
-const runEffect = (env: Record<string, LionValueType>, eff: Effect.Effect<unknown, Error, LionEnvironment>) =>
+const runEffect = (env: Record<string, unknown>, eff: Effect.Effect<unknown, Error, LionEnvironment>) =>
   Effect.runSync(Effect.flatMap(Ref.make(env), (envRef) => Effect.provideService(LionEnvironment, envRef)(eff)));
 
 const succeed: typeof Effect.succeed = (value) => Effect.succeed(value);
 
-const runEvaluate = (env: Record<string, LionValueType>, expression: LionExpressionType) => {
+const runEvaluate = (env: Record<string, unknown>, expression: LionExpressionType) => {
   return runEffect(env, evaluate(expression));
 };
 
 // Standard library functions for testing
-const stdlib: Record<string, LionValueType> = {
+const stdlib: Record<string, unknown> = {
   ...math,
   ...logic,
   ...list,
@@ -101,7 +100,7 @@ describe("evaluate", () => {
     it.effect("should return a curried function when called with no arguments", () =>
       Effect.gen(function* () {
         const result = yield* Effect.flip(evaluate(["quote"]));
-        expect(result).toBeInstanceOf(TooFewArgumentsGivenError);
+        expect(result).toBeInstanceOf(TooFewArgumentsError);
       }).pipe(Effect.provide(testEnvLayer))
     );
   });
@@ -121,14 +120,14 @@ describe("evaluate", () => {
     it.effect("should return a curried function when called with no arguments", () =>
       Effect.gen(function* () {
         const result = yield* Effect.flip(evaluate(["eval"]));
-        expect(result).toBeInstanceOf(TooFewArgumentsGivenError);
+        expect(result).toBeInstanceOf(TooFewArgumentsError);
       }).pipe(Effect.provide(testEnvLayer))
     );
 
     it.effect("should throw for invalid expressions in eval", () =>
       Effect.gen(function* () {
         // Functions are valid LionValues but not valid LionExpressions
-        const env: Record<string, LionValueType> = {
+        const env: Record<string, unknown> = {
           ...stdlib,
           fn: () => succeed(() => succeed(null)),
         };
@@ -323,7 +322,7 @@ describe("evaluate", () => {
 
     it.effect("should throw when eval receives non-expression", () =>
       Effect.gen(function* () {
-        const env: Record<string, LionValueType> = {
+        const env: Record<string, unknown> = {
           ...stdlib,
           getFn: () => succeed(() => succeed(null)),
         };

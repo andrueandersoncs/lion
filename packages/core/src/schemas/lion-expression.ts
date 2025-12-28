@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { JsonPrimitiveSchema, type JsonPrimitiveType } from "./json-primitive.ts";
 
-type AssumedExpressionType =
+export type AssumedExpressionType =
   | JsonPrimitiveType
   | ReadonlyArray<AssumedExpressionType>
   | { readonly [key: string]: AssumedExpressionType };
