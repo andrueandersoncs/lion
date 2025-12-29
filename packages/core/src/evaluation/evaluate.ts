@@ -1,13 +1,12 @@
-import { Context, Effect, Match, Ref, Schema, pipe, Data } from "effect";
-import {
-  LionArrayExpressionSchema,
-  LionRecordExpressionSchema,
-  type LionExpressionType,
-} from "../schemas/lion-expression.ts";
-import { JsonPrimitiveSchema } from "../schemas/json-primitive.ts";
+import { Context, Effect, Match, Ref, Schema, pipe } from "effect";
+import { type LionExpressionType } from "../schemas/lion-expression.ts";
 import { evaluateArray } from "./base-forms/array.ts";
 import { evaluateRecord } from "./base-forms/record.ts";
 import { evaluatePrimitive } from "./base-forms/primitive.ts";
+import type { ParseError } from "effect/ParseResult";
+import { JsonPrimitiveSchema } from "../schemas/json-primitive.ts";
+import { LionRecordExpressionSchema } from "../schemas/lion-expression.ts";
+import { LionArrayExpressionSchema } from "../schemas/lion-expression.ts";
 
 // IDEA:
 // walk creates a stream of expressions to evaluate
@@ -24,21 +23,7 @@ export class LionEnvironment extends Context.Tag("LionEnvironment")<
   Ref.Ref<Record<string, unknown>>
 >() {}
 
-export class TooFewArgumentsError extends Data.TaggedError("TooFewArgumentsError")<{
-  functionName: string;
-  passedArgs: readonly unknown[];
-  expectedArgs: string[];
-}> {}
-
-export class InvalidArgumentTypeError extends Data.TaggedError("InvalidArgumentTypeError")<{
-  functionName: string;
-  passedArgs: readonly unknown[];
-  expectedArgs: string[];
-}> {}
-
-export type EvaluateResult = Effect.Effect<unknown, EvaluateError, LionEnvironment>;
-
-export type EvaluateError = TooFewArgumentsError | InvalidArgumentTypeError;
+export type EvaluateResult = Effect.Effect<unknown, ParseError, LionEnvironment>;
 
 export const evaluate = (expression: LionExpressionType): EvaluateResult =>
   pipe(

@@ -1,19 +1,6 @@
-import { Array, Effect, Option, pipe } from "effect";
-import type { AssumedExpressionType } from "../../schemas/lion-expression.ts";
-import { TooFewArgumentsError } from "../evaluate.ts";
+import { Effect, Schema } from "effect";
+import { LionExpressionSchema } from "../../schemas/lion-expression.ts";
 
-export const evaluateQuote = (args: readonly AssumedExpressionType[]) => () =>
-  pipe(
-    Array.head(args),
-    Option.match({
-      onSome: (quotedValue) => Effect.succeed(quotedValue),
-      onNone: () =>
-        Effect.fail(
-          new TooFewArgumentsError({
-            functionName: "quote",
-            passedArgs: args,
-            expectedArgs: ["quotedValue"],
-          })
-        ),
-    })
-  );
+export const QuoteFormSchema = Schema.Tuple(Schema.Literal("quote"), LionExpressionSchema);
+
+export const evaluateQuote = ([_, args]: typeof QuoteFormSchema.Type) => Effect.succeed(args);

@@ -1,38 +1,16 @@
-import { Array, Effect, Match, pipe } from "effect";
-import { evaluate, type EvaluateResult } from "../evaluate.ts";
-import type { LionArrayExpressionType } from "../../schemas/lion-expression.ts";
-import { evaluateQuote } from "../special-forms/quote.ts";
-import { evaluateEval } from "../special-forms/eval.ts";
-import { evaluateFunctionCall } from "../special-forms/function.ts";
+import { Array, Effect, flow, Match, pipe, Schema } from "effect";
+import { evaluate } from "../evaluate.ts";
+import { type LionArrayExpressionType } from "../../schemas/lion-expression.ts";
+import { evaluateQuote, QuoteFormSchema } from "../special-forms/quote.ts";
+import { EvalFormSchema, evaluateEval } from "../special-forms/eval.ts";
+import { FunctionCallFormSchema, evaluateFunctionCall } from "../special-forms/function.ts";
 
-export const evaluateArray = (expression: LionArrayExpressionType): EvaluateResult =>
+export const evaluateArray = (expression: LionArrayExpressionType) =>
   pipe(
     Match.value(expression),
-    // empty array expression: default return empty array
-    Match.when(
-      (expression) => Array.isEmptyReadonlyArray(expression),
-      (emptyArray) => Effect.succeed(emptyArray)
-    ),
-    // nonempty array expression: evaluate
-    Match.when(
-      (expression) => Array.isNonEmptyReadonlyArray(expression),
-      (nonEmptyArray) =>
-        pipe(
-          Array.unprepend(nonEmptyArray),
-          Match.value,
-          // function call form: match on correct evaluation order
-          Match.when([Match.string, Match.any], ([name, args]) =>
-            pipe(
-              Match.value(name),
-              Match.when("quote", evaluateQuote(args)),
-              Match.when("eval", evaluateEval(args)),
-              Match.when(Match.string, evaluateFunctionCall(nonEmptyArray)),
-              Match.exhaustive
-            )
-          ),
-          // basically a "cons" expression: just evaluate and return the list
-          Match.orElse(() => pipe(nonEmptyArray, Array.map(evaluate), Effect.all))
-        )
-    ),
-    Match.orElseAbsurd
+    Match.when(Array.isEmptyReadonlyArray, Effect.succeed),
+    Match.when(Schema.is(EvalFormSchema), (_) => evaluateEval(_)),
+    Match.when(Schema.is(QuoteFormSchema), (_) => evaluateQuote(_)),
+    Match.when(Schema.is(FunctionCallFormSchema), (_) => evaluateFunctionCall(_)),
+    Match.orElse(flow(Array.map(evaluate), Effect.all))
   );

@@ -1,11 +1,12 @@
 import { Array, Effect, Match, pipe, Schema } from "effect";
-import type { AssumedExpressionType } from "../../schemas/lion-expression.ts";
+import { LionExpressionSchema } from "../../schemas/lion-expression.ts";
 import { evaluate, LionFunctionValueSchema } from "../evaluate.ts";
-import type { NonEmptyReadonlyArray } from "effect/Array";
 
-export const evaluateFunctionCall = (nonEmptyArray: NonEmptyReadonlyArray<AssumedExpressionType>) => () =>
+export const FunctionCallFormSchema = Schema.Tuple([Schema.String], LionExpressionSchema);
+
+export const evaluateFunctionCall = (x: typeof FunctionCallFormSchema.Type) =>
   pipe(
-    nonEmptyArray,
+    x,
     Array.map(evaluate),
     Effect.all,
     Effect.map(Array.unprepend),

@@ -1,38 +1,8 @@
-import { Array, Effect, Match, Option, pipe, Schema } from "effect";
-import { LionExpressionSchema, type AssumedExpressionType } from "../../schemas/lion-expression.ts";
-import { evaluate, InvalidArgumentTypeError, LionFunctionValueSchema, TooFewArgumentsError } from "../evaluate.ts";
+import { Effect, pipe, Schema } from "effect";
+import { LionExpressionSchema } from "../../schemas/lion-expression.ts";
+import { evaluate } from "../evaluate.ts";
 
-export const evaluateEval = (args: readonly AssumedExpressionType[]) => () =>
-  pipe(
-    Array.head(args),
-    Option.match({
-      onSome: (firstArg) =>
-        pipe(
-          evaluate(firstArg),
-          Effect.flatMap((value) =>
-            pipe(
-              Match.value(value),
-              Match.when(Schema.is(LionFunctionValueSchema), (_) =>
-                Effect.fail(
-                  new InvalidArgumentTypeError({
-                    functionName: "eval",
-                    passedArgs: args,
-                    expectedArgs: ["expression"],
-                  })
-                )
-              ),
-              Match.when(Schema.is(LionExpressionSchema), (_) => evaluate(_)),
-              Match.orElseAbsurd
-            )
-          )
-        ),
-      onNone: () =>
-        Effect.fail(
-          new TooFewArgumentsError({
-            functionName: "eval",
-            passedArgs: args,
-            expectedArgs: ["expression"],
-          })
-        ),
-    })
-  );
+export const EvalFormSchema = Schema.Tuple(Schema.Literal("eval"), LionExpressionSchema);
+
+export const evaluateEval = ([_, args]: typeof EvalFormSchema.Type) =>
+  pipe(args, evaluate, Effect.flatMap(Schema.decodeUnknown(LionExpressionSchema)), Effect.flatMap(evaluate));
