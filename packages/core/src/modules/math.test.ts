@@ -7,6 +7,10 @@ describe("math", () => {
     expect(Effect.runSync(math["+"](1, 2))).toBe(3);
   });
 
+  it("should add many numbers", () => {
+    expect(Effect.runSync(math["+"](1, 2, 3, 4, 5))).toBe(15);
+  })
+
   it("should subtract two numbers", () => {
     expect(Effect.runSync(math["-"](1, 2))).toBe(-1);
   });

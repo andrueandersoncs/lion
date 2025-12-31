@@ -1,37 +1,37 @@
 {
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
   "compilerOptions": {
-    "lib": [
-      "ESNext"
-    ],
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleDetection": "force",
+    "target": "ES2022",
     "jsx": "react-jsx",
-    "allowJs": true,
-    "incremental": true,
-    "composite": true,
-    // Bundler mode
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client"
+    ],
+    /* Bundler mode */
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "rewriteRelativeImportExtensions": true,
-    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": false,
     "noEmit": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    // Best practices
-    "strict": true,
+    /* Linting */
     "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "plugins": [
-      {
-        "name": "@effect/language-service"
-      }
-    ]
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   }
 }
