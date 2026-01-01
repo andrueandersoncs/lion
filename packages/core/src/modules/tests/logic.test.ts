@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@effect/vitest";
-import { logic } from "./logic.ts";
+import { logic } from "../logic.ts";
 import { Effect } from "effect";
 
 describe("logic", () => {

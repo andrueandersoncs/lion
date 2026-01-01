@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { math } from "./math.ts";
+import { math } from "../math.ts";
 import { Effect } from "effect";
 
 describe("math", () => {
@@ -9,7 +9,7 @@ describe("math", () => {
 
   it("should add many numbers", () => {
     expect(Effect.runSync(math["+"](1, 2, 3, 4, 5))).toBe(15);
-  })
+  });
 
   it("should subtract two numbers", () => {
     expect(Effect.runSync(math["-"](1, 2))).toBe(-1);

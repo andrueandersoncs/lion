@@ -1,8 +1,8 @@
 import { describe, it, expect } from "@effect/vitest";
-import { evaluateFunctionCall } from "./function.ts";
+import { evaluateFunctionCall } from "../function.ts";
 import { Effect, Layer, Ref } from "effect";
-import { LionEnvironment } from "../evaluate.ts";
-import { math } from "../../modules/math.ts";
+import { LionEnvironment } from "../../evaluate.ts";
+import { math } from "../../../modules/math.ts";
 
 const stdlib: Record<string, unknown> = {
   ...math,
