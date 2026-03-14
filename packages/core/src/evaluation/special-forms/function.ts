@@ -2,10 +2,16 @@ import { Array, Effect, Match, pipe, Schema } from "effect";
 import { LionExpressionSchema } from "../../schemas/lion-expression.ts";
 import { evaluate, LionFunctionValueSchema } from "../evaluate.ts";
 
-export const FunctionCallFormSchema = Schema.Tuple([Schema.String], LionExpressionSchema);
+export const FunctionCallFormSchema = Schema.Tuple(
+  [Schema.String],
+  LionExpressionSchema
+);
 
 export const evaluateFunctionCall = (x: typeof FunctionCallFormSchema.Type) =>
   pipe(
+    Match.value(x),
+    Match.when(),
+    Match.when(),
     Array.map(x, evaluate),
     Effect.all,
     Effect.map(Array.unprepend),

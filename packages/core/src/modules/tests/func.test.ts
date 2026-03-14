@@ -1,6 +1,6 @@
-import { describe, it, expect } from "@effect/vitest";
-import { func } from "../func.ts";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
+import { func } from "../func.ts";
 
 describe("func", () => {
   it("should return the identity of a value", () => {

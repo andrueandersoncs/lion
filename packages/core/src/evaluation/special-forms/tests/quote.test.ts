@@ -1,15 +1,14 @@
-import { describe, it, expect } from "@effect/vitest";
-import { evaluateQuote } from "../quote.ts";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { LionEnvironment } from "../../evaluate.ts";
 import { math } from "../../../modules/math.ts";
-import { ParseError } from "effect/ParseResult";
+import { LionEnvironmentService } from "../../evaluate.ts";
+import { evaluateQuote } from "../quote.ts";
 
 const stdlib: Record<string, unknown> = {
   ...math,
 };
 
-const testEnvLayer = Layer.effect(LionEnvironment, Ref.make(stdlib));
+const testEnvLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
 
 describe("quote special form", () => {
   it.effect("should return the argument unevaluated", () =>

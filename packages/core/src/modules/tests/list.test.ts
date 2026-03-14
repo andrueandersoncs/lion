@@ -1,6 +1,6 @@
-import { describe, it, expect } from "@effect/vitest";
-import { list } from "../list.ts";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
+import { list } from "../list.ts";
 
 describe("list", () => {
   it("should return the head of a list", () => {
@@ -13,6 +13,8 @@ describe("list", () => {
     expect(Effect.runSync(list.length([12, 34, 56]))).toEqual(3);
   });
   it("should return the concat of two lists", () => {
-    expect(Effect.runSync(list.concat([12, 34, 56], [78, 90]))).toEqual([12, 34, 56, 78, 90]);
+    expect(Effect.runSync(list.concat([12, 34, 56], [78, 90]))).toEqual([
+      12, 34, 56, 78, 90,
+    ]);
   });
 });

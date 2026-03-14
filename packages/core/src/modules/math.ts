@@ -1,4 +1,4 @@
-import { Effect, Schema, flow, Array } from "effect";
+import { Array, Effect, flow, Schema } from "effect";
 import { dual, tupled } from "effect/Function";
 
 const add = (a: number, b: number) => a + b;
@@ -29,42 +29,58 @@ export const math = {
   ),
   "-": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(subtract))
   ),
   "*": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(multiply))
   ),
   "/": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.flatMap(tupled(divide))
   ),
   "=": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(equals))
   ),
   "<": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(lessThan))
   ),
   ">": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(greaterThan))
   ),
   "<=": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(lessThanOrEqualTo))
   ),
   ">=": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))),
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
     Effect.map(tupled(greaterThanOrEqualTo))
   ),
 };

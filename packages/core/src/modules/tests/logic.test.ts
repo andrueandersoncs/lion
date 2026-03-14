@@ -1,6 +1,6 @@
-import { describe, it, expect } from "@effect/vitest";
-import { logic } from "../logic.ts";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
+import { logic } from "../logic.ts";
 
 describe("logic", () => {
   it("should return the negation of a boolean", () => {

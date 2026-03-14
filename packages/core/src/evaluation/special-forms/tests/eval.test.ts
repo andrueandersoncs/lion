@@ -1,22 +1,20 @@
-import { describe, it, expect } from "@effect/vitest";
-import { evaluateEval } from "../eval.ts";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { LionEnvironment } from "../../evaluate.ts";
-import { math } from "../../../modules/math.ts";
 import { ParseError } from "effect/ParseResult";
+import { LionEnvironmentService } from "@/evaluation/evaluate";
+import { evaluateEval } from "@/evaluation/special-forms/eval";
 
-const stdlib: Record<string, unknown> = {
-  ...math,
-};
-
-const testEnvLayer = Layer.effect(LionEnvironment, Ref.make(stdlib));
+const testEnvLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
 
 describe("eval special form", () => {
   it.effect("should evaluate a quoted expression", () =>
     Effect.gen(function* () {
       const env: Record<string, unknown> = { ...stdlib, expr: ["+", 1, 2] };
       const result = yield* evaluateEval(["eval", "expr"]).pipe(
-        Effect.provideServiceEffect(LionEnvironment, Ref.make<Record<string, unknown>>(env))
+        Effect.provideServiceEffect(
+          LionEnvironmentService,
+          Ref.make<Record<string, unknown>>(env)
+        )
       );
       expect(result).toBe(3);
     })
@@ -37,7 +35,10 @@ describe("eval special form", () => {
         fn: () => Effect.succeed(() => Effect.succeed(null)),
       };
       const result = yield* Effect.flip(evaluateEval(["eval", ["fn"]])).pipe(
-        Effect.provideServiceEffect(LionEnvironment, Ref.make<Record<string, unknown>>(env))
+        Effect.provideServiceEffect(
+          LionEnvironmentService,
+          Ref.make<Record<string, unknown>>(env)
+        )
       );
       expect(result).toBeInstanceOf(ParseError);
     })

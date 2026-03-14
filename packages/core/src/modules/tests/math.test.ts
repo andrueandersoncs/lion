@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
-import { math } from "../math.ts";
 import { Effect } from "effect";
+import { math } from "../math.ts";
 
 describe("math", () => {
   it("should add two numbers", () => {
