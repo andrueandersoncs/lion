@@ -6,8 +6,7 @@ export const FunctionCallFormSchema = Schema.Tuple([Schema.String], LionExpressi
 
 export const evaluateFunctionCall = (x: typeof FunctionCallFormSchema.Type) =>
   pipe(
-    x,
-    Array.map(evaluate),
+    Array.map(x, evaluate),
     Effect.all,
     Effect.map(Array.unprepend),
     Effect.flatMap(([head, tail]) =>

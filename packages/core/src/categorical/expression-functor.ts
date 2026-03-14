@@ -34,7 +34,7 @@ export type Datum =
   | readonly Datum[]
   | { readonly [key in string]: Datum };
 
-export const ExpressionFunctor = <A>() => Data.taggedEnum<ExpressionFunctor<A>>();
+export const ConsExprF = <A>() => Data.taggedEnum<ExpressionFunctor<A>>();
 
 export const mapExpressionFunctor = <A, B>(f: (a: A) => B) =>
   pipe(
@@ -46,22 +46,22 @@ export const mapExpressionFunctor = <A, B>(f: (a: A) => B) =>
     Match.tag("Symbol", (e) => e as ExpressionFunctor<B>),
     Match.tag("Quote", (e) => e as ExpressionFunctor<B>),
 
-    Match.tag("Record", (e) => ExpressionFunctor<B>().Record({ fields: Record.map(e.fields, f) })),
-    Match.tag("Call", (e) => ExpressionFunctor<B>().Call({ function: f(e.function), arguments: e.arguments.map(f) })),
-    Match.tag("If", (e) => ExpressionFunctor<B>().If({ condition: f(e.condition), then: f(e.then), else: f(e.else) })),
+    Match.tag("Record", (e) => ConsExprF<B>().Record({ fields: Record.map(e.fields, f) })),
+    Match.tag("Call", (e) => ConsExprF<B>().Call({ function: f(e.function), arguments: e.arguments.map(f) })),
+    Match.tag("If", (e) => ConsExprF<B>().If({ condition: f(e.condition), then: f(e.then), else: f(e.else) })),
 
     Match.tag("Let", (e) =>
-      ExpressionFunctor<B>().Let({ bindings: e.bindings.map(([name, value]) => [name, f(value)]), body: e.body.map(f) })
+      ConsExprF<B>().Let({ bindings: e.bindings.map(([name, value]) => [name, f(value)]), body: e.body.map(f) })
     ),
 
-    Match.tag("Lambda", (e) => ExpressionFunctor<B>().Lambda({ parameters: e.parameters, body: e.body.map(f) })),
-    Match.tag("Begin", (e) => ExpressionFunctor<B>().Begin({ expressions: e.expressions.map(f) })),
+    Match.tag("Lambda", (e) => ConsExprF<B>().Lambda({ parameters: e.parameters, body: e.body.map(f) })),
+    Match.tag("Begin", (e) => ConsExprF<B>().Begin({ expressions: e.expressions.map(f) })),
     Match.exhaustive
   );
 
 export type Expression = ExpressionFunctor<{ unbox: Expression }>;
 
-export const Expression = ExpressionFunctor<Expression>();
+export const ConsExpr = ConsExprF<Expression>();
 
 const lens =
   <A>(key: keyof A) =>
@@ -79,6 +79,15 @@ const evaluate = pipe(
   Match.tag("Boolean", Function.constant),
   Match.tag("String", Function.constant),
   Match.tag("Number", Function.constant),
-  Match.tag("Symbol", )
+  Match.tag("Symbol", Function.constant),
+  Match.tag("Quote", Function.constant),
+  Match.tag("Record", Function.constant),
+  Match.tag("Call", Function.constant),
+  Match.tag("If", Function.constant),
+  Match.tag("Let", Function.constant),
+  Match.tag("Lambda", Function.constant),
+  Match.tag("Begin", Function.constant),
   Match.exhaustive
-)
+);
+
+evaluate(ConsExpr.Begin({ expressions: [ConsExpr.Null(), ConsExpr.Boolean(true)] }));
