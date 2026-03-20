@@ -1,11 +1,18 @@
-import { Array, Boolean, Effect, Equal, flow, Schema } from "effect";
+import {
+  Array as Arr,
+  Boolean as Bool,
+  Effect,
+  Equal,
+  flow,
+  Schema,
+} from "effect";
 import { tupled } from "effect/Function";
 
-const not = Boolean.not;
+const not = Bool.not;
 
-const and = Array.every(Equal.equals(true));
+const and = Arr.every(Equal.equals(true));
 
-const or = Array.some(Equal.equals(true));
+const or = Arr.some(Equal.equals(true));
 
 const if_ = (cond: boolean, then: unknown, else_: unknown) =>
   cond ? then : else_;

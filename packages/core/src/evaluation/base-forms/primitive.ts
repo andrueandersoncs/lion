@@ -1,11 +1,11 @@
-import { Effect, Match, Option, pipe, Record, String } from "effect";
-import type { JsonPrimitiveType } from "../../schemas/json-primitive.ts";
-import { LionEnvironmentService } from "../evaluate.ts";
+import { Effect, Match, Option, pipe, Record, String as Str } from "effect";
+import type { JsonPrimitiveType } from "@/schemas/json-primitive";
+import { LionEnvironmentService } from "@/services/evaluation.ts";
 
 export const evaluatePrimitive = (expression: JsonPrimitiveType) =>
   pipe(
     Match.value(expression),
-    Match.when(String.isString, evaluateReference),
+    Match.when(Str.isString, evaluateReference),
     Match.orElse(Effect.succeed)
   );
 

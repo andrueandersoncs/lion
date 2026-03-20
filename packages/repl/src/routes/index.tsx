@@ -1,16 +1,18 @@
-import { evaluate, LionEnvironmentService, stdlib } from "@lion/core";
+import { evaluate } from "@lion/core/evaluation";
+import { stdlib } from "@lion/core/modules";
+import { LionEnvironmentService } from "@lion/core/services/evaluation";
 import { createFileRoute } from "@tanstack/react-router";
 import { Effect, Ref } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({ component: App });
 
-type HistoryEntry = {
+interface HistoryEntry {
   id: number;
   input: string;
-  output: string;
   isError: boolean;
-};
+  output: string;
+}
 
 function App() {
   const [input, setInput] = useState("");
@@ -29,7 +31,7 @@ function App() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [history, scrollToBottom]);
+  }, [scrollToBottom]);
 
   const evalExpression = useCallback(
     async (

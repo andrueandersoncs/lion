@@ -3,7 +3,7 @@ import type { ReadonlyRecord } from "effect/Record";
 
 export type ExprF<A> = Data.TaggedEnum<{
   // JSON primitives
-  Null: {};
+  Null: { value: null };
   Boolean: { value: boolean };
   String: { value: string };
   Number: { value: number };
@@ -15,16 +15,16 @@ export type ExprF<A> = Data.TaggedEnum<{
   Record: { fields: ReadonlyRecord<string, A> };
 
   // function calls: (f a b c)
-  Call: { function: A; arguments: ReadonlyArray<A> };
+  Call: { function: A; arguments: readonly A[] };
 
   // special forms
   If: { condition: A; then: A; else: A };
   Let: {
     bindings: ReadonlyArray<readonly [string, A]>;
-    body: ReadonlyArray<A>;
+    body: readonly A[];
   };
-  Lambda: { parameters: ReadonlyArray<string>; body: ReadonlyArray<A> };
-  Begin: { expressions: ReadonlyArray<A> };
+  Lambda: { parameters: readonly string[]; body: readonly A[] };
+  Begin: { expressions: readonly A[] };
   Quote: { datum: Datum };
 }>;
 
@@ -43,7 +43,7 @@ type EvaluateResult =
   | { _tag: "Paused"; oplog: [] }
   | { _tag: "Completed"; result: unknown };
 
-const evaluationAlgebra: Algebra<EvaluateResult> = (node) => {};
+// const evaluationAlgebra: Algebra<EvaluateResult> = (node) => {};
 
 // export const ConsExprF = <A>() => Data.taggedEnum<ExpressionFunctor<A>>();
 

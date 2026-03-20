@@ -1,12 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { math } from "../../../modules/math.ts";
-import { LionEnvironmentService } from "../../evaluate.ts";
+import { stdlib } from "@/modules/index.ts";
+import { LionEnvironmentService } from "@/services/evaluation.ts";
 import { evaluateQuote } from "../quote.ts";
-
-const stdlib: Record<string, unknown> = {
-  ...math,
-};
 
 const testEnvLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
 

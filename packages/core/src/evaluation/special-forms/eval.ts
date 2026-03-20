@@ -1,6 +1,6 @@
 import { Effect, pipe, Schema } from "effect";
-import { LionExpressionSchema } from "../../schemas/lion-expression.ts";
-import { evaluate } from "../evaluate.ts";
+import { evaluate } from "@/evaluation/evaluate.ts";
+import { LionExpressionSchema } from "@/schemas/lion-expression";
 
 export const EvalFormSchema = Schema.Tuple(
   Schema.Literal("eval"),

@@ -1,8 +1,19 @@
 {
   "name": "@lion/core",
   "version": "0.0.1",
-  "module": "index.ts",
   "type": "module",
+  "exports": {
+    "./evaluation": "./src/evaluation/evaluate.ts",
+    "./modules": "./src/modules/index.ts",
+    "./services/evaluation": "./src/services/evaluation.ts",
+    "./services/oplog": "./src/services/oplog.ts",
+    "./schemas/evaluation": "./src/schemas/evaluation.ts",
+    "./schemas/json-primitive": "./src/schemas/json-primitive.ts",
+    "./schemas/lion-expression": "./src/schemas/lion-expression.ts",
+    "./schemas/oplog": "./src/schemas/oplog.ts",
+    "./types/evaluation": "./src/types/evaluation.ts",
+    "./errors/evaluation": "./src/errors/evaluation.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

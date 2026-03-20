@@ -1,10 +1,16 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
 import { ParseError } from "effect/ParseResult";
-import { LionEnvironmentService } from "@/evaluation/evaluate";
 import { evaluateEval } from "@/evaluation/special-forms/eval";
+import { stdlib } from "@/modules";
+import type { OplogEntrySchema } from "@/schemas/oplog";
+import { LionEnvironmentService } from "@/services/evaluation";
+import { LionOplogService } from "@/services/oplog";
 
-const testEnvLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
+const testEnvLayer = Layer.merge(
+  Layer.effect(LionEnvironmentService, Ref.make(stdlib)),
+  Layer.effect(LionOplogService, Ref.make<(typeof OplogEntrySchema.Type)[]>([]))
+);
 
 describe("eval special form", () => {
   it.effect("should evaluate a quoted expression", () =>
@@ -14,6 +20,10 @@ describe("eval special form", () => {
         Effect.provideServiceEffect(
           LionEnvironmentService,
           Ref.make<Record<string, unknown>>(env)
+        ),
+        Effect.provideServiceEffect(
+          LionOplogService,
+          Ref.make<(typeof OplogEntrySchema.Type)[]>([])
         )
       );
       expect(result).toBe(3);
@@ -38,6 +48,10 @@ describe("eval special form", () => {
         Effect.provideServiceEffect(
           LionEnvironmentService,
           Ref.make<Record<string, unknown>>(env)
+        ),
+        Effect.provideServiceEffect(
+          LionOplogService,
+          Ref.make<(typeof OplogEntrySchema.Type)[]>([])
         )
       );
       expect(result).toBeInstanceOf(ParseError);

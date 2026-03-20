@@ -1,14 +1,15 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { math } from "../../../modules/math.ts";
-import { LionEnvironmentService } from "../../evaluate.ts";
+import { stdlib } from "@/modules/index.ts";
+import type { OplogEntrySchema } from "@/schemas/oplog.ts";
+import { LionEnvironmentService } from "@/services/evaluation.ts";
+import { LionOplogService } from "@/services/oplog.ts";
 import { evaluateFunctionCall } from "../function.ts";
 
-const stdlib: Record<string, unknown> = {
-  ...math,
-};
-
-const testEnvLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
+const testEnvLayer = Layer.merge(
+  Layer.effect(LionEnvironmentService, Ref.make(stdlib)),
+  Layer.effect(LionOplogService, Ref.make<(typeof OplogEntrySchema.Type)[]>([]))
+);
 
 describe("evaluateFunctionCall", () => {
   it.effect("should evaluate a function call", () =>

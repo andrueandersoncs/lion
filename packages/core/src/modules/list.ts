@@ -1,4 +1,4 @@
-import { Array, Effect, flow, Option, Schema } from "effect";
+import { Array as Arr, Effect, flow, Option, Schema } from "effect";
 
 export const list = {
   list: <T>(...args: T[]) => Effect.succeed(args),
@@ -6,26 +6,26 @@ export const list = {
   head: flow(
     <T>(a: T) => a,
     Schema.decodeUnknown(Schema.Array(Schema.Any)),
-    Effect.map(Array.head),
+    Effect.map(Arr.head),
     Effect.map(Option.getOrThrow)
   ),
 
   tail: flow(
     <T>(a: T) => a,
     Schema.decodeUnknown(Schema.Array(Schema.Any)),
-    Effect.map(Array.tail),
+    Effect.map(Arr.tail),
     Effect.map(Option.getOrThrow)
   ),
 
   length: flow(
     <T>(a: T) => a,
     Schema.decodeUnknown(Schema.Array(Schema.Any)),
-    Effect.map(Array.length)
+    Effect.map(Arr.length)
   ),
 
   concat: flow(
     <T>(a: T, b: T) => [a, b],
     Schema.decodeUnknown(Schema.Array(Schema.Array(Schema.Any))),
-    Effect.map(Array.flatten)
+    Effect.map(Arr.flatten)
   ),
 };

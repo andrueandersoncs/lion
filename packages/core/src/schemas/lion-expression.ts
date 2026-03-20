@@ -2,12 +2,12 @@ import { Schema } from "effect";
 import {
   JsonPrimitiveSchema,
   type JsonPrimitiveType,
-} from "./json-primitive.ts";
+} from "@/schemas/json-primitive.ts";
 
 // array
 export type AssumedExpressionType =
   | JsonPrimitiveType
-  | ReadonlyArray<AssumedExpressionType>
+  | readonly AssumedExpressionType[]
   | { readonly [key: string]: AssumedExpressionType };
 
 export const LionArrayExpressionSchema = Schema.Array(
