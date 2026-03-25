@@ -8,7 +8,6 @@ import {
   Record,
   Ref,
   Schema,
-  Tuple,
 } from "effect";
 import {
   ContinuationNeededError,
@@ -32,74 +31,90 @@ export const evaluateFunctionCall = (
   functionCallExpression: typeof FunctionCallFormSchema.Type
 ) =>
   pipe(
-    Match.value(functionCallExpression),
-    Match.when(
-      ([name]) => !HashSet.has(pureFunctions, name),
-      (impureFunctionCallExpression) =>
-        Effect.gen(function* () {
-          const oplogService = yield* LionOplogService;
-          const oplog = yield* Ref.get(oplogService);
-          const nextOperation = Arr.head(oplog);
-          return yield* Option.match(nextOperation, {
-            onSome: (op) =>
-              pipe(
-                Match.value(op),
-                Match.when(
-                  Schema.is(OperationCompletedSchema),
-                  (opCompleted) =>
-                    opCompleted.operation ===
-                    Tuple.at(impureFunctionCallExpression, 0)
-                      ? Effect.gen(function* () {
-                          const oplogService = yield* LionOplogService;
-                          yield* Ref.update(oplogService, (oplog) =>
-                            Arr.drop(oplog, 1)
-                          );
-                          return opCompleted.result;
-                        })
-                      : new OplogMismatchError({
-                          oplog,
-                          evaluatedOperation: impureFunctionCallExpression,
-                          storedOperation: opCompleted.operation,
-                        })
-                ),
-                Match.when(Schema.is(OperationStartedSchema), (opStarted) =>
-                  opStarted.operation ===
-                  Tuple.at(impureFunctionCallExpression, 0)
-                    ? new ContinuationNeededError({
-                        oplog,
-                      })
-                    : new OplogMismatchError({
-                        oplog,
-                        evaluatedOperation: impureFunctionCallExpression,
-                        storedOperation: opStarted.operation,
-                      })
-                ),
-                Match.exhaustive
-              ),
-            onNone: () =>
-              new ContinuationNeededError({
-                oplog: Arr.prepend(
-                  oplog,
-                  new OperationStartedSchema({
-                    operation: Tuple.at(impureFunctionCallExpression, 0),
-                    arguments: Arr.tailNonEmpty(impureFunctionCallExpression), // fixme: evaluate the arguments
-                  })
-                ),
-              }),
-          });
-        })
-    ),
-    Match.orElse((pureFunctionCallExpression) =>
+    Arr.headNonEmpty(functionCallExpression),
+    (name) => evaluate(name),
+    Effect.flatMap((evaluatedName) =>
       pipe(
-        Effect.all(Arr.map(pureFunctionCallExpression, evaluate)),
-        Effect.map(Arr.unprepend),
-        Effect.flatMap(([head, tail]) =>
+        Match.value(evaluatedName),
+        Match.when(Schema.is(LionFunctionValueSchema), (_) =>
           pipe(
-            Match.value(head),
-            Match.when(Schema.is(LionFunctionValueSchema), (fn) => fn(...tail)),
-            Match.orElse(() => Effect.succeed([head, ...tail]))
+            Match.value(functionCallExpression),
+            Match.when(
+              ([name]) => !HashSet.has(pureFunctions, name),
+              (impureFunctionCallExpression) =>
+                Effect.gen(function* () {
+                  const oplogService = yield* LionOplogService;
+                  const oplog = yield* Ref.get(oplogService);
+                  const nextOperation = Arr.head(oplog);
+                  return yield* Option.match(nextOperation, {
+                    onSome: (op) =>
+                      pipe(
+                        Match.value(op),
+                        Match.when(
+                          Schema.is(OperationCompletedSchema),
+                          (opCompleted) =>
+                            opCompleted.expression ===
+                            impureFunctionCallExpression
+                              ? Effect.gen(function* () {
+                                  const oplogService = yield* LionOplogService;
+                                  yield* Ref.update(oplogService, (oplog) =>
+                                    Arr.drop(oplog, 1)
+                                  );
+                                  return opCompleted.result;
+                                })
+                              : new OplogMismatchError({
+                                  oplog,
+                                  evaluatedExpression:
+                                    impureFunctionCallExpression,
+                                  storedExpression: opCompleted.expression,
+                                })
+                        ),
+                        Match.when(
+                          Schema.is(OperationStartedSchema),
+                          (opStarted) =>
+                            opStarted.expression ===
+                            impureFunctionCallExpression
+                              ? new ContinuationNeededError({
+                                  oplog,
+                                })
+                              : new OplogMismatchError({
+                                  oplog,
+                                  evaluatedExpression:
+                                    impureFunctionCallExpression,
+                                  storedExpression: opStarted.expression,
+                                })
+                        ),
+                        Match.exhaustive
+                      ),
+                    onNone: () =>
+                      new ContinuationNeededError({
+                        oplog: Arr.prepend(
+                          oplog,
+                          new OperationStartedSchema({
+                            expression: impureFunctionCallExpression,
+                          })
+                        ),
+                      }),
+                  });
+                })
+            ),
+            Match.orElse(() => doFnCall(functionCallExpression))
           )
-        )
+        ),
+        Match.orElse(() => doFnCall(functionCallExpression))
+      )
+    )
+  );
+
+const doFnCall = (functionCallExpression: typeof FunctionCallFormSchema.Type) =>
+  pipe(
+    Effect.all(Arr.map(functionCallExpression, evaluate)),
+    Effect.map(Arr.unprepend),
+    Effect.flatMap(([head, tail]) =>
+      pipe(
+        Match.value(head),
+        Match.when(Schema.is(LionFunctionValueSchema), (fn) => fn(...tail)),
+        Match.orElse(() => Effect.succeed([head, ...tail]))
       )
     )
   );

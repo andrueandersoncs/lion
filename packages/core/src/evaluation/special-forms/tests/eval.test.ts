@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer, Ref } from "effect";
-import { ParseError } from "effect/ParseResult";
+import { ContinuationNeededError } from "@/errors/evaluation";
 import { evaluateEval } from "@/evaluation/special-forms/eval";
 import { stdlib } from "@/modules";
 import type { OplogEntrySchema } from "@/schemas/oplog";
@@ -15,7 +15,10 @@ const testEnvLayer = Layer.merge(
 describe("eval special form", () => {
   it.effect("should evaluate a quoted expression", () =>
     Effect.gen(function* () {
-      const env: Record<string, unknown> = { ...stdlib, expr: ["+", 1, 2] };
+      const env: Record<string, unknown> = {
+        ...stdlib,
+        expr: ["math/+", 1, 2],
+      };
       const result = yield* evaluateEval(["eval", "expr"]).pipe(
         Effect.provideServiceEffect(
           LionEnvironmentService,
@@ -32,7 +35,7 @@ describe("eval special form", () => {
 
   it.effect("should double-evaluate nested quotes", () =>
     Effect.gen(function* () {
-      const result = yield* evaluateEval(["eval", ["quote", ["+", 1, 2]]]);
+      const result = yield* evaluateEval(["eval", ["quote", ["math/+", 1, 2]]]);
       expect(result).toBe(3);
     }).pipe(Effect.provide(testEnvLayer))
   );
@@ -54,7 +57,7 @@ describe("eval special form", () => {
           Ref.make<(typeof OplogEntrySchema.Type)[]>([])
         )
       );
-      expect(result).toBeInstanceOf(ParseError);
+      expect(result).toBeInstanceOf(ContinuationNeededError);
     })
   );
 });

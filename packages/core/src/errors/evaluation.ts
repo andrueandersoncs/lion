@@ -12,6 +12,6 @@ export class OplogMismatchError extends Schema.TaggedError<OplogMismatchError>(
   "OplogMismatchError"
 )("OplogMismatchError", {
   oplog: Schema.Array(OplogEntrySchema),
-  evaluatedOperation: FunctionCallFormSchema,
-  storedOperation: Schema.String,
+  evaluatedExpression: FunctionCallFormSchema,
+  storedExpression: FunctionCallFormSchema,
 }) {}
