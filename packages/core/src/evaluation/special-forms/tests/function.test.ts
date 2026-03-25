@@ -1,13 +1,15 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer, Ref } from "effect";
+import { Effect, Layer, type Record, Ref } from "effect";
 import { stdlib } from "@/modules/index.ts";
 import type { OplogEntrySchema } from "@/schemas/oplog.ts";
 import { LionEnvironmentService } from "@/services/evaluation.ts";
 import { LionOplogService } from "@/services/oplog.ts";
 import { evaluateFunctionCall } from "../function.ts";
 
+const stdlibLayer = Layer.effect(LionEnvironmentService, Ref.make(stdlib));
+
 const testEnvLayer = Layer.merge(
-  Layer.effect(LionEnvironmentService, Ref.make(stdlib)),
+  stdlibLayer,
   Layer.effect(LionOplogService, Ref.make<(typeof OplogEntrySchema.Type)[]>([]))
 );
 
@@ -30,5 +32,31 @@ describe("evaluateFunctionCall", () => {
         ]);
         expect(result).toEqual(["not-a-function", 2, 1, 2]);
       }).pipe(Effect.provide(testEnvLayer))
+  );
+  it.effect("should ignore oplog for pure functions", () =>
+    Effect.gen(function* () {
+      const result = yield* evaluateFunctionCall(["+", 1, 2]);
+      expect(result).toBe(3);
+    }).pipe(Effect.provide(testEnvLayer))
+  );
+  it.effect(
+    "should pause evaluation for impure functions that haven't been started",
+    () =>
+      Effect.gen(function* () {
+        const result = yield* evaluateFunctionCall(["+", 1, 2]);
+        expect(result);
+      }).pipe(
+        Effect.provideServiceEffect(
+          LionEnvironmentService,
+          Ref.make<Record<string, unknown>>({
+            ...stdlib,
+            "impure-function": () => Effect.succeed(3),
+          })
+        ),
+        Effect.provideServiceEffect(
+          LionOplogService,
+          Ref.make<(typeof OplogEntrySchema.Type)[]>([])
+        )
+      )
   );
 });

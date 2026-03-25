@@ -5,6 +5,7 @@ import {
   Match,
   Option,
   pipe,
+  Record,
   Ref,
   Schema,
   Tuple,
@@ -14,6 +15,7 @@ import {
   OplogMismatchError,
 } from "@/errors/evaluation";
 import { evaluate } from "@/evaluation/evaluate.ts";
+import { stdlib } from "@/modules";
 import {
   type FunctionCallFormSchema,
   LionFunctionValueSchema,
@@ -24,7 +26,7 @@ import {
 } from "@/schemas/oplog";
 import { LionOplogService } from "@/services/oplog";
 
-const pureFunctions = HashSet.make();
+const pureFunctions = HashSet.make(...Record.keys(stdlib));
 
 export const evaluateFunctionCall = (
   functionCallExpression: typeof FunctionCallFormSchema.Type
