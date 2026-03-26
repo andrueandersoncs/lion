@@ -1,10 +1,5 @@
-import { Effect, Schema } from "effect";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
-
-export const QuoteFormSchema = Schema.Tuple(
-  Schema.Literal("quote"),
-  LionExpressionSchema
-);
+import { Effect } from "effect";
+import type { QuoteFormSchema } from "@/schemas/evaluation";
 
 export const evaluateQuote = ([_, args]: typeof QuoteFormSchema.Type) =>
   Effect.succeed(args);

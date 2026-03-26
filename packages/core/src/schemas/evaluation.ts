@@ -14,3 +14,13 @@ export const FunctionCallFormSchema = Schema.Tuple(
   [Schema.String],
   LionExpressionSchema
 );
+
+export const EvalFormSchema = Schema.Tuple(
+  Schema.Literal("eval"),
+  LionExpressionSchema
+);
+
+export const QuoteFormSchema = Schema.Tuple(
+  Schema.Literal("quote"),
+  LionExpressionSchema
+);

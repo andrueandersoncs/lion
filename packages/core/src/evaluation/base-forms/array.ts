@@ -1,10 +1,14 @@
 import { Array as Arr, Effect, flow, Match, pipe, Schema } from "effect";
-import { FunctionCallFormSchema } from "@/schemas/evaluation.ts";
-import type { LionArrayExpressionType } from "../../schemas/lion-expression.ts";
-import { evaluate } from "../evaluate.ts";
-import { EvalFormSchema, evaluateEval } from "../special-forms/eval.ts";
-import { evaluateFunctionCall } from "../special-forms/function.ts";
-import { evaluateQuote, QuoteFormSchema } from "../special-forms/quote.ts";
+import { evaluate } from "@/evaluation/evaluate.ts";
+import { evaluateEval } from "@/evaluation/special-forms/eval.ts";
+import { evaluateFunctionCall } from "@/evaluation/special-forms/function.ts";
+import { evaluateQuote } from "@/evaluation/special-forms/quote.ts";
+import {
+  EvalFormSchema,
+  FunctionCallFormSchema,
+  QuoteFormSchema,
+} from "@/schemas/evaluation.ts";
+import type { LionArrayExpressionType } from "@/schemas/lion-expression.ts";
 
 export const evaluateArray = (expression: LionArrayExpressionType) =>
   pipe(

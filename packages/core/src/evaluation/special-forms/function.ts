@@ -1,6 +1,8 @@
 import {
   Array as Arr,
+  Data,
   Effect,
+  Equal,
   HashSet,
   Match,
   Option,
@@ -53,17 +55,18 @@ export const evaluateFunctionCall = (
                         Match.when(
                           Schema.is(OperationCompletedSchema),
                           (opCompleted) =>
-                            opCompleted.expression ===
-                            impureFunctionCallExpression
+                            Equal.equals(
+                              Data.array(opCompleted.expression),
+                              Data.array(impureFunctionCallExpression)
+                            )
                               ? Effect.gen(function* () {
                                   const oplogService = yield* LionOplogService;
                                   yield* Ref.update(oplogService, (oplog) =>
-                                    Arr.drop(oplog, 1)
+                                    Arr.drop(oplog, 2)
                                   );
                                   return opCompleted.result;
                                 })
                               : new OplogMismatchError({
-                                  oplog,
                                   evaluatedExpression:
                                     impureFunctionCallExpression,
                                   storedExpression: opCompleted.expression,
@@ -72,13 +75,12 @@ export const evaluateFunctionCall = (
                         Match.when(
                           Schema.is(OperationStartedSchema),
                           (opStarted) =>
-                            opStarted.expression ===
-                            impureFunctionCallExpression
-                              ? new ContinuationNeededError({
-                                  oplog,
-                                })
+                            Equal.equals(
+                              Data.array(opStarted.expression),
+                              Data.array(impureFunctionCallExpression)
+                            )
+                              ? new ContinuationNeededError()
                               : new OplogMismatchError({
-                                  oplog,
                                   evaluatedExpression:
                                     impureFunctionCallExpression,
                                   storedExpression: opStarted.expression,
@@ -87,13 +89,17 @@ export const evaluateFunctionCall = (
                         Match.exhaustive
                       ),
                     onNone: () =>
-                      new ContinuationNeededError({
-                        oplog: Arr.prepend(
-                          oplog,
-                          new OperationStartedSchema({
-                            expression: impureFunctionCallExpression,
-                          })
-                        ),
+                      Effect.gen(function* () {
+                        const oplogService = yield* LionOplogService;
+                        yield* Ref.update(oplogService, (oplog) =>
+                          Arr.prepend(
+                            oplog,
+                            new OperationStartedSchema({
+                              expression: impureFunctionCallExpression,
+                            })
+                          )
+                        );
+                        return yield* new ContinuationNeededError();
                       }),
                   });
                 })
