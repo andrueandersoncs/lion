@@ -1,5 +1,6 @@
 import {
   Array as Arr,
+  Context,
   Data,
   Effect,
   Equal,
@@ -43,66 +44,72 @@ export const evaluateFunctionCall = (
             Match.value(functionCallExpression),
             Match.when(
               ([name]) => !HashSet.has(pureFunctions, name),
-              (impureFunctionCallExpression) =>
-                Effect.gen(function* () {
-                  const oplogService = yield* LionOplogService;
-                  const oplog = yield* Ref.get(oplogService);
-                  const nextOperation = Arr.head(oplog);
-                  return yield* Option.match(nextOperation, {
-                    onSome: (op) =>
-                      pipe(
-                        Match.value(op),
-                        Match.when(
-                          Schema.is(OperationCompletedSchema),
-                          (opCompleted) =>
-                            Equal.equals(
-                              Data.array(opCompleted.expression),
-                              Data.array(impureFunctionCallExpression)
-                            )
-                              ? Effect.gen(function* () {
-                                  const oplogService = yield* LionOplogService;
-                                  yield* Ref.update(oplogService, (oplog) =>
-                                    Arr.drop(oplog, 2)
-                                  );
-                                  return opCompleted.result;
-                                })
-                              : new OplogMismatchError({
-                                  evaluatedExpression:
-                                    impureFunctionCallExpression,
-                                  storedExpression: opCompleted.expression,
-                                })
+              (impureFnExpr) =>
+                pipe(
+                  Effect.context<LionOplogService>(),
+                  Effect.map(Context.get(LionOplogService)),
+                  Effect.flatMap(Ref.get),
+                  Effect.map(Arr.head),
+                  Effect.flatMap(
+                    Option.match({
+                      onSome: (op) =>
+                        pipe(
+                          Match.value(op),
+                          Match.when(
+                            Schema.is(OperationCompletedSchema),
+                            (opCompleted) =>
+                              Equal.equals(
+                                Data.array(opCompleted.expression),
+                                Data.array(impureFnExpr)
+                              )
+                                ? pipe(
+                                    Effect.context<LionOplogService>(),
+                                    Effect.map(Context.get(LionOplogService)),
+                                    Effect.flatMap(
+                                      Ref.update((oplog) => Arr.drop(oplog, 2))
+                                    ),
+                                    Effect.map(() => opCompleted.result)
+                                  )
+                                : new OplogMismatchError({
+                                    evaluatedExpression: impureFnExpr,
+                                    storedExpression: opCompleted.expression,
+                                  })
+                          ),
+                          Match.when(
+                            Schema.is(OperationStartedSchema),
+                            (opStarted) =>
+                              Equal.equals(
+                                Data.array(opStarted.expression),
+                                Data.array(impureFnExpr)
+                              )
+                                ? Effect.fail(new ContinuationNeededError())
+                                : Effect.fail(
+                                    new OplogMismatchError({
+                                      evaluatedExpression: impureFnExpr,
+                                      storedExpression: opStarted.expression,
+                                    })
+                                  )
+                          ),
+                          Match.exhaustive
                         ),
-                        Match.when(
-                          Schema.is(OperationStartedSchema),
-                          (opStarted) =>
-                            Equal.equals(
-                              Data.array(opStarted.expression),
-                              Data.array(impureFunctionCallExpression)
-                            )
-                              ? new ContinuationNeededError()
-                              : new OplogMismatchError({
-                                  evaluatedExpression:
-                                    impureFunctionCallExpression,
-                                  storedExpression: opStarted.expression,
+                      onNone: () =>
+                        pipe(
+                          Effect.context<LionOplogService>(),
+                          Effect.map(Context.get(LionOplogService)),
+                          Effect.flatMap(
+                            Ref.update(
+                              Arr.prepend(
+                                new OperationStartedSchema({
+                                  expression: impureFnExpr,
                                 })
+                              )
+                            )
+                          ),
+                          Effect.flatMap(() => new ContinuationNeededError())
                         ),
-                        Match.exhaustive
-                      ),
-                    onNone: () =>
-                      Effect.gen(function* () {
-                        const oplogService = yield* LionOplogService;
-                        yield* Ref.update(oplogService, (oplog) =>
-                          Arr.prepend(
-                            oplog,
-                            new OperationStartedSchema({
-                              expression: impureFunctionCallExpression,
-                            })
-                          )
-                        );
-                        return yield* new ContinuationNeededError();
-                      }),
-                  });
-                })
+                    })
+                  )
+                )
             ),
             Match.orElse(() => doFnCall(functionCallExpression))
           )
