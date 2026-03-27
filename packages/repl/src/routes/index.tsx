@@ -156,30 +156,32 @@ function App() {
             </p>
             <div className="grid gap-2 rounded-lg border border-[#30363d] bg-[#0d1117]/60 p-4">
               <code className="text-sm">
-                <span className="text-[#7ee787]">["+", 1, 2, 3]</span>
+                <span className="text-[#7ee787]">["math/+", 1, 2, 3]</span>
                 <span className="text-[#8b949e]"> → 6</span>
               </code>
               <code className="text-sm">
-                <span className="text-[#7ee787]">["*", 4, 5]</span>
+                <span className="text-[#7ee787]">["math/*", 4, 5]</span>
                 <span className="text-[#8b949e]"> → 20</span>
               </code>
               <code className="text-sm">
                 <span className="text-[#7ee787]">
-                  ["if", true, "yes", "no"]
+                  ["logic/if", true, "yes", "no"]
                 </span>
                 <span className="text-[#8b949e]"> → "yes"</span>
               </code>
               <code className="text-sm">
-                <span className="text-[#7ee787]">["list", 1, 2, 3]</span>
+                <span className="text-[#7ee787]">["list/list", 1, 2, 3]</span>
                 <span className="text-[#8b949e]"> → [1, 2, 3]</span>
               </code>
               <code className="text-sm">
-                <span className="text-[#7ee787]">["head", [1, 2, 3]]</span>
+                <span className="text-[#7ee787]">["list/head", [1, 2, 3]]</span>
                 <span className="text-[#8b949e]"> → 1</span>
               </code>
               <code className="text-sm">
-                <span className="text-[#7ee787]">["quote", ["+", 1, 2]]</span>
-                <span className="text-[#8b949e]"> → ["+", 1, 2]</span>
+                <span className="text-[#7ee787]">
+                  ["quote", ["math/+", 1, 2]]
+                </span>
+                <span className="text-[#8b949e]"> → ["math/+", 1, 2]</span>
               </code>
             </div>
           </div>
@@ -224,7 +226,7 @@ function App() {
             className="min-h-[40px] flex-1 resize-none rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-2 text-[#f0f6fc] placeholder:text-[#484f58] focus:border-[#58a6ff] focus:outline-none focus:ring-1 focus:ring-[#58a6ff]"
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder='["+", 1, 2]'
+            placeholder='["math/+", 1, 2]'
             ref={textareaRef}
             rows={1}
             value={input}

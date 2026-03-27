@@ -37,6 +37,30 @@ const result = await Effect.runPromise(
 // => 108
 ```
 
+Environment values can be functions. When the first element of an array evaluates to a function, it is called with the remaining evaluated arguments:
+
+```typescript
+import { Effect } from "effect";
+import { run } from "@lion/core/evaluation";
+import { stdlib } from "@lion/core/modules";
+
+const env = {
+  ...stdlib,
+  "greet": (name: string) => Effect.succeed(`Hello, ${name}!`),
+  "clamp": (min: number, max: number, value: number) =>
+    Effect.succeed(Math.min(max, Math.max(min, value))),
+};
+
+await Effect.runPromise(run(["greet", "Lion"], env));
+// => "Hello, Lion!"
+
+await Effect.runPromise(run(["clamp", 0, 100, 150], env));
+// => 100
+
+await Effect.runPromise(run(["clamp", 0, 100, ["math/+", 20, 30]], env));
+// => 50
+```
+
 ### Evaluating JSON from an External Source
 
 Because Lion programs are plain JSON, they can be loaded from files, APIs, or databases:
@@ -93,19 +117,19 @@ null
 "x"
 ```
 
-**Arrays** — an array with a string as its first element is a function call. The remaining elements are the arguments. All elements are evaluated before the function is applied.
+**Arrays** — if the first element of an array expression evaluates to a function, the array is treated as a function call. The remaining elements are the arguments. All elements are evaluated before the function is applied.
 
 ```json
 ["math/+", 1, 2]
 ```
 
-An array without a string head evaluates each of its elements and returns the resulting array:
+Otherwise, the expression evaluates each of its elements and returns the resulting array:
 
 ```json
-[1, ["math/+", 2, 3], true]
+["hi", ["math/+", 2, 3], true]
 ```
 
-Evaluates to `[1, 5, true]`.
+Evaluates to `["hi", 5, true]`.
 
 **Objects** — each value in the object is evaluated; keys are preserved.
 
