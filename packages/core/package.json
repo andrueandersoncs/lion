@@ -2,30 +2,47 @@
   "name": "@lion/core",
   "version": "0.0.1",
   "type": "module",
+  "description": "Lion is a JSON-based Lisp.",
+  "license": "MIT",
+  "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
+  "repository": "https://github.com/andrueandersoncs/lion",
   "exports": {
-    "./evaluation": "./src/evaluation/evaluate.ts",
-    "./modules": "./src/modules/index.ts",
-    "./services/evaluation": "./src/services/evaluation.ts",
-    "./services/oplog": "./src/services/oplog.ts",
-    "./schemas/evaluation": "./src/schemas/evaluation.ts",
-    "./schemas/json-primitive": "./src/schemas/json-primitive.ts",
-    "./schemas/lion-expression": "./src/schemas/lion-expression.ts",
-    "./schemas/oplog": "./src/schemas/oplog.ts",
-    "./types/evaluation": "./src/types/evaluation.ts",
-    "./errors/evaluation": "./src/errors/evaluation.ts"
+    "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",
+    "./evaluation/base-forms/primitive": "./dist/evaluation/base-forms/primitive.mjs",
+    "./evaluation/base-forms/record": "./dist/evaluation/base-forms/record.mjs",
+    "./evaluation/evaluate": "./dist/evaluation/evaluate.mjs",
+    "./evaluation/special-forms/eval": "./dist/evaluation/special-forms/eval.mjs",
+    "./evaluation/special-forms/function": "./dist/evaluation/special-forms/function.mjs",
+    "./evaluation/special-forms/quote": "./dist/evaluation/special-forms/quote.mjs",
+    "./modules": "./dist/modules/index.mjs",
+    "./modules/func": "./dist/modules/func.mjs",
+    "./modules/list": "./dist/modules/list.mjs",
+    "./modules/logic": "./dist/modules/logic.mjs",
+    "./modules/math": "./dist/modules/math.mjs",
+    "./modules/object": "./dist/modules/object.mjs",
+    "./schemas/evaluation": "./dist/schemas/evaluation.mjs",
+    "./schemas/json-primitive": "./dist/schemas/json-primitive.mjs",
+    "./schemas/lion-expression": "./dist/schemas/lion-expression.mjs",
+    "./services/evaluation": "./dist/services/evaluation.mjs",
+    "./types/evaluation": "./dist/types/evaluation.mjs",
+    "./package.json": "./package.json"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown"
   },
-  "private": true,
   "devDependencies": {
     "@effect/vitest": "^0.27.0",
     "@types/bun": "latest",
+    "tsdown": "^0.21.6",
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "effect": "^3.19.9"
