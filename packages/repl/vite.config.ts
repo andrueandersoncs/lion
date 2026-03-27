@@ -9,10 +9,10 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 const config = defineConfig({
   plugins: [
     devtools(),
-    nitro(),
+    nitro({ experimental: { tsconfigPaths: false } }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
+      root: "../..",
     }),
     tailwindcss(),
     tanstackStart(),

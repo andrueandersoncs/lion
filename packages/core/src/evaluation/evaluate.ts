@@ -1,14 +1,14 @@
 import { Match, pipe, Schema } from "effect";
-import { evaluateArray } from "@/evaluation/base-forms/array.ts";
-import { evaluatePrimitive } from "@/evaluation/base-forms/primitive.ts";
-import { evaluateRecord } from "@/evaluation/base-forms/record.ts";
-import { JsonPrimitiveSchema } from "@/schemas/json-primitive.ts";
+import { evaluateArray } from "@/evaluation/base-forms/array";
+import { evaluatePrimitive } from "@/evaluation/base-forms/primitive";
+import { evaluateRecord } from "@/evaluation/base-forms/record";
+import { JsonPrimitiveSchema } from "@/schemas/json-primitive";
 import {
   LionArrayExpressionSchema,
   type LionExpressionType,
   LionRecordExpressionSchema,
-} from "@/schemas/lion-expression.ts";
-import type { EvaluateResult } from "@/types/evaluation.ts";
+} from "@/schemas/lion-expression";
+import type { EvaluateResult } from "@/types/evaluation";
 
 export const evaluate = (expression: LionExpressionType): EvaluateResult =>
   pipe(
