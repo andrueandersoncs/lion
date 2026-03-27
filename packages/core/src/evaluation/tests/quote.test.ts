@@ -6,7 +6,6 @@ import {
   LionEnvironmentService,
   makeEnvironmentRef,
 } from "@/services/evaluation.ts";
-import { LionOplogService, makeOplogRef } from "@/services/oplog";
 
 describe("quote special form", () => {
   it.effect.prop(
@@ -19,8 +18,7 @@ describe("quote special form", () => {
         Effect.provideServiceEffect(
           LionEnvironmentService,
           makeEnvironmentRef({})
-        ),
-        Effect.provideServiceEffect(LionOplogService, makeOplogRef([]))
+        )
       )
   );
 });

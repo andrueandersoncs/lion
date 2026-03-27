@@ -6,7 +6,6 @@ import {
   LionEnvironmentService,
   makeEnvironmentRef,
 } from "@/services/evaluation";
-import { LionOplogService, makeOplogRef } from "@/services/oplog";
 
 describe("evaluate", () => {
   it.effect.prop(
@@ -20,8 +19,7 @@ describe("evaluate", () => {
         Effect.provideServiceEffect(
           LionEnvironmentService,
           makeEnvironmentRef({})
-        ),
-        Effect.provideServiceEffect(LionOplogService, makeOplogRef([]))
+        )
       )
   );
 });
