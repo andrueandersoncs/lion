@@ -1,4 +1,4 @@
-import { Array as Arr, Effect, flow, Schema } from "effect";
+import { Effect, flow, Schema } from "effect";
 import { dual, tupled } from "effect/Function";
 
 const add = (a: number, b: number) => a + b;
@@ -24,8 +24,10 @@ const greaterThanOrEqualTo = (a: number, b: number) => a >= b;
 export const math = {
   "+": flow(
     (...flowArgs: unknown[]) => flowArgs,
-    Schema.decodeUnknown(Schema.Array(Schema.Number)),
-    Effect.map(Arr.reduce(0, add))
+    Schema.decodeUnknown(
+      Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))
+    ),
+    Effect.map(tupled(add))
   ),
   "-": flow(
     (...flowArgs: unknown[]) => flowArgs,

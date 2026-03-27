@@ -1,8 +1,7 @@
-import { evaluate } from "@lion/core/evaluation";
+import { run } from "@lion/core/evaluation";
 import { stdlib } from "@lion/core/modules";
-import { LionEnvironmentService } from "@lion/core/services/evaluation";
 import { createFileRoute } from "@tanstack/react-router";
-import { Effect, Ref } from "effect";
+import { Effect } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({ component: App });
@@ -38,15 +37,8 @@ function App() {
       expressionStr: string
     ): Promise<{ result: string; isError: boolean }> => {
       try {
-        const parsed = JSON.parse(expressionStr);
-        const result = await Effect.runPromise(
-          evaluate(parsed).pipe(
-            Effect.provideServiceEffect(
-              LionEnvironmentService,
-              Ref.make<Record<string, unknown>>(stdlib)
-            )
-          )
-        );
+        const parsed: unknown = JSON.parse(expressionStr);
+        const result = await Effect.runPromise(run(parsed, stdlib));
         return { result: JSON.stringify(result, null, 2), isError: false };
       } catch (e) {
         const errorMessage = e instanceof Error ? e.message : String(e);
