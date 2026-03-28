@@ -1,4 +1,4 @@
-import { run } from "@lion/core/evaluation";
+import { run } from "@lion/core/evaluation/evaluate";
 import { stdlib } from "@lion/core/modules";
 import { createFileRoute } from "@tanstack/react-router";
 import { Effect } from "effect";

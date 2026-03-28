@@ -27,7 +27,7 @@ export const evaluate = (expression: LionExpressionType): EvaluateResult =>
 export const run = (
   expression: unknown,
   environment: Record<string, unknown>
-): EvaluateResult =>
+) =>
   pipe(
     Schema.decodeUnknown(LionExpressionSchema)(expression),
     Effect.flatMap(evaluate),
