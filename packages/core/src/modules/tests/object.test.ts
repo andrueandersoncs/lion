@@ -12,4 +12,15 @@ describe("object", () => {
   it("should return the values of an object", () => {
     expect(Effect.runSync(object.values({ a: 1, b: 2 }))).toEqual([1, 2]);
   });
+  it("should create a new instance of a class", () => {
+    const Person = class {
+      constructor(name: string) {
+        this.name = name;
+      }
+      name: string;
+    };
+    const result = Effect.runSync(object.new(Person, "John"));
+    expect(result).toEqual({ name: "John" });
+    expect(result).toBeInstanceOf(Person);
+  });
 });

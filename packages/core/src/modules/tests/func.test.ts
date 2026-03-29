@@ -8,13 +8,13 @@ describe("func/identity", () => {
   });
 });
 
-describe("func/js-bind", () => {
+describe("func/bind", () => {
   it("should bind a function to an object", () => {
     const context = {};
     const fn = () => {
       expect(this).toEqual(context);
     };
-    const boundFn = func["js-bind"](fn, context);
+    const boundFn = func.bind(fn, context);
     Effect.runSync(boundFn);
   });
 });

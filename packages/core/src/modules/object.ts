@@ -42,4 +42,15 @@ export const object = {
     ),
     Effect.map(Record.values)
   ),
+  "new": flow(
+    (classRef: unknown, ...args: unknown[]) => [classRef, args],
+    Effect.fn(function* ([classRef, args]) {
+      if (typeof classRef !== "function") {
+        return yield* new ObjectError();
+      }
+      return new (classRef as new (...args: unknown[]) => unknown)(
+        ...(args as unknown[])
+      );
+    })
+  ),
 };

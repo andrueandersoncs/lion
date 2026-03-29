@@ -1,27 +1,23 @@
 import { run } from "@lion/core/evaluation/evaluate";
 import { stdlib } from "@lion/core/modules";
-import {
-  ASCIIFont,
-  Box,
-  createCliRenderer,
-  Input,
-  InputRenderableEvents,
-  Text,
-} from "@opentui/core";
+// biome-ignore lint/performance/noNamespaceImport: Intentionally importing everything to passthrough to Lion
+import * as OpenTUI from "@opentui/core";
 import { Effect } from "effect";
 
-const renderer = await createCliRenderer({ exitOnCtrlC: true });
+const renderer = await OpenTUI.createCliRenderer({ exitOnCtrlC: true });
 
 const program = [
-  "begin",
+  "/begin",
   [
-    "define",
+    "/define",
     "message-box",
     [
-      "Box",
+      "object/new",
+      "ScrollBoxRenderable",
+      "renderer",
       {
-        alignItems: "center",
-        justifyContent: "center",
+        stickyScroll: true,
+        stickyStart: "bottom",
         width: "100%",
         height: "100%",
         border: true,
@@ -30,16 +26,16 @@ const program = [
     ],
   ],
   [
-    "define",
+    "/define",
     "input-box",
     [
       "Box",
       {
-        title: ["quote", "Input"],
+        title: ["/quote", "Input"],
         border: true,
       },
       [
-        "define",
+        "/define",
         "my-input",
         [
           "Input",
@@ -52,17 +48,36 @@ const program = [
       ],
     ],
   ],
-  ["define", "input-on", ["object/access", "my-input", "on"]],
+  ["/define", "input-on", ["object/access", "my-input", "on"]],
   [
-    "define",
+    "/define",
     "renderable-events-input",
     ["object/access", "InputRenderableEvents", "INPUT"],
   ],
   [
-    "define",
-    "registration-result",
-    ["input-on", "renderable-events-input", ["func/callback", "console/log"]],
+    "/define",
+    "renderable-events-enter",
+    ["object/access", "InputRenderableEvents", "ENTER"],
   ],
+  [
+    "/define",
+    "add-message",
+    [
+      "/lambda",
+      ["message"],
+      [
+        "/begin",
+        [
+          "/define",
+          "message-box-add",
+          ["func/bind", ["object/access", "message-box", "add"], "message-box"],
+        ],
+        ["/define", "new-message-text", ["Text", { content: "message" }]],
+        ["message-box-add", "new-message-text"],
+      ],
+    ],
+  ],
+  ["input-on", "renderable-events-enter", ["func/callback", "add-message"]],
   ["Box", {}, ["input-box", "message-box"]],
 ];
 
@@ -70,13 +85,10 @@ const node = Effect.runSync(
   run(program, {
     ...stdlib,
     renderer,
-    Box,
-    Text,
-    Input,
-    ASCIIFont,
-    InputRenderableEvents,
+    ...OpenTUI,
   })
 );
 
 renderer.root.add(node);
-renderer.console.toggle();
+
+// renderer.console.toggle();

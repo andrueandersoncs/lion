@@ -2,7 +2,7 @@ import { Effect } from "effect";
 
 export const func = {
   identity: (x: unknown) => Effect.succeed(x),
-  "js-bind": (
+  bind: (
     fn: (...args: unknown[]) => unknown,
     obj: unknown,
     ...args: unknown[]

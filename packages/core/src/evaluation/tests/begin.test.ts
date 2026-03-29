@@ -12,7 +12,7 @@ describe("begin special form", () => {
     [TestSchema],
     ([expressions]) =>
       Effect.gen(function* () {
-        const result = yield* run(["begin", ...expressions], stdlib);
+        const result = yield* run(["/begin", ...expressions], stdlib);
         const lastExpressionResult = yield* run(
           Arr.last(expressions).pipe(Option.getOrElse(() => [])),
           stdlib

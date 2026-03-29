@@ -7,6 +7,7 @@
   "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
   "repository": "https://github.com/andrueandersoncs/lion",
   "exports": {
+    "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",
     "./evaluation/base-forms/primitive": "./dist/evaluation/base-forms/primitive.mjs",
     "./evaluation/base-forms/record": "./dist/evaluation/base-forms/record.mjs",
@@ -15,6 +16,7 @@
     "./evaluation/special-forms/define": "./dist/evaluation/special-forms/define.mjs",
     "./evaluation/special-forms/eval": "./dist/evaluation/special-forms/eval.mjs",
     "./evaluation/special-forms/function": "./dist/evaluation/special-forms/function.mjs",
+    "./evaluation/special-forms/lambda": "./dist/evaluation/special-forms/lambda.mjs",
     "./evaluation/special-forms/quote": "./dist/evaluation/special-forms/quote.mjs",
     "./modules": "./dist/modules/index.mjs",
     "./modules/console": "./dist/modules/console.mjs",
