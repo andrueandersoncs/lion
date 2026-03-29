@@ -39,16 +39,31 @@ const program = [
         border: true,
       },
       [
-        "Input",
-        {
-          placeholder: "What will you build?",
-          width: "full",
-          backgroundColor: "white",
-        },
+        "define",
+        "my-input",
+        [
+          "Input",
+          {
+            placeholder: "What will you build?",
+            width: "full",
+            backgroundColor: "white",
+          },
+        ],
       ],
     ],
   ],
-  ["Box", {}, ["message-box", "input-box"]],
+  ["define", "input-on", ["object/access", "my-input", "on"]],
+  [
+    "define",
+    "renderable-events-input",
+    ["object/access", "InputRenderableEvents", "INPUT"],
+  ],
+  [
+    "define",
+    "registration-result",
+    ["input-on", "renderable-events-input", ["func/callback", "console/log"]],
+  ],
+  ["Box", {}, ["input-box", "message-box"]],
 ];
 
 const node = Effect.runSync(
@@ -64,3 +79,4 @@ const node = Effect.runSync(
 );
 
 renderer.root.add(node);
+renderer.console.toggle();

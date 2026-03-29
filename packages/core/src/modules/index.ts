@@ -1,3 +1,4 @@
+import { console } from "./console.ts";
 import { func } from "./func.ts";
 import { list } from "./list.ts";
 import { logic } from "./logic.ts";
@@ -24,4 +25,5 @@ export const stdlib = {
   ...namespaceEntries("list", list),
   ...namespaceEntries("object", object),
   ...namespaceEntries("func", func),
+  ...namespaceEntries("console", console),
 };

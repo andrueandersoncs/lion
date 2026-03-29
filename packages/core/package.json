@@ -17,6 +17,7 @@
     "./evaluation/special-forms/function": "./dist/evaluation/special-forms/function.mjs",
     "./evaluation/special-forms/quote": "./dist/evaluation/special-forms/quote.mjs",
     "./modules": "./dist/modules/index.mjs",
+    "./modules/console": "./dist/modules/console.mjs",
     "./modules/func": "./dist/modules/func.mjs",
     "./modules/list": "./dist/modules/list.mjs",
     "./modules/logic": "./dist/modules/logic.mjs",
