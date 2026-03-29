@@ -4,8 +4,9 @@ import {
   ASCIIFont,
   Box,
   createCliRenderer,
+  Input,
+  InputRenderableEvents,
   Text,
-  TextAttributes,
 } from "@opentui/core";
 import { Effect } from "effect";
 
@@ -14,45 +15,52 @@ const renderer = await createCliRenderer({ exitOnCtrlC: true });
 const program = [
   "begin",
   [
-    ["func/jsBind", ["object/access", "renderer", "on"], "renderer"],
-    "focus",
-    "logFocus",
-  ],
-  [
-    "Box",
-    { alignItems: "center", justifyContent: "center", flexGrow: 1 },
+    "define",
+    "message-box",
     [
       "Box",
-      { justifyContent: "center", alignItems: "flex-end" },
-      ["ASCIIFont", { font: "tiny", text: "OpenTUI" }],
+      {
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        border: true,
+        title: "Messages",
+      },
+    ],
+  ],
+  [
+    "define",
+    "input-box",
+    [
+      "Box",
+      {
+        title: ["quote", "Input"],
+        border: true,
+      },
       [
-        "Text",
-        { content: "What will you build?", attributes: TextAttributes.DIM },
+        "Input",
+        {
+          placeholder: "What will you build?",
+          width: "full",
+          backgroundColor: "white",
+        },
       ],
     ],
   ],
+  ["Box", {}, ["message-box", "input-box"]],
 ];
 
 const node = Effect.runSync(
   run(program, {
     ...stdlib,
     renderer,
-    logFocus: () => Effect.succeed(console.log("focus")),
-    Box: (...args: Parameters<typeof Box>) => Effect.succeed(Box(...args)),
-    Text: (...args: Parameters<typeof Text>) => Effect.succeed(Text(...args)),
-    ASCIIFont: (...args: Parameters<typeof ASCIIFont>) =>
-      Effect.succeed(ASCIIFont(...args)),
+    Box,
+    Text,
+    Input,
+    ASCIIFont,
+    InputRenderableEvents,
   })
 );
 
 renderer.root.add(node);
-
-renderer.keyInput.on("keypress", (key) => {
-  // Toggle with backtick key
-  renderer.console.toggle();
-
-  // Or with a modifier
-  if (key.ctrl && key.name === "l") {
-    renderer.console.toggle();
-  }
-});

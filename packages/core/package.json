@@ -12,6 +12,7 @@
     "./evaluation/base-forms/record": "./dist/evaluation/base-forms/record.mjs",
     "./evaluation/evaluate": "./dist/evaluation/evaluate.mjs",
     "./evaluation/special-forms/begin": "./dist/evaluation/special-forms/begin.mjs",
+    "./evaluation/special-forms/define": "./dist/evaluation/special-forms/define.mjs",
     "./evaluation/special-forms/eval": "./dist/evaluation/special-forms/eval.mjs",
     "./evaluation/special-forms/function": "./dist/evaluation/special-forms/function.mjs",
     "./evaluation/special-forms/quote": "./dist/evaluation/special-forms/quote.mjs",

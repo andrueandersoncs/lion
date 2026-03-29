@@ -29,3 +29,14 @@ export const BeginFormSchema = Schema.Tuple(
   [Schema.Literal("begin")],
   LionExpressionSchema
 );
+
+const DISALLOWED_IDENTIFIERS = ["begin", "define", "eval", "quote"];
+
+export const DefineFormSchema = Schema.Tuple(
+  Schema.Literal("define"),
+  Schema.String.pipe(
+    Schema.filter((s) => !DISALLOWED_IDENTIFIERS.includes(s)),
+    Schema.minLength(1)
+  ),
+  LionExpressionSchema
+);
