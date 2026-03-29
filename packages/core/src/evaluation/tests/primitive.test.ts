@@ -1,11 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { evaluate } from "@/evaluation/evaluate";
+import { run } from "@/evaluation/evaluate";
 import { JsonPrimitiveSchema } from "@/schemas/json-primitive";
-import {
-  LionEnvironmentService,
-  makeEnvironmentRef,
-} from "@/services/evaluation";
 
 describe("primitive evaluation", () => {
   it.effect.prop(
@@ -13,13 +9,8 @@ describe("primitive evaluation", () => {
     [JsonPrimitiveSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* evaluate(expression);
+        const result = yield* run(expression, {});
         expect(result).toEqual(expression);
-      }).pipe(
-        Effect.provideServiceEffect(
-          LionEnvironmentService,
-          makeEnvironmentRef({})
-        )
-      )
+      })
   );
 });

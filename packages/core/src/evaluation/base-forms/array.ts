@@ -1,9 +1,11 @@
 import { Array as Arr, Effect, flow, Match, pipe, Schema } from "effect";
 import { evaluate } from "@/evaluation/evaluate.ts";
+import { evaluateBegin } from "@/evaluation/special-forms/begin.ts";
 import { evaluateEval } from "@/evaluation/special-forms/eval.ts";
 import { evaluateFunctionCall } from "@/evaluation/special-forms/function.ts";
 import { evaluateQuote } from "@/evaluation/special-forms/quote.ts";
 import {
+  BeginFormSchema,
   EvalFormSchema,
   FunctionCallFormSchema,
   QuoteFormSchema,
@@ -16,6 +18,7 @@ export const evaluateArray = (expression: LionArrayExpressionType) =>
     Match.when(Arr.isEmptyReadonlyArray, Effect.succeed),
     Match.when(Schema.is(EvalFormSchema), (_) => evaluateEval(_)),
     Match.when(Schema.is(QuoteFormSchema), (_) => evaluateQuote(_)),
+    Match.when(Schema.is(BeginFormSchema), (_) => evaluateBegin(_)),
     Match.when(Schema.is(FunctionCallFormSchema), (_) =>
       evaluateFunctionCall(_)
     ),

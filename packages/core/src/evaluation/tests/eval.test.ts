@@ -1,11 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { evaluate } from "@/evaluation/evaluate";
+import { run } from "@/evaluation/evaluate";
 import { EvalFormSchema } from "@/schemas/evaluation";
-import {
-  LionEnvironmentService,
-  makeEnvironmentRef,
-} from "@/services/evaluation";
 
 describe("eval special form", () => {
   it.effect.prop(
@@ -13,14 +9,9 @@ describe("eval special form", () => {
     [EvalFormSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* evaluate(expression);
-        const argResult = yield* evaluate(expression[1]);
+        const result = yield* run(expression, {});
+        const argResult = yield* run(expression[1], {});
         expect(result).toEqual(argResult);
-      }).pipe(
-        Effect.provideServiceEffect(
-          LionEnvironmentService,
-          makeEnvironmentRef({})
-        )
-      )
+      })
   );
 });

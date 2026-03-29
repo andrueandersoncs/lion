@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Array as Arr, Schema } from "effect";
 import {
   JsonPrimitiveSchema,
   type JsonPrimitiveType,
@@ -18,9 +18,13 @@ export const LionArrayExpressionSchema = Schema.Array(
 
 export type LionArrayExpressionType = typeof LionArrayExpressionSchema.Type;
 
+const DISALLOWED_KEYS = ["__proto__"] as const;
+
 // record
 export const LionRecordExpressionSchema = Schema.Record({
-  key: Schema.String,
+  key: Schema.String.pipe(
+    Schema.filter((s) => !Arr.contains(DISALLOWED_KEYS, s))
+  ),
   value: Schema.suspend(
     (): Schema.Schema<AssumedExpressionType> => LionExpressionSchema
   ),

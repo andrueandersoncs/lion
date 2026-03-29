@@ -14,7 +14,10 @@ export const evaluateFunctionCall = (
     Effect.flatMap(([head, tail]) =>
       pipe(
         Match.value(head),
-        Match.when(Schema.is(LionFunctionValueSchema), (fn) => fn(...tail)),
+        Match.when(Schema.is(LionFunctionValueSchema), (fn) => {
+          const result = fn(...tail);
+          return Effect.isEffect(result) ? result : Effect.succeed(result);
+        }),
         Match.orElse(() => Effect.succeed([head, ...tail]))
       )
     )

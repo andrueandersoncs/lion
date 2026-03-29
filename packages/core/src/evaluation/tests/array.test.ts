@@ -1,11 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { evaluate } from "@/evaluation/evaluate";
+import { run } from "@/evaluation/evaluate";
 import { LionArrayExpressionSchema } from "@/schemas/lion-expression";
-import {
-  LionEnvironmentService,
-  makeEnvironmentRef,
-} from "@/services/evaluation";
 
 describe("array evaluation", () => {
   it.effect.prop(
@@ -13,13 +9,8 @@ describe("array evaluation", () => {
     [LionArrayExpressionSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* evaluate(expression);
+        const result = yield* run(expression, {});
         expect(result).toEqual(expression);
-      }).pipe(
-        Effect.provideServiceEffect(
-          LionEnvironmentService,
-          makeEnvironmentRef({})
-        )
-      )
+      })
   );
 });

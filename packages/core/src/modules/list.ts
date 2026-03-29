@@ -25,7 +25,15 @@ export const list = {
 
   concat: flow(
     <T>(a: T, b: T) => [a, b],
-    Schema.decodeUnknown(Schema.Array(Schema.Array(Schema.Any))),
+    Schema.decodeUnknown(
+      Schema.Tuple(Schema.Array(Schema.Any), Schema.Array(Schema.Any))
+    ),
     Effect.map(Arr.flatten)
+  ),
+
+  includes: flow(
+    <T>(a: T, b: T) => [a, b],
+    Schema.decodeUnknown(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    Effect.map(([list, item]) => Arr.contains(list, item))
   ),
 };

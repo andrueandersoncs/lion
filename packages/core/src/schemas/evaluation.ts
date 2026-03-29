@@ -11,7 +11,7 @@ export const LionFunctionValueSchema = Schema.declare(
 );
 
 export const FunctionCallFormSchema = Schema.Tuple(
-  [Schema.String],
+  [LionExpressionSchema],
   LionExpressionSchema
 );
 
@@ -22,5 +22,10 @@ export const EvalFormSchema = Schema.Tuple(
 
 export const QuoteFormSchema = Schema.Tuple(
   Schema.Literal("quote"),
+  LionExpressionSchema
+);
+
+export const BeginFormSchema = Schema.Tuple(
+  [Schema.Literal("begin")],
   LionExpressionSchema
 );

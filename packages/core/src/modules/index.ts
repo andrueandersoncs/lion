@@ -4,24 +4,24 @@ import { logic } from "./logic.ts";
 import { math } from "./math.ts";
 import { object } from "./object.ts";
 
-export const generateFunctionLabels = (
-  label: string,
-  module: Record<string, unknown>
+export const namespaceEntries = (
+  namespace: string,
+  record: Record<string, unknown>
 ) => {
-  const labeledValues: Record<string, unknown> = {};
+  const result: Record<string, unknown> = {};
 
-  for (const entry of Object.entries(module)) {
+  for (const entry of Object.entries(record)) {
     const [key, value] = entry;
-    labeledValues[`${label}/${key}`] = value;
+    result[`${namespace}/${key}`] = value;
   }
 
-  return labeledValues;
+  return result;
 };
 
 export const stdlib = {
-  ...generateFunctionLabels("math", math),
-  ...generateFunctionLabels("logic", logic),
-  ...generateFunctionLabels("list", list),
-  ...generateFunctionLabels("object", object),
-  ...generateFunctionLabels("func", func),
+  ...namespaceEntries("math", math),
+  ...namespaceEntries("logic", logic),
+  ...namespaceEntries("list", list),
+  ...namespaceEntries("object", object),
+  ...namespaceEntries("func", func),
 };

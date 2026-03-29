@@ -20,9 +20,11 @@ export const evaluatePrimitive = (expression: JsonPrimitiveType) =>
 
 export const evaluateReference = (name: string) =>
   pipe(
-    Effect.context<LionEnvironmentService>(),
-    Effect.map(Context.get(LionEnvironmentService)),
+    getService(LionEnvironmentService),
     Effect.flatMap(Ref.get),
     Effect.map(Record.get(name)),
     Effect.map(Option.getOrElse(() => name))
   );
+
+export const getService = <T, U>(context: Context.Tag<T, U>) =>
+  pipe(Effect.context<T>(), Effect.map(Context.get(context)));
