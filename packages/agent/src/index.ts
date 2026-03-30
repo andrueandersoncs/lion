@@ -1,19 +1,31 @@
+import { createFireworks } from "@ai-sdk/fireworks";
 import { run } from "@lion/core/evaluation/evaluate";
 import { stdlib } from "@lion/core/modules";
 // biome-ignore lint/performance/noNamespaceImport: Intentionally importing everything to passthrough to Lion
 import * as OpenTUI from "@opentui/core";
+// biome-ignore lint/performance/noNamespaceImport: Pass through to Lion
+import * as AI from "ai";
 import { Effect } from "effect";
+import { z } from "zod";
+
+const fireworks = createFireworks({
+  apiKey: process.env.FIREWORKS_API_KEY,
+});
+
+const model = fireworks("accounts/fireworks/routers/kimi-k2p5-turbo");
 
 const renderer = await OpenTUI.createCliRenderer({ exitOnCtrlC: true });
 
 const program = [
   "/begin",
+  ["/define", "()", "object/call-method"],
+  ["/define", ".", "object/get-path"],
   [
     "/define",
     "message-box",
     [
       "object/new",
-      "ScrollBoxRenderable",
+      [".", "OpenTUI", "ScrollBoxRenderable"],
       "renderer",
       {
         stickyScroll: true,
@@ -22,6 +34,8 @@ const program = [
         height: "100%",
         border: true,
         title: "Messages",
+        padding: 1,
+        gap: 4,
       },
     ],
   ],
@@ -29,39 +43,48 @@ const program = [
     "/define",
     "input-box",
     [
-      "Box",
+      [".", "OpenTUI", "Box"],
       {
-        title: ["/quote", "Input"],
         border: true,
       },
       [
         "/define",
         "my-input",
         [
-          "Input",
+          [".", "OpenTUI", "Input"],
           {
-            placeholder: "What will you build?",
+            placeholder: "Type your message to Lion Agent here...",
             width: "full",
-            backgroundColor: "white",
           },
         ],
       ],
     ],
   ],
-  ["/define", "input-on", ["object/access", "my-input", "on"]],
-  [
-    "/define",
-    "renderable-events-input",
-    ["object/access", "InputRenderableEvents", "INPUT"],
-  ],
   [
     "/define",
     "renderable-events-enter",
-    ["object/access", "InputRenderableEvents", "ENTER"],
+    [".", "OpenTUI", "InputRenderableEvents.ENTER"],
   ],
   [
     "/define",
-    "add-message",
+    "file-read-tool",
+    [
+      "()",
+      "AI",
+      "tool",
+      {
+        description: "Read a file",
+        inputSchema: ["()", "Zod", "object", { path: ["()", "Zod", "string"] }],
+        execute: [
+          "func/callback",
+          ["/lambda", ["path"], ["()", "fs", "readFile", "path", "utf8"]],
+        ],
+      },
+    ],
+  ],
+  [
+    "/define",
+    "on-user-submit",
     [
       "/lambda",
       ["message"],
@@ -69,23 +92,83 @@ const program = [
         "/begin",
         [
           "/define",
-          "message-box-add",
-          ["func/bind", ["object/access", "message-box", "add"], "message-box"],
+          "user-message-text",
+          [
+            "()",
+            "OpenTUI",
+            "Box",
+            {
+              border: true,
+              title: "User",
+            },
+            ["()", "OpenTUI", "Text", { content: "message" }],
+          ],
         ],
-        ["/define", "new-message-text", ["Text", { content: "message" }]],
-        ["message-box-add", "new-message-text"],
+        ["()", "message-box", "add", "user-message-text"],
+        [
+          "()",
+          [
+            "()",
+            "AI",
+            "generateText",
+            {
+              model: "model",
+              prompt: "message",
+              // tools: { "read-file": "fileReadTool" },
+            },
+          ],
+          "then",
+          [
+            "func/callback",
+            [
+              "/lambda",
+              ["response"],
+              [
+                "()",
+                "message-box",
+                "add",
+                [
+                  "()",
+                  "OpenTUI",
+                  "Box",
+                  {
+                    border: true,
+                    title: "Assistant",
+                  },
+                  [
+                    "()",
+                    "OpenTUI",
+                    "Text",
+                    { content: [".", "response", "text"] },
+                  ],
+                ],
+              ],
+            ],
+          ],
+        ],
       ],
     ],
   ],
-  ["input-on", "renderable-events-enter", ["func/callback", "add-message"]],
-  ["Box", {}, ["input-box", "message-box"]],
+  [
+    "()",
+    "my-input",
+    "on",
+    "renderable-events-enter",
+    ["func/callback", "on-user-submit"],
+  ],
+  ["()", "OpenTUI", "Box", {}, ["message-box", "input-box"]],
 ];
+
+// const submit = (message: string) => {};
 
 const node = Effect.runSync(
   run(program, {
     ...stdlib,
     renderer,
-    ...OpenTUI,
+    OpenTUI,
+    model,
+    AI,
+    Zod: z,
   })
 );
 

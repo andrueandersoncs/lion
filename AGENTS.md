@@ -10,64 +10,42 @@ Lion is a TypeScript monorepo with two main packages:
 
 ## Build, Lint, and Test Commands
 
-### Root Level Commands
+All commands should be run from the root directory using Turbo:
+
 ```bash
 # Install dependencies for all workspaces
-npm install
+bun install
+
+# Run all tests across all packages
+bun test
+
+# Build all packages
+bun run build
+
+# Run linting and formatting check (ultracite)
+bun run check
+
+# Fix linting and formatting issues
+bun run fix
 
 # Prepare development environment (Effect language service)
-npm run prepare
+bun run prepare
 ```
 
-### Core Package (@lion/core)
+### Package-Specific Commands
+
+For running commands in a specific package, use Turbo's filter syntax:
+
 ```bash
-cd packages/core
+# Run tests for a specific package
+turbo test --filter=@lion/core
+turbo test --filter=@lion/repl
 
-# Run all tests
-npm test
-# or
-npm run test
+# Run dev server for repl package
+turbo dev --filter=@lion/repl
 
-# Type checking
-npm run typecheck
-
-# Run specific test file
-npx vitest run src/path/to/file.test.ts
-
-# Run tests in watch mode
-npx vitest
-```
-
-### REPL Package (@lion/repl)
-```bash
-cd packages/repl
-
-# Development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run all tests
-npm run test
-
-# Run specific test file
-npx vitest run src/path/to/file.test.ts
-
-# Linting
-npm run lint
-
-# Formatting
-npm run format
-
-# Full check (lint + format + type check)
-npm run check
-
-# Install shadcn/ui components (from .cursorrules)
-bunx shadcn@latest add [component-name]
+# Run typecheck for core package
+turbo typecheck --filter=@lion/core
 ```
 
 ## Testing Guidelines
@@ -298,12 +276,12 @@ packages/repl/
 
 ### Development Workflow
 
-1. **Before coding**: Run `npm install` and `npm run prepare`
-2. **During development**: Use `npm run dev` in repl package
+1. **Before coding**: Run `bun install` and `bun run prepare`
+2. **During development**: Use `turbo dev --filter=@lion/repl` for REPL development
 3. **Before committing**:
-   - Run `npm run check` in repl package
-   - Run `npm run typecheck` in core package
-   - Run `npm test` in both packages
+   - Run `bun run check`
+   - Run `bun test`
+   - Run `bun run build`
 4. **After changes**: Update this AGENTS.md if development practices change
 
 ### Performance Considerations

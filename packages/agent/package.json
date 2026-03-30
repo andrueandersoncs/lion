@@ -13,8 +13,10 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@ai-sdk/fireworks": "^2.0.42",
     "@lion/core": "workspace:*",
     "@opentui/core": "^0.1.90",
+    "ai": "^6.0.141",
     "effect": "catalog:"
   }
 }
