@@ -16,7 +16,7 @@
       },
     },
     "packages/agent": {
-      "name": "agent",
+      "name": "@lion/agent",
       "dependencies": {
         "@ai-sdk/fireworks": "^2.0.42",
         "@lion/core": "workspace:*",
@@ -45,6 +45,18 @@
       },
       "peerDependencies": {
         "typescript": "catalog:",
+      },
+    },
+    "packages/examples": {
+      "name": "@lion/examples",
+      "dependencies": {
+        "@lion/core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
       },
     },
     "packages/repl": {
@@ -403,7 +415,11 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
+    "@lion/agent": ["@lion/agent@workspace:packages/agent"],
+
     "@lion/core": ["@lion/core@workspace:packages/core"],
+
+    "@lion/examples": ["@lion/examples@workspace:packages/examples"],
 
     "@lion/repl": ["@lion/repl@workspace:packages/repl"],
 
@@ -854,8 +870,6 @@
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
-
-    "agent": ["agent@workspace:packages/agent"],
 
     "agent-base": ["agent-base@7.1.4", "", {}, "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="],
 

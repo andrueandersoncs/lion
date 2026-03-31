@@ -1,0 +1,160 @@
+[
+  "begin",
+  ["define", "()", "object/call-method"],
+  ["define", ".", "object/get-path"],
+  ["define", "[]", "list/list"],
+  ["define", "=>", "func/callback"],
+  ["define", "new", "object/new"],
+  [
+    "define",
+    "message-box",
+    [
+      "new",
+      [".", "OpenTUI", "ScrollBoxRenderable"],
+      "renderer",
+      {
+        "stickyScroll": true,
+        "stickyStart": "bottom",
+        "width": "100%",
+        "height": "100%",
+        "border": true,
+        "title": "Messages",
+        "padding": 1,
+        "gap": 4
+      }
+    ]
+  ],
+  [
+    "define",
+    "input-box",
+    [
+      [".", "OpenTUI", "Box"],
+      {
+        "border": true
+      },
+      [
+        "define",
+        "my-input",
+        [
+          [".", "OpenTUI", "Input"],
+          {
+            "placeholder": "Type your message to Lion Agent here...",
+            "width": "full"
+          }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "renderable-events-enter",
+    [".", "OpenTUI", "InputRenderableEvents.ENTER"]
+  ],
+  [
+    "define",
+    "file-read-tool",
+    [
+      "()",
+      "AI",
+      "tool",
+      {
+        "description": "Read a file",
+        "inputSchema": [
+          "()",
+          "Zod",
+          "object",
+          { "path": ["()", "Zod", "string"] }
+        ],
+        "execute": [
+          "=>",
+          [
+            "lambda",
+            ["input"],
+            [
+              "begin",
+              ["console/log", "input"],
+              [
+                ["object/get", "fs", "readFileSync"],
+                ["object/get", "input", "path"]
+              ]
+            ]
+          ]
+        ]
+      }
+    ]
+  ],
+  [
+    "define",
+    "on-user-submit",
+    [
+      "lambda",
+      ["message"],
+      [
+        "begin",
+        [
+          "define",
+          "user-message-text",
+          [
+            "()",
+            "OpenTUI",
+            "Box",
+            {
+              "border": true,
+              "title": "User"
+            },
+            ["()", "OpenTUI", "Text", { "content": "message" }]
+          ]
+        ],
+        ["()", "message-box", "add", "user-message-text"],
+        [
+          "define",
+          "handle-response",
+          [
+            "=>",
+            [
+              "lambda",
+              ["response"],
+              [
+                "()",
+                "message-box",
+                "add",
+                [
+                  "()",
+                  "OpenTUI",
+                  "Box",
+                  {
+                    "border": true,
+                    "title": "Assistant"
+                  },
+                  [
+                    "()",
+                    "OpenTUI",
+                    "Text",
+                    { "content": [".", "response", "toolResults.0.output"] }
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        [
+          "()",
+          [
+            "()",
+            "AI",
+            "generateText",
+            {
+              "model": "model",
+              "prompt": "message",
+              "tools": { "read-file": "file-read-tool" }
+            }
+          ],
+          "then",
+          "handle-response"
+        ]
+      ]
+    ]
+  ],
+  ["()", "my-input", "on", "renderable-events-enter", ["=>", "on-user-submit"]],
+  ["()", "OpenTUI", "Box", {}, ["[]", "input-box", "message-box"]]
+]
