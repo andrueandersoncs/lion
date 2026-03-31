@@ -9,8 +9,12 @@ describe("eval special form", () => {
     [EvalFormSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* run(expression, {});
-        const argResult = yield* run(expression[1], {});
+        const result = yield* run(expression, {}).pipe(
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
+        );
+        const argResult = yield* run(expression[1], {}).pipe(
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
+        );
         expect(result).toEqual(argResult);
       })
   );

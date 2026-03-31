@@ -16,21 +16,21 @@ export const FunctionCallFormSchema = Schema.Tuple(
 );
 
 export const EvalFormSchema = Schema.Tuple(
-  Schema.Literal("/eval"),
+  Schema.Literal("eval"),
   LionExpressionSchema
 );
 
 export const QuoteFormSchema = Schema.Tuple(
-  Schema.Literal("/quote"),
+  Schema.Literal("quote"),
   LionExpressionSchema
 );
 
 export const BeginFormSchema = Schema.Tuple(
-  [Schema.Literal("/begin")],
+  [Schema.Literal("begin")],
   LionExpressionSchema
 );
 
-const DISALLOWED_IDENTIFIERS = ["/begin", "/define", "/eval", "/quote"];
+const DISALLOWED_IDENTIFIERS = ["begin", "define", "eval", "quote"];
 
 const ValidIdentifierSchema = Schema.String.pipe(
   Schema.filter((s) => !DISALLOWED_IDENTIFIERS.includes(s)),
@@ -38,13 +38,13 @@ const ValidIdentifierSchema = Schema.String.pipe(
 );
 
 export const DefineFormSchema = Schema.Tuple(
-  Schema.Literal("/define"),
+  Schema.Literal("define"),
   ValidIdentifierSchema,
   LionExpressionSchema
 );
 
 export const LambdaFormSchema = Schema.Tuple(
-  Schema.Literal("/lambda"),
+  Schema.Literal("lambda"),
   Schema.Array(ValidIdentifierSchema),
   LionExpressionSchema
 );

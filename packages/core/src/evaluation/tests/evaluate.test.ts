@@ -38,7 +38,7 @@ describe("run", () => {
 
   it.effect("should call a function when in call position", () =>
     Effect.gen(function* () {
-      const program = [["object/access", "obj", "fn"], 1, 2];
+      const program = [["object/get", "obj", "fn"], 1, 2];
       const result = yield* run(program, {
         ...stdlib,
         obj: {

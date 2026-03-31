@@ -23,7 +23,8 @@ const DISALLOWED_KEYS = ["__proto__"] as const;
 // record
 export const LionRecordExpressionSchema = Schema.Record({
   key: Schema.String.pipe(
-    Schema.filter((s) => !Arr.contains(DISALLOWED_KEYS, s))
+    Schema.filter((s) => !Arr.contains(DISALLOWED_KEYS, s)),
+    Schema.minLength(1)
   ),
   value: Schema.suspend(
     (): Schema.Schema<AssumedExpressionType> => LionExpressionSchema

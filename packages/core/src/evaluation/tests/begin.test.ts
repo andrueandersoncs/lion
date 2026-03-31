@@ -1,23 +1,30 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Array as Arr, Effect, Option, Schema } from "effect";
+import { Array as Arr, Effect, Match, pipe } from "effect";
 import { run } from "@/evaluation/evaluate";
-import { stdlib } from "@/modules";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
-
-const TestSchema = Schema.Array(LionExpressionSchema);
+import { BeginFormSchema } from "@/schemas/evaluation";
 
 describe("begin special form", () => {
   it.effect.prop(
     "should evaluate the arguments in order and return the last result",
-    [TestSchema],
-    ([expressions]) =>
+    [BeginFormSchema],
+    ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* run(["/begin", ...expressions], stdlib);
-        const lastExpressionResult = yield* run(
-          Arr.last(expressions).pipe(Option.getOrElse(() => [])),
-          stdlib
+        const result = yield* run(expression, {}).pipe(
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
         );
-        expect(result).toEqual(lastExpressionResult);
+        const [_, ...args] = expression;
+        const evaluatedArgs = yield* Effect.all(
+          Arr.map(args, (arg) => run(arg, {}))
+        ).pipe(
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
+        );
+        const expected = pipe(
+          Match.value(evaluatedArgs),
+          Match.when(Arr.isNonEmptyArray, (a) => Arr.lastNonEmpty(a)),
+          Match.when(Arr.isEmptyArray, () => []),
+          Match.orElse((a) => a)
+        );
+        expect(result).toEqual(expected);
       })
   );
 });

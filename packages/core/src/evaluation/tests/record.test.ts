@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Effect, pipe, Record } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { LionRecordExpressionSchema } from "@/schemas/lion-expression";
 
@@ -9,8 +9,16 @@ describe("evaluate", () => {
     [LionRecordExpressionSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        const result = yield* run(expression, {});
-        expect(result).toEqual(expression);
+        const result = yield* pipe(
+          run(expression, {}),
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
+        );
+        const expected = yield* pipe(
+          Record.map(expression, (value) => run(value, {})),
+          Effect.all,
+          Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
+        );
+        expect(result).toEqual(expected);
       })
   );
 });
