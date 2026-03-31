@@ -8,6 +8,7 @@ import {
   makeEnvironmentRef,
 } from "@/services/evaluation";
 
+// TODO: FIXME: lambda breaks global environment (code inside lambda does not have access to global environment)
 export const evaluateLambda = ([
   _,
   parameters,

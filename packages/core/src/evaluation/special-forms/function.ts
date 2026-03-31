@@ -1,4 +1,5 @@
 import { Array as Arr, Effect, Match, pipe, Schema } from "effect";
+import { InvalidFunctionCallError } from "@/errors/evaluation";
 import { evaluate } from "@/evaluation/evaluate.ts";
 import {
   type FunctionCallFormSchema,
@@ -18,7 +19,11 @@ export const evaluateFunctionCall = (
           const result = fn(...tail);
           return Effect.isEffect(result) ? result : Effect.succeed(result);
         }),
-        Match.orElse(() => Effect.succeed([head, ...tail]))
+        Match.orElse(() =>
+          Effect.fail(
+            new InvalidFunctionCallError({ expression: functionCallExpression })
+          )
+        )
       )
     )
   );

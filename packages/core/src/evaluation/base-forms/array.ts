@@ -1,5 +1,5 @@
-import { Array as Arr, Effect, flow, Match, pipe, Schema } from "effect";
-import { evaluate } from "@/evaluation/evaluate.ts";
+import { Array as Arr, Effect, Match, pipe, Schema } from "effect";
+import { InvalidFunctionCallError } from "@/errors/evaluation";
 import { evaluateBegin } from "@/evaluation/special-forms/begin.ts";
 import { evaluateDefine } from "@/evaluation/special-forms/define.ts";
 import { evaluateEval } from "@/evaluation/special-forms/eval.ts";
@@ -28,5 +28,7 @@ export const evaluateArray = (expression: LionArrayExpressionType) =>
     Match.when(Schema.is(FunctionCallFormSchema), (_) =>
       evaluateFunctionCall(_)
     ),
-    Match.orElse(flow(Arr.map(evaluate), Effect.all))
+    Match.orElse(() =>
+      Effect.fail(new InvalidFunctionCallError({ expression }))
+    )
   );
