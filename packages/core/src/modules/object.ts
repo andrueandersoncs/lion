@@ -36,6 +36,46 @@ class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>(
   actual: Schema.Unknown,
 }) {}
 
+class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>(
+  "IndexOutOfBoundsError"
+)("IndexOutOfBoundsError", {
+  index: Schema.Number,
+  length: Schema.Number,
+}) {}
+
+class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>(
+  "NotAnArrayError"
+)("NotAnArrayError", { actual: Schema.Unknown }) {}
+
+const NUMERIC_KEY_REGEX = /^\d+$/;
+
+const isNumericKey = (key: string): boolean => NUMERIC_KEY_REGEX.test(key);
+
+const getValueAtKey = (current: unknown, key: string): unknown => {
+  if (Array.isArray(current) && isNumericKey(key)) {
+    return current[Number.parseInt(key, 10)];
+  }
+  return (current as Record<string, unknown>)[key];
+};
+
+const validateKeyExists = (current: unknown, key: string) =>
+  Effect.gen(function* () {
+    if (!Array.isArray(current) && isNumericKey(key)) {
+      return yield* new NotAnArrayError({ actual: current });
+    }
+    const index = isNumericKey(key) ? Number.parseInt(key, 10) : -1;
+    if (Array.isArray(current) && index >= 0) {
+      if (index >= current.length) {
+        return yield* new IndexOutOfBoundsError({
+          index,
+          length: current.length,
+        });
+      }
+    } else if (!(key in (current as object))) {
+      return yield* new KeyNotFoundError({ key });
+    }
+  });
+
 const traversePath = (
   obj: object,
   path: string,
@@ -66,7 +106,7 @@ const traversePath = (
           current,
         });
       }
-      current = (current as Record<string, unknown>)[key];
+      current = getValueAtKey(current, key);
     }
     return current as object;
   });
@@ -124,12 +164,21 @@ export const object = {
             current,
           });
         }
-        if (!(key in current)) {
-          return yield* new KeyNotFoundError({ key: String(key) });
-        }
-        current = (current as Record<string, unknown>)[key];
+        yield* validateKeyExists(current, key);
+        current = getValueAtKey(current, key);
       }
       return current;
+    }),
+  "json-stringify": (
+    obj: unknown,
+    replacer: Parameters<typeof JSON.stringify>[1],
+    space: number
+  ) =>
+    Effect.gen(function* () {
+      if (typeof obj !== "object" || obj === null) {
+        return yield* new NotAnObjectError({ actual: obj });
+      }
+      return JSON.stringify(obj, replacer, space);
     }),
   keys: flow(
     (obj: unknown) => obj,

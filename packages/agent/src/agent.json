@@ -63,21 +63,21 @@
           "()",
           "Zod",
           "object",
-          { "path": ["()", "Zod", "string"] }
+          {
+            "path": [
+              "()",
+              ["()", "Zod", "string"],
+              "describe",
+              "Path string to the file to read. This is passed directly to the node.js fs.readFileSync function, so make sure it is formatted as expected."
+            ]
+          }
         ],
         "execute": [
           "=>",
           [
             "lambda",
-            ["input"],
-            [
-              "begin",
-              ["console/log", "input"],
-              [
-                ["object/get", "fs", "readFileSync"],
-                ["object/get", "input", "path"]
-              ]
-            ]
+            ["input", "options"],
+            ["()", "fs", "readFileSync", [".", "input", "path"], "utf8"]
           ]
         ]
       }
@@ -115,22 +115,26 @@
               "lambda",
               ["response"],
               [
-                "()",
-                "message-box",
-                "add",
+                "begin",
+                ["console/log-json", [".", "response", "steps"]],
                 [
                   "()",
-                  "OpenTUI",
-                  "Box",
-                  {
-                    "border": true,
-                    "title": "Assistant"
-                  },
+                  "message-box",
+                  "add",
                   [
                     "()",
                     "OpenTUI",
-                    "Text",
-                    { "content": [".", "response", "toolResults.0.output"] }
+                    "Box",
+                    {
+                      "border": true,
+                      "title": "Assistant"
+                    },
+                    [
+                      "()",
+                      "OpenTUI",
+                      "Text",
+                      { "content": [".", "response", "toolResults.0.output"] }
+                    ]
                   ]
                 ]
               ]

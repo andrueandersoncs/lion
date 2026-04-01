@@ -22,6 +22,6 @@ describe("func/bind", () => {
 describe("func/callback", () => {
   it("should call a function with the given arguments", () => {
     const callback = func.callback((a: number, b: number) => a + b);
-    expect(callback(1, 2)).toEqual(3);
+    expect(Effect.runSync(callback)(1, 2)).toEqual(3);
   });
 });

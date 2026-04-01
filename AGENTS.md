@@ -12,6 +12,8 @@ Lion is a TypeScript monorepo with two main packages:
 
 All commands should be run from the root directory using Turbo:
 
+> **IMPORTANT**: NEVER use `npx` or `npm` commands. Use `bun` or `turbo` instead.
+
 ```bash
 # Install dependencies for all workspaces
 bun install

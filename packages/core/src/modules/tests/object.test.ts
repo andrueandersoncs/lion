@@ -81,6 +81,64 @@ describe("object", () => {
         }
       })
     );
+    it.effect("should access array elements using numeric keys", () =>
+      Effect.gen(function* () {
+        const obj = { items: ["a", "b", "c"] };
+        const result = yield* object["get-path"](obj, "items.0");
+        expect(result).toBe("a");
+      })
+    );
+    it.effect("should access nested properties within array elements", () =>
+      Effect.gen(function* () {
+        const obj = { users: [{ name: "Alice" }, { name: "Bob" }] };
+        const result = yield* object["get-path"](obj, "users.1.name");
+        expect(result).toBe("Bob");
+      })
+    );
+    it.effect(
+      "should fail with IndexOutOfBoundsError for out of bounds array index",
+      () =>
+        Effect.gen(function* () {
+          const obj = { items: ["a", "b"] };
+          const error = yield* Effect.flip(object["get-path"](obj, "items.5"));
+          expect(error._tag).toBe("IndexOutOfBoundsError");
+          if (error._tag === "IndexOutOfBoundsError") {
+            expect(error.index).toBe(5);
+            expect(error.length).toBe(2);
+          }
+        })
+    );
+    it.effect(
+      "should handle negative array indices as object keys (not array access)",
+      () =>
+        Effect.gen(function* () {
+          const obj = { items: { "-1": "negative" } };
+          const result = yield* object["get-path"](obj, "items.-1");
+          expect(result).toBe("negative");
+        })
+    );
+    it.effect("should access deep array nesting", () =>
+      Effect.gen(function* () {
+        const obj = {
+          matrix: [
+            [1, 2],
+            [3, 4],
+          ],
+        };
+        const result = yield* object["get-path"](obj, "matrix.1.0");
+        expect(result).toBe(3);
+      })
+    );
+  });
+
+  describe("json-stringify", () => {
+    it.effect("should stringify an object", () =>
+      Effect.gen(function* () {
+        const obj = { a: 1, b: 2 };
+        const result = yield* object["json-stringify"](obj, null, 2);
+        expect(result).toBe(JSON.stringify(obj, null, 2));
+      })
+    );
   });
 
   describe("keys", () => {

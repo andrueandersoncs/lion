@@ -7,9 +7,8 @@ export const func = {
     obj: unknown,
     ...args: unknown[]
   ) => Effect.succeed(fn.bind(obj, ...args)),
-  callback:
-    (fn: unknown) =>
-    (...args: unknown[]) => {
+  callback: (fn: unknown) =>
+    Effect.succeed((...args: unknown[]) => {
       if (typeof fn !== "function") {
         return fn;
       }
@@ -19,9 +18,9 @@ export const func = {
       if (Effect.isEffect(result)) {
         return Effect.runPromise(
           result as Effect.Effect<unknown, unknown, never>
-        );
+        ).catch((e) => console.error(e));
       }
 
       return result;
-    },
+    }),
 };
