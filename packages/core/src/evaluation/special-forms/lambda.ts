@@ -18,7 +18,7 @@ export const evaluateLambda = ([
     const environmentRef = yield* getService(LionEnvironmentService);
     const environment = yield* Ref.get(environmentRef);
     const lambda = Effect.fn(function* (...args: unknown[]) {
-      if (parameters.length !== args.length) {
+      if (args.length < parameters.length) {
         return yield* new ArgumentMismatchError();
       }
       const params = Record.fromEntries(Arr.zip(parameters, args));

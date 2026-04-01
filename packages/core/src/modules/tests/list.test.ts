@@ -1,5 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
+import { run } from "@/evaluation/evaluate";
+import { stdlib } from "../index.ts";
 import { list } from "../list.ts";
 
 describe("list", () => {
@@ -16,5 +18,27 @@ describe("list", () => {
     expect(Effect.runSync(list.concat([12, 34, 56], [78, 90]))).toEqual([
       12, 34, 56, 78, 90,
     ]);
+  });
+  describe("map", () => {
+    it("should map a list", () => {
+      expect(
+        Effect.runSync(
+          list.map([12, 34, 56], (x: number) => Effect.succeed(x * 2))
+        )
+      ).toEqual([24, 68, 112]);
+    });
+    it.effect("should map a list (via run())", () =>
+      Effect.gen(function* () {
+        const result = yield* run(
+          [
+            "list/map",
+            ["list/list", 12, 34, 56],
+            ["lambda", ["x"], ["math/*", "x", 2]],
+          ],
+          stdlib
+        );
+        expect(result).toEqual([24, 68, 112]);
+      })
+    );
   });
 });

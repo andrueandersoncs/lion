@@ -36,4 +36,12 @@ export const list = {
     Schema.decodeUnknown(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
     Effect.map(([list, item]) => Arr.contains(list, item))
   ),
+
+  map: flow(
+    <T, U>(a: T, b: U) => [a, b],
+    Schema.decodeUnknown(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    Effect.flatMap(([list, fn]) =>
+      Effect.all(Arr.map(list, fn) as Effect.Effect<unknown>[])
+    )
+  ),
 };

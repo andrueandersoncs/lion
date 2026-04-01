@@ -32,7 +32,7 @@ export const BeginFormSchema = Schema.Tuple(
 
 const DISALLOWED_IDENTIFIERS = ["begin", "define", "eval", "quote"];
 
-const ValidIdentifierSchema = Schema.String.pipe(
+export const ValidIdentifierSchema = Schema.String.pipe(
   Schema.filter((s) => !DISALLOWED_IDENTIFIERS.includes(s)),
   Schema.minLength(1)
 );

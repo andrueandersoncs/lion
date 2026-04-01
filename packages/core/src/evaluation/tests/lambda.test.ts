@@ -1,11 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Array as Arr, Effect } from "effect";
+import { Array as Arr, Effect, Schema } from "effect";
 import {
   ArgumentMismatchError,
   type InvalidFunctionCallError,
 } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
-import { LambdaFormSchema } from "@/schemas/evaluation";
+import { LambdaFormSchema, ValidIdentifierSchema } from "@/schemas/evaluation";
+import { LionExpressionSchema } from "@/schemas/lion-expression";
 
 describe("lambda special form", () => {
   it.effect.prop(
@@ -43,16 +44,21 @@ describe("lambda special form", () => {
       })
   );
   it.effect.prop(
-    "should evaluate to a function, calling the function with incorrect arguments should produce an error",
-    [LambdaFormSchema],
+    "should evaluate to a function, calling the function with too few arguments should produce an error",
+    [
+      Schema.Tuple(
+        Schema.Literal("lambda"),
+        Schema.Tuple([ValidIdentifierSchema], ValidIdentifierSchema),
+        LionExpressionSchema
+      ),
+    ],
     ([expression]) =>
       Effect.gen(function* () {
         const result = yield* run(expression, {});
         expect(typeof result).toBe("function");
 
         if (typeof result === "function") {
-          const improperArgs = Arr.fromIterable(expression[1]).concat("extra");
-          const result2 = result(...improperArgs);
+          const result2 = result();
           expect(Effect.isEffect(result2)).toBe(true);
 
           const result3 = yield* (
