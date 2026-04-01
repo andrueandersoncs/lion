@@ -41,4 +41,29 @@ describe("list", () => {
       })
     );
   });
+  describe("reduce", () => {
+    it("should reduce a list", () => {
+      expect(
+        Effect.runSync(
+          list.reduce([1, 2, 3, 4], 0, (acc: number, x: number) =>
+            Effect.succeed(acc + x)
+          )
+        )
+      ).toEqual(10);
+    });
+    it.effect("should reduce a list (via run())", () =>
+      Effect.gen(function* () {
+        const result = yield* run(
+          [
+            "list/reduce",
+            ["list/list", 1, 2, 3, 4],
+            0,
+            ["lambda", ["acc", "x"], ["math/+", "acc", "x"]],
+          ],
+          stdlib
+        );
+        expect(result).toEqual(10);
+      })
+    );
+  });
 });

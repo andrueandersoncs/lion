@@ -44,4 +44,21 @@ export const list = {
       Effect.all(Arr.map(list, fn) as Effect.Effect<unknown>[])
     )
   ),
+
+  reduce: flow(
+    <T, U>(a: T, b: U, c: unknown) => [a, b, c],
+    Schema.decodeUnknown(
+      Schema.Tuple(Schema.Array(Schema.Any), Schema.Any, Schema.Any)
+    ),
+    Effect.flatMap(([list, initial, fn]) =>
+      Arr.reduce(list, Effect.succeed(initial), (accEffect, item) =>
+        Effect.flatMap(accEffect, (acc) =>
+          (fn as (acc: unknown, item: unknown) => Effect.Effect<unknown>)(
+            acc,
+            item
+          )
+        )
+      )
+    )
+  ),
 };
