@@ -1,6 +1,7 @@
 import { Array as Arr, Effect, Match, pipe, Schema } from "effect";
 import { InvalidFunctionCallError } from "@/errors/evaluation";
 import { evaluateBegin } from "@/evaluation/special-forms/begin.ts";
+import { evaluateCond } from "@/evaluation/special-forms/cond.ts";
 import { evaluateDefine } from "@/evaluation/special-forms/define.ts";
 import { evaluateEval } from "@/evaluation/special-forms/eval.ts";
 import { evaluateFunctionCall } from "@/evaluation/special-forms/function.ts";
@@ -8,6 +9,7 @@ import { evaluateLambda } from "@/evaluation/special-forms/lambda";
 import { evaluateQuote } from "@/evaluation/special-forms/quote.ts";
 import {
   BeginFormSchema,
+  CondFormSchema,
   DefineFormSchema,
   EvalFormSchema,
   FunctionCallFormSchema,
@@ -25,6 +27,7 @@ export const evaluateArray = (expression: LionArrayExpressionType) =>
     Match.when(Schema.is(BeginFormSchema), (_) => evaluateBegin(_)),
     Match.when(Schema.is(DefineFormSchema), (_) => evaluateDefine(_)),
     Match.when(Schema.is(LambdaFormSchema), (_) => evaluateLambda(_)),
+    Match.when(Schema.is(CondFormSchema), (_) => evaluateCond(_)),
     Match.when(Schema.is(FunctionCallFormSchema), (_) =>
       evaluateFunctionCall(_)
     ),

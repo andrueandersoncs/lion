@@ -48,3 +48,29 @@ export const LambdaFormSchema = Schema.Tuple(
   Schema.Array(ValidIdentifierSchema),
   LionExpressionSchema
 );
+
+export const CondCaseSchema = Schema.Tuple(
+  LionExpressionSchema,
+  LionExpressionSchema
+);
+
+export const CondElseCaseSchema = Schema.Tuple(
+  Schema.Literal("else"),
+  LionExpressionSchema
+);
+
+export const CondFormWithoutElseSchema = Schema.Tuple(
+  [Schema.Literal("cond"), CondCaseSchema],
+  CondCaseSchema
+);
+
+export const CondFormWithElseSchema = Schema.Tuple(
+  [Schema.Literal("cond"), CondCaseSchema],
+  CondCaseSchema,
+  CondElseCaseSchema
+);
+
+export const CondFormSchema = Schema.Union(
+  CondFormWithoutElseSchema,
+  CondFormWithElseSchema
+);
