@@ -72,4 +72,18 @@ describe("match special form", () => {
       expect(result).toBe(2);
     })
   );
+  it.effect(
+    "should evaluate the value expression before applying the patterns",
+    () =>
+      Effect.gen(function* () {
+        const expression = [
+          "match",
+          ["number/add", 1, 2],
+          ["value/number?", ["lambda", ["x"], ["number/add", "x", 1]]],
+          ["lambda", ["x"], "x"],
+        ];
+        const result = yield* run(expression, stdlib);
+        expect(result).toBe(4);
+      })
+  );
 });

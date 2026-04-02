@@ -52,6 +52,24 @@
   ],
   [
     "define",
+    "LabeledText",
+    [
+      "lambda",
+      ["label", "text"],
+      [
+        "()",
+        "OpenTUI",
+        "Box",
+        {
+          "border": true,
+          "title": "label"
+        },
+        ["()", "OpenTUI", "Text", { "content": "text" }]
+      ]
+    ]
+  ],
+  [
+    "define",
     "file-read-tool",
     [
       "()",
@@ -81,6 +99,37 @@
           ]
         ]
       }
+    ]
+  ],
+  [
+    "define",
+    "add-message-box",
+    [
+      "lambda",
+      ["title", "content"],
+      ["()", "message-box", "add", ["LabeledText", "title", "content"]]
+    ]
+  ],
+  [
+    "define",
+    "render-message-step",
+    [
+      "lambda",
+      ["step"],
+      [
+        "array/map",
+        [".", "step", "content"],
+        [
+          "lambda",
+          ["content"],
+          [
+            "match",
+            "content",
+            [],
+            ["lambda", ["content"], "Unknown content type"]
+          ]
+        ]
+      ]
     ]
   ],
   [
@@ -121,31 +170,100 @@
                   "fs",
                   "writeFileSync",
                   "agent-response-log.json",
-                  [
-                    "object/json-stringify",
-                    [".", "response", "steps"],
-                    null,
-                    2
-                  ],
+                  ["object/json-stringify", "response", null, 2],
                   "utf8"
                 ],
                 [
-                  "()",
-                  "message-box",
-                  "add",
+                  "array/map",
+                  [".", "response", "steps"],
                   [
-                    "()",
-                    "OpenTUI",
-                    "Box",
-                    {
-                      "border": true,
-                      "title": "Assistant"
-                    },
+                    "lambda",
+                    ["step"],
                     [
-                      "()",
-                      "OpenTUI",
-                      "Text",
-                      { "content": [".", "response", "toolResults.0.output"] }
+                      "array/map",
+                      [".", "step", "content"],
+                      [
+                        "lambda",
+                        ["content"],
+                        [
+                          "match",
+                          "content",
+                          [
+                            [
+                              "lambda",
+                              ["c"],
+                              ["string/equals?", [".", "c", "type"], "text"]
+                            ],
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "add-message-box",
+                                "Assistant",
+                                [".", "c", "text"]
+                              ]
+                            ]
+                          ],
+                          [
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "string/equals?",
+                                [".", "c", "type"],
+                                "reasoning"
+                              ]
+                            ],
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "add-message-box",
+                                "Reasoning",
+                                [".", "c", "text"]
+                              ]
+                            ]
+                          ],
+
+                          [
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "string/equals?",
+                                [".", "c", "type"],
+                                "tool-call"
+                              ]
+                            ],
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "add-message-box",
+                                "Tool Call",
+                                [
+                                  "object/json-stringify",
+                                  {
+                                    "name": [".", "c", "toolName"],
+                                    "input": [".", "c", "input"]
+                                  },
+                                  null,
+                                  2
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "lambda",
+                            ["c"],
+                            [
+                              "add-message-box",
+                              "Error",
+                              ["object/json-stringify", "c", null, 2]
+                            ]
+                          ]
+                        ]
+                      ]
                     ]
                   ]
                 ]

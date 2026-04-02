@@ -73,4 +73,7 @@ export const evaluateMatch = ([
   valueExpr,
   ...patternExprs
 ]: typeof MatchFormSchema.Type) =>
-  evaluateMatchPatterns(valueExpr, patternExprs);
+  pipe(
+    evaluate(valueExpr),
+    Effect.flatMap((value) => evaluateMatchPatterns(value, patternExprs))
+  );

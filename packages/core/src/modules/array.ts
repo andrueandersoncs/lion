@@ -1,4 +1,4 @@
-import { Array as Arr, Effect, flow, Option, Schema } from "effect";
+import { Array as Arr, Effect, flow, Option, pipe, Schema } from "effect";
 import { decode } from "@/modules/shared";
 
 export const module = {
@@ -37,6 +37,18 @@ export const module = {
     decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
     Effect.flatMap(([list, fn]) =>
       Effect.all(Arr.map(list, fn) as Effect.Effect<unknown>[])
+    )
+  ),
+
+  "flat-map": flow(
+    (a: unknown, b: unknown) => [a, b],
+    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    Effect.flatMap(([list, fn]) =>
+      pipe(
+        Arr.map(list, fn) as Effect.Effect<unknown[]>[],
+        Effect.all,
+        Effect.map(Arr.flatten)
+      )
     )
   ),
 
