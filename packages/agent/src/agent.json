@@ -2,7 +2,7 @@
   "begin",
   ["define", "()", "object/call-method"],
   ["define", ".", "object/get-path"],
-  ["define", "[]", "list/list"],
+  ["define", "[]", "array/make"],
   ["define", "=>", "func/callback"],
   ["define", "new", "object/new"],
   [
@@ -116,7 +116,19 @@
               ["response"],
               [
                 "begin",
-                ["console/log-json", [".", "response", "steps"]],
+                [
+                  "()",
+                  "fs",
+                  "writeFileSync",
+                  "agent-response-log.json",
+                  [
+                    "object/json-stringify",
+                    [".", "response", "steps"],
+                    null,
+                    2
+                  ],
+                  "utf8"
+                ],
                 [
                   "()",
                   "message-box",

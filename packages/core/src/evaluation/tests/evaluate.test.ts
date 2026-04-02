@@ -6,7 +6,7 @@ import { stdlib } from "@/modules";
 describe("run", () => {
   it.effect("should evaluate an expression", () =>
     Effect.gen(function* () {
-      const result = yield* run(["math/+", 1, 2], stdlib);
+      const result = yield* run(["number/add", 1, 2], stdlib);
       expect(result).toBe(3);
     })
   );
@@ -51,8 +51,8 @@ describe("run", () => {
 
   it.effect("should return a function as a value", () =>
     Effect.gen(function* () {
-      const result = yield* run("func/identity", stdlib);
-      expect(result).toBe(stdlib["func/identity"]);
+      const result = yield* run("value/identity", stdlib);
+      expect(result).toBe(stdlib["value/identity"]);
     })
   );
 });

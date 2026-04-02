@@ -141,7 +141,9 @@ const getMethodFromObject = (
     return method as (...args: unknown[]) => unknown;
   });
 
-export const object = {
+export const module = {
+  symbol: Symbol("object"),
+
   get: (obj: unknown, key: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
@@ -149,6 +151,7 @@ export const object = {
       }
       return (obj as Record<string, unknown>)[key];
     }),
+
   "get-path": (obj: unknown, path: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
@@ -169,6 +172,7 @@ export const object = {
       }
       return current;
     }),
+
   "json-stringify": (
     obj: unknown,
     replacer: Parameters<typeof JSON.stringify>[1],
@@ -180,6 +184,7 @@ export const object = {
       }
       return JSON.stringify(obj, replacer, space);
     }),
+
   keys: flow(
     (obj: unknown) => obj,
     Schema.decodeUnknown(
@@ -187,6 +192,7 @@ export const object = {
     ),
     Effect.map(Record.keys)
   ),
+
   values: flow(
     (obj: unknown) => obj,
     Schema.decodeUnknown(
@@ -194,6 +200,7 @@ export const object = {
     ),
     Effect.map(Record.values)
   ),
+
   "new": (classRef: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {
       if (typeof classRef !== "function") {
@@ -203,6 +210,7 @@ export const object = {
         ...(args as unknown[])
       );
     }),
+
   "get-method": (obj: unknown, key: unknown) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
@@ -217,6 +225,7 @@ export const object = {
       }
       return method.bind(obj);
     }),
+
   "call-method": (obj: unknown, key: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
@@ -231,6 +240,7 @@ export const object = {
       }
       return method.apply(obj, args);
     }),
+
   "get-method-path": (obj: unknown, path: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
@@ -242,6 +252,7 @@ export const object = {
       const method = yield* getMethodFromObject(targetObj, methodKey, path);
       return method.bind(targetObj);
     }),
+
   "call-method-path": (obj: unknown, path: string, ...args: unknown[]) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {

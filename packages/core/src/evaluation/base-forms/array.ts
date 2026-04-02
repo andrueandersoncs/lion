@@ -6,6 +6,7 @@ import { evaluateDefine } from "@/evaluation/special-forms/define.ts";
 import { evaluateEval } from "@/evaluation/special-forms/eval.ts";
 import { evaluateFunctionCall } from "@/evaluation/special-forms/function.ts";
 import { evaluateLambda } from "@/evaluation/special-forms/lambda";
+import { evaluateMatch } from "@/evaluation/special-forms/match";
 import { evaluateQuote } from "@/evaluation/special-forms/quote.ts";
 import {
   BeginFormSchema,
@@ -14,6 +15,7 @@ import {
   EvalFormSchema,
   FunctionCallFormSchema,
   LambdaFormSchema,
+  MatchFormSchema,
   QuoteFormSchema,
 } from "@/schemas/evaluation.ts";
 import type { LionArrayExpressionType } from "@/schemas/lion-expression.ts";
@@ -28,6 +30,7 @@ export const evaluateArray = (expression: LionArrayExpressionType) =>
     Match.when(Schema.is(DefineFormSchema), (_) => evaluateDefine(_)),
     Match.when(Schema.is(LambdaFormSchema), (_) => evaluateLambda(_)),
     Match.when(Schema.is(CondFormSchema), (_) => evaluateCond(_)),
+    Match.when(Schema.is(MatchFormSchema), (_) => evaluateMatch(_)),
     Match.when(Schema.is(FunctionCallFormSchema), (_) =>
       evaluateFunctionCall(_)
     ),

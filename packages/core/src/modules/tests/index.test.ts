@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { namespaceEntries } from "../index.ts";
-import { math } from "../math.ts";
+import { module as number } from "../number.ts";
 
-describe("labeled functions", () => {
-  test("it labels functions", () => {
-    const labeledMath = namespaceEntries("math", math);
-    expect(labeledMath).toMatchObject({
-      "math/+": math["+"],
+describe("labeled modules", () => {
+  test("it labels modules", () => {
+    const labeledNumber = namespaceEntries("number", number);
+    expect(labeledNumber).toMatchObject({
+      "number/add": number.add,
     });
   });
 });

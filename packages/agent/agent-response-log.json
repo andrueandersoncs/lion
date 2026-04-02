@@ -1,0 +1,211 @@
+[
+  {
+    "stepNumber": 0,
+    "model": {
+      "provider": "fireworks.chat",
+      "modelId": "accounts/fireworks/routers/kimi-k2p5-turbo"
+    },
+    "content": [
+      {
+        "type": "text",
+        "text": "Hello! How can I help you today?"
+      },
+      {
+        "type": "reasoning",
+        "text": "The user said \"hihi\". This is a simple greeting. I should respond in a friendly manner while being ready to help with whatever they need next. They haven't asked me to do anything specific yet, so I'll just greet them back and ask how I can help."
+      }
+    ],
+    "finishReason": "stop",
+    "rawFinishReason": "stop",
+    "usage": {
+      "inputTokens": 88,
+      "inputTokenDetails": {
+        "noCacheTokens": 88,
+        "cacheReadTokens": 0
+      },
+      "outputTokens": 65,
+      "outputTokenDetails": {
+        "textTokens": 65,
+        "reasoningTokens": 0
+      },
+      "totalTokens": 153,
+      "raw": {
+        "prompt_tokens": 88,
+        "completion_tokens": 65,
+        "total_tokens": 153,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "reasoningTokens": 0,
+      "cachedInputTokens": 0
+    },
+    "warnings": [],
+    "request": {
+      "body": "{\"model\":\"accounts/fireworks/routers/kimi-k2p5-turbo\",\"messages\":[{\"role\":\"user\",\"content\":\"hihi\"}],\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"read-file\",\"description\":\"Read a file\",\"parameters\":{\"$schema\":\"http://json-schema.org/draft-07/schema#\",\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path string to the file to read. This is passed directly to the node.js fs.readFileSync function, so make sure it is formatted as expected.\"}},\"required\":[\"path\"],\"additionalProperties\":false}}}],\"tool_choice\":\"auto\"}"
+    },
+    "response": {
+      "id": "16d2bb70-0230-417a-9b62-6db25d59f9db",
+      "timestamp": "2026-04-02T09:09:52.000Z",
+      "modelId": "accounts/fireworks/models/kimi-k2p5",
+      "headers": {
+        "connection": "keep-alive",
+        "content-length": "1109",
+        "content-type": "application/json",
+        "date": "Thu, 02 Apr 2026 09:09:53 GMT",
+        "fireworks-cached-prompt-tokens": "0",
+        "fireworks-prompt-tokens": "88",
+        "fireworks-sampling-options": "{\"max_tokens\": 32768, \"temperature\": 1.0, \"top_k\": 0, \"top_p\": 0.95, \"min_p\": 0.0, \"typical_p\": 1.0, \"frequency_penalty\": 0.0, \"presence_penalty\": 0.0, \"repetition_penalty\": 1.0, \"mirostat_target\": null, \"mirostat_lr\": 0.1, \"cycle_multiplier\": 0.0, \"cycle_base\": 0.0, \"cycle_allowed_length\": 0, \"cycle_sequence_breakers\": []}",
+        "fireworks-server-processing-time": "0.786",
+        "fireworks-server-received-timestamp": "1775120992.4087744",
+        "fireworks-server-time-to-first-token": "0.348",
+        "fireworks-speculation-prompt-matched-tokens": "0",
+        "server": "istio-envoy",
+        "vary": "Origin",
+        "x-envoy-upstream-service-time": "787",
+        "x-ratelimit-limit-requests": "60",
+        "x-ratelimit-limit-tokens-generated": "12000",
+        "x-ratelimit-limit-tokens-prompt": "900000",
+        "x-ratelimit-over-limit": "no",
+        "x-ratelimit-remaining-requests": "59",
+        "x-ratelimit-remaining-tokens-generated": "12000",
+        "x-ratelimit-remaining-tokens-prompt": "899912",
+        "x-request-id": "16d2bb70-0230-417a-9b62-6db25d59f9db"
+      },
+      "body": {
+        "id": "16d2bb70-0230-417a-9b62-6db25d59f9db",
+        "object": "chat.completion",
+        "created": 1775120992,
+        "model": "accounts/fireworks/models/kimi-k2p5",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "Hello! How can I help you today?",
+              "reasoning_content": "The user said \"hihi\". This is a simple greeting. I should respond in a friendly manner while being ready to help with whatever they need next. They haven't asked me to do anything specific yet, so I'll just greet them back and ask how I can help."
+            },
+            "finish_reason": "stop",
+            "token_ids": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 88,
+          "total_tokens": 153,
+          "completion_tokens": 65,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "prompt_token_ids": [
+          163594,
+          20960,
+          35556,
+          677,
+          163601,
+          2,
+          30391,
+          382,
+          798,
+          8271,
+          198,
+          6370,
+          8271,
+          440,
+          408,
+          8193,
+          261,
+          1650,
+          198,
+          2217,
+          2032,
+          22735,
+          327,
+          9600,
+          25,
+          440,
+          220,
+          726,
+          12957,
+          2204,
+          308,
+          276,
+          1650,
+          308,
+          2032,
+          13,
+          1379,
+          387,
+          8952,
+          7609,
+          308,
+          276,
+          4456,
+          7237,
+          16059,
+          8827,
+          2435,
+          13264,
+          1527,
+          11,
+          971,
+          1628,
+          3287,
+          483,
+          387,
+          39860,
+          559,
+          5344,
+          341,
+          220,
+          3463,
+          25,
+          2204,
+          422,
+          220,
+          793,
+          74,
+          25,
+          2204,
+          10242,
+          3949,
+          198,
+          9483,
+          1318,
+          1178,
+          303,
+          896,
+          163586,
+          163587,
+          2482,
+          163601,
+          71,
+          157028,
+          163586,
+          163588,
+          69702,
+          163601,
+          163606
+        ]
+      },
+      "messages": [
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Hello! How can I help you today?"
+            },
+            {
+              "type": "reasoning",
+              "text": "The user said \"hihi\". This is a simple greeting. I should respond in a friendly manner while being ready to help with whatever they need next. They haven't asked me to do anything specific yet, so I'll just greet them back and ask how I can help."
+            }
+          ]
+        }
+      ]
+    },
+    "providerMetadata": {
+      "fireworks": {}
+    }
+  }
+]

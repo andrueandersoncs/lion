@@ -30,7 +30,15 @@ export const BeginFormSchema = Schema.Tuple(
   LionExpressionSchema
 );
 
-const DISALLOWED_IDENTIFIERS = ["begin", "define", "eval", "quote"];
+const DISALLOWED_IDENTIFIERS = [
+  "begin",
+  "define",
+  "eval",
+  "quote",
+  "lambda",
+  "cond",
+  "match",
+];
 
 export const ValidIdentifierSchema = Schema.String.pipe(
   Schema.filter((s) => !DISALLOWED_IDENTIFIERS.includes(s)),
@@ -73,4 +81,16 @@ export const CondFormWithElseSchema = Schema.Tuple(
 export const CondFormSchema = Schema.Union(
   CondFormWithoutElseSchema,
   CondFormWithElseSchema
+);
+
+// ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
+export const MatchPatternSchema = Schema.Tuple(
+  LionExpressionSchema,
+  LionExpressionSchema
+);
+
+export const MatchFormSchema = Schema.Tuple(
+  [Schema.Literal("match"), LionExpressionSchema, MatchPatternSchema],
+  MatchPatternSchema,
+  LionExpressionSchema
 );

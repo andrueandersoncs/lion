@@ -9,9 +9,9 @@ describe("function call evaluation", () => {
     [Schema.Number, Schema.Number],
     ([a, b]) =>
       Effect.gen(function* () {
-        expect(yield* run(["math/+", a, b], stdlib)).toBe(a + b);
-        expect(yield* run(["math/-", a, b], stdlib)).toBe(a - b);
-        expect(yield* run(["math/*", a, b], stdlib)).toBe(a * b);
+        expect(yield* run(["number/add", a, b], stdlib)).toBe(a + b);
+        expect(yield* run(["number/subtract", a, b], stdlib)).toBe(a - b);
+        expect(yield* run(["number/multiply", a, b], stdlib)).toBe(a * b);
       })
   );
 });

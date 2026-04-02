@@ -1,12 +1,14 @@
 import { Effect } from "effect";
 
-export const func = {
-  identity: (x: unknown) => Effect.succeed(x),
+export const module = {
+  symbol: Symbol("func"),
+
   bind: (
     fn: (...args: unknown[]) => unknown,
     obj: unknown,
     ...args: unknown[]
   ) => Effect.succeed(fn.bind(obj, ...args)),
+
   callback: (fn: unknown) =>
     Effect.succeed((...args: unknown[]) => {
       if (typeof fn !== "function") {

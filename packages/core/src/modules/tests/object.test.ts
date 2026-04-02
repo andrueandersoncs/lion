@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { object } from "../object.ts";
+import { module as object } from "../object.ts";
 
 describe("object", () => {
   describe("get", () => {

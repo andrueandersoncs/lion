@@ -1,12 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { func } from "../func.ts";
-
-describe("func/identity", () => {
-  it("should return the identity of a value", () => {
-    expect(Effect.runSync(func.identity(1))).toEqual(1);
-  });
-});
+import { module as func } from "../func.ts";
 
 describe("func/bind", () => {
   it("should bind a function to an object", () => {
