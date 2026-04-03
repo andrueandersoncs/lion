@@ -1,5 +1,5 @@
 import { Effect, flow, Schema, String as Str } from "effect";
-import { decode } from "@/modules/shared";
+import { decode } from "@/modules/lib/shared";
 
 export const module = {
   symbol: Symbol("string"),

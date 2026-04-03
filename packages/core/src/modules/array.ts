@@ -1,5 +1,5 @@
 import { Array as Arr, Effect, flow, Option, pipe, Schema } from "effect";
-import { decode } from "@/modules/shared";
+import { decode } from "@/modules/lib/shared";
 
 export const module = {
   symbol: Symbol("array"),
