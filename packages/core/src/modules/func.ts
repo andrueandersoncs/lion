@@ -25,4 +25,13 @@ export const module = {
 
       return result;
     }),
+
+  partial: (fn: unknown, ...args: unknown[]) =>
+    Effect.succeed((...moreArgs: unknown[]) => {
+      if (typeof fn !== "function") {
+        return fn;
+      }
+
+      return fn(...args, ...moreArgs);
+    }),
 };

@@ -189,11 +189,9 @@
                           "match",
                           "content",
                           [
-                            [
-                              "lambda",
-                              ["c"],
-                              ["string/equals?", [".", "c", "type"], "text"]
-                            ],
+                            {
+                              "type": ["func/partial", "string/equals?", "text"]
+                            },
                             [
                               "lambda",
                               ["c"],
@@ -205,15 +203,13 @@
                             ]
                           ],
                           [
-                            [
-                              "lambda",
-                              ["c"],
-                              [
+                            {
+                              "type": [
+                                "func/partial",
                                 "string/equals?",
-                                [".", "c", "type"],
                                 "reasoning"
                               ]
-                            ],
+                            },
                             [
                               "lambda",
                               ["c"],
@@ -224,17 +220,14 @@
                               ]
                             ]
                           ],
-
                           [
-                            [
-                              "lambda",
-                              ["c"],
-                              [
+                            {
+                              "type": [
+                                "func/partial",
                                 "string/equals?",
-                                [".", "c", "type"],
                                 "tool-call"
                               ]
-                            ],
+                            },
                             [
                               "lambda",
                               ["c"],
@@ -250,6 +243,24 @@
                                   null,
                                   2
                                 ]
+                              ]
+                            ]
+                          ],
+                          [
+                            {
+                              "type": [
+                                "func/partial",
+                                "string/equals?",
+                                "tool-result"
+                              ]
+                            },
+                            [
+                              "lambda",
+                              ["c"],
+                              [
+                                "add-message-box",
+                                "Tool Result",
+                                [".", "c", "output"]
                               ]
                             ]
                           ],

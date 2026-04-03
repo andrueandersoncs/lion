@@ -86,4 +86,58 @@ describe("match special form", () => {
         expect(result).toBe(4);
       })
   );
+  it.effect("should accept structural predicates as pattern matchers", () =>
+    Effect.gen(function* () {
+      const expression = [
+        "match",
+        { a: 1, b: 2 },
+        [
+          {
+            a: "value/number?",
+          },
+          "value/identity",
+        ],
+        ["lambda", ["x"], 1],
+      ];
+      const result = yield* run(expression, stdlib);
+      expect(result).toEqual({ a: 1, b: 2 });
+    })
+  );
+  it.effect("should only match structural predicates if all substructures match", () =>
+    Effect.gen(function* () {
+      const expression = [
+        "match",
+        { a: 1, b: 2 },
+        [
+          {
+            a: "value/number?",
+            b: "value/boolean?",
+          },
+          "value/identity",
+        ],
+        ["lambda", ["x"], 1],
+      ];
+      const result = yield* run(expression, stdlib);
+      expect(result).toEqual(1);
+    })
+  );
+  it.effect("should match nested structural predicates", () =>
+    Effect.gen(function* () {
+      const expression = [
+        "match",
+        { a: { c: 3 }, b: 2 },
+        [
+          {
+            a: {
+              c: "value/number?",
+            },
+          },
+          "value/identity",
+        ],
+        ["lambda", ["x"], 1],
+      ];
+      const result = yield* run(expression, stdlib);
+      expect(result).toEqual({ a: { c: 3 }, b: 2 });
+    })
+  );
 });
