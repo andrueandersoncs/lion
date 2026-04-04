@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "debug-mode": {
+      "source": "andrueandersoncs/debug-skill",
+      "sourceType": "github",
+      "computedHash": "cbb6976d3f1c68fcb889906edfc4c4bd443f32a89a29b6e73f25697f73be0567"
+    }
+  }
+}

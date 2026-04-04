@@ -1,0 +1,23 @@
+{
+  "name": "debug-skill",
+  "module": "scripts/cli.js",
+  "type": "module",
+  "author": "Andrue Anderson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreandersoncs/debug-skill"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@effect/cli": "^0.73.2",
+    "@effect/platform": "^0.94.5",
+    "@effect/platform-bun": "^0.87.1",
+    "effect": "^3.19.19"
+  }
+}

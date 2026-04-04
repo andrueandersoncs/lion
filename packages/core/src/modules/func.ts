@@ -1,4 +1,5 @@
 import { Effect } from "effect";
+import { getService, LionEnvironmentService } from "@/services/evaluation";
 
 export const module = {
   symbol: Symbol("func"),
@@ -10,20 +11,25 @@ export const module = {
   ) => Effect.succeed(fn.bind(obj, ...args)),
 
   callback: (fn: unknown) =>
-    Effect.succeed((...args: unknown[]) => {
-      if (typeof fn !== "function") {
-        return fn;
-      }
+    Effect.gen(function* () {
+      const environmentRef = yield* getService(LionEnvironmentService);
+      return (...args: unknown[]) => {
+        if (typeof fn !== "function") {
+          return fn;
+        }
 
-      const result = fn(...args);
+        const result = fn(...args);
 
-      if (Effect.isEffect(result)) {
-        return Effect.runPromise(
-          result as Effect.Effect<unknown, unknown, never>
-        ).catch((e) => console.error(e));
-      }
+        if (Effect.isEffect(result)) {
+          return Effect.runPromise(
+            result.pipe(
+              Effect.provideService(LionEnvironmentService, environmentRef)
+            ) as Effect.Effect<unknown, unknown, never>
+          ).catch((e) => console.error(e));
+        }
 
-      return result;
+        return result;
+      };
     }),
 
   partial: (fn: unknown, ...args: unknown[]) =>

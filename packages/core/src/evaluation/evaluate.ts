@@ -2,6 +2,7 @@ import { Effect, Match, pipe, Schema } from "effect";
 import { evaluateArray } from "@/evaluation/base-forms/array";
 import { evaluatePrimitive } from "@/evaluation/base-forms/primitive";
 import { evaluateRecord } from "@/evaluation/base-forms/record";
+import { makeEnvironment } from "@/evaluation/environment";
 import { JsonPrimitiveSchema } from "@/schemas/json-primitive";
 import {
   LionArrayExpressionSchema,
@@ -33,6 +34,6 @@ export const run = (
     Effect.flatMap(evaluate),
     Effect.provideServiceEffect(
       LionEnvironmentService,
-      makeEnvironmentRef(environment)
+      makeEnvironmentRef(makeEnvironment(environment))
     )
   );

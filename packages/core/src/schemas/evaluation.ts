@@ -38,6 +38,7 @@ const DISALLOWED_IDENTIFIERS = [
   "lambda",
   "cond",
   "match",
+  "__proto__",
 ];
 
 export const ValidIdentifierSchema = Schema.String.pipe(

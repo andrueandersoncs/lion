@@ -70,4 +70,24 @@ describe("lambda special form", () => {
         }
       })
   );
+  it.effect("should capture the global environment in the lambda", () =>
+    Effect.gen(function* () {
+      const expression = ["lambda", [], "x"];
+      const lambda = yield* run(expression, { x: 1 });
+      if (typeof lambda === "function") {
+        const result = yield* lambda() as Effect.Effect<unknown>;
+        expect(result).toBe(1);
+      }
+    })
+  );
+  it.effect("should capture the scope(s) above it in the lambda", () =>
+    Effect.gen(function* () {
+      const expression = ["lambda", ["x"], [["lambda", [], "x"]]];
+      const lambda = yield* run(expression, {});
+      if (typeof lambda === "function") {
+        const result = yield* lambda(1) as Effect.Effect<unknown>;
+        expect(result).toBe(1);
+      }
+    })
+  );
 });

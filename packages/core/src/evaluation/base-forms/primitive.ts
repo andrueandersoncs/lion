@@ -1,12 +1,5 @@
-import {
-  Effect,
-  Match,
-  Option,
-  pipe,
-  Record,
-  Ref,
-  String as Str,
-} from "effect";
+import { Effect, Match, Option, pipe, Ref, String as Str } from "effect";
+import { getBinding } from "@/evaluation/environment";
 import type { JsonPrimitiveType } from "@/schemas/json-primitive";
 import { getService, LionEnvironmentService } from "@/services/evaluation.ts";
 
@@ -21,6 +14,6 @@ export const evaluateReference = (name: string) =>
   pipe(
     getService(LionEnvironmentService),
     Effect.flatMap(Ref.get),
-    Effect.map(Record.get(name)),
+    Effect.map((environment) => getBinding(environment, name)),
     Effect.map(Option.getOrElse(() => name))
   );
