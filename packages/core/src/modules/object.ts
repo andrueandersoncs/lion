@@ -47,6 +47,10 @@ class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>(
   "NotAnArrayError"
 )("NotAnArrayError", { actual: Schema.Unknown }) {}
 
+class InvalidPathError extends Schema.TaggedError<InvalidPathError>(
+  "InvalidPathError"
+)("InvalidPathError", { path: Schema.Unknown }) {}
+
 const NUMERIC_KEY_REGEX = /^\d+$/;
 
 const isNumericKey = (key: string): boolean => NUMERIC_KEY_REGEX.test(key);
@@ -157,6 +161,9 @@ export const module = {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
       }
+      if (typeof path !== "string") {
+        return yield* new InvalidPathError({ path });
+      }
       const keys = path.split(".");
       let current: unknown = obj;
       for (const key of keys) {
@@ -226,11 +233,9 @@ export const module = {
       return method.bind(obj);
     }),
 
+  // FIXME: technically any value can have a method through its prototype chain
   "call-method": (obj: unknown, key: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {
-      if (typeof obj !== "object" || obj === null) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
       const method = (obj as Record<string, unknown>)[key as string];
       if (typeof method !== "function") {
         return yield* new NotAFunctionError({
@@ -246,6 +251,9 @@ export const module = {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
       }
+      if (typeof path !== "string") {
+        return yield* new InvalidPathError({ path });
+      }
       const keys = path.split(".");
       const targetObj = yield* traversePath(obj, path, keys);
       const methodKey = keys.at(-1) ?? "";
@@ -257,6 +265,9 @@ export const module = {
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
+      }
+      if (typeof path !== "string") {
+        return yield* new InvalidPathError({ path });
       }
       const keys = (path as string).split(".");
       const targetObj = yield* traversePath(obj, path as string, keys);

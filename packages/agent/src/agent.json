@@ -138,6 +138,110 @@
   ],
   [
     "define",
+    "edit-file-tool",
+    [
+      "()",
+      "AI",
+      "tool",
+      {
+        "description": "Edit a file by replacing exactly one matching string",
+        "inputSchema": [
+          "()",
+          "Zod",
+          "object",
+          {
+            "path": [
+              "()",
+              ["()", "Zod", "string"],
+              "describe",
+              "Path string to the file to edit. This is passed directly to the node.js fs.readFileSync and fs.writeFileSync functions, so make sure it is formatted as expected."
+            ],
+            "old-string": [
+              "()",
+              ["()", "Zod", "string"],
+              "describe",
+              "The exact string to replace. It must match exactly one occurrence in the file."
+            ],
+            "new-string": [
+              "()",
+              ["()", "Zod", "string"],
+              "describe",
+              "The replacement string to write in place of old-string."
+            ]
+          }
+        ],
+        "execute": [
+          "=>",
+          [
+            "lambda",
+            ["input", "options"],
+            [
+              "begin",
+              [
+                "define",
+                "contents",
+                ["()", "fs", "readFileSync", [".", "input", "path"], "utf8"]
+              ],
+              ["console/log", { "contents": "contents" }],
+              [
+                "define",
+                "parts",
+                ["()", "contents", "split", [".", "input", "old-string"]]
+              ],
+              ["console/log", { "parts": "parts" }],
+              [
+                "define",
+                "match-count",
+                ["number/subtract", [".", "parts", "length"], 1]
+              ],
+              ["console/log", { "match-count": "match-count" }],
+              [
+                "cond",
+                [
+                  ["boolean/not", ["number/equals?", "match-count", 1]],
+                  [
+                    "new",
+                    "Error",
+                    [
+                      "string/concat",
+                      "Expected exactly one match for old-string in file, found ",
+                      "match-count"
+                    ]
+                  ]
+                ],
+                [
+                  "else",
+                  [
+                    "begin",
+                    [
+                      "define",
+                      "updated-contents",
+                      [
+                        "string/concat",
+                        [".", "parts", "0"],
+                        [".", "input", "new-string"],
+                        [".", "parts", "1"]
+                      ]
+                    ],
+                    [
+                      "()",
+                      "fs",
+                      "writeFileSync",
+                      [".", "input", "path"],
+                      "updated-contents"
+                    ],
+                    "updated-contents"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      }
+    ]
+  ],
+  [
+    "define",
     "add-message-box",
     [
       "lambda",
@@ -167,8 +271,8 @@
       ]
     ]
   ],
-  ["define", "messages", ["array/make"]],
-  ["define", "contents", ["array/make"]],
+  ["define", "messages", ["[]"]],
+  ["define", "contents", ["[]"]],
   [
     "define",
     "on-user-submit",
@@ -377,7 +481,8 @@
               "stopWhen": ["()", "AI", "stepCountIs", 8],
               "tools": {
                 "read-file": "file-read-tool",
-                "read-directory": "read-directory-tool"
+                "read-directory": "read-directory-tool",
+                "edit-file": "edit-file-tool"
               }
             }
           ],

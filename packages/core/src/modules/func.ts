@@ -10,6 +10,12 @@ export const module = {
     ...args: unknown[]
   ) => Effect.succeed(fn.bind(obj, ...args)),
 
+  apply: (
+    fn: (...args: unknown[]) => unknown,
+    obj: unknown,
+    ...args: unknown[]
+  ) => Effect.succeed(fn.apply(obj, args)),
+
   callback: (fn: unknown) =>
     pipe(
       Effect.context<never>(),
@@ -39,7 +45,10 @@ export const module = {
 
           return Effect.runPromise(
             callbackEffect as Effect.Effect<unknown, unknown, never>
-          );
+          ).catch((e) => {
+            console.error(e);
+            throw e;
+          });
         }
 
         return result;

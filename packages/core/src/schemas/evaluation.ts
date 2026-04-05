@@ -58,6 +58,7 @@ export const LambdaFormSchema = Schema.Tuple(
   LionExpressionSchema
 );
 
+// ["cond", [<predicate>, <result>], ..., ["else", <result>]]
 export const CondCaseSchema = Schema.Tuple(
   LionExpressionSchema,
   LionExpressionSchema
