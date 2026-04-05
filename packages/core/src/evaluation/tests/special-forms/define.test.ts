@@ -50,6 +50,20 @@ describe("define special form", () => {
       })
   );
   it.effect(
+    "should overwrite a global binding when called from within a lambda",
+    () =>
+      Effect.gen(function* () {
+        const program = [
+          "begin",
+          ["define", "x", 1],
+          [["lambda", [], ["define", "x", 2]]],
+          "x",
+        ];
+        const result = yield* run(program, stdlib);
+        expect(result).toBe(2);
+      })
+  );
+  it.effect(
     "should overwrite a global binding when called from within a callback",
     () =>
       Effect.gen(function* () {

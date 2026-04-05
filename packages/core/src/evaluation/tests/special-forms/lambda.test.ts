@@ -80,13 +80,33 @@ describe("lambda special form", () => {
       }
     })
   );
+  it.effect("should read the latest global binding when invoked", () =>
+    Effect.gen(function* () {
+      const expression = [
+        "begin",
+        ["define", "x", 1],
+        ["define", "f", ["lambda", [], "x"]],
+        ["define", "x", 2],
+        ["f"],
+      ];
+      const result = yield* run(expression, {});
+      expect(result).toBe(2);
+    })
+  );
   it.effect("should capture the scope(s) above it in the lambda", () =>
     Effect.gen(function* () {
-      const expression = ["lambda", ["x"], [["lambda", [], "x"]]];
+      const expression = [
+        "lambda",
+        ["x"],
+        [
+          ["lambda", ["y"], [["lambda", ["z"], { x: "x", y: "y", z: "z" }], 3]],
+          2,
+        ],
+      ];
       const lambda = yield* run(expression, {});
       if (typeof lambda === "function") {
         const result = yield* lambda(1) as Effect.Effect<unknown>;
-        expect(result).toBe(1);
+        expect(result).toEqual({ x: 1, y: 2, z: 3 });
       }
     })
   );

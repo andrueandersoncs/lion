@@ -14,11 +14,15 @@ describe("array", () => {
   it("should return the length of an array", () => {
     expect(Effect.runSync(array.length([12, 34, 56]))).toEqual(3);
   });
-  it("should return the concat of twon arrays", () => {
-    expect(Effect.runSync(array.concat([12, 34, 56], [78, 90]))).toEqual([
-      12, 34, 56, 78, 90,
-    ]);
-  });
+  it.effect("should return the concat of twon arrays", () =>
+    Effect.gen(function* () {
+      const result = yield* run(
+        ["array/concat", ["array/make", 12, 34, 56], ["array/make", 78, 90]],
+        stdlib
+      );
+      expect(result).toEqual([12, 34, 56, 78, 90]);
+    })
+  );
   describe("map", () => {
     it("should map an array", () => {
       expect(

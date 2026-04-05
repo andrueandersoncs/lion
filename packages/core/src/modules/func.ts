@@ -1,5 +1,5 @@
-import { Effect } from "effect";
-import { getService, LionEnvironmentService } from "@/services/evaluation";
+import { Context, Effect, Match, Option, pipe } from "effect";
+import { LionEnvironmentService } from "@/services/evaluation";
 
 export const module = {
   symbol: Symbol("func"),
@@ -11,9 +11,12 @@ export const module = {
   ) => Effect.succeed(fn.bind(obj, ...args)),
 
   callback: (fn: unknown) =>
-    Effect.gen(function* () {
-      const environmentRef = yield* getService(LionEnvironmentService);
-      return (...args: unknown[]) => {
+    pipe(
+      Effect.context<never>(),
+      Effect.map((context) =>
+        Context.getOption(context, LionEnvironmentService)
+      ),
+      Effect.map((environmentRef) => (...args: unknown[]) => {
         if (typeof fn !== "function") {
           return fn;
         }
@@ -21,16 +24,27 @@ export const module = {
         const result = fn(...args);
 
         if (Effect.isEffect(result)) {
+          const callbackEffect = pipe(
+            Match.value(environmentRef),
+            Match.when(
+              Option.isSome,
+              ({ value }) =>
+                result.pipe(
+                  Effect.provideService(LionEnvironmentService, value)
+                ) as Effect.Effect<unknown, unknown, never>
+            ),
+            Match.when(Option.isNone, () => result),
+            Match.exhaustive
+          );
+
           return Effect.runPromise(
-            result.pipe(
-              Effect.provideService(LionEnvironmentService, environmentRef)
-            ) as Effect.Effect<unknown, unknown, never>
+            callbackEffect as Effect.Effect<unknown, unknown, never>
           ).catch((e) => console.error(e));
         }
 
         return result;
-      };
-    }),
+      })
+    ),
 
   partial: (fn: unknown, ...args: unknown[]) =>
     Effect.succeed((...moreArgs: unknown[]) => {

@@ -74,3 +74,34 @@ export const setGlobalBinding = (
     ),
     Match.exhaustive
   );
+
+export const getGlobalEnvironment = (
+  environment: Environment
+): ToplevelEnvironment =>
+  pipe(
+    Match.value(environment),
+    Match.when(Schema.is(InnerEnvironmentSchema), ({ parent }) =>
+      getGlobalEnvironment(parent)
+    ),
+    Match.when(
+      Schema.is(ToplevelEnvironmentSchema),
+      (environment) => environment
+    ),
+    Match.exhaustive
+  );
+
+export const replaceGlobalEnvironment = (
+  environment: Environment,
+  globalEnvironment: ToplevelEnvironment
+): Environment =>
+  pipe(
+    Match.value(environment),
+    Match.when(Schema.is(InnerEnvironmentSchema), ({ bindings, parent }) =>
+      makeEnvironment(
+        bindings,
+        replaceGlobalEnvironment(parent, globalEnvironment)
+      )
+    ),
+    Match.when(Schema.is(ToplevelEnvironmentSchema), () => globalEnvironment),
+    Match.exhaustive
+  );
