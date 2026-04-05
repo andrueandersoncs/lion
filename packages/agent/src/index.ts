@@ -32,4 +32,4 @@ const node = Effect.runSync(
 
 renderer.root.add(node);
 
-renderer.console.toggle();
+// renderer.console.toggle();

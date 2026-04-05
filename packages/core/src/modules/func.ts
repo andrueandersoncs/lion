@@ -39,7 +39,7 @@ export const module = {
 
           return Effect.runPromise(
             callbackEffect as Effect.Effect<unknown, unknown, never>
-          ).catch((e) => console.error(e));
+          );
         }
 
         return result;

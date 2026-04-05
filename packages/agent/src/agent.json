@@ -105,6 +105,39 @@
   ],
   [
     "define",
+    "read-directory-tool",
+    [
+      "()",
+      "AI",
+      "tool",
+      {
+        "description": "Read a directory",
+        "inputSchema": [
+          "()",
+          "Zod",
+          "object",
+          {
+            "path": [
+              "()",
+              ["()", "Zod", "string"],
+              "describe",
+              "Path string to the directory to read. This is passed directly to the node.js fs.readdirSync function, so make sure it is formatted as expected."
+            ]
+          }
+        ],
+        "execute": [
+          "=>",
+          [
+            "lambda",
+            ["input", "options"],
+            ["()", "fs", "readdirSync", [".", "input", "path"]]
+          ]
+        ]
+      }
+    ]
+  ],
+  [
+    "define",
     "add-message-box",
     [
       "lambda",
@@ -187,14 +220,6 @@
                     "messages",
                     [".", "response", "response.messages"]
                   ]
-                ],
-                [
-                  "()",
-                  "fs",
-                  "writeFileSync",
-                  "agent-response-log.json",
-                  ["object/json-stringify", "response", null, 2],
-                  "utf8"
                 ],
                 [
                   "array/map",
@@ -283,7 +308,42 @@
                               [
                                 "add-message-box",
                                 "Tool Result",
-                                [".", "c", "output"]
+                                [
+                                  "match",
+                                  [".", "c", "output"],
+                                  ["value/string?", "value/identity"],
+                                  [
+                                    "value/array?",
+                                    [
+                                      "lambda",
+                                      ["output"],
+                                      [
+                                        "object/json-stringify",
+                                        "output",
+                                        null,
+                                        2
+                                      ]
+                                    ]
+                                  ],
+                                  [
+                                    "value/object?",
+                                    [
+                                      "lambda",
+                                      ["output"],
+                                      [
+                                        "object/json-stringify",
+                                        "output",
+                                        null,
+                                        2
+                                      ]
+                                    ]
+                                  ],
+                                  [
+                                    "lambda",
+                                    ["output"],
+                                    ["object/json-stringify", "output", null, 2]
+                                  ]
+                                ]
                               ]
                             ]
                           ],
@@ -305,7 +365,6 @@
             ]
           ]
         ],
-        ["console/log", "messages"],
         [
           "()",
           [
@@ -315,7 +374,11 @@
             {
               "model": "model",
               "messages": "messages",
-              "tools": { "read-file": "file-read-tool" }
+              "stopWhen": ["()", "AI", "stepCountIs", 8],
+              "tools": {
+                "read-file": "file-read-tool",
+                "read-directory": "read-directory-tool"
+              }
             }
           ],
           "then",
