@@ -1,9 +1,10 @@
-import { Effect, Option, Record, Ref, Schema } from "effect";
+import { Effect, Match, Option, pipe, Record, Ref, Schema } from "effect";
 import {
   type Environment,
   type InnerEnvironment,
   InnerEnvironmentSchema,
   type ToplevelEnvironment,
+  ToplevelEnvironmentSchema,
 } from "@/schemas/environment";
 
 export function makeEnvironment(
@@ -32,19 +33,25 @@ export const getBinding = (
   environment: Environment,
   name: string
 ): Effect.Effect<Option.Option<unknown>> =>
-  Effect.gen(function* () {
-    const bindings = yield* Ref.get(environment.bindingsRef);
-    const binding = Record.get(bindings, name);
-
-    if (
-      Option.isSome(binding) ||
-      !Schema.is(InnerEnvironmentSchema)(environment)
-    ) {
-      return binding;
-    }
-
-    return yield* getBinding(environment.parent, name);
-  });
+  pipe(
+    Match.value(environment),
+    Match.when(Schema.is(InnerEnvironmentSchema), ({ bindingsRef, parent }) =>
+      pipe(
+        Ref.get(bindingsRef),
+        Effect.map(Record.get(name)),
+        Effect.flatMap(
+          Option.match({
+            onSome: (binding) => Effect.succeed(Option.some(binding)),
+            onNone: () => getBinding(parent, name),
+          })
+        )
+      )
+    ),
+    Match.when(Schema.is(ToplevelEnvironmentSchema), ({ bindingsRef }) =>
+      pipe(Ref.get(bindingsRef), Effect.map(Record.get(name)))
+    ),
+    Match.exhaustive
+  );
 
 export const setLocalBinding = (
   environment: Environment,
