@@ -177,6 +177,15 @@
               [
                 "begin",
                 [
+                  "define",
+                  "messages",
+                  [
+                    "array/concat",
+                    "messages",
+                    [".", "response", "response.messages"]
+                  ]
+                ],
+                [
                   "()",
                   "fs",
                   "writeFileSync",
