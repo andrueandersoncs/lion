@@ -1,20 +1,25 @@
-import { Schema } from "effect";
+import { Ref, Schema } from "effect";
 
-export const ToplevelEnvironmentSchema = Schema.Struct({
-  bindings: Schema.Record({
-    key: Schema.String,
-    value: Schema.Unknown,
-  }),
-});
+type BindingsRef = Ref.Ref<Record<string, unknown>>;
 
-export type ToplevelEnvironment = typeof ToplevelEnvironmentSchema.Type;
+const isBindingsRef = (input: unknown): input is BindingsRef =>
+  typeof input === "object" && input !== null && Ref.RefTypeId in input;
+
+const BindingsSchema: Schema.Schema<BindingsRef> =
+  Schema.declare<BindingsRef>(isBindingsRef);
 
 export interface InnerEnvironment {
-  readonly bindings: Record<string, unknown>;
+  readonly bindingsRef: BindingsRef;
   readonly parent: Environment;
 }
 
-export type Environment = ToplevelEnvironment | InnerEnvironment;
+export type Environment = typeof EnvironmentSchema.Type;
+
+export type ToplevelEnvironment = typeof ToplevelEnvironmentSchema.Type;
+
+export const ToplevelEnvironmentSchema = Schema.Struct({
+  bindingsRef: BindingsSchema,
+});
 
 export const EnvironmentSchema = Schema.Union(
   ToplevelEnvironmentSchema,
@@ -22,9 +27,6 @@ export const EnvironmentSchema = Schema.Union(
 );
 
 export const InnerEnvironmentSchema = Schema.Struct({
-  bindings: Schema.Record({
-    key: Schema.String,
-    value: Schema.Unknown,
-  }),
+  bindingsRef: BindingsSchema,
   parent: EnvironmentSchema,
 });

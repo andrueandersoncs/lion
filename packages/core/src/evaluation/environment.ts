@@ -1,107 +1,75 @@
-import { Match, Option, pipe, Record, Schema } from "effect";
+import { Effect, Option, Record, Ref, Schema } from "effect";
 import {
   type Environment,
   type InnerEnvironment,
   InnerEnvironmentSchema,
   type ToplevelEnvironment,
-  ToplevelEnvironmentSchema,
 } from "@/schemas/environment";
 
 export function makeEnvironment(
   bindings: Record<string, unknown>
-): typeof ToplevelEnvironmentSchema.Type;
+): Effect.Effect<ToplevelEnvironment>;
 
 export function makeEnvironment(
   bindings: Record<string, unknown>,
   parent: Environment
-): typeof InnerEnvironmentSchema.Type;
+): Effect.Effect<InnerEnvironment>;
 
 export function makeEnvironment(
   bindings: Record<string, unknown>,
   parent?: Environment
 ) {
-  return typeof parent === "undefined"
-    ? ({ bindings } as ToplevelEnvironment)
-    : ({ bindings, parent } as InnerEnvironment);
+  return Ref.make(bindings).pipe(
+    Effect.map((bindingsRef) =>
+      typeof parent === "undefined"
+        ? ({ bindingsRef } as ToplevelEnvironment)
+        : ({ bindingsRef, parent } as InnerEnvironment)
+    )
+  );
 }
 
 export const getBinding = (
   environment: Environment,
   name: string
-): Option.Option<unknown> =>
-  pipe(
-    Record.get(environment.bindings, name),
-    Option.orElse(() =>
-      pipe(
-        Match.value(environment),
-        Match.when(Schema.is(InnerEnvironmentSchema), ({ parent }) =>
-          getBinding(parent, name)
-        ),
-        Match.when(Schema.is(ToplevelEnvironmentSchema), () => Option.none()),
-        Match.exhaustive
-      )
-    )
-  );
+): Effect.Effect<Option.Option<unknown>> =>
+  Effect.gen(function* () {
+    const bindings = yield* Ref.get(environment.bindingsRef);
+    const binding = Record.get(bindings, name);
+
+    if (
+      Option.isSome(binding) ||
+      !Schema.is(InnerEnvironmentSchema)(environment)
+    ) {
+      return binding;
+    }
+
+    return yield* getBinding(environment.parent, name);
+  });
 
 export const setLocalBinding = (
   environment: Environment,
   name: string,
   value: unknown
-): Environment =>
-  pipe(
-    Match.value(environment),
-    Match.when(Schema.is(InnerEnvironmentSchema), ({ bindings, parent }) =>
-      makeEnvironment({ ...bindings, [name]: value }, parent)
-    ),
-    Match.when(Schema.is(ToplevelEnvironmentSchema), ({ bindings }) =>
-      makeEnvironment({ ...bindings, [name]: value })
-    ),
-    Match.exhaustive
-  );
+): Effect.Effect<Environment> =>
+  Ref.update(environment.bindingsRef, (bindings) => ({
+    ...bindings,
+    [name]: value,
+  })).pipe(Effect.as(environment));
 
 export const setGlobalBinding = (
   environment: Environment,
   name: string,
   value: unknown
-): Environment =>
-  pipe(
-    Match.value(environment),
-    Match.when(Schema.is(InnerEnvironmentSchema), ({ bindings, parent }) =>
-      makeEnvironment(bindings, setGlobalBinding(parent, name, value))
-    ),
-    Match.when(Schema.is(ToplevelEnvironmentSchema), ({ bindings }) =>
-      makeEnvironment({ ...bindings, [name]: value })
-    ),
-    Match.exhaustive
-  );
+): Effect.Effect<Environment> =>
+  Effect.gen(function* () {
+    if (Schema.is(InnerEnvironmentSchema)(environment)) {
+      yield* setGlobalBinding(environment.parent, name, value);
+      return environment;
+    }
 
-export const getGlobalEnvironment = (
-  environment: Environment
-): ToplevelEnvironment =>
-  pipe(
-    Match.value(environment),
-    Match.when(Schema.is(InnerEnvironmentSchema), ({ parent }) =>
-      getGlobalEnvironment(parent)
-    ),
-    Match.when(
-      Schema.is(ToplevelEnvironmentSchema),
-      (environment) => environment
-    ),
-    Match.exhaustive
-  );
-
-export const replaceGlobalEnvironment = (
-  environment: Environment,
-  globalEnvironment: ToplevelEnvironment
-): Environment =>
-  pipe(
-    Match.value(environment),
-    Match.when(Schema.is(InnerEnvironmentSchema), ({ bindings, parent }) =>
-      makeEnvironment(
-        bindings,
-        replaceGlobalEnvironment(parent, globalEnvironment)
-      )
-    ),
-    Match.when(Schema.is(ToplevelEnvironmentSchema), () => globalEnvironment),
-    Match.exhaustive
-  );
+    yield* Ref.update(environment.bindingsRef, (bindings) => ({
+      ...bindings,
+      [name]: value,
+    }));
+    return environment;
+  });

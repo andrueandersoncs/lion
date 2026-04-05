@@ -10,10 +10,7 @@ import {
   type LionExpressionType,
   LionRecordExpressionSchema,
 } from "@/schemas/lion-expression";
-import {
-  LionEnvironmentService,
-  makeEnvironmentRef,
-} from "@/services/evaluation";
+import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
 export const evaluate = (expression: LionExpressionType): EvaluateResult =>
@@ -34,6 +31,6 @@ export const run = (
     Effect.flatMap(evaluate),
     Effect.provideServiceEffect(
       LionEnvironmentService,
-      makeEnvironmentRef(makeEnvironment(environment))
+      makeEnvironment(environment)
     )
   );

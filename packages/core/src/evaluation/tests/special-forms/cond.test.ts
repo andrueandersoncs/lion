@@ -1,11 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Ref } from "effect";
+import { Effect, Option } from "effect";
 import { getBinding, makeEnvironment } from "@/evaluation/environment";
 import { evaluate, run } from "@/evaluation/evaluate";
-import {
-  LionEnvironmentService,
-  makeEnvironmentRef,
-} from "@/services/evaluation";
+import { LionEnvironmentService } from "@/services/evaluation";
 
 describe("cond special form", () => {
   it.effect(
@@ -28,13 +25,13 @@ describe("cond special form", () => {
           [true, "true"],
           [["define", "x", 1], "huh?"],
         ];
-        const environmentRef = yield* makeEnvironmentRef(makeEnvironment({}));
+        const environment = yield* makeEnvironment({});
         const result = yield* evaluate(expression).pipe(
-          Effect.provideService(LionEnvironmentService, environmentRef)
+          Effect.provideService(LionEnvironmentService, environment)
         );
         expect(result).toBe("true");
-        const environment = yield* Ref.get(environmentRef);
-        expect(getBinding(environment, "x")).not.toBe(1);
+        const binding = yield* getBinding(environment, "x");
+        expect(Option.isNone(binding)).toBe(true);
       })
   );
 
@@ -48,13 +45,13 @@ describe("cond special form", () => {
           [true, "true"],
           [true, ["define", "x", 1]],
         ];
-        const environmentRef = yield* makeEnvironmentRef(makeEnvironment({}));
+        const environment = yield* makeEnvironment({});
         const result = yield* evaluate(expression).pipe(
-          Effect.provideService(LionEnvironmentService, environmentRef)
+          Effect.provideService(LionEnvironmentService, environment)
         );
         expect(result).toBe("true");
-        const environment = yield* Ref.get(environmentRef);
-        expect(getBinding(environment, "x")).not.toBe(1);
+        const binding = yield* getBinding(environment, "x");
+        expect(Option.isNone(binding)).toBe(true);
       })
   );
 
@@ -66,14 +63,15 @@ describe("cond special form", () => {
         [true, "true"],
         [true, ["define", "y", 1]],
       ];
-      const environmentRef = yield* makeEnvironmentRef(makeEnvironment({}));
+      const environment = yield* makeEnvironment({});
       const result = yield* evaluate(expression).pipe(
-        Effect.provideService(LionEnvironmentService, environmentRef)
+        Effect.provideService(LionEnvironmentService, environment)
       );
       expect(result).toBe("true");
-      const environment = yield* Ref.get(environmentRef);
-      expect(getBinding(environment, "x")).not.toBe(1);
-      expect(getBinding(environment, "y")).not.toBe(1);
+      const xBinding = yield* getBinding(environment, "x");
+      const yBinding = yield* getBinding(environment, "y");
+      expect(Option.isNone(xBinding)).toBe(true);
+      expect(Option.isNone(yBinding)).toBe(true);
     })
   );
 });
