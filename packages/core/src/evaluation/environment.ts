@@ -58,25 +58,25 @@ export const setLocalBinding = (
   name: string,
   value: unknown
 ): Effect.Effect<Environment> =>
-  Ref.update(environment.bindingsRef, (bindings) => ({
-    ...bindings,
-    [name]: value,
-  })).pipe(Effect.as(environment));
+  pipe(
+    environment.bindingsRef,
+    Ref.update(Record.set(name, value)),
+    Effect.as(environment)
+  );
 
 export const setGlobalBinding = (
   environment: Environment,
   name: string,
   value: unknown
 ): Effect.Effect<Environment> =>
-  Effect.gen(function* () {
-    if (Schema.is(InnerEnvironmentSchema)(environment)) {
-      yield* setGlobalBinding(environment.parent, name, value);
-      return environment;
-    }
-
-    yield* Ref.update(environment.bindingsRef, (bindings) => ({
-      ...bindings,
-      [name]: value,
-    }));
-    return environment;
-  });
+  pipe(
+    Match.value(environment),
+    Match.when(Schema.is(InnerEnvironmentSchema), ({ parent }) =>
+      setGlobalBinding(parent, name, value)
+    ),
+    Match.when(Schema.is(ToplevelEnvironmentSchema), ({ bindingsRef }) =>
+      Ref.update(bindingsRef, Record.set(name, value))
+    ),
+    Match.exhaustive,
+    Effect.map(() => environment)
+  );
