@@ -36,7 +36,9 @@
         "define",
         "my-input",
         [
-          [".", "OpenTUI", "Input"],
+          "new",
+          [".", "OpenTUI", "InputRenderable"],
+          "renderer",
           {
             "placeholder": "Type your message to Lion Agent here...",
             "width": "full"
@@ -166,6 +168,7 @@
           ]
         ],
         ["()", "message-box", "add", "user-message-text"],
+        ["()", "my-input", "clear"],
         [
           "define",
           "handle-response",
