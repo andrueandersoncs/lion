@@ -71,6 +71,7 @@
 
 <span class="code-comment">// Evaluates to: 17</span></code></pre>
       </div>
+      <p class="hero-subtext">Lisp-style prefix notation, JSON syntax. Load programs from files, APIs, or databases.</p>
     </div>
   </header>
 
@@ -213,33 +214,33 @@
         </div>
       </div>
       <div class="example-card">
-        <h3>Lambda Functions</h3>
-        <p>Define anonymous functions with the lambda special form.</p>
+        <h3>List Operations</h3>
+        <p>Built-in functions for working with arrays and lists.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"double"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
-    <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"x"</span>, <span class="code-number">2</span><span class="code-bracket">]</span>
-  <span class="code-bracket">]</span>
-<span class="code-bracket">]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"list/head"</span>, <span class="code-bracket">[</span><span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">3</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-comment">// => 1</span>
 
-<span class="code-bracket">[</span><span class="code-string">"double"</span>, <span class="code-number">21</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 42</span></code></pre>
+<span class="code-bracket">[</span><span class="code-string">"list/tail"</span>, <span class="code-bracket">[</span><span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">3</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-comment">// => [2, 3]</span>
+
+<span class="code-bracket">[</span><span class="code-string">"list/concat"</span>, <span class="code-bracket">[</span><span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-comment">// => [1, 2, 3, 4]</span></code></pre>
         </div>
       </div>
       <div class="example-card">
-        <h3>Custom Environment</h3>
-        <p>Extend the standard library with your own bindings.</p>
+        <h3>Custom Functions</h3>
+        <p>Environment values can be functions that return Effects.</p>
         <div class="code-block">
           <pre><code><span class="code-keyword">const</span> env = {
   ...stdlib,
-  <span class="code-string">"tax-rate"</span>: <span class="code-number">0.08</span>,
-  <span class="code-string">"price"</span>: <span class="code-number">100</span>
+  <span class="code-string">"greet"</span>: (name) => 
+    Effect.succeed(<span class="code-string">`Hello, ${name}!`</span>),
+  <span class="code-string">"clamp"</span>: (min, max, val) =>
+    Effect.succeed(Math.min(max, Math.max(min, val)))
 };
 
-<span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-string">"price"</span>, 
-  <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"price"</span>, <span class="code-string">"tax-rate"</span><span class="code-bracket">]</span>
-<span class="code-bracket">]</span>
-<span class="code-comment">// => 108</span></code></pre>
+<span class="code-bracket">[</span><span class="code-string">"clamp"</span>, <span class="code-number">0</span>, <span class="code-number">100</span>, <span class="code-number">150</span><span class="code-bracket">]</span>
+<span class="code-comment">// => 100</span></code></pre>
         </div>
       </div>
       <div class="example-card">
@@ -296,13 +297,14 @@
           <div class="code-block">
             <pre><code><span class="code-keyword">const</span> env = {
   ...stdlib,
-  <span class="code-string">"greet"</span>: (name) => Effect.succeed(<span class="code-string">`Hello, </span>${name}<span class="code-string">!`</span>),
+  <span class="code-string">"tax-rate"</span>: <span class="code-number">0.08</span>,
+  <span class="code-string">"price"</span>: <span class="code-number">100</span>,
 };
 
 <span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"greet"</span>, <span class="code-string">"World"</span><span class="code-bracket">]</span>, env)
+  run(<span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-string">"price"</span>, <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"price"</span>, <span class="code-string">"tax-rate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>, env)
 );
-<span class="code-comment">// => "Hello, World!"</span></code></pre>
+<span class="code-comment">// => 108</span></code></pre>
           </div>
         </div>
       </div>

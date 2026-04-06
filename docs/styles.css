@@ -209,6 +209,12 @@ body {
   margin-bottom: 3rem;
 }
 
+.hero-subtext {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
