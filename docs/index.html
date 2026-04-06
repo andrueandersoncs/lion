@@ -67,7 +67,7 @@
           <span class="code-dot"></span>
           <span class="code-filename">example.lion.json</span>
         </div>
-        <pre><code><span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"math/-"</span>, <span class="code-number">10</span>, <span class="code-number">5</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+        <pre><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/subtract"</span>, <span class="code-number">10</span>, <span class="code-number">5</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 
 <span class="code-comment">// Evaluates to: 17</span></code></pre>
       </div>
@@ -182,63 +182,61 @@
         <h3>Basic Arithmetic</h3>
         <p>Function calls use Lisp-style prefix notation within JSON arrays.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 3</span>
 
-<span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-number">5</span>, <span class="code-number">4</span><span class="code-bracket">]</span>
+<span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">5</span>, <span class="code-number">4</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 20</span></code></pre>
         </div>
       </div>
       <div class="example-card">
         <h3>Conditionals</h3>
-        <p>Use logic/if for conditional branching with full expression support.</p>
+        <p>Use cond for multi-branch conditionals with pattern matching.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"logic/if"</span>, 
-  <span class="code-bracket">[</span><span class="code-string">"math/>"</span>, <span class="code-string">"score"</span>, <span class="code-number">90</span><span class="code-bracket">]</span>,
-  <span class="code-string">"pass"</span>,
-  <span class="code-string">"fail"</span>
-<span class="code-bracket">]</span>
-<span class="code-comment">// score=95 => "pass"</span></code></pre>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"cond"</span>,
+  <span class="code-bracket">[</span><span class="code-bracket">[</span><span class="code-string">"number/greaterThan"</span>, <span class="code-string">"score"</span>, <span class="code-number">90</span><span class="code-bracket">]</span>, <span class="code-string">"great"</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-bracket">[</span><span class="code-string">"number/greaterThan"</span>, <span class="code-string">"score"</span>, <span class="code-number">70</span><span class="code-bracket">]</span>, <span class="code-string">"pass"</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-string">"else"</span>, <span class="code-string">"retry"</span><span class="code-bracket">]</span>
+<span class="code-bracket">]</span></code></pre>
         </div>
       </div>
       <div class="example-card">
         <h3>Record Evaluation</h3>
-        <p>Objects evaluate their values while preserving keys.</p>
+        <p>Objects preserve keys and evaluate each value.</p>
         <div class="code-block">
           <pre><code><span class="code-bracket">{</span>
-  <span class="code-key">"sum"</span>: <span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-string">"x"</span>, <span class="code-string">"y"</span><span class="code-bracket">]</span>,
-  <span class="code-key">"product"</span>: <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"x"</span>, <span class="code-string">"y"</span><span class="code-bracket">]</span>
+  <span class="code-key">"sum"</span>: <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>,
+  <span class="code-key">"ok"</span>: <span class="code-keyword">true</span>
 <span class="code-bracket">}</span>
-<span class="code-comment">// x=10, y=20 => { sum: 30, product: 200 }</span></code></pre>
+<span class="code-comment">// => { "sum": 3, "ok": true }</span></code></pre>
         </div>
       </div>
       <div class="example-card">
         <h3>Lambda Functions</h3>
-        <p>Define anonymous functions with the lambda special form.</p>
+        <p>Create functions with lexical scope using lambda.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"double"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
-    <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"x"</span>, <span class="code-number">2</span><span class="code-bracket">]</span>
-  <span class="code-bracket">]</span>
-<span class="code-bracket">]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 
-<span class="code-bracket">[</span><span class="code-string">"double"</span>, <span class="code-number">21</span><span class="code-bracket">]</span>
+<span class="code-comment">// Define and use:</span>
+<span class="code-bracket">[</span><span class="code-string">"begin"</span>,
+  <span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"inc"</span>, <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-string">"inc"</span>, <span class="code-number">41</span><span class="code-bracket">]</span>
+<span class="code-bracket">]</span>
 <span class="code-comment">// => 42</span></code></pre>
         </div>
       </div>
       <div class="example-card">
         <h3>Custom Environment</h3>
-        <p>Extend the standard library with your own bindings.</p>
+        <p>Extend stdlib with your own values and functions.</p>
         <div class="code-block">
           <pre><code><span class="code-keyword">const</span> env = {
   ...stdlib,
-  <span class="code-string">"tax-rate"</span>: <span class="code-number">0.08</span>,
-  <span class="code-string">"price"</span>: <span class="code-number">100</span>
+  price: <span class="code-number">100</span>,
+  taxRate: <span class="code-number">0.08</span>,
+  clamp: (min, max, val) => Math.min(max, Math.max(min, val))
 };
 
-<span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-string">"price"</span>, 
-  <span class="code-bracket">[</span><span class="code-string">"math/*"</span>, <span class="code-string">"price"</span>, <span class="code-string">"tax-rate"</span><span class="code-bracket">]</span>
-<span class="code-bracket">]</span>
+<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 108</span></code></pre>
         </div>
       </div>
@@ -246,10 +244,10 @@
         <h3>Quote &amp; Eval</h3>
         <p>Control evaluation with quote and eval special forms.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-<span class="code-comment">// => ["math/+", 1, 2]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-comment">// => ["number/add", 1, 2]</span>
 
-<span class="code-bracket">[</span><span class="code-string">"eval"</span>, <span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-bracket">[</span><span class="code-string">"eval"</span>, <span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 3</span></code></pre>
         </div>
       </div>
@@ -279,11 +277,11 @@
           <h3>Import and run</h3>
           <div class="code-block">
             <pre><code><span class="code-keyword">import</span> { Effect } <span class="code-keyword">from</span> <span class="code-string">"effect"</span>;
-<span class="code-keyword">import</span> { run } <span class="code-keyword">from</span> <span class="code-string">"@lion/core/evaluation"</span>;
+<span class="code-keyword">import</span> { run } <span class="code-keyword">from</span> <span class="code-string">"@lion/core/evaluation/evaluate"</span>;
 <span class="code-keyword">import</span> { stdlib } <span class="code-keyword">from</span> <span class="code-string">"@lion/core/modules"</span>;
 
 <span class="code-keyword">const</span> result = <span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"math/+"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>, stdlib)
+  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>, stdlib)
 );
 <span class="code-comment">// => 3</span></code></pre>
           </div>
@@ -296,13 +294,14 @@
           <div class="code-block">
             <pre><code><span class="code-keyword">const</span> env = {
   ...stdlib,
-  <span class="code-string">"greet"</span>: (name) => Effect.succeed(<span class="code-string">`Hello, </span>${name}<span class="code-string">!`</span>),
+  price: <span class="code-number">100</span>,
+  taxRate: <span class="code-number">0.08</span>,
 };
 
 <span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"greet"</span>, <span class="code-string">"World"</span><span class="code-bracket">]</span>, env)
+  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>, env)
 );
-<span class="code-comment">// => "Hello, World!"</span></code></pre>
+<span class="code-comment">// => 108</span></code></pre>
           </div>
         </div>
       </div>
