@@ -5,6 +5,7 @@
   "description": "Lion is a JSON-based Lisp.",
   "license": "MIT",
   "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
+  "homepage": "https://lionlang.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/andrueandersoncs/lion.git",
