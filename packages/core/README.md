@@ -1,4 +1,4 @@
-# @lion/core
+# @lionlang/core
 
 To install dependencies:
 

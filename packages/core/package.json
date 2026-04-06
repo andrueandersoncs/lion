@@ -1,11 +1,18 @@
 {
-  "name": "@lion/core",
-  "version": "0.0.1",
+  "name": "@lionlang/core",
+  "version": "0.1.0",
   "type": "module",
   "description": "Lion is a JSON-based Lisp.",
   "license": "MIT",
   "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
-  "repository": "https://github.com/andrueandersoncs/lion",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrueandersoncs/lion.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",

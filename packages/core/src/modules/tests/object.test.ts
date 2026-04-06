@@ -288,13 +288,13 @@ describe("object", () => {
       })
     );
     it.effect(
-      "should fail with NotAnObjectError when obj is not an object",
+      "should fail with NotAFunctionError when target is not a function",
       () =>
         Effect.gen(function* () {
           const error = yield* Effect.flip(
             object["call-method"]("not an object", "method")
           );
-          expect(error._tag).toBe("NotAnObjectError");
+          expect(error._tag).toBe("NotAFunctionError");
         })
     );
     it.effect(

@@ -1,5 +1,5 @@
-import { run } from "@lion/core/evaluation/evaluate";
-import { stdlib } from "@lion/core/modules";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
 import { createFileRoute } from "@tanstack/react-router";
 import { Effect } from "effect";
 import { useCallback, useEffect, useRef, useState } from "react";

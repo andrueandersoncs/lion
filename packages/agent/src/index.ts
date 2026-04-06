@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { createFireworks } from "@ai-sdk/fireworks";
-import { run } from "@lion/core/evaluation/evaluate";
-import { stdlib } from "@lion/core/modules";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
 // biome-ignore lint/performance/noNamespaceImport: Intentionally importing everything to passthrough to Lion
 import * as OpenTUI from "@opentui/core";
 // biome-ignore lint/performance/noNamespaceImport: Pass through to Lion
