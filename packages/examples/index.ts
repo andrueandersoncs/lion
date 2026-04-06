@@ -2,78 +2,112 @@ import { run } from "@lion/core/evaluation/evaluate";
 import { stdlib } from "@lion/core/modules";
 import { Effect } from "effect";
 
-// FizzBuzz in Lion Language
-// Note: This implementation requires these functions that are missing from @lion/core:
-// - math/% (modulo operator) for divisibility checks
-// - list/range (to generate numbers 1-100)
-// - list/map or recursion utilities for iteration
+const env = {
+  ...stdlib,
+  price: 100,
+  taxRate: 0.08,
+  clamp: (min: number, max: number, value: number) =>
+    Math.min(max, Math.max(min, value)),
+  user: {
+    name: "Ada",
+    stats: {
+      score: 92,
+    },
+  },
+};
 
-// Hardcoded FizzBuzz for numbers 1-15 as a demonstration
-const fizzBuzzProgram = [
-  "begin",
-  [
-    "define",
-    "fizzbuzz",
-    [
-      "lambda",
-      ["n"],
+const examples: Array<{
+  name: string;
+  program: unknown;
+}> = [
+  {
+    name: "Arithmetic",
+    program: ["number/add", "price", ["number/multiply", "price", "taxRate"]],
+  },
+  {
+    name: "Sequential Evaluation",
+    program: [
+      "begin",
+      ["define", "x", 1],
+      ["define", "x", ["number/add", "x", 4]],
+      "x",
+    ],
+  },
+  {
+    name: "Conditionals",
+    program: [
+      "cond",
       [
-        "logic/if",
+        ["number/greaterThan", ["object/get-path", "user", "stats.score"], 90],
+        "great",
+      ],
+      [
+        ["number/greaterThan", ["object/get-path", "user", "stats.score"], 70],
+        "pass",
+      ],
+      ["else", "retry"],
+    ],
+  },
+  {
+    name: "Array Mapping",
+    program: [
+      "array/map",
+      ["array/make", 1, 2, 3],
+      ["lambda", ["x"], ["number/multiply", "x", 10]],
+    ],
+  },
+  {
+    name: "Structural Match",
+    program: [
+      "match",
+      [
+        "quote",
+        {
+          type: "user",
+          profile: {
+            name: "Ada",
+          },
+        },
+      ],
+      [
+        {
+          type: ["func/partial", "string/equals?", ["quote", "user"]],
+          profile: {
+            name: "value/string?",
+          },
+        },
         [
-          "logic/and",
-          ["math/=", ["math/%", "n", 3], 0],
-          ["math/=", ["math/%", "n", 5], 0],
-        ],
-        "FizzBuzz",
-        [
-          "logic/if",
-          ["math/=", ["math/%", "n", 3], 0],
-          "Fizz",
-          ["logic/if", ["math/=", ["math/%", "n", 5], 0], "Buzz", "n"],
+          "lambda",
+          ["value"],
+          [
+            "string/concat",
+            ["object/get-path", "value", "profile.name"],
+            " matched",
+          ],
         ],
       ],
+      ["lambda", ["value"], "value"],
     ],
-  ],
-  ["console/log", ["fizzbuzz", 1]],
-  ["console/log", ["fizzbuzz", 2]],
-  ["console/log", ["fizzbuzz", 3]],
-  ["console/log", ["fizzbuzz", 4]],
-  ["console/log", ["fizzbuzz", 5]],
-  ["console/log", ["fizzbuzz", 15]],
+  },
+  {
+    name: "Host Interop",
+    program: ["clamp", 0, 100, 150],
+  },
+  {
+    name: "Object Path Lookup",
+    program: ["object/get-path", "user", "stats.score"],
+  },
 ];
 
-console.log("=== FizzBuzz in Lion Language ===");
-console.log("\nNote: This example requires the following missing functions:");
-console.log("  - math/% (modulo operator)");
-console.log("  - list/range (to generate 1-100)");
-console.log("  - list/map or recursion for iteration");
-console.log("\nWith these functions, FizzBuzz could be written as:");
-console.log(`
-["begin",
-  ["define", "fizzbuzz", ["lambda", ["n"],
-    ["logic/if",
-      ["logic/and", ["math/=", ["math/%", "n", 3], 0], 
-                    ["math/=", ["math/%", "n", 5], 0]],
-      "FizzBuzz",
-      ["logic/if", ["math/=", ["math/%", "n", 3], 0],
-        "Fizz",
-        ["logic/if", ["math/=", ["math/%", "n", 5], 0],
-          "Buzz",
-          "n"]]]]],
-  ["list/map", ["list/range", 1, 100], "fizzbuzz"]
-]
-`);
+const main = Effect.gen(function* () {
+  console.log("=== Lion Examples ===");
 
-// Attempt to run (will fail due to missing functions)
-Effect.runPromise(run(fizzBuzzProgram, stdlib))
-  .then((result) => {
-    console.log("\n=== Output ===");
-    console.log(result);
-  })
-  .catch((error) => {
-    console.log("\n=== Expected Error ===");
-    console.log("Error:", error.message || error);
-    console.log(
-      "\nThe error occurs because 'math/%' and 'list/range' are not defined in @lion/core"
-    );
-  });
+  for (const { name, program } of examples) {
+    const result = yield* run(program, env);
+    console.log(`\n${name}`);
+    console.log(JSON.stringify(program, null, 2));
+    console.log("=>", result);
+  }
+});
+
+await Effect.runPromise(main);
