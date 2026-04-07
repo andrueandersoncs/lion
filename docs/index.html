@@ -53,8 +53,7 @@
       <div class="hero-badge">A New Kind of Language</div>
       <h1 class="hero-title">The JSON-Based Lisp<br>for Modern Systems</h1>
       <p class="hero-description">
-        All code is valid JSON. All JSON is valid code. 
-        Serializable, homoiconic, and trivially parseable by any system.
+        All code is valid JSON. All JSON is valid code. Serializable, homoiconic, and trivially parseable by any system.
       </p>
       <div class="hero-actions">
         <a href="#examples" class="btn btn-primary">Get Started</a>
@@ -67,7 +66,9 @@
           <span class="code-dot"></span>
           <span class="code-filename">example.lion.json</span>
         </div>
-        <pre><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/subtract"</span>, <span class="code-number">10</span>, <span class="code-number">5</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+        <pre><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>,
+  <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-string">"number/subtract"</span>, <span class="code-number">10</span>, <span class="code-number">5</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 
 <span class="code-comment">// Evaluates to: 17</span></code></pre>
       </div>
@@ -215,13 +216,15 @@
         <h3>Lambda Functions</h3>
         <p>Create functions with lexical scope using lambda.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 
 <span class="code-comment">// Define and use:</span>
 <span class="code-bracket">[</span><span class="code-string">"begin"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"inc"</span>, <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-string">"inc"</span>, <span class="code-number">41</span><span class="code-bracket">]</span>
-<span class="code-bracket">]</span>
+  <span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"inc"</span>,
+    <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
+      <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>,
+  <span class="code-bracket">[</span><span class="code-string">"inc"</span>, <span class="code-number">41</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 42</span></code></pre>
         </div>
       </div>
@@ -233,10 +236,11 @@
   ...stdlib,
   price: <span class="code-number">100</span>,
   taxRate: <span class="code-number">0.08</span>,
-  clamp: (min, max, val) => Math.min(max, Math.max(min, val))
 };
 
-<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>,
+  <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>,
+    <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 108</span></code></pre>
         </div>
       </div>
@@ -244,10 +248,13 @@
         <h3>Quote &amp; Eval</h3>
         <p>Control evaluation with quote and eval special forms.</p>
         <div class="code-block">
-          <pre><code><span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+          <pre><code><span class="code-bracket">[</span><span class="code-string">"quote"</span>,
+  <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => ["number/add", 1, 2]</span>
 
-<span class="code-bracket">[</span><span class="code-string">"eval"</span>, <span class="code-bracket">[</span><span class="code-string">"quote"</span>, <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
+<span class="code-bracket">[</span><span class="code-string">"eval"</span>,
+  <span class="code-bracket">[</span><span class="code-string">"quote"</span>,
+    <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
 <span class="code-comment">// => 3</span></code></pre>
         </div>
       </div>
@@ -299,7 +306,9 @@
 };
 
 <span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>, <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>, env)
+  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>,
+    <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>,
+      <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>, env)
 );
 <span class="code-comment">// => 108</span></code></pre>
           </div>

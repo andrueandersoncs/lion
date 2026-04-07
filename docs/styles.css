@@ -169,6 +169,7 @@ body {
 
 .hero-content {
   max-width: 800px;
+  width: 100%;
   text-align: center;
 }
 
@@ -253,7 +254,8 @@ body {
   border-radius: var(--radius);
   overflow: hidden;
   text-align: left;
-  max-width: 600px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -444,6 +446,8 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .example-card h3 {
@@ -463,6 +467,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  max-width: 100%;
 }
 
 .code-block pre {
@@ -684,20 +689,39 @@ body {
   }
 
   .hero-code {
-    margin: 0 -0.5rem;
+    margin: 0;
     border-radius: var(--radius-sm);
+    max-width: 100%;
   }
 
   .hero-code pre,
   .code-block pre {
-    padding: 1rem;
-    font-size: 0.75rem;
+    padding: 0.75rem;
+    font-size: 0.7rem;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .hero-code code,
   .code-block code {
-    font-size: 0.75rem;
-    word-break: break-word;
+    font-size: 0.7rem;
+  }
+
+  .hero-description {
+    font-size: 0.9rem;
+    padding: 0 0.5rem;
+  }
+
+  .examples-grid {
+    gap: 1rem;
+  }
+
+  .example-card .code-block {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 
   .feature-card {
