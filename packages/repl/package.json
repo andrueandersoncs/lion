@@ -1,5 +1,5 @@
 {
-  "name": "@lion/repl",
+  "name": "@lionlang/repl",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "@effect/platform": "^0.93.8",
     "@effect/platform-bun": "^0.86.0",
     "@hookform/resolvers": "^5.2.2",
-    "@lion/core": "workspace:*",
+    "@lionlang/core": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",

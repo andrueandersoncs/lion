@@ -24,8 +24,8 @@ packages/
 
 ```ts
 import { Effect } from "effect";
-import { run } from "@lion/core/evaluation/evaluate";
-import { stdlib } from "@lion/core/modules";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
 
 const result = await Effect.runPromise(
 	run(["number/add", 1, 2], stdlib)
@@ -40,8 +40,8 @@ Any string can resolve against the evaluation environment. That includes values,
 
 ```ts
 import { Effect } from "effect";
-import { run } from "@lion/core/evaluation/evaluate";
-import { stdlib } from "@lion/core/modules";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
 
 const env = {
 	...stdlib,
@@ -328,6 +328,6 @@ bun run build
 To work on a specific package:
 
 ```bash
-turbo test --filter=@lion/core
-turbo dev --filter=@lion/repl
+turbo test --filter=@lionlang/core
+turbo dev --filter=@lionlang/repl
 ```

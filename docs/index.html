@@ -267,7 +267,7 @@
         <div class="step-content">
           <h3>Install the package</h3>
           <div class="code-block terminal">
-            <pre><code>npm install @lion/core</code></pre>
+            <pre><code>npm install @lionlang/core</code></pre>
           </div>
         </div>
       </div>
@@ -277,8 +277,8 @@
           <h3>Import and run</h3>
           <div class="code-block">
             <pre><code><span class="code-keyword">import</span> { Effect } <span class="code-keyword">from</span> <span class="code-string">"effect"</span>;
-<span class="code-keyword">import</span> { run } <span class="code-keyword">from</span> <span class="code-string">"@lion/core/evaluation/evaluate"</span>;
-<span class="code-keyword">import</span> { stdlib } <span class="code-keyword">from</span> <span class="code-string">"@lion/core/modules"</span>;
+<span class="code-keyword">import</span> { run } <span class="code-keyword">from</span> <span class="code-string">"@lionlang/core/evaluation/evaluate"</span>;
+<span class="code-keyword">import</span> { stdlib } <span class="code-keyword">from</span> <span class="code-string">"@lionlang/core/modules"</span>;
 
 <span class="code-keyword">const</span> result = <span class="code-keyword">await</span> Effect.runPromise(
   run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>, stdlib)

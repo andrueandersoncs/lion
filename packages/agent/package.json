@@ -1,5 +1,5 @@
 {
-  "name": "@lion/agent",
+  "name": "@lionlang/agent",
   "module": "src/index.tsx",
   "type": "module",
   "private": true,
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/fireworks": "^2.0.42",
-    "@lion/core": "workspace:*",
+    "@lionlang/core": "workspace:*",
     "@opentui/core": "^0.1.90",
     "ai": "^6.0.141",
     "effect": "catalog:"

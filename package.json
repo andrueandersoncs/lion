@@ -1,6 +1,6 @@
 {
   "name": "@lion",
-  "private": "true",
+  "private": true,
   "workspaces": [
     "packages/*"
   ],

@@ -1,10 +1,10 @@
 {
-  "name": "@lion/examples",
+  "name": "@lionlang/examples",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "dependencies": {
-    "@lion/core": "workspace:*"
+    "@lionlang/core": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest"

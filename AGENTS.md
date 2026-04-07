@@ -5,8 +5,8 @@ This document provides essential information for AI coding agents working on the
 ## Project Overview
 
 Lion is a TypeScript monorepo with two main packages:
-- **@lion/core**: Core library built with Effect.js for functional programming
-- **@lion/repl**: React-based web application using TanStack Router and Vite
+- **@lionlang/core**: Core library built with Effect.js for functional programming
+- **@lionlang/repl**: React-based web application using TanStack Router and Vite
 
 ## Build, Lint, and Test Commands
 
@@ -40,14 +40,14 @@ For running commands in a specific package, use Turbo's filter syntax:
 
 ```bash
 # Run tests for a specific package
-turbo test --filter=@lion/core
-turbo test --filter=@lion/repl
+turbo test --filter=@lionlang/core
+turbo test --filter=@lionlang/repl
 
 # Run dev server for repl package
-turbo dev --filter=@lion/repl
+turbo dev --filter=@lionlang/repl
 
 # Run typecheck for core package
-turbo typecheck --filter=@lion/core
+turbo typecheck --filter=@lionlang/core
 ```
 
 ## Testing Guidelines
@@ -279,7 +279,7 @@ packages/repl/
 ### Development Workflow
 
 1. **Before coding**: Run `bun install` and `bun run prepare`
-2. **During development**: Use `turbo dev --filter=@lion/repl` for REPL development
+2. **During development**: Use `turbo dev --filter=@lionlang/repl` for REPL development
 3. **Before committing**:
    - Run `bun run check`
    - Run `bun test`
