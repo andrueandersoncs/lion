@@ -40,6 +40,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Noise overlay for texture */
@@ -288,6 +289,7 @@ body {
   margin: 0;
   padding: 1.25rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hero-code code,
@@ -295,6 +297,8 @@ body {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.7;
+  white-space: pre;
+  display: block;
 }
 
 .code-string { color: var(--code-string); }
@@ -653,6 +657,7 @@ body {
   }
 
   .footer-links {
+    flex-wrap: wrap;
     gap: 2rem;
   }
 
@@ -661,33 +666,107 @@ body {
     gap: 1rem;
   }
 
+  .hero {
+    padding: 6rem 1rem 3rem;
+  }
+
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  .hero-description {
+    font-size: 1rem;
   }
 
   .section-title {
     font-size: 1.75rem;
+  }
+
+  .hero-code {
+    margin: 0 -0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .hero-code pre,
+  .code-block pre {
+    padding: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .hero-code code,
+  .code-block code {
+    font-size: 0.75rem;
+    word-break: break-word;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+
+  .example-card {
+    padding: 1rem;
+  }
+
+  .step-content .code-block pre {
+    padding: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat {
+    padding: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
   }
 
   .hero-actions {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
   }
 
   .btn {
     width: 100%;
-    max-width: 280px;
     justify-content: center;
   }
 
   .cta-actions {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+  }
+
+  .features,
+  .examples,
+  .docs,
+  .cta {
+    padding: 4rem 1rem;
+  }
+
+  .footer-links {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .footer-column {
+    text-align: left;
+  }
+
+  .cta h2 {
+    font-size: 1.5rem;
+  }
+
+  .cta p {
+    font-size: 1rem;
   }
 }
