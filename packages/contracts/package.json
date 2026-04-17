@@ -1,0 +1,26 @@
+{
+  "name": "@lionlang/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Solidity LionVM — executes Lion programs supplied in calldata on the EVM.",
+  "license": "MIT",
+  "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrueandersoncs/lion.git",
+    "directory": "packages/contracts"
+  },
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "test:verbose": "forge test -vv",
+    "gas": "forge test --gas-report",
+    "fmt": "forge fmt",
+    "fmt:check": "forge fmt --check",
+    "fixtures": "cd ../evm && bun run scripts/generate-fixture.ts 0x0000000000000000000000000000000000000001 ../contracts/test/fixtures/programs.json",
+    "clean": "forge clean"
+  },
+  "devDependencies": {
+    "@lionlang/evm": "workspace:*"
+  }
+}

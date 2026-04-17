@@ -1,0 +1,45 @@
+{
+  "name": "@lionlang/evm",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "EVM wire-format encoder/decoder for Lion programs.",
+  "license": "MIT",
+  "author": "Andrue Anderson <andrue.anderson.cs@gmail.com>",
+  "homepage": "https://lionlang.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrueandersoncs/lion.git",
+    "directory": "packages/evm"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./decode": "./dist/decode.mjs",
+    "./encode": "./dist/encode.mjs",
+    "./tags": "./dist/tags.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "@effect/vitest": "^0.27.0",
+    "@types/bun": "latest",
+    "tsdown": "^0.21.6",
+    "vitest": "^4.0.16"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@lionlang/core": "workspace:*",
+    "effect": "catalog:"
+  }
+}

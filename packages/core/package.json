@@ -33,6 +33,7 @@
     "./modules/array": "./dist/modules/array.mjs",
     "./modules/boolean": "./dist/modules/boolean.mjs",
     "./modules/console": "./dist/modules/console.mjs",
+    "./modules/evm": "./dist/modules/evm.mjs",
     "./modules/func": "./dist/modules/func.mjs",
     "./modules/lib/shared": "./dist/modules/lib/shared.mjs",
     "./modules/number": "./dist/modules/number.mjs",

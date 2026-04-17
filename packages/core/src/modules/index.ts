@@ -1,6 +1,7 @@
 import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
 import { module as console } from "./console.ts";
+import { module as evm } from "./evm.ts";
 import { module as func } from "./func.ts";
 import { module as number } from "./number.ts";
 import { module as object } from "./object.ts";
@@ -25,6 +26,7 @@ export const stdlib = {
   ...namespaceEntries("array", array),
   ...namespaceEntries("boolean", boolean),
   ...namespaceEntries("console", console),
+  ...namespaceEntries("evm", evm),
   ...namespaceEntries("func", func),
   ...namespaceEntries("number", number),
   ...namespaceEntries("object", object),
