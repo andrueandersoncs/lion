@@ -5,6 +5,7 @@ import { module as func } from "./func.ts";
 import { module as number } from "./number.ts";
 import { module as object } from "./object.ts";
 import { module as string } from "./string.ts";
+import { module as ui } from "./ui.ts";
 import { module as value } from "./value.ts";
 
 export const namespaceEntries = (
@@ -29,5 +30,6 @@ export const stdlib = {
   ...namespaceEntries("number", number),
   ...namespaceEntries("object", object),
   ...namespaceEntries("string", string),
+  ...namespaceEntries("ui", ui),
   ...namespaceEntries("value", value),
 };
