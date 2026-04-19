@@ -15,7 +15,6 @@
     "access": "public"
   },
   "exports": {
-    ".": "./dist/index.mjs",
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",
     "./evaluation/base-forms/primitive": "./dist/evaluation/base-forms/primitive.mjs",
@@ -39,13 +38,11 @@
     "./modules/number": "./dist/modules/number.mjs",
     "./modules/object": "./dist/modules/object.mjs",
     "./modules/string": "./dist/modules/string.mjs",
-    "./modules/ui": "./dist/modules/ui.mjs",
     "./modules/value": "./dist/modules/value.mjs",
     "./schemas/environment": "./dist/schemas/environment.mjs",
     "./schemas/evaluation": "./dist/schemas/evaluation.mjs",
     "./schemas/json-primitive": "./dist/schemas/json-primitive.mjs",
     "./schemas/lion-expression": "./dist/schemas/lion-expression.mjs",
-    "./schemas/ui": "./dist/schemas/ui.mjs",
     "./services/evaluation": "./dist/services/evaluation.mjs",
     "./types/evaluation": "./dist/types/evaluation.mjs",
     "./package.json": "./package.json"
