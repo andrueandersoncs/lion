@@ -1,13 +1,13 @@
 /**
  * Source-as-state UI streaming.
  *
- * The client holds two documents:
- *   - `source`: a Lion expression tree (the program that renders the UI).
- *   - `bindings`: a flat record of live values referenced from `source`.
+ * The client holds one document: `source`, a Lion expression tree.
+ * Updates arrive as `Message` values; JSON-Patch ops mutate the tree.
+ * A `useMemo` re-evaluates source against baseEnv and produces a React
+ * element tree directly — no bindings indirection, no $ui intermediate.
  *
- * Updates arrive as `Message` values; JSON-Patch ops mutate either document.
- * A `useMemo` re-evaluates source against (baseEnv ∪ bindings) and produces
- * a React element tree directly — no $ui intermediate, no custom renderer.
+ * Live values live at specific paths inside the source and update in place.
+ * To change a price, patch the leaf where the price sits.
  */
 
 import { Effect } from "effect";
@@ -25,20 +25,17 @@ import {
 import { run } from "@lionlang/core/evaluation/evaluate";
 
 export type Message =
-	| { kind: "reset"; source: unknown; bindings?: Record<string, unknown> }
-	| { kind: "source-patch"; ops: Operation[] }
-	| { kind: "bindings-patch"; ops: Operation[] }
+	| { kind: "reset"; source: unknown }
+	| { kind: "patch"; ops: Operation[] }
 	| { kind: "clear" };
 
 export interface SourceState {
 	source: unknown | null;
-	bindings: Record<string, unknown>;
 	messages: Message[];
 }
 
 const initialState: SourceState = {
 	source: null,
-	bindings: {},
 	messages: [],
 };
 
@@ -46,25 +43,12 @@ const reducer = (state: SourceState, msg: Message): SourceState => {
 	const messages = [...state.messages, msg];
 	switch (msg.kind) {
 		case "reset":
-			return {
-				source: msg.source,
-				bindings: msg.bindings ?? {},
-				messages,
-			};
-		case "source-patch": {
+			return { source: msg.source, messages };
+		case "patch": {
 			if (state.source === null) return { ...state, messages };
 			const cloned = deepClone(state.source);
 			const result = applyPatch(cloned, msg.ops, false, false);
 			return { ...state, source: result.newDocument, messages };
-		}
-		case "bindings-patch": {
-			const cloned = deepClone(state.bindings);
-			const result = applyPatch(cloned, msg.ops, false, false);
-			return {
-				...state,
-				bindings: result.newDocument as Record<string, unknown>,
-				messages,
-			};
 		}
 		case "clear":
 			return { ...initialState, messages };
@@ -75,7 +59,6 @@ export interface UiSource {
 	rendered: ReactNode;
 	error: string | null;
 	source: unknown | null;
-	bindings: Record<string, unknown>;
 	messages: Message[];
 	dispatch: (msg: Message) => void;
 	clear: () => void;
@@ -93,7 +76,6 @@ const toRenderable = (value: unknown): ReactNode => {
 export const useUiSource = (baseEnv: Record<string, unknown>): UiSource => {
 	const [state, dispatch] = useReducer(reducer, initialState);
 
-	// Keep a stable ref to baseEnv so callers can construct it inline.
 	const baseEnvRef = useRef(baseEnv);
 	baseEnvRef.current = baseEnv;
 
@@ -102,8 +84,7 @@ export const useUiSource = (baseEnv: Record<string, unknown>): UiSource => {
 			return { rendered: null, error: null };
 		}
 		try {
-			const env = { ...baseEnvRef.current, ...state.bindings };
-			const value = Effect.runSync(run(state.source, env));
+			const value = Effect.runSync(run(state.source, baseEnvRef.current));
 			return { rendered: toRenderable(value), error: null };
 		} catch (e) {
 			return {
@@ -111,7 +92,7 @@ export const useUiSource = (baseEnv: Record<string, unknown>): UiSource => {
 				error: e instanceof Error ? e.message : String(e),
 			};
 		}
-	}, [state.source, state.bindings]);
+	}, [state.source]);
 
 	const clear = useCallback(() => dispatch({ kind: "clear" }), []);
 
@@ -119,7 +100,6 @@ export const useUiSource = (baseEnv: Record<string, unknown>): UiSource => {
 		rendered,
 		error,
 		source: state.source,
-		bindings: state.bindings,
 		messages: state.messages,
 		dispatch,
 		clear,
