@@ -24,7 +24,7 @@ export const Route = createFileRoute("/stream")({
 function StreamDemo() {
 	// baseEnv is stable across renders.
 	const baseEnv = useMemo(() => makeUiEnv(), []);
-	const { rendered, error, source, bindings, messages, dispatch, clear } =
+	const { rendered, error, source, messages, dispatch, clear } =
 		useUiSource(baseEnv);
 	const [showLog, setShowLog] = useState(false);
 	const [isStreaming, setIsStreaming] = useState(false);
@@ -106,7 +106,7 @@ function StreamDemo() {
 								</CardTitle>
 								<CardDescription>
 									Lion source evaluates against a React-populated environment.
-									Bindings update via JSON Patch; the tree re-renders.
+									JSON Patch ops mutate the source tree; the UI re-renders.
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
@@ -130,19 +130,6 @@ function StreamDemo() {
 
 					{showLog && (
 						<div className="lg:col-span-1 space-y-4">
-							<Card>
-								<CardHeader>
-									<CardTitle className="text-sm font-medium text-muted-foreground">
-										Bindings
-									</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<pre className="text-xs font-mono bg-muted p-2 rounded max-h-48 overflow-auto">
-										{JSON.stringify(bindings, null, 2)}
-									</pre>
-								</CardContent>
-							</Card>
-
 							<Card>
 								<CardHeader>
 									<CardTitle className="text-sm font-medium text-muted-foreground">
@@ -214,7 +201,7 @@ function StreamDemo() {
 									{`["Card",
   ["CardHeader", ["CardTitle", "ETH"]],
   ["CardContent",
-    ["p", ["format/usd", "eth-price"]]]]`}
+    ["p", ["format/usd", 3275]]]]`}
 								</pre>
 							</CardContent>
 						</Card>
@@ -224,15 +211,11 @@ function StreamDemo() {
 							</CardHeader>
 							<CardContent className="text-sm text-muted-foreground">
 								<p>
-									RFC 6902 JSON Patch. Two documents:{" "}
+									RFC 6902 JSON Patch against a single{" "}
 									<code className="bg-muted px-1 rounded text-foreground">
 										source
 									</code>{" "}
-									(structure) and{" "}
-									<code className="bg-muted px-1 rounded text-foreground">
-										bindings
-									</code>{" "}
-									(live values).
+									document. Live values live inline in the tree.
 								</p>
 							</CardContent>
 						</Card>

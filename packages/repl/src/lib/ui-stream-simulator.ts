@@ -1,19 +1,34 @@
 /**
  * Simulates an AI agent streaming a UI program to the client.
  *
- * Two demos:
- *   - simulateAgentStream: bindings-patch driven. Source stays mostly stable;
- *     live values update via JSON Patch.
- *   - simulateAgentUiStream: source-patch driven. The tree itself is reshaped
- *     over time — nodes added, replaced, removed.
+ * Source-only architecture: there's just one document — the Lion expression
+ * tree. Live values live inside the tree at concrete paths; updates are
+ * JSON-Patch ops that mutate those paths directly.
  *
- * Source now uses real React components directly by name (`Card`, `Button`,
- * `Alert`, etc.) — no bespoke `ui/*` wrappers.
+ * Two demos:
+ *   - simulateAgentStream: "data-style" updates. Source defines a token-card
+ *     lambda and calls it with literal price/change values. A ticker patches
+ *     those literal values in place at their call-site paths.
+ *   - simulateAgentUiStream: "UI-style" updates. The tree itself reshapes
+ *     over time — nodes added, replaced, removed.
  */
 
 import type { Message } from "./use-ui-source.ts";
 
 // ─────────── data-stream demo ───────────
+//
+// Source structure for path reasoning:
+//   /0 = "begin"
+//   /1 = ["define", "token-card", lambda]
+//   /2 = dashboard stack = ["div", props, h1, row, sep, alert]
+//       /2/3 = row = ["div", props, card0, card1, card2, (card3?)]
+//         /2/3/2 = first card: ["token-card", "ETH", 3250, 0.052]
+//           /2/3/2/0 = "token-card" (head)
+//           /2/3/2/1 = "ETH" (name arg)
+//           /2/3/2/2 = price arg
+//           /2/3/2/3 = change arg
+//       /2/5 = alert = ["Alert", [AlertTitle], [AlertDescription, "text"]]
+//         /2/5/2/1 = alert description text
 
 const tokenCard = [
 	"lambda",
@@ -44,28 +59,18 @@ const dashboard = [
 		[
 			"div",
 			{ className: "flex flex-row flex-wrap items-center gap-4" },
-			["token-card", "ETH", "eth-price", "eth-change"],
-			["token-card", "USDC", "usdc-price", "usdc-change"],
-			["token-card", "AAVE", "aave-price", "aave-change"],
+			["token-card", "ETH", 3250, 0.052],
+			["token-card", "USDC", 1, 0],
+			["token-card", "AAVE", 85, -0.021],
 		],
 		["Separator"],
 		[
 			"Alert",
 			["AlertTitle", "Health Factor"],
-			["AlertDescription", "health-factor-msg"],
+			["AlertDescription", "Health factor: 1.42 (safe)"],
 		],
 	],
 ];
-
-const initialBindings = {
-	"eth-price": 3250,
-	"eth-change": 0.052,
-	"usdc-price": 1,
-	"usdc-change": 0,
-	"aave-price": 85,
-	"aave-change": -0.021,
-	"health-factor-msg": "Health factor: 1.42 (safe)",
-};
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -76,28 +81,30 @@ export const simulateAgentStream = async (
 	dispatch: (msg: Message) => void,
 	onDone?: () => void,
 ): Promise<() => void> => {
-	dispatch({ kind: "reset", source: dashboard, bindings: initialBindings });
+	dispatch({ kind: "reset", source: dashboard });
 
 	await sleep(400);
 
+	// Update ETH price + change at their call-site paths.
 	dispatch({
-		kind: "bindings-patch",
+		kind: "patch",
 		ops: [
-			{ op: "replace", path: "/eth-price", value: 3275 },
-			{ op: "replace", path: "/eth-change", value: 0.061 },
+			{ op: "replace", path: "/2/3/2/2", value: 3275 },
+			{ op: "replace", path: "/2/3/2/3", value: 0.061 },
 		],
 	});
 
 	await sleep(600);
 
+	// Update AAVE price + change, and the alert description.
 	dispatch({
-		kind: "bindings-patch",
+		kind: "patch",
 		ops: [
-			{ op: "replace", path: "/aave-price", value: 83.4 },
-			{ op: "replace", path: "/aave-change", value: -0.039 },
+			{ op: "replace", path: "/2/3/4/2", value: 83.4 },
+			{ op: "replace", path: "/2/3/4/3", value: -0.039 },
 			{
 				op: "replace",
-				path: "/health-factor-msg",
+				path: "/2/5/2/1",
 				value: "Health factor: 1.31 (caution)",
 			},
 		],
@@ -105,46 +112,39 @@ export const simulateAgentStream = async (
 
 	await sleep(600);
 
-	// Append a new card to the row.
-	// source = ["begin", define, stack]
-	// stack is at /2; children start at /2/2; the row is /2/3; cards start at /2/3/2.
+	// Append a new WBTC card to the row.
 	dispatch({
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "add",
 				path: "/2/3/-",
-				value: ["token-card", "WBTC", "wbtc-price", "wbtc-change"],
+				value: ["token-card", "WBTC", 67_400, 0.018],
 			},
-		],
-	});
-	dispatch({
-		kind: "bindings-patch",
-		ops: [
-			{ op: "add", path: "/wbtc-price", value: 67_400 },
-			{ op: "add", path: "/wbtc-change", value: 0.018 },
 		],
 	});
 
 	await sleep(400);
 
-	const tickers = ["eth-price", "aave-price", "wbtc-price"] as const;
-	const baselines: Record<string, number> = {
-		"eth-price": 3275,
-		"aave-price": 83.4,
-		"wbtc-price": 67_400,
-	};
+	// Live price feed — jitter values directly in the source.
+	// After the WBTC append, cards live at /2/3/2 (ETH), /2/3/4 (AAVE), /2/3/5 (WBTC).
+	// Price sits at index 2 of each card tuple (head=0, name=1, price=2, change=3).
+	const tickers: Array<{ path: string; base: number }> = [
+		{ path: "/2/3/2/2", base: 3275 }, // ETH price
+		{ path: "/2/3/4/2", base: 83.4 }, // AAVE price
+		{ path: "/2/3/5/2", base: 67_400 }, // WBTC price
+	];
 
 	let stopped = false;
 	const interval = setInterval(() => {
 		if (stopped) return;
-		const ticker =
-			tickers[Math.floor(Math.random() * tickers.length)] ?? "eth-price";
-		const next = jitter(baselines[ticker] ?? 0, 0.01);
+		const ticker = tickers[Math.floor(Math.random() * tickers.length)];
+		if (!ticker) return;
+		const next = jitter(ticker.base, 0.01);
 		dispatch({
-			kind: "bindings-patch",
+			kind: "patch",
 			ops: [
-				{ op: "replace", path: `/${ticker}`, value: Number(next.toFixed(2)) },
+				{ op: "replace", path: ticker.path, value: Number(next.toFixed(2)) },
 			],
 		});
 	}, 700);
@@ -161,13 +161,12 @@ export const simulateAgentStream = async (
 	return stop;
 };
 
-// ─────────── structural simulation: source-patches reshape the tree ───────────
+// ─────────── structural simulation: tree reshapes over time ───────────
+//
+// Root shape at every step:
+//   ["div", <props>, child0, child1, ...]
+// so children start at index 2. Use "-" to append.
 
-/**
- * Root shape at every step:
- *   ["div", <props>, child0, child1, ...]
- * so children start at index 2. Use "-" to append.
- */
 export const simulateAgentUiStream = async (
 	dispatch: (msg: Message) => void,
 	onDone?: () => void,
@@ -179,7 +178,7 @@ export const simulateAgentUiStream = async (
 		dispatch(msg);
 	};
 
-	// T0: analyzing shell with skeleton placeholder.
+	// T0: analyzing shell with skeleton.
 	dispatch({
 		kind: "reset",
 		source: [
@@ -192,12 +191,11 @@ export const simulateAgentUiStream = async (
 			],
 			["Skeleton", { className: "h-24 w-full" }],
 		],
-		bindings: {},
 	});
 
 	// T1: replace skeleton with loading group (text + progress bar).
 	await step(700, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "replace",
@@ -213,15 +211,14 @@ export const simulateAgentUiStream = async (
 	});
 
 	// T2: bump progress — deep patch into nested props.
-	// /3 is loading-group; children at /3/2..; Progress is at /3/3; props at /3/3/1.
 	await step(500, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [{ op: "replace", path: "/3/3/1", value: { value: 72 } }],
 	});
 
-	// T3: swap heading, replace loader with Overview card.
+	// T3: swap heading, replace loader with Overview card (values inline).
 	await step(500, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "replace",
@@ -252,34 +249,26 @@ export const simulateAgentUiStream = async (
 								[
 									"p",
 									{ className: "text-2xl font-bold" },
-									["format/usd", "portfolio-value"],
+									["format/usd", 49_125],
 								],
 								["Badge", { variant: "secondary" }, "12 tokens"],
-								["Badge", ["format/percent", "day-change"]],
+								["Badge", ["format/percent", 0.031]],
 							],
-							["p", { className: "text-sm" }, "portfolio-summary"],
+							[
+								"p",
+								{ className: "text-sm" },
+								"Active since 2021 · 847 transactions · 3 chains",
+							],
 						],
 					],
 				],
 			},
 		],
 	});
-	dispatch({
-		kind: "bindings-patch",
-		ops: [
-			{ op: "add", path: "/portfolio-value", value: 49_125 },
-			{ op: "add", path: "/day-change", value: 0.031 },
-			{
-				op: "add",
-				path: "/portfolio-summary",
-				value: "Active since 2021 · 847 transactions · 3 chains",
-			},
-		],
-	});
 
 	// T4: neutral risk alert.
 	await step(800, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "add",
@@ -295,7 +284,7 @@ export const simulateAgentUiStream = async (
 
 	// T5: morph into destructive variant.
 	await step(900, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "replace",
@@ -318,9 +307,9 @@ export const simulateAgentUiStream = async (
 		],
 	});
 
-	// T6: append a positions table (composed, not prop-driven).
+	// T6: append a positions table.
 	await step(700, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "add",
@@ -377,7 +366,7 @@ export const simulateAgentUiStream = async (
 
 	// T7: append an actions row.
 	await step(700, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "add",
@@ -395,13 +384,13 @@ export const simulateAgentUiStream = async (
 
 	// T8: remove the risk alert (indices shift afterward).
 	await step(900, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [{ op: "remove", path: "/4" }],
 	});
 
 	// T9: success alert.
 	await step(400, {
-		kind: "source-patch",
+		kind: "patch",
 		ops: [
 			{
 				op: "add",
