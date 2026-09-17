@@ -22,19 +22,19 @@ export const module = {
 
   concat: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Array(Schema.Any))),
+    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Array(Schema.Any)])),
     Effect.map(Arr.flatten)
   ),
 
   "includes?": flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
     Effect.map(([list, item]) => Arr.contains(list, item))
   ),
 
   map: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
     Effect.flatMap(([list, fn]) =>
       Effect.all(Arr.map(list, fn) as Effect.Effect<unknown>[])
     )
@@ -42,7 +42,7 @@ export const module = {
 
   "flat-map": flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any)),
+    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
     Effect.flatMap(([list, fn]) =>
       pipe(
         Arr.map(list, fn) as Effect.Effect<unknown[]>[],
@@ -54,7 +54,7 @@ export const module = {
 
   reduce: flow(
     (a: unknown, b: unknown, c: unknown) => [a, b, c],
-    decode(Schema.Tuple(Schema.Array(Schema.Any), Schema.Any, Schema.Any)),
+    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any, Schema.Any])),
     Effect.flatMap(([list, initial, fn]) =>
       Arr.reduce(list, Effect.succeed(initial), (accEffect, item) =>
         Effect.flatMap(accEffect, (acc) =>

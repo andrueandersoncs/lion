@@ -12,7 +12,7 @@ export type AssumedExpressionType =
 
 export const LionArrayExpressionSchema = Schema.Array(
   Schema.suspend(
-    (): Schema.Schema<AssumedExpressionType> => LionExpressionSchema
+    (): Schema.Codec<AssumedExpressionType> => LionExpressionSchema
   )
 );
 
@@ -21,23 +21,25 @@ export type LionArrayExpressionType = typeof LionArrayExpressionSchema.Type;
 const DISALLOWED_KEYS = ["__proto__"] as const;
 
 // record
-export const LionRecordExpressionSchema = Schema.Record({
-  key: Schema.String.pipe(
-    Schema.filter((s) => !Arr.contains(DISALLOWED_KEYS, s)),
-    Schema.minLength(1)
+export const LionRecordExpressionSchema = Schema.Record(
+  Schema.String.pipe(
+    Schema.check(
+      Schema.makeFilter((key) => !Arr.contains(DISALLOWED_KEYS, key)),
+      Schema.isMinLength(1)
+    )
   ),
-  value: Schema.suspend(
-    (): Schema.Schema<AssumedExpressionType> => LionExpressionSchema
-  ),
-});
+  Schema.suspend(
+    (): Schema.Codec<AssumedExpressionType> => LionExpressionSchema
+  )
+);
 
 export type LionRecordExpressionType = typeof LionRecordExpressionSchema.Type;
 
 // expression
-export const LionExpressionSchema = Schema.Union(
+export const LionExpressionSchema = Schema.Union([
   JsonPrimitiveSchema,
   LionArrayExpressionSchema,
-  LionRecordExpressionSchema
-);
+  LionRecordExpressionSchema,
+]);
 
 export type LionExpressionType = typeof LionExpressionSchema.Type;

@@ -3,7 +3,7 @@ import { ArgumentMismatchError } from "@/errors/evaluation";
 import { makeEnvironment } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
 import type { LambdaFormSchema } from "@/schemas/evaluation";
-import { getService, LionEnvironmentService } from "@/services/evaluation";
+import { LionEnvironmentService } from "@/services/evaluation";
 
 export const evaluateLambda = ([
   _,
@@ -11,7 +11,7 @@ export const evaluateLambda = ([
   bodyExpression,
 ]: typeof LambdaFormSchema.Type) =>
   Effect.gen(function* () {
-    const enclosedEnvironment = yield* getService(LionEnvironmentService);
+    const enclosedEnvironment = yield* LionEnvironmentService;
     const lambda = Effect.fn(function* (...args: unknown[]) {
       if (args.length < parameters.length) {
         return yield* new ArgumentMismatchError();

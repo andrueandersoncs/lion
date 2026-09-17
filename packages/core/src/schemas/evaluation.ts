@@ -10,24 +10,24 @@ export const LionFunctionValueSchema = Schema.declare(
   }
 );
 
-export const FunctionCallFormSchema = Schema.Tuple(
-  [LionExpressionSchema],
-  LionExpressionSchema
+export const FunctionCallFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([LionExpressionSchema]),
+  [LionExpressionSchema]
 );
 
-export const EvalFormSchema = Schema.Tuple(
+export const EvalFormSchema = Schema.Tuple([
   Schema.Literal("eval"),
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
-export const QuoteFormSchema = Schema.Tuple(
+export const QuoteFormSchema = Schema.Tuple([
   Schema.Literal("quote"),
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
-export const BeginFormSchema = Schema.Tuple(
-  [Schema.Literal("begin")],
-  LionExpressionSchema
+export const BeginFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("begin")]),
+  [LionExpressionSchema]
 );
 
 const DISALLOWED_IDENTIFIERS = [
@@ -42,57 +42,63 @@ const DISALLOWED_IDENTIFIERS = [
 ];
 
 export const ValidIdentifierSchema = Schema.String.pipe(
-  Schema.filter((s) => !DISALLOWED_IDENTIFIERS.includes(s)),
-  Schema.minLength(1)
+  Schema.check(
+    Schema.makeFilter(
+      (identifier) => !DISALLOWED_IDENTIFIERS.includes(identifier)
+    ),
+    Schema.isMinLength(1)
+  )
 );
 
-export const DefineFormSchema = Schema.Tuple(
+export const DefineFormSchema = Schema.Tuple([
   Schema.Literal("define"),
   ValidIdentifierSchema,
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
-export const LambdaFormSchema = Schema.Tuple(
+export const LambdaFormSchema = Schema.Tuple([
   Schema.Literal("lambda"),
   Schema.Array(ValidIdentifierSchema),
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
 // ["cond", [<predicate>, <result>], ..., ["else", <result>]]
-export const CondCaseSchema = Schema.Tuple(
+export const CondCaseSchema = Schema.Tuple([
   LionExpressionSchema,
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
-export const CondElseCaseSchema = Schema.Tuple(
+export const CondElseCaseSchema = Schema.Tuple([
   Schema.Literal("else"),
-  LionExpressionSchema
+  LionExpressionSchema,
+]);
+
+export const CondFormWithoutElseSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("cond"), CondCaseSchema]),
+  [CondCaseSchema]
 );
 
-export const CondFormWithoutElseSchema = Schema.Tuple(
-  [Schema.Literal("cond"), CondCaseSchema],
-  CondCaseSchema
+export const CondFormWithElseSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("cond"), CondCaseSchema]),
+  [CondCaseSchema, CondElseCaseSchema]
 );
 
-export const CondFormWithElseSchema = Schema.Tuple(
-  [Schema.Literal("cond"), CondCaseSchema],
-  CondCaseSchema,
-  CondElseCaseSchema
-);
-
-export const CondFormSchema = Schema.Union(
+export const CondFormSchema = Schema.Union([
   CondFormWithoutElseSchema,
-  CondFormWithElseSchema
-);
+  CondFormWithElseSchema,
+]);
 
 // ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
-export const MatchPatternSchema = Schema.Tuple(
+export const MatchPatternSchema = Schema.Tuple([
   LionExpressionSchema,
-  LionExpressionSchema
-);
+  LionExpressionSchema,
+]);
 
-export const MatchFormSchema = Schema.Tuple(
-  [Schema.Literal("match"), LionExpressionSchema, MatchPatternSchema],
-  MatchPatternSchema,
-  LionExpressionSchema
+export const MatchFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([
+    Schema.Literal("match"),
+    LionExpressionSchema,
+    MatchPatternSchema,
+  ]),
+  [MatchPatternSchema, LionExpressionSchema]
 );

@@ -6,7 +6,7 @@ export const module = {
 
   "equals?": flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => a === b)
   ),
 
@@ -14,31 +14,31 @@ export const module = {
 
   and: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => Bool.and(a, b))
   ),
 
   or: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => Bool.or(a, b))
   ),
 
   xor: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => Bool.xor(a, b))
   ),
 
   nand: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => Bool.nand(a, b))
   ),
 
   nor: flow(
     (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple(Schema.Boolean, Schema.Boolean)),
+    decode(Schema.Tuple([Schema.Boolean, Schema.Boolean])),
     Effect.map(([a, b]) => Bool.nor(a, b))
   ),
 };

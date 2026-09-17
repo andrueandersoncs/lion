@@ -1,8 +1,7 @@
-import { Args, Command } from "@effect/cli"
-import { FetchHttpClient, HttpClient, HttpMiddleware, HttpRouter, HttpServer, HttpServerRequest, HttpServerResponse } from "@effect/platform"
-import { BunContext, BunHttpServer, BunRuntime } from "@effect/platform-bun"
-import { FileSystem, Path } from "@effect/platform"
-import { Config, Duration, Effect, Layer, pipe, Schema } from "effect"
+import { BunHttpServer, BunRuntime, BunServices } from "@effect/platform-bun"
+import { Config, Duration, Effect, FileSystem, Layer, Path, pipe, Schema } from "effect"
+import { Argument, Command } from "effect/unstable/cli"
+import { FetchHttpClient, HttpClient, HttpMiddleware, HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import * as Crypto from "node:crypto"
 
 const generateId = () => Crypto.randomBytes(3).toString("hex")
@@ -15,21 +14,27 @@ const toKebabCase = (str: string) =>
         .replace(/^-|-$/g, "")
 
 const SessionBody = Schema.Struct({
-    name: Schema.optionalWith(Schema.String, { default: () => "debug" })
+    name: Schema.String.pipe(
+        Schema.withDecodingDefaultType(Effect.succeed("debug"))
+    )
 })
 
-const LogBody = Schema.Struct({
-    sessionId: Schema.optionalWith(Schema.String, { default: () => "default" }),
-    msg: Schema.optional(Schema.String),
-}).pipe(Schema.extend(Schema.Record({ key: Schema.String, value: Schema.Unknown })))
-
+const LogBody = Schema.StructWithRest(
+    Schema.Struct({
+        sessionId: Schema.String.pipe(
+            Schema.withDecodingDefaultType(Effect.succeed("default"))
+        ),
+        msg: Schema.optional(Schema.String),
+    }),
+    [Schema.Record(Schema.String, Schema.Unknown)]
+)
 const makeRouter = (logDir: string) =>
-    HttpRouter.empty.pipe(
-        HttpRouter.get("/", Effect.gen(function* () {
-            return yield* HttpServerResponse.json({ status: "ok", log_dir: logDir })
+    HttpRouter.addAll([
+        HttpRouter.route("GET", "/", HttpServerResponse.json({
+            status: "ok",
+            log_dir: logDir,
         })),
-
-        HttpRouter.post("/session", Effect.gen(function* () {
+        HttpRouter.route("POST", "/session", Effect.gen(function* () {
             const path = yield* Path.Path
             const fs = yield* FileSystem.FileSystem
             const body = yield* HttpServerRequest.schemaBodyJson(SessionBody)
@@ -40,10 +45,12 @@ const makeRouter = (logDir: string) =>
             yield* fs.writeFileString(logFile, "")
             yield* Effect.log(`[session] Created: ${sessionId}`)
 
-            return yield* HttpServerResponse.json({ session_id: sessionId, log_file: logFile })
+            return yield* HttpServerResponse.json({
+                session_id: sessionId,
+                log_file: logFile,
+            })
         })),
-
-        HttpRouter.post("/log", Effect.gen(function* () {
+        HttpRouter.route("POST", "/log", Effect.gen(function* () {
             const path = yield* Path.Path
             const fs = yield* FileSystem.FileSystem
             const body = yield* HttpServerRequest.schemaBodyJson(LogBody)
@@ -51,28 +58,29 @@ const makeRouter = (logDir: string) =>
             const logFile = path.join(logDir, `debug-${sessionId}.log`)
             const entry = { ts: new Date().toISOString(), ...rest }
 
-            yield* fs.writeFileString(logFile, JSON.stringify(entry) + "\n", { flag: "a" })
-            yield* Effect.log(`[${sessionId}] ${entry.msg ?? JSON.stringify(entry).slice(0, 80)}`)
+            yield* fs.writeFileString(logFile, `${JSON.stringify(entry)}\n`, {
+                flag: "a",
+            })
+            yield* Effect.log(
+                `[${sessionId}] ${entry.msg ?? JSON.stringify(entry).slice(0, 80)}`
+            )
 
-            return yield* HttpServerResponse.json({ ok: true, log_file: logFile })
+            return yield* HttpServerResponse.json({
+                ok: true,
+                log_file: logFile,
+            })
         })),
-
-        HttpRouter.catchAll((error) =>
-            HttpServerResponse.json({ error: String(error) }, { status: 400 })
-        ),
-
-        HttpMiddleware.cors()
-    )
+    ])
 
 const directory = pipe(
-    Args.text({ name: "directory" }),
-    Args.withDescription("The relative path to your project's directory. A .debug/ directory will be created at this path.")
+    Argument.String("directory"),
+    Argument.withDescription("The relative path to your project's directory. A .debug/ directory will be created at this path.")
 )
 
 const serve = Command.make("serve", { directory }, ({ directory }) =>
     Effect.gen(function* () {
-        const logSubdir = yield* Config.string("DEBUG_LOG_DIR").pipe(Config.withDefault(".debug"))
-        const port = yield* Config.integer("DEBUG_PORT").pipe(Config.withDefault(8787))
+        const logSubdir = yield* Config.String("DEBUG_LOG_DIR").pipe(Config.withDefault(".debug"))
+        const port = yield* Config.Int("DEBUG_PORT").pipe(Config.withDefault(8787))
         const path = yield* Path.Path
         const logDir = path.resolve(directory, logSubdir)
 
@@ -96,15 +104,20 @@ const serve = Command.make("serve", { directory }, ({ directory }) =>
         const fs = yield* FileSystem.FileSystem
         yield* fs.makeDirectory(logDir, { recursive: true })
 
-        const router = makeRouter(logDir)
-
-        const ServerLive = BunHttpServer.layer({ port })
-
-        const app = pipe(
-            router,
-            HttpServer.serve(),
-            HttpServer.withLogAddress,
-            Layer.provide(ServerLive)
+        const app = HttpRouter.serve(makeRouter(logDir), {
+            middleware: (httpEffect) =>
+                pipe(
+                    httpEffect,
+                    Effect.catch((error) =>
+                        HttpServerResponse.json(
+                            { error: String(error) },
+                            { status: 400 }
+                        )
+                    ),
+                    HttpMiddleware.cors()
+                ),
+        }).pipe(
+            Layer.provide(BunHttpServer.layer({ port }))
         )
 
         yield* Layer.launch(app)
@@ -116,18 +129,18 @@ const toLogFileBase = (raw: string) => {
 }
 
 const action = pipe(
-    Args.choice([["clear", "clear"] as const, ["remove", "remove"] as const]),
-    Args.withDescription("Action to perform: clear (truncate) or remove (delete)")
+    Argument.ChoiceWithValue("action", [["clear", "clear"] as const, ["remove", "remove"] as const]),
+    Argument.withDescription("Action to perform: clear (truncate) or remove (delete)")
 )
 
 const sessionId = pipe(
-    Args.text({ name: "sessionId" }),
-    Args.withDescription("Session ID or log file base name")
+    Argument.String("sessionId"),
+    Argument.withDescription("Session ID or log file base name")
 )
 
 const cleanup = Command.make("cleanup", { action, directory, sessionId }, ({ action, directory, sessionId }) =>
     Effect.gen(function* () {
-        const logSubdir = yield* Config.string("DEBUG_LOG_DIR").pipe(Config.withDefault(".debug"))
+        const logSubdir = yield* Config.String("DEBUG_LOG_DIR").pipe(Config.withDefault(".debug"))
         const path = yield* Path.Path
         const fs = yield* FileSystem.FileSystem
 
@@ -156,11 +169,10 @@ const command = pipe(
 )
 
 const cli = Command.run(command, {
-    name: "Debug Server CLI",
     version: "v1.0.0"
 })
 
-cli(process.argv).pipe(
-    Effect.provide(Layer.merge(BunContext.layer, FetchHttpClient.layer)),
+cli.pipe(
+    Effect.provide(Layer.merge(BunServices.layer, FetchHttpClient.layer)),
     BunRuntime.runMain
 )

@@ -2,6 +2,8 @@
 
 Lion is a JSON-based Lisp. Every Lion program is valid JSON, which makes it easy to serialize, store, inspect, and generate from other systems.
 
+The evaluator runs on Effect v4.
+
 Lion evaluates:
 
 - JSON primitives directly

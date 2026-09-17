@@ -1,55 +1,65 @@
 import { Effect, flow, Record, Schema } from "effect";
 
-class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>(
-  "NotAnObjectError"
-)("NotAnObjectError", { actual: Schema.Unknown }) {}
+class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>()(
+  "NotAnObjectError",
+  { actual: Schema.Unknown }
+) {}
 
-class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>(
-  "KeyNotFoundError"
-)("KeyNotFoundError", { key: Schema.String }) {}
+class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>()(
+  "KeyNotFoundError",
+  { key: Schema.String }
+) {}
 
-class NotAFunctionError extends Schema.TaggedError<NotAFunctionError>(
-  "NotAFunctionError"
-)("NotAFunctionError", { key: Schema.String, actual: Schema.Unknown }) {}
+class NotAFunctionError extends Schema.TaggedError<NotAFunctionError>()(
+  "NotAFunctionError",
+  { key: Schema.String, actual: Schema.Unknown }
+) {}
 
-class NotAConstructorError extends Schema.TaggedError<NotAConstructorError>(
-  "NotAConstructorError"
-)("NotAConstructorError", { actual: Schema.Unknown }) {}
+class NotAConstructorError extends Schema.TaggedError<NotAConstructorError>()(
+  "NotAConstructorError",
+  { actual: Schema.Unknown }
+) {}
 
-class PathTraversalError extends Schema.TaggedError<PathTraversalError>(
-  "PathTraversalError"
-)("PathTraversalError", {
-  path: Schema.String,
-  key: Schema.String,
-  current: Schema.Unknown,
-}) {}
+class PathTraversalError extends Schema.TaggedError<PathTraversalError>()(
+  "PathTraversalError",
+  {
+    path: Schema.String,
+    key: Schema.String,
+    current: Schema.Unknown,
+  }
+) {}
 
-class EmptyPathError extends Schema.TaggedError<EmptyPathError>(
-  "EmptyPathError"
-)("EmptyPathError", { path: Schema.String }) {}
+class EmptyPathError extends Schema.TaggedError<EmptyPathError>()(
+  "EmptyPathError",
+  { path: Schema.String }
+) {}
 
-class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>(
-  "MethodNotFoundError"
-)("MethodNotFoundError", {
-  path: Schema.String,
-  methodKey: Schema.String,
-  actual: Schema.Unknown,
-}) {}
+class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>()(
+  "MethodNotFoundError",
+  {
+    path: Schema.String,
+    methodKey: Schema.String,
+    actual: Schema.Unknown,
+  }
+) {}
 
-class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>(
-  "IndexOutOfBoundsError"
-)("IndexOutOfBoundsError", {
-  index: Schema.Number,
-  length: Schema.Number,
-}) {}
+class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
+  "IndexOutOfBoundsError",
+  {
+    index: Schema.Number,
+    length: Schema.Number,
+  }
+) {}
 
-class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>(
-  "NotAnArrayError"
-)("NotAnArrayError", { actual: Schema.Unknown }) {}
+class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>()(
+  "NotAnArrayError",
+  { actual: Schema.Unknown }
+) {}
 
-class InvalidPathError extends Schema.TaggedError<InvalidPathError>(
-  "InvalidPathError"
-)("InvalidPathError", { path: Schema.Unknown }) {}
+class InvalidPathError extends Schema.TaggedError<InvalidPathError>()(
+  "InvalidPathError",
+  { path: Schema.Unknown }
+) {}
 
 const NUMERIC_KEY_REGEX = /^\d+$/;
 
@@ -194,17 +204,13 @@ export const module = {
 
   keys: flow(
     (obj: unknown) => obj,
-    Schema.decodeUnknown(
-      Schema.Record({ key: Schema.String, value: Schema.Unknown })
-    ),
+    Schema.decodeUnknownEffect(Schema.Record(Schema.String, Schema.Unknown)),
     Effect.map(Record.keys)
   ),
 
   values: flow(
     (obj: unknown) => obj,
-    Schema.decodeUnknown(
-      Schema.Record({ key: Schema.String, value: Schema.Unknown })
-    ),
+    Schema.decodeUnknownEffect(Schema.Record(Schema.String, Schema.Unknown)),
     Effect.map(Record.values)
   ),
 

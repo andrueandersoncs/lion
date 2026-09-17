@@ -5,7 +5,7 @@ This document provides essential information for AI coding agents working on the
 ## Project Overview
 
 Lion is a TypeScript monorepo with two main packages:
-- **@lionlang/core**: Core library built with Effect.js for functional programming
+- **@lionlang/core**: Core library built with Effect v4 for functional programming
 - **@lionlang/repl**: React-based web application using TanStack Router and Vite
 
 ## Build, Lint, and Test Commands
@@ -74,9 +74,9 @@ describe("moduleName", () => {
 ```
 
 ### Running Single Tests
-- Run specific test file: `npx vitest run path/to/test.test.ts`
-- Run tests matching pattern: `npx vitest run --reporter=verbose "pattern"`
-- Run with coverage: `npx vitest run --coverage`
+- Run specific test file: `bunx vitest run path/to/test.test.ts`
+- Run tests matching pattern: `bunx vitest run --reporter=verbose "pattern"`
+- Run with coverage: `bunx vitest run --coverage`
 
 ## Code Style Guidelines
 
@@ -146,9 +146,9 @@ const dual = (args: unknown[], options?: Options) =>
 
 #### Schema Validation
 ```typescript
-const validateNumber = Schema.decodeUnknown(Schema.Number);
-const validateTuple = Schema.decodeUnknown(
-  Schema.Tuple(Schema.Number, Schema.Number)
+const validateNumber = Schema.decodeUnknownEffect(Schema.Number);
+const validateTuple = Schema.decodeUnknownEffect(
+  Schema.Tuple([Schema.Number, Schema.Number])
 );
 ```
 
@@ -156,7 +156,7 @@ const validateTuple = Schema.decodeUnknown(
 ```typescript
 export const operation = flow(
   (...args: unknown[]) => args,
-  Schema.decodeUnknown(SomeSchema),
+  Schema.decodeUnknownEffect(SomeSchema),
   Effect.map(processData)
 );
 ```
@@ -203,7 +203,7 @@ const operation = (value: unknown) =>
     : Effect.fail(new TypeError("Expected number"));
 
 // Catch and handle errors
-const safeOperation = Effect.catchAll(operation, (error) =>
+const safeOperation = Effect.catch(operation, (error) =>
   Effect.succeed(`Error: ${error.message}`)
 );
 ```

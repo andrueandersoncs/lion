@@ -23,7 +23,7 @@
 import { Schema } from "effect";
 
 // Base UI node — every UI element has this shape
-export const UINodeTypeSchema = Schema.Literal(
+export const UINodeTypeSchema = Schema.Literals([
 	"text",
 	"heading",
 	"button",
@@ -39,7 +39,7 @@ export const UINodeTypeSchema = Schema.Literal(
 	"table",
 	"input",
 	"image",
-);
+]);
 
 export type UINodeType = typeof UINodeTypeSchema.Type;
 
@@ -49,32 +49,32 @@ export interface UINode {
 	readonly children?: ReadonlyArray<UINode | string | number | boolean>;
 }
 
-export const UINodeSchema: Schema.Schema<UINode> = Schema.suspend(() =>
+export const UINodeSchema: Schema.Codec<UINode> = Schema.suspend(() =>
 	Schema.Struct({
 		$ui: UINodeTypeSchema,
 		props: Schema.optional(
-			Schema.Record({ key: Schema.String, value: Schema.Unknown }),
+			Schema.Record(Schema.String, Schema.Unknown),
 		),
 		children: Schema.optional(
 			Schema.Array(
-				Schema.Union(
+				Schema.Union([
 					UINodeSchema,
 					Schema.String,
 					Schema.Number,
 					Schema.Boolean,
-				),
+				]),
 			),
 		),
 	}),
 );
 
 // Stream message types for incremental updates
-export const UIStreamOperationSchema = Schema.Literal(
+export const UIStreamOperationSchema = Schema.Literals([
 	"replace", // Replace the entire UI tree
 	"append", // Append children to a target node
 	"update", // Update props of a target node
 	"clear", // Clear the UI
-);
+]);
 
 export type UIStreamOperation = typeof UIStreamOperationSchema.Type;
 
@@ -85,11 +85,17 @@ export interface UIStreamMessage {
 	readonly timestamp: number;
 }
 
-export const UIStreamMessageSchema: Schema.Schema<UIStreamMessage> =
+export const UIStreamMessageSchema: Schema.Codec<UIStreamMessage> =
 	Schema.Struct({
 		op: UIStreamOperationSchema,
 		path: Schema.optional(Schema.String),
-		value: Schema.Union(UINodeSchema, Schema.String, Schema.Number, Schema.Boolean, Schema.Null),
+		value: Schema.Union([
+			UINodeSchema,
+			Schema.String,
+			Schema.Number,
+			Schema.Boolean,
+			Schema.Null,
+		]),
 		timestamp: Schema.Number,
 	});
 ```

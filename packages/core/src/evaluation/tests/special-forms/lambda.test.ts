@@ -46,11 +46,13 @@ describe("lambda special form", () => {
   it.effect.prop(
     "should evaluate to a function, calling the function with too few arguments should produce an error",
     [
-      Schema.Tuple(
+      Schema.Tuple([
         Schema.Literal("lambda"),
-        Schema.Tuple([ValidIdentifierSchema], ValidIdentifierSchema),
-        LionExpressionSchema
-      ),
+        Schema.TupleWithRest(Schema.Tuple([ValidIdentifierSchema]), [
+          ValidIdentifierSchema,
+        ]),
+        LionExpressionSchema,
+      ]),
     ],
     ([expression]) =>
       Effect.gen(function* () {

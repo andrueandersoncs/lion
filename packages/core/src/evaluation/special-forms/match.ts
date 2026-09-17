@@ -1,19 +1,11 @@
-import {
-  Array as Arr,
-  Effect,
-  Match,
-  Option,
-  pipe,
-  Record,
-  Schema,
-} from "effect";
+import { Effect, Record, Schema } from "effect";
 import { evaluate } from "@/evaluation/evaluate";
 import {
   LionFunctionValueSchema,
   type MatchFormSchema,
   MatchPatternSchema,
 } from "@/schemas/evaluation";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
+import type { LionExpressionSchema } from "@/schemas/lion-expression";
 import type { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
@@ -25,113 +17,87 @@ type AssumedMatchPredicateType =
   | { readonly [key: string]: AssumedMatchPredicateType }
   | typeof LionFunctionValueSchema.Type;
 
-const MatchPredicateRecordSchema = Schema.Record({
-  key: Schema.String,
-  value: Schema.suspend(
-    (): Schema.Schema<AssumedMatchPredicateType> => MatchPredicateSchema
-  ),
-});
-
-const MatchPredicateSchema = Schema.Union(
-  MatchPredicateRecordSchema,
-  LionFunctionValueSchema
+const MatchPredicateRecordSchema = Schema.Record(
+  Schema.String,
+  Schema.suspend(
+    (): Schema.Codec<AssumedMatchPredicateType> => MatchPredicateSchema
+  )
 );
 
-const AnyRecordSchema = Schema.Record({
-  key: Schema.String,
-  value: Schema.Any,
-});
+const MatchPredicateSchema = Schema.Union([
+  MatchPredicateRecordSchema,
+  LionFunctionValueSchema,
+]);
+
+const AnyRecordSchema = Schema.Record(Schema.String, Schema.Any);
 
 const evaluatePredicate = (
   value: unknown,
   predicate: typeof MatchPredicateSchema.Type
-): Effect.Effect<boolean, never, LionEnvironmentService> =>
-  pipe(
-    Match.value(predicate),
-    Match.when(Schema.is(MatchPredicateRecordSchema), (record) =>
-      Effect.gen(function* () {
-        if (!Schema.is(AnyRecordSchema)(value)) {
+): Effect.Effect<boolean, never, LionEnvironmentService> => {
+  if (Schema.is(MatchPredicateRecordSchema)(predicate)) {
+    return Effect.gen(function* () {
+      if (!Schema.is(AnyRecordSchema)(value)) {
+        return false;
+      }
+
+      if (!Record.keys(predicate).every((key) => Record.has(value, key))) {
+        return false;
+      }
+
+      for (const [key, nestedPredicate] of Record.toEntries(predicate)) {
+        if (!(yield* evaluatePredicate(value[key], nestedPredicate))) {
           return false;
         }
+      }
+      return true;
+    });
+  }
 
-        if (!Record.keys(record).every((key) => Record.has(value, key))) {
-          return false;
-        }
-
-        let result = true;
-        for (const [recordKey, recordValue] of Record.toEntries(record)) {
-          const recordValueResult = yield* evaluatePredicate(
-            value[recordKey],
-            recordValue
-          );
-          result = result && recordValueResult;
-        }
-
-        return result;
-      })
-    ),
-    Match.when(Schema.is(LionFunctionValueSchema), (predicateFn) =>
-      pipe(
-        predicateFn(value),
-        Effect.flatMap(Schema.decodeUnknown(Schema.Boolean)),
-        Effect.catchAll(() => Effect.succeed(false))
-      )
-    ),
-    Match.orElseAbsurd
+  return predicate(value).pipe(
+    Effect.flatMap(Schema.decodeUnknownEffect(Schema.Boolean)),
+    Effect.catch(() => Effect.succeed(false))
   );
+};
 
 const evaluateMatchPatterns = (
   value: unknown,
-  patternExprs: (
-    | typeof MatchPatternSchema.Type
-    | typeof LionExpressionSchema.Type
-  )[]
+  patternExprs: ReadonlyArray<
+    typeof MatchPatternSchema.Type | typeof LionExpressionSchema.Type
+  >
 ): EvaluateResult =>
-  pipe(
-    Arr.head(patternExprs),
-    Option.getOrThrow,
-    Match.value,
-    Match.when(Schema.is(MatchPatternSchema), ([predicateExpr, fnExpr]) =>
-      pipe(
-        Effect.Do,
-        Effect.bind("predicate", () => evaluate(predicateExpr)),
-        Effect.bind("fn", () =>
-          pipe(
-            evaluate(fnExpr),
-            Effect.flatMap(Schema.decodeUnknown(LionFunctionValueSchema))
-          )
-        ),
-        Effect.flatMap(({ predicate, fn }) =>
-          pipe(
-            Schema.decodeUnknown(MatchPredicateSchema)(predicate),
-            Effect.flatMap((predicate) => evaluatePredicate(value, predicate)),
-            Effect.if({
-              onTrue: () => fn(value),
-              onFalse: () =>
-                pipe(Arr.tail(patternExprs), Option.getOrThrow, (tail) =>
-                  evaluateMatchPatterns(value, tail)
-                ),
-            })
-          )
-        )
-      )
-    ),
-    Match.when(Schema.is(LionExpressionSchema), (fallbackFn) =>
-      pipe(
-        evaluate(fallbackFn),
-        Effect.flatMap(Schema.decodeUnknown(LionFunctionValueSchema)),
-        Effect.flatMap((fallbackFn) => fallbackFn(value))
-      )
-    ),
-    Match.exhaustive
-  );
+  Effect.gen(function* () {
+    const patternExpr = patternExprs[0];
+    if (patternExpr === undefined) {
+      return yield* Effect.die(
+        new Error("Match expression requires a fallback function")
+      );
+    }
+
+    if (Schema.is(MatchPatternSchema)(patternExpr)) {
+      const [predicateExpr, functionExpr] = patternExpr;
+      const predicate = yield* evaluate(predicateExpr).pipe(
+        Effect.flatMap(Schema.decodeUnknownEffect(MatchPredicateSchema))
+      );
+      const fn = yield* evaluate(functionExpr).pipe(
+        Effect.flatMap(Schema.decodeUnknownEffect(LionFunctionValueSchema))
+      );
+      return (yield* evaluatePredicate(value, predicate))
+        ? yield* fn(value)
+        : yield* evaluateMatchPatterns(value, patternExprs.slice(1));
+    }
+
+    const fallback = yield* evaluate(patternExpr).pipe(
+      Effect.flatMap(Schema.decodeUnknownEffect(LionFunctionValueSchema))
+    );
+    return yield* fallback(value);
+  });
 
 export const evaluateMatch = ([
   _,
-  valueExpr,
-  ...patternExprs
+  valueExpression,
+  ...patternExpressions
 ]: typeof MatchFormSchema.Type) =>
-  pipe(
-    evaluate(valueExpr),
-    Effect.flatMap((value) => evaluateMatchPatterns(value, patternExprs))
+  evaluate(valueExpression).pipe(
+    Effect.flatMap((value) => evaluateMatchPatterns(value, patternExpressions))
   );

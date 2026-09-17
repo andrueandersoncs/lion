@@ -1,11 +1,11 @@
-import { Ref, Schema } from "effect";
+import { type Ref, Schema } from "effect";
 
 type BindingsRef = Ref.Ref<Record<string, unknown>>;
 
 const isBindingsRef = (input: unknown): input is BindingsRef =>
-  typeof input === "object" && input !== null && Ref.RefTypeId in input;
+  typeof input === "object" && input !== null && "ref" in input;
 
-const BindingsSchema: Schema.Schema<BindingsRef> =
+const BindingsSchema: Schema.Codec<BindingsRef> =
   Schema.declare<BindingsRef>(isBindingsRef);
 
 export interface InnerEnvironment {
@@ -21,10 +21,10 @@ export const ToplevelEnvironmentSchema = Schema.Struct({
   bindingsRef: BindingsSchema,
 });
 
-export const EnvironmentSchema = Schema.Union(
+export const EnvironmentSchema = Schema.Union([
   ToplevelEnvironmentSchema,
-  Schema.suspend((): Schema.Schema<InnerEnvironment> => InnerEnvironmentSchema)
-);
+  Schema.suspend((): Schema.Codec<InnerEnvironment> => InnerEnvironmentSchema),
+]);
 
 export const InnerEnvironmentSchema = Schema.Struct({
   bindingsRef: BindingsSchema,

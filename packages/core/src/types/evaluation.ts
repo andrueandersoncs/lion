@@ -1,5 +1,4 @@
-import type { Effect } from "effect";
-import type { ParseError } from "effect/ParseResult";
+import type { Effect, Schema } from "effect";
 import type {
   ArgumentMismatchError,
   InvalidFunctionCallError,
@@ -8,6 +7,6 @@ import type { LionEnvironmentService } from "@/services/evaluation";
 
 export type EvaluateResult = Effect.Effect<
   unknown,
-  ParseError | ArgumentMismatchError | InvalidFunctionCallError,
+  Schema.SchemaError | ArgumentMismatchError | InvalidFunctionCallError,
   LionEnvironmentService
 >;

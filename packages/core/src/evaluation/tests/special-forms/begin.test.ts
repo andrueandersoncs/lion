@@ -20,8 +20,8 @@ describe("begin special form", () => {
         );
         const expected = pipe(
           Match.value(evaluatedArgs),
-          Match.when(Arr.isNonEmptyArray, (a) => Arr.lastNonEmpty(a)),
-          Match.when(Arr.isEmptyArray, () => []),
+          Match.when(Arr.isArrayNonEmpty, (a) => Arr.lastNonEmpty(a)),
+          Match.when(Arr.isArrayEmpty, () => []),
           Match.orElse((a) => a)
         );
         expect(result).toEqual(expected);

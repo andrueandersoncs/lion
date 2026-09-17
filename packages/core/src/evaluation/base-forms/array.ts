@@ -23,7 +23,7 @@ import type { LionArrayExpressionType } from "@/schemas/lion-expression.ts";
 export const evaluateArray = (expression: LionArrayExpressionType) =>
   pipe(
     Match.value(expression),
-    Match.when(Arr.isEmptyReadonlyArray, Effect.succeed),
+    Match.when(Arr.isReadonlyArrayEmpty, Effect.succeed),
     Match.when(Schema.is(EvalFormSchema), (_) => evaluateEval(_)),
     Match.when(Schema.is(QuoteFormSchema), (_) => evaluateQuote(_)),
     Match.when(Schema.is(BeginFormSchema), (_) => evaluateBegin(_)),
