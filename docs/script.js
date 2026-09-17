@@ -1,62 +1,63 @@
 // Mobile menu toggle
-const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-const mobileMenu = document.querySelector('.mobile-menu');
+const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+const mobileMenu = document.querySelector(".mobile-menu");
 
 if (mobileMenuBtn && mobileMenu) {
-  mobileMenuBtn.addEventListener('click', () => {
-    mobileMenu.classList.toggle('active');
-    
+  mobileMenuBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("active");
+
     // Animate hamburger to X
-    const spans = mobileMenuBtn.querySelectorAll('span');
-    if (mobileMenu.classList.contains('active')) {
-      spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
-      spans[1].style.opacity = '0';
-      spans[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+    const spans = mobileMenuBtn.querySelectorAll("span");
+    if (mobileMenu.classList.contains("active")) {
+      spans[0].style.transform = "rotate(45deg) translate(5px, 5px)";
+      spans[1].style.opacity = "0";
+      spans[2].style.transform = "rotate(-45deg) translate(5px, -5px)";
     } else {
-      spans[0].style.transform = 'none';
-      spans[1].style.opacity = '1';
-      spans[2].style.transform = 'none';
+      spans[0].style.transform = "none";
+      spans[1].style.opacity = "1";
+      spans[2].style.transform = "none";
     }
   });
 
   // Close mobile menu when clicking a link
-  mobileMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('active');
-      const spans = mobileMenuBtn.querySelectorAll('span');
-      spans[0].style.transform = 'none';
-      spans[1].style.opacity = '1';
-      spans[2].style.transform = 'none';
+  for (const link of mobileMenu.querySelectorAll("a")) {
+    link.addEventListener("click", () => {
+      mobileMenu.classList.remove("active");
+      const spans = mobileMenuBtn.querySelectorAll("span");
+      spans[0].style.transform = "none";
+      spans[1].style.opacity = "1";
+      spans[2].style.transform = "none";
     });
-  });
+  }
 }
 
 // Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
+for (const anchor of document.querySelectorAll('a[href^="#"]')) {
+  anchor.addEventListener("click", function (e) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
+    const target = document.querySelector(this.getAttribute("href"));
     if (target) {
       const headerOffset = 80;
       const elementPosition = target.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   });
-});
+}
 
 // Add scroll-based nav background opacity
-const nav = document.querySelector('.nav');
+const nav = document.querySelector(".nav");
 if (nav) {
-  window.addEventListener('scroll', () => {
+  window.addEventListener("scroll", () => {
     if (window.scrollY > 50) {
-      nav.style.backgroundColor = 'rgba(10, 10, 10, 0.95)';
+      nav.style.backgroundColor = "rgba(10, 10, 10, 0.95)";
     } else {
-      nav.style.backgroundColor = 'rgba(10, 10, 10, 0.8)';
+      nav.style.backgroundColor = "rgba(10, 10, 10, 0.8)";
     }
   });
 }
@@ -64,32 +65,36 @@ if (nav) {
 // Animate elements on scroll
 const observerOptions = {
   threshold: 0.1,
-  rootMargin: '0px 0px -50px 0px'
+  rootMargin: "0px 0px -50px 0px",
 };
 
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
+  for (const entry of entries) {
     if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
+      entry.target.style.opacity = "1";
+      entry.target.style.transform = "translateY(0)";
     }
-  });
+  }
 }, observerOptions);
 
 // Apply initial styles and observe elements
-document.querySelectorAll('.feature-card, .example-card, .docs-step, .stat').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-  observer.observe(el);
-});
+for (const element of document.querySelectorAll(
+  ".feature-card, .example-card, .docs-step, .stat"
+)) {
+  element.style.opacity = "0";
+  element.style.transform = "translateY(20px)";
+  element.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+  observer.observe(element);
+}
 
 // Add copy functionality to code blocks (optional enhancement)
-document.querySelectorAll('.code-block').forEach(block => {
-  block.style.position = 'relative';
-  
-  const copyBtn = document.createElement('button');
-  copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+for (const block of document.querySelectorAll(".code-block")) {
+  block.style.position = "relative";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.setAttribute("aria-label", "Copy code");
+  copyBtn.innerHTML = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
   copyBtn.style.cssText = `
     position: absolute;
     top: 0.5rem;
@@ -103,29 +108,31 @@ document.querySelectorAll('.code-block').forEach(block => {
     opacity: 0;
     transition: opacity 0.2s, color 0.2s;
   `;
-  
+
   block.appendChild(copyBtn);
-  
-  block.addEventListener('mouseenter', () => {
-    copyBtn.style.opacity = '1';
+
+  block.addEventListener("mouseenter", () => {
+    copyBtn.style.opacity = "1";
   });
-  
-  block.addEventListener('mouseleave', () => {
-    copyBtn.style.opacity = '0';
+
+  block.addEventListener("mouseleave", () => {
+    copyBtn.style.opacity = "0";
   });
-  
-  copyBtn.addEventListener('click', async () => {
-    const code = block.querySelector('code').textContent;
+
+  copyBtn.addEventListener("click", async () => {
+    const code = block.querySelector("code").textContent;
     try {
       await navigator.clipboard.writeText(code);
-      copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      copyBtn.style.color = '#22c55e';
+      copyBtn.innerHTML = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      copyBtn.style.color = "#22c55e";
+      copyBtn.setAttribute("aria-label", "Copied");
       setTimeout(() => {
-        copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-        copyBtn.style.color = 'var(--muted)';
+        copyBtn.innerHTML = `<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+        copyBtn.style.color = "var(--muted)";
+        copyBtn.setAttribute("aria-label", "Copy code");
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   });
-});
+}

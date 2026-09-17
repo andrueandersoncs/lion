@@ -2,112 +2,80 @@ import { run } from "@lionlang/core/evaluation/evaluate";
 import { stdlib } from "@lionlang/core/modules";
 import { Effect } from "effect";
 
-const env = {
-  ...stdlib,
-  price: 100,
-  taxRate: 0.08,
-  clamp: (min: number, max: number, value: number) =>
-    Math.min(max, Math.max(min, value)),
-  user: {
-    name: "Ada",
-    stats: {
-      score: 92,
-    },
-  },
-};
+interface Example {
+  readonly expression: unknown;
+  readonly name: string;
+}
 
-const examples: Array<{
-  name: string;
-  program: unknown;
-}> = [
+const examples: readonly Example[] = [
   {
     name: "Arithmetic",
-    program: ["number/add", "price", ["number/multiply", "price", "taxRate"]],
+    expression: ["number/add", 1, 2],
   },
   {
-    name: "Sequential Evaluation",
-    program: [
+    name: "Sequential evaluation",
+    expression: [
       "begin",
-      ["define", "x", 1],
-      ["define", "x", ["number/add", "x", 4]],
-      "x",
+      ["define", "value", 10],
+      ["number/multiply", "value", 2],
     ],
   },
   {
-    name: "Conditionals",
-    program: [
+    name: "Branching",
+    expression: [
       "cond",
-      [
-        ["number/greaterThan", ["object/get-path", "user", "stats.score"], 90],
-        "great",
-      ],
-      [
-        ["number/greaterThan", ["object/get-path", "user", "stats.score"], 70],
-        "pass",
-      ],
-      ["else", "retry"],
+      [["number/greaterThan", 5, 3], "greater"],
+      ["else", "smaller"],
     ],
   },
   {
-    name: "Array Mapping",
-    program: [
+    name: "Collection transform",
+    expression: [
       "array/map",
       ["array/make", 1, 2, 3],
-      ["lambda", ["x"], ["number/multiply", "x", 10]],
+      ["lambda", ["item"], ["number/multiply", "item", 2]],
     ],
   },
   {
-    name: "Structural Match",
-    program: [
+    name: "Structural pattern matching",
+    expression: [
       "match",
-      [
-        "quote",
-        {
-          type: "user",
-          profile: {
-            name: "Ada",
-          },
-        },
-      ],
+      { profile: { name: "Ada" }, type: "user" },
       [
         {
-          type: ["func/partial", "string/equals?", ["quote", "user"]],
-          profile: {
-            name: "value/string?",
-          },
+          profile: { name: "value/string?" },
+          type: ["func/partial", "string/equals?", "user"],
         },
-        [
-          "lambda",
-          ["value"],
-          [
-            "string/concat",
-            ["object/get-path", "value", "profile.name"],
-            " matched",
-          ],
-        ],
+        ["lambda", ["user"], ["object/get-path", "user", "profile.name"]],
       ],
       ["lambda", ["value"], "value"],
     ],
   },
   {
-    name: "Host Interop",
-    program: ["clamp", 0, 100, 150],
-  },
-  {
-    name: "Object Path Lookup",
-    program: ["object/get-path", "user", "stats.score"],
+    name: "Nested object lookup",
+    expression: [
+      "object/get-path",
+      { users: ["array/make", { name: "Grace" }, { name: "Lin" }] },
+      "users.1.name",
+    ],
   },
 ];
 
-const main = Effect.gen(function* () {
-  console.log("=== Lion Examples ===");
+const results: { name: string; result: unknown }[] = [];
+for (const { expression, name } of examples) {
+  const result = await Effect.runPromise(run(expression, stdlib));
+  results.push({ name, result });
+}
 
-  for (const { name, program } of examples) {
-    const result = yield* run(program, env);
-    console.log(`\n${name}`);
-    console.log(JSON.stringify(program, null, 2));
-    console.log("=>", result);
-  }
-});
+const hostInterop = await Effect.runPromise(
+  run(["clamp", 0, 100, "reading"], {
+    ...stdlib,
+    clamp: (minimum: number, maximum: number, value: number) =>
+      Math.min(maximum, Math.max(minimum, value)),
+    reading: 142,
+  })
+);
 
-await Effect.runPromise(main);
+const output = { examples: results, hostInterop };
+
+process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);

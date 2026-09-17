@@ -1,10 +1,12 @@
 {
   "name": "@lionlang/agent",
-  "module": "src/index.tsx",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --watch src/index.ts"
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "dev": "bun run --watch src/index.ts",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -13,10 +15,10 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@ai-sdk/fireworks": "^2.0.42",
+    "@ai-sdk/fireworks": "^2.0.85",
     "@lionlang/core": "workspace:*",
-    "@opentui/core": "^0.1.90",
-    "ai": "^6.0.141",
+    "@opentui/core": "^0.1.107",
+    "ai": "^6.0.285",
     "effect": "catalog:"
   }
 }

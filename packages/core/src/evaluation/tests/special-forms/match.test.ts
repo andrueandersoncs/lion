@@ -103,23 +103,25 @@ describe("match special form", () => {
       expect(result).toEqual({ a: 1, b: 2 });
     })
   );
-  it.effect("should only match structural predicates if all substructures match", () =>
-    Effect.gen(function* () {
-      const expression = [
-        "match",
-        { a: 1, b: 2 },
-        [
-          {
-            a: "value/number?",
-            b: "value/boolean?",
-          },
-          "value/identity",
-        ],
-        ["lambda", ["x"], 1],
-      ];
-      const result = yield* run(expression, stdlib);
-      expect(result).toEqual(1);
-    })
+  it.effect(
+    "should only match structural predicates if all substructures match",
+    () =>
+      Effect.gen(function* () {
+        const expression = [
+          "match",
+          { a: 1, b: 2 },
+          [
+            {
+              a: "value/number?",
+              b: "value/boolean?",
+            },
+            "value/identity",
+          ],
+          ["lambda", ["x"], 1],
+        ];
+        const result = yield* run(expression, stdlib);
+        expect(result).toEqual(1);
+      })
   );
   it.effect("should match nested structural predicates", () =>
     Effect.gen(function* () {

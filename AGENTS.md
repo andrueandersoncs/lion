@@ -19,7 +19,7 @@ All commands should be run from the root directory using Turbo:
 bun install
 
 # Run all tests across all packages
-bun test
+bun run test
 
 # Build all packages
 bun run build

@@ -321,7 +321,7 @@ From the repo root:
 ```bash
 bun install
 bun run prepare
-bun test
+bun run test
 bun run build
 ```
 

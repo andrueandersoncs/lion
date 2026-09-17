@@ -160,7 +160,9 @@ function App() {
                 <span className="text-[#8b949e]"> → 3</span>
               </code>
               <code className="text-sm">
-                <span className="text-[#7ee787]">["number/multiply", 4, 5]</span>
+                <span className="text-[#7ee787]">
+                  ["number/multiply", 4, 5]
+                </span>
                 <span className="text-[#8b949e]"> → 20</span>
               </code>
               <code className="text-sm">
