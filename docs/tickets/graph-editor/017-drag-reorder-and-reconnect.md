@@ -1,6 +1,6 @@
 # LION-EDITOR-017 — Add validated drag, reorder, and reconnect
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P1  
 **Depends on:** LION-EDITOR-012, LION-EDITOR-016
 

@@ -1,6 +1,6 @@
 # LION-EDITOR-025 — Document, clean up, and release the editor
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-024
 
@@ -37,3 +37,14 @@ Ship one coherent product, remove superseded prototypes, and leave accurate oper
 ## Non-goals
 
 New product features, cloud deployment infrastructure, marketing copy, pricing, or claims unsupported by repository evidence.
+
+## Completion evidence
+
+- Removed the terminal REPL route, `/stream` prototype, UI-streaming simulator, obsolete demo assets, generated route entries, and unused prototype dependencies.
+- Documented setup, browser/file behavior, workflow, shortcuts, limitations, architecture boundaries, changelog, the One-Sheet Fold Map system, and the `/` route surface in `README.md`, `packages/repl/README.md`, `packages/repl/PRODUCT.md`, `packages/repl/DESIGN.md`, and `packages/repl/.impeccable/surfaces/route.md`.
+- Recorded IBM Plex Sans Condensed licensing and retrieval provenance beside the self-hosted font assets.
+- The design detector returned no findings. The finish reviewer returned `ship` after the overview, typography, and current-revision evidence findings were resolved.
+- `bun run check`, `bun run test`, and `bun run build` pass from the repository root. Core reports 98 passing tests; REPL reports 13 passing tests.
+- `bun run --filter=@lionlang/repl test:e2e` passes all 12 desktop and narrow Chromium workflows, including keyboard access, serious Axe checks, fallback download, stale graph recovery, and the 5,000-node fixture.
+- The production build completed an open-import-edit-run-download smoke workflow: `["number/multiply", 6, 7]` evaluated to `42`, the downloaded bytes matched the editor exactly, and the successful fallback save cleared dirty state without claiming the original file was overwritten.
+- The built page retains the `lion:direction-contract` metadata with seed `LION-FOLD-MAP-021`; source and dependency searches find no obsolete route or prototype references.

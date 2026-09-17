@@ -1,92 +1,76 @@
 @import "tailwindcss";
-
 @import "tw-animate-css";
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/fonts/IBMPlexSansCondensed-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./assets/fonts/IBMPlexSansCondensed-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/IBMPlexSansCondensed-SemiBold.ttf")
+    format("truetype");
+}
 
 @custom-variant dark (&:is(.dark *));
 
-body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  @apply m-0;
-}
-
-code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.871 0.006 286.286);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --background: oklch(0.955 0.018 78);
+  --foreground: oklch(0.235 0.022 48);
+  --card: oklch(0.982 0.012 82);
+  --card-foreground: oklch(0.235 0.022 48);
+  --popover: oklch(0.99 0.009 82);
+  --popover-foreground: oklch(0.235 0.022 48);
+  --primary: oklch(0.555 0.19 35);
+  --primary-foreground: oklch(0.985 0.01 85);
+  --secondary: oklch(0.9 0.04 75);
+  --secondary-foreground: oklch(0.27 0.025 48);
+  --muted: oklch(0.925 0.024 78);
+  --muted-foreground: oklch(0.44 0.025 55);
+  --accent: oklch(0.91 0.055 76);
+  --accent-foreground: oklch(0.26 0.025 48);
+  --destructive: oklch(0.53 0.19 27);
+  --destructive-foreground: oklch(0.985 0.01 85);
+  --border: oklch(0.79 0.03 70);
+  --input: oklch(0.79 0.03 70);
+  --ring: oklch(0.555 0.19 35);
+  --chart-1: oklch(0.555 0.19 35);
+  --chart-2: oklch(0.64 0.105 74);
+  --chart-3: oklch(0.36 0.045 50);
+  --chart-4: oklch(0.78 0.09 87);
+  --chart-5: oklch(0.49 0.085 145);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.871 0.006 286.286);
-}
-
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.141 0.005 285.823);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.141 0.005 285.823);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.274 0.006 286.033);
-  --input: oklch(0.274 0.006 286.033);
-  --ring: oklch(0.442 0.017 285.786);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.442 0.017 285.786);
+  --sidebar: oklch(0.94 0.022 78);
+  --sidebar-foreground: oklch(0.235 0.022 48);
+  --sidebar-primary: oklch(0.555 0.19 35);
+  --sidebar-primary-foreground: oklch(0.985 0.01 85);
+  --sidebar-accent: oklch(0.9 0.04 75);
+  --sidebar-accent-foreground: oklch(0.235 0.022 48);
+  --sidebar-border: oklch(0.79 0.03 70);
+  --sidebar-ring: oklch(0.555 0.19 35);
+  --sheet: oklch(0.982 0.012 82);
+  --sheet-muted: oklch(0.935 0.025 78);
+  --crease: oklch(0.79 0.03 70);
+  --vermilion: oklch(0.555 0.19 35);
+  --sumi: oklch(0.235 0.022 48);
+  --gold: oklch(0.72 0.11 78);
+  --font-display: "IBM Plex Sans Condensed", sans-serif;
+  --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -126,13 +110,426 @@ code {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-code);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html,
   body {
-    @apply bg-background text-foreground;
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply m-0 bg-background text-foreground;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-code);
+  }
+
+  ::selection {
+    color: var(--sumi);
+    background: color-mix(in oklab, var(--vermilion) 28%, transparent);
+  }
+
+  * {
+    scrollbar-color: var(--crease) var(--sheet-muted);
+    scrollbar-width: thin;
+  }
+}
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0 49.85%,
+      color-mix(in oklab, var(--crease) 30%, transparent) 50%,
+      transparent 50.15%
+    )
+    0 0 / 42rem 42rem,
+    var(--background);
+}
+
+.command-strip {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 3.5rem;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in oklab, var(--sheet) 94%, transparent);
+  border-bottom: 1px solid var(--crease);
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--sumi) 8%, transparent);
+}
+
+.command-group {
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  height: 2rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--crease);
+}
+
+.command-group [data-slot="separator"] {
+  height: 1.25rem;
+}
+
+.lion-mark {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  color: var(--vermilion);
+}
+
+.graph-search {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: 3rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--sheet);
+  border-bottom: 1px solid var(--crease);
+}
+
+.graph-search > svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}
+
+.graph-search input {
+  max-width: 24rem;
+  height: 2rem;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.selection-breadcrumbs {
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: var(--sheet-muted);
+  border-bottom: 1px solid color-mix(in oklab, var(--crease) 72%, transparent);
+}
+
+.selection-breadcrumbs svg {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.selection-breadcrumbs button {
+  padding: 0.125rem 0.25rem;
+  font-size: 0.72rem;
+  border-radius: 0.25rem;
+}
+
+.selection-breadcrumbs button:hover,
+.selection-breadcrumbs button:focus-visible {
+  background: var(--accent);
+}
+
+.graph-node {
+  border: 1px solid var(--crease);
+  box-shadow: 0 7px 18px color-mix(in oklab, var(--sumi) 11%, transparent);
+  transition:
+    border-color 140ms ease-out,
+    box-shadow 140ms ease-out,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.graph-node::after {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 1.15rem;
+  height: 1.15rem;
+  content: "";
+  background: linear-gradient(135deg, transparent 48%, var(--sheet-muted) 49%);
+  border-top: 1px solid var(--crease);
+  border-left: 1px solid var(--crease);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.graph-node-selected {
+  border-color: var(--vermilion);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent),
+    0 9px 24px color-mix(in oklab, var(--sumi) 13%, transparent);
+}
+
+.graph-node-selected::before {
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: -0.25rem;
+  width: 0.16rem;
+  content: "";
+  background: var(--vermilion);
+  border-radius: 999px;
+}
+
+.graph-node-unfolded {
+  background: var(--sheet-muted);
+  border-style: dashed;
+}
+
+.graph-node-stale {
+  border-style: dashed;
+  filter: saturate(0.55);
+}
+
+.graph-node-invalid {
+  border-color: var(--destructive);
+}
+
+.react-flow__handle {
+  width: 0.65rem;
+  height: 0.65rem;
+  background: var(--vermilion);
+  border: 2px solid var(--sheet);
+}
+
+.react-flow__edge-path {
+  stroke: var(--sumi);
+  stroke-width: 1.5;
+}
+
+.graph-edge-quoted .react-flow__edge-path {
+  stroke-dasharray: 5 5;
+}
+
+.react-flow__edge-text {
+  font-family: var(--font-code);
+  font-size: 10px;
+}
+
+.react-flow__edge-textbg {
+  fill: var(--sheet);
+}
+
+.react-flow__controls,
+.graph-minimap {
+  overflow: hidden;
+  background: var(--sheet);
+  border: 1px solid var(--crease);
+  border-radius: 0.625rem;
+  box-shadow: 0 7px 18px color-mix(in oklab, var(--sumi) 11%, transparent);
+}
+
+.graph-minimap {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  width: 12.5rem;
+  height: 9.375rem;
+  padding: 0.5rem;
+  cursor: crosshair;
+}
+
+.graph-minimap svg {
+  width: 100%;
+  height: 100%;
+}
+
+.overview-node,
+.overview-node-selected {
+  fill: color-mix(in oklab, var(--sumi) 70%, var(--sheet));
+  stroke: var(--sheet);
+  stroke-width: 5;
+}
+
+.overview-node-selected {
+  fill: var(--vermilion);
+  stroke: var(--gold);
+  stroke-width: 8;
+}
+
+.document-revision {
+  color: var(--sumi);
+  background: color-mix(in oklab, var(--gold) 30%, var(--sheet));
+  border-color: var(--gold);
+}
+
+.react-flow__controls-button {
+  color: var(--sumi);
+  background: var(--sheet);
+  border-color: var(--crease);
+}
+
+.cm-graph-selection {
+  background: color-mix(in oklab, var(--vermilion) 12%, transparent);
+  border-bottom: 2px solid var(--vermilion);
+}
+
+.inspector-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.inspector-facts div {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.inspector-facts dt {
+  color: var(--muted-foreground);
+}
+
+.inspector-facts dd {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+}
+
+.outline-row {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+  width: 100%;
+  min-height: 2rem;
+  padding-block: 0.25rem;
+  padding-right: 0.5rem;
+  font-size: 0.78rem;
+  text-align: left;
+  border-radius: 0.375rem;
+}
+
+.outline-row:hover {
+  background: var(--accent);
+}
+
+.outline-row-selected {
+  background: color-mix(in oklab, var(--vermilion) 13%, var(--sheet));
+  box-shadow: inset 2px 0 var(--vermilion);
+}
+
+.outline-row svg {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.result-code {
+  max-width: 100%;
+  padding: 0.75rem;
+  overflow: auto;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  word-break: break-word;
+  white-space: pre-wrap;
+  background: var(--sheet-muted);
+  border: 1px solid var(--crease);
+  border-radius: 0.5rem;
+}
+
+[data-slot="resizable-handle"] {
+  background: var(--crease);
+}
+
+[data-slot="resizable-handle"] > div {
+  background: var(--sheet-muted);
+  border-color: var(--crease);
+}
+
+[data-slot="tabs-content"][data-state="active"] {
+  display: block;
+  height: 100%;
+}
+
+@media (max-width: 899px) {
+  .command-strip {
+    flex-wrap: wrap;
+    min-height: auto;
+  }
+
+  .command-strip > :first-child {
+    flex: 1 1 12rem;
+  }
+
+  .command-group {
+    order: 3;
+    width: 100%;
+    padding-top: 0.35rem;
+    padding-left: 0;
+    border-top: 1px solid var(--crease);
+    border-left: 0;
+  }
+
+  .graph-search {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 3rem;
+  }
+
+  .graph-search input {
+    flex: 1;
+    min-width: 12rem;
+  }
+  .graph-minimap {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .command-strip button,
+  .graph-search button,
+  .outline-row {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .graph-node-selected,
+  .outline-row-selected {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  .graph-node-stale,
+  .graph-node-unfolded {
+    border-style: dashed;
   }
 }

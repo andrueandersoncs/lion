@@ -1,6 +1,6 @@
 # LION-EDITOR-006 — Handle invalid source and stale graph state
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-004, LION-EDITOR-005
 

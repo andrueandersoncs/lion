@@ -1,6 +1,6 @@
 # LION-EDITOR-011 — Render the semantic graph
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-002, LION-EDITOR-005, LION-EDITOR-009
 

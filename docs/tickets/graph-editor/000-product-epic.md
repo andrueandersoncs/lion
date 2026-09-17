@@ -1,5 +1,7 @@
 # Lion Graph Editor — Product Epic
 
+**Status:** Complete
+
 ## Outcome
 
 Ship a local-first web editor where Lion developers open a JSON program, navigate and edit it through synchronized semantic graph and source views, evaluate it, and save the same source back to disk. The editor must remain usable with programs exceeding 1,000 nodes.
@@ -108,3 +110,7 @@ flowchart LR
 ## Release gate
 
 The product is complete only when ticket 024 proves the real workflows in a browser and ticket 025 removes superseded prototypes, updates user-facing documentation, and records the shipped design system. Passing unit tests alone is not completion.
+
+## Completion evidence
+
+All 25 implementation tickets are complete. The release gate is satisfied by the desktop and narrow end-to-end workflow suite, the production open-edit-run-save smoke scenario, the documented One-Sheet Fold Map design system, and removal of superseded prototype surfaces.

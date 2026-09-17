@@ -1,0 +1,7 @@
+IBM Plex Sans Condensed
+Source: Google Fonts repository, ofl/ibmplexsanscondensed
+Upstream: https://github.com/google/fonts/tree/main/ofl/ibmplexsanscondensed
+Files: Regular, Medium, SemiBold
+Retrieved: 2026-09-17
+License: SIL Open Font License 1.1; see OFL.txt in this directory.
+Purpose: self-hosted compact workhorse interface type for Lion Fold Map.

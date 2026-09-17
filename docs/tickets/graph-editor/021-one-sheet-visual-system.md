@@ -1,6 +1,6 @@
 # LION-EDITOR-021 — Apply the One-Sheet Fold Map visual system
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P1  
 **Depends on:** LION-EDITOR-009, LION-EDITOR-011, LION-EDITOR-015
 

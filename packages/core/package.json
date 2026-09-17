@@ -15,6 +15,7 @@
     "access": "public"
   },
   "exports": {
+    "./analysis/analyze": "./dist/analysis/analyze.mjs",
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",
     "./evaluation/base-forms/primitive": "./dist/evaluation/base-forms/primitive.mjs",

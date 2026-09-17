@@ -1,6 +1,6 @@
 # LION-EDITOR-008 — Implement saving, dirty state, and file conflicts
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-007
 

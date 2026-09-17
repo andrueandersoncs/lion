@@ -1,6 +1,6 @@
 # LION-EDITOR-015 — Implement semantic unfold and refold
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-010, LION-EDITOR-011, LION-EDITOR-013
 

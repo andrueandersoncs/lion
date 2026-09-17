@@ -1,0 +1,354 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-17T21:06:59Z",
+  "title": "Design System: Lion Fold Map",
+  "extensions": {
+    "colorMeta": {
+      "warm-washi": {
+        "role": "neutral",
+        "displayName": "Warm Washi",
+        "canonical": "oklch(0.955 0.018 78)",
+        "tonalRamp": [
+          "oklch(0.15 0.018 78)",
+          "oklch(0.27 0.018 78)",
+          "oklch(0.39 0.018 78)",
+          "oklch(0.51 0.018 78)",
+          "oklch(0.63 0.018 78)",
+          "oklch(0.75 0.018 78)",
+          "oklch(0.87 0.018 78)",
+          "oklch(0.95 0.018 78)"
+        ]
+      },
+      "clean-sheet": {
+        "role": "neutral",
+        "displayName": "Clean Sheet",
+        "canonical": "oklch(0.982 0.012 82)",
+        "tonalRamp": [
+          "oklch(0.15 0.012 82)",
+          "oklch(0.27 0.012 82)",
+          "oklch(0.39 0.012 82)",
+          "oklch(0.51 0.012 82)",
+          "oklch(0.63 0.012 82)",
+          "oklch(0.75 0.012 82)",
+          "oklch(0.87 0.012 82)",
+          "oklch(0.95 0.012 82)"
+        ]
+      },
+      "muted-sheet": {
+        "role": "neutral",
+        "displayName": "Muted Sheet",
+        "canonical": "oklch(0.935 0.025 78)",
+        "tonalRamp": [
+          "oklch(0.15 0.025 78)",
+          "oklch(0.27 0.025 78)",
+          "oklch(0.39 0.025 78)",
+          "oklch(0.51 0.025 78)",
+          "oklch(0.63 0.025 78)",
+          "oklch(0.75 0.025 78)",
+          "oklch(0.87 0.025 78)",
+          "oklch(0.95 0.025 78)"
+        ]
+      },
+      "sumi": {
+        "role": "neutral",
+        "displayName": "Sumi",
+        "canonical": "oklch(0.235 0.022 48)",
+        "tonalRamp": [
+          "oklch(0.15 0.022 48)",
+          "oklch(0.27 0.022 48)",
+          "oklch(0.39 0.022 48)",
+          "oklch(0.51 0.022 48)",
+          "oklch(0.63 0.022 48)",
+          "oklch(0.75 0.022 48)",
+          "oklch(0.87 0.022 48)",
+          "oklch(0.95 0.022 48)"
+        ]
+      },
+      "muted-sumi": {
+        "role": "neutral",
+        "displayName": "Muted Sumi",
+        "canonical": "oklch(0.44 0.025 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.025 55)",
+          "oklch(0.27 0.025 55)",
+          "oklch(0.39 0.025 55)",
+          "oklch(0.51 0.025 55)",
+          "oklch(0.63 0.025 55)",
+          "oklch(0.75 0.025 55)",
+          "oklch(0.87 0.025 55)",
+          "oklch(0.95 0.025 55)"
+        ]
+      },
+      "crease": {
+        "role": "neutral",
+        "displayName": "Crease",
+        "canonical": "oklch(0.79 0.03 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 70)",
+          "oklch(0.27 0.03 70)",
+          "oklch(0.39 0.03 70)",
+          "oklch(0.51 0.03 70)",
+          "oklch(0.63 0.03 70)",
+          "oklch(0.75 0.03 70)",
+          "oklch(0.87 0.03 70)",
+          "oklch(0.95 0.03 70)"
+        ]
+      },
+      "vermilion": {
+        "role": "primary",
+        "displayName": "Vermilion",
+        "canonical": "oklch(0.555 0.19 35)",
+        "tonalRamp": [
+          "oklch(0.15 0.19 35)",
+          "oklch(0.27 0.19 35)",
+          "oklch(0.39 0.19 35)",
+          "oklch(0.51 0.19 35)",
+          "oklch(0.63 0.19 35)",
+          "oklch(0.75 0.19 35)",
+          "oklch(0.87 0.19 35)",
+          "oklch(0.95 0.19 35)"
+        ]
+      },
+      "sheet-ink": {
+        "role": "neutral",
+        "displayName": "Sheet Ink",
+        "canonical": "oklch(0.985 0.01 85)",
+        "tonalRamp": [
+          "oklch(0.15 0.01 85)",
+          "oklch(0.27 0.01 85)",
+          "oklch(0.39 0.01 85)",
+          "oklch(0.51 0.01 85)",
+          "oklch(0.63 0.01 85)",
+          "oklch(0.75 0.01 85)",
+          "oklch(0.87 0.01 85)",
+          "oklch(0.95 0.01 85)"
+        ]
+      },
+      "warm-secondary": {
+        "role": "secondary",
+        "displayName": "Warm Secondary",
+        "canonical": "oklch(0.9 0.04 75)",
+        "tonalRamp": [
+          "oklch(0.15 0.04 75)",
+          "oklch(0.27 0.04 75)",
+          "oklch(0.39 0.04 75)",
+          "oklch(0.51 0.04 75)",
+          "oklch(0.63 0.04 75)",
+          "oklch(0.75 0.04 75)",
+          "oklch(0.87 0.04 75)",
+          "oklch(0.95 0.04 75)"
+        ]
+      },
+      "warm-accent": {
+        "role": "secondary",
+        "displayName": "Warm Accent",
+        "canonical": "oklch(0.91 0.055 76)",
+        "tonalRamp": [
+          "oklch(0.15 0.055 76)",
+          "oklch(0.27 0.055 76)",
+          "oklch(0.39 0.055 76)",
+          "oklch(0.51 0.055 76)",
+          "oklch(0.63 0.055 76)",
+          "oklch(0.75 0.055 76)",
+          "oklch(0.87 0.055 76)",
+          "oklch(0.95 0.055 76)"
+        ]
+      },
+      "restrained-gold": {
+        "role": "tertiary",
+        "displayName": "Restrained Gold",
+        "canonical": "oklch(0.72 0.11 78)",
+        "tonalRamp": [
+          "oklch(0.15 0.11 78)",
+          "oklch(0.27 0.11 78)",
+          "oklch(0.39 0.11 78)",
+          "oklch(0.51 0.11 78)",
+          "oklch(0.63 0.11 78)",
+          "oklch(0.75 0.11 78)",
+          "oklch(0.87 0.11 78)",
+          "oklch(0.95 0.11 78)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Destructive",
+        "canonical": "oklch(0.53 0.19 27)",
+        "tonalRamp": [
+          "oklch(0.15 0.19 27)",
+          "oklch(0.27 0.19 27)",
+          "oklch(0.39 0.19 27)",
+          "oklch(0.51 0.19 27)",
+          "oklch(0.63 0.19 27)",
+          "oklch(0.75 0.19 27)",
+          "oklch(0.87 0.19 27)",
+          "oklch(0.95 0.19 27)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Workbench Title",
+        "purpose": "Local pane headings and inspector titles."
+      },
+      "body": {
+        "displayName": "Compact Interface",
+        "purpose": "Controls, pane content, messages, and working labels."
+      },
+      "label": {
+        "displayName": "Dense Metadata",
+        "purpose": "Badges, roles, statuses, and supporting facts."
+      },
+      "code": {
+        "displayName": "Exact Notation",
+        "purpose": "JSON source, pointers, counts, ranges, and evaluation output."
+      }
+    },
+    "shadows": [
+      {
+        "name": "command-lift",
+        "value": "0 8px 24px color-mix(in oklab, var(--sumi) 8%, transparent)",
+        "purpose": "Separates the global command strip from the working sheet."
+      },
+      {
+        "name": "map-lift",
+        "value": "0 7px 18px color-mix(in oklab, var(--sumi) 11%, transparent)",
+        "purpose": "Lifts graph nodes, graph controls, and the document overview."
+      },
+      {
+        "name": "selected-map-lift",
+        "value": "0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent), 0 9px 24px color-mix(in oklab, var(--sumi) 13%, transparent)",
+        "purpose": "Marks the one current semantic node."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-quick",
+        "value": "140ms ease-out",
+        "purpose": "Border and shadow feedback on graph-node state changes."
+      },
+      {
+        "name": "map-settle",
+        "value": "180ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Graph-node transform and overview navigation settling."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-workbench",
+        "value": "899px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Run Button",
+      "kind": "button",
+      "refersTo": "button-primary-small",
+      "description": "The compact vermilion primary action fixed to the command strip's upper-right action group.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M8 5v14l11-7z\" fill=\"none\" stroke=\"currentColor\" stroke-linejoin=\"round\" stroke-width=\"2\"/></svg><span>Run</span></button>",
+      "css": ".ds-btn-primary { display: inline-flex; height: 2rem; align-items: center; justify-content: center; gap: 0.375rem; padding: 0 0.75rem; border: 0; border-radius: 0.5rem; background: var(--vermilion); color: var(--primary-foreground); font: 500 0.875rem/1 var(--font-display); transition: background-color 140ms ease-out, box-shadow 140ms ease-out; } .ds-btn-primary svg { width: 1rem; height: 1rem; } .ds-btn-primary:hover { background: color-mix(in oklab, var(--vermilion) 90%, var(--sumi)); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklab, var(--vermilion) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Command Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "A quiet paper-surface command with a visible shortcut keycap.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\"><span>Commands</span><kbd>⌘K</kbd></button>",
+      "css": ".ds-btn-outline { display: inline-flex; height: 2rem; align-items: center; justify-content: center; gap: 0.5rem; padding: 0 0.75rem; border: 1px solid var(--crease); border-radius: 0.5rem; background: var(--background); color: var(--sumi); font: 500 0.875rem/1 var(--font-display); box-shadow: 0 1px 2px color-mix(in oklab, var(--sumi) 5%, transparent); transition: background-color 140ms ease-out, box-shadow 140ms ease-out; } .ds-btn-outline kbd { display: inline-flex; min-width: 1.25rem; height: 1.25rem; align-items: center; justify-content: center; padding: 0 0.25rem; border-radius: 0.25rem; background: var(--muted); color: var(--muted-foreground); font: 500 0.75rem/1 var(--font-display); } .ds-btn-outline:hover { background: var(--accent); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Graph Search",
+      "kind": "input",
+      "refersTo": "input-standard",
+      "description": "The borderless search field embedded in a full-width creased navigation row.",
+      "html": "<label class=\"ds-graph-search\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"11\" cy=\"11\" r=\"7\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"m20 20-4-4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg><input type=\"search\" placeholder=\"Search name, value, /path\" /></label>",
+      "css": ".ds-graph-search { display: flex; min-height: 3rem; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-bottom: 1px solid var(--crease); background: var(--sheet); color: var(--muted-foreground); font-family: var(--font-display); } .ds-graph-search svg { width: 1rem; height: 1rem; flex: none; } .ds-graph-search input { width: min(24rem, 100%); height: 2rem; padding: 0 0.75rem; border: 0; border-radius: 0.5rem; outline: none; background: transparent; color: var(--sumi); font: 400 0.875rem/1 var(--font-display); } .ds-graph-search input::placeholder { color: var(--muted-foreground); } .ds-graph-search:focus-within { box-shadow: inset 0 -2px var(--ring); }"
+    },
+    {
+      "name": "Current Revision Badge",
+      "kind": "chip",
+      "refersTo": "badge-outline",
+      "description": "The restrained-gold status pill that proves which source revision the graph represents.",
+      "html": "<span class=\"ds-revision\">Current r0</span>",
+      "css": ".ds-revision { display: inline-flex; width: fit-content; align-items: center; justify-content: center; padding: 0.125rem 0.5rem; border: 1px solid var(--gold); border-radius: 999px; background: color-mix(in oklab, var(--gold) 30%, var(--sheet)); color: var(--sumi); font: 500 0.75rem/1.25 var(--font-display); white-space: nowrap; } .ds-revision:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }"
+    },
+    {
+      "name": "Workbench Tabs",
+      "kind": "nav",
+      "refersTo": "tabs-active",
+      "description": "The shared segmented navigation for mobile views and the desktop inspector workbench.",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Workbench views\"><button class=\"ds-tab is-active\" type=\"button\">Graph</button><button class=\"ds-tab\" type=\"button\">Source</button><button class=\"ds-tab\" type=\"button\">Inspect</button><button class=\"ds-tab\" type=\"button\">Result</button></nav>",
+      "css": ".ds-tabs { display: inline-grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 2.25rem; align-items: center; padding: 3px; border-radius: 0.625rem; background: var(--muted); color: var(--muted-foreground); font-family: var(--font-display); } .ds-tab { height: calc(100% - 1px); padding: 0.25rem 0.5rem; border: 1px solid transparent; border-radius: 0.5rem; background: transparent; color: var(--sumi); font: 500 0.875rem/1 var(--font-display); transition: color 140ms ease-out, box-shadow 140ms ease-out; } .ds-tab:hover { background: color-mix(in oklab, var(--accent) 65%, transparent); } .ds-tab.is-active { background: var(--background); box-shadow: 0 1px 3px color-mix(in oklab, var(--sumi) 10%, transparent); } .ds-tab:focus-visible { outline: 1px solid var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Folded Semantic Node",
+      "kind": "custom",
+      "refersTo": "graph-node",
+      "description": "The signature map object joining semantic identity, exact pointer, role, and fold state.",
+      "html": "<article class=\"ds-graph-node is-selected\" tabindex=\"0\"><header><div><strong>number/add</strong><code>/</code></div><span class=\"ds-node-role\">root</span></header><footer><span>call</span><span aria-hidden=\"true\">↔</span></footer></article>",
+      "css": ".ds-graph-node { position: relative; min-width: 12rem; overflow: hidden; border: 1px solid var(--crease); border-radius: 0.875rem; background: var(--sheet); color: var(--sumi); box-shadow: 0 7px 18px color-mix(in oklab, var(--sumi) 11%, transparent); font-family: var(--font-display); transition: border-color 140ms ease-out, box-shadow 140ms ease-out, transform 180ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-graph-node::after { position: absolute; right: -1px; bottom: -1px; width: 1.15rem; height: 1.15rem; content: \"\"; clip-path: polygon(100% 0, 100% 100%, 0 100%); border-top: 1px solid var(--crease); border-left: 1px solid var(--crease); background: linear-gradient(135deg, transparent 48%, var(--sheet-muted) 49%); } .ds-graph-node header, .ds-graph-node footer { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0.75rem; } .ds-graph-node header { border-bottom: 1px solid var(--crease); } .ds-graph-node strong { display: block; font-size: 0.875rem; font-weight: 600; } .ds-graph-node code { display: block; margin-top: 0.125rem; color: var(--muted-foreground); font: 400 0.6875rem/1.25 var(--font-code); } .ds-graph-node footer { color: var(--muted-foreground); font-size: 0.75rem; } .ds-node-role { padding: 0.125rem 0.5rem; border: 1px solid var(--crease); border-radius: 999px; color: var(--sumi); font-size: 0.75rem; } .ds-graph-node.is-selected { border-color: var(--vermilion); box-shadow: 0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent), 0 9px 24px color-mix(in oklab, var(--sumi) 13%, transparent); } .ds-graph-node.is-selected::before { position: absolute; top: 0.5rem; bottom: 0.5rem; left: -0.25rem; width: 0.16rem; content: \"\"; border-radius: 999px; background: var(--vermilion); } .ds-graph-node:hover { transform: translateY(-1px); } .ds-graph-node:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "One-Sheet Fold Map",
+    "overview": "Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, exact JSON source, inspector, and result views feel like different folds of the same canonical document rather than detached dashboard cards.\n\nThe visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.",
+    "keyCharacteristics": [
+      "Warm washi surfaces with visible creases and sparse paper geometry.",
+      "Compact, self-hosted workhorse typography paired with exact monospaced notation.",
+      "Vermilion for action and selection; gold only for current-state evidence.",
+      "Dense, resizable desktop workbench that becomes a focused tabbed sheet on narrow screens.",
+      "Folded semantic nodes that can reveal exact JSON structure without leaving the canvas."
+    ],
+    "rules": [
+      {
+        "name": "The Vermilion Means Action Rule",
+        "body": "Vermilion identifies primary execution, current selection, and direct manipulation; it is not ambient decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Gold Is Evidence Rule",
+        "body": "Gold appears only where the interface proves currency or active position, never as a second call-to-action color.",
+        "section": "colors"
+      },
+      {
+        "name": "The Workhorse and Notation Rule",
+        "body": "IBM Plex Sans Condensed owns interface language; the monospaced stack appears only when the content is structurally exact.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Sheet Rule",
+        "body": "Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, source, inspector, or result panes in detached dashboard cards.",
+        "section": "layout"
+      },
+      {
+        "name": "The Focused Fold Rule",
+        "body": "Wide screens expose synchronized views together; narrow screens preserve the same views as one active full-height tab at a time.",
+        "section": "layout"
+      },
+      {
+        "name": "The Creases Before Lift Rule",
+        "body": "Use tonal layers and one-pixel crease borders for structure; add shadow only to global commands or manipulable map objects.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Folded Edge Rule",
+        "body": "A folded corner belongs to semantic graph nodes and exact-structure states, not to every container in the application.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do keep graph, source, inspector, and result visibly connected as folds of one continuous work surface.",
+      "Do use vermilion for executable action, selection, focus, and direct graph manipulation.",
+      "Do reserve gold for current-revision and active-position evidence.",
+      "Do use monospaced type for exact JSON, pointers, ranges, counts, and evaluation output.",
+      "Do preserve visible keyboard focus, reduced-motion behavior, forced-color selection outlines, and coarse-pointer targets."
+    ],
+    "donts": [
+      "Don't introduce detached dashboard-card grids around the primary editor panes.",
+      "Don't use gold as a decorative accent or competing primary action color.",
+      "Don't apply folded corners to generic controls or containers; the fold communicates semantic structure.",
+      "Don't collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views.",
+      "Don't add decorative shadows where a crease border or tonal sheet change already expresses hierarchy."
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 # LION-EDITOR-001 — Validate the round-trip editing architecture
 
-**Status:** Ready  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** None
 
@@ -35,3 +35,28 @@ Prove the riskiest invariant before product construction: JSON text remains cano
 ## Non-goals
 
 Production styling, complete graph editing, final worker architecture, or permanent tests for the throwaway UI.
+
+
+## Recorded decision
+
+- **Editor:** CodeMirror 6 with the JSON language package.
+- **Parse and edit API:** `jsonc-parser` configured for strict JSON (`allowTrailingComma: false`, comments rejected). Its syntax tree supplies source ranges; `modify` and `applyEdits` produce bounded graph-originated text edits.
+- **Graph:** React Flow for interaction and bounded rendering, with ELK layered layout in a module worker.
+- **Transaction boundary:** one `CanonicalDocument` source snapshot and monotonic revision per accepted source or graph change. Undo and redo restore exact source snapshots regardless of edit origin.
+- **Projection rule:** semantic analysis is derived asynchronously from source. Revision checks reject obsolete worker responses and stale graph intents. Invalid JSON retains the last valid projection without accepting graph mutation or evaluation.
+- **Fidelity:** untouched text and object-key order stay byte-identical. Reorder and cross-parent move preserve exact subtree bytes. The deliberate limitation is strict JSON: comments and trailing commas are diagnostics, not silently normalized.
+
+The spike was promoted into the production editor, so no spike-only route, component, or dependency remains.
+
+## Baseline evidence
+
+Five warm parse/analyze samples were run on the project workstation (Apple M3 Max, Bun 1.4.2); values are medians and are local engineering evidence, not product guarantees.
+
+| Fixture | Nodes | Shape | Source bytes | Median parse/analyze |
+| --- | ---: | --- | ---: | ---: |
+| `wide1000` | 1,000 | wide | 19,873 | 10.67 ms |
+| `deep1000` | 1,000 | 100-level deep | 70,948 | 11.68 ms |
+| `wide5000` | 5,000 | wide | 103,872 | 119.10 ms |
+| `deep5000` | 5,000 | 100-level deep | 344,346 | 57.04 ms |
+
+`document.test.ts` proves exact undo restoration, stale-revision rejection, minimal replacement, exact-byte reorder, and exact-byte cross-parent move. The desktop and narrow Chromium workflows prove source edits, graph mutation, invalid-source recovery, and shared undo in the actual editor.

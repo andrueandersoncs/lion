@@ -33,7 +33,7 @@ Lion programs are already JSON and homoiconic. The editor treats that source as 
 - Local files only in the first release; no account, backend persistence, or collaboration.
 - Graph and JSON edits must round-trip without changing program meaning or unsupported source structure.
 - Large graphs require navigation, selective detail, and rendering strategies that remain responsive beyond 1,000 nodes.
-- Accessibility target beyond normal web-platform expectations remains an open decision.
+- Accessibility target is WCAG 2.2 AA for keyboard, contrast, focus, names, touch targets, reduced motion, forced colors, and equivalent non-drag interactions.
 
 ## Brand Commitments
 

@@ -1,6 +1,6 @@
 # LION-EDITOR-012 — Scale graph layout through folding and culling
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-011
 

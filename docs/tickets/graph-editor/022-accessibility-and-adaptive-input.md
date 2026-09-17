@@ -1,6 +1,6 @@
 # LION-EDITOR-022 — Harden accessibility and adaptive input
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-018, LION-EDITOR-021
 

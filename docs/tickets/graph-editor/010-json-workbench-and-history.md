@@ -1,6 +1,6 @@
 # LION-EDITOR-010 — Build the JSON workbench and shared history
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-004, LION-EDITOR-006, LION-EDITOR-009
 

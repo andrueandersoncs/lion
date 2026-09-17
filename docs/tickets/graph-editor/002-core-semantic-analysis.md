@@ -1,6 +1,6 @@
 # LION-EDITOR-002 — Add a public Lion semantic-analysis API
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-001
 

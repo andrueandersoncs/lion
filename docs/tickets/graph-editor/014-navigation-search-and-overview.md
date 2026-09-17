@@ -1,6 +1,6 @@
 # LION-EDITOR-014 — Add graph navigation and overview tools
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-012, LION-EDITOR-013
 

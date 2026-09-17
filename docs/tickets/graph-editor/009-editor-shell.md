@@ -1,6 +1,6 @@
 # LION-EDITOR-009 — Build the editor shell and pane topology
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-003
 

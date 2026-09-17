@@ -1,6 +1,6 @@
 # LION-EDITOR-007 — Implement new, open, and import workflows
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-003, LION-EDITOR-004
 

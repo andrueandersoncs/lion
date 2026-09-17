@@ -22,6 +22,18 @@ packages/
   agent/  real-world Lion program driving an OpenTUI + AI agent
 ```
 
+## Graph Editor
+
+`@lionlang/repl` is the Lion Fold Map: a local-first semantic graph and exact JSON workbench. Source text remains canonical while graph, outline, inspector, diagnostics, and evaluation results track explicit document revisions.
+
+```bash
+bun install
+bun run prepare
+bun run dev --filter=@lionlang/repl
+```
+
+Open `http://localhost:3000`, import or open a Lion JSON file, edit through either synchronized view, run against the standard library, then save to the original file handle or download the exact source. See [`packages/repl/README.md`](packages/repl/README.md) for shortcuts, browser fallback behavior, verification, and architecture.
+
 ## Basic Usage
 
 ```ts

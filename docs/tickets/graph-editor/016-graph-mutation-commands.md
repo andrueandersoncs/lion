@@ -1,6 +1,6 @@
 # LION-EDITOR-016 — Implement graph mutation commands
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-004, LION-EDITOR-010, LION-EDITOR-011, LION-EDITOR-015
 

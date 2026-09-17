@@ -1,6 +1,6 @@
 # LION-EDITOR-020 — Add live evaluation and cancellation
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P1  
 **Depends on:** LION-EDITOR-019
 

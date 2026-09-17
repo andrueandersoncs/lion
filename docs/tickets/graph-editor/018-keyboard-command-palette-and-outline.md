@@ -1,6 +1,6 @@
 # LION-EDITOR-018 — Add command palette, keyboard control, and outline
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-014, LION-EDITOR-016, LION-EDITOR-017
 

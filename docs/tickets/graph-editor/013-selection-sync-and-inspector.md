@@ -1,6 +1,6 @@
 # LION-EDITOR-013 — Synchronize selection and build the inspector
 
-**Status:** Blocked  
+**Status:** Complete
 **Priority:** P0  
 **Depends on:** LION-EDITOR-010, LION-EDITOR-011
 
