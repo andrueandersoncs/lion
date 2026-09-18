@@ -1,5 +1,6 @@
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { stdlib } from "@lionlang/core/modules";
+import { makeTypeSafeBindings } from "@lionlang/typesafe-ai";
 import { Effect } from "effect";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -26,6 +27,73 @@ export const STARTER_SOURCE = `[
 	2
 ]
 `;
+
+export const JEV_STARTER_SOURCE = `[
+	"typesafe/system-one",
+	{
+		"model": "jev-latest",
+		"state": {
+			"ticket": {
+				"subject": "Duplicate charge",
+				"message": "Help! I was charged twice and need this fixed today."
+			}
+		},
+		"questions": {
+			"urgent": [
+				"typesafe/noul",
+				"Does ticket.message convey urgency?",
+				{
+					"true": "The customer explicitly needs prompt action",
+					"false": "The customer does not indicate urgency"
+				}
+			],
+			"department": [
+				"typesafe/choice",
+				"Which team should handle this ticket?",
+				{
+					"billing": "Payments, charges, invoices, and refunds",
+					"technical": "Bugs, outages, and integrations",
+					"sales": "Pricing, upgrades, and new accounts"
+				}
+			],
+			"frustration": [
+				"typesafe/score",
+				"How frustrated is the customer?",
+				[
+					"quote",
+					[
+						"Calm or neutral",
+						"Concerned",
+						"Clearly frustrated",
+						"Extremely angry"
+					]
+				]
+			]
+		}
+	}
+]
+`;
+
+const usesTypeSafeBindings = (value: unknown): boolean => {
+  if (typeof value === "string") {
+    return value.startsWith("typesafe/");
+  }
+  if (Array.isArray(value)) {
+    return value.some(usesTypeSafeBindings);
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value).some(usesTypeSafeBindings);
+  }
+  return false;
+};
+
+const sourceUsesTypeSafeBindings = (sourceText: string): boolean => {
+  try {
+    return usesTypeSafeBindings(JSON.parse(sourceText));
+  } catch {
+    return false;
+  }
+};
 
 export interface FileIdentity {
   readonly direct: boolean;
@@ -73,6 +141,18 @@ export interface EvaluationState {
   readonly transcript: readonly string[];
 }
 
+export class MissingJevApiKeyError extends Error {
+  constructor() {
+    super("Add a TypeSafe API key before running this Jev program.");
+    this.name = "MissingJevApiKeyError";
+  }
+}
+
+export interface JevState {
+  readonly active: boolean;
+  readonly configured: boolean;
+}
+
 export interface EditorController {
   readonly applyIntent: (intent: EditIntent) => void;
   readonly download: () => void;
@@ -80,6 +160,7 @@ export interface EditorController {
   readonly fileIdentity: FileIdentity;
   readonly graphProjection: DocumentProjection | null;
   readonly graphStale: boolean;
+  readonly jev: JevState;
   readonly layout: (
     nodes: readonly { readonly id: string; readonly parentId: string | null }[]
   ) => Promise<
@@ -90,6 +171,7 @@ export interface EditorController {
     file: File,
     handle?: LionFileHandle | null
   ) => Promise<void>;
+  readonly loadJevExample: () => void;
   readonly navigateSelection: (direction: -1 | 1) => void;
   readonly newDocument: () => void;
   readonly openFile: () => Promise<boolean>;
@@ -106,6 +188,7 @@ export interface EditorController {
   readonly selectedNode: IndexedSemanticNode | null;
   readonly selectionHistory: readonly string[];
   readonly selectionIndex: number;
+  readonly setJevApiKey: (apiKey: string | null) => void;
   readonly setLive: (next: boolean) => void;
   readonly setSelectedId: (id: string | null, recordHistory?: boolean) => void;
   readonly snapshot: DocumentSnapshot;
@@ -156,6 +239,56 @@ const renderResult = (value: unknown): string => {
   }
 };
 
+const assertRunnableProjection = (
+  projection: DocumentProjection,
+  revision: number
+) => {
+  if (projection.status !== "valid" || projection.revision !== revision) {
+    throw new InvalidEditError("Run requires a valid current Lion document.");
+  }
+};
+
+const shouldSkipEvaluation = (
+  source: "explicit" | "live",
+  usesJev: boolean,
+  apiKey: string | null,
+  revision: number,
+  lastEvaluationRevision: number | null
+) => {
+  if (usesJev && !apiKey) {
+    throw new MissingJevApiKeyError();
+  }
+  return source === "live" && (usesJev || lastEvaluationRevision === revision);
+};
+
+const makeEvaluationEnvironment = (
+  usesJev: boolean,
+  apiKey: string | null,
+  transcript: string[]
+) => ({
+  ...stdlib,
+  ...(usesJev
+    ? makeTypeSafeBindings({
+        apiKey: apiKey ?? "",
+        baseURL: "/api/typesafe",
+        dangerouslyAllowBrowser: true,
+        logLevel: "off",
+      })
+    : {}),
+  "console/log": (message: string) => {
+    transcript.push(message);
+    return message;
+  },
+  "console/log-json": (message: unknown) => {
+    const rendered = renderResult(message);
+    transcript.push(rendered);
+    return rendered;
+  },
+});
+
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message || error.name : String(error);
+
 const initialLivePreference = () =>
   typeof localStorage === "undefined"
     ? false
@@ -196,6 +329,11 @@ export function useEditor() {
   const workerRef = useRef<EditorWorkerClient | null>(null);
   const evaluationIdRef = useRef(0);
   const lastEvaluationRevisionRef = useRef<number | null>(null);
+  const [jevApiKey, setJevApiKeyState] = useState<string | null>(null);
+  const usesJev = useMemo(
+    () => sourceUsesTypeSafeBindings(snapshot.sourceText),
+    [snapshot.sourceText]
+  );
 
   if (!workerRef.current) {
     workerRef.current = createEditorWorkerClient();
@@ -351,16 +489,17 @@ export function useEditor() {
 
   const runEvaluation = useCallback(
     async (source: "explicit" | "live" = "explicit") => {
-      if (
-        projection.status !== "valid" ||
-        projection.revision !== snapshot.revision
-      ) {
-        throw new InvalidEditError(
-          "Run requires a valid current Lion document."
-        );
-      }
+      assertRunnableProjection(projection, snapshot.revision);
       const revision = snapshot.revision;
-      if (source === "live" && lastEvaluationRevisionRef.current === revision) {
+      if (
+        shouldSkipEvaluation(
+          source,
+          usesJev,
+          jevApiKey,
+          revision,
+          lastEvaluationRevisionRef.current
+        )
+      ) {
         return;
       }
       lastEvaluationRevisionRef.current = revision;
@@ -376,18 +515,11 @@ export function useEditor() {
         stale: false,
       });
       try {
-        const environment = {
-          ...stdlib,
-          "console/log": (message: string) => {
-            transcript.push(message);
-            return message;
-          },
-          "console/log-json": (message: unknown) => {
-            const rendered = renderResult(message);
-            transcript.push(rendered);
-            return rendered;
-          },
-        };
+        const environment = makeEvaluationEnvironment(
+          usesJev,
+          jevApiKey,
+          transcript
+        );
         const value = JSON.parse(snapshot.sourceText) as unknown;
         const result = await Effect.runPromise(run(value, environment));
         if (evaluationId !== evaluationIdRef.current) {
@@ -411,23 +543,29 @@ export function useEditor() {
           revision,
           result: null,
           rendered: "",
-          error:
-            error instanceof Error
-              ? error.message || error.name
-              : String(error),
+          error: errorMessage(error),
           transcript: [...transcript],
           stale: editorDocument.snapshot.revision !== revision,
         });
       }
-      if (source === "explicit") {
-        return;
-      }
     },
-    [editorDocument, projection, snapshot.revision, snapshot.sourceText]
+    [
+      editorDocument,
+      jevApiKey,
+      projection,
+      snapshot.revision,
+      snapshot.sourceText,
+      usesJev,
+    ]
   );
 
   useEffect(() => {
-    if (!live || projection.status !== "valid" || window.document.hidden) {
+    if (
+      !live ||
+      usesJev ||
+      projection.status !== "valid" ||
+      window.document.hidden
+    ) {
       return;
     }
     setEvaluation((current) => ({ ...current, status: "scheduled" }));
@@ -435,7 +573,7 @@ export function useEditor() {
       runEvaluation("live").catch(() => undefined);
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [live, projection.status, runEvaluation]);
+  }, [live, projection.status, runEvaluation, usesJev]);
 
   const setLive = useCallback((next: boolean) => {
     setLiveState(next);
@@ -448,6 +586,11 @@ export function useEditor() {
           : current
       );
     }
+  }, []);
+
+  const setJevApiKey = useCallback((apiKey: string | null) => {
+    const normalized = apiKey?.trim() ?? "";
+    setJevApiKeyState(normalized || null);
   }, []);
 
   const loadFile = useCallback(
@@ -478,6 +621,17 @@ export function useEditor() {
     fileHandleRef.current = null;
     setFileIdentity({
       name: "untitled.lion.json",
+      direct: false,
+      lastModified: null,
+    });
+    setSelectedId("$", false);
+  }, [commitSnapshot, editorDocument, setSelectedId]);
+
+  const loadJevExample = useCallback(() => {
+    commitSnapshot(editorDocument.reset(JEV_STARTER_SOURCE, true));
+    fileHandleRef.current = null;
+    setFileIdentity({
+      name: "jev-playground.lion.json",
       direct: false,
       lastModified: null,
     });
@@ -660,6 +814,12 @@ export function useEditor() {
     redo,
     evaluation,
     runEvaluation,
+    jev: {
+      active: usesJev,
+      configured: jevApiKey !== null,
+    },
+    setJevApiKey,
+    loadJevExample,
     live,
     setLive,
     fileIdentity,

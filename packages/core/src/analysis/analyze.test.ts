@@ -45,6 +45,15 @@ describe("analyze", () => {
     expect(childRoles(["quote", 1])).toEqual(["operator", "quoted-value"]);
   });
 
+  it("treats quoted form-shaped arrays as literal data", () => {
+    const flat = flattenAnalysis(analyze(["quote", ["define", "x"]]));
+    const array = flat.find(({ pointer }) => pointer === "/1");
+    expect(array?.kind).toBe("call");
+    expect(array?.specialForm).toBeUndefined();
+    expect(array?.children.map(({ role }) => role)).toEqual(["item", "item"]);
+    expect(flat.some(({ kind }) => kind === "invalid-call")).toBe(false);
+  });
+
   it("classifies empty arrays, calls, records, and primitive roots", () => {
     expect(analyze([]).kind).toBe("empty-array");
     expect(analyze(["number/add", 1, 2]).kind).toBe("call");

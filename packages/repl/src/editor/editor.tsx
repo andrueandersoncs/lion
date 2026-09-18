@@ -14,6 +14,7 @@ import {
   FilePlus2Icon,
   FolderOpenIcon,
   KeyboardIcon,
+  KeyRoundIcon,
   PanelBottomIcon,
   PlayIcon,
   PlusIcon,
@@ -36,6 +37,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,8 +58,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
+import { Progress } from "@/components/ui/progress";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -78,7 +88,11 @@ import { searchProjection } from "./parse";
 import { SemanticGraph } from "./semantic-graph";
 import { SourceEditor } from "./source-editor";
 import type { EditIntent, IndexedSemanticNode } from "./types";
-import { type EditorController, useEditor } from "./use-editor";
+import {
+  type EditorController,
+  MissingJevApiKeyError,
+  useEditor,
+} from "./use-editor";
 
 const isAbortError = (error: unknown) =>
   error instanceof DOMException && error.name === "AbortError";
@@ -419,8 +433,159 @@ function Outline({ editor }: { readonly editor: EditorController }) {
   );
 }
 
+const JevAnswerSchema = z
+  .object({
+    type: z.string().optional(),
+    noul: z.number().optional(),
+    choice: z.string().optional(),
+    score: z.number().optional(),
+    confidence: z.number().optional(),
+    probabilities: z.record(z.string(), z.number()).optional(),
+    legend: z.record(z.string(), z.string()).optional(),
+  })
+  .passthrough();
+
+const JevResultSchema = z
+  .object({
+    model: z.string(),
+    answers: z.record(z.string(), JevAnswerSchema),
+    usage: z
+      .object({
+        input_tokens: z.number().optional(),
+        output_tokens: z.number().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+type JevAnswerValue = z.infer<typeof JevAnswerSchema>;
+type JevResult = z.infer<typeof JevResultSchema>;
+
+const asJevResult = (value: unknown): JevResult | null => {
+  const parsed = JevResultSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+};
+
+const formatProbability = (value: number) =>
+  new Intl.NumberFormat(undefined, {
+    style: "percent",
+    maximumFractionDigits: 1,
+  }).format(value);
+
+function JevAnswer({
+  answer,
+  name,
+}: {
+  readonly answer: JevAnswerValue;
+  readonly name: string;
+}) {
+  const type = answer.type ?? "answer";
+  const confidence = answer.confidence ?? null;
+  const probabilities = Object.entries(answer.probabilities ?? {});
+  const legend = answer.legend;
+  return (
+    <section className="flex flex-col gap-3 border-crease border-b pb-4 last:border-0 last:pb-0">
+      <header className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold text-sm">{name}</h3>
+        <Badge variant="outline">{type}</Badge>
+      </header>
+      {typeof answer.noul === "number" ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-muted-foreground text-xs">
+            True probability
+          </span>
+          <strong className="font-mono text-lg tabular-nums">
+            {formatProbability(answer.noul)}
+          </strong>
+        </div>
+      ) : null}
+      {typeof answer.choice === "string" ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground text-xs">Selected</span>
+          <Badge variant="secondary">{answer.choice}</Badge>
+        </div>
+      ) : null}
+      {typeof answer.score === "number" ? (
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-muted-foreground text-xs">Score</span>
+          <strong className="font-mono text-lg tabular-nums">
+            {answer.score.toFixed(2)}
+          </strong>
+        </div>
+      ) : null}
+      {confidence === null ? null : (
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="text-muted-foreground">Confidence</span>
+          <span className="font-mono tabular-nums">
+            {formatProbability(confidence)}
+          </span>
+        </div>
+      )}
+      {probabilities.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          {probabilities.map(([key, probability]) => (
+            <div className="flex flex-col gap-1" key={key}>
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="truncate">
+                  {typeof legend?.[key] === "string" ? legend[key] : key}
+                </span>
+                <span className="font-mono tabular-nums">
+                  {formatProbability(probability)}
+                </span>
+              </div>
+              <Progress
+                aria-label={`${name}: ${key}`}
+                className="h-1.5"
+                value={Math.max(0, Math.min(100, probability * 100))}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function JevResultView({
+  raw,
+  result,
+}: {
+  readonly raw: string;
+  readonly result: JevResult;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="secondary">{result.model}</Badge>
+        {result.usage?.input_tokens === undefined ? null : (
+          <span className="text-muted-foreground text-xs">
+            {result.usage.input_tokens} input tokens
+          </span>
+        )}
+        {result.usage?.output_tokens === undefined ? null : (
+          <span className="text-muted-foreground text-xs">
+            {result.usage.output_tokens} output tokens
+          </span>
+        )}
+      </div>
+      <div className="flex flex-col gap-4">
+        {Object.entries(result.answers).map(([name, answer]) => (
+          <JevAnswer answer={answer} key={name} name={name} />
+        ))}
+      </div>
+      <details>
+        <summary className="cursor-pointer text-muted-foreground text-xs">
+          Raw JSON
+        </summary>
+        <pre className="result-code mt-2">{raw}</pre>
+      </details>
+    </div>
+  );
+}
+
 function ResultPanel({ editor }: { readonly editor: EditorController }) {
   const { evaluation } = editor;
+  const jevResult = asJevResult(evaluation.result);
   const copy = () => {
     navigator.clipboard
       .writeText(evaluation.error ?? evaluation.rendered)
@@ -483,7 +648,10 @@ function ResultPanel({ editor }: { readonly editor: EditorController }) {
               <AlertDescription>{evaluation.error}</AlertDescription>
             </Alert>
           ) : null}
-          {evaluation.rendered ? (
+          {jevResult ? (
+            <JevResultView raw={evaluation.rendered} result={jevResult} />
+          ) : null}
+          {evaluation.rendered && !jevResult ? (
             <pre className="result-code">{evaluation.rendered}</pre>
           ) : null}
         </div>
@@ -586,6 +754,16 @@ function Breadcrumbs({ editor }: { readonly editor: EditorController }) {
   );
 }
 
+const getRunDisabledReason = (editor: EditorController) => {
+  if (editor.evaluation.status === "running") {
+    return "Evaluation already running";
+  }
+  if (editor.projection.status !== "valid" || editor.graphStale) {
+    return "Repair source before running";
+  }
+  return undefined;
+};
+
 export function GraphEditor() {
   const editor = useEditor();
   const narrow = useNarrowLayout();
@@ -597,6 +775,10 @@ export function GraphEditor() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [conflictOpen, setConflictOpen] = useState(false);
+  const [jevKeyOpen, setJevKeyOpen] = useState(false);
+  const [jevKeyInput, setJevKeyInput] = useState("");
+  const [jevKeyError, setJevKeyError] = useState<string | null>(null);
+  const [runAfterJevKey, setRunAfterJevKey] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingActionRef = useRef<(() => void | Promise<void>) | null>(null);
@@ -621,6 +803,66 @@ export function GraphEditor() {
     }
     toast.error(message);
   }, []);
+
+  const openJevKeyDialog = useCallback((runAfterSave = false) => {
+    setJevKeyInput("");
+    setJevKeyError(null);
+    setRunAfterJevKey(runAfterSave);
+    setJevKeyOpen(true);
+  }, []);
+
+  const runCurrentRevision = useCallback(async () => {
+    if (editor.evaluation.status === "running") {
+      return;
+    }
+    if (editor.jev.active && !editor.jev.configured) {
+      openJevKeyDialog(true);
+      return;
+    }
+    if (narrow) {
+      setActiveTab("result");
+    } else {
+      setWorkbenchTab("result");
+    }
+    try {
+      await editor.runEvaluation();
+    } catch (error) {
+      if (error instanceof MissingJevApiKeyError) {
+        openJevKeyDialog(true);
+        return;
+      }
+      handleError(error);
+    }
+  }, [editor, handleError, narrow, openJevKeyDialog]);
+
+  useEffect(() => {
+    if (!(editor.jev.configured && runAfterJevKey)) {
+      return;
+    }
+    setRunAfterJevKey(false);
+    runCurrentRevision().catch(handleError);
+  }, [editor.jev.configured, handleError, runAfterJevKey, runCurrentRevision]);
+
+  const saveJevKey = () => {
+    const apiKey = jevKeyInput.trim();
+    if (!apiKey) {
+      setJevKeyError("Enter a TypeSafe API key.");
+      return;
+    }
+    editor.setJevApiKey(apiKey);
+    setJevKeyError(null);
+    setJevKeyOpen(false);
+    toast.success("TypeSafe API key ready for this tab");
+  };
+
+  const forgetJevKey = () => {
+    editor.setJevApiKey(null);
+    setJevKeyInput("");
+    setJevKeyError(null);
+    setRunAfterJevKey(false);
+    setJevKeyOpen(false);
+    toast.info("TypeSafe API key forgotten");
+  };
 
   const startOpen = useCallback(async () => {
     try {
@@ -790,6 +1032,13 @@ export function GraphEditor() {
         run: () => guardDestructive(startOpen),
       },
       {
+        id: "jev-playground",
+        label: "Open Jev playground",
+        group: "Document",
+        icon: SparklesIcon,
+        run: () => guardDestructive(editor.loadJevExample),
+      },
+      {
         id: "save",
         label: "Save",
         group: "Document",
@@ -902,17 +1151,23 @@ export function GraphEditor() {
         run: () => editor.navigateSelection(1),
       },
       {
+        id: "jev-key",
+        label: editor.jev.configured
+          ? "Replace TypeSafe API key"
+          : "Add TypeSafe API key",
+        group: "Run",
+        icon: KeyRoundIcon,
+        run: () => openJevKeyDialog(false),
+      },
+      {
         id: "run",
         label: "Run current revision",
         group: "Run",
         shortcut: "⌘↵",
         icon: PlayIcon,
-        disabledReason:
-          editor.projection.status === "valid" && !editor.graphStale
-            ? undefined
-            : "Repair source before running",
+        disabledReason: getRunDisabledReason(editor),
         run: () => {
-          editor.runEvaluation().catch(handleError);
+          runCurrentRevision().catch(handleError);
         },
       },
       {
@@ -943,6 +1198,8 @@ export function GraphEditor() {
       graphEditingReason,
       guardDestructive,
       handleError,
+      openJevKeyDialog,
+      runCurrentRevision,
       save,
       startOpen,
       wrapSelected,
@@ -966,12 +1223,12 @@ export function GraphEditor() {
       }
       if (modifier && event.key === "Enter") {
         event.preventDefault();
-        editor.runEvaluation().catch(handleError);
+        runCurrentRevision().catch(handleError);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [editor, handleError, save]);
+  }, [editor, handleError, runCurrentRevision, save]);
 
   const graphPane = editor.graphProjection ? (
     <div className="flex h-full min-h-0 flex-col">
@@ -1078,20 +1335,52 @@ export function GraphEditor() {
           </ToolButton>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <label
-            className="flex items-center gap-2 text-xs"
-            htmlFor="live-evaluation"
-          >
-            <span>Live</span>
-            <Switch
-              checked={editor.live}
-              id="live-evaluation"
-              onCheckedChange={editor.setLive}
-            />
-          </label>
+          {editor.jev.active ? (
+            <>
+              <Badge variant="secondary">Jev · explicit run</Badge>
+              <ToolButton
+                label={
+                  editor.jev.configured
+                    ? "Replace TypeSafe API key"
+                    : "Add TypeSafe API key"
+                }
+                onClick={() => openJevKeyDialog(false)}
+                size="icon-sm"
+                variant="ghost"
+              >
+                <KeyRoundIcon />
+              </ToolButton>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={() => guardDestructive(editor.loadJevExample)}
+                size="sm"
+                variant="outline"
+              >
+                <SparklesIcon data-icon="inline-start" />
+                Jev
+              </Button>
+              <label
+                className="flex items-center gap-2 text-xs"
+                htmlFor="live-evaluation"
+              >
+                <span>Live</span>
+                <Switch
+                  checked={editor.live}
+                  id="live-evaluation"
+                  onCheckedChange={editor.setLive}
+                />
+              </label>
+            </>
+          )}
           <Button
-            disabled={editor.graphStale || editor.projection.status !== "valid"}
-            onClick={() => editor.runEvaluation().catch(handleError)}
+            disabled={
+              editor.evaluation.status === "running" ||
+              editor.graphStale ||
+              editor.projection.status !== "valid"
+            }
+            onClick={() => runCurrentRevision().catch(handleError)}
             size="sm"
           >
             <PlayIcon data-icon="inline-start" />
@@ -1261,6 +1550,87 @@ export function GraphEditor() {
           )}
         </CommandList>
       </CommandDialog>
+
+      <Dialog
+        onOpenChange={(open) => {
+          setJevKeyOpen(open);
+          if (!open) {
+            setJevKeyError(null);
+            setRunAfterJevKey(false);
+          }
+        }}
+        open={jevKeyOpen}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto">
+          <form
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              saveJevKey();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>TypeSafe API key</DialogTitle>
+              <DialogDescription>
+                Connect this tab to Jev. The key stays in memory and is never
+                written into the Lion document.
+              </DialogDescription>
+            </DialogHeader>
+            <FieldGroup>
+              <Field data-invalid={Boolean(jevKeyError)}>
+                <FieldLabel htmlFor="jev-api-key">
+                  {editor.jev.configured ? "Replacement API key" : "API key"}
+                </FieldLabel>
+                <Input
+                  aria-invalid={Boolean(jevKeyError)}
+                  autoComplete="off"
+                  id="jev-api-key"
+                  onChange={(event) => {
+                    setJevKeyInput(event.target.value);
+                    setJevKeyError(null);
+                  }}
+                  placeholder="Paste your TypeSafe API key"
+                  type="password"
+                  value={jevKeyInput}
+                />
+                <FieldDescription>
+                  Closing or refreshing this tab clears the credential.
+                </FieldDescription>
+                <FieldError>{jevKeyError}</FieldError>
+              </Field>
+            </FieldGroup>
+            <Alert>
+              <CircleAlertIcon />
+              <AlertTitle>Browser credential</AlertTitle>
+              <AlertDescription>
+                Requests travel through this app&apos;s same-origin proxy. Use a
+                scoped development key rather than a production credential.
+              </AlertDescription>
+            </Alert>
+            <DialogFooter>
+              {editor.jev.configured ? (
+                <Button onClick={forgetJevKey} type="button" variant="outline">
+                  Forget key
+                </Button>
+              ) : null}
+              <Button
+                onClick={() => {
+                  setJevKeyOpen(false);
+                  setJevKeyError(null);
+                  setRunAfterJevKey(false);
+                }}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                {runAfterJevKey ? "Save and run" : "Save key"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         onOpenChange={(open) => {

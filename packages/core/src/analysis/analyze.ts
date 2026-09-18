@@ -191,18 +191,24 @@ const analyzeNode = (
   const namedForm = SPECIAL_FORMS.find(({ name }) => name === head);
   const validForm = SPECIAL_FORMS.find(({ matches }) => matches(expression));
   const relationships: SemanticRelationship[] = [];
-  if (validForm?.name === "define" && typeof expression[1] === "string") {
+  if (
+    !quoted &&
+    validForm?.name === "define" &&
+    typeof expression[1] === "string"
+  ) {
     relationships.push({ kind: "definition", name: expression[1] });
   }
   const nextQuoted = quoted || validForm?.name === "quote";
-  const role = validForm?.role ?? roleByIndex(["callee"], "argument");
+  const role = quoted
+    ? () => "item"
+    : (validForm?.role ?? roleByIndex(["callee"], "argument"));
   const children = expression.map((value, order) => ({
     role: role(order, expression.length),
     order,
     node: analyzeNode(value, [...path, order], nextQuoted && order > 0),
   }));
 
-  if (namedForm && !validForm) {
+  if (!quoted && namedForm && !validForm) {
     return {
       path,
       pointer: pathToPointer(path),
@@ -216,7 +222,7 @@ const analyzeNode = (
     };
   }
 
-  if (validForm) {
+  if (!quoted && validForm) {
     return {
       path,
       pointer: pathToPointer(path),

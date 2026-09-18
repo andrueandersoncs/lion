@@ -27,8 +27,9 @@ bun run --filter=@lionlang/repl test:e2e
 
 1. Open a `.json` Lion program with **Open**. Browsers without the File System Access API use the file picker import path.
 2. Edit exact JSON in **Source**, or select graph/outline nodes and mutate them through **Inspector**. Every accepted edit is one shared source transaction.
-3. Use **Run** to evaluate the current valid revision against `@lionlang/core`'s standard library. **Live** reruns after a short debounce.
-4. Save through the original file handle where supported. Otherwise **Save** downloads the exact source text. Invalid source remains savable.
+3. Use **Run** to evaluate the current valid revision. Local standard-library programs can use **Live** after a short debounce.
+4. Use **Jev** to load a TypeSafe System One starter program. The first run requests a TypeSafe API key, keeps it only in tab memory, and renders model, usage, confidence, score, and probability details. Jev programs are always explicit-run to prevent accidental network requests.
+5. Save through the original file handle where supported. Otherwise **Save** downloads the exact source text. Invalid source remains savable.
 
 Unsaved edits are guarded before New/Open and page exit. An externally changed file prompts for Reload, Save As, Overwrite, or Cancel rather than silently replacing either version.
 
@@ -59,4 +60,4 @@ The browser worker rejects stale revisions; invalid source keeps the last valid 
 - Chromium browsers provide the complete open/save-handle workflow.
 - Other current browsers use import and download fallback without persistent file permissions.
 - Files above 10 MiB are rejected before parsing.
-- The first release is single-user, local-only, and standard-library-only. It has no tracing, cloud persistence, collaboration, plugins, or custom evaluation environment editor.
+- The first release is single-user and local-first. Jev support sends requests through the app's same-origin proxy with a user-provided, preferably scoped development key that remains in browser memory; it has no cloud persistence, collaboration, plugins, or general custom-environment editor.

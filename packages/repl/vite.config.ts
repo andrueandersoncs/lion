@@ -7,7 +7,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
   plugins: [
-    nitro(),
+    nitro({ serverDir: "./server" }),
     viteTsConfigPaths({
       root: "../..",
     }),

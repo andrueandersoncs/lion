@@ -1,3 +1,4 @@
+import type { SpecialFormName } from "@lionlang/core/analysis/analyze";
 import {
   Background,
   type Connection,
@@ -31,30 +32,369 @@ interface GraphNodeData extends Record<string, unknown> {
   readonly expanded: boolean;
   readonly onToggle: (id: string) => void;
   readonly onUnfold: (id: string) => void;
+  readonly presentation?: GraphNodePresentation;
   readonly semantic: IndexedSemanticNode;
   readonly stale: boolean;
   readonly unfolded: boolean;
 }
 
+type GraphNodeMark =
+  | SpecialFormName
+  | "array"
+  | "boolean"
+  | "null"
+  | "number"
+  | "record"
+  | "reference"
+  | "string"
+  | "syntax";
+
+interface GraphNodePresentation {
+  readonly description: string;
+  readonly detail: string;
+  readonly mark: GraphNodeMark;
+}
+
 type GraphFlowNode = Node<GraphNodeData, "semantic">;
+const pluralize = (count: number, noun: string, plural = `${noun}s`) =>
+  `${count} ${count === 1 ? noun : plural}`;
+
+const describeSpecialForm = (
+  semantic: IndexedSemanticNode,
+  byId: ReadonlyMap<string, IndexedSemanticNode>
+): GraphNodePresentation | undefined => {
+  const form = semantic.specialForm;
+  if (!form) {
+    return undefined;
+  }
+  if (semantic.kind === "invalid-call") {
+    return {
+      mark: form,
+      description: "invalid Lion form",
+      detail: "structure needs repair",
+    };
+  }
+
+  const children = semantic.children.flatMap((id) => {
+    const child = byId.get(id);
+    return child ? [child] : [];
+  });
+  const roleCount = (role: string) =>
+    children.filter((child) => child.role === role).length;
+
+  switch (form) {
+    case "begin": {
+      const stepCount = roleCount("sequence-item");
+      return {
+        mark: form,
+        description: "ordered sequence",
+        detail:
+          stepCount === 0
+            ? "0 steps → []"
+            : `${pluralize(stepCount, "step")} → last`,
+      };
+    }
+    case "cond": {
+      const branchCount = roleCount("branch");
+      return {
+        mark: form,
+        description: "first truthy wins",
+        detail: pluralize(branchCount, "branch", "branches"),
+      };
+    }
+    case "define": {
+      const binding = semantic.relationships.find(
+        ({ kind }) => kind === "definition"
+      )?.name;
+      return {
+        mark: form,
+        description: "global binding",
+        detail: binding ? `${binding} ← value` : "binding ← value",
+      };
+    }
+    case "eval":
+      return {
+        mark: form,
+        description: "evaluate data",
+        detail: "code → value",
+      };
+    case "lambda": {
+      const parameters = children.find(({ role }) => role === "parameters");
+      const parameterCount = parameters?.children.length ?? 0;
+      return {
+        mark: form,
+        description: "function value",
+        detail: `${pluralize(parameterCount, "param")} → body`,
+      };
+    }
+    case "match": {
+      const patternCount = roleCount("pattern");
+      return {
+        mark: form,
+        description: "pattern dispatch",
+        detail: `${patternCount} + fallback`,
+      };
+    }
+    case "quote":
+      return {
+        mark: form,
+        description: "literal syntax",
+        detail: "not evaluated",
+      };
+    default:
+      return form satisfies never;
+  }
+};
+
+const describeStructuredNode = (
+  semantic: IndexedSemanticNode
+): GraphNodePresentation | undefined => {
+  const itemCount = semantic.children.length;
+  if (
+    semantic.role === "parameters" &&
+    (semantic.kind === "call" || semantic.kind === "empty-array")
+  ) {
+    return {
+      mark: "syntax",
+      description: "parameter list",
+      detail: pluralize(itemCount, "name"),
+    };
+  }
+  if (semantic.kind === "record") {
+    return {
+      mark: "record",
+      description: semantic.quoted ? "quoted record" : "record literal",
+      detail: pluralize(itemCount, "field"),
+    };
+  }
+  if (semantic.kind === "empty-array") {
+    return {
+      mark: "array",
+      description: "array literal",
+      detail: "0 items",
+    };
+  }
+  if (
+    semantic.quoted &&
+    (semantic.kind === "call" ||
+      semantic.kind === "invalid-call" ||
+      semantic.kind === "special-form")
+  ) {
+    return {
+      mark: "array",
+      description: "quoted array",
+      detail: pluralize(itemCount, "item"),
+    };
+  }
+  return undefined;
+};
+
+const describePrimitiveNode = (
+  semantic: IndexedSemanticNode,
+  byId: ReadonlyMap<string, IndexedSemanticNode>
+): GraphNodePresentation | undefined => {
+  if (semantic.kind !== "primitive") {
+    return undefined;
+  }
+
+  const { value } = semantic;
+  if (typeof value === "string") {
+    if (semantic.quoted) {
+      return {
+        mark: "string",
+        description: "string literal",
+        detail: pluralize(value.length, "char"),
+      };
+    }
+    const parent = semantic.parentId ? byId.get(semantic.parentId) : undefined;
+    if (semantic.role === "operator") {
+      return {
+        mark: "syntax",
+        description: "form keyword",
+        detail: "syntax marker",
+      };
+    }
+    if (parent?.role === "parameters") {
+      return {
+        mark: "syntax",
+        description: "parameter name",
+        detail: "local identifier",
+      };
+    }
+    if (value === "else" && parent?.role === "branch") {
+      return {
+        mark: "syntax",
+        description: "branch keyword",
+        detail: "fallback marker",
+      };
+    }
+    if (semantic.role === "binding") {
+      return {
+        mark: "syntax",
+        description: "binding name",
+        detail: "global identifier",
+      };
+    }
+    return {
+      mark: "reference",
+      description: "symbol reference",
+      detail: "lookup or text",
+    };
+  }
+  if (typeof value === "number") {
+    return {
+      mark: "number",
+      description: "number literal",
+      detail: "numeric value",
+    };
+  }
+  if (typeof value === "boolean") {
+    return {
+      mark: "boolean",
+      description: "boolean literal",
+      detail: "truth value",
+    };
+  }
+  if (value === null) {
+    return {
+      mark: "null",
+      description: "null literal",
+      detail: "empty value",
+    };
+  }
+  return undefined;
+};
+
+function SemanticNodeMark({ mark }: { readonly mark: GraphNodeMark }) {
+  return (
+    <span aria-hidden className="graph-node-mark">
+      <svg fill="none" viewBox="0 0 24 24">
+        <title>{mark} node</title>
+        {mark === "begin" && (
+          <>
+            <path d="M7 5h11M7 12h11M7 19h11" />
+            <path d="M4 5h.01M4 12h.01M4 19h.01" />
+          </>
+        )}
+        {mark === "cond" && (
+          <>
+            <path d="M5 5v14M5 9h5c3 0 3-4 6-4h3M5 15h5c3 0 3 4 6 4h3" />
+            <path d="m17 3 2 2-2 2M17 17l2 2-2 2" />
+          </>
+        )}
+        {mark === "define" && (
+          <>
+            <path d="M4 8h5M4 16h5M13 6v12M17 6v12" />
+            <path d="m11 12 2-2 2 2-2 2-2-2Z" />
+          </>
+        )}
+        {mark === "eval" && (
+          <>
+            <path d="m8 5 10 7-10 7V5Z" />
+            <path d="M4 5v14" />
+          </>
+        )}
+        {mark === "lambda" && (
+          <path d="M6 19c3.5-1 5.5-5.5 7-13M9 5c2.5 0 3.8 1.5 5 5l3 9" />
+        )}
+        {mark === "match" && (
+          <>
+            <path d="m4 12 5-5 5 5-5 5-5-5Z" />
+            <path d="M14 12h6M17 9l3 3-3 3" />
+          </>
+        )}
+        {mark === "quote" && (
+          <>
+            <path d="M5 6h6v6H7c0 3 1 5 3 6" />
+            <path d="M14 6h6v6h-4c0 3 1 5 3 6" />
+          </>
+        )}
+        {mark === "record" && (
+          <>
+            <path d="M9 4H7v5l-3 3 3 3v5h2M15 4h2v5l3 3-3 3v5h-2" />
+            <path d="M11 9h2M11 15h2" />
+          </>
+        )}
+        {mark === "array" && (
+          <>
+            <path d="M9 4H6v16h3M15 4h3v16h-3" />
+            <path d="M11 9h2M11 15h2" />
+          </>
+        )}
+        {mark === "string" && (
+          <path d="M5 7h6v5H7c0 2.5 1 4 3 5M14 7h5v5h-3c0 2.5 1 4 3 5" />
+        )}
+        {mark === "number" && <path d="M9 4 7 20M17 4l-2 16M4 9h16M3 15h16" />}
+        {mark === "boolean" && <path d="m4 12 5 5L20 6" />}
+        {mark === "null" && (
+          <>
+            <circle cx="12" cy="12" r="7" />
+            <path d="m7 17 10-10" />
+          </>
+        )}
+        {mark === "reference" && (
+          <>
+            <path d="M5 12h12M13 8l4 4-4 4" />
+            <path d="M5 7v10" />
+          </>
+        )}
+        {mark === "syntax" && (
+          <>
+            <path d="m9 6-5 6 5 6M15 6l5 6-5 6" />
+            <path d="m13 4-2 16" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
 
 const SemanticGraphNode = memo(function SemanticGraphNode({
   data,
   selected,
 }: NodeProps<GraphFlowNode>) {
-  const { semantic, expanded, unfolded, stale, onToggle, onUnfold } = data;
+  const {
+    semantic,
+    expanded,
+    unfolded,
+    stale,
+    onToggle,
+    onUnfold,
+    presentation,
+  } = data;
   const hasChildren = semantic.children.length > 0;
+  const foldControl = (
+    <Button
+      aria-label={
+        unfolded ? "Refold semantic node" : "Unfold exact JSON structure"
+      }
+      className="nodrag"
+      onClick={() => onUnfold(semantic.id)}
+      size="icon-sm"
+      variant="ghost"
+    >
+      <FoldHorizontalIcon />
+    </Button>
+  );
+  const presentationLabel = presentation
+    ? `${presentation.mark}: ${presentation.description}; ${presentation.detail}`
+    : undefined;
+
   return (
     <article
       aria-label={`${semantic.kind}: ${semantic.label}`}
       className={cn(
-        "graph-node min-w-48 overflow-hidden rounded-xl bg-card text-card-foreground",
+        "graph-node w-52 overflow-hidden rounded-xl bg-card text-card-foreground",
+        presentation && "graph-node-presented",
         selected && "graph-node-selected",
-        semantic.kind === "invalid-call" && "graph-node-invalid",
+        semantic.kind === "invalid-call" &&
+          !semantic.quoted &&
+          "graph-node-invalid",
         stale && "graph-node-stale",
         unfolded && "graph-node-unfolded"
       )}
       data-kind={semantic.kind}
+      data-mark={presentation?.mark}
     >
       <Handle aria-hidden position={Position.Left} type="target" />
       <header className="flex items-center gap-2 border-crease border-b px-3 py-2">
@@ -79,23 +419,28 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         </div>
         <Badge variant="outline">{semantic.role}</Badge>
       </header>
-      <div className="flex items-center justify-between gap-3 px-3 py-2">
-        <span className="text-muted-foreground text-xs">
-          {semantic.quoted ? "Quoted · " : ""}
-          {semantic.kind}
-        </span>
-        <Button
-          aria-label={
-            unfolded ? "Refold semantic node" : "Unfold exact JSON structure"
-          }
-          className="nodrag"
-          onClick={() => onUnfold(semantic.id)}
-          size="icon-sm"
-          variant="ghost"
+      {presentation ? (
+        <section
+          aria-label={presentationLabel}
+          className="graph-node-summary"
+          title={presentationLabel}
         >
-          <FoldHorizontalIcon />
-        </Button>
-      </div>
+          <SemanticNodeMark mark={presentation.mark} />
+          <div className="min-w-0">
+            <p className="graph-node-description">{presentation.description}</p>
+            <p className="graph-node-detail">{presentation.detail}</p>
+          </div>
+          {foldControl}
+        </section>
+      ) : (
+        <div className="flex items-center justify-between gap-3 px-3 py-2">
+          <span className="text-muted-foreground text-xs">
+            {semantic.quoted ? "Quoted · " : ""}
+            {semantic.kind}
+          </span>
+          {foldControl}
+        </div>
+      )}
       <Handle aria-hidden position={Position.Right} type="source" />
     </article>
   );
@@ -284,12 +629,17 @@ export function SemanticGraph({
           semantic,
           expanded: !collapsed.has(semantic.id),
           unfolded: unfolded.has(semantic.id),
+          presentation:
+            describeStructuredNode(semantic) ??
+            describePrimitiveNode(semantic, byId) ??
+            describeSpecialForm(semantic, byId),
           stale,
           onToggle: toggleCollapsed,
           onUnfold: toggleUnfolded,
         },
       })),
     [
+      byId,
       collapsed,
       positions,
       selectedId,
