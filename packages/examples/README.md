@@ -11,6 +11,7 @@ The example script demonstrates:
 - structural pattern matching with `match`
 - host interop through injected JavaScript values and functions
 - nested lookup with `object/get-path`
+- TypeSafe AI Jev evaluation from a standalone Lion JSON program
 
 ## Run
 
@@ -18,4 +19,10 @@ From the repo root:
 
 ```bash
 bun run packages/examples/index.ts
+```
+
+Run the Jev example with the API key stored in `packages/typesafe-ai/.env`:
+
+```bash
+bun run --cwd packages/examples jev
 ```

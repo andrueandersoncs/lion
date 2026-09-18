@@ -1,0 +1,52 @@
+[
+  "begin",
+  [
+    "define",
+    "jev-result",
+    [
+      "typesafe/system-one",
+      {
+        "model": "jev-latest",
+        "state": {
+          "ticket": {
+            "subject": "Duplicate charge",
+            "message": "Help! I was charged twice and need this fixed today."
+          }
+        },
+        "questions": {
+          "urgent": [
+            "typesafe/noul",
+            "Does `ticket.message` convey urgency?",
+            {
+              "true": "The customer explicitly needs prompt action",
+              "false": "The customer does not indicate urgency"
+            }
+          ],
+          "department": [
+            "typesafe/choice",
+            "Which team should handle this ticket?",
+            {
+              "billing": "Payments, charges, invoices, and refunds",
+              "technical": "Bugs, outages, and integrations",
+              "sales": "Pricing, upgrades, and new accounts"
+            }
+          ],
+          "frustration": [
+            "typesafe/score",
+            "How frustrated is the customer?",
+            [
+              "quote",
+              [
+                "Calm or neutral",
+                "Concerned",
+                "Clearly frustrated",
+                "Extremely angry"
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  ],
+  ["console/log-json", "jev-result"]
+]

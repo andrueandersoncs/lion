@@ -4,12 +4,15 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build index.ts --outdir dist --target bun",
+    "build": "bun build index.ts jev.ts --outdir dist --target bun",
     "dev": "bun run index.ts",
+    "jev": "bun --env-file=../typesafe-ai/.env run jev.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@lionlang/core": "workspace:*"
+    "@lionlang/core": "workspace:*",
+    "@lionlang/typesafe-ai": "workspace:*",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "latest"

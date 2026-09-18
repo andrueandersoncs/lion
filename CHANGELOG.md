@@ -5,6 +5,7 @@
 ### Added
 
 - Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.
+- Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.
 - Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.
 - Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.
 - File System Access open/save workflows with permission and external-change handling, plus import/download fallback.

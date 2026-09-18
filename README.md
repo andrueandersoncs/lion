@@ -17,9 +17,10 @@ The result is a small homoiconic language that can describe both computation and
 
 ```text
 packages/
-  core/   evaluator, special forms, stdlib
-  repl/   interactive web REPL
-  agent/  real-world Lion program driving an OpenTUI + AI agent
+  core/         evaluator, special forms, stdlib
+  typesafe-ai/  TypeSafe AI and Jev expression bindings
+  repl/         interactive graph editor
+  agent/        real-world Lion program driving an OpenTUI + AI agent
 ```
 
 ## Graph Editor
@@ -47,6 +48,59 @@ const result = await Effect.runPromise(
 
 // => 3
 ```
+
+## TypeSafe AI and Jev
+
+`@lionlang/typesafe-ai` exposes every Jev question primitive plus the System One and models APIs as Lion functions. Set `TYPESAFE_API_KEY`, create the bindings once in the host, and spread them into the evaluation environment:
+
+```ts
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+import { makeTypeSafeBindings } from "@lionlang/typesafe-ai";
+
+const environment = {
+	...stdlib,
+	...makeTypeSafeBindings(),
+};
+
+const result = await Effect.runPromise(
+	run(
+		[
+			"typesafe/system-one",
+			{
+				state: "Help! My payouts have been failing for 3 days.",
+				questions: {
+					urgent: [
+						"typesafe/noul",
+						"Does this convey urgency?",
+						{
+							true: "Explicitly time-sensitive",
+							false: "No urgency expressed",
+						},
+					],
+					department: [
+						"typesafe/choice",
+						"Which team should handle this?",
+						{
+							billing: "Payments, invoicing, and refunds",
+							technical: "Bugs, outages, and integrations",
+						},
+					],
+					frustration: [
+						"typesafe/score",
+						"How frustrated is the customer?",
+						["quote", ["Calm", "Frustrated", "Very angry"]],
+					],
+				},
+			},
+		],
+		environment
+	)
+);
+```
+
+Lion arrays are executable, so literal arrays in state, instructions, or score criteria must use `quote`. Use `["typesafe/models"]` to list the models available to the configured account. `makeTypeSafeBindings` accepts the TypeSafe SDK client configuration and an optional namespace.
 
 ## Custom Environment
 
