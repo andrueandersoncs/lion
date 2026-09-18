@@ -31,4 +31,26 @@ describe("editor worker protocol", () => {
       expect(response.projection.diagnostics[0]?.category).toBe("json-syntax");
     }
   });
+
+  it("places argument values left of consuming expressions", async () => {
+    const response = await handleWorkerRequest({
+      type: "layout",
+      requestId: 2,
+      revision: 3,
+      nodes: [
+        { id: "$", parentId: null },
+        { id: "/1", parentId: "$" },
+        { id: "/2", parentId: "$" },
+      ],
+    });
+    expect(response.type).toBe("layout");
+    if (response.type === "layout") {
+      expect(response.positions["/1"]?.x).toBeLessThan(
+        response.positions.$?.x ?? 0
+      );
+      expect(response.positions["/2"]?.x).toBeLessThan(
+        response.positions.$?.x ?? 0
+      );
+    }
+  });
 });

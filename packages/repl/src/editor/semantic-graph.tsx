@@ -614,6 +614,10 @@ export function SemanticGraph({
     },
     [byId, onConstraint]
   );
+  const maxVisibleDepth = useMemo(
+    () => Math.max(...visibleSemanticNodes.map(({ path }) => path.length), 0),
+    [visibleSemanticNodes]
+  );
 
   const nodes = useMemo<GraphFlowNode[]>(
     () =>
@@ -621,7 +625,7 @@ export function SemanticGraph({
         id: semantic.id,
         type: "semantic",
         position: positions[semantic.id] ?? {
-          x: semantic.path.length * 260,
+          x: (maxVisibleDepth - semantic.path.length) * 260,
           y: index * 104,
         },
         selected: semantic.id === selectedId,
@@ -641,6 +645,7 @@ export function SemanticGraph({
     [
       byId,
       collapsed,
+      maxVisibleDepth,
       positions,
       selectedId,
       stale,
@@ -658,9 +663,9 @@ export function SemanticGraph({
         node.parentId && visibleIds.has(node.parentId)
           ? [
               {
-                id: `${node.parentId}->${node.id}`,
-                source: node.parentId,
-                target: node.id,
+                id: `${node.id}->${node.parentId}`,
+                source: node.id,
+                target: node.parentId,
                 label: node.role,
                 markerEnd: { type: MarkerType.ArrowClosed },
                 className: node.quoted ? "graph-edge-quoted" : "graph-edge",
