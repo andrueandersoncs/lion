@@ -6,6 +6,7 @@ import {
   type Edge,
   Handle,
   MarkerType,
+  MiniMap,
   type Node,
   type NodeProps,
   Position,
@@ -56,6 +57,10 @@ interface GraphNodePresentation {
 }
 
 type GraphFlowNode = Node<GraphNodeData, "semantic">;
+const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
+  selected
+    ? "var(--vermilion)"
+    : "color-mix(in oklab, var(--sumi) 70%, var(--sheet))";
 const pluralize = (count: number, noun: string, plural = `${noun}s`) =>
   `${count} ${count === 1 ? noun : plural}`;
 
@@ -384,7 +389,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     <article
       aria-label={`${semantic.kind}: ${semantic.label}`}
       className={cn(
-        "graph-node w-52 overflow-hidden rounded-xl bg-card text-card-foreground",
+        "graph-node relative w-52 rounded-xl bg-card text-card-foreground",
         presentation && "graph-node-presented",
         selected && "graph-node-selected",
         semantic.kind === "invalid-call" &&
@@ -575,7 +580,12 @@ export function SemanticGraph({
     }
     const timer = window.setTimeout(() => {
       flowInstance
-        .fitView({ padding: 0.18, minZoom: 0.5, maxZoom: 1.1 })
+        .fitView({
+          duration: 180,
+          padding: 0.18,
+          minZoom: 0.5,
+          maxZoom: 1.1,
+        })
         .catch(() => undefined);
     }, 120);
     return () => window.clearTimeout(timer);
@@ -622,6 +632,8 @@ export function SemanticGraph({
   const nodes = useMemo<GraphFlowNode[]>(
     () =>
       visibleSemanticNodes.map((semantic, index) => ({
+        initialHeight: 112,
+        initialWidth: 208,
         id: semantic.id,
         type: "semantic",
         position: positions[semantic.id] ?? {
@@ -675,22 +687,6 @@ export function SemanticGraph({
       ),
     [visibleIds, visibleSemanticNodes]
   );
-  const overview = useMemo(() => {
-    const minX = Math.min(...nodes.map(({ position }) => position.x), 0);
-    const minY = Math.min(...nodes.map(({ position }) => position.y), 0);
-    const maxX = Math.max(
-      ...nodes.map(({ position }) => position.x + 210),
-      210
-    );
-    const maxY = Math.max(...nodes.map(({ position }) => position.y + 78), 78);
-    const padding = 24;
-    return {
-      minX: minX - padding,
-      minY: minY - padding,
-      width: maxX - minX + padding * 2,
-      height: maxY - minY + padding * 2,
-    };
-  }, [nodes]);
 
   const reconnect = useCallback(
     (connection: Connection) => {
@@ -752,59 +748,36 @@ export function SemanticGraph({
         {projection.nodes.length} total · {nodes.length} mounted
       </div>
       <ReactFlow
+        className="semantic-flow"
         colorMode="light"
         edges={edges}
-        fitView
         minZoom={0.12}
         nodes={nodes}
         nodesConnectable={!stale}
+        nodesDraggable={false}
         nodeTypes={nodeTypes}
         onConnect={reconnect}
         onInit={setFlowInstance}
         onNodeClick={(_event, node) => onSelect(node.id)}
         onNodeDoubleClick={(_event, node) => toggleUnfolded(node.id)}
         proOptions={{ hideAttribution: true }}
+        zoomOnDoubleClick={false}
       >
         <Controls position="bottom-left" showInteractive={false} />
+        {nodes.length > 12 ? (
+          <MiniMap
+            ariaLabel="Document overview"
+            className="graph-minimap"
+            maskColor="color-mix(in oklab, var(--background) 72%, transparent)"
+            maskStrokeColor="var(--vermilion)"
+            nodeBorderRadius={8}
+            nodeColor={getMiniMapNodeColor}
+            pannable
+            zoomable
+          />
+        ) : null}
         <Background color="var(--crease)" gap={32} size={1} />
       </ReactFlow>
-      <button
-        aria-label="Navigate document overview"
-        className="graph-minimap"
-        onClick={(event) => {
-          if (!flowInstance) {
-            return;
-          }
-          const bounds = event.currentTarget.getBoundingClientRect();
-          const x =
-            overview.minX +
-            ((event.clientX - bounds.left) / bounds.width) * overview.width;
-          const y =
-            overview.minY +
-            ((event.clientY - bounds.top) / bounds.height) * overview.height;
-          flowInstance.setCenter(x, y, { duration: 180, zoom: 0.9 });
-        }}
-        type="button"
-      >
-        <svg
-          aria-hidden
-          preserveAspectRatio="xMidYMid meet"
-          viewBox={`${overview.minX} ${overview.minY} ${overview.width} ${overview.height}`}
-        >
-          <title>Document density map</title>
-          {nodes.map(({ id, position, selected }) => (
-            <rect
-              className={selected ? "overview-node-selected" : "overview-node"}
-              height="78"
-              key={id}
-              rx="8"
-              width="210"
-              x={position.x}
-              y={position.y}
-            />
-          ))}
-        </svg>
-      </button>
     </div>
   );
 }

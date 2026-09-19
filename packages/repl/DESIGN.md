@@ -169,7 +169,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 The surface fills the dynamic viewport beneath a compact command strip. At desktop widths the graph receives 62% of the horizontal workbench and the source/inspector column receives 38%; the right column divides vertically into 58% source and 42% inspector, outline, or result. Every split is directly resizable, and pane boundaries read as creases in one sheet.
 
-The graph uses a 32px point rhythm over a sparse 42rem diagonal crease field. Search and selection breadcrumbs sit directly above the canvas, keeping navigation attached to the graph instead of introducing a separate card.
+The graph uses a 32px point rhythm over the continuous warm paper field. Search and selection breadcrumbs sit directly above the canvas, keeping navigation attached to the graph instead of introducing a separate card.
 
 At 899px and below, the command strip wraps its document controls onto a second row, the minimap disappears, and Graph, Source, Inspect, and Result become four mutually exclusive tabs. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
 
@@ -195,7 +195,7 @@ The system is crease-first and lightly lifted. Borders, tonal sheet changes, gut
 
 ## Shapes
 
-Corners are compact and consistently curved, ranging from small 0.25rem breadcrumb corners through 0.5rem controls to 0.875rem semantic nodes. Pills are reserved for status and role badges. The signature silhouette is the graph node's clipped lower-right fold, reinforced by a diagonal sheet flap and a crease line; selection adds a narrow vermilion registration mark on the left edge.
+Corners are compact and consistently curved, ranging from small 0.25rem breadcrumb corners through 0.5rem controls to 0.875rem semantic nodes. Pills are reserved for status and role badges. The signature silhouette is the graph node's clipped lower-right fold, reinforced by a diagonal sheet flap and a crease line; selection uses a clear vermilion border and soft ring without adding a second edge.
 
 ### Named Rules
 

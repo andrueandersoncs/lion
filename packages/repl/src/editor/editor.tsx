@@ -662,7 +662,7 @@ function ResultPanel({ editor }: { readonly editor: EditorController }) {
 
 function SearchBar({ editor }: { readonly editor: EditorController }) {
   const [query, setQuery] = useState("");
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const matches = useMemo(
     () =>
       editor.graphProjection
@@ -678,40 +678,53 @@ function SearchBar({ editor }: { readonly editor: EditorController }) {
     setActiveIndex(index);
     editor.setSelectedId(match.id);
   };
+  const move = (direction: -1 | 1) => {
+    if (matches.length === 0) {
+      return;
+    }
+    if (activeIndex < 0 || activeIndex >= matches.length) {
+      reveal(direction === 1 ? 0 : matches.length - 1);
+      return;
+    }
+    reveal((activeIndex + direction + matches.length) % matches.length);
+  };
+  const resultLabel =
+    activeIndex >= 0 && activeIndex < matches.length
+      ? `${activeIndex + 1} of ${matches.length}`
+      : `${matches.length} match${matches.length === 1 ? "" : "es"}`;
+
   return (
     <div className="graph-search">
-      <SearchIcon aria-hidden />
-      <Input
-        aria-label="Search graph by name, value, or JSON Pointer"
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setActiveIndex(0);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && matches.length > 0) {
-            reveal(
-              (activeIndex + (event.shiftKey ? -1 : 1) + matches.length) %
-                matches.length
-            );
-          }
-        }}
-        placeholder="Search name, value, /path"
-        value={query}
-      />
-      <span
-        aria-live="polite"
-        className="whitespace-nowrap text-muted-foreground text-xs"
-      >
-        {query
-          ? `${matches.length} match${matches.length === 1 ? "" : "es"}`
-          : "Name · value · path"}
+      <div className="graph-search-field">
+        <SearchIcon aria-hidden />
+        <Input
+          aria-label="Search graph by name, value, or JSON Pointer"
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setActiveIndex(-1);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && query) {
+              setQuery("");
+              setActiveIndex(-1);
+              return;
+            }
+            if (event.key === "Enter") {
+              move(event.shiftKey ? -1 : 1);
+            }
+          }}
+          placeholder="Search name, value, /path"
+          type="search"
+          value={query}
+        />
+      </div>
+      <span aria-live="polite" className="graph-search-status">
+        {query ? resultLabel : null}
       </span>
       <ToolButton
         disabled={matches.length === 0}
         label="Previous match"
-        onClick={() =>
-          reveal((activeIndex - 1 + matches.length) % matches.length)
-        }
+        onClick={() => move(-1)}
         size="icon-sm"
         variant="ghost"
       >
@@ -720,7 +733,7 @@ function SearchBar({ editor }: { readonly editor: EditorController }) {
       <ToolButton
         disabled={matches.length === 0}
         label="Next match"
-        onClick={() => reveal((activeIndex + 1) % matches.length)}
+        onClick={() => move(1)}
         size="icon-sm"
         variant="ghost"
       >
