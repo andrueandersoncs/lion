@@ -95,7 +95,6 @@ import {
 import { cn } from "@/lib/utils";
 import { searchProjection } from "./parse";
 import { SemanticGraph } from "./semantic-graph";
-import { SourceEditor } from "./source-editor";
 import type { EditIntent, IndexedSemanticNode } from "./types";
 import {
   type EditorController,
@@ -311,7 +310,7 @@ function Diagnostics({ editor }: { readonly editor: EditorController }) {
       <AlertTitle>
         {editor.workerError
           ? "Analysis worker stopped"
-          : "Source needs attention"}
+          : "Document cannot be graphed"}
       </AlertTitle>
       <AlertDescription className="flex items-center justify-between gap-3">
         <span>{editor.workerError ?? diagnostic?.message}</span>
@@ -340,7 +339,7 @@ function Inspector({
   if (!node) {
     return (
       <div className="flex h-full items-center justify-center p-8 text-center text-muted-foreground text-sm">
-        Select a graph node or place the source cursor inside an expression.
+        Select a graph or outline node to inspect it.
       </div>
     );
   }
@@ -360,7 +359,7 @@ function Inspector({
         </div>
         <dl className="inspector-facts">
           <div>
-            <dt>Source range</dt>
+            <dt>Document range</dt>
             <dd>
               {node.range.from}–{node.range.to}
             </dd>
@@ -429,7 +428,7 @@ function Inspector({
         </div>
         {graphEditingDisabled ? (
           <p className="text-destructive text-xs">
-            Graph mutations resume after the current source is valid.
+            Graph editing resumes after opening a valid Lion document.
           </p>
         ) : null}
       </div>
@@ -847,7 +846,7 @@ const getRunDisabledReason = (editor: EditorController) => {
     return "Evaluation already running";
   }
   if (editor.projection.status !== "valid" || editor.graphStale) {
-    return "Repair source before running";
+    return "Open a valid Lion document before running";
   }
   return undefined;
 };
@@ -881,7 +880,7 @@ function GraphWorkspace({
           </EmptyMedia>
           <EmptyTitle>Start with one Lion expression</EmptyTitle>
           <EmptyDescription>
-            Repair the JSON source and the semantic graph will return here.
+            Open a valid Lion JSON file or start a new document.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -989,9 +988,8 @@ export function GraphEditor() {
     setHydrated(true);
   }, []);
 
-  const selectedRange = editor.selectedNode?.range ?? null;
   const graphEditingReason = editor.graphStale
-    ? "Repair source before editing the graph."
+    ? "Open a valid Lion document before editing the graph."
     : undefined;
 
   const handleError = useCallback((error: unknown) => {
@@ -1390,13 +1388,6 @@ export function GraphEditor() {
         run: () => setActiveTab("graph"),
       },
       {
-        id: "source",
-        label: "Show source",
-        group: "View",
-        icon: BracesIcon,
-        run: () => setActiveTab("source"),
-      },
-      {
         id: "result",
         label: "Show result",
         group: "View",
@@ -1438,23 +1429,6 @@ export function GraphEditor() {
       onMutate={beginMutation}
       onWrap={wrapSelected}
     />
-  );
-
-  const sourcePane = (
-    <div className="flex h-full min-h-0 flex-col">
-      <Diagnostics editor={editor} />
-      <div className="min-h-0 flex-1">
-        <SourceEditor
-          diagnostics={editor.projection.diagnostics}
-          onChange={editor.replaceSource}
-          onRedo={editor.redo}
-          onSelectionChange={editor.selectAtOffset}
-          onUndo={editor.undo}
-          selectedRange={selectedRange}
-          sourceText={editor.snapshot.sourceText}
-        />
-      </div>
-    </div>
   );
 
   return (
@@ -1607,6 +1581,7 @@ export function GraphEditor() {
         ref={fileInputRef}
         type="file"
       />
+      <Diagnostics editor={editor} />
 
       {narrow ? (
         <Tabs
@@ -1614,17 +1589,13 @@ export function GraphEditor() {
           onValueChange={setActiveTab}
           value={activeTab}
         >
-          <TabsList className="mx-3 my-2 grid w-auto grid-cols-4">
+          <TabsList className="mx-3 my-2 grid w-auto grid-cols-3">
             <TabsTrigger value="graph">Graph</TabsTrigger>
-            <TabsTrigger value="source">Source</TabsTrigger>
             <TabsTrigger value="inspect">Inspect</TabsTrigger>
             <TabsTrigger value="result">Result</TabsTrigger>
           </TabsList>
           <TabsContent className="min-h-0" value="graph">
             {graphPane}
-          </TabsContent>
-          <TabsContent className="min-h-0" value="source">
-            {sourcePane}
           </TabsContent>
           <TabsContent className="min-h-0" value="inspect">
             <Tabs
@@ -1658,44 +1629,36 @@ export function GraphEditor() {
           className="min-h-0 flex-1"
           orientation="horizontal"
         >
-          <ResizablePanel defaultSize={62} minSize={35}>
+          <ResizablePanel defaultSize={68} minSize={40}>
             {graphPane}
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={38} minSize={25}>
-            <ResizablePanelGroup orientation="vertical">
-              <ResizablePanel defaultSize={58} minSize={25}>
-                {sourcePane}
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={42} minSize={20}>
-                <Tabs
-                  className="h-full gap-0"
-                  onValueChange={setWorkbenchTab}
-                  value={workbenchTab}
-                >
-                  <TabsList className="m-2">
-                    <TabsTrigger value="inspector">Inspector</TabsTrigger>
-                    <TabsTrigger value="outline">Outline</TabsTrigger>
-                    <TabsTrigger value="result">Result</TabsTrigger>
-                  </TabsList>
-                  <TabsContent className="min-h-0" value="inspector">
-                    <Inspector
-                      editor={editor}
-                      onDelete={() => setDeleteOpen(true)}
-                      onMutate={beginMutation}
-                      onReorder={reorderSelected}
-                    />
-                  </TabsContent>
-                  <TabsContent className="min-h-0" value="outline">
-                    <Outline editor={editor} />
-                  </TabsContent>
-                  <TabsContent className="min-h-0" value="result">
-                    <ResultPanel editor={editor} />
-                  </TabsContent>
-                </Tabs>
-              </ResizablePanel>
-            </ResizablePanelGroup>
+          <ResizablePanel defaultSize={32} minSize={25}>
+            <Tabs
+              className="h-full gap-0"
+              onValueChange={setWorkbenchTab}
+              value={workbenchTab}
+            >
+              <TabsList className="m-2">
+                <TabsTrigger value="inspector">Inspector</TabsTrigger>
+                <TabsTrigger value="outline">Outline</TabsTrigger>
+                <TabsTrigger value="result">Result</TabsTrigger>
+              </TabsList>
+              <TabsContent className="min-h-0" value="inspector">
+                <Inspector
+                  editor={editor}
+                  onDelete={() => setDeleteOpen(true)}
+                  onMutate={beginMutation}
+                  onReorder={reorderSelected}
+                />
+              </TabsContent>
+              <TabsContent className="min-h-0" value="outline">
+                <Outline editor={editor} />
+              </TabsContent>
+              <TabsContent className="min-h-0" value="result">
+                <ResultPanel editor={editor} />
+              </TabsContent>
+            </Tabs>
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
@@ -1849,7 +1812,7 @@ export function GraphEditor() {
               </DialogTitle>
               <DialogDescription>
                 Build from a Lion pattern or enter any strict JSON value. Only
-                the selected source range changes.
+                the selected expression changes.
               </DialogDescription>
             </DialogHeader>
             <section
@@ -1941,7 +1904,7 @@ export function GraphEditor() {
                   value={mutation?.source ?? ""}
                 />
                 <FieldDescription>
-                  Canonical source remains visible and undoable after applying.
+                  The change remains undoable after applying.
                 </FieldDescription>
                 <FieldError>{mutationError}</FieldError>
               </Field>
@@ -1968,9 +1931,8 @@ export function GraphEditor() {
           <DialogHeader>
             <DialogTitle>Delete this subtree?</DialogTitle>
             <DialogDescription>
-              The exact source range {editor.selectedNode?.range.from}–
-              {editor.selectedNode?.range.to} will be removed in one undoable
-              transaction.
+              The selected expression and all of its descendants will be removed
+              in one undoable transaction.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1990,8 +1952,8 @@ export function GraphEditor() {
           <DialogHeader>
             <DialogTitle>Unsaved changes</DialogTitle>
             <DialogDescription>
-              Save the current source before replacing this document, discard
-              it, or keep editing.
+              Save the current document before replacing it, discard it, or keep
+              editing.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

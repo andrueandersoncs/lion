@@ -550,11 +550,6 @@
   border-color: var(--crease);
 }
 
-.cm-graph-selection {
-  background: color-mix(in oklab, var(--vermilion) 12%, transparent);
-  border-bottom: 2px solid var(--vermilion);
-}
-
 .inspector-facts {
   display: flex;
   flex-direction: column;

@@ -8,30 +8,30 @@ web
 
 ## Users
 
-Lion developers authoring and debugging real Lion programs. They are technical, work directly with JSON source, and need precision at developer-tool speed rather than a simplified no-code abstraction.
+Lion developers authoring and debugging real Lion programs. They open JSON-backed programs and need precision at developer-tool speed rather than a simplified no-code abstraction.
 
 ## Product Purpose
 
-Provide a local-first graph editor for Lion programs. Users can open a Lion JSON file, edit one program through synchronized graph and JSON views, evaluate it, inspect the result, and save the same JSON representation back to disk.
+Provide a local-first graph editor for Lion programs. Users can open a Lion JSON file, edit one program through the graph and inspector, evaluate it, inspect the result, and save the same JSON representation back to disk.
 
 Success means developers can understand and modify large Lion programs faster without losing source fidelity or needing a hosted workspace.
 
 ## Positioning
 
-Lion programs are already JSON and homoiconic. The editor treats that source as the canonical program: the semantic graph and raw structural detail are two synchronized views of the same JSON, not a proprietary intermediate format.
+Lion programs are already JSON and homoiconic. The editor keeps that source as the canonical program while making the semantic graph the primary editing surface rather than introducing a proprietary intermediate format.
 
 ## Operating Context
 
 - Open and save local Lion JSON files in a desktop-class browser.
 - Work with programs that can exceed 1,000 graph nodes.
-- Edit semantic Lion expressions by default, then expand into raw JSON detail where exact structure matters.
+- Edit semantic Lion expressions through the graph, direct node actions, and focused expression dialogs.
 - Evaluate explicitly by default, with an optional live-evaluation mode.
 
 ## Capabilities and Constraints
 
 - Existing stack: React, Vite, TanStack Router, TypeScript, Effect, and the `@lionlang/core` evaluator.
 - Local files only in the first release; no account, backend persistence, or collaboration.
-- Graph and JSON edits must round-trip without changing program meaning or unsupported source structure.
+- Graph edits must round-trip through canonical JSON without changing program meaning or unsupported source structure.
 - Large graphs require navigation, selective detail, and rendering strategies that remain responsive beyond 1,000 nodes.
 - Accessibility target is WCAG 2.2 AA for keyboard, contrast, focus, names, touch targets, reduced motion, forced colors, and equivalent non-drag interactions.
 

@@ -1,6 +1,6 @@
 # Lion Fold Map
 
-Local-first semantic graph and JSON editor for Lion programs. The JSON source is canonical; graph, outline, inspector, and result views derive from the same revision.
+Local-first semantic graph editor for Lion programs. The JSON document remains canonical; graph, outline, inspector, and result views derive from the same revision.
 
 ## Develop
 
@@ -26,10 +26,10 @@ bun run --filter=@lionlang/repl test:e2e
 ## Workflow
 
 1. Open a `.json` Lion program with **Open**. Browsers without the File System Access API use the file picker import path.
-2. Edit exact JSON in **Source**, or select graph/outline nodes and mutate them through **Inspector**. Every accepted edit is one shared source transaction.
+2. Select graph or outline nodes and mutate them through direct actions or **Inspector**. Every accepted edit is one undoable document transaction.
 3. Use **Run** to evaluate the current valid revision. Local standard-library programs can use **Live** after a short debounce.
 4. Use **Jev** to load a TypeSafe System One starter program. The first run requests a TypeSafe API key, keeps it only in tab memory, and renders model, usage, confidence, score, and probability details. Jev programs are always explicit-run to prevent accidental network requests.
-5. Save through the original file handle where supported. Otherwise **Save** downloads the exact source text. Invalid source remains savable.
+5. Save through the original file handle where supported. Otherwise **Save** downloads the exact JSON document.
 
 Unsaved edits are guarded before New/Open and page exit. An externally changed file prompts for Reload, Save As, Overwrite, or Cancel rather than silently replacing either version.
 
@@ -40,7 +40,7 @@ Unsaved edits are guarded before New/Open and page exit. An externally changed f
 - `⌘/Ctrl+Enter`: run
 - `⌘/Ctrl+K`: command palette
 - `⌘/Ctrl+Z`, `⌘/Ctrl+Shift+Z`: shared undo/redo
-- `⌘/Ctrl+F`: source or graph search, based on focus
+- `⌘/Ctrl+F`: search the graph
 - Arrow keys, Home, End: navigate the outline tree
 - Enter/Space: select an outline node or activate a focused command
 
@@ -50,7 +50,6 @@ Unsaved edits are guarded before New/Open and page exit. An externally changed f
 - `src/editor/parse.ts`: strict JSON parsing, source ranges, diagnostics, and searchable projections
 - `src/editor/editor.worker.ts`: revisioned semantic analysis and ELK layout off the main thread
 - `src/editor/semantic-graph.tsx`: bounded React Flow rendering, folding, and semantic edges
-- `src/editor/source-editor.tsx`: CodeMirror JSON workbench
 - `src/editor/use-editor.ts`: file, evaluation, selection, and worker orchestration
 
 The browser worker rejects stale revisions; invalid source keeps the last valid graph visibly stale. Graph edits compile to minimal `jsonc-parser` text edits, with exact subtree bytes preserved for reorder and move operations.

@@ -200,7 +200,7 @@
       },
       "code": {
         "displayName": "Exact Notation",
-        "purpose": "JSON source, pointers, counts, ranges, and evaluation output."
+        "purpose": "Expression JSON, pointers, counts, ranges, and evaluation output."
       }
     },
     "shadows": [
@@ -277,8 +277,8 @@
       "kind": "nav",
       "refersTo": "tabs-active",
       "description": "The shared segmented navigation for mobile views and the desktop inspector workbench.",
-      "html": "<nav class=\"ds-tabs\" aria-label=\"Workbench views\"><button class=\"ds-tab is-active\" type=\"button\">Graph</button><button class=\"ds-tab\" type=\"button\">Source</button><button class=\"ds-tab\" type=\"button\">Inspect</button><button class=\"ds-tab\" type=\"button\">Result</button></nav>",
-      "css": ".ds-tabs { display: inline-grid; grid-template-columns: repeat(4, minmax(0, 1fr)); height: 2.25rem; align-items: center; padding: 3px; border-radius: 0.625rem; background: var(--muted); color: var(--muted-foreground); font-family: var(--font-display); } .ds-tab { height: calc(100% - 1px); padding: 0.25rem 0.5rem; border: 1px solid transparent; border-radius: 0.5rem; background: transparent; color: var(--sumi); font: 500 0.875rem/1 var(--font-display); transition: color 140ms ease-out, box-shadow 140ms ease-out; } .ds-tab:hover { background: color-mix(in oklab, var(--accent) 65%, transparent); } .ds-tab.is-active { background: var(--background); box-shadow: 0 1px 3px color-mix(in oklab, var(--sumi) 10%, transparent); } .ds-tab:focus-visible { outline: 1px solid var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }"
+      "html": "<nav class=\"ds-tabs\" aria-label=\"Workbench views\"><button class=\"ds-tab is-active\" type=\"button\">Graph</button><button class=\"ds-tab\" type=\"button\">Inspect</button><button class=\"ds-tab\" type=\"button\">Result</button></nav>",
+      "css": ".ds-tabs { display: inline-grid; grid-template-columns: repeat(3, minmax(0, 1fr)); height: 2.25rem; align-items: center; padding: 3px; border-radius: 0.625rem; background: var(--muted); color: var(--muted-foreground); font-family: var(--font-display); } .ds-tab { height: calc(100% - 1px); padding: 0.25rem 0.5rem; border: 1px solid transparent; border-radius: 0.5rem; background: transparent; color: var(--sumi); font: 500 0.875rem/1 var(--font-display); transition: color 140ms ease-out, box-shadow 140ms ease-out; } .ds-tab:hover { background: color-mix(in oklab, var(--accent) 65%, transparent); } .ds-tab.is-active { background: var(--background); box-shadow: 0 1px 3px color-mix(in oklab, var(--sumi) 10%, transparent); } .ds-tab:focus-visible { outline: 1px solid var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }"
     },
     {
       "name": "Folded Semantic Node",
@@ -291,7 +291,7 @@
   ],
   "narrative": {
     "northStar": "One-Sheet Fold Map",
-    "overview": "Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, exact JSON source, inspector, and result views feel like different folds of the same canonical document rather than detached dashboard cards.\n\nThe visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.",
+    "overview": "Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, inspector, outline, and result views feel like different folds of the same canonical document rather than detached dashboard cards.\n\nThe visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.",
     "keyCharacteristics": [
       "Warm washi surfaces with visible creases and sparse paper geometry.",
       "Compact, self-hosted workhorse typography paired with exact monospaced notation.",
@@ -317,12 +317,12 @@
       },
       {
         "name": "The One Sheet Rule",
-        "body": "Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, source, inspector, or result panes in detached dashboard cards.",
+        "body": "Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, inspector, outline, or result panes in detached dashboard cards.",
         "section": "layout"
       },
       {
         "name": "The Focused Fold Rule",
-        "body": "Wide screens expose synchronized views together; narrow screens preserve the same views as one active full-height tab at a time.",
+        "body": "Wide screens expose the graph beside one focused workbench view; narrow screens preserve the same views as one active full-height tab at a time.",
         "section": "layout"
       },
       {
@@ -337,17 +337,17 @@
       }
     ],
     "dos": [
-      "Do keep graph, source, inspector, and result visibly connected as folds of one continuous work surface.",
+      "Do keep graph, inspector, outline, and result visibly connected as folds of one continuous work surface.",
       "Do use vermilion for executable action, selection, focus, and direct graph manipulation.",
       "Do reserve gold for current-revision and active-position evidence.",
-      "Do use monospaced type for exact JSON, pointers, ranges, counts, and evaluation output.",
+      "Do use monospaced type for expression JSON, pointers, ranges, counts, and evaluation output.",
       "Do preserve visible keyboard focus, reduced-motion behavior, forced-color selection outlines, and coarse-pointer targets."
     ],
     "donts": [
       "Don't introduce detached dashboard-card grids around the primary editor panes.",
       "Don't use gold as a decorative accent or competing primary action color.",
       "Don't apply folded corners to generic controls or containers; the fold communicates semantic structure.",
-      "Don't collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views.",
+      "Don't reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression.",
       "Don't add decorative shadows where a crease border or tonal sheet change already expresses hierarchy."
     ]
   }

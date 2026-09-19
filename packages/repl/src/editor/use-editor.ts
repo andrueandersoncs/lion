@@ -183,7 +183,6 @@ export interface EditorController {
   readonly runEvaluation: (source?: "explicit" | "live") => Promise<void>;
   readonly save: (overwrite?: boolean) => Promise<"download" | "saved">;
   readonly saveAs: () => Promise<"download" | "saved">;
-  readonly selectAtOffset: (offset: number) => void;
   readonly selectedId: string | null;
   readonly selectedNode: IndexedSemanticNode | null;
   readonly selectionHistory: readonly string[];
@@ -454,22 +453,6 @@ export function useEditor() {
       });
     },
     [selectionIndex]
-  );
-
-  const selectAtOffset = useCallback(
-    (offset: number) => {
-      const candidate = [
-        ...(projection.status === "valid" ? projection.nodes : []),
-      ]
-        .filter(({ range }) => range.from <= offset && range.to >= offset)
-        .sort(
-          (a, b) => a.range.to - a.range.from - (b.range.to - b.range.from)
-        )[0];
-      if (candidate) {
-        setSelectedId(candidate.id, false);
-      }
-    },
-    [projection, setSelectedId]
   );
 
   const navigateSelection = useCallback(
@@ -804,7 +787,6 @@ export function useEditor() {
     selectedId,
     selectedNode,
     setSelectedId,
-    selectAtOffset,
     selectionHistory,
     selectionIndex,
     navigateSelection,

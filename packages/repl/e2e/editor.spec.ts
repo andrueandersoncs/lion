@@ -17,22 +17,6 @@ const gotoEditor = async (page: Page) => {
   await expect(page.locator('main[data-hydrated="true"]')).toBeVisible();
 };
 
-const replaceSource = async (page: Page, source: string) => {
-  const editor = page.getByRole("textbox", { name: "Lion JSON source editor" });
-  await editor.click();
-  await page.keyboard.press(
-    process.platform === "darwin" ? "Meta+A" : "Control+A"
-  );
-  await page.keyboard.insertText(source);
-};
-
-const showSourceOnNarrowViewport = async (page: Page) => {
-  const sourceTab = page.getByRole("tab", { name: "Source" });
-  if ((await sourceTab.count()) > 0) {
-    await sourceTab.click();
-  }
-};
-
 const showGraphOnNarrowViewport = async (page: Page) => {
   const graphTab = page.getByRole("tab", { name: "Graph" });
   if ((await graphTab.count()) > 0) {
@@ -84,9 +68,10 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
   await expect(page.getByText("Unsaved", { exact: true })).toHaveCount(0);
 });
 
-test("invalid source keeps a stale graph until repair", async ({ page }) => {
+test("invalid source keeps the graph blocked until a new document", async ({
+  page,
+}) => {
   await gotoEditor(page);
-  await showSourceOnNarrowViewport(page);
   await page.locator('input[type="file"]').setInputFiles({
     name: "invalid.json",
     mimeType: "application/json",
@@ -95,9 +80,10 @@ test("invalid source keeps a stale graph until repair", async ({ page }) => {
   await expect(page.getByText("Invalid JSON", { exact: true })).toBeVisible();
   await expect(page.getByText(STALE_GRAPH_PATTERN)).toBeVisible();
   await expect(page.getByRole("button", { name: "Run" })).toBeDisabled();
-  await replaceSource(page, '["number/add", 2, 3]');
+  await page.getByRole("button", { name: "New document" }).click();
   await expect(page.getByText("Invalid JSON", { exact: true })).toHaveCount(0);
   await expect(page.getByText(STALE_GRAPH_PATTERN)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Run" })).toBeEnabled();
 });
 
 test("fallback import preserves text and download saves current bytes", async ({
@@ -116,12 +102,15 @@ test("fallback import preserves text and download saves current bytes", async ({
     mimeType: "application/json",
     buffer: Buffer.from(source),
   });
-  await expect(page.getByText("unicode.json", { exact: true })).toBeVisible();
-  await showSourceOnNarrowViewport(page);
-  await expect(
-    page.getByRole("textbox", { name: "Lion JSON source editor" })
-  ).toContainText("héllo");
-  await replaceSource(page, '{\n  "message": "héllo!"\n}\n');
+  await page
+    .getByRole("toolbar", { name: "Selected expression actions" })
+    .getByRole("button", { name: "Replace", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("textbox", { name: "Expression JSON" })
+    .fill('{"message":"héllo!"}');
+  await page.getByRole("button", { name: "Replace", exact: true }).click();
   await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Save" }).click();

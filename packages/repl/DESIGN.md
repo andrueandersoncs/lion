@@ -1,6 +1,6 @@
 ---
 name: Lion Fold Map
-description: A compact one-sheet workbench for editing Lion programs as synchronized semantic graphs and exact JSON.
+description: A compact one-sheet graph workbench for editing JSON-backed Lion programs.
 colors:
   warm-washi: "oklch(0.955 0.018 78)"
   clean-sheet: "oklch(0.982 0.012 82)"
@@ -106,7 +106,7 @@ components:
 
 **Creative North Star: "One-Sheet Fold Map"**
 
-Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, exact JSON source, inspector, and result views feel like different folds of the same canonical document rather than detached dashboard cards.
+Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, inspector, outline, and result views feel like different folds of the same canonical document rather than detached dashboard cards.
 
 The visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.
 
@@ -122,18 +122,18 @@ The visual language is precise and tactile: vermilion marks the active sheet and
 The palette is a warm, restrained light scheme: paper neutrals carry the interface, sumi establishes legibility, and saturated color is reserved for state.
 
 ### Primary
-- **Vermilion:** Drives the Run action, current selection, graph handles, editor caret, focus, and text selection.
+- **Vermilion:** Drives the Run action, current selection, graph handles, focus, and text selection.
 
 ### Secondary
 - **Warm Secondary:** Marks quiet secondary controls and status surfaces without competing with vermilion.
 - **Warm Accent:** Provides hover feedback for neutral controls, breadcrumbs, and outline rows.
 
 ### Tertiary
-- **Restrained Gold:** Confirms the current revision and highlights the active source line or selected overview node.
+- **Restrained Gold:** Confirms the current revision and highlights selected overview nodes.
 
 ### Neutral
 - **Warm Washi:** The continuous application field and default neutral control surface.
-- **Clean Sheet:** The graph-node, source-editor, command, and control surface.
+- **Clean Sheet:** The graph-node, command, dialog, and control surface.
 - **Muted Sheet:** Gutter, breadcrumb, result, and folded-detail layers.
 - **Sumi:** Primary notation, labels, edges, and icon color.
 - **Muted Sumi:** Secondary metadata and explanatory text.
@@ -153,13 +153,13 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 **Body Font:** IBM Plex Sans Condensed (with sans-serif fallback)
 **Label/Mono Font:** SFMono-Regular (with Consolas, Liberation Mono, Menlo, and monospace fallbacks)
 
-**Character:** The self-hosted condensed family keeps a dense developer tool readable without feeling generic. Monospaced text is limited to source, pointers, counts, ranges, and evaluation output where exact alignment carries meaning.
+**Character:** The self-hosted condensed family keeps a dense developer tool readable without feeling generic. Monospaced text is limited to expression JSON, pointers, counts, ranges, and evaluation output where exact alignment carries meaning.
 
 ### Hierarchy
 - **Title** (600, 1.125rem, 1.25): Inspector headings and other local workbench titles.
 - **Body** (400, 0.875rem, 1.5): Controls, pane content, messages, and primary interface copy.
 - **Label** (500, 0.75rem, 1.25): Metadata, status, badges, node roles, and compact support copy.
-- **Code** (400, 0.8125rem, 1.65): JSON source, pointers, values, counts, ranges, and rendered results.
+- **Code** (400, 0.8125rem, 1.65): Expression JSON, pointers, values, counts, ranges, and rendered results.
 
 ### Named Rules
 
@@ -167,17 +167,17 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 ## Layout
 
-The surface fills the dynamic viewport beneath a compact command strip. At desktop widths the graph receives 62% of the horizontal workbench and the source/inspector column receives 38%; the right column divides vertically into 58% source and 42% inspector, outline, or result. Every split is directly resizable, and pane boundaries read as creases in one sheet.
+The surface fills the dynamic viewport beneath a compact command strip. At desktop widths the graph receives 68% of the horizontal workbench and a tabbed inspector, outline, or result pane receives 32%. The split is directly resizable, and the pane boundary reads as a crease in one sheet.
 
 The graph uses a 32px point rhythm over the continuous warm paper field. Search and selection breadcrumbs sit directly above the canvas, keeping navigation attached to the graph instead of introducing a separate card.
 
-At 899px and below, the command strip wraps its document controls onto a second row while Open and Save remain visibly labeled, the minimap disappears, and Graph, Source, Inspect, and Result become four mutually exclusive tabs. The graph centers the selected node at a readable scale instead of shrinking the full branch to fit. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
+At 899px and below, the command strip wraps its document controls onto a second row while Open and Save remain visibly labeled, the minimap disappears, and Graph, Inspect, and Result become three mutually exclusive tabs. The graph centers the selected node at a readable scale instead of shrinking the full branch to fit. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
 
 ### Named Rules
 
-**The One Sheet Rule.** Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, source, inspector, or result panes in detached dashboard cards.
+**The One Sheet Rule.** Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, inspector, outline, or result panes in detached dashboard cards.
 
-**The Focused Fold Rule.** Wide screens expose synchronized views together; narrow screens preserve the same views as one active full-height tab at a time.
+**The Focused Fold Rule.** Wide screens expose the graph beside one focused workbench view; narrow screens preserve the same views as one active full-height tab at a time.
 
 ## Elevation & Depth
 
@@ -224,33 +224,30 @@ Components are compact, tactile, and state-forward. They share the paper palette
 
 ### Inputs / Fields
 - **Style:** Standard fields use a transparent sheet, crease stroke, medium corner, and compact body text. Graph search removes the inner field border and treats its full-width row as the control boundary.
-- **Focus:** Ring-colored border plus a three-pixel translucent focus ring; the source editor uses an inset two-pixel ring.
+- **Focus:** Ring-colored border plus a three-pixel translucent focus ring.
 - **Error / Disabled:** Invalid fields switch border and ring to destructive; disabled controls retain shape while reducing opacity.
 
 ### Navigation
 
-Graph search and horizontally scrollable breadcrumbs form the canvas navigation. Workbench tabs use a muted-sheet rail with an active warm-washi segment and soft inset lift. On narrow screens the four primary views use the same tab vocabulary across the available width.
+Graph search and horizontally scrollable breadcrumbs form the canvas navigation. Workbench tabs use a muted-sheet rail with an active warm-washi segment and soft inset lift. On narrow screens the three primary views use the same tab vocabulary across the available width.
 
 ### Folded Semantic Node
 
 Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
 
-### Source Editor
-
-The exact JSON view uses a clean sheet with a muted gutter, 13px monospaced source, 1.65 line height, a gold current-line wash, vermilion selection and caret, and an inset focus ring. This view is structurally equal to the graph, not a secondary preview.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep graph, source, inspector, and result visibly connected as folds of one continuous work surface.
+- **Do** keep graph, inspector, outline, and result visibly connected as folds of one continuous work surface.
 - **Do** use vermilion for executable action, selection, focus, and direct graph manipulation.
 - **Do** reserve gold for current-revision and active-position evidence.
-- **Do** use monospaced type for exact JSON, pointers, ranges, counts, and evaluation output.
+- **Do** use monospaced type for expression JSON, pointers, ranges, counts, and evaluation output.
 - **Do** preserve visible keyboard focus, reduced-motion behavior, forced-color selection outlines, and coarse-pointer targets.
 
 ### Don't:
 - **Don't** introduce detached dashboard-card grids around the primary editor panes.
 - **Don't** use gold as a decorative accent or competing primary action color.
 - **Don't** apply folded corners to generic controls or containers; the fold communicates semantic structure.
-- **Don't** collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views.
+- **Don't** reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression.
 - **Don't** add decorative shadows where a crease border or tonal sheet change already expresses hierarchy.
