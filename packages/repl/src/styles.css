@@ -425,6 +425,78 @@
   min-height: 3.5rem;
   padding: 0.5rem 0.75rem;
 }
+.graph-literal-summary {
+  grid-template-columns: 2rem minmax(0, 1fr);
+}
+
+.graph-literal-field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--muted-foreground);
+}
+
+.graph-literal-input {
+  width: 100%;
+  min-width: 0;
+  height: 2rem;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-code);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--sumi);
+  background: var(--sheet);
+  border: 1px solid var(--crease);
+  border-radius: 0.375rem;
+}
+
+.graph-literal-input:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--sumi) 42%, var(--crease));
+}
+
+.graph-literal-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.graph-literal-input:invalid {
+  border-color: var(--destructive);
+}
+
+.graph-literal-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.graph-boolean-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-code);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--sumi);
+  background: var(--sheet);
+  border: 1px solid var(--crease);
+  border-radius: 0.375rem;
+}
+
+.graph-boolean-input:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.graph-boolean-input input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--vermilion);
+}
 
 .graph-node-mark {
   display: grid;
@@ -732,6 +804,16 @@
 
   .graph-node-actions {
     opacity: 1;
+  }
+
+  .graph-literal-input,
+  .graph-boolean-input {
+    min-height: 2.75rem;
+  }
+
+  .graph-boolean-input input {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .graph-search {

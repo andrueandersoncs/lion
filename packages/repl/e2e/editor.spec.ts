@@ -48,22 +48,24 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
   ).toBeVisible();
   await showGraphOnNarrowViewport(page);
 
-  await page
-    .getByRole("toolbar", { name: "Selected expression actions" })
-    .getByRole("button", { name: "Replace", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("textbox", { name: "Expression JSON" })
-    .fill('["number/multiply", 4, 5]');
-  await page.getByRole("button", { name: "Replace", exact: true }).click();
+  const search = page.getByRole("searchbox", {
+    name: "Search graph by name, value, or JSON Pointer",
+  });
+  await search.fill("/1");
+  await search.press("Enter");
+  const numberInput = page.getByRole("spinbutton", {
+    name: "Number value at /1",
+  });
+  await expect(numberInput).toBeVisible();
+  await numberInput.fill("4");
+  await numberInput.press("Enter");
+  await expect(page.getByText("Unsaved", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Run" }).click();
   await expect(
     page
       .getByRole("tabpanel", { name: "Result" })
-      .getByText("20", { exact: true })
+      .getByText("6", { exact: true })
   ).toBeVisible();
-  await expect(page.getByText("Unsaved", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByText("Unsaved", { exact: true })).toHaveCount(0);
 });

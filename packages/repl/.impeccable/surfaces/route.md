@@ -29,7 +29,7 @@ Move confidently through the semantic graph while preserving one canonical JSON 
 
 ## Proof and Content
 
-The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a wide semantic fold-map canvas, a dense tabbed inspector, revision status, search, breadcrumbs, and evaluation controls. Folded nodes show labels, JSON pointers, parent roles, semantic kinds, direct Replace/Add child actions, and exact-structure expansion.
+The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a wide semantic fold-map canvas, a dense tabbed inspector, revision status, search, breadcrumbs, and evaluation controls. Folded nodes show labels, JSON pointers, parent roles, semantic kinds, native inline controls for primitive values, direct Replace/Add child actions, and exact-structure expansion.
 
 ## Constraints
 

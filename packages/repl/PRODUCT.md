@@ -24,7 +24,7 @@ Lion programs are already JSON and homoiconic. The editor keeps that source as t
 
 - Open and save local Lion JSON files in a desktop-class browser.
 - Work with programs that can exceed 1,000 graph nodes.
-- Edit semantic Lion expressions through the graph, direct node actions, and focused expression dialogs.
+- Edit primitive values with native controls in their graph nodes; use direct node actions and focused expression dialogs for structural changes.
 - Evaluate explicitly by default, with an optional live-evaluation mode.
 
 ## Capabilities and Constraints

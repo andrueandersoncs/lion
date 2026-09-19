@@ -21,7 +21,15 @@ import {
   PencilIcon,
   PlusIcon,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,8 +41,11 @@ import type {
 
 interface GraphNodeData extends Record<string, unknown> {
   readonly expanded: boolean;
+  readonly literalDraft?: string;
   readonly onEdit: (id: string) => void;
   readonly onInsert: (id: string) => void;
+  readonly onIntent: (intent: EditIntent) => void;
+  readonly onLiteralDraftChange: (id: string, value?: string) => void;
   readonly onToggle: (id: string) => void;
   readonly onUnfold: (id: string) => void;
   readonly presentation?: GraphNodePresentation;
@@ -61,7 +72,12 @@ interface GraphNodePresentation {
   readonly mark: GraphNodeMark;
 }
 
-type GraphFlowNode = Node<GraphNodeData, "semantic">;
+type GraphNodeType =
+  | "semantic"
+  | "boolean-literal"
+  | "number-literal"
+  | "string-literal";
+type GraphFlowNode = Node<GraphNodeData, GraphNodeType>;
 const GRAPH_NODE_HEIGHT = 138;
 const GRAPH_NODE_WIDTH = 240;
 const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
@@ -376,17 +392,248 @@ function SemanticNodeMark({ mark }: { readonly mark: GraphNodeMark }) {
   );
 }
 
+type EditableLiteralKind = "boolean" | "number" | "string";
+
+const getEditableLiteralKind = (
+  presentation: GraphNodePresentation | undefined
+): EditableLiteralKind | undefined => {
+  if (presentation?.mark === "boolean" || presentation?.mark === "number") {
+    return presentation.mark;
+  }
+  if (presentation?.mark === "string" || presentation?.mark === "reference") {
+    return "string";
+  }
+  return undefined;
+};
+
+const getGraphNodeType = (
+  literalKind: EditableLiteralKind | undefined
+): GraphNodeType => (literalKind ? `${literalKind}-literal` : "semantic");
+
+interface LiteralValueInputProps {
+  readonly kind: EditableLiteralKind;
+  readonly literalDraft?: string;
+  readonly onIntent: (intent: EditIntent) => void;
+  readonly onLiteralDraftChange: (id: string, value?: string) => void;
+  readonly semantic: IndexedSemanticNode;
+  readonly stale: boolean;
+}
+const getLiteralInputValue = (
+  kind: "number" | "string",
+  value: IndexedSemanticNode["value"]
+) => {
+  if (kind === "number" && typeof value === "number") {
+    return String(value);
+  }
+  if (kind === "string" && typeof value === "string") {
+    return value;
+  }
+  return "";
+};
+
+function TextLiteralInput({
+  kind,
+  literalDraft,
+  onIntent,
+  onLiteralDraftChange,
+  semantic,
+  stale,
+}: Omit<LiteralValueInputProps, "kind"> & {
+  readonly kind: "number" | "string";
+}) {
+  const currentValue = getLiteralInputValue(kind, semantic.value);
+  const draft = literalDraft ?? currentValue;
+
+  const commit = () => {
+    if (kind === "number") {
+      const nextValue = Number(draft);
+      if (draft.trim() === "" || !Number.isFinite(nextValue)) {
+        onLiteralDraftChange(semantic.id);
+        return;
+      }
+      if (nextValue !== semantic.value) {
+        onIntent({ type: "replace", path: semantic.path, value: nextValue });
+      }
+      return;
+    }
+    if (draft !== semantic.value) {
+      onIntent({ type: "replace", path: semantic.path, value: draft });
+    }
+  };
+
+  const label = `${kind === "number" ? "Number" : "String"} value at ${
+    semantic.pointer || "root"
+  }`;
+
+  return (
+    <label className="graph-literal-field">
+      <span>{kind === "number" ? "Number value" : "String value"}</span>
+      <input
+        aria-label={label}
+        autoComplete="off"
+        className="graph-literal-input nodrag nopan nowheel"
+        disabled={stale}
+        onBlur={commit}
+        onChange={(event) =>
+          onLiteralDraftChange(semantic.id, event.currentTarget.value)
+        }
+        onDoubleClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          event.stopPropagation();
+          if (event.key === "Enter") {
+            event.currentTarget.blur();
+          } else if (event.key === "Escape") {
+            onLiteralDraftChange(semantic.id);
+          }
+        }}
+        required={kind === "number"}
+        step={kind === "number" ? "any" : undefined}
+        type={kind === "number" ? "number" : "text"}
+        value={draft}
+      />
+    </label>
+  );
+}
+
+function LiteralValueInput({
+  kind,
+  literalDraft,
+  onIntent,
+  onLiteralDraftChange,
+  semantic,
+  stale,
+}: LiteralValueInputProps) {
+  if (kind !== "boolean") {
+    return (
+      <TextLiteralInput
+        kind={kind}
+        literalDraft={literalDraft}
+        onIntent={onIntent}
+        onLiteralDraftChange={onLiteralDraftChange}
+        semantic={semantic}
+        stale={stale}
+      />
+    );
+  }
+
+  const checked = semantic.value === true;
+  return (
+    <label className="graph-literal-field">
+      <span>Boolean value</span>
+      <span className="graph-boolean-input">
+        <input
+          aria-label={`Boolean value at ${semantic.pointer || "root"}`}
+          checked={checked}
+          className="nodrag nopan"
+          disabled={stale}
+          onChange={(event) =>
+            onIntent({
+              type: "replace",
+              path: semantic.path,
+              value: event.currentTarget.checked,
+            })
+          }
+          onDoubleClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+          type="checkbox"
+        />
+        <span aria-hidden>{checked ? "True" : "False"}</span>
+      </span>
+    </label>
+  );
+}
+
+interface GraphNodeBodyProps {
+  readonly foldControl: ReactNode;
+  readonly literalDraft?: string;
+  readonly literalKind?: EditableLiteralKind;
+  readonly onIntent: (intent: EditIntent) => void;
+  readonly onLiteralDraftChange: (id: string, value?: string) => void;
+  readonly presentation?: GraphNodePresentation;
+  readonly semantic: IndexedSemanticNode;
+  readonly stale: boolean;
+}
+
+function GraphNodeBody({
+  foldControl,
+  literalDraft,
+  literalKind,
+  onIntent,
+  onLiteralDraftChange,
+  presentation,
+  semantic,
+  stale,
+}: GraphNodeBodyProps) {
+  const presentationLabel = presentation
+    ? `${presentation.mark}: ${presentation.description}; ${presentation.detail}`
+    : undefined;
+
+  if (literalKind) {
+    return (
+      <section
+        aria-label={presentationLabel}
+        className="graph-node-summary graph-literal-summary"
+      >
+        <SemanticNodeMark mark={literalKind} />
+        <LiteralValueInput
+          kind={literalKind}
+          literalDraft={literalDraft}
+          onIntent={onIntent}
+          onLiteralDraftChange={onLiteralDraftChange}
+          semantic={semantic}
+          stale={stale}
+        />
+      </section>
+    );
+  }
+
+  if (presentation) {
+    return (
+      <section
+        aria-label={presentationLabel}
+        className="graph-node-summary"
+        title={presentationLabel}
+      >
+        <SemanticNodeMark mark={presentation.mark} />
+        <div className="min-w-0">
+          <p className="graph-node-description">{presentation.description}</p>
+          <p className="graph-node-detail">{presentation.detail}</p>
+        </div>
+        {foldControl}
+      </section>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3 py-2">
+      <span className="text-muted-foreground text-xs">
+        {semantic.quoted ? "Quoted · " : ""}
+        {semantic.kind}
+      </span>
+      {foldControl}
+    </div>
+  );
+}
+
+type SemanticGraphNodeProps = NodeProps<GraphFlowNode> & {
+  readonly literalKind?: EditableLiteralKind;
+};
+
 const SemanticGraphNode = memo(function SemanticGraphNode({
   data,
   selected,
-}: NodeProps<GraphFlowNode>) {
+  literalKind,
+}: SemanticGraphNodeProps) {
   const {
     semantic,
     expanded,
+    literalDraft,
     unfolded,
     stale,
     onEdit,
     onInsert,
+    onIntent,
+    onLiteralDraftChange,
     onToggle,
     onUnfold,
     presentation,
@@ -409,9 +656,6 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       <FoldHorizontalIcon />
     </Button>
   );
-  const presentationLabel = presentation
-    ? `${presentation.mark}: ${presentation.description}; ${presentation.detail}`
-    : undefined;
 
   return (
     <article
@@ -475,28 +719,16 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
           ) : null}
         </div>
       </header>
-      {presentation ? (
-        <section
-          aria-label={presentationLabel}
-          className="graph-node-summary"
-          title={presentationLabel}
-        >
-          <SemanticNodeMark mark={presentation.mark} />
-          <div className="min-w-0">
-            <p className="graph-node-description">{presentation.description}</p>
-            <p className="graph-node-detail">{presentation.detail}</p>
-          </div>
-          {foldControl}
-        </section>
-      ) : (
-        <div className="flex items-center justify-between gap-3 px-3 py-2">
-          <span className="text-muted-foreground text-xs">
-            {semantic.quoted ? "Quoted · " : ""}
-            {semantic.kind}
-          </span>
-          {foldControl}
-        </div>
-      )}
+      <GraphNodeBody
+        foldControl={foldControl}
+        literalDraft={literalDraft}
+        literalKind={literalKind}
+        onIntent={onIntent}
+        onLiteralDraftChange={onLiteralDraftChange}
+        presentation={presentation}
+        semantic={semantic}
+        stale={stale}
+      />
       <footer className="graph-node-footer">
         <Badge variant="outline">{semantic.role}</Badge>
         <span>
@@ -512,7 +744,30 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
   );
 });
 
-const nodeTypes = { semantic: SemanticGraphNode };
+const BooleanLiteralGraphNode = memo(function BooleanLiteralGraphNode(
+  props: NodeProps<GraphFlowNode>
+) {
+  return <SemanticGraphNode {...props} literalKind="boolean" />;
+});
+
+const NumberLiteralGraphNode = memo(function NumberLiteralGraphNode(
+  props: NodeProps<GraphFlowNode>
+) {
+  return <SemanticGraphNode {...props} literalKind="number" />;
+});
+
+const StringLiteralGraphNode = memo(function StringLiteralGraphNode(
+  props: NodeProps<GraphFlowNode>
+) {
+  return <SemanticGraphNode {...props} literalKind="string" />;
+});
+
+const nodeTypes = {
+  "boolean-literal": BooleanLiteralGraphNode,
+  "number-literal": NumberLiteralGraphNode,
+  semantic: SemanticGraphNode,
+  "string-literal": StringLiteralGraphNode,
+};
 
 const getAncestors = (
   node: IndexedSemanticNode,
@@ -562,6 +817,9 @@ export function SemanticGraph({
   const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(
     () => new Set()
   );
+  const [literalDrafts, setLiteralDrafts] = useState<
+    Readonly<Record<string, string>>
+  >({});
   const [positions, setPositions] = useState<
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >({});
@@ -586,6 +844,7 @@ export function SemanticGraph({
   useEffect(() => {
     setCollapsed(new Set(defaultCollapsedIds));
     setUnfolded(new Set());
+    setLiteralDrafts({});
   }, [defaultCollapsedIds]);
 
   useEffect(() => {
@@ -719,50 +978,74 @@ export function SemanticGraph({
     [byId, onConstraint]
   );
 
+  const updateLiteralDraft = useCallback((id: string, value?: string) => {
+    setLiteralDrafts((current) => {
+      if (value !== undefined) {
+        return current[id] === value ? current : { ...current, [id]: value };
+      }
+      if (!(id in current)) {
+        return current;
+      }
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
   const nodes = useMemo<GraphFlowNode[]>(
     () =>
-      visibleSemanticNodes.map((semantic, index) => ({
-        initialHeight: GRAPH_NODE_HEIGHT,
-        initialWidth: GRAPH_NODE_WIDTH,
-        id: semantic.id,
-        type: "semantic",
-        position: positions[semantic.id] ?? {
-          x: semantic.path.length * 312,
-          y: index * GRAPH_NODE_HEIGHT,
-        },
-        selected: semantic.id === selectedId,
-        data: {
-          semantic,
-          expanded: !collapsed.has(semantic.id),
-          unfolded: unfolded.has(semantic.id),
-          presentation:
-            describeStructuredNode(semantic) ??
-            describePrimitiveNode(semantic, byId) ??
-            describeSpecialForm(semantic, byId),
-          stale,
-          onEdit,
-          onInsert,
-          onToggle: toggleCollapsed,
-          visibleChildCount: semantic.children.filter((childId) => {
-            const child = byId.get(childId);
-            return (
-              unfolded.has(semantic.id) ||
-              (child?.role !== "operator" && child?.role !== "callee")
-            );
-          }).length,
-          onUnfold: toggleUnfolded,
-        },
-      })),
+      visibleSemanticNodes.map((semantic, index) => {
+        const presentation =
+          describeStructuredNode(semantic) ??
+          describePrimitiveNode(semantic, byId) ??
+          describeSpecialForm(semantic, byId);
+        const literalKind = getEditableLiteralKind(presentation);
+        return {
+          initialHeight: GRAPH_NODE_HEIGHT,
+          initialWidth: GRAPH_NODE_WIDTH,
+          id: semantic.id,
+          type: getGraphNodeType(literalKind),
+          position: positions[semantic.id] ?? {
+            x: semantic.path.length * 312,
+            y: index * GRAPH_NODE_HEIGHT,
+          },
+          selected: semantic.id === selectedId,
+          data: {
+            semantic,
+            expanded: !collapsed.has(semantic.id),
+            unfolded: unfolded.has(semantic.id),
+            literalDraft: literalDrafts[semantic.id],
+            presentation,
+            stale,
+            onEdit,
+            onInsert,
+            onIntent,
+            onLiteralDraftChange: updateLiteralDraft,
+            onToggle: toggleCollapsed,
+            visibleChildCount: semantic.children.filter((childId) => {
+              const child = byId.get(childId);
+              return (
+                unfolded.has(semantic.id) ||
+                (child?.role !== "operator" && child?.role !== "callee")
+              );
+            }).length,
+            onUnfold: toggleUnfolded,
+          },
+        };
+      }),
     [
       byId,
       collapsed,
+      literalDrafts,
       onEdit,
       onInsert,
+      onIntent,
       positions,
       selectedId,
       stale,
       toggleCollapsed,
       toggleUnfolded,
+      updateLiteralDraft,
       unfolded,
       visibleSemanticNodes,
     ]

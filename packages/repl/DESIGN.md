@@ -223,7 +223,7 @@ Components are compact, tactile, and state-forward. They share the paper palette
 - **Internal Padding:** Node rows use 0.75rem horizontal and 0.5rem vertical padding.
 
 ### Inputs / Fields
-- **Style:** Standard fields use a transparent sheet, crease stroke, medium corner, and compact body text. Graph search removes the inner field border and treats its full-width row as the control boundary.
+- **Style:** Standard fields use a transparent sheet, crease stroke, medium corner, and compact body text. Graph search removes the inner field border and treats its full-width row as the control boundary. Editable primitive nodes use native number, text, and checkbox inputs inside the folded sheet.
 - **Focus:** Ring-colored border plus a three-pixel translucent focus ring.
 - **Error / Disabled:** Invalid fields switch border and ring to destructive; disabled controls retain shape while reducing opacity.
 
@@ -233,7 +233,7 @@ Graph search and horizontally scrollable breadcrumbs form the canvas navigation.
 
 ### Folded Semantic Node
 
-Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
+Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Number, string, and boolean literals become custom nodes with native inline controls; text and number changes commit on blur or Enter, while checkboxes commit immediately. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
 
 
 ## Do's and Don'ts

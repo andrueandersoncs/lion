@@ -26,7 +26,7 @@ bun run --filter=@lionlang/repl test:e2e
 ## Workflow
 
 1. Open a `.json` Lion program with **Open**. Browsers without the File System Access API use the file picker import path.
-2. Select graph or outline nodes and mutate them through direct actions or **Inspector**. Every accepted edit is one undoable document transaction.
+2. Edit number, string, and boolean literals directly in their graph nodes. Use direct actions or **Inspector** for structural changes. Every accepted edit is one undoable document transaction.
 3. Use **Run** to evaluate the current valid revision. Local standard-library programs can use **Live** after a short debounce.
 4. Use **Jev** to load a TypeSafe System One starter program. The first run requests a TypeSafe API key, keeps it only in tab memory, and renders model, usage, confidence, score, and probability details. Jev programs are always explicit-run to prevent accidental network requests.
 5. Save through the original file handle where supported. Otherwise **Save** downloads the exact JSON document.
