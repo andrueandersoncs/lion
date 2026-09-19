@@ -9,9 +9,8 @@ const LARGE_FIXTURE = JSON.stringify([
   Array.from({ length: 5000 }, (_, index) => index),
 ]);
 const SERIOUS_IMPACTS = new Set(["critical", "serious"]);
-const REPLACE_EXPRESSION_PATTERN = /Replace selected expression/;
 const STALE_GRAPH_PATTERN = /Graph at r/;
-const LARGE_GRAPH_PATTERN = /5003 total · 300 mounted/;
+const LARGE_GRAPH_PATTERN = /5003 total · 300 shown/;
 
 const gotoEditor = async (page: Page) => {
   await page.goto("/");
@@ -34,12 +33,26 @@ const showSourceOnNarrowViewport = async (page: Page) => {
   }
 };
 
+const showGraphOnNarrowViewport = async (page: Page) => {
+  const graphTab = page.getByRole("tab", { name: "Graph" });
+  if ((await graphTab.count()) > 0) {
+    await graphTab.click();
+  }
+};
+
 test("new, edit, graph mutation, run, and shared undo remain synchronized", async ({
   page,
 }) => {
   await gotoEditor(page);
   await expect(page.getByText("Lion Fold Map")).toBeVisible();
   await expect(page.getByTestId("semantic-graph")).toBeVisible();
+  await expect(page.getByText("Open", { exact: true })).toBeVisible();
+  await expect(page.getByText("Save", { exact: true })).toBeVisible();
+  const selectedNode = page.locator(".graph-node-selected");
+  await expect(selectedNode).toBeVisible();
+  await expect
+    .poll(async () => (await selectedNode.boundingBox())?.width ?? 0)
+    .toBeGreaterThan(220);
 
   await page.getByRole("button", { name: "Run" }).click();
   await page.getByRole("tab", { name: "Result" }).click();
@@ -49,14 +62,23 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
       .getByRole("tabpanel", { name: "Result" })
       .getByText("3", { exact: true })
   ).toBeVisible();
+  await showGraphOnNarrowViewport(page);
 
-  await page.getByRole("button", { name: "Open command palette" }).click();
-  await page.getByRole("option", { name: REPLACE_EXPRESSION_PATTERN }).click();
+  await page
+    .getByRole("toolbar", { name: "Selected expression actions" })
+    .getByRole("button", { name: "Replace", exact: true })
+    .click();
   await page
     .getByRole("dialog")
-    .getByRole("textbox")
+    .getByRole("textbox", { name: "Expression JSON" })
     .fill('["number/multiply", 4, 5]');
-  await page.getByRole("button", { name: "Apply transaction" }).click();
+  await page.getByRole("button", { name: "Replace", exact: true }).click();
+  await page.getByRole("button", { name: "Run" }).click();
+  await expect(
+    page
+      .getByRole("tabpanel", { name: "Result" })
+      .getByText("20", { exact: true })
+  ).toBeVisible();
   await expect(page.getByText("Unsaved", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByText("Unsaved", { exact: true })).toHaveCount(0);

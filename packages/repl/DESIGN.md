@@ -171,7 +171,7 @@ The surface fills the dynamic viewport beneath a compact command strip. At deskt
 
 The graph uses a 32px point rhythm over the continuous warm paper field. Search and selection breadcrumbs sit directly above the canvas, keeping navigation attached to the graph instead of introducing a separate card.
 
-At 899px and below, the command strip wraps its document controls onto a second row, the minimap disappears, and Graph, Source, Inspect, and Result become four mutually exclusive tabs. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
+At 899px and below, the command strip wraps its document controls onto a second row while Open and Save remain visibly labeled, the minimap disappears, and Graph, Source, Inspect, and Result become four mutually exclusive tabs. The graph centers the selected node at a readable scale instead of shrinking the full branch to fit. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
 
 ### Named Rules
 
@@ -209,7 +209,7 @@ Components are compact, tactile, and state-forward. They share the paper palette
 - **Shape:** Compact curved rectangle with a medium corner.
 - **Primary:** Vermilion with sheet-ink text; Run uses the small 2rem treatment and stays at the upper right.
 - **Hover / Focus:** Hover deepens the existing fill; keyboard focus adds a three-pixel translucent ring and ring-colored border.
-- **Outline / Ghost:** Outline commands remain on the paper field with a crease border; icon-only document commands use ghost treatment and warm-accent hover feedback.
+- **Outline / Ghost:** Open and Save remain labeled outline commands at every width. New, undo, and redo use compact ghost treatment with warm-accent hover feedback.
 
 ### Chips
 - **Style:** Role and revision badges are small pills with compact horizontal padding. Roles use a transparent crease outline; the current revision uses a gold-tinted sheet and gold border.
@@ -233,7 +233,7 @@ Graph search and horizontally scrollable breadcrumbs form the canvas navigation.
 
 ### Folded Semantic Node
 
-Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Sumi edges connect role-labeled handles; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map.
+Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
 
 ### Source Editor
 

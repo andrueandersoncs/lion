@@ -18,8 +18,10 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FoldHorizontalIcon,
+  PencilIcon,
+  PlusIcon,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,12 +33,15 @@ import type {
 
 interface GraphNodeData extends Record<string, unknown> {
   readonly expanded: boolean;
+  readonly onEdit: (id: string) => void;
+  readonly onInsert: (id: string) => void;
   readonly onToggle: (id: string) => void;
   readonly onUnfold: (id: string) => void;
   readonly presentation?: GraphNodePresentation;
   readonly semantic: IndexedSemanticNode;
   readonly stale: boolean;
   readonly unfolded: boolean;
+  readonly visibleChildCount: number;
 }
 
 type GraphNodeMark =
@@ -57,12 +62,29 @@ interface GraphNodePresentation {
 }
 
 type GraphFlowNode = Node<GraphNodeData, "semantic">;
+const GRAPH_NODE_HEIGHT = 138;
+const GRAPH_NODE_WIDTH = 240;
 const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
   selected
     ? "var(--vermilion)"
     : "color-mix(in oklab, var(--sumi) 70%, var(--sheet))";
 const pluralize = (count: number, noun: string, plural = `${noun}s`) =>
   `${count} ${count === 1 ? noun : plural}`;
+const CHILD_CONTAINER_KINDS: Readonly<
+  Partial<Record<IndexedSemanticNode["kind"], true>>
+> = {
+  call: true,
+  "empty-array": true,
+  record: true,
+  "special-form": true,
+};
+const ORDERED_CHILD_CONTAINER_KINDS: Readonly<
+  Partial<Record<IndexedSemanticNode["kind"], true>>
+> = {
+  call: true,
+  "empty-array": true,
+  "special-form": true,
+};
 
 const describeSpecialForm = (
   semantic: IndexedSemanticNode,
@@ -274,7 +296,7 @@ function SemanticNodeMark({ mark }: { readonly mark: GraphNodeMark }) {
   return (
     <span aria-hidden className="graph-node-mark">
       <svg fill="none" viewBox="0 0 24 24">
-        <title>{mark} node</title>
+        <title>{`${mark} node`}</title>
         {mark === "begin" && (
           <>
             <path d="M7 5h11M7 12h11M7 19h11" />
@@ -363,11 +385,17 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     expanded,
     unfolded,
     stale,
+    onEdit,
+    onInsert,
     onToggle,
     onUnfold,
     presentation,
+    visibleChildCount,
   } = data;
   const hasChildren = semantic.children.length > 0;
+  const acceptsChildren = CHILD_CONTAINER_KINDS[semantic.kind] === true;
+  const acceptsConnections =
+    ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
   const foldControl = (
     <Button
       aria-label={
@@ -389,7 +417,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     <article
       aria-label={`${semantic.kind}: ${semantic.label}`}
       className={cn(
-        "graph-node relative w-52 rounded-xl bg-card text-card-foreground",
+        "graph-node relative w-60 rounded-xl bg-card text-card-foreground",
         presentation && "graph-node-presented",
         selected && "graph-node-selected",
         semantic.kind === "invalid-call" &&
@@ -401,8 +429,10 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       data-kind={semantic.kind}
       data-mark={presentation?.mark}
     >
-      <Handle aria-hidden position={Position.Left} type="target" />
-      <header className="flex items-center gap-2 border-crease border-b px-3 py-2">
+      {semantic.parentId ? (
+        <Handle aria-hidden position={Position.Left} type="target" />
+      ) : null}
+      <header className="flex items-center gap-1 border-crease border-b px-2 py-2">
         {hasChildren ? (
           <Button
             aria-label={expanded ? "Collapse branch" : "Expand branch"}
@@ -418,11 +448,32 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold text-sm">{semantic.label}</p>
-          <p className="truncate font-mono text-[11px] text-muted-foreground">
+          <p className="truncate font-mono text-muted-foreground text-xs">
             {semantic.pointer || "/"}
           </p>
         </div>
-        <Badge variant="outline">{semantic.role}</Badge>
+        <div className="graph-node-actions nodrag">
+          <Button
+            aria-label={`Replace ${semantic.label}`}
+            disabled={stale}
+            onClick={() => onEdit(semantic.id)}
+            size="icon-sm"
+            variant="ghost"
+          >
+            <PencilIcon />
+          </Button>
+          {acceptsChildren ? (
+            <Button
+              aria-label={`Add child to ${semantic.label}`}
+              disabled={stale}
+              onClick={() => onInsert(semantic.id)}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <PlusIcon />
+            </Button>
+          ) : null}
+        </div>
       </header>
       {presentation ? (
         <section
@@ -446,7 +497,17 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
           {foldControl}
         </div>
       )}
-      <Handle aria-hidden position={Position.Right} type="source" />
+      <footer className="graph-node-footer">
+        <Badge variant="outline">{semantic.role}</Badge>
+        <span>
+          {visibleChildCount === 0
+            ? "Leaf"
+            : pluralize(visibleChildCount, "child", "children")}
+        </span>
+      </footer>
+      {acceptsConnections ? (
+        <Handle aria-hidden position={Position.Right} type="source" />
+      ) : null}
     </article>
   );
 });
@@ -472,7 +533,10 @@ interface SemanticGraphProps {
   ) => Promise<
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >;
+  readonly narrow: boolean;
   readonly onConstraint: (message: string) => void;
+  readonly onEdit: (id: string) => void;
+  readonly onInsert: (id: string) => void;
   readonly onIntent: (intent: EditIntent) => void;
   readonly onSelect: (id: string) => void;
   readonly projection: DocumentProjection;
@@ -482,9 +546,12 @@ interface SemanticGraphProps {
 
 export function SemanticGraph({
   projection,
+  narrow,
   selectedId,
   stale,
   onSelect,
+  onEdit,
+  onInsert,
   onIntent,
   onConstraint,
   layout,
@@ -498,10 +565,12 @@ export function SemanticGraph({
   const [positions, setPositions] = useState<
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >({});
+  const [layoutRevision, setLayoutRevision] = useState(0);
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance<
     GraphFlowNode,
     Edge
   > | null>(null);
+  const focusedSelectionRef = useRef(selectedId);
   const byId = useMemo(
     () => new Map(projection.nodes.map((node) => [node.id, node])),
     [projection.nodes]
@@ -561,6 +630,7 @@ export function SemanticGraph({
       .then((next) => {
         if (active) {
           setPositions(next);
+          setLayoutRevision((revision) => revision + 1);
         }
       })
       .catch((error: unknown) => {
@@ -575,21 +645,45 @@ export function SemanticGraph({
     };
   }, [layout, onConstraint, visibleSemanticNodes]);
   useEffect(() => {
-    if (!flowInstance || Object.keys(positions).length === 0) {
+    if (!(flowInstance && layoutRevision > 0)) {
       return;
     }
+    const focusId =
+      narrow || visibleSemanticNodes.length > 40
+        ? (selectedId ?? projection.rootId ?? visibleSemanticNodes[0]?.id)
+        : undefined;
+    const focusPosition = focusId ? positions[focusId] : undefined;
     const timer = window.setTimeout(() => {
+      if (narrow && focusPosition) {
+        flowInstance
+          .setCenter(
+            focusPosition.x + GRAPH_NODE_WIDTH / 2,
+            focusPosition.y + GRAPH_NODE_HEIGHT / 2,
+            { duration: 180, zoom: 0.95 }
+          )
+          .catch(() => undefined);
+        return;
+      }
       flowInstance
         .fitView({
           duration: 180,
-          padding: 0.18,
+          nodes: focusId ? [{ id: focusId }] : undefined,
+          padding: focusId ? 1.4 : 0.18,
           minZoom: 0.5,
-          maxZoom: 1.1,
+          maxZoom: 1.05,
         })
         .catch(() => undefined);
-    }, 120);
+    }, 160);
     return () => window.clearTimeout(timer);
-  }, [flowInstance, positions]);
+  }, [
+    flowInstance,
+    layoutRevision,
+    narrow,
+    projection.rootId,
+    selectedId,
+    positions,
+    visibleSemanticNodes,
+  ]);
 
   const toggleCollapsed = useCallback((id: string) => {
     setCollapsed((current) => {
@@ -624,21 +718,17 @@ export function SemanticGraph({
     },
     [byId, onConstraint]
   );
-  const maxVisibleDepth = useMemo(
-    () => Math.max(...visibleSemanticNodes.map(({ path }) => path.length), 0),
-    [visibleSemanticNodes]
-  );
 
   const nodes = useMemo<GraphFlowNode[]>(
     () =>
       visibleSemanticNodes.map((semantic, index) => ({
-        initialHeight: 112,
-        initialWidth: 208,
+        initialHeight: GRAPH_NODE_HEIGHT,
+        initialWidth: GRAPH_NODE_WIDTH,
         id: semantic.id,
         type: "semantic",
         position: positions[semantic.id] ?? {
-          x: (maxVisibleDepth - semantic.path.length) * 260,
-          y: index * 104,
+          x: semantic.path.length * 312,
+          y: index * GRAPH_NODE_HEIGHT,
         },
         selected: semantic.id === selectedId,
         data: {
@@ -650,14 +740,24 @@ export function SemanticGraph({
             describePrimitiveNode(semantic, byId) ??
             describeSpecialForm(semantic, byId),
           stale,
+          onEdit,
+          onInsert,
           onToggle: toggleCollapsed,
+          visibleChildCount: semantic.children.filter((childId) => {
+            const child = byId.get(childId);
+            return (
+              unfolded.has(semantic.id) ||
+              (child?.role !== "operator" && child?.role !== "callee")
+            );
+          }).length,
           onUnfold: toggleUnfolded,
         },
       })),
     [
       byId,
       collapsed,
-      maxVisibleDepth,
+      onEdit,
+      onInsert,
       positions,
       selectedId,
       stale,
@@ -667,6 +767,39 @@ export function SemanticGraph({
       visibleSemanticNodes,
     ]
   );
+  useEffect(() => {
+    if (
+      !(flowInstance && selectedId) ||
+      focusedSelectionRef.current === selectedId ||
+      !positions[selectedId]
+    ) {
+      return;
+    }
+    const selectedPosition = positions[selectedId];
+    focusedSelectionRef.current = selectedId;
+    const timer = window.setTimeout(() => {
+      if (narrow) {
+        flowInstance
+          .setCenter(
+            selectedPosition.x + GRAPH_NODE_WIDTH / 2,
+            selectedPosition.y + GRAPH_NODE_HEIGHT / 2,
+            { duration: 180, zoom: 0.95 }
+          )
+          .catch(() => undefined);
+        return;
+      }
+      flowInstance
+        .fitView({
+          duration: 180,
+          nodes: [{ id: selectedId }],
+          padding: 1.25,
+          minZoom: 0.65,
+          maxZoom: 1.05,
+        })
+        .catch(() => undefined);
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [flowInstance, narrow, positions, selectedId]);
 
   const visibleIds = useMemo(() => new Set(nodes.map(({ id }) => id)), [nodes]);
   const edges = useMemo<Edge[]>(
@@ -675,9 +808,9 @@ export function SemanticGraph({
         node.parentId && visibleIds.has(node.parentId)
           ? [
               {
-                id: `${node.id}->${node.parentId}`,
-                source: node.id,
-                target: node.parentId,
+                id: `${node.parentId}->${node.id}`,
+                source: node.parentId,
+                target: node.id,
                 label: node.role,
                 markerEnd: { type: MarkerType.ArrowClosed },
                 className: node.quoted ? "graph-edge-quoted" : "graph-edge",
@@ -691,66 +824,79 @@ export function SemanticGraph({
   const reconnect = useCallback(
     (connection: Connection) => {
       if (stale || !connection.source || !connection.target) {
-        onConstraint("Reconnect is unavailable while the graph is stale.");
+        onConstraint("Connections are unavailable while the graph is stale.");
         return;
       }
-      const source = byId.get(connection.source);
-      const target = byId.get(connection.target);
-      if (!(source && target)) {
+      const parent = byId.get(connection.source);
+      const child = byId.get(connection.target);
+      if (!(parent && child)) {
         onConstraint("The dragged node or target no longer exists.");
         return;
       }
-      if (!source.parentId) {
-        onConstraint(
-          "Replace the root instead of moving it into a child role."
-        );
-        return;
-      }
-      if (source.parentId === target.parentId) {
-        const parent = byId.get(source.parentId);
-        if (!parent || typeof source.path.at(-1) !== "number") {
-          onConstraint(
-            "Object values keep their keys and cannot be reordered here."
-          );
-          return;
-        }
-        onIntent({
-          type: "reorder",
-          parentPath: parent.path,
-          from: source.order,
-          to: target.order,
-        });
+      if (!child.parentId) {
+        onConstraint("The root expression cannot become a child.");
         return;
       }
       if (
-        target.kind !== "call" &&
-        target.kind !== "special-form" &&
-        target.kind !== "empty-array"
+        parent.id === child.id ||
+        getAncestors(parent, byId).includes(child.id)
       ) {
+        onConstraint("A node cannot contain itself or one of its ancestors.");
+        return;
+      }
+      if (ORDERED_CHILD_CONTAINER_KINDS[parent.kind] !== true) {
         onConstraint(
-          "This role cannot accept an ordered child. Select an array expression."
+          "This expression cannot accept an ordered child. Select an array expression."
         );
+        return;
+      }
+      if (child.parentId === parent.id) {
+        onConstraint("This node is already a child of that expression.");
         return;
       }
       onIntent({
         type: "move",
-        path: source.path,
-        targetParentPath: target.path,
-        index: target.children.length,
+        path: child.path,
+        targetParentPath: parent.path,
+        index: parent.children.length,
       });
     },
     [byId, onConstraint, onIntent, stale]
   );
+  const shouldFocusInitialNode = narrow || visibleSemanticNodes.length > 40;
+  const initialFitNodeId =
+    selectedId ?? projection.rootId ?? visibleSemanticNodes[0]?.id;
+  const initialFitNodes =
+    shouldFocusInitialNode && initialFitNodeId
+      ? [{ id: initialFitNodeId }]
+      : undefined;
+  let initialFitPadding = 0.18;
+  if (narrow) {
+    initialFitPadding = 0.2;
+  } else if (visibleSemanticNodes.length > 40) {
+    initialFitPadding = 1.4;
+  }
 
   return (
     <div className="relative h-full min-h-0" data-testid="semantic-graph">
-      <div className="pointer-events-none absolute top-3 left-3 z-10 rounded-md bg-background/90 px-2 py-1 font-mono text-[11px] text-muted-foreground shadow-sm">
-        {projection.nodes.length} total · {nodes.length} mounted
+      <div className="graph-count">
+        {projection.nodes.length} total · {nodes.length} shown
+      </div>
+      <div className="graph-hint">
+        Double-click to replace · connect parent → child
       </div>
       <ReactFlow
         className="semantic-flow"
         colorMode="light"
         edges={edges}
+        fitView
+        fitViewOptions={{
+          nodes: initialFitNodes,
+          padding: initialFitPadding,
+          minZoom: narrow ? 0.95 : 0.5,
+          maxZoom: 1.05,
+        }}
+        key={layoutRevision}
         minZoom={0.12}
         nodes={nodes}
         nodesConnectable={!stale}
@@ -759,7 +905,10 @@ export function SemanticGraph({
         onConnect={reconnect}
         onInit={setFlowInstance}
         onNodeClick={(_event, node) => onSelect(node.id)}
-        onNodeDoubleClick={(_event, node) => toggleUnfolded(node.id)}
+        onNodeDoubleClick={(_event, node) => {
+          onSelect(node.id);
+          onEdit(node.id);
+        }}
         proOptions={{ hideAttribution: true }}
         zoomOnDoubleClick={false}
       >

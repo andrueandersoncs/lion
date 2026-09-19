@@ -59,6 +59,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
   Field,
   FieldDescription,
   FieldError,
@@ -75,9 +82,11 @@ import {
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
   TooltipContent,
@@ -128,6 +137,56 @@ const useNarrowLayout = () => {
   return narrow;
 };
 
+interface EditorShortcutActions {
+  readonly newDocument: () => void;
+  readonly onError: (error: unknown) => void;
+  readonly openDocument: () => void;
+  readonly openPalette: () => void;
+  readonly run: () => Promise<void>;
+  readonly save: () => Promise<boolean>;
+  readonly saveAs: () => Promise<unknown>;
+}
+
+const useEditorShortcuts = ({
+  newDocument,
+  onError,
+  openDocument,
+  openPalette,
+  run,
+  save,
+  saveAs,
+}: EditorShortcutActions) => {
+  useEffect(() => {
+    const actions: Readonly<Record<string, () => Promise<unknown>>> = {
+      enter: run,
+      k: async () => openPalette(),
+      n: async () => newDocument(),
+      o: async () => openDocument(),
+      s: save,
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      const modifier = event.metaKey || event.ctrlKey;
+      const key = event.key === "Enter" ? "enter" : event.key.toLowerCase();
+      const action = key === "s" && event.shiftKey ? saveAs : actions[key];
+      if (!(modifier && action)) {
+        return;
+      }
+      event.preventDefault();
+      Promise.resolve(action()).catch(onError);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [newDocument, onError, openDocument, openPalette, run, save, saveAs]);
+};
+const CHILD_CONTAINER_KINDS: Readonly<
+  Partial<Record<IndexedSemanticNode["kind"], true>>
+> = {
+  call: true,
+  "empty-array": true,
+  record: true,
+  "special-form": true,
+};
+
 interface EditorCommand {
   readonly disabledReason?: string;
   readonly group: "Document" | "Edit" | "Navigate" | "Run" | "View";
@@ -151,12 +210,28 @@ const EMPTY_MUTATION: MutationDialogState = {
 };
 
 const templateValues = [
-  { label: "Null", value: "null" },
-  { label: "Record", value: "{}" },
-  { label: "Call", value: '["number/add", 1, 2]' },
-  { label: "Begin", value: '["begin", null]' },
-  { label: "Lambda", value: '["lambda", ["x"], "x"]' },
-  { label: "Cond", value: '["cond", [true, null]]' },
+  { label: "Value", description: "Literal null", value: "null" },
+  { label: "Record", description: "Named fields", value: "{}" },
+  {
+    label: "Call",
+    description: "Invoke a binding",
+    value: '["number/add", 1, 2]',
+  },
+  {
+    label: "Sequence",
+    description: "Run in order",
+    value: '["begin", null]',
+  },
+  {
+    label: "Function",
+    description: "Parameters and body",
+    value: '["lambda", ["x"], "x"]',
+  },
+  {
+    label: "Branch",
+    description: "Conditional paths",
+    value: '["cond", [true, null]]',
+  },
 ] as const;
 
 function LionMark() {
@@ -777,6 +852,120 @@ const getRunDisabledReason = (editor: EditorController) => {
   return undefined;
 };
 
+interface GraphWorkspaceProps {
+  readonly editor: EditorController;
+  readonly graphEditingReason?: string;
+  readonly narrow: boolean;
+  readonly onDelete: () => void;
+  readonly onMutate: (
+    mode: MutationDialogState["mode"],
+    nodeId?: string
+  ) => void;
+  readonly onWrap: () => void;
+}
+
+function GraphWorkspace({
+  editor,
+  graphEditingReason,
+  narrow,
+  onDelete,
+  onMutate,
+  onWrap,
+}: GraphWorkspaceProps) {
+  if (!editor.graphProjection) {
+    return (
+      <Empty className="h-full">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <BracesIcon />
+          </EmptyMedia>
+          <EmptyTitle>Start with one Lion expression</EmptyTitle>
+          <EmptyDescription>
+            Repair the JSON source and the semantic graph will return here.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
+  }
+
+  const selectedAcceptsChildren = editor.selectedNode
+    ? CHILD_CONTAINER_KINDS[editor.selectedNode.kind] === true
+    : false;
+  const editingDisabled = Boolean(graphEditingReason);
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <SearchBar editor={editor} />
+      <div className="graph-context-bar">
+        <Breadcrumbs editor={editor} />
+        <div
+          aria-label="Selected expression actions"
+          className="graph-action-group"
+          role="toolbar"
+        >
+          <div className="graph-selection-summary">
+            <span>Selected</span>
+            <strong>{editor.selectedNode?.label ?? "Choose a node"}</strong>
+          </div>
+          <Button
+            disabled={editingDisabled || !editor.selectedNode}
+            onClick={() => onMutate("replace")}
+            size="sm"
+            variant="outline"
+          >
+            <ReplaceIcon data-icon="inline-start" />
+            Replace
+          </Button>
+          <Button
+            disabled={
+              editingDisabled ||
+              !editor.selectedNode ||
+              !selectedAcceptsChildren
+            }
+            onClick={() => onMutate("insert")}
+            size="sm"
+            variant="outline"
+          >
+            <PlusIcon data-icon="inline-start" />
+            Add child
+          </Button>
+          <Button
+            disabled={editingDisabled || !editor.selectedNode}
+            onClick={onWrap}
+            size="sm"
+            variant="outline"
+          >
+            <WrapTextIcon data-icon="inline-start" />
+            Quote
+          </Button>
+          <ToolButton
+            disabled={editingDisabled || !editor.selectedNode?.parentId}
+            label="Delete selected subtree"
+            onClick={onDelete}
+            size="icon-sm"
+            variant="ghost"
+          >
+            <Trash2Icon />
+          </ToolButton>
+        </div>
+      </div>
+      <div className="min-h-0 flex-1">
+        <SemanticGraph
+          layout={editor.layout}
+          narrow={narrow}
+          onConstraint={toast.info}
+          onEdit={(id) => onMutate("replace", id)}
+          onInsert={(id) => onMutate("insert", id)}
+          onIntent={editor.applyIntent}
+          onSelect={editor.setSelectedId}
+          projection={editor.graphProjection}
+          selectedId={editor.selectedId}
+          stale={editor.graphStale}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function GraphEditor() {
   const editor = useEditor();
   const narrow = useNarrowLayout();
@@ -914,6 +1103,16 @@ export function GraphEditor() {
       }
     },
     [editor, handleError]
+  );
+  const beginMutation = useCallback(
+    (mode: MutationDialogState["mode"], nodeId?: string) => {
+      if (nodeId) {
+        editor.setSelectedId(nodeId);
+      }
+      setMutation({ ...EMPTY_MUTATION, mode });
+      setMutationError(null);
+    },
+    [editor]
   );
 
   const applyMutation = () => {
@@ -1100,7 +1299,7 @@ export function GraphEditor() {
         group: "Edit",
         icon: ReplaceIcon,
         disabledReason: graphEditingReason,
-        run: () => setMutation({ ...EMPTY_MUTATION, mode: "replace" }),
+        run: () => beginMutation("replace"),
       },
       {
         id: "insert",
@@ -1108,7 +1307,7 @@ export function GraphEditor() {
         group: "Edit",
         icon: PlusIcon,
         disabledReason: graphEditingReason,
-        run: () => setMutation({ ...EMPTY_MUTATION, mode: "insert" }),
+        run: () => beginMutation("insert"),
       },
       {
         id: "wrap",
@@ -1206,6 +1405,7 @@ export function GraphEditor() {
       },
     ],
     [
+      beginMutation,
       editor,
       formatDocument,
       graphEditingReason,
@@ -1219,50 +1419,25 @@ export function GraphEditor() {
     ]
   );
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const modifier = event.metaKey || event.ctrlKey;
-      if (modifier && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setPaletteOpen(true);
-      }
-      if (modifier && event.key.toLowerCase() === "s") {
-        event.preventDefault();
-        if (event.shiftKey) {
-          editor.saveAs().catch(handleError);
-        } else {
-          save().catch(handleError);
-        }
-      }
-      if (modifier && event.key === "Enter") {
-        event.preventDefault();
-        runCurrentRevision().catch(handleError);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [editor, handleError, runCurrentRevision, save]);
+  useEditorShortcuts({
+    newDocument: () => guardDestructive(editor.newDocument),
+    onError: handleError,
+    openDocument: () => guardDestructive(startOpen),
+    openPalette: () => setPaletteOpen(true),
+    run: runCurrentRevision,
+    save,
+    saveAs: editor.saveAs,
+  });
 
-  const graphPane = editor.graphProjection ? (
-    <div className="flex h-full min-h-0 flex-col">
-      <SearchBar editor={editor} />
-      <Breadcrumbs editor={editor} />
-      <div className="min-h-0 flex-1">
-        <SemanticGraph
-          layout={editor.layout}
-          onConstraint={toast.info}
-          onIntent={editor.applyIntent}
-          onSelect={editor.setSelectedId}
-          projection={editor.graphProjection}
-          selectedId={editor.selectedId}
-          stale={editor.graphStale}
-        />
-      </div>
-    </div>
-  ) : (
-    <div className="flex h-full items-center justify-center p-8 text-center text-muted-foreground">
-      The graph appears after the source contains one valid Lion expression.
-    </div>
+  const graphPane = (
+    <GraphWorkspace
+      editor={editor}
+      graphEditingReason={graphEditingReason}
+      narrow={narrow}
+      onDelete={() => setDeleteOpen(true)}
+      onMutate={beginMutation}
+      onWrap={wrapSelected}
+    />
   );
 
   const sourcePane = (
@@ -1305,26 +1480,27 @@ export function GraphEditor() {
           >
             <FilePlus2Icon />
           </ToolButton>
-          <ToolButton
-            label="Open local file"
+          <Button
+            aria-label="Open"
             onClick={() => guardDestructive(startOpen)}
-            size="icon-sm"
-            variant="ghost"
+            size="sm"
+            variant="outline"
           >
-            <FolderOpenIcon />
-          </ToolButton>
-          <ToolButton
+            <FolderOpenIcon data-icon="inline-start" />
+            <span className="document-action-label">Open</span>
+          </Button>
+          <Button
+            aria-label="Save"
             disabled={!editor.snapshot.dirty}
-            label="Save"
             onClick={() => {
               save().catch(handleError);
             }}
-            shortcut="⌘S"
-            size="icon-sm"
-            variant="ghost"
+            size="sm"
+            variant="outline"
           >
-            <SaveIcon />
-          </ToolButton>
+            <SaveIcon data-icon="inline-start" />
+            <span className="document-action-label">Save</span>
+          </Button>
           <Separator orientation="vertical" />
           <ToolButton
             disabled={!editor.snapshot.canUndo}
@@ -1388,6 +1564,7 @@ export function GraphEditor() {
             </>
           )}
           <Button
+            aria-busy={editor.evaluation.status === "running"}
             disabled={
               editor.evaluation.status === "running" ||
               editor.graphStale ||
@@ -1396,8 +1573,12 @@ export function GraphEditor() {
             onClick={() => runCurrentRevision().catch(handleError)}
             size="sm"
           >
-            <PlayIcon data-icon="inline-start" />
-            Run
+            {editor.evaluation.status === "running" ? (
+              <Spinner data-icon="inline-start" />
+            ) : (
+              <PlayIcon data-icon="inline-start" />
+            )}
+            {editor.evaluation.status === "running" ? "Running…" : "Run"}
           </Button>
           <Button
             aria-label="Open command palette"
@@ -1459,7 +1640,7 @@ export function GraphEditor() {
                 <Inspector
                   editor={editor}
                   onDelete={() => setDeleteOpen(true)}
-                  onMutate={(mode) => setMutation({ ...EMPTY_MUTATION, mode })}
+                  onMutate={beginMutation}
                   onReorder={reorderSelected}
                 />
               </TabsContent>
@@ -1502,9 +1683,7 @@ export function GraphEditor() {
                     <Inspector
                       editor={editor}
                       onDelete={() => setDeleteOpen(true)}
-                      onMutate={(mode) =>
-                        setMutation({ ...EMPTY_MUTATION, mode })
-                      }
+                      onMutate={beginMutation}
                       onReorder={reorderSelected}
                     />
                   </TabsContent>
@@ -1654,72 +1833,133 @@ export function GraphEditor() {
         }}
         open={mutation !== null}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {mutation?.mode === "insert"
-                ? "Add a child"
-                : "Replace expression"}
-            </DialogTitle>
-            <DialogDescription>
-              Enter one strict JSON value. The editor changes only the selected
-              structural range.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-wrap gap-2">
-            {templateValues.map((template) => (
-              <Button
-                key={template.label}
-                onClick={() =>
-                  setMutation((current) =>
-                    current ? { ...current, source: template.value } : current
-                  )
+        <DialogContent className="expression-dialog">
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyMutation();
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>
+                {mutation?.mode === "insert"
+                  ? "Add a child expression"
+                  : "Replace expression"}
+              </DialogTitle>
+              <DialogDescription>
+                Build from a Lion pattern or enter any strict JSON value. Only
+                the selected source range changes.
+              </DialogDescription>
+            </DialogHeader>
+            <section
+              aria-labelledby="expression-patterns"
+              className="flex flex-col gap-2"
+            >
+              <div>
+                <h3 className="font-semibold text-sm" id="expression-patterns">
+                  Start from a pattern
+                </h3>
+                <p className="text-muted-foreground text-xs">
+                  Pick once, then refine the exact JSON below.
+                </p>
+              </div>
+              <ToggleGroup
+                aria-label="Expression pattern"
+                className="expression-template-grid"
+                onValueChange={(source) => {
+                  if (source) {
+                    setMutation((current) =>
+                      current ? { ...current, source } : current
+                    );
+                  }
+                }}
+                spacing={2}
+                type="single"
+                value={
+                  templateValues.some(({ value }) => value === mutation?.source)
+                    ? mutation?.source
+                    : ""
                 }
-                size="sm"
                 variant="outline"
               >
-                {template.label}
-              </Button>
-            ))}
-          </div>
-          {mutation?.mode === "insert" &&
-          editor.selectedNode &&
-          !Array.isArray(
-            valueAtPath(editor.snapshot.sourceText, editor.selectedNode.path)
-          ) ? (
-            <Input
-              aria-label="Object key"
-              onChange={(event) =>
-                setMutation((current) =>
-                  current ? { ...current, key: event.target.value } : current
+                {templateValues.map((template) => (
+                  <ToggleGroupItem
+                    aria-label={`Use ${template.label} pattern`}
+                    key={template.label}
+                    value={template.value}
+                  >
+                    <span>{template.label}</span>
+                    <small>{template.description}</small>
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </section>
+            <FieldGroup>
+              {mutation?.mode === "insert" &&
+              editor.selectedNode &&
+              !Array.isArray(
+                valueAtPath(
+                  editor.snapshot.sourceText,
+                  editor.selectedNode.path
                 )
-              }
-              placeholder="Object key"
-              value={mutation.key}
-            />
-          ) : null}
-          <Textarea
-            aria-invalid={Boolean(mutationError)}
-            className="min-h-36 font-mono"
-            onChange={(event) =>
-              setMutation((current) =>
-                current ? { ...current, source: event.target.value } : current
-              )
-            }
-            value={mutation?.source ?? ""}
-          />
-          {mutationError ? (
-            <p className="text-destructive text-sm">{mutationError}</p>
-          ) : null}
-          <DialogFooter>
-            <Button onClick={() => setMutation(null)} variant="outline">
-              Cancel
-            </Button>
-            <Button onClick={applyMutation}>
-              <CheckIcon data-icon="inline-start" />
-              Apply transaction
-            </Button>
-          </DialogFooter>
+              ) ? (
+                <Field>
+                  <FieldLabel htmlFor="expression-key">
+                    Property name
+                  </FieldLabel>
+                  <Input
+                    id="expression-key"
+                    onChange={(event) =>
+                      setMutation((current) =>
+                        current
+                          ? { ...current, key: event.target.value }
+                          : current
+                      )
+                    }
+                    placeholder="newField"
+                    value={mutation.key}
+                  />
+                </Field>
+              ) : null}
+              <Field data-invalid={Boolean(mutationError)}>
+                <FieldLabel htmlFor="expression-source">
+                  Expression JSON
+                </FieldLabel>
+                <Textarea
+                  aria-invalid={Boolean(mutationError)}
+                  className="min-h-36 font-mono"
+                  id="expression-source"
+                  onChange={(event) =>
+                    setMutation((current) =>
+                      current
+                        ? { ...current, source: event.target.value }
+                        : current
+                    )
+                  }
+                  spellCheck={false}
+                  value={mutation?.source ?? ""}
+                />
+                <FieldDescription>
+                  Canonical source remains visible and undoable after applying.
+                </FieldDescription>
+                <FieldError>{mutationError}</FieldError>
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <Button
+                onClick={() => setMutation(null)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                <CheckIcon data-icon="inline-start" />
+                {mutation?.mode === "insert" ? "Add expression" : "Replace"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

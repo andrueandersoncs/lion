@@ -22,14 +22,14 @@ const layout = async (
       "elk.spacing.nodeNode": "32",
       "elk.layered.spacing.nodeNodeBetweenLayers": "72",
     },
-    children: request.nodes.map(({ id }) => ({ id, width: 210, height: 112 })),
+    children: request.nodes.map(({ id }) => ({ id, width: 240, height: 138 })),
     edges: request.nodes.flatMap(({ id, parentId }) =>
       parentId
         ? [
             {
-              id: `${id}->${parentId}`,
-              sources: [id],
-              targets: [parentId],
+              id: `${parentId}->${id}`,
+              sources: [parentId],
+              targets: [id],
             },
           ]
         : []

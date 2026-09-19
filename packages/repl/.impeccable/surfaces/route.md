@@ -29,7 +29,7 @@ Move confidently between semantic graph and exact JSON while preserving one cano
 
 ## Proof and Content
 
-The first viewport exposes the synchronized workbench itself: a wide semantic fold-map canvas, exact JSON source, dense inspector, revision status, search, breadcrumbs, and evaluation controls. Folded nodes show labels, JSON pointers, parent roles, semantic kinds, and exact-structure expansion.
+The first viewport exposes the synchronized workbench itself: visibly labeled Open and Save commands, a wide semantic fold-map canvas, exact JSON source, dense inspector, revision status, search, breadcrumbs, and evaluation controls. Folded nodes show labels, JSON pointers, parent roles, semantic kinds, direct Replace/Add child actions, and exact-structure expansion.
 
 ## Constraints
 
