@@ -106,7 +106,7 @@ components:
 
 **Creative North Star: "One-Sheet Fold Map"**
 
-Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Its graph, inspector, outline, and result views feel like different folds of the same canonical document rather than detached dashboard cards.
+Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Semantic structure, exact source facts, navigation, mutation controls, and evaluation output all stay attached to the graph rather than splitting into detached workbench panes.
 
 The visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.
 
@@ -114,8 +114,8 @@ The visual language is precise and tactile: vermilion marks the active sheet and
 - Warm washi surfaces with visible creases and sparse paper geometry.
 - Compact, self-hosted workhorse typography paired with exact monospaced notation.
 - Vermilion for action and selection; gold only for current-state evidence.
-- Dense, resizable desktop workbench that becomes a focused tabbed sheet on narrow screens.
-- Folded semantic nodes that can reveal exact JSON structure without leaving the canvas.
+- A full-width graph workbench at every breakpoint, centered on the active semantic node with evaluation available from a compact canvas-edge dock.
+- Folded semantic nodes reveal exact JSON structure, source facts, and mutation controls without leaving the canvas.
 
 ## Colors
 
@@ -126,7 +126,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 ### Secondary
 - **Warm Secondary:** Marks quiet secondary controls and status surfaces without competing with vermilion.
-- **Warm Accent:** Provides hover feedback for neutral controls, breadcrumbs, and outline rows.
+- **Warm Accent:** Provides hover feedback for neutral controls, breadcrumbs, graph commands, and navigation.
 
 ### Tertiary
 - **Restrained Gold:** Confirms the current revision and highlights selected overview nodes.
@@ -137,7 +137,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 - **Muted Sheet:** Gutter, breadcrumb, result, and folded-detail layers.
 - **Sumi:** Primary notation, labels, edges, and icon color.
 - **Muted Sumi:** Secondary metadata and explanatory text.
-- **Crease:** Borders, separators, resize handles, scrollbars, and graph-grid points.
+- **Crease:** Borders, separators, scrollbars, and graph-grid points.
 - **Sheet Ink:** High-contrast copy on vermilion and destructive actions.
 - **Destructive:** Invalid graph structure, errors, and irreversible actions.
 
@@ -156,8 +156,8 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 **Character:** The self-hosted condensed family keeps a dense developer tool readable without feeling generic. Monospaced text is limited to expression JSON, pointers, counts, ranges, and evaluation output where exact alignment carries meaning.
 
 ### Hierarchy
-- **Title** (600, 1.125rem, 1.25): Inspector headings and other local workbench titles.
-- **Body** (400, 0.875rem, 1.5): Controls, pane content, messages, and primary interface copy.
+- **Title** (600, 1.125rem, 1.25): Dialogs and other local workbench titles.
+- **Body** (400, 0.875rem, 1.5): Controls, node content, messages, and primary interface copy.
 - **Label** (500, 0.75rem, 1.25): Metadata, status, badges, node roles, and compact support copy.
 - **Code** (400, 0.8125rem, 1.65): Expression JSON, pointers, values, counts, ranges, and rendered results.
 
@@ -167,21 +167,23 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 ## Layout
 
-The surface fills the dynamic viewport beneath a compact command strip. At desktop widths the graph receives 68% of the horizontal workbench and a tabbed inspector, outline, or result pane receives 32%. The split is directly resizable, and the pane boundary reads as a crease in one sheet.
+The surface fills the dynamic viewport beneath a compact command strip. The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.
 
-The graph uses a 32px point rhythm over the continuous warm paper field. Search and selection breadcrumbs sit directly above the canvas, keeping navigation attached to the graph instead of introducing a separate card.
+Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. Selected nodes carry source range, parent role, child order, mutation controls, and exact-structure folding. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
 
-At 899px and below, the command strip wraps its document controls onto a second row while Open and Save remain visibly labeled, the minimap disappears, and Graph, Inspect, and Result become three mutually exclusive tabs. The graph centers the selected node at a readable scale instead of shrinking the full branch to fit. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, and outline.
+Evaluation appears in a compact dock over the bottom edge of the canvas. A run expands the dock without changing graph layout or moving the viewport; collapsing it leaves a one-line receipt with status and a result preview. The Output command restores it without moving the user into another view.
+
+At 899px and below, the command strip wraps its document controls onto a second row, Open and Save stay visibly labeled, the minimap disappears, and the canvas centers the selected expression at a readable scale. The output dock spans the safe width and limits its expanded height so the graph remains visible. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, node actions, and dock controls.
 
 ### Named Rules
 
-**The One Sheet Rule.** Major work areas meet edge to edge through dividers and resize handles; do not wrap graph, inspector, outline, or result panes in detached dashboard cards.
+**The One Sheet Rule.** Editing, inspection, navigation, and evaluation remain within the canvas; do not reintroduce detached workbench panes.
 
-**The Focused Fold Rule.** Wide screens expose the graph beside one focused workbench view; narrow screens preserve the same views as one active full-height tab at a time.
+**The Focused Fold Rule.** Every viewport preserves one continuous graph and centers the active semantic node rather than shrinking the whole branch to fit. Evaluation output overlays the canvas edge and never enters the graph layout.
 
 ## Elevation & Depth
 
-The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, folded corners, and resize handles establish most hierarchy. Soft shadows are reserved for the command strip, graph nodes, graph controls, and overview map; selected nodes add a vermilion ring and slightly deeper lift.
+The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy. Soft shadows are reserved for the command strip, graph nodes, graph controls, and overview map; selected nodes add a vermilion ring and slightly deeper lift.
 
 ### Shadow Vocabulary
 
@@ -216,9 +218,9 @@ Components are compact, tactile, and state-forward. They share the paper palette
 - **State:** Destructive and invalid states switch to the destructive role instead of borrowing vermilion action styling.
 
 ### Cards / Containers
-- **Corner Style:** Semantic nodes use the largest system corner and a clipped folded edge; ordinary workbench panes remain edge-to-edge.
+- **Corner Style:** Semantic nodes use the largest system corner and a clipped folded edge; the output dock uses a plain large corner because it is a utility surface, not semantic structure.
 - **Background:** Clean sheet at rest and muted sheet when exact structure is unfolded.
-- **Shadow Strategy:** Graph nodes use Map Lift; selection adds Selected Map Lift.
+- **Shadow Strategy:** Graph nodes use Map Lift; selection adds Selected Map Lift. The output dock receives one utility lift above the canvas.
 - **Border:** One-pixel crease border, dashed for stale or unfolded structure, destructive for invalid calls.
 - **Internal Padding:** Node rows use 0.75rem horizontal and 0.5rem vertical padding.
 
@@ -229,17 +231,22 @@ Components are compact, tactile, and state-forward. They share the paper palette
 
 ### Navigation
 
-Graph search and horizontally scrollable breadcrumbs form the canvas navigation. Workbench tabs use a muted-sheet rail with an active warm-washi segment and soft inset lift. On narrow screens the three primary views use the same tab vocabulary across the available width.
+Graph search and horizontally scrollable breadcrumbs form the visible canvas navigation. Arrow keys move through the visible semantic order, left and right move to parent and child, and `/` focuses search. A compact key guide documents mutation and folding commands without consuming persistent canvas space.
+
+### Evaluation Output Dock
+
+An explicit run expands a bottom-edge canvas dock with status, revision, stale state, copy action, transcript, structured Jev answers, failures, and raw output. Its collapsed receipt preserves the latest status and preview without taking graph layout space. The Output control and command palette reopen it. The dock overlays rather than resizes the graph, keeps the selected node fixed, caps its height, and becomes safe-width on narrow screens.
+
 
 ### Folded Semantic Node
 
-Each node exposes label, JSON pointer, semantic kind, parent role, expansion, and fold state in one compact sheet. Number, string, and boolean literals become custom nodes with native inline controls; text and number changes commit on blur or Enter, while checkboxes commit immediately. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
+Each node exposes label, JSON pointer, semantic kind, parent role, source range, child order, expansion, and fold state in one compact sheet. Number, string, and boolean literals become custom nodes with native inline controls; text and number changes commit on blur or Enter, while checkboxes commit immediately. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection reveals a compact action row for replace, add, reorder, quote, and delete, while the same operations remain available through direct keyboard commands and the command palette. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
 
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep graph, inspector, outline, and result visibly connected as folds of one continuous work surface.
+- **Do** keep editing, inspection, navigation, and evaluation attached to the continuous graph canvas.
 - **Do** use vermilion for executable action, selection, focus, and direct graph manipulation.
 - **Do** reserve gold for current-revision and active-position evidence.
 - **Do** use monospaced type for expression JSON, pointers, ranges, counts, and evaluation output.

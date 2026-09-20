@@ -15,11 +15,17 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   FoldHorizontalIcon,
+  KeyboardIcon,
   PencilIcon,
   PlusIcon,
+  Trash2Icon,
+  WrapTextIcon,
+  XIcon,
 } from "lucide-react";
 import {
   memo,
@@ -42,14 +48,18 @@ import type {
 interface GraphNodeData extends Record<string, unknown> {
   readonly expanded: boolean;
   readonly literalDraft?: string;
+  readonly onDelete: (id: string) => void;
   readonly onEdit: (id: string) => void;
   readonly onInsert: (id: string) => void;
   readonly onIntent: (intent: EditIntent) => void;
   readonly onLiteralDraftChange: (id: string, value?: string) => void;
+  readonly onReorder: (id: string, direction: -1 | 1) => void;
   readonly onToggle: (id: string) => void;
   readonly onUnfold: (id: string) => void;
+  readonly onWrap: (id: string) => void;
   readonly presentation?: GraphNodePresentation;
   readonly semantic: IndexedSemanticNode;
+  readonly siblingCount: number;
   readonly stale: boolean;
   readonly unfolded: boolean;
   readonly visibleChildCount: number;
@@ -72,12 +82,13 @@ interface GraphNodePresentation {
   readonly mark: GraphNodeMark;
 }
 
-type GraphNodeType =
+type SemanticGraphNodeType =
   | "semantic"
   | "boolean-literal"
   | "number-literal"
   | "string-literal";
-type GraphFlowNode = Node<GraphNodeData, GraphNodeType>;
+type SemanticFlowNode = Node<GraphNodeData, SemanticGraphNodeType>;
+type GraphFlowNode = SemanticFlowNode;
 const GRAPH_NODE_HEIGHT = 138;
 const GRAPH_NODE_WIDTH = 240;
 const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
@@ -86,6 +97,8 @@ const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
     : "color-mix(in oklab, var(--sumi) 70%, var(--sheet))";
 const pluralize = (count: number, noun: string, plural = `${noun}s`) =>
   `${count} ${count === 1 ? noun : plural}`;
+const describeChildCount = (count: number) =>
+  count === 0 ? "Leaf" : pluralize(count, "child", "children");
 const CHILD_CONTAINER_KINDS: Readonly<
   Partial<Record<IndexedSemanticNode["kind"], true>>
 > = {
@@ -408,7 +421,8 @@ const getEditableLiteralKind = (
 
 const getGraphNodeType = (
   literalKind: EditableLiteralKind | undefined
-): GraphNodeType => (literalKind ? `${literalKind}-literal` : "semantic");
+): SemanticGraphNodeType =>
+  literalKind ? `${literalKind}-literal` : "semantic";
 
 interface LiteralValueInputProps {
   readonly kind: EditableLiteralKind;
@@ -615,9 +629,95 @@ function GraphNodeBody({
   );
 }
 
-type SemanticGraphNodeProps = NodeProps<GraphFlowNode> & {
+type SemanticGraphNodeProps = NodeProps<SemanticFlowNode> & {
   readonly literalKind?: EditableLiteralKind;
 };
+
+function GraphNodeCommandBar({ data }: { readonly data: GraphNodeData }) {
+  const {
+    onDelete,
+    onEdit,
+    onInsert,
+    onReorder,
+    onWrap,
+    semantic,
+    siblingCount,
+    stale,
+  } = data;
+  const acceptsChildren = CHILD_CONTAINER_KINDS[semantic.kind] === true;
+  return (
+    <div
+      aria-label={`Actions for ${semantic.label}`}
+      className="graph-node-command-bar nodrag"
+      role="toolbar"
+    >
+      <Button
+        aria-label={`Replace ${semantic.label}`}
+        disabled={stale}
+        onClick={() => onEdit(semantic.id)}
+        size="icon-sm"
+        title="Replace (Enter)"
+        variant="ghost"
+      >
+        <PencilIcon />
+      </Button>
+      {acceptsChildren ? (
+        <Button
+          aria-label={`Add child to ${semantic.label}`}
+          disabled={stale}
+          onClick={() => onInsert(semantic.id)}
+          size="icon-sm"
+          title="Add child (A)"
+          variant="ghost"
+        >
+          <PlusIcon />
+        </Button>
+      ) : null}
+      <Button
+        aria-label={`Move ${semantic.label} earlier`}
+        disabled={stale || !semantic.parentId || semantic.order <= 0}
+        onClick={() => onReorder(semantic.id, -1)}
+        size="icon-sm"
+        title="Move earlier (Shift+↑)"
+        variant="ghost"
+      >
+        <ArrowUpIcon />
+      </Button>
+      <Button
+        aria-label={`Move ${semantic.label} later`}
+        disabled={
+          stale || !semantic.parentId || semantic.order >= siblingCount - 1
+        }
+        onClick={() => onReorder(semantic.id, 1)}
+        size="icon-sm"
+        title="Move later (Shift+↓)"
+        variant="ghost"
+      >
+        <ArrowDownIcon />
+      </Button>
+      <Button
+        aria-label={`Wrap ${semantic.label} in quote`}
+        disabled={stale}
+        onClick={() => onWrap(semantic.id)}
+        size="icon-sm"
+        title="Wrap in quote (Q)"
+        variant="ghost"
+      >
+        <WrapTextIcon />
+      </Button>
+      <Button
+        aria-label={`Delete ${semantic.label}`}
+        disabled={stale || !semantic.parentId}
+        onClick={() => onDelete(semantic.id)}
+        size="icon-sm"
+        title="Delete subtree (Delete)"
+        variant="ghost"
+      >
+        <Trash2Icon />
+      </Button>
+    </div>
+  );
+}
 
 const SemanticGraphNode = memo(function SemanticGraphNode({
   data,
@@ -651,6 +751,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       className="nodrag"
       onClick={() => onUnfold(semantic.id)}
       size="icon-sm"
+      title={unfolded ? "Refold exact JSON (F)" : "Unfold exact JSON (F)"}
       variant="ghost"
     >
       <FoldHorizontalIcon />
@@ -683,6 +784,9 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
             className="nodrag"
             onClick={() => onToggle(semantic.id)}
             size="icon-sm"
+            title={
+              expanded ? "Collapse branch (Space)" : "Expand branch (Space)"
+            }
             variant="ghost"
           >
             {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
@@ -702,6 +806,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
             disabled={stale}
             onClick={() => onEdit(semantic.id)}
             size="icon-sm"
+            title="Replace expression (Enter)"
             variant="ghost"
           >
             <PencilIcon />
@@ -712,6 +817,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
               disabled={stale}
               onClick={() => onInsert(semantic.id)}
               size="icon-sm"
+              title="Add child (A)"
               variant="ghost"
             >
               <PlusIcon />
@@ -731,12 +837,13 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       />
       <footer className="graph-node-footer">
         <Badge variant="outline">{semantic.role}</Badge>
-        <span>
-          {visibleChildCount === 0
-            ? "Leaf"
-            : pluralize(visibleChildCount, "child", "children")}
+        <span className="graph-node-range">
+          {semantic.parentId ? `#${semantic.order + 1} · ` : ""}
+          {semantic.range.from}–{semantic.range.to}
         </span>
+        <span>{describeChildCount(visibleChildCount)}</span>
       </footer>
+      {selected ? <GraphNodeCommandBar data={data} /> : null}
       {acceptsConnections ? (
         <Handle aria-hidden position={Position.Right} type="source" />
       ) : null}
@@ -745,19 +852,19 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
 });
 
 const BooleanLiteralGraphNode = memo(function BooleanLiteralGraphNode(
-  props: NodeProps<GraphFlowNode>
+  props: NodeProps<SemanticFlowNode>
 ) {
   return <SemanticGraphNode {...props} literalKind="boolean" />;
 });
 
 const NumberLiteralGraphNode = memo(function NumberLiteralGraphNode(
-  props: NodeProps<GraphFlowNode>
+  props: NodeProps<SemanticFlowNode>
 ) {
   return <SemanticGraphNode {...props} literalKind="number" />;
 });
 
 const StringLiteralGraphNode = memo(function StringLiteralGraphNode(
-  props: NodeProps<GraphFlowNode>
+  props: NodeProps<SemanticFlowNode>
 ) {
   return <SemanticGraphNode {...props} literalKind="string" />;
 });
@@ -782,6 +889,116 @@ const getAncestors = (
   return ancestors;
 };
 
+type GraphKeyboardCommand =
+  | "add"
+  | "delete"
+  | "edit"
+  | "earlier"
+  | "later"
+  | "quote"
+  | "toggle"
+  | "unfold";
+
+const GRAPH_KEY_COMMANDS: Readonly<
+  Partial<Record<string, GraphKeyboardCommand>>
+> = {
+  " ": "toggle",
+  a: "add",
+  backspace: "delete",
+  delete: "delete",
+  enter: "edit",
+  f: "unfold",
+  q: "quote",
+};
+
+const GRAPH_SHIFT_COMMANDS: Readonly<
+  Partial<Record<string, GraphKeyboardCommand>>
+> = {
+  arrowdown: "later",
+  arrowup: "earlier",
+};
+
+const MUTATING_GRAPH_COMMANDS = new Set<GraphKeyboardCommand>([
+  "add",
+  "delete",
+  "edit",
+  "earlier",
+  "later",
+  "quote",
+]);
+
+const blocksGraphShortcut = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable ||
+    Boolean(
+      target.closest("input, textarea, select, button, [role='dialog']")
+    ));
+
+const handleGraphUtilityShortcut = (
+  event: KeyboardEvent,
+  toggleShortcuts: () => void
+) => {
+  const handlers: Readonly<Partial<Record<string, () => void>>> = {
+    "/": () => document.getElementById("graph-search-input")?.focus(),
+    "?": toggleShortcuts,
+  };
+  const handler = handlers[event.key];
+  if (!handler) {
+    return false;
+  }
+  event.preventDefault();
+  handler();
+  return true;
+};
+
+const getGraphNavigationTarget = (
+  event: KeyboardEvent,
+  selected: IndexedSemanticNode,
+  nodes: readonly IndexedSemanticNode[]
+) => {
+  if (event.shiftKey) {
+    return undefined;
+  }
+  const selectedIndex = nodes.findIndex(({ id }) => id === selected.id);
+  const visibleIds = new Set(nodes.map(({ id }) => id));
+  const targets: Readonly<Record<string, string | undefined>> = {
+    ArrowDown: nodes[selectedIndex + 1]?.id,
+    ArrowLeft: selected.parentId ?? undefined,
+    ArrowUp: nodes[selectedIndex - 1]?.id,
+    ArrowRight: selected.children.find((id) => visibleIds.has(id)),
+    End: nodes.at(-1)?.id,
+    Home: nodes[0]?.id,
+  };
+  return targets[event.key];
+};
+
+const getGraphKeyboardCommand = (
+  event: KeyboardEvent,
+  selected: IndexedSemanticNode,
+  stale: boolean
+): GraphKeyboardCommand | undefined => {
+  if (event.repeat) {
+    return undefined;
+  }
+  const key = event.key.toLowerCase();
+  const command = event.shiftKey
+    ? GRAPH_SHIFT_COMMANDS[key]
+    : GRAPH_KEY_COMMANDS[key];
+  if (!command || (stale && MUTATING_GRAPH_COMMANDS.has(command))) {
+    return undefined;
+  }
+  if (command === "add" && CHILD_CONTAINER_KINDS[selected.kind] !== true) {
+    return undefined;
+  }
+  if (command === "delete" && !selected.parentId) {
+    return undefined;
+  }
+  if (command === "toggle" && selected.children.length === 0) {
+    return undefined;
+  }
+  return command;
+};
+
 interface SemanticGraphProps {
   readonly layout: (
     nodes: readonly { readonly id: string; readonly parentId: string | null }[]
@@ -790,10 +1007,13 @@ interface SemanticGraphProps {
   >;
   readonly narrow: boolean;
   readonly onConstraint: (message: string) => void;
+  readonly onDelete: (id: string) => void;
   readonly onEdit: (id: string) => void;
   readonly onInsert: (id: string) => void;
   readonly onIntent: (intent: EditIntent) => void;
+  readonly onReorder: (id: string, direction: -1 | 1) => void;
   readonly onSelect: (id: string) => void;
+  readonly onWrap: (id: string) => void;
   readonly projection: DocumentProjection;
   readonly selectedId: string | null;
   readonly stale: boolean;
@@ -805,9 +1025,12 @@ export function SemanticGraph({
   selectedId,
   stale,
   onSelect,
+  onDelete,
   onEdit,
   onInsert,
   onIntent,
+  onReorder,
+  onWrap,
   onConstraint,
   layout,
 }: SemanticGraphProps) {
@@ -824,6 +1047,7 @@ export function SemanticGraph({
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >({});
   const [layoutRevision, setLayoutRevision] = useState(0);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance<
     GraphFlowNode,
     Edge
@@ -882,10 +1106,14 @@ export function SemanticGraph({
     });
     return visible.slice(0, 300);
   }, [byId, collapsed, projection.nodes, unfolded]);
+  const layoutNodes = useMemo(
+    () => visibleSemanticNodes.map(({ id, parentId }) => ({ id, parentId })),
+    [visibleSemanticNodes]
+  );
 
   useEffect(() => {
     let active = true;
-    layout(visibleSemanticNodes.map(({ id, parentId }) => ({ id, parentId })))
+    layout(layoutNodes)
       .then((next) => {
         if (active) {
           setPositions(next);
@@ -902,7 +1130,7 @@ export function SemanticGraph({
     return () => {
       active = false;
     };
-  }, [layout, onConstraint, visibleSemanticNodes]);
+  }, [layout, layoutNodes, onConstraint]);
   useEffect(() => {
     if (!(flowInstance && layoutRevision > 0)) {
       return;
@@ -992,6 +1220,66 @@ export function SemanticGraph({
     });
   }, []);
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (blocksGraphShortcut(event.target)) {
+        return;
+      }
+      if (
+        handleGraphUtilityShortcut(event, () =>
+          setShortcutsOpen((open) => !open)
+        )
+      ) {
+        return;
+      }
+      const selected = selectedId ? byId.get(selectedId) : undefined;
+      if (!selected) {
+        return;
+      }
+      const targetId = getGraphNavigationTarget(
+        event,
+        selected,
+        visibleSemanticNodes
+      );
+      if (targetId) {
+        event.preventDefault();
+        onSelect(targetId);
+        return;
+      }
+      const command = getGraphKeyboardCommand(event, selected, stale);
+      if (!command) {
+        return;
+      }
+      const handlers: Readonly<Record<GraphKeyboardCommand, () => void>> = {
+        add: () => onInsert(selected.id),
+        delete: () => onDelete(selected.id),
+        earlier: () => onReorder(selected.id, -1),
+        edit: () => onEdit(selected.id),
+        later: () => onReorder(selected.id, 1),
+        quote: () => onWrap(selected.id),
+        toggle: () => toggleCollapsed(selected.id),
+        unfold: () => toggleUnfolded(selected.id),
+      };
+      event.preventDefault();
+      handlers[command]();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    byId,
+    onDelete,
+    onEdit,
+    onInsert,
+    onReorder,
+    onSelect,
+    onWrap,
+    visibleSemanticNodes,
+    selectedId,
+    stale,
+    toggleCollapsed,
+    toggleUnfolded,
+  ]);
+
   const nodes = useMemo<GraphFlowNode[]>(
     () =>
       visibleSemanticNodes.map((semantic, index) => {
@@ -1016,11 +1304,16 @@ export function SemanticGraph({
             unfolded: unfolded.has(semantic.id),
             literalDraft: literalDrafts[semantic.id],
             presentation,
+            siblingCount: semantic.parentId
+              ? (byId.get(semantic.parentId)?.children.length ?? 1)
+              : 1,
             stale,
+            onDelete,
             onEdit,
             onInsert,
             onIntent,
             onLiteralDraftChange: updateLiteralDraft,
+            onReorder,
             onToggle: toggleCollapsed,
             visibleChildCount: semantic.children.filter((childId) => {
               const child = byId.get(childId);
@@ -1030,6 +1323,7 @@ export function SemanticGraph({
               );
             }).length,
             onUnfold: toggleUnfolded,
+            onWrap,
           },
         };
       }),
@@ -1037,9 +1331,12 @@ export function SemanticGraph({
       byId,
       collapsed,
       literalDrafts,
+      onDelete,
       onEdit,
       onInsert,
       onIntent,
+      onReorder,
+      onWrap,
       positions,
       selectedId,
       stale,
@@ -1163,11 +1460,90 @@ export function SemanticGraph({
   return (
     <div className="relative h-full min-h-0" data-testid="semantic-graph">
       <div className="graph-count">
-        {projection.nodes.length} total · {nodes.length} shown
+        {projection.nodes.length} total · {visibleSemanticNodes.length} shown
       </div>
       <div className="graph-hint">
-        Double-click to replace · connect parent → child
+        Arrows navigate · Enter edits · A adds · ? for keys
       </div>
+      <Button
+        aria-expanded={shortcutsOpen}
+        aria-label="Show graph keyboard shortcuts"
+        className="graph-shortcut-trigger"
+        onClick={() => setShortcutsOpen((open) => !open)}
+        size="sm"
+        variant="outline"
+      >
+        <KeyboardIcon data-icon="inline-start" />
+        Keys
+      </Button>
+      {shortcutsOpen ? (
+        <aside
+          aria-label="Graph keyboard shortcuts"
+          className="graph-shortcuts"
+        >
+          <header>
+            <strong>Move at thought speed</strong>
+            <Button
+              aria-label="Close graph keyboard shortcuts"
+              onClick={() => setShortcutsOpen(false)}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <XIcon />
+            </Button>
+          </header>
+          <dl>
+            <div>
+              <dt>
+                <kbd>↑</kbd>
+                <kbd>↓</kbd>
+              </dt>
+              <dd>Previous / next expression</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>←</kbd>
+                <kbd>→</kbd>
+              </dt>
+              <dd>Parent / first child</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>Enter</kbd>
+              </dt>
+              <dd>Replace selection</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>A</kbd>
+                <kbd>Q</kbd>
+              </dt>
+              <dd>Add child / quote</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>F</kbd>
+                <kbd>Space</kbd>
+              </dt>
+              <dd>Exact JSON / branch</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>⇧↑</kbd>
+                <kbd>⇧↓</kbd>
+              </dt>
+              <dd>Reorder sibling</dd>
+            </div>
+            <div>
+              <dt>
+                <kbd>/</kbd>
+                <kbd>⌫</kbd>
+              </dt>
+              <dd>Search / delete</dd>
+            </div>
+          </dl>
+        </aside>
+      ) : null}
       <ReactFlow
         className="semantic-flow"
         colorMode="light"

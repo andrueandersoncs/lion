@@ -9,7 +9,7 @@ related_targets: []
 
 ## Scope
 
-The shipped graph-editor surface at route `/`. This brief governs the one-screen workbench that synchronizes the semantic graph, inspector, outline, and evaluation result over one canonical JSON document.
+The shipped graph-editor surface at route `/`. This brief governs the one-screen workbench that synchronizes semantic nodes, graph navigation, and a collapsible evaluation output dock over one canonical JSON document.
 
 ## Visitor Mode
 
@@ -29,19 +29,19 @@ Move confidently through the semantic graph while preserving one canonical JSON 
 
 ## Proof and Content
 
-The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a wide semantic fold-map canvas, a dense tabbed inspector, revision status, search, breadcrumbs, and evaluation controls. Folded nodes show labels, JSON pointers, parent roles, semantic kinds, native inline controls for primitive values, direct Replace/Add child actions, and exact-structure expansion.
+The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a full-width semantic fold-map canvas, revision status, search, breadcrumbs, evaluation controls, and discoverable graph keys. Folded nodes show labels, JSON pointers, parent roles, source ranges, order, semantic kinds, native inline controls for primitive values, direct mutation actions, and exact-structure expansion.
 
 ## Constraints
 
 - Local files only; no account, hosted workspace, or collaboration surface.
 - The JSON source is canonical and always recoverable.
 - Graph edits must round-trip without changing program meaning or unsupported structure.
-- Desktop supports a resizable graph and tabbed inspector workbench; narrow screens preserve Graph, Inspect, and Result as focused tabs.
+- Desktop and narrow screens keep the graph as the only primary workspace; inspection lives in selected nodes, outline navigation lives in search and arrow keys, and evaluation appears in a compact bottom-edge dock that never participates in graph layout.
 - Interaction remains keyboard-accessible, touch-targeted for coarse pointers, reduced-motion aware, and legible in forced colors.
 
 ## Chosen Direction
 
-**One-Sheet Fold Map.** One canonical JSON document unfolds as a semantic graph and focused workbench views. The world is warm washi, vermilion active sheet, sumi notation, restrained gold, crisp creases, and compact workhorse type. It refuses a detached dashboard-card arrangement. Seed: `LION-FOLD-MAP-021`.
+**One-Sheet Fold Map.** One canonical JSON document unfolds as a semantic graph whose editing, inspection, navigation, and evaluation stay on the canvas. The world is warm washi, vermilion active sheet, sumi notation, restrained gold, crisp creases, and compact workhorse type. It refuses detached workbench panels and dashboard-card arrangements. Seed: `LION-FOLD-MAP-021`.
 
 ## Memorable Moment
 

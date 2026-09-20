@@ -11,17 +11,11 @@ const LARGE_FIXTURE = JSON.stringify([
 const SERIOUS_IMPACTS = new Set(["critical", "serious"]);
 const STALE_GRAPH_PATTERN = /Graph at r/;
 const LARGE_GRAPH_PATTERN = /5003 total · 300 shown/;
+const REPLACE_BUTTON_PATTERN = /^Replace /;
 
 const gotoEditor = async (page: Page) => {
   await page.goto("/");
   await expect(page.locator('main[data-hydrated="true"]')).toBeVisible();
-};
-
-const showGraphOnNarrowViewport = async (page: Page) => {
-  const graphTab = page.getByRole("tab", { name: "Graph" });
-  if ((await graphTab.count()) > 0) {
-    await graphTab.click();
-  }
 };
 
 test("new, edit, graph mutation, run, and shared undo remain synchronized", async ({
@@ -39,14 +33,21 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
     .toBeGreaterThan(220);
 
   await page.getByRole("button", { name: "Run" }).click();
-  await page.getByRole("tab", { name: "Result" }).click();
-  await expect(page.getByText("succeeded", { exact: true })).toBeVisible();
-  await expect(
-    page
-      .getByRole("tabpanel", { name: "Result" })
-      .getByText("3", { exact: true })
-  ).toBeVisible();
-  await showGraphOnNarrowViewport(page);
+  const outputDock = page.getByRole("region", {
+    name: "Evaluation output: succeeded",
+  });
+  await expect(outputDock).toBeVisible();
+  await expect(outputDock.getByText("3", { exact: true })).toBeVisible();
+  await expect(outputDock.locator(".evaluation-dock-summary")).toHaveAttribute(
+    "aria-expanded",
+    "true"
+  );
+  await outputDock.locator(".evaluation-dock-summary").click();
+  await expect(outputDock.locator(".evaluation-dock-body")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Show evaluation output: succeeded" })
+    .click();
+  await expect(outputDock.locator(".evaluation-dock-body")).toBeVisible();
 
   const search = page.getByRole("searchbox", {
     name: "Search graph by name, value, or JSON Pointer",
@@ -63,11 +64,32 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
   await page.getByRole("button", { name: "Run" }).click();
   await expect(
     page
-      .getByRole("tabpanel", { name: "Result" })
+      .getByRole("region", { name: "Evaluation output: succeeded" })
       .getByText("6", { exact: true })
   ).toBeVisible();
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByText("Unsaved", { exact: true })).toHaveCount(0);
+});
+
+test("graph keyboard navigation replaces the detached outline", async ({
+  page,
+}) => {
+  await gotoEditor(page);
+  await page.locator(".react-flow__pane").click({ position: { x: 20, y: 20 } });
+  await page.keyboard.press("ArrowDown");
+  await expect(page.locator(".graph-node-selected")).toHaveAttribute(
+    "aria-label",
+    "primitive: 1"
+  );
+  await page.keyboard.press("?");
+  await expect(
+    page.locator('aside[aria-label="Graph keyboard shortcuts"]')
+  ).toBeVisible();
+  await page.keyboard.press("?");
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("dialog", { name: "Replace expression" })
+  ).toBeVisible();
 });
 
 test("invalid source keeps the graph blocked until a new document", async ({
@@ -105,8 +127,9 @@ test("fallback import preserves text and download saves current bytes", async ({
     buffer: Buffer.from(source),
   });
   await page
-    .getByRole("toolbar", { name: "Selected expression actions" })
-    .getByRole("button", { name: "Replace", exact: true })
+    .locator(".graph-node-selected")
+    .getByRole("button", { name: REPLACE_BUTTON_PATTERN })
+    .first()
     .click();
   await page
     .getByRole("dialog")
@@ -130,9 +153,11 @@ test("runtime failures stay separate from valid analysis", async ({ page }) => {
   });
   await expect(page.getByRole("button", { name: "Run" })).toBeEnabled();
   await page.getByRole("button", { name: "Run" }).click();
-  await page.getByRole("tab", { name: "Result" }).click();
-  await expect(page.getByText("failed", { exact: true })).toBeVisible();
-  await expect(page.getByText("InvalidFunctionCallError")).toBeVisible();
+  const failureDock = page.getByRole("region", {
+    name: "Evaluation output: failed",
+  });
+  await expect(failureDock).toBeVisible();
+  await expect(failureDock.getByText("InvalidFunctionCallError")).toBeVisible();
 });
 
 test("the folded graph bounds rendering for 5,000-node source", async ({
@@ -161,8 +186,12 @@ test("primary workflow is keyboard reachable and has no serious axe violations",
   ).toBeVisible();
   await page.getByPlaceholder("Type a command or action…").fill("run current");
   await page.keyboard.press("Enter");
-  await page.getByRole("tab", { name: "Result" }).click();
-  await expect(page.getByText("succeeded", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Evaluation output: succeeded" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Command Palette" })
+  ).toBeHidden();
   const results = await new AxeBuilder({ page }).analyze();
   expect(
     results.violations.filter(({ impact }) =>

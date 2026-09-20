@@ -236,6 +236,31 @@
   white-space: nowrap;
 }
 
+.graph-result-jump {
+  flex: none;
+  margin-left: 0.25rem;
+}
+
+.graph-result-jump span[data-status] {
+  padding: 0.05rem 0.35rem;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  background: var(--sheet-muted);
+  border-radius: 999px;
+}
+
+.graph-result-jump span[data-status="running"],
+.graph-result-jump span[data-status="scheduled"] {
+  color: var(--sumi);
+  background: color-mix(in oklab, var(--gold) 30%, var(--sheet));
+}
+
+.graph-result-jump span[data-status="failed"] {
+  color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 10%, var(--sheet));
+}
+
 .graph-context-bar {
   display: flex;
   align-items: center;
@@ -274,38 +299,6 @@
   background: var(--accent);
 }
 
-.graph-action-group {
-  display: flex;
-  flex: none;
-  gap: 0.375rem;
-  align-items: center;
-  min-height: 3rem;
-  padding: 0.375rem 0.75rem 0.375rem 0.5rem;
-  border-left: 1px solid var(--crease);
-}
-
-.graph-selection-summary {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  max-width: 9rem;
-  margin-right: 0.25rem;
-}
-
-.graph-selection-summary span {
-  font-size: 0.75rem;
-  line-height: 1;
-  color: var(--muted-foreground);
-}
-
-.graph-selection-summary strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.75rem;
-  line-height: 1.35;
-  white-space: nowrap;
-}
-
 .graph-node {
   overflow: visible;
   border: 1px solid var(--crease);
@@ -336,6 +329,10 @@
   box-shadow:
     0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent),
     0 9px 24px color-mix(in oklab, var(--sumi) 13%, transparent);
+}
+
+.graph-node-selected {
+  z-index: 2;
 }
 
 .graph-node-actions {
@@ -370,6 +367,27 @@
   text-overflow: ellipsis;
 }
 
+.graph-node-range {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+}
+
+.graph-node-command-bar {
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.375rem 0.375rem;
+  background: color-mix(in oklab, var(--accent) 45%, var(--sheet));
+  border-top: 1px solid color-mix(in oklab, var(--crease) 72%, transparent);
+  border-radius: 0 0 0.875rem 0.875rem;
+}
+
+.graph-node-command-bar button {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
 .graph-count,
 .graph-hint {
   position: absolute;
@@ -390,9 +408,88 @@
 }
 
 .graph-hint {
-  right: 0.75rem;
+  right: 5.75rem;
   font-size: 0.75rem;
   color: var(--muted-foreground);
+}
+
+.graph-shortcut-trigger {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.75rem;
+  z-index: 12;
+  background: color-mix(in oklab, var(--sheet) 94%, transparent);
+}
+
+.graph-shortcuts {
+  position: absolute;
+  top: 3.5rem;
+  right: 0.75rem;
+  z-index: 20;
+  width: min(18rem, calc(100% - 1.5rem));
+  padding: 0.625rem;
+  background: var(--sheet);
+  border: 1px solid var(--crease);
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 28px color-mix(in oklab, var(--sumi) 15%, transparent);
+  animation: shortcut-sheet-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.graph-shortcuts header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.25rem 0.375rem;
+}
+
+.graph-shortcuts dl {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+}
+
+.graph-shortcuts dl > div {
+  display: grid;
+  grid-template-columns: 4.75rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.graph-shortcuts dt {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.graph-shortcuts kbd {
+  min-width: 1.5rem;
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  text-align: center;
+  background: var(--sheet-muted);
+  border: 1px solid var(--crease);
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--sumi) 22%, transparent);
+}
+
+.graph-shortcuts dd {
+  margin: 0;
+  color: var(--muted-foreground);
+}
+
+@keyframes shortcut-sheet-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 0.625rem);
+  }
+
+  to {
+    opacity: 1;
+    clip-path: inset(0 round 0.625rem);
+  }
 }
 
 .graph-node-unfolded {
@@ -410,7 +507,7 @@
 }
 
 .graph-node > header {
-  border-radius: calc(var(--radius) + 4px) calc(var(--radius) + 4px) 0 0;
+  border-radius: 0.875rem 0.875rem 0 0;
 }
 
 .graph-node-presented > header {
@@ -580,6 +677,11 @@
   stroke-dasharray: 5 5;
 }
 
+.graph-stage {
+  position: relative;
+  overflow: hidden;
+}
+
 .react-flow__edge-text {
   font-family: var(--font-code);
   font-size: 0.75rem;
@@ -622,55 +724,123 @@
   border-color: var(--crease);
 }
 
-.inspector-facts {
+.evaluation-dock {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 6;
+  width: min(44rem, calc(100% - 2rem));
+  overflow: hidden;
+  color: var(--card-foreground);
+  background: color-mix(in oklab, var(--card) 96%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 54%, var(--crease));
+  border-radius: 0.875rem;
+  box-shadow: 0 18px 48px color-mix(in oklab, var(--sumi) 16%, transparent);
+  backdrop-filter: blur(12px);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.evaluation-dock:hover,
+.evaluation-dock:focus-within {
+  border-color: color-mix(in oklab, var(--gold) 72%, var(--crease));
+  box-shadow: 0 20px 52px color-mix(in oklab, var(--sumi) 19%, transparent);
+}
+
+.evaluation-dock-header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  background: color-mix(in oklab, var(--gold) 10%, var(--sheet));
+}
+
+.evaluation-dock-summary {
+  display: flex;
+  flex: 1;
   gap: 0.5rem;
+  align-items: center;
+  min-width: 0;
+  height: 2.75rem;
+  padding: 0 0.5rem 0 0.75rem;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.evaluation-dock-summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+.evaluation-dock-summary > svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+
+.evaluation-status-mark {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--muted-foreground);
+  border-radius: 999px;
+}
+
+.evaluation-status-mark[data-status="running"],
+.evaluation-status-mark[data-status="scheduled"] {
+  background: var(--gold);
+}
+
+.evaluation-status-mark[data-status="succeeded"] {
+  background: var(--chart-5);
+}
+
+.evaluation-status-mark[data-status="failed"] {
+  background: var(--destructive);
+}
+
+.evaluation-dock-preview {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-code);
   font-size: 0.75rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
 }
 
-.inspector-facts div {
-  display: flex;
-  gap: 1rem;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.inspector-facts dt {
+.evaluation-dock-chevron {
   color: var(--muted-foreground);
 }
 
-.inspector-facts dd {
-  font-family: var(--font-code);
-  font-variant-numeric: tabular-nums;
-}
-
-.outline-row {
-  display: flex;
-  gap: 0.375rem;
-  align-items: center;
-  width: 100%;
-  min-height: 2rem;
-  padding-block: 0.25rem;
-  padding-right: 0.5rem;
-  font-size: 0.78rem;
-  text-align: left;
-  border-radius: 0.375rem;
-}
-
-.outline-row:hover {
-  background: var(--accent);
-}
-
-.outline-row-selected {
-  background: color-mix(in oklab, var(--vermilion) 13%, var(--sheet));
-  box-shadow: inset 2px 0 var(--vermilion);
-}
-
-.outline-row svg {
+.evaluation-dock-header > [data-slot="button"] {
   flex: none;
-  width: 0.8rem;
-  height: 0.8rem;
+  margin-right: 0.375rem;
+}
+
+.evaluation-dock-body {
+  max-height: min(38dvh, 26rem);
+  overflow: auto;
+  cursor: text;
+  background: var(--card);
+  border-top: 1px solid var(--crease);
+  animation: graph-reveal 140ms ease-out;
+}
+
+.graph-evaluation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75rem;
+}
+
+.graph-evaluation-content [data-slot="alert"] {
+  min-width: 0;
 }
 
 .result-code {
@@ -715,26 +885,6 @@
   color: var(--muted-foreground);
 }
 
-[data-slot="resizable-handle"] {
-  background: var(--crease);
-}
-
-[data-slot="resizable-handle"] > div {
-  background: var(--sheet-muted);
-  border-color: var(--crease);
-}
-
-[data-slot="tabs-content"][data-state="active"] {
-  display: block;
-  height: 100%;
-}
-
-@media (max-width: 1199px) {
-  .graph-selection-summary {
-    display: none;
-  }
-}
-
 @media (max-width: 899px) {
   .command-strip {
     flex-wrap: wrap;
@@ -762,6 +912,10 @@
     min-width: 3.25rem;
   }
 
+  .graph-result-jump span[data-status] {
+    display: none;
+  }
+
   .graph-context-bar {
     flex-direction: column;
     align-items: stretch;
@@ -772,20 +926,21 @@
     border-bottom: 1px solid color-mix(in oklab, var(--crease) 62%, transparent);
   }
 
-  .graph-action-group {
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.375rem 0.75rem;
-    overflow-x: auto;
-    border-left: 0;
-  }
-
-  .graph-action-group > * {
-    flex: none;
-  }
-
   .graph-hint,
   .graph-minimap {
+    display: none;
+  }
+  .evaluation-dock {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+
+  .evaluation-dock-body {
+    max-height: 46dvh;
+  }
+
+  .evaluation-dock-preview {
     display: none;
   }
 
@@ -796,8 +951,9 @@
 
 @media (pointer: coarse) {
   .command-strip button,
+  .evaluation-dock button,
   .graph-search button,
-  .outline-row {
+  .graph-node-command-bar button {
     min-width: 2.75rem;
     min-height: 2.75rem;
   }
@@ -834,8 +990,7 @@
 }
 
 @media (forced-colors: active) {
-  .graph-node-selected,
-  .outline-row-selected {
+  .graph-node-selected {
     outline: 3px solid Highlight;
     outline-offset: 2px;
   }

@@ -6,7 +6,9 @@ import {
   ArrowUpIcon,
   BracesIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   CircleAlertIcon,
   CopyIcon,
   DownloadIcon,
@@ -15,7 +17,6 @@ import {
   FolderOpenIcon,
   KeyboardIcon,
   KeyRoundIcon,
-  PanelBottomIcon,
   PlayIcon,
   PlusIcon,
   Redo2Icon,
@@ -75,16 +76,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { Progress } from "@/components/ui/progress";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -92,7 +86,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { searchProjection } from "./parse";
 import { SemanticGraph } from "./semantic-graph";
 import type { EditIntent, IndexedSemanticNode } from "./types";
@@ -176,14 +169,6 @@ const useEditorShortcuts = ({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [newDocument, onError, openDocument, openPalette, run, save, saveAs]);
-};
-const CHILD_CONTAINER_KINDS: Readonly<
-  Partial<Record<IndexedSemanticNode["kind"], true>>
-> = {
-  call: true,
-  "empty-array": true,
-  record: true,
-  "special-form": true,
 };
 
 interface EditorCommand {
@@ -321,189 +306,6 @@ function Diagnostics({ editor }: { readonly editor: EditorController }) {
         ) : null}
       </AlertDescription>
     </Alert>
-  );
-}
-
-function Inspector({
-  editor,
-  onMutate,
-  onDelete,
-  onReorder,
-}: {
-  readonly editor: EditorController;
-  readonly onMutate: (mode: "replace" | "insert") => void;
-  readonly onDelete: () => void;
-  readonly onReorder: (direction: -1 | 1) => void;
-}) {
-  const node = editor.selectedNode;
-  if (!node) {
-    return (
-      <div className="flex h-full items-center justify-center p-8 text-center text-muted-foreground text-sm">
-        Select a graph or outline node to inspect it.
-      </div>
-    );
-  }
-  const graphEditingDisabled = editor.graphStale;
-  return (
-    <ScrollArea className="h-full">
-      <div className="flex flex-col gap-5 p-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">{node.kind}</Badge>
-            {node.quoted ? <Badge variant="secondary">Quoted</Badge> : null}
-          </div>
-          <h2 className="mt-2 font-semibold text-lg">{node.label}</h2>
-          <p className="font-mono text-muted-foreground text-xs">
-            {node.pointer || "/"}
-          </p>
-        </div>
-        <dl className="inspector-facts">
-          <div>
-            <dt>Document range</dt>
-            <dd>
-              {node.range.from}–{node.range.to}
-            </dd>
-          </div>
-          <div>
-            <dt>Parent role</dt>
-            <dd>{node.role}</dd>
-          </div>
-          <div>
-            <dt>Child order</dt>
-            <dd>{node.order}</dd>
-          </div>
-          <div>
-            <dt>Revision</dt>
-            <dd>{editor.graphProjection?.revision}</dd>
-          </div>
-        </dl>
-        <Separator />
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            disabled={graphEditingDisabled}
-            onClick={() => onMutate("replace")}
-            size="sm"
-            variant="outline"
-          >
-            <ReplaceIcon data-icon="inline-start" />
-            Replace
-          </Button>
-          <Button
-            disabled={graphEditingDisabled}
-            onClick={() => onMutate("insert")}
-            size="sm"
-            variant="outline"
-          >
-            <PlusIcon data-icon="inline-start" />
-            Add child
-          </Button>
-          <Button
-            disabled={graphEditingDisabled || node.order <= 1}
-            onClick={() => onReorder(-1)}
-            size="sm"
-            variant="outline"
-          >
-            <ArrowUpIcon data-icon="inline-start" />
-            Earlier
-          </Button>
-          <Button
-            disabled={graphEditingDisabled || !node.parentId}
-            onClick={() => onReorder(1)}
-            size="sm"
-            variant="outline"
-          >
-            <ArrowDownIcon data-icon="inline-start" />
-            Later
-          </Button>
-          <Button
-            className="col-span-2"
-            disabled={graphEditingDisabled || !node.parentId}
-            onClick={onDelete}
-            size="sm"
-            variant="destructive"
-          >
-            <Trash2Icon data-icon="inline-start" />
-            Delete subtree
-          </Button>
-        </div>
-        {graphEditingDisabled ? (
-          <p className="text-destructive text-xs">
-            Graph editing resumes after opening a valid Lion document.
-          </p>
-        ) : null}
-      </div>
-    </ScrollArea>
-  );
-}
-
-function Outline({ editor }: { readonly editor: EditorController }) {
-  const nodes = editor.graphProjection?.nodes ?? [];
-  const moveFocus = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    index: number,
-    node: IndexedSemanticNode
-  ) => {
-    let targetIndex: number | null = null;
-    if (event.key === "ArrowDown") {
-      targetIndex = Math.min(nodes.length - 1, index + 1);
-    } else if (event.key === "ArrowUp") {
-      targetIndex = Math.max(0, index - 1);
-    } else if (event.key === "Home") {
-      targetIndex = 0;
-    } else if (event.key === "End") {
-      targetIndex = nodes.length - 1;
-    } else if (event.key === "ArrowLeft" && node.parentId) {
-      targetIndex = nodes.findIndex(({ id }) => id === node.parentId);
-    } else if (event.key === "ArrowRight" && node.children[0]) {
-      targetIndex = nodes.findIndex(({ id }) => id === node.children[0]);
-    }
-    if (targetIndex === null || targetIndex < 0) {
-      return;
-    }
-    event.preventDefault();
-    const target = nodes[targetIndex];
-    const container = event.currentTarget.parentElement;
-    if (target) {
-      editor.setSelectedId(target.id);
-      window.requestAnimationFrame(() => {
-        const element = container?.children.item(targetIndex);
-        if (element instanceof HTMLElement) {
-          element.focus();
-        }
-      });
-    }
-  };
-  return (
-    <ScrollArea className="h-full">
-      <div aria-label="Semantic document outline" className="p-2" role="tree">
-        {nodes.map((node, index) => (
-          <button
-            aria-expanded={node.children.length > 0 ? true : undefined}
-            aria-level={node.path.length + 1}
-            aria-selected={editor.selectedId === node.id}
-            className={cn(
-              "outline-row",
-              editor.selectedId === node.id && "outline-row-selected"
-            )}
-            key={node.id}
-            onClick={() => editor.setSelectedId(node.id)}
-            onKeyDown={(event) => moveFocus(event, index, node)}
-            role="treeitem"
-            style={{
-              paddingInlineStart: `${Math.min(node.path.length, 12) * 14 + 8}px`,
-            }}
-            tabIndex={editor.selectedId === node.id ? 0 : -1}
-            type="button"
-          >
-            <ChevronRightIcon aria-hidden />
-            <span className="truncate">{node.label}</span>
-            <span className="ml-auto text-muted-foreground text-xs">
-              {node.role}
-            </span>
-          </button>
-        ))}
-      </div>
-    </ScrollArea>
   );
 }
 
@@ -657,84 +459,140 @@ function JevResultView({
   );
 }
 
-function ResultPanel({ editor }: { readonly editor: EditorController }) {
+function EvaluationBody({ editor }: { readonly editor: EditorController }) {
   const { evaluation } = editor;
   const jevResult = asJevResult(evaluation.result);
-  const copy = () => {
-    navigator.clipboard
-      .writeText(evaluation.error ?? evaluation.rendered)
-      .then(() => toast.success("Result copied"));
-  };
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center justify-between border-crease border-b px-3 py-2">
-        <div className="flex items-center gap-2">
+    <div className="graph-evaluation-content">
+      {evaluation.transcript.length > 0 ? (
+        <section>
+          <h3 className="mb-2 font-semibold text-xs uppercase tracking-wide">
+            Console
+          </h3>
+          <pre className="result-code">{evaluation.transcript.join("\n")}</pre>
+        </section>
+      ) : null}
+      {evaluation.status === "scheduled" ? (
+        <p className="text-muted-foreground text-sm">
+          Live evaluation is queued until typing settles.
+        </p>
+      ) : null}
+      {evaluation.status === "running" ? (
+        <p className="text-sm">Evaluating revision {evaluation.revision}…</p>
+      ) : null}
+      {evaluation.status === "canceled" ? (
+        <p className="text-muted-foreground text-sm">Evaluation canceled.</p>
+      ) : null}
+      {evaluation.error ? (
+        <Alert variant="destructive">
+          <CircleAlertIcon />
+          <AlertTitle>Evaluation failed</AlertTitle>
+          <AlertDescription>{evaluation.error}</AlertDescription>
+        </Alert>
+      ) : null}
+      {jevResult ? (
+        <JevResultView raw={evaluation.rendered} result={jevResult} />
+      ) : null}
+      {evaluation.rendered && !jevResult ? (
+        <pre className="result-code">{evaluation.rendered}</pre>
+      ) : null}
+    </div>
+  );
+}
+function EvaluationDock({
+  editor,
+  onOpenChange,
+  open,
+}: {
+  readonly editor: EditorController;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly open: boolean;
+}) {
+  const { evaluation } = editor;
+  if (evaluation.status === "idle") {
+    return null;
+  }
+  const value = evaluation.error ?? evaluation.rendered;
+  const preview =
+    value ?? evaluation.transcript.at(-1) ?? `Revision ${evaluation.revision}`;
+  const copyResult = () => {
+    if (!value) {
+      toast.info("No evaluation output to copy");
+      return;
+    }
+    navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success("Result copied"))
+      .catch(() => toast.error("Could not copy the result"));
+  };
+
+  return (
+    <section
+      aria-label={`Evaluation output: ${evaluation.status}`}
+      className={
+        open ? "evaluation-dock evaluation-dock-open" : "evaluation-dock"
+      }
+    >
+      <header className="evaluation-dock-header">
+        <button
+          aria-expanded={open}
+          className="evaluation-dock-summary"
+          onClick={() => onOpenChange(!open)}
+          type="button"
+        >
+          <span
+            aria-hidden
+            className="evaluation-status-mark"
+            data-status={evaluation.status}
+          />
           <SquareTerminalIcon aria-hidden />
-          <span className="font-semibold text-sm">Result</span>
+          <strong>Output</strong>
           <Badge
             variant={evaluation.status === "failed" ? "destructive" : "outline"}
           >
             {evaluation.status}
           </Badge>
           {evaluation.stale ? <Badge variant="secondary">Stale</Badge> : null}
-        </div>
-        <ToolButton
-          disabled={!(evaluation.error || evaluation.rendered)}
-          label="Copy result"
-          onClick={copy}
+          <span className="evaluation-dock-preview">
+            {open
+              ? `Revision ${evaluation.revision ?? "—"}`
+              : preview.replaceAll(/\s+/g, " ").slice(0, 72)}
+          </span>
+          {open ? (
+            <ChevronDownIcon aria-hidden className="evaluation-dock-chevron" />
+          ) : (
+            <ChevronUpIcon aria-hidden className="evaluation-dock-chevron" />
+          )}
+        </button>
+        <Button
+          aria-label="Copy evaluation output"
+          disabled={!value}
+          onClick={copyResult}
           size="icon-sm"
+          title="Copy output"
           variant="ghost"
         >
           <CopyIcon />
-        </ToolButton>
+        </Button>
       </header>
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4">
-          {evaluation.transcript.length > 0 ? (
-            <section>
-              <h3 className="mb-2 font-semibold text-xs uppercase tracking-wide">
-                Console
-              </h3>
-              <pre className="result-code">
-                {evaluation.transcript.join("\n")}
-              </pre>
-            </section>
-          ) : null}
-          {evaluation.status === "idle" ? (
-            <p className="text-muted-foreground text-sm">
-              Run the current valid revision to inspect its result.
-            </p>
-          ) : null}
-          {evaluation.status === "scheduled" ? (
-            <p className="text-muted-foreground text-sm">
-              Live evaluation scheduled after typing settles.
-            </p>
-          ) : null}
-          {evaluation.status === "running" ? (
-            <p aria-live="polite" className="text-sm">
-              Evaluating revision {evaluation.revision}…
-            </p>
-          ) : null}
-          {evaluation.error ? (
-            <Alert variant="destructive">
-              <CircleAlertIcon />
-              <AlertTitle>Evaluation failed</AlertTitle>
-              <AlertDescription>{evaluation.error}</AlertDescription>
-            </Alert>
-          ) : null}
-          {jevResult ? (
-            <JevResultView raw={evaluation.rendered} result={jevResult} />
-          ) : null}
-          {evaluation.rendered && !jevResult ? (
-            <pre className="result-code">{evaluation.rendered}</pre>
-          ) : null}
+      {open ? (
+        <div aria-live="polite" className="evaluation-dock-body">
+          <EvaluationBody editor={editor} />
         </div>
-      </ScrollArea>
-    </div>
+      ) : null}
+    </section>
   );
 }
 
-function SearchBar({ editor }: { readonly editor: EditorController }) {
+function SearchBar({
+  editor,
+  onToggleResult,
+  resultOpen,
+}: {
+  readonly editor: EditorController;
+  readonly onToggleResult: () => void;
+  readonly resultOpen: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const matches = useMemo(
@@ -773,6 +631,7 @@ function SearchBar({ editor }: { readonly editor: EditorController }) {
         <SearchIcon aria-hidden />
         <Input
           aria-label="Search graph by name, value, or JSON Pointer"
+          id="graph-search-input"
           onChange={(event) => {
             setQuery(event.target.value);
             setActiveIndex(-1);
@@ -792,27 +651,46 @@ function SearchBar({ editor }: { readonly editor: EditorController }) {
           value={query}
         />
       </div>
-      <span aria-live="polite" className="graph-search-status">
-        {query ? resultLabel : null}
-      </span>
-      <ToolButton
-        disabled={matches.length === 0}
-        label="Previous match"
-        onClick={() => move(-1)}
-        size="icon-sm"
-        variant="ghost"
+      {query ? (
+        <>
+          <span aria-live="polite" className="graph-search-status">
+            {resultLabel}
+          </span>
+          <ToolButton
+            disabled={matches.length === 0}
+            label="Previous match"
+            onClick={() => move(-1)}
+            size="icon-sm"
+            variant="ghost"
+          >
+            <ArrowUpIcon />
+          </ToolButton>
+          <ToolButton
+            disabled={matches.length === 0}
+            label="Next match"
+            onClick={() => move(1)}
+            size="icon-sm"
+            variant="ghost"
+          >
+            <ArrowDownIcon />
+          </ToolButton>
+        </>
+      ) : null}
+      <Button
+        aria-expanded={resultOpen}
+        aria-label={`${resultOpen ? "Hide" : "Show"} evaluation output: ${editor.evaluation.status}`}
+        className="graph-result-jump"
+        disabled={editor.evaluation.status === "idle"}
+        onClick={onToggleResult}
+        size="sm"
+        variant="outline"
       >
-        <ArrowUpIcon />
-      </ToolButton>
-      <ToolButton
-        disabled={matches.length === 0}
-        label="Next match"
-        onClick={() => move(1)}
-        size="icon-sm"
-        variant="ghost"
-      >
-        <ArrowDownIcon />
-      </ToolButton>
+        <SquareTerminalIcon data-icon="inline-start" />
+        Output
+        <span data-status={editor.evaluation.status}>
+          {editor.evaluation.status}
+        </span>
+      </Button>
     </div>
   );
 }
@@ -853,23 +731,27 @@ const getRunDisabledReason = (editor: EditorController) => {
 
 interface GraphWorkspaceProps {
   readonly editor: EditorController;
-  readonly graphEditingReason?: string;
   readonly narrow: boolean;
-  readonly onDelete: () => void;
+  readonly onDelete: (id: string) => void;
   readonly onMutate: (
     mode: MutationDialogState["mode"],
     nodeId?: string
   ) => void;
-  readonly onWrap: () => void;
+  readonly onReorder: (id: string, direction: -1 | 1) => void;
+  readonly onResultOpenChange: (open: boolean) => void;
+  readonly onWrap: (id: string) => void;
+  readonly resultOpen: boolean;
 }
 
 function GraphWorkspace({
   editor,
-  graphEditingReason,
   narrow,
   onDelete,
   onMutate,
+  onReorder,
+  onResultOpenChange,
   onWrap,
+  resultOpen,
 }: GraphWorkspaceProps) {
   if (!editor.graphProjection) {
     return (
@@ -887,78 +769,36 @@ function GraphWorkspace({
     );
   }
 
-  const selectedAcceptsChildren = editor.selectedNode
-    ? CHILD_CONTAINER_KINDS[editor.selectedNode.kind] === true
-    : false;
-  const editingDisabled = Boolean(graphEditingReason);
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SearchBar editor={editor} />
+      <SearchBar
+        editor={editor}
+        onToggleResult={() => onResultOpenChange(!resultOpen)}
+        resultOpen={resultOpen}
+      />
       <div className="graph-context-bar">
         <Breadcrumbs editor={editor} />
-        <div
-          aria-label="Selected expression actions"
-          className="graph-action-group"
-          role="toolbar"
-        >
-          <div className="graph-selection-summary">
-            <span>Selected</span>
-            <strong>{editor.selectedNode?.label ?? "Choose a node"}</strong>
-          </div>
-          <Button
-            disabled={editingDisabled || !editor.selectedNode}
-            onClick={() => onMutate("replace")}
-            size="sm"
-            variant="outline"
-          >
-            <ReplaceIcon data-icon="inline-start" />
-            Replace
-          </Button>
-          <Button
-            disabled={
-              editingDisabled ||
-              !editor.selectedNode ||
-              !selectedAcceptsChildren
-            }
-            onClick={() => onMutate("insert")}
-            size="sm"
-            variant="outline"
-          >
-            <PlusIcon data-icon="inline-start" />
-            Add child
-          </Button>
-          <Button
-            disabled={editingDisabled || !editor.selectedNode}
-            onClick={onWrap}
-            size="sm"
-            variant="outline"
-          >
-            <WrapTextIcon data-icon="inline-start" />
-            Quote
-          </Button>
-          <ToolButton
-            disabled={editingDisabled || !editor.selectedNode?.parentId}
-            label="Delete selected subtree"
-            onClick={onDelete}
-            size="icon-sm"
-            variant="ghost"
-          >
-            <Trash2Icon />
-          </ToolButton>
-        </div>
       </div>
-      <div className="min-h-0 flex-1">
+      <div className="graph-stage min-h-0 flex-1">
         <SemanticGraph
           layout={editor.layout}
           narrow={narrow}
           onConstraint={toast.info}
+          onDelete={onDelete}
           onEdit={(id) => onMutate("replace", id)}
           onInsert={(id) => onMutate("insert", id)}
           onIntent={editor.applyIntent}
+          onReorder={onReorder}
           onSelect={editor.setSelectedId}
+          onWrap={onWrap}
           projection={editor.graphProjection}
           selectedId={editor.selectedId}
           stale={editor.graphStale}
+        />
+        <EvaluationDock
+          editor={editor}
+          onOpenChange={onResultOpenChange}
+          open={resultOpen}
         />
       </div>
     </div>
@@ -968,8 +808,7 @@ function GraphWorkspace({
 export function GraphEditor() {
   const editor = useEditor();
   const narrow = useNarrowLayout();
-  const [activeTab, setActiveTab] = useState("graph");
-  const [workbenchTab, setWorkbenchTab] = useState("inspector");
+  const [resultOpen, setResultOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mutation, setMutation] = useState<MutationDialogState | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -1019,11 +858,7 @@ export function GraphEditor() {
       openJevKeyDialog(true);
       return;
     }
-    if (narrow) {
-      setActiveTab("result");
-    } else {
-      setWorkbenchTab("result");
-    }
+    setResultOpen(true);
     try {
       await editor.runEvaluation();
     } catch (error) {
@@ -1033,7 +868,7 @@ export function GraphEditor() {
       }
       handleError(error);
     }
-  }, [editor, handleError, narrow, openJevKeyDialog]);
+  }, [editor, handleError, openJevKeyDialog]);
 
   useEffect(() => {
     if (!(editor.jev.configured && runAfterJevKey)) {
@@ -1173,13 +1008,15 @@ export function GraphEditor() {
     setDeleteOpen(false);
   };
 
-  const reorderSelected = (direction: -1 | 1) => {
-    const selected = editor.selectedNode;
+  const reorderNode = (id: string, direction: -1 | 1) => {
+    const selected = editor.graphProjection?.nodes.find(
+      (node) => node.id === id
+    );
     if (!(selected?.parentId && editor.graphProjection)) {
       return;
     }
     const parent = editor.graphProjection.nodes.find(
-      ({ id }) => id === selected.parentId
+      ({ id: nodeId }) => nodeId === selected.parentId
     );
     if (!parent) {
       return;
@@ -1197,20 +1034,28 @@ export function GraphEditor() {
     });
   };
 
-  const wrapSelected = useCallback(() => {
-    if (!editor.selectedNode) {
-      return;
-    }
-    const value = valueAtPath(
-      editor.snapshot.sourceText,
-      editor.selectedNode.path
-    );
-    editor.applyIntent({
-      type: "replace",
-      path: editor.selectedNode.path,
-      value: ["quote", value],
-    });
-  }, [editor]);
+  const wrapNode = useCallback(
+    (id: string) => {
+      const selected = editor.graphProjection?.nodes.find(
+        (node) => node.id === id
+      );
+      if (!selected) {
+        return;
+      }
+      const value = valueAtPath(editor.snapshot.sourceText, selected.path);
+      editor.applyIntent({
+        type: "replace",
+        path: selected.path,
+        value: ["quote", value],
+      });
+    },
+    [editor]
+  );
+
+  const requestDelete = (id: string) => {
+    editor.setSelectedId(id);
+    setDeleteOpen(true);
+  };
 
   const formatDocument = useCallback(() => {
     try {
@@ -1295,6 +1140,7 @@ export function GraphEditor() {
         id: "replace",
         label: "Replace selected expression",
         group: "Edit",
+        shortcut: "↵",
         icon: ReplaceIcon,
         disabledReason: graphEditingReason,
         run: () => beginMutation("replace"),
@@ -1303,6 +1149,7 @@ export function GraphEditor() {
         id: "insert",
         label: "Add child to selected expression",
         group: "Edit",
+        shortcut: "A",
         icon: PlusIcon,
         disabledReason: graphEditingReason,
         run: () => beginMutation("insert"),
@@ -1311,14 +1158,20 @@ export function GraphEditor() {
         id: "wrap",
         label: "Wrap selection in quote",
         group: "Edit",
+        shortcut: "Q",
         icon: WrapTextIcon,
         disabledReason: graphEditingReason,
-        run: wrapSelected,
+        run: () => {
+          if (editor.selectedNode) {
+            wrapNode(editor.selectedNode.id);
+          }
+        },
       },
       {
         id: "delete",
         label: "Delete selected subtree",
         group: "Edit",
+        shortcut: "⌫",
         icon: Trash2Icon,
         disabledReason:
           graphEditingReason ??
@@ -1381,18 +1234,23 @@ export function GraphEditor() {
         },
       },
       {
-        id: "graph",
-        label: "Show graph",
-        group: "View",
-        icon: SparklesIcon,
-        run: () => setActiveTab("graph"),
+        id: "graph-search",
+        label: "Focus graph search",
+        group: "Navigate",
+        shortcut: "/",
+        icon: SearchIcon,
+        run: () => document.getElementById("graph-search-input")?.focus(),
       },
       {
         id: "result",
-        label: "Show result",
+        label: "Show evaluation output",
         group: "View",
-        icon: PanelBottomIcon,
-        run: () => setActiveTab("result"),
+        icon: SquareTerminalIcon,
+        disabledReason:
+          editor.evaluation.status === "idle"
+            ? "Run the current revision first"
+            : undefined,
+        run: () => setResultOpen(true),
       },
     ],
     [
@@ -1406,7 +1264,7 @@ export function GraphEditor() {
       runCurrentRevision,
       save,
       startOpen,
-      wrapSelected,
+      wrapNode,
     ]
   );
 
@@ -1423,11 +1281,13 @@ export function GraphEditor() {
   const graphPane = (
     <GraphWorkspace
       editor={editor}
-      graphEditingReason={graphEditingReason}
       narrow={narrow}
-      onDelete={() => setDeleteOpen(true)}
+      onDelete={requestDelete}
       onMutate={beginMutation}
-      onWrap={wrapSelected}
+      onReorder={reorderNode}
+      onResultOpenChange={setResultOpen}
+      onWrap={wrapNode}
+      resultOpen={resultOpen}
     />
   );
 
@@ -1583,85 +1443,7 @@ export function GraphEditor() {
       />
       <Diagnostics editor={editor} />
 
-      {narrow ? (
-        <Tabs
-          className="min-h-0 flex-1 gap-0"
-          onValueChange={setActiveTab}
-          value={activeTab}
-        >
-          <TabsList className="mx-3 my-2 grid w-auto grid-cols-3">
-            <TabsTrigger value="graph">Graph</TabsTrigger>
-            <TabsTrigger value="inspect">Inspect</TabsTrigger>
-            <TabsTrigger value="result">Result</TabsTrigger>
-          </TabsList>
-          <TabsContent className="min-h-0" value="graph">
-            {graphPane}
-          </TabsContent>
-          <TabsContent className="min-h-0" value="inspect">
-            <Tabs
-              className="h-full"
-              onValueChange={setWorkbenchTab}
-              value={workbenchTab}
-            >
-              <TabsList className="mx-3 mt-2">
-                <TabsTrigger value="inspector">Inspector</TabsTrigger>
-                <TabsTrigger value="outline">Outline</TabsTrigger>
-              </TabsList>
-              <TabsContent value="inspector">
-                <Inspector
-                  editor={editor}
-                  onDelete={() => setDeleteOpen(true)}
-                  onMutate={beginMutation}
-                  onReorder={reorderSelected}
-                />
-              </TabsContent>
-              <TabsContent value="outline">
-                <Outline editor={editor} />
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-          <TabsContent className="min-h-0" value="result">
-            <ResultPanel editor={editor} />
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <ResizablePanelGroup
-          className="min-h-0 flex-1"
-          orientation="horizontal"
-        >
-          <ResizablePanel defaultSize={68} minSize={40}>
-            {graphPane}
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={32} minSize={25}>
-            <Tabs
-              className="h-full gap-0"
-              onValueChange={setWorkbenchTab}
-              value={workbenchTab}
-            >
-              <TabsList className="m-2">
-                <TabsTrigger value="inspector">Inspector</TabsTrigger>
-                <TabsTrigger value="outline">Outline</TabsTrigger>
-                <TabsTrigger value="result">Result</TabsTrigger>
-              </TabsList>
-              <TabsContent className="min-h-0" value="inspector">
-                <Inspector
-                  editor={editor}
-                  onDelete={() => setDeleteOpen(true)}
-                  onMutate={beginMutation}
-                  onReorder={reorderSelected}
-                />
-              </TabsContent>
-              <TabsContent className="min-h-0" value="outline">
-                <Outline editor={editor} />
-              </TabsContent>
-              <TabsContent className="min-h-0" value="result">
-                <ResultPanel editor={editor} />
-              </TabsContent>
-            </Tabs>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      )}
+      <section className="min-h-0 flex-1">{graphPane}</section>
 
       <div aria-atomic="true" aria-live="polite" className="sr-only">
         {editor.graphStale

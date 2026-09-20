@@ -286,6 +286,15 @@ packages/repl/
    - Run `bun run build`
 4. **After changes**: Update this AGENTS.md if development practices change
 
+### Completion Proof
+
+- After completing any task, **MUST capture a screen recording** that demonstrates the delivered behavior working as intended.
+- For UI work, record the actual application and exercise the changed interaction end to end.
+- For CLI, backend, configuration, or documentation work, record the relevant terminal command, runtime scenario, or rendered artifact and its successful result.
+- Screenshots, logs, and automated tests may supplement the recording but never replace it.
+- Provide the recording artifact with the final response. Do not claim completion without it.
+
+
 ### Performance Considerations
 
 - Use Effect.js for complex async operations and error handling
@@ -302,5 +311,4 @@ packages/repl/
 
 ---
 
-*This document should be updated whenever development practices, tooling, or code standards change in the Lion project.*</content>
-<parameter name="filePath">AGENTS.md
+*This document should be updated whenever development practices, tooling, or code standards change in the Lion project.*
