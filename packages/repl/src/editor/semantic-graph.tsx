@@ -32,11 +32,19 @@ import { cn } from "@/lib/utils";
 import type {
   DocumentProjection,
   EditIntent,
+  GraphLayoutNode,
   IndexedSemanticNode,
 } from "./types";
 
+interface GraphPort {
+  readonly handleId: string;
+  readonly label: string;
+  readonly title: string;
+}
+
 interface GraphNodeData extends Record<string, unknown> {
   readonly canUnfoldExact: boolean;
+  readonly inputPorts: readonly GraphPort[];
   readonly literalDraft?: string;
   readonly onDelete: (id: string) => void;
   readonly onEdit: (id: string) => void;
@@ -47,6 +55,7 @@ interface GraphNodeData extends Record<string, unknown> {
   readonly onRun: (id: string) => void;
   readonly onUnfold: (id: string) => void;
   readonly onWrap: (id: string) => void;
+  readonly outputPorts: readonly GraphPort[];
   readonly presentation?: GraphNodePresentation;
   readonly semantic: IndexedSemanticNode;
   readonly siblingCount: number;
@@ -79,7 +88,47 @@ type SemanticGraphNodeType =
 type SemanticFlowNode = Node<GraphNodeData, SemanticGraphNodeType>;
 type GraphFlowNode = SemanticFlowNode;
 const GRAPH_NODE_HEIGHT = 96;
+const GRAPH_NODE_LAYOUT_HEIGHT = 138;
 const GRAPH_NODE_WIDTH = 240;
+const GRAPH_PORT_PITCH = 24;
+const SOURCE_HANDLE_PREFIX = "source:";
+const TARGET_HANDLE_PREFIX = "target:";
+const getGraphNodeLayoutHeight = (inputCount: number) =>
+  Math.max(GRAPH_NODE_LAYOUT_HEIGHT, inputCount * GRAPH_PORT_PITCH + 32);
+const getGraphNodeContentHeight = (inputCount: number) =>
+  Math.max(GRAPH_NODE_HEIGHT, inputCount * GRAPH_PORT_PITCH + 24);
+const getInputPort = (child: IndexedSemanticNode): GraphPort => {
+  const segment = child.path.at(-1);
+  const label =
+    typeof segment === "number" ? `[${segment}]` : (segment ?? child.role);
+  return {
+    handleId: `${TARGET_HANDLE_PREFIX}${child.id}`,
+    label,
+    title: `${label} · ${child.role}`,
+  };
+};
+const getOutputPort = (node: IndexedSemanticNode): GraphPort => ({
+  handleId: `${SOURCE_HANDLE_PREFIX}${node.id}`,
+  label: "value",
+  title: `Value from ${node.pointer || "/"}`,
+});
+const getGraphPortTop = (index: number, total: number) =>
+  `${((index + 1) / (total + 1)) * 100}%`;
+const getConnectionInsertionIndex = (
+  connection: Connection,
+  parent: IndexedSemanticNode,
+  byId: ReadonlyMap<string, IndexedSemanticNode>
+) => {
+  const targetChildId = connection.targetHandle?.startsWith(
+    TARGET_HANDLE_PREFIX
+  )
+    ? connection.targetHandle.slice(TARGET_HANDLE_PREFIX.length)
+    : undefined;
+  const targetChild = targetChildId ? byId.get(targetChildId) : undefined;
+  return targetChild?.parentId === parent.id
+    ? targetChild.order
+    : parent.children.length;
+};
 const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
   selected
     ? "var(--vermilion)"
@@ -787,18 +836,18 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
   literalKind,
 }: SemanticGraphNodeProps) {
   const {
-    semantic,
+    inputPorts,
     literalDraft,
-    unfolded,
-    stale,
     onIntent,
     onLiteralDraftChange,
     onRun,
+    outputPorts,
     presentation,
+    semantic,
+    stale,
+    unfolded,
   } = data;
   const acceptsChildren = ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
-  const showsTargetHandle = acceptsChildren || semantic.children.length > 0;
-
   return (
     <article
       aria-label={`${semantic.kind}: ${semantic.label}`}
@@ -814,11 +863,24 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       )}
       data-kind={semantic.kind}
       data-mark={presentation?.mark}
+      style={{ minHeight: getGraphNodeContentHeight(inputPorts.length) }}
       title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
     >
-      {semantic.parentId ? (
-        <Handle aria-hidden position={Position.Right} type="source" />
-      ) : null}
+      {outputPorts.map((port, index) => (
+        <span
+          className="graph-port graph-port-source"
+          key={port.handleId}
+          style={{ top: getGraphPortTop(index, outputPorts.length) }}
+        >
+          <Handle
+            aria-label={`Output port ${port.label}`}
+            id={port.handleId}
+            position={Position.Right}
+            title={port.title}
+            type="source"
+          />
+        </span>
+      ))}
       {literalKind ? null : (
         <GraphNodeHeader onRun={onRun} semantic={semantic} stale={stale} />
       )}
@@ -832,14 +894,25 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         stale={stale}
       />
       {selected ? <GraphNodeCommandBar data={data} /> : null}
-      {showsTargetHandle ? (
-        <Handle
-          aria-hidden
-          isConnectableEnd={acceptsChildren}
-          position={Position.Left}
-          type="target"
-        />
-      ) : null}
+      {inputPorts.map((port, index) => (
+        <span
+          className="graph-port graph-port-target"
+          key={port.handleId}
+          style={{ top: getGraphPortTop(index, inputPorts.length) }}
+        >
+          <span aria-hidden className="graph-port-label" title={port.title}>
+            {port.label}
+          </span>
+          <Handle
+            aria-label={`Input port ${port.label}`}
+            id={port.handleId}
+            isConnectableEnd={acceptsChildren}
+            position={Position.Left}
+            title={port.title}
+            type="target"
+          />
+        </span>
+      ))}
     </article>
   );
 });
@@ -989,7 +1062,7 @@ const getGraphKeyboardCommand = (
 
 interface SemanticGraphProps {
   readonly layout: (
-    nodes: readonly { readonly id: string; readonly parentId: string | null }[]
+    nodes: readonly GraphLayoutNode[]
   ) => Promise<
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >;
@@ -1056,9 +1129,33 @@ export function SemanticGraph({
     );
     return visible.slice(0, 300);
   }, [projection.nodes, unfolded]);
-  const layoutNodes = useMemo(
-    () => visibleSemanticNodes.map(({ id, parentId }) => ({ id, parentId })),
+  const visibleIds = useMemo(
+    () => new Set(visibleSemanticNodes.map(({ id }) => id)),
     [visibleSemanticNodes]
+  );
+  const visibleChildrenByParent = useMemo(() => {
+    const childrenByParent = new Map<string, IndexedSemanticNode[]>();
+    for (const child of visibleSemanticNodes) {
+      if (!(child.parentId && visibleIds.has(child.parentId))) {
+        continue;
+      }
+      const children = childrenByParent.get(child.parentId) ?? [];
+      children.push(child);
+      childrenByParent.set(child.parentId, children);
+    }
+    return childrenByParent;
+  }, [visibleIds, visibleSemanticNodes]);
+  const layoutNodes = useMemo<readonly GraphLayoutNode[]>(
+    () =>
+      visibleSemanticNodes.map(({ id, parentId }) => ({
+        height: getGraphNodeLayoutHeight(
+          visibleChildrenByParent.get(id)?.length ?? 0
+        ),
+        id,
+        parentId,
+        width: GRAPH_NODE_WIDTH,
+      })),
+    [visibleChildrenByParent, visibleSemanticNodes]
   );
 
   useEffect(() => {
@@ -1090,12 +1187,17 @@ export function SemanticGraph({
         ? (selectedId ?? projection.rootId ?? visibleSemanticNodes[0]?.id)
         : undefined;
     const focusPosition = focusId ? positions[focusId] : undefined;
+    const focusHeight = focusId
+      ? getGraphNodeLayoutHeight(
+          visibleChildrenByParent.get(focusId)?.length ?? 0
+        )
+      : GRAPH_NODE_HEIGHT;
     const timer = window.setTimeout(() => {
       if (narrow && focusPosition) {
         flowInstance
           .setCenter(
             focusPosition.x + GRAPH_NODE_WIDTH / 2,
-            focusPosition.y + GRAPH_NODE_HEIGHT / 2,
+            focusPosition.y + focusHeight / 2,
             { duration: 180, zoom: 0.95 }
           )
           .catch(() => undefined);
@@ -1120,6 +1222,7 @@ export function SemanticGraph({
     selectedId,
     positions,
     visibleSemanticNodes,
+    visibleChildrenByParent,
   ]);
 
   const toggleUnfolded = useCallback(
@@ -1224,8 +1327,11 @@ export function SemanticGraph({
           describePrimitiveNode(semantic, byId) ??
           describeSpecialForm(semantic, byId);
         const literalKind = getEditableLiteralKind(presentation);
+        const inputPorts = (visibleChildrenByParent.get(semantic.id) ?? []).map(
+          getInputPort
+        );
         return {
-          initialHeight: GRAPH_NODE_HEIGHT,
+          initialHeight: getGraphNodeLayoutHeight(inputPorts.length),
           initialWidth: GRAPH_NODE_WIDTH,
           id: semantic.id,
           type: getGraphNodeType(literalKind),
@@ -1235,6 +1341,7 @@ export function SemanticGraph({
           },
           selected: semantic.id === selectedId,
           data: {
+            inputPorts,
             semantic,
             unfolded: unfolded.has(semantic.id),
             literalDraft: literalDrafts[semantic.id],
@@ -1248,6 +1355,10 @@ export function SemanticGraph({
             onInsert,
             onIntent,
             onRun,
+            outputPorts:
+              semantic.parentId && visibleIds.has(semantic.parentId)
+                ? [getOutputPort(semantic)]
+                : [],
             onLiteralDraftChange: updateLiteralDraft,
             onReorder,
             canUnfoldExact: semantic.children.some((childId) => {
@@ -1275,6 +1386,8 @@ export function SemanticGraph({
       toggleUnfolded,
       updateLiteralDraft,
       unfolded,
+      visibleChildrenByParent,
+      visibleIds,
       visibleSemanticNodes,
     ]
   );
@@ -1287,13 +1400,16 @@ export function SemanticGraph({
       return;
     }
     const selectedPosition = positions[selectedId];
+    const selectedHeight = getGraphNodeLayoutHeight(
+      visibleChildrenByParent.get(selectedId)?.length ?? 0
+    );
     focusedSelectionRef.current = selectedId;
     const timer = window.setTimeout(() => {
       if (narrow) {
         flowInstance
           .setCenter(
             selectedPosition.x + GRAPH_NODE_WIDTH / 2,
-            selectedPosition.y + GRAPH_NODE_HEIGHT / 2,
+            selectedPosition.y + selectedHeight / 2,
             { duration: 180, zoom: 0.95 }
           )
           .catch(() => undefined);
@@ -1310,9 +1426,8 @@ export function SemanticGraph({
         .catch(() => undefined);
     }, 80);
     return () => window.clearTimeout(timer);
-  }, [flowInstance, narrow, positions, selectedId]);
+  }, [flowInstance, narrow, positions, selectedId, visibleChildrenByParent]);
 
-  const visibleIds = useMemo(() => new Set(nodes.map(({ id }) => id)), [nodes]);
   const edges = useMemo<Edge[]>(
     () =>
       visibleSemanticNodes.flatMap((node) =>
@@ -1322,7 +1437,8 @@ export function SemanticGraph({
                 id: `${node.id}->${node.parentId}`,
                 source: node.id,
                 target: node.parentId,
-                label: node.role,
+                sourceHandle: `${SOURCE_HANDLE_PREFIX}${node.id}`,
+                targetHandle: `${TARGET_HANDLE_PREFIX}${node.id}`,
                 markerEnd: { type: MarkerType.ArrowClosed },
                 className: node.quoted ? "graph-edge-quoted" : "graph-edge",
               },
@@ -1365,11 +1481,12 @@ export function SemanticGraph({
         onConstraint("This node is already a child of that expression.");
         return;
       }
+      const index = getConnectionInsertionIndex(connection, parent, byId);
       onIntent({
         type: "move",
         path: child.path,
         targetParentPath: parent.path,
-        index: parent.children.length,
+        index,
       });
     },
     [byId, onConstraint, onIntent, stale]

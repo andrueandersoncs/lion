@@ -14,6 +14,7 @@ import type {
   DocumentProjection,
   DocumentSnapshot,
   EditIntent,
+  GraphLayoutNode,
   IndexedSemanticNode,
   WorkerResponse,
 } from "./types";
@@ -167,7 +168,7 @@ export interface EditorController {
   readonly graphStale: boolean;
   readonly jev: JevState;
   readonly layout: (
-    nodes: readonly { readonly id: string; readonly parentId: string | null }[]
+    nodes: readonly GraphLayoutNode[]
   ) => Promise<
     Readonly<Record<string, { readonly x: number; readonly y: number }>>
   >;
@@ -762,12 +763,7 @@ export function useEditor() {
   );
 
   const layout = useCallback(
-    async (
-      nodes: readonly {
-        readonly id: string;
-        readonly parentId: string | null;
-      }[]
-    ) => {
+    async (nodes: readonly GraphLayoutNode[]) => {
       const worker = workerRef.current;
       if (!worker) {
         return {};

@@ -603,6 +603,58 @@
   border: 2px solid var(--sheet);
 }
 
+.graph-port {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  pointer-events: none;
+}
+
+.graph-port-target {
+  left: 0;
+  transform: translate(-100%, -50%);
+}
+
+.graph-port-source {
+  right: 0;
+  transform: translate(100%, -50%);
+}
+
+.graph-port .react-flow__handle {
+  position: relative;
+  inset: auto;
+  flex: none;
+  pointer-events: auto;
+  transform: none;
+}
+
+.graph-port-label {
+  max-width: 7rem;
+  padding: 0.1rem 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  background: color-mix(in oklab, var(--sheet) 94%, transparent);
+  border: 1px solid color-mix(in oklab, var(--crease) 78%, transparent);
+  border-radius: 0.25rem;
+}
+
+.graph-port .react-flow__handle:hover {
+  background: color-mix(in oklab, var(--vermilion) 82%, var(--sumi));
+}
+
+.graph-port .react-flow__handle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
 .semantic-flow {
   background: var(--background);
 }

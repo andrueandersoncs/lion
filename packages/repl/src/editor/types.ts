@@ -40,6 +40,13 @@ export interface IndexedSemanticNode {
   readonly value?: boolean | null | number | string;
 }
 
+export interface GraphLayoutNode {
+  readonly height: number;
+  readonly id: string;
+  readonly parentId: string | null;
+  readonly width: number;
+}
+
 export interface DocumentProjection {
   readonly analyzedAt: number;
   readonly diagnostics: readonly EditorDiagnostic[];
@@ -109,10 +116,7 @@ export type WorkerRequest =
       readonly type: "layout";
       readonly requestId: number;
       readonly revision: number;
-      readonly nodes: readonly {
-        readonly id: string;
-        readonly parentId: string | null;
-      }[];
+      readonly nodes: readonly GraphLayoutNode[];
     };
 
 export type WorkerResponse =

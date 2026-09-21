@@ -165,10 +165,18 @@ test("graph edges point from values into their consuming expressions", async ({
   const valueNode = page.locator('.react-flow__node[data-id="/1"]');
   const consumerNode = page.locator('.react-flow__node[data-id="$"]');
   await expect(
-    valueNode.locator(".react-flow__handle.source.react-flow__handle-right")
+    valueNode.locator('.react-flow__handle.source[data-handleid="source:/1"]')
   ).toBeVisible();
+  await expect(consumerNode.locator(".react-flow__handle.target")).toHaveCount(
+    2
+  );
   await expect(
-    consumerNode.locator(".react-flow__handle.target.react-flow__handle-left")
+    consumerNode.locator(".graph-port-target .graph-port-label")
+  ).toHaveText(["[1]", "[2]"]);
+  await expect(
+    consumerNode.locator(
+      '.react-flow__handle.target[data-handleid="target:/1"]'
+    )
   ).toBeVisible();
   await expect
     .poll(async () => {
@@ -179,6 +187,22 @@ test("graph edges point from values into their consuming expressions", async ({
       return valueBox && consumerBox ? consumerBox.x - valueBox.x : 0;
     })
     .toBeGreaterThan(0);
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "record.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(VALID_FIXTURE),
+  });
+  await expect(
+    page.locator(
+      '.react-flow__node[data-id="$"] .graph-node[data-kind="record"]'
+    )
+  ).toBeVisible();
+  await expect(
+    page
+      .locator('.react-flow__node[data-id="$"]')
+      .locator(".graph-port-target .graph-port-label")
+  ).toHaveText("message");
 
   await page.getByRole("button", { name: "Jev" }).click();
 

@@ -38,9 +38,9 @@ describe("editor worker protocol", () => {
       requestId: 2,
       revision: 3,
       nodes: [
-        { id: "$", parentId: null },
-        { id: "/1", parentId: "$" },
-        { id: "/2", parentId: "$" },
+        { id: "$", parentId: null, width: 240, height: 186 },
+        { id: "/1", parentId: "$", width: 240, height: 138 },
+        { id: "/2", parentId: "$", width: 240, height: 138 },
       ],
     });
     expect(response.type).toBe("layout");
