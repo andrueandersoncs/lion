@@ -796,9 +796,8 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     onRun,
     presentation,
   } = data;
-  const acceptsConnections =
-    ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
-  const showsSourceHandle = acceptsConnections || semantic.children.length > 0;
+  const acceptsChildren = ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
+  const showsTargetHandle = acceptsChildren || semantic.children.length > 0;
 
   return (
     <article
@@ -818,7 +817,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
     >
       {semantic.parentId ? (
-        <Handle aria-hidden position={Position.Left} type="target" />
+        <Handle aria-hidden position={Position.Left} type="source" />
       ) : null}
       {literalKind ? null : (
         <GraphNodeHeader onRun={onRun} semantic={semantic} stale={stale} />
@@ -833,12 +832,12 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         stale={stale}
       />
       {selected ? <GraphNodeCommandBar data={data} /> : null}
-      {showsSourceHandle ? (
+      {showsTargetHandle ? (
         <Handle
           aria-hidden
-          isConnectableStart={acceptsConnections}
+          isConnectableEnd={acceptsChildren}
           position={Position.Right}
-          type="source"
+          type="target"
         />
       ) : null}
     </article>
@@ -1320,9 +1319,9 @@ export function SemanticGraph({
         node.parentId && visibleIds.has(node.parentId)
           ? [
               {
-                id: `${node.parentId}->${node.id}`,
-                source: node.parentId,
-                target: node.id,
+                id: `${node.id}->${node.parentId}`,
+                source: node.id,
+                target: node.parentId,
                 label: node.role,
                 markerEnd: { type: MarkerType.ArrowClosed },
                 className: node.quoted ? "graph-edge-quoted" : "graph-edge",
@@ -1339,8 +1338,8 @@ export function SemanticGraph({
         onConstraint("Connections are unavailable while the graph is stale.");
         return;
       }
-      const parent = byId.get(connection.source);
-      const child = byId.get(connection.target);
+      const child = byId.get(connection.source);
+      const parent = byId.get(connection.target);
       if (!(parent && child)) {
         onConstraint("The dragged node or target no longer exists.");
         return;

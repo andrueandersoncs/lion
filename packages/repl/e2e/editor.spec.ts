@@ -20,6 +20,7 @@ const SERIOUS_IMPACTS = new Set(["critical", "serious"]);
 const STALE_GRAPH_PATTERN = /Graph at r/;
 const LARGE_GRAPH_PATTERN = /5003 total · 300 shown/;
 const REPLACE_BUTTON_PATTERN = /^Replace /;
+const ARROW_MARKER_PATTERN = /arrowclosed/;
 
 const gotoEditor = async (page: Page) => {
   await page.goto("/");
@@ -142,10 +143,16 @@ test("node runs evaluate only expression-like subtrees", async ({ page }) => {
   await expect(output.locator(".result-code")).toHaveText("3");
 });
 
-test("Jev example renders every visible parent-child connection", async ({
+test("graph edges point from values into their consuming expressions", async ({
   page,
 }) => {
   await gotoEditor(page);
+  await expect(page.getByTestId("rf__edge-/1->$")).toBeVisible();
+  await expect(page.getByTestId("rf__edge-$->/1")).toHaveCount(0);
+  await expect(
+    page.getByTestId("rf__edge-/1->$").locator(".react-flow__edge-path")
+  ).toHaveAttribute("marker-end", ARROW_MARKER_PATTERN);
+
   await page.getByRole("button", { name: "Jev" }).click();
 
   const graphNodes = page.locator(".react-flow__node");
