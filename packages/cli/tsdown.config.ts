@@ -7,4 +7,5 @@ export default defineConfig({
   deps: {
     alwaysBundle: [/^@lionlang\/core(?:\/|$)/],
   },
+  copy: [{ from: "../repl/.output", to: "dist", rename: "repl" }],
 });

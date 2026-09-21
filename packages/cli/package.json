@@ -2,7 +2,7 @@
   "name": "@lionlang/cli",
   "version": "0.1.0",
   "type": "module",
-  "description": "Command-line interface for evaluating Lion programs.",
+  "description": "Command-line interface for evaluating Lion programs and serving the graph editor.",
   "license": "MIT",
   "author": "Andrue Anderson <andrueanderson.cs@gmail.com>",
   "homepage": "https://lionlang.dev",
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@lionlang/repl": "workspace:*",
     "@lionlang/core": "workspace:*",
     "tsdown": "^0.21.10"
   },

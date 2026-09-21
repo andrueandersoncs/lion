@@ -38,14 +38,32 @@ Open `http://localhost:3000`, import or open a Lion JSON file, edit through eith
 
 ## Command Line
 
-Install `@lionlang/cli` globally, then pass it a Lion JSON file:
+Install `@lionlang/cli` in a project or globally:
 
 ```bash
-bun add --global @lionlang/cli
-lion program.json
+bun add --dev @lionlang/cli
 ```
 
-The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.
+Evaluate a Lion JSON file:
+
+```bash
+bun run lion program.json
+```
+
+Serve the bundled graph editor locally:
+
+```bash
+bun run lion repl
+```
+
+The editor listens on `127.0.0.1:3000` by default. Use `--host` and `--port`
+to change the bind address. The published CLI includes the production editor,
+so an end-user project does not need the Lion monorepo or a separate REPL
+installation.
+
+The `lion` command validates files as Lion expressions, evaluates them with the
+standard library, and writes results as formatted JSON. The graph editor keeps
+opened programs local to the browser and saves through the browser's file APIs.
 
 ## Basic Usage
 

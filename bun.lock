@@ -44,6 +44,7 @@
       },
       "devDependencies": {
         "@lionlang/core": "workspace:*",
+        "@lionlang/repl": "workspace:*",
         "@types/node": "latest",
         "tsdown": "^0.21.10",
       },
