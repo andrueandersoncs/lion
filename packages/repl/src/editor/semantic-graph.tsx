@@ -817,7 +817,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
     >
       {semantic.parentId ? (
-        <Handle aria-hidden position={Position.Left} type="source" />
+        <Handle aria-hidden position={Position.Right} type="source" />
       ) : null}
       {literalKind ? null : (
         <GraphNodeHeader onRun={onRun} semantic={semantic} stale={stale} />
@@ -836,7 +836,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         <Handle
           aria-hidden
           isConnectableEnd={acceptsChildren}
-          position={Position.Right}
+          position={Position.Left}
           type="target"
         />
       ) : null}
@@ -954,9 +954,9 @@ const getGraphNavigationTarget = (
   const visibleIds = new Set(nodes.map(({ id }) => id));
   const targets: Readonly<Record<string, string | undefined>> = {
     ArrowDown: nodes[selectedIndex + 1]?.id,
-    ArrowLeft: selected.parentId ?? undefined,
+    ArrowLeft: selected.children.find((id) => visibleIds.has(id)),
     ArrowUp: nodes[selectedIndex - 1]?.id,
-    ArrowRight: selected.children.find((id) => visibleIds.has(id)),
+    ArrowRight: selected.parentId ?? undefined,
     End: nodes.at(-1)?.id,
     Home: nodes[0]?.id,
   };
@@ -1230,7 +1230,7 @@ export function SemanticGraph({
           id: semantic.id,
           type: getGraphNodeType(literalKind),
           position: positions[semantic.id] ?? {
-            x: semantic.path.length * 312,
+            x: semantic.path.length * -312,
             y: index * GRAPH_NODE_HEIGHT,
           },
           selected: semantic.id === selectedId,
@@ -1436,7 +1436,7 @@ export function SemanticGraph({
                 <kbd>←</kbd>
                 <kbd>→</kbd>
               </dt>
-              <dd>Parent / first child</dd>
+              <dd>First child / parent</dd>
             </div>
             <div>
               <dt>

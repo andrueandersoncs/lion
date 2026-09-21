@@ -169,7 +169,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 The surface fills the dynamic viewport beneath a compact command strip. The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.
 
-Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Every semantic branch stays expanded, selection reveals only applicable mutation controls, and source ranges and JSON pointers remain available as hover details while exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
+Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Every semantic branch stays expanded, with values to the left of the expressions that consume them so information flows left to right. Selection reveals only applicable mutation controls, and source ranges and JSON pointers remain available as hover details while exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
 
 Evaluation appears in a compact, always-open dock over the bottom edge of the canvas after the first run. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run updates the dock without changing graph layout or moving the viewport.
 
@@ -231,7 +231,7 @@ Components are compact, tactile, and state-forward. They share the paper palette
 
 ### Navigation
 
-Graph search and horizontally scrollable breadcrumbs form the visible canvas navigation. Arrow keys move through the visible semantic order, left and right move to parent and child, and `/` focuses search. A compact key guide documents mutation and exact-structure commands without consuming persistent canvas space.
+Graph search and horizontally scrollable breadcrumbs form the visible canvas navigation. Arrow keys move through the visible semantic order, left moves to the first child, right moves to the parent, and `/` focuses search. A compact key guide documents mutation and exact-structure commands without consuming persistent canvas space.
 
 ### Evaluation Output Dock
 

@@ -27,9 +27,9 @@ const layout = async (
       parentId
         ? [
             {
-              id: `${parentId}->${id}`,
-              sources: [parentId],
-              targets: [id],
+              id: `${id}->${parentId}`,
+              sources: [id],
+              targets: [parentId],
             },
           ]
         : []

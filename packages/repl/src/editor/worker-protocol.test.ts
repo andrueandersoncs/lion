@@ -32,7 +32,7 @@ describe("editor worker protocol", () => {
     }
   });
 
-  it("places parent expressions left of their child values", async () => {
+  it("places child values left of their consuming expression", async () => {
     const response = await handleWorkerRequest({
       type: "layout",
       requestId: 2,
@@ -45,11 +45,11 @@ describe("editor worker protocol", () => {
     });
     expect(response.type).toBe("layout");
     if (response.type === "layout") {
-      expect(response.positions.$?.x).toBeLessThan(
-        response.positions["/1"]?.x ?? 0
+      expect(response.positions["/1"]?.x).toBeLessThan(
+        response.positions.$?.x ?? 0
       );
-      expect(response.positions.$?.x).toBeLessThan(
-        response.positions["/2"]?.x ?? 0
+      expect(response.positions["/2"]?.x).toBeLessThan(
+        response.positions.$?.x ?? 0
       );
     }
   });

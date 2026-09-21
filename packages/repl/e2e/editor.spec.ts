@@ -85,6 +85,16 @@ test("graph keyboard navigation replaces the detached outline", async ({
 }) => {
   await gotoEditor(page);
   await page.locator(".react-flow__pane").click({ position: { x: 20, y: 20 } });
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator(".graph-node-selected")).toHaveAttribute(
+    "aria-label",
+    "primitive: 1"
+  );
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator(".graph-node-selected")).toHaveAttribute(
+    "aria-label",
+    "call: number/add"
+  );
   await page.keyboard.press("ArrowDown");
   await expect(page.locator(".graph-node-selected")).toHaveAttribute(
     "aria-label",
@@ -152,6 +162,23 @@ test("graph edges point from values into their consuming expressions", async ({
   await expect(
     page.getByTestId("rf__edge-/1->$").locator(".react-flow__edge-path")
   ).toHaveAttribute("marker-end", ARROW_MARKER_PATTERN);
+  const valueNode = page.locator('.react-flow__node[data-id="/1"]');
+  const consumerNode = page.locator('.react-flow__node[data-id="$"]');
+  await expect(
+    valueNode.locator(".react-flow__handle.source.react-flow__handle-right")
+  ).toBeVisible();
+  await expect(
+    consumerNode.locator(".react-flow__handle.target.react-flow__handle-left")
+  ).toBeVisible();
+  await expect
+    .poll(async () => {
+      const [valueBox, consumerBox] = await Promise.all([
+        valueNode.boundingBox(),
+        consumerNode.boundingBox(),
+      ]);
+      return valueBox && consumerBox ? consumerBox.x - valueBox.x : 0;
+    })
+    .toBeGreaterThan(0);
 
   await page.getByRole("button", { name: "Jev" }).click();
 
