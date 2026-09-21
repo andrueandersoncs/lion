@@ -47,6 +47,18 @@ const parseStrictTree = (sourceText: string): JsonNode => {
   return tree;
 };
 
+export const valueAtPath = (
+  sourceText: string,
+  path: readonly (number | string)[]
+): unknown => {
+  const tree = parseStrictTree(sourceText);
+  const node = findNodeAtLocation(tree, [...path]);
+  if (!node) {
+    throw new InvalidEditError("The selected expression no longer exists.");
+  }
+  return getNodeValue(node);
+};
+
 const reorderArray = (
   sourceText: string,
   tree: JsonNode,

@@ -7,6 +7,7 @@ import {
   CanonicalDocument,
   InvalidEditError,
   StaleEditError,
+  valueAtPath,
 } from "./document";
 import { analyzeSource } from "./parse";
 import type {
@@ -138,6 +139,10 @@ export interface EvaluationState {
   readonly revision: number | null;
   readonly stale: boolean;
   readonly status: EvaluationStatus;
+  readonly target: {
+    readonly label: string;
+    readonly pointer: string;
+  } | null;
   readonly transcript: readonly string[];
 }
 
@@ -181,6 +186,7 @@ export interface EditorController {
   readonly replaceSource: (sourceText: string) => void;
   readonly restartWorker: () => void;
   readonly runEvaluation: (source?: "explicit" | "live") => Promise<void>;
+  readonly runExpression: (node: IndexedSemanticNode) => Promise<void>;
   readonly save: (overwrite?: boolean) => Promise<"download" | "saved">;
   readonly saveAs: () => Promise<"download" | "saved">;
   readonly selectedId: string | null;
@@ -203,6 +209,7 @@ const INITIAL_EVALUATION: EvaluationState = {
   error: null,
   transcript: [],
   stale: false,
+  target: null,
 };
 
 const renderResult = (value: unknown): string => {
@@ -470,14 +477,21 @@ export function useEditor() {
     [selectionHistory, selectionIndex]
   );
 
-  const runEvaluation = useCallback(
-    async (source: "explicit" | "live" = "explicit") => {
+  const performEvaluation = useCallback(
+    async (
+      source: "explicit" | "live",
+      target?: IndexedSemanticNode
+    ): Promise<void> => {
       assertRunnableProjection(projection, snapshot.revision);
       const revision = snapshot.revision;
+      const value = target
+        ? valueAtPath(snapshot.sourceText, target.path)
+        : (JSON.parse(snapshot.sourceText) as unknown);
+      const evaluationUsesJev = usesTypeSafeBindings(value);
       if (
         shouldSkipEvaluation(
           source,
-          usesJev,
+          evaluationUsesJev,
           jevApiKey,
           revision,
           lastEvaluationRevisionRef.current
@@ -488,6 +502,9 @@ export function useEditor() {
       lastEvaluationRevisionRef.current = revision;
       const evaluationId = ++evaluationIdRef.current;
       const transcript: string[] = [];
+      const evaluationTarget = target
+        ? { label: target.label, pointer: target.pointer }
+        : null;
       setEvaluation({
         status: "running",
         revision,
@@ -496,14 +513,14 @@ export function useEditor() {
         error: null,
         transcript,
         stale: false,
+        target: evaluationTarget,
       });
       try {
         const environment = makeEvaluationEnvironment(
-          usesJev,
+          evaluationUsesJev,
           jevApiKey,
           transcript
         );
-        const value = JSON.parse(snapshot.sourceText) as unknown;
         const result = await Effect.runPromise(run(value, environment));
         if (evaluationId !== evaluationIdRef.current) {
           return;
@@ -516,6 +533,7 @@ export function useEditor() {
           error: null,
           transcript: [...transcript],
           stale: editorDocument.snapshot.revision !== revision,
+          target: evaluationTarget,
         });
       } catch (error) {
         if (evaluationId !== evaluationIdRef.current) {
@@ -529,6 +547,7 @@ export function useEditor() {
           error: errorMessage(error),
           transcript: [...transcript],
           stale: editorDocument.snapshot.revision !== revision,
+          target: evaluationTarget,
         });
       }
     },
@@ -538,8 +557,15 @@ export function useEditor() {
       projection,
       snapshot.revision,
       snapshot.sourceText,
-      usesJev,
     ]
+  );
+  const runEvaluation = useCallback(
+    (source: "explicit" | "live" = "explicit") => performEvaluation(source),
+    [performEvaluation]
+  );
+  const runExpression = useCallback(
+    (node: IndexedSemanticNode) => performEvaluation("explicit", node),
+    [performEvaluation]
   );
 
   useEffect(() => {
@@ -551,7 +577,11 @@ export function useEditor() {
     ) {
       return;
     }
-    setEvaluation((current) => ({ ...current, status: "scheduled" }));
+    setEvaluation((current) => ({
+      ...current,
+      status: "scheduled",
+      target: null,
+    }));
     const timer = window.setTimeout(() => {
       runEvaluation("live").catch(() => undefined);
     }, 450);
@@ -796,6 +826,7 @@ export function useEditor() {
     redo,
     evaluation,
     runEvaluation,
+    runExpression,
     jev: {
       active: usesJev,
       configured: jevApiKey !== null,

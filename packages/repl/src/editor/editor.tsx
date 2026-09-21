@@ -86,6 +86,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { valueAtPath } from "./document";
 import { searchProjection } from "./parse";
 import { SemanticGraph } from "./semantic-graph";
 import type { EditIntent, IndexedSemanticNode } from "./types";
@@ -97,25 +98,6 @@ import {
 
 const isAbortError = (error: unknown) =>
   error instanceof DOMException && error.name === "AbortError";
-
-const valueAtPath = (
-  sourceText: string,
-  path: readonly (number | string)[]
-) => {
-  let value: unknown = JSON.parse(sourceText);
-  for (const segment of path) {
-    if (Array.isArray(value) && typeof segment === "number") {
-      value = value[segment];
-      continue;
-    }
-    if (value && typeof value === "object" && typeof segment === "string") {
-      value = (value as Record<string, unknown>)[segment];
-      continue;
-    }
-    return undefined;
-  }
-  return value;
-};
 
 const useNarrowLayout = () => {
   const [narrow, setNarrow] = useState(false);
@@ -462,6 +444,9 @@ function JevResultView({
 function EvaluationBody({ editor }: { readonly editor: EditorController }) {
   const { evaluation } = editor;
   const jevResult = asJevResult(evaluation.result);
+  const evaluationTarget = evaluation.target
+    ? `${evaluation.target.label} at ${evaluation.target.pointer || "root"}`
+    : null;
   return (
     <div className="graph-evaluation-content">
       {evaluation.transcript.length > 0 ? (
@@ -478,7 +463,9 @@ function EvaluationBody({ editor }: { readonly editor: EditorController }) {
         </p>
       ) : null}
       {evaluation.status === "running" ? (
-        <p className="text-sm">Evaluating revision {evaluation.revision}…</p>
+        <p className="text-sm">
+          Evaluating {evaluationTarget ?? `revision ${evaluation.revision}`}…
+        </p>
       ) : null}
       {evaluation.status === "canceled" ? (
         <p className="text-muted-foreground text-sm">Evaluation canceled.</p>
@@ -515,6 +502,9 @@ function EvaluationDock({
   const value = evaluation.error ?? evaluation.rendered;
   const preview =
     value ?? evaluation.transcript.at(-1) ?? `Revision ${evaluation.revision}`;
+  const targetLabel = evaluation.target
+    ? `${evaluation.target.label} · ${evaluation.target.pointer || "/"}`
+    : null;
   const copyResult = () => {
     if (!value) {
       toast.info("No evaluation output to copy");
@@ -555,7 +545,7 @@ function EvaluationDock({
           {evaluation.stale ? <Badge variant="secondary">Stale</Badge> : null}
           <span className="evaluation-dock-preview">
             {open
-              ? `Revision ${evaluation.revision ?? "—"}`
+              ? (targetLabel ?? `Revision ${evaluation.revision ?? "—"}`)
               : preview.replaceAll(/\s+/g, " ").slice(0, 72)}
           </span>
           {open ? (
@@ -739,6 +729,7 @@ interface GraphWorkspaceProps {
   ) => void;
   readonly onReorder: (id: string, direction: -1 | 1) => void;
   readonly onResultOpenChange: (open: boolean) => void;
+  readonly onRun: (id: string) => void;
   readonly onWrap: (id: string) => void;
   readonly resultOpen: boolean;
 }
@@ -750,6 +741,7 @@ function GraphWorkspace({
   onMutate,
   onReorder,
   onResultOpenChange,
+  onRun,
   onWrap,
   resultOpen,
 }: GraphWorkspaceProps) {
@@ -789,6 +781,7 @@ function GraphWorkspace({
           onInsert={(id) => onMutate("insert", id)}
           onIntent={editor.applyIntent}
           onReorder={onReorder}
+          onRun={onRun}
           onSelect={editor.setSelectedId}
           onWrap={onWrap}
           projection={editor.graphProjection}
@@ -822,6 +815,9 @@ export function GraphEditor() {
   const [hydrated, setHydrated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingActionRef = useRef<(() => void | Promise<void>) | null>(null);
+  const pendingEvaluationRef = useRef<(() => Promise<void>) | null>(null);
+  const editorRef = useRef(editor);
+  editorRef.current = editor;
 
   useEffect(() => {
     setHydrated(true);
@@ -843,40 +839,64 @@ export function GraphEditor() {
     toast.error(message);
   }, []);
 
-  const openJevKeyDialog = useCallback((runAfterSave = false) => {
+  const openJevKeyDialog = useCallback((afterSave?: () => Promise<void>) => {
+    pendingEvaluationRef.current = afterSave ?? null;
     setJevKeyInput("");
     setJevKeyError(null);
-    setRunAfterJevKey(runAfterSave);
+    setRunAfterJevKey(Boolean(afterSave));
     setJevKeyOpen(true);
   }, []);
 
-  const runCurrentRevision = useCallback(async () => {
-    if (editor.evaluation.status === "running") {
-      return;
-    }
-    if (editor.jev.active && !editor.jev.configured) {
-      openJevKeyDialog(true);
-      return;
-    }
-    setResultOpen(true);
-    try {
-      await editor.runEvaluation();
-    } catch (error) {
-      if (error instanceof MissingJevApiKeyError) {
-        openJevKeyDialog(true);
+  const runAndReveal = useCallback(
+    async (action: () => Promise<void>) => {
+      if (editor.evaluation.status === "running") {
         return;
       }
-      handleError(error);
-    }
-  }, [editor, handleError, openJevKeyDialog]);
+      setResultOpen(true);
+      try {
+        await action();
+      } catch (error) {
+        if (error instanceof MissingJevApiKeyError) {
+          openJevKeyDialog(action);
+          return;
+        }
+        handleError(error);
+      }
+    },
+    [editor.evaluation.status, handleError, openJevKeyDialog]
+  );
+
+  const runCurrentRevision = useCallback(
+    () => runAndReveal(() => editorRef.current.runEvaluation()),
+    [runAndReveal]
+  );
+  const runNodeExpression = useCallback(
+    (id: string) => {
+      const action = async () => {
+        const currentEditor = editorRef.current;
+        const node = currentEditor.graphProjection?.nodes.find(
+          ({ id: nodeId }) => nodeId === id
+        );
+        if (!node) {
+          throw new Error("The selected expression no longer exists.");
+        }
+        currentEditor.setSelectedId(id);
+        await currentEditor.runExpression(node);
+      };
+      return runAndReveal(action);
+    },
+    [runAndReveal]
+  );
 
   useEffect(() => {
-    if (!(editor.jev.configured && runAfterJevKey)) {
+    const pendingEvaluation = pendingEvaluationRef.current;
+    if (!(editor.jev.configured && runAfterJevKey && pendingEvaluation)) {
       return;
     }
+    pendingEvaluationRef.current = null;
     setRunAfterJevKey(false);
-    runCurrentRevision().catch(handleError);
-  }, [editor.jev.configured, handleError, runAfterJevKey, runCurrentRevision]);
+    pendingEvaluation().catch(handleError);
+  }, [editor.jev.configured, handleError, runAfterJevKey]);
 
   const saveJevKey = () => {
     const apiKey = jevKeyInput.trim();
@@ -894,6 +914,7 @@ export function GraphEditor() {
     editor.setJevApiKey(null);
     setJevKeyInput("");
     setJevKeyError(null);
+    pendingEvaluationRef.current = null;
     setRunAfterJevKey(false);
     setJevKeyOpen(false);
     toast.info("TypeSafe API key forgotten");
@@ -1220,7 +1241,7 @@ export function GraphEditor() {
           : "Add TypeSafe API key",
         group: "Run",
         icon: KeyRoundIcon,
-        run: () => openJevKeyDialog(false),
+        run: () => openJevKeyDialog(),
       },
       {
         id: "run",
@@ -1286,6 +1307,9 @@ export function GraphEditor() {
       onMutate={beginMutation}
       onReorder={reorderNode}
       onResultOpenChange={setResultOpen}
+      onRun={(id) => {
+        runNodeExpression(id).catch(handleError);
+      }}
       onWrap={wrapNode}
       resultOpen={resultOpen}
     />
@@ -1367,7 +1391,7 @@ export function GraphEditor() {
                     ? "Replace TypeSafe API key"
                     : "Add TypeSafe API key"
                 }
-                onClick={() => openJevKeyDialog(false)}
+                onClick={() => openJevKeyDialog()}
                 size="icon-sm"
                 variant="ghost"
               >
@@ -1494,6 +1518,7 @@ export function GraphEditor() {
           if (!open) {
             setJevKeyError(null);
             setRunAfterJevKey(false);
+            pendingEvaluationRef.current = null;
           }
         }}
         open={jevKeyOpen}

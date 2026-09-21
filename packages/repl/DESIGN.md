@@ -115,7 +115,7 @@ The visual language is precise and tactile: vermilion marks the active sheet and
 - Compact, self-hosted workhorse typography paired with exact monospaced notation.
 - Vermilion for action and selection; gold only for current-state evidence.
 - A full-width graph workbench at every breakpoint, centered on the active semantic node with evaluation available from a compact canvas-edge dock.
-- Folded semantic nodes reveal exact JSON structure, source facts, and mutation controls without leaving the canvas.
+- Folded semantic nodes lead with the operation or editable value; exact JSON structure, source facts, and mutation controls stay available on demand without leaving the canvas.
 
 ## Colors
 
@@ -169,9 +169,9 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 The surface fills the dynamic viewport beneath a compact command strip. The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.
 
-Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. Selected nodes carry source range, parent role, child order, mutation controls, and exact-structure folding. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
+Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Selection reveals only applicable mutation controls, while source ranges and JSON pointers remain available as hover details and exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
 
-Evaluation appears in a compact dock over the bottom edge of the canvas. A run expands the dock without changing graph layout or moving the viewport; collapsing it leaves a one-line receipt with status and a result preview. The Output command restores it without moving the user into another view.
+Evaluation appears in a compact dock over the bottom edge of the canvas. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run expands the same dock without changing graph layout or moving the viewport; collapsing it leaves a one-line receipt with status and a result preview. The Output command restores it without moving the user into another view.
 
 At 899px and below, the command strip wraps its document controls onto a second row, Open and Save stay visibly labeled, the minimap disappears, and the canvas centers the selected expression at a readable scale. The output dock spans the safe width and limits its expanded height so the graph remains visible. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, node actions, and dock controls.
 
@@ -214,7 +214,7 @@ Components are compact, tactile, and state-forward. They share the paper palette
 - **Outline / Ghost:** Open and Save remain labeled outline commands at every width. New, undo, and redo use compact ghost treatment with warm-accent hover feedback.
 
 ### Chips
-- **Style:** Role and revision badges are small pills with compact horizontal padding. Roles use a transparent crease outline; the current revision uses a gold-tinted sheet and gold border.
+- **Style:** Revision badges are small pills with compact horizontal padding. The current revision uses a gold-tinted sheet and gold border.
 - **State:** Destructive and invalid states switch to the destructive role instead of borrowing vermilion action styling.
 
 ### Cards / Containers
@@ -240,7 +240,7 @@ An explicit run expands a bottom-edge canvas dock with status, revision, stale s
 
 ### Folded Semantic Node
 
-Each node exposes label, JSON pointer, semantic kind, parent role, source range, child order, expansion, and fold state in one compact sheet. Number, string, and boolean literals become custom nodes with native inline controls; text and number changes commit on blur or Enter, while checkboxes commit immediately. Parent-to-child sumi edges carry role labels; quoted relationships use dashed edges, selection is vermilion, and unfolding changes the node to a muted dashed sheet without leaving the semantic map. Selection reveals a compact action row for replace, add, reorder, quote, and delete, while the same operations remain available through direct keyboard commands and the command palette. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
+Each node leads with one semantic fact: an operation label, a useful form summary, or a native inline primitive control. Text and number changes commit on blur or Enter, while checkboxes commit immediately. Parent-to-child sumi edges carry role labels, and spatial structure carries order and child count instead of repeating them inside every sheet. JSON pointers and source ranges remain available as hover details. Quoted relationships use dashed edges, selection is vermilion, and unfolding reveals exact JSON structure in place. Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree; syntax-only structures and primitive values omit it. Selection reveals one compact action row containing only mutation operations that currently apply; the same operations remain available through direct keyboard commands and the command palette. Connection handles appear only on ordered child containers so every visible connector represents a valid move.
 
 
 ## Do's and Don'ts

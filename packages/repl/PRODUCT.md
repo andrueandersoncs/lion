@@ -12,7 +12,7 @@ Lion developers authoring and debugging real Lion programs. They open JSON-backe
 
 ## Product Purpose
 
-Provide a local-first graph editor for Lion programs. Users can open a Lion JSON file, edit one program directly through semantic nodes, evaluate it in a collapsible canvas output dock, and save the same JSON representation back to disk.
+Provide a local-first graph editor for Lion programs. Users can open a Lion JSON file, edit one program directly through semantic nodes, evaluate the whole revision or one expression-like subtree in a collapsible canvas output dock, and save the same JSON representation back to disk.
 
 Success means developers can understand and modify large Lion programs faster without losing source fidelity or needing a hosted workspace.
 
@@ -25,7 +25,7 @@ Lion programs are already JSON and homoiconic. The editor keeps that source as t
 - Open and save local Lion JSON files in a desktop-class browser.
 - Work with programs that can exceed 1,000 graph nodes.
 - Edit primitive values with native controls in their graph nodes; use direct node actions and focused expression dialogs for structural changes.
-- Evaluate explicitly by default, with an optional live-evaluation mode.
+- Evaluate explicitly at the document or expression level by default, with an optional whole-document live-evaluation mode.
 
 ## Capabilities and Constraints
 

@@ -8,6 +8,14 @@ const LARGE_FIXTURE = JSON.stringify([
   "quote",
   Array.from({ length: 5000 }, (_, index) => index),
 ]);
+const NODE_RUN_FIXTURE = JSON.stringify([
+  "begin",
+  ["define", "x", 5],
+  ["number/add", 1, 2],
+  ["lambda", ["y"], "y"],
+  ["cond", [true, 0], ["else", 1]],
+  ["quote", ["number/add", 2, 3]],
+]);
 const SERIOUS_IMPACTS = new Set(["critical", "serious"]);
 const STALE_GRAPH_PATTERN = /Graph at r/;
 const LARGE_GRAPH_PATTERN = /5003 total · 300 shown/;
@@ -90,6 +98,48 @@ test("graph keyboard navigation replaces the detached outline", async ({
   await expect(
     page.getByRole("dialog", { name: "Replace expression" })
   ).toBeVisible();
+});
+
+test("node runs evaluate only expression-like subtrees", async ({ page }) => {
+  await gotoEditor(page);
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "node-run.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(NODE_RUN_FIXTURE),
+  });
+
+  await expect(page.getByRole("button", { name: "Run begin" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Run number/add" })
+  ).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Run lambda" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Run quote" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Run define" })).toHaveCount(0);
+  await expect(
+    page.locator(
+      '.graph-node[data-kind="primitive"] button[aria-label^="Run "]'
+    )
+  ).toHaveCount(0);
+  await expect(
+    page.locator('.graph-node[title^="/3/1 "] button[aria-label^="Run "]')
+  ).toHaveCount(0);
+  await expect(
+    page.locator('.graph-node[title^="/4/1 "] button[aria-label^="Run "]')
+  ).toHaveCount(0);
+  await expect(
+    page.locator('.graph-node[title^="/5/1 "] button[aria-label^="Run "]')
+  ).toHaveCount(0);
+
+  await page
+    .getByRole("button", { name: "Run number/add" })
+    .evaluate((button: HTMLButtonElement) => button.click());
+  const output = page.getByRole("region", {
+    name: "Evaluation output: succeeded",
+  });
+  await expect(output.locator(".evaluation-dock-preview")).toHaveText(
+    "number/add · /2"
+  );
+  await expect(output.locator(".result-code")).toHaveText("3");
 });
 
 test("invalid source keeps the graph blocked until a new document", async ({

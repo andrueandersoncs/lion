@@ -21,7 +21,7 @@ Lion developers authoring and debugging real Lion programs from local JSON files
 
 ## Job
 
-Open a local Lion JSON file, understand and edit its semantic shape, evaluate the current revision, inspect the result, and save exact JSON without introducing an intermediate representation.
+Open a local Lion JSON file, understand and edit its semantic shape, evaluate either the current revision or one expression-like subtree, inspect the result, and save exact JSON without introducing an intermediate representation.
 
 ## Primary Task
 
@@ -29,7 +29,7 @@ Move confidently through the semantic graph while preserving one canonical JSON 
 
 ## Proof and Content
 
-The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a full-width semantic fold-map canvas, revision status, search, breadcrumbs, evaluation controls, and discoverable graph keys. Folded nodes show labels, JSON pointers, parent roles, source ranges, order, semantic kinds, native inline controls for primitive values, direct mutation actions, and exact-structure expansion.
+The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a full-width semantic fold-map canvas, revision status, search, breadcrumbs, evaluation controls, and discoverable graph keys. Folded nodes lead with operation labels, useful semantic summaries, or native inline primitive controls. Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree; definitions, syntax-only structures, quoted data, primitives, and invalid forms omit it. Edges and topology carry roles, order, and child count without repeating them inside every node; source facts remain available on hover, exact JSON unfolds in place, and selection reveals only applicable mutation actions.
 
 ## Constraints
 
