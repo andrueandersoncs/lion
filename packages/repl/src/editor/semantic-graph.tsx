@@ -126,8 +126,11 @@ const SOURCE_HANDLE_PREFIX = "source:";
 const TARGET_HANDLE_PREFIX = "target:";
 const getGraphNodeLayoutHeight = (inputCount: number) =>
   Math.max(GRAPH_NODE_LAYOUT_HEIGHT, inputCount * GRAPH_PORT_PITCH + 32);
-const getGraphNodeContentHeight = (inputCount: number) =>
-  Math.max(GRAPH_NODE_HEIGHT, inputCount * GRAPH_PORT_PITCH + 24);
+const getGraphNodeContentHeight = (inputCount: number, compact: boolean) =>
+  Math.max(
+    compact ? 56 : GRAPH_NODE_HEIGHT,
+    inputCount * GRAPH_PORT_PITCH + 24
+  );
 const getInputPort = (child: IndexedSemanticNode): GraphPort => {
   const segment = child.path.at(-1);
   const label =
@@ -645,6 +648,7 @@ interface GraphNodeBodyProps {
   readonly literalKind?: EditableLiteralKind;
   readonly onIntent: (intent: EditIntent) => void;
   readonly onLiteralDraftChange: (id: string, value?: string) => void;
+  readonly onRun: (id: string) => void;
   readonly presentation?: GraphNodePresentation;
   readonly semantic: IndexedSemanticNode;
   readonly stale: boolean;
@@ -655,6 +659,7 @@ function GraphNodeBody({
   literalKind,
   onIntent,
   onLiteralDraftChange,
+  onRun,
   presentation,
   semantic,
   stale,
@@ -683,6 +688,8 @@ function GraphNodeBody({
   }
 
   if (presentation) {
+    const runsInline =
+      presentation.mark === "record" || presentation.mark === "array";
     return (
       <section
         aria-label={presentationLabel}
@@ -694,6 +701,9 @@ function GraphNodeBody({
           <p className="graph-node-description">{presentation.description}</p>
           <p className="graph-node-detail">{presentation.detail}</p>
         </div>
+        {runsInline && canRunSemanticNode(semantic) ? (
+          <GraphNodeRunButton onRun={onRun} semantic={semantic} stale={stale} />
+        ) : null}
       </section>
     );
   }
@@ -816,6 +826,33 @@ function GraphNodeCommandBar({ data }: { readonly data: GraphNodeData }) {
   );
 }
 
+function GraphNodeRunButton({
+  onRun,
+  semantic,
+  stale,
+}: {
+  readonly onRun: (id: string) => void;
+  readonly semantic: IndexedSemanticNode;
+  readonly stale: boolean;
+}) {
+  return (
+    <Button
+      aria-label={`Run ${semantic.label}`}
+      className="nodrag"
+      disabled={stale}
+      onClick={(event) => {
+        event.stopPropagation();
+        onRun(semantic.id);
+      }}
+      size="icon-sm"
+      title="Run this expression"
+      variant="ghost"
+    >
+      <PlayIcon />
+    </Button>
+  );
+}
+
 function GraphNodeHeader({
   onRun,
   semantic,
@@ -832,20 +869,7 @@ function GraphNodeHeader({
         {semantic.label}
       </p>
       {canRun ? (
-        <Button
-          aria-label={`Run ${semantic.label}`}
-          className="nodrag"
-          disabled={stale}
-          onClick={(event) => {
-            event.stopPropagation();
-            onRun(semantic.id);
-          }}
-          size="icon-sm"
-          title="Run this expression"
-          variant="ghost"
-        >
-          <PlayIcon />
-        </Button>
+        <GraphNodeRunButton onRun={onRun} semantic={semantic} stale={stale} />
       ) : null}
     </header>
   );
@@ -868,6 +892,10 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     stale,
     unfolded,
   } = data;
+  const hasHeader =
+    !literalKind &&
+    presentation?.mark !== "record" &&
+    presentation?.mark !== "array";
   const acceptsChildren = ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
   return (
     <article
@@ -888,7 +916,12 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       style={
         literalKind
           ? undefined
-          : { minHeight: getGraphNodeContentHeight(inputPorts.length) }
+          : {
+              minHeight: getGraphNodeContentHeight(
+                inputPorts.length,
+                !hasHeader
+              ),
+            }
       }
       title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
     >
@@ -907,14 +940,15 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
           />
         </span>
       ))}
-      {literalKind ? null : (
+      {hasHeader ? (
         <GraphNodeHeader onRun={onRun} semantic={semantic} stale={stale} />
-      )}
+      ) : null}
       <GraphNodeBody
         literalDraft={literalDraft}
         literalKind={literalKind}
         onIntent={onIntent}
         onLiteralDraftChange={onLiteralDraftChange}
+        onRun={onRun}
         presentation={presentation}
         semantic={semantic}
         stale={stale}

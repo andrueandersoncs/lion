@@ -191,9 +191,11 @@ test("node runs evaluate only expression-like subtrees", async ({ page }) => {
 
   const quotedArray = page.locator('.graph-node[title^="/5/1 "]');
   await expect(quotedArray).toHaveAttribute("data-kind", "array");
-  await expect(quotedArray.locator(".graph-node-header")).toHaveText(
-    "array · 3"
+  await expect(quotedArray.locator(".graph-node-header")).toHaveCount(0);
+  await expect(quotedArray.locator(".graph-node-description")).toHaveText(
+    "quoted array"
   );
+  await expect(quotedArray.locator(".graph-node-detail")).toHaveText("3 items");
 
   await page
     .getByRole("button", { name: "Run number/add" })
@@ -247,11 +249,15 @@ test("graph edges point from values into their consuming expressions", async ({
     mimeType: "application/json",
     buffer: Buffer.from(VALID_FIXTURE),
   });
-  await expect(
-    page.locator(
-      '.react-flow__node[data-id="$"] .graph-node[data-kind="record"]'
-    )
-  ).toBeVisible();
+  const recordNode = page.locator(
+    '.react-flow__node[data-id="$"] .graph-node[data-kind="record"]'
+  );
+  await expect(recordNode).toBeVisible();
+  await expect(recordNode.locator(".graph-node-header")).toHaveCount(0);
+  await expect(recordNode.locator(".graph-node-description")).toHaveText(
+    "record literal"
+  );
+  await expect(recordNode.locator(".graph-node-detail")).toHaveText("1 field");
   await expect(
     page
       .locator('.react-flow__node[data-id="$"]')
