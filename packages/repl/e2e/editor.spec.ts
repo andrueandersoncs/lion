@@ -142,6 +142,20 @@ test("node runs evaluate only expression-like subtrees", async ({ page }) => {
   await expect(output.locator(".result-code")).toHaveText("3");
 });
 
+test("Jev example renders every visible parent-child connection", async ({
+  page,
+}) => {
+  await gotoEditor(page);
+  await page.getByRole("button", { name: "Jev" }).click();
+
+  const graphNodes = page.locator(".react-flow__node");
+  const graphEdges = page.locator(".react-flow__edge");
+  await expect(graphNodes).toHaveCount(27);
+  await expect
+    .poll(async () => (await graphEdges.count()) - (await graphNodes.count()))
+    .toBe(-1);
+});
+
 test("invalid source keeps the graph blocked until a new document", async ({
   page,
 }) => {

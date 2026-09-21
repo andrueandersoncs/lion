@@ -798,6 +798,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
   } = data;
   const acceptsConnections =
     ORDERED_CHILD_CONTAINER_KINDS[semantic.kind] === true;
+  const showsSourceHandle = acceptsConnections || semantic.children.length > 0;
 
   return (
     <article
@@ -832,8 +833,13 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         stale={stale}
       />
       {selected ? <GraphNodeCommandBar data={data} /> : null}
-      {acceptsConnections ? (
-        <Handle aria-hidden position={Position.Right} type="source" />
+      {showsSourceHandle ? (
+        <Handle
+          aria-hidden
+          isConnectableStart={acceptsConnections}
+          position={Position.Right}
+          type="source"
+        />
       ) : null}
     </article>
   );
