@@ -236,31 +236,6 @@
   white-space: nowrap;
 }
 
-.graph-result-jump {
-  flex: none;
-  margin-left: 0.25rem;
-}
-
-.graph-result-jump span[data-status] {
-  padding: 0.05rem 0.35rem;
-  font-family: var(--font-code);
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  background: var(--sheet-muted);
-  border-radius: 999px;
-}
-
-.graph-result-jump span[data-status="running"],
-.graph-result-jump span[data-status="scheduled"] {
-  color: var(--sumi);
-  background: color-mix(in oklab, var(--gold) 30%, var(--sheet));
-}
-
-.graph-result-jump span[data-status="failed"] {
-  color: var(--destructive);
-  background: color-mix(in oklab, var(--destructive) 10%, var(--sheet));
-}
-
 .graph-context-bar {
   display: flex;
   align-items: center;
@@ -720,7 +695,7 @@
   background: color-mix(in oklab, var(--gold) 10%, var(--sheet));
 }
 
-.evaluation-dock-summary {
+.evaluation-dock-meta {
   display: flex;
   flex: 1;
   gap: 0.5rem;
@@ -728,19 +703,9 @@
   min-width: 0;
   height: 2.75rem;
   padding: 0 0.5rem 0 0.75rem;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
 }
 
-.evaluation-dock-summary:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: -2px;
-}
-
-.evaluation-dock-summary > svg {
+.evaluation-dock-meta > svg {
   flex: none;
   width: 1rem;
   height: 1rem;
@@ -776,10 +741,6 @@
   font-size: 0.75rem;
   color: var(--muted-foreground);
   white-space: nowrap;
-}
-
-.evaluation-dock-chevron {
-  color: var(--muted-foreground);
 }
 
 .evaluation-dock-header > [data-slot="button"] {
@@ -874,10 +835,6 @@
 
   .graph-search-status {
     min-width: 3.25rem;
-  }
-
-  .graph-result-jump span[data-status] {
-    display: none;
   }
 
   .graph-context-bar {

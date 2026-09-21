@@ -9,7 +9,7 @@ related_targets: []
 
 ## Scope
 
-The shipped graph-editor surface at route `/`. This brief governs the one-screen workbench that synchronizes semantic nodes, graph navigation, and a collapsible evaluation output dock over one canonical JSON document.
+The shipped graph-editor surface at route `/`. This brief governs the one-screen workbench that synchronizes always-expanded semantic nodes, graph navigation, and an always-open evaluation output dock over one canonical JSON document.
 
 ## Visitor Mode
 
@@ -29,7 +29,7 @@ Move confidently through the semantic graph while preserving one canonical JSON 
 
 ## Proof and Content
 
-The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a full-width semantic fold-map canvas, revision status, search, breadcrumbs, evaluation controls, and discoverable graph keys. Folded nodes lead with operation labels, useful semantic summaries, or native inline primitive controls. Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree; definitions, syntax-only structures, quoted data, primitives, and invalid forms omit it. Edges and topology carry roles, order, and child count without repeating them inside every node; source facts remain available on hover, exact JSON unfolds in place, and selection reveals only applicable mutation actions.
+The first viewport exposes the workbench itself: visibly labeled Open and Save commands, a full-width semantic fold-map canvas, revision status, search, breadcrumbs, evaluation status, and discoverable graph keys. Semantic branches remain expanded. Folded nodes lead with operation labels, useful semantic summaries, or native inline primitive controls. Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree; definitions, syntax-only structures, quoted data, primitives, and invalid forms omit it. Edges and topology carry roles, order, and child count without repeating them inside every node; source facts remain available on hover, exact JSON unfolds in place, and selection reveals only applicable mutation actions.
 
 ## Constraints
 

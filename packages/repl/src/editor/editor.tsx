@@ -6,9 +6,7 @@ import {
   ArrowUpIcon,
   BracesIcon,
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
-  ChevronUpIcon,
   CircleAlertIcon,
   CopyIcon,
   DownloadIcon,
@@ -155,7 +153,7 @@ const useEditorShortcuts = ({
 
 interface EditorCommand {
   readonly disabledReason?: string;
-  readonly group: "Document" | "Edit" | "Navigate" | "Run" | "View";
+  readonly group: "Document" | "Edit" | "Navigate" | "Run";
   readonly icon: typeof SaveIcon;
   readonly id: string;
   readonly label: string;
@@ -486,25 +484,15 @@ function EvaluationBody({ editor }: { readonly editor: EditorController }) {
     </div>
   );
 }
-function EvaluationDock({
-  editor,
-  onOpenChange,
-  open,
-}: {
-  readonly editor: EditorController;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly open: boolean;
-}) {
+function EvaluationDock({ editor }: { readonly editor: EditorController }) {
   const { evaluation } = editor;
   if (evaluation.status === "idle") {
     return null;
   }
   const value = evaluation.error ?? evaluation.rendered;
-  const preview =
-    value ?? evaluation.transcript.at(-1) ?? `Revision ${evaluation.revision}`;
   const targetLabel = evaluation.target
     ? `${evaluation.target.label} · ${evaluation.target.pointer || "/"}`
-    : null;
+    : `Revision ${evaluation.revision ?? "—"}`;
   const copyResult = () => {
     if (!value) {
       toast.info("No evaluation output to copy");
@@ -519,17 +507,10 @@ function EvaluationDock({
   return (
     <section
       aria-label={`Evaluation output: ${evaluation.status}`}
-      className={
-        open ? "evaluation-dock evaluation-dock-open" : "evaluation-dock"
-      }
+      className="evaluation-dock"
     >
       <header className="evaluation-dock-header">
-        <button
-          aria-expanded={open}
-          className="evaluation-dock-summary"
-          onClick={() => onOpenChange(!open)}
-          type="button"
-        >
+        <div className="evaluation-dock-meta">
           <span
             aria-hidden
             className="evaluation-status-mark"
@@ -543,17 +524,8 @@ function EvaluationDock({
             {evaluation.status}
           </Badge>
           {evaluation.stale ? <Badge variant="secondary">Stale</Badge> : null}
-          <span className="evaluation-dock-preview">
-            {open
-              ? (targetLabel ?? `Revision ${evaluation.revision ?? "—"}`)
-              : preview.replaceAll(/\s+/g, " ").slice(0, 72)}
-          </span>
-          {open ? (
-            <ChevronDownIcon aria-hidden className="evaluation-dock-chevron" />
-          ) : (
-            <ChevronUpIcon aria-hidden className="evaluation-dock-chevron" />
-          )}
-        </button>
+          <span className="evaluation-dock-preview">{targetLabel}</span>
+        </div>
         <Button
           aria-label="Copy evaluation output"
           disabled={!value}
@@ -565,24 +537,14 @@ function EvaluationDock({
           <CopyIcon />
         </Button>
       </header>
-      {open ? (
-        <div aria-live="polite" className="evaluation-dock-body">
-          <EvaluationBody editor={editor} />
-        </div>
-      ) : null}
+      <div aria-live="polite" className="evaluation-dock-body">
+        <EvaluationBody editor={editor} />
+      </div>
     </section>
   );
 }
 
-function SearchBar({
-  editor,
-  onToggleResult,
-  resultOpen,
-}: {
-  readonly editor: EditorController;
-  readonly onToggleResult: () => void;
-  readonly resultOpen: boolean;
-}) {
+function SearchBar({ editor }: { readonly editor: EditorController }) {
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const matches = useMemo(
@@ -666,21 +628,6 @@ function SearchBar({
           </ToolButton>
         </>
       ) : null}
-      <Button
-        aria-expanded={resultOpen}
-        aria-label={`${resultOpen ? "Hide" : "Show"} evaluation output: ${editor.evaluation.status}`}
-        className="graph-result-jump"
-        disabled={editor.evaluation.status === "idle"}
-        onClick={onToggleResult}
-        size="sm"
-        variant="outline"
-      >
-        <SquareTerminalIcon data-icon="inline-start" />
-        Output
-        <span data-status={editor.evaluation.status}>
-          {editor.evaluation.status}
-        </span>
-      </Button>
     </div>
   );
 }
@@ -728,10 +675,8 @@ interface GraphWorkspaceProps {
     nodeId?: string
   ) => void;
   readonly onReorder: (id: string, direction: -1 | 1) => void;
-  readonly onResultOpenChange: (open: boolean) => void;
   readonly onRun: (id: string) => void;
   readonly onWrap: (id: string) => void;
-  readonly resultOpen: boolean;
 }
 
 function GraphWorkspace({
@@ -740,10 +685,8 @@ function GraphWorkspace({
   onDelete,
   onMutate,
   onReorder,
-  onResultOpenChange,
   onRun,
   onWrap,
-  resultOpen,
 }: GraphWorkspaceProps) {
   if (!editor.graphProjection) {
     return (
@@ -763,11 +706,7 @@ function GraphWorkspace({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SearchBar
-        editor={editor}
-        onToggleResult={() => onResultOpenChange(!resultOpen)}
-        resultOpen={resultOpen}
-      />
+      <SearchBar editor={editor} />
       <div className="graph-context-bar">
         <Breadcrumbs editor={editor} />
       </div>
@@ -788,11 +727,7 @@ function GraphWorkspace({
           selectedId={editor.selectedId}
           stale={editor.graphStale}
         />
-        <EvaluationDock
-          editor={editor}
-          onOpenChange={onResultOpenChange}
-          open={resultOpen}
-        />
+        <EvaluationDock editor={editor} />
       </div>
     </div>
   );
@@ -801,7 +736,6 @@ function GraphWorkspace({
 export function GraphEditor() {
   const editor = useEditor();
   const narrow = useNarrowLayout();
-  const [resultOpen, setResultOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mutation, setMutation] = useState<MutationDialogState | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -847,12 +781,11 @@ export function GraphEditor() {
     setJevKeyOpen(true);
   }, []);
 
-  const runAndReveal = useCallback(
+  const runEvaluation = useCallback(
     async (action: () => Promise<void>) => {
       if (editor.evaluation.status === "running") {
         return;
       }
-      setResultOpen(true);
       try {
         await action();
       } catch (error) {
@@ -867,8 +800,8 @@ export function GraphEditor() {
   );
 
   const runCurrentRevision = useCallback(
-    () => runAndReveal(() => editorRef.current.runEvaluation()),
-    [runAndReveal]
+    () => runEvaluation(() => editorRef.current.runEvaluation()),
+    [runEvaluation]
   );
   const runNodeExpression = useCallback(
     (id: string) => {
@@ -883,9 +816,9 @@ export function GraphEditor() {
         currentEditor.setSelectedId(id);
         await currentEditor.runExpression(node);
       };
-      return runAndReveal(action);
+      return runEvaluation(action);
     },
-    [runAndReveal]
+    [runEvaluation]
   );
 
   useEffect(() => {
@@ -1262,17 +1195,6 @@ export function GraphEditor() {
         icon: SearchIcon,
         run: () => document.getElementById("graph-search-input")?.focus(),
       },
-      {
-        id: "result",
-        label: "Show evaluation output",
-        group: "View",
-        icon: SquareTerminalIcon,
-        disabledReason:
-          editor.evaluation.status === "idle"
-            ? "Run the current revision first"
-            : undefined,
-        run: () => setResultOpen(true),
-      },
     ],
     [
       beginMutation,
@@ -1306,12 +1228,10 @@ export function GraphEditor() {
       onDelete={requestDelete}
       onMutate={beginMutation}
       onReorder={reorderNode}
-      onResultOpenChange={setResultOpen}
       onRun={(id) => {
         runNodeExpression(id).catch(handleError);
       }}
       onWrap={wrapNode}
-      resultOpen={resultOpen}
     />
   );
 
@@ -1479,36 +1399,34 @@ export function GraphEditor() {
         <CommandInput placeholder="Type a command or action…" />
         <CommandList>
           <CommandEmpty>No command found.</CommandEmpty>
-          {(["Document", "Edit", "Navigate", "Run", "View"] as const).map(
-            (group) => (
-              <CommandGroup heading={group} key={group}>
-                {commands
-                  .filter((command) => command.group === group)
-                  .map((command) => (
-                    <CommandItem
-                      disabled={Boolean(command.disabledReason)}
-                      key={command.id}
-                      onSelect={() => {
-                        command.run();
-                        setPaletteOpen(false);
-                      }}
-                      value={`${command.label} ${command.disabledReason ?? ""}`}
-                    >
-                      <command.icon />
-                      {command.label}
-                      {command.disabledReason ? (
-                        <span className="ml-auto text-muted-foreground text-xs">
-                          {command.disabledReason}
-                        </span>
-                      ) : null}
-                      {!command.disabledReason && command.shortcut ? (
-                        <CommandShortcut>{command.shortcut}</CommandShortcut>
-                      ) : null}
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            )
-          )}
+          {(["Document", "Edit", "Navigate", "Run"] as const).map((group) => (
+            <CommandGroup heading={group} key={group}>
+              {commands
+                .filter((command) => command.group === group)
+                .map((command) => (
+                  <CommandItem
+                    disabled={Boolean(command.disabledReason)}
+                    key={command.id}
+                    onSelect={() => {
+                      command.run();
+                      setPaletteOpen(false);
+                    }}
+                    value={`${command.label} ${command.disabledReason ?? ""}`}
+                  >
+                    <command.icon />
+                    {command.label}
+                    {command.disabledReason ? (
+                      <span className="ml-auto text-muted-foreground text-xs">
+                        {command.disabledReason}
+                      </span>
+                    ) : null}
+                    {!command.disabledReason && command.shortcut ? (
+                      <CommandShortcut>{command.shortcut}</CommandShortcut>
+                    ) : null}
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          ))}
         </CommandList>
       </CommandDialog>
 

@@ -17,8 +17,6 @@ import "@xyflow/react/dist/style.css";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
   FoldHorizontalIcon,
   KeyboardIcon,
   PencilIcon,
@@ -39,7 +37,6 @@ import type {
 
 interface GraphNodeData extends Record<string, unknown> {
   readonly canUnfoldExact: boolean;
-  readonly expanded: boolean;
   readonly literalDraft?: string;
   readonly onDelete: (id: string) => void;
   readonly onEdit: (id: string) => void;
@@ -48,7 +45,6 @@ interface GraphNodeData extends Record<string, unknown> {
   readonly onLiteralDraftChange: (id: string, value?: string) => void;
   readonly onReorder: (id: string, direction: -1 | 1) => void;
   readonly onRun: (id: string) => void;
-  readonly onToggle: (id: string) => void;
   readonly onUnfold: (id: string) => void;
   readonly onWrap: (id: string) => void;
   readonly presentation?: GraphNodePresentation;
@@ -751,33 +747,17 @@ function GraphNodeCommandBar({ data }: { readonly data: GraphNodeData }) {
 }
 
 function GraphNodeHeader({
-  expanded,
   onRun,
-  onToggle,
   semantic,
   stale,
 }: {
-  readonly expanded: boolean;
   readonly onRun: (id: string) => void;
-  readonly onToggle: (id: string) => void;
   readonly semantic: IndexedSemanticNode;
   readonly stale: boolean;
 }) {
   const canRun = canRunSemanticNode(semantic);
   return (
     <header className="graph-node-header flex items-center gap-1 px-2 py-2">
-      {semantic.children.length > 0 ? (
-        <Button
-          aria-label={expanded ? "Collapse branch" : "Expand branch"}
-          className="nodrag"
-          onClick={() => onToggle(semantic.id)}
-          size="icon-sm"
-          title={expanded ? "Collapse branch (Space)" : "Expand branch (Space)"}
-          variant="ghost"
-        >
-          {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
-        </Button>
-      ) : null}
       <p className="min-w-0 flex-1 truncate px-1 font-semibold text-sm">
         {semantic.label}
       </p>
@@ -808,14 +788,12 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
 }: SemanticGraphNodeProps) {
   const {
     semantic,
-    expanded,
     literalDraft,
     unfolded,
     stale,
     onIntent,
     onLiteralDraftChange,
     onRun,
-    onToggle,
     presentation,
   } = data;
   const acceptsConnections =
@@ -842,13 +820,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         <Handle aria-hidden position={Position.Left} type="target" />
       ) : null}
       {literalKind ? null : (
-        <GraphNodeHeader
-          expanded={expanded}
-          onRun={onRun}
-          onToggle={onToggle}
-          semantic={semantic}
-          stale={stale}
-        />
+        <GraphNodeHeader onRun={onRun} semantic={semantic} stale={stale} />
       )}
       <GraphNodeBody
         literalDraft={literalDraft}
@@ -912,13 +884,11 @@ type GraphKeyboardCommand =
   | "earlier"
   | "later"
   | "quote"
-  | "toggle"
   | "unfold";
 
 const GRAPH_KEY_COMMANDS: Readonly<
   Partial<Record<string, GraphKeyboardCommand>>
 > = {
-  " ": "toggle",
   a: "add",
   backspace: "delete",
   delete: "delete",
@@ -1009,9 +979,6 @@ const getGraphKeyboardCommand = (
   if (command === "delete" && !selected.parentId) {
     return undefined;
   }
-  if (command === "toggle" && selected.children.length === 0) {
-    return undefined;
-  }
   return command;
 };
 
@@ -1052,9 +1019,6 @@ export function SemanticGraph({
   onConstraint,
   layout,
 }: SemanticGraphProps) {
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(
-    () => new Set()
-  );
   const [unfolded, setUnfolded] = useState<ReadonlySet<string>>(
     () => new Set()
   );
@@ -1075,55 +1039,18 @@ export function SemanticGraph({
     () => new Map(projection.nodes.map((node) => [node.id, node])),
     [projection.nodes]
   );
-  const defaultCollapsedIds = useMemo(
-    () =>
-      projection.nodes
-        .filter((node) => node.path.length >= 2 && node.children.length > 0)
-        .map(({ id }) => id),
-    [projection.nodes]
-  );
-
-  useEffect(() => {
-    setCollapsed(new Set(defaultCollapsedIds));
-    setUnfolded(new Set());
-    setLiteralDrafts({});
-  }, [defaultCollapsedIds]);
-
-  useEffect(() => {
-    if (!selectedId) {
-      return;
-    }
-    const selected = byId.get(selectedId);
-    if (!selected) {
-      return;
-    }
-    const ancestors = getAncestors(selected, byId);
-    setCollapsed((current) => {
-      const next = new Set(current);
-      for (const id of ancestors) {
-        next.delete(id);
-      }
-      return next;
-    });
-  }, [byId, selectedId]);
 
   const visibleSemanticNodes = useMemo(() => {
-    const visible = projection.nodes.filter((node) => {
-      const ancestors = getAncestors(node, byId);
-      if (ancestors.some((id) => collapsed.has(id))) {
-        return false;
-      }
-      if (
-        (node.role === "operator" || node.role === "callee") &&
-        node.parentId &&
-        !unfolded.has(node.parentId)
-      ) {
-        return false;
-      }
-      return true;
-    });
+    const visible = projection.nodes.filter(
+      (node) =>
+        !(
+          (node.role === "operator" || node.role === "callee") &&
+          node.parentId &&
+          !unfolded.has(node.parentId)
+        )
+    );
     return visible.slice(0, 300);
-  }, [byId, collapsed, projection.nodes, unfolded]);
+  }, [projection.nodes, unfolded]);
   const layoutNodes = useMemo(
     () => visibleSemanticNodes.map(({ id, parentId }) => ({ id, parentId })),
     [visibleSemanticNodes]
@@ -1189,18 +1116,6 @@ export function SemanticGraph({
     positions,
     visibleSemanticNodes,
   ]);
-
-  const toggleCollapsed = useCallback((id: string) => {
-    setCollapsed((current) => {
-      const next = new Set(current);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
 
   const toggleUnfolded = useCallback(
     (id: string) => {
@@ -1275,7 +1190,6 @@ export function SemanticGraph({
         edit: () => onEdit(selected.id),
         later: () => onReorder(selected.id, 1),
         quote: () => onWrap(selected.id),
-        toggle: () => toggleCollapsed(selected.id),
         unfold: () => toggleUnfolded(selected.id),
       };
       event.preventDefault();
@@ -1294,7 +1208,6 @@ export function SemanticGraph({
     visibleSemanticNodes,
     selectedId,
     stale,
-    toggleCollapsed,
     toggleUnfolded,
   ]);
 
@@ -1318,7 +1231,6 @@ export function SemanticGraph({
           selected: semantic.id === selectedId,
           data: {
             semantic,
-            expanded: !collapsed.has(semantic.id),
             unfolded: unfolded.has(semantic.id),
             literalDraft: literalDrafts[semantic.id],
             presentation,
@@ -1333,7 +1245,6 @@ export function SemanticGraph({
             onRun,
             onLiteralDraftChange: updateLiteralDraft,
             onReorder,
-            onToggle: toggleCollapsed,
             canUnfoldExact: semantic.children.some((childId) => {
               const child = byId.get(childId);
               return child?.role === "operator" || child?.role === "callee";
@@ -1345,7 +1256,6 @@ export function SemanticGraph({
       }),
     [
       byId,
-      collapsed,
       literalDrafts,
       onDelete,
       onEdit,
@@ -1357,7 +1267,6 @@ export function SemanticGraph({
       positions,
       selectedId,
       stale,
-      toggleCollapsed,
       toggleUnfolded,
       updateLiteralDraft,
       unfolded,
@@ -1540,9 +1449,8 @@ export function SemanticGraph({
             <div>
               <dt>
                 <kbd>F</kbd>
-                <kbd>Space</kbd>
               </dt>
-              <dd>Exact JSON / branch</dd>
+              <dd>Exact JSON</dd>
             </div>
             <div>
               <dt>

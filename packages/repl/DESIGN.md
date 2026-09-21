@@ -169,11 +169,11 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 The surface fills the dynamic viewport beneath a compact command strip. The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.
 
-Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Selection reveals only applicable mutation controls, while source ranges and JSON pointers remain available as hover details and exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
+Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Every semantic branch stays expanded, selection reveals only applicable mutation controls, and source ranges and JSON pointers remain available as hover details while exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
 
-Evaluation appears in a compact dock over the bottom edge of the canvas. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run expands the same dock without changing graph layout or moving the viewport; collapsing it leaves a one-line receipt with status and a result preview. The Output command restores it without moving the user into another view.
+Evaluation appears in a compact, always-open dock over the bottom edge of the canvas after the first run. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run updates the dock without changing graph layout or moving the viewport.
 
-At 899px and below, the command strip wraps its document controls onto a second row, Open and Save stay visibly labeled, the minimap disappears, and the canvas centers the selected expression at a readable scale. The output dock spans the safe width and limits its expanded height so the graph remains visible. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, node actions, and dock controls.
+At 899px and below, the command strip wraps its document controls onto a second row, Open and Save stay visibly labeled, the minimap disappears, and the canvas centers the selected expression at a readable scale. The output dock spans the safe width and caps its height so the graph remains visible. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, node actions, and dock controls.
 
 ### Named Rules
 
@@ -231,11 +231,11 @@ Components are compact, tactile, and state-forward. They share the paper palette
 
 ### Navigation
 
-Graph search and horizontally scrollable breadcrumbs form the visible canvas navigation. Arrow keys move through the visible semantic order, left and right move to parent and child, and `/` focuses search. A compact key guide documents mutation and folding commands without consuming persistent canvas space.
+Graph search and horizontally scrollable breadcrumbs form the visible canvas navigation. Arrow keys move through the visible semantic order, left and right move to parent and child, and `/` focuses search. A compact key guide documents mutation and exact-structure commands without consuming persistent canvas space.
 
 ### Evaluation Output Dock
 
-An explicit run expands a bottom-edge canvas dock with status, revision, stale state, copy action, transcript, structured Jev answers, failures, and raw output. Its collapsed receipt preserves the latest status and preview without taking graph layout space. The Output control and command palette reopen it. The dock overlays rather than resizes the graph, keeps the selected node fixed, caps its height, and becomes safe-width on narrow screens.
+An explicit run opens a bottom-edge canvas dock with status, revision, stale state, copy action, transcript, structured Jev answers, failures, and raw output. The dock remains open and updates in place for subsequent runs. It overlays rather than resizes the graph, keeps the selected node fixed, caps its height, and becomes safe-width on narrow screens.
 
 
 ### Folded Semantic Node

@@ -288,7 +288,7 @@ packages/repl/
 
 ### Completion Proof
 
-- After completing any task, **MUST capture a screen recording** that demonstrates the delivered behavior working as intended.
+- After completing any development task where any app behavior is changed, **you MUST capture a screen recording** that demonstrates the delivered behavior working as intended.
 - For UI work, record the actual application and exercise the changed interaction end to end.
 - For CLI, backend, configuration, or documentation work, record the relevant terminal command, runtime scenario, or rendered artifact and its successful result.
 - Screenshots, logs, and automated tests may supplement the recording but never replace it.
