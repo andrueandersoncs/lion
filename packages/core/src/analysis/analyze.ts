@@ -15,6 +15,7 @@ export type StructuralPath = readonly (number | string)[];
 export type SemanticKind =
   | "primitive"
   | "record"
+  | "array"
   | "empty-array"
   | "call"
   | "special-form"
@@ -198,15 +199,30 @@ const analyzeNode = (
   ) {
     relationships.push({ kind: "definition", name: expression[1] });
   }
-  const nextQuoted = quoted || validForm?.name === "quote";
   const role = quoted
     ? () => "item"
     : (validForm?.role ?? roleByIndex(["callee"], "argument"));
   const children = expression.map((value, order) => ({
     role: role(order, expression.length),
     order,
-    node: analyzeNode(value, [...path, order], nextQuoted && order > 0),
+    node: analyzeNode(
+      value,
+      [...path, order],
+      quoted || (validForm?.name === "quote" && order > 0)
+    ),
   }));
+
+  if (quoted) {
+    return {
+      path,
+      pointer: pathToPointer(path),
+      kind: "array",
+      label: `array · ${expression.length}`,
+      quoted,
+      children,
+      relationships,
+    };
+  }
 
   if (!quoted && namedForm && !validForm) {
     return {

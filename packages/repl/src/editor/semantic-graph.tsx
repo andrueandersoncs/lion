@@ -79,6 +79,37 @@ interface GraphNodePresentation {
   readonly detail: string;
   readonly mark: GraphNodeMark;
 }
+type GraphNodeColorKey = GraphNodeMark | "call" | "invalid";
+
+const NODE_COLOR_BY_KEY = {
+  array: "var(--node-array)",
+  begin: "var(--node-begin)",
+  boolean: "var(--node-boolean)",
+  call: "var(--node-call)",
+  cond: "var(--node-cond)",
+  define: "var(--node-define)",
+  eval: "var(--node-eval)",
+  invalid: "var(--destructive)",
+  lambda: "var(--node-lambda)",
+  match: "var(--node-match)",
+  null: "var(--node-null)",
+  number: "var(--node-number)",
+  quote: "var(--node-quote)",
+  record: "var(--node-record)",
+  reference: "var(--node-reference)",
+  string: "var(--node-string)",
+  syntax: "var(--node-syntax)",
+} satisfies Readonly<Record<GraphNodeColorKey, string>>;
+
+const getGraphNodeColorKey = (
+  semantic: IndexedSemanticNode,
+  presentation: GraphNodePresentation | undefined
+): GraphNodeColorKey => {
+  if (semantic.kind === "invalid-call" && !semantic.quoted) {
+    return "invalid";
+  }
+  return presentation?.mark ?? "call";
+};
 
 type SemanticGraphNodeType =
   | "semantic"
@@ -129,15 +160,16 @@ const getConnectionInsertionIndex = (
     ? targetChild.order
     : parent.children.length;
 };
-const getMiniMapNodeColor = ({ selected }: GraphFlowNode) =>
+const getMiniMapNodeColor = ({ data, selected }: GraphFlowNode) =>
   selected
     ? "var(--vermilion)"
-    : "color-mix(in oklab, var(--sumi) 70%, var(--sheet))";
+    : NODE_COLOR_BY_KEY[getGraphNodeColorKey(data.semantic, data.presentation)];
 const pluralize = (count: number, noun: string, plural = `${noun}s`) =>
   `${count} ${count === 1 ? noun : plural}`;
 const CHILD_CONTAINER_KINDS: Readonly<
   Partial<Record<IndexedSemanticNode["kind"], true>>
 > = {
+  array: true,
   call: true,
   "empty-array": true,
   record: true,
@@ -146,6 +178,7 @@ const CHILD_CONTAINER_KINDS: Readonly<
 const ORDERED_CHILD_CONTAINER_KINDS: Readonly<
   Partial<Record<IndexedSemanticNode["kind"], true>>
 > = {
+  array: true,
   call: true,
   "empty-array": true,
   "special-form": true,
@@ -283,22 +316,10 @@ const describeStructuredNode = (
       detail: pluralize(itemCount, "field"),
     };
   }
-  if (semantic.kind === "empty-array") {
+  if (semantic.kind === "array" || semantic.kind === "empty-array") {
     return {
       mark: "array",
-      description: "array literal",
-      detail: "0 items",
-    };
-  }
-  if (
-    semantic.quoted &&
-    (semantic.kind === "call" ||
-      semantic.kind === "invalid-call" ||
-      semantic.kind === "special-form")
-  ) {
-    return {
-      mark: "array",
-      description: "quoted array",
+      description: semantic.quoted ? "quoted array" : "array literal",
       detail: pluralize(itemCount, "item"),
     };
   }
@@ -861,6 +882,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         stale && "graph-node-stale",
         unfolded && "graph-node-unfolded"
       )}
+      data-color={getGraphNodeColorKey(semantic, presentation)}
       data-kind={semantic.kind}
       data-mark={presentation?.mark}
       style={
@@ -1116,7 +1138,10 @@ export function SemanticGraph({
     GraphFlowNode,
     Edge
   > | null>(null);
-  const focusedSelectionRef = useRef(selectedId);
+  const selectedIdRef = useRef(selectedId);
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
   const byId = useMemo(
     () => new Map(projection.nodes.map((node) => [node.id, node])),
     [projection.nodes]
@@ -1188,7 +1213,9 @@ export function SemanticGraph({
     }
     const focusId =
       narrow || visibleSemanticNodes.length > 40
-        ? (selectedId ?? projection.rootId ?? visibleSemanticNodes[0]?.id)
+        ? (selectedIdRef.current ??
+          projection.rootId ??
+          visibleSemanticNodes[0]?.id)
         : undefined;
     const focusPosition = focusId ? positions[focusId] : undefined;
     const focusHeight = focusId
@@ -1223,7 +1250,6 @@ export function SemanticGraph({
     layoutRevision,
     narrow,
     projection.rootId,
-    selectedId,
     positions,
     visibleSemanticNodes,
     visibleChildrenByParent,
@@ -1395,42 +1421,6 @@ export function SemanticGraph({
       visibleSemanticNodes,
     ]
   );
-  useEffect(() => {
-    if (
-      !(flowInstance && selectedId) ||
-      focusedSelectionRef.current === selectedId ||
-      !positions[selectedId]
-    ) {
-      return;
-    }
-    const selectedPosition = positions[selectedId];
-    const selectedHeight = getGraphNodeLayoutHeight(
-      visibleChildrenByParent.get(selectedId)?.length ?? 0
-    );
-    focusedSelectionRef.current = selectedId;
-    const timer = window.setTimeout(() => {
-      if (narrow) {
-        flowInstance
-          .setCenter(
-            selectedPosition.x + GRAPH_NODE_WIDTH / 2,
-            selectedPosition.y + selectedHeight / 2,
-            { duration: 180, zoom: 0.95 }
-          )
-          .catch(() => undefined);
-        return;
-      }
-      flowInstance
-        .fitView({
-          duration: 180,
-          nodes: [{ id: selectedId }],
-          padding: 1.25,
-          minZoom: 0.65,
-          maxZoom: 1.05,
-        })
-        .catch(() => undefined);
-    }, 80);
-    return () => window.clearTimeout(timer);
-  }, [flowInstance, narrow, positions, selectedId, visibleChildrenByParent]);
 
   const edges = useMemo<Edge[]>(
     () =>

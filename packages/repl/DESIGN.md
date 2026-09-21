@@ -108,7 +108,7 @@ components:
 
 Lion Fold Map is a compact developer workbench made from one continuous warm paper field. Semantic structure, exact source facts, navigation, mutation controls, and evaluation output all stay attached to the graph rather than splitting into detached workbench panes.
 
-The visual language is precise and tactile: vermilion marks the active sheet and executable actions, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.
+The visual language is precise and tactile: vermilion marks the active sheet and executable actions, muted semantic inks distinguish node types, sumi carries notation, restrained gold confirms the current revision, and crisp creases separate dense working regions. Expression is concentrated in the folded graph nodes and sheet geometry while controls remain familiar and fast.
 
 **Key Characteristics:**
 - Warm washi surfaces with visible creases and sparse paper geometry.
@@ -119,7 +119,7 @@ The visual language is precise and tactile: vermilion marks the active sheet and
 
 ## Colors
 
-The palette is a warm, restrained light scheme: paper neutrals carry the interface, sumi establishes legibility, and saturated color is reserved for state.
+The palette is a warm, restrained light scheme: paper neutrals carry the interface, sumi establishes legibility, saturated color is reserved for action and state, and compact semantic inks make node types scannable.
 
 ### Primary
 - **Vermilion:** Drives the Run action, current selection, graph handles, focus, and text selection.
@@ -130,6 +130,10 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 
 ### Tertiary
 - **Restrained Gold:** Confirms the current revision and highlights selected overview nodes.
+
+### Semantic Node Inks
+- **Type colors:** Calls, special forms, structured values, literals, references, syntax, and invalid forms each receive a distinct muted OKLCH hue across the node border, header, mark, fold, and overview map.
+- **Redundant cues:** Color supplements the existing icon silhouette, operation label, literal control, and invalid-state treatment; it never carries node identity alone.
 
 ### Neutral
 - **Warm Washi:** The continuous application field and default neutral control surface.
@@ -219,7 +223,7 @@ Components are compact, tactile, and state-forward. They share the paper palette
 
 ### Cards / Containers
 - **Corner Style:** Semantic nodes use the largest system corner and a clipped folded edge; the output dock uses a plain large corner because it is a utility surface, not semantic structure.
-- **Background:** Clean sheet at rest and muted sheet when exact structure is unfolded.
+- **Background:** Clean sheet at rest, lightly tinted by semantic type; muted sheet when exact structure is unfolded.
 - **Shadow Strategy:** Graph nodes use Map Lift; selection adds Selected Map Lift. The output dock receives one utility lift above the canvas.
 - **Border:** One-pixel crease border, dashed for stale or unfolded structure, destructive for invalid calls.
 - **Internal Padding:** Node rows use 0.75rem horizontal and 0.5rem vertical padding.

@@ -68,6 +68,22 @@
   --vermilion: oklch(0.555 0.19 35);
   --sumi: oklch(0.235 0.022 48);
   --gold: oklch(0.72 0.11 78);
+  --node-array: oklch(0.49 0.12 195);
+  --node-begin: oklch(0.5 0.12 215);
+  --node-boolean: oklch(0.51 0.13 95);
+  --node-call: oklch(0.49 0.14 250);
+  --node-cond: oklch(0.49 0.14 290);
+  --node-define: oklch(0.47 0.12 150);
+  --node-eval: oklch(0.51 0.16 25);
+  --node-lambda: oklch(0.49 0.14 320);
+  --node-match: oklch(0.5 0.15 355);
+  --node-null: oklch(0.46 0.035 255);
+  --node-number: oklch(0.48 0.14 270);
+  --node-quote: oklch(0.48 0.1 70);
+  --node-record: oklch(0.47 0.11 170);
+  --node-reference: oklch(0.5 0.14 45);
+  --node-string: oklch(0.47 0.12 130);
+  --node-syntax: oklch(0.45 0.075 80);
   --font-display: "IBM Plex Sans Condensed", sans-serif;
   --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   color-scheme: light;
@@ -274,9 +290,79 @@
   background: var(--accent);
 }
 
+.graph-node[data-color="array"] {
+  --node-accent: var(--node-array);
+}
+
+.graph-node[data-color="begin"] {
+  --node-accent: var(--node-begin);
+}
+
+.graph-node[data-color="boolean"] {
+  --node-accent: var(--node-boolean);
+}
+
+.graph-node[data-color="call"] {
+  --node-accent: var(--node-call);
+}
+
+.graph-node[data-color="cond"] {
+  --node-accent: var(--node-cond);
+}
+
+.graph-node[data-color="define"] {
+  --node-accent: var(--node-define);
+}
+
+.graph-node[data-color="eval"] {
+  --node-accent: var(--node-eval);
+}
+
+.graph-node[data-color="invalid"] {
+  --node-accent: var(--destructive);
+}
+
+.graph-node[data-color="lambda"] {
+  --node-accent: var(--node-lambda);
+}
+
+.graph-node[data-color="match"] {
+  --node-accent: var(--node-match);
+}
+
+.graph-node[data-color="null"] {
+  --node-accent: var(--node-null);
+}
+
+.graph-node[data-color="number"] {
+  --node-accent: var(--node-number);
+}
+
+.graph-node[data-color="quote"] {
+  --node-accent: var(--node-quote);
+}
+
+.graph-node[data-color="record"] {
+  --node-accent: var(--node-record);
+}
+
+.graph-node[data-color="reference"] {
+  --node-accent: var(--node-reference);
+}
+
+.graph-node[data-color="string"] {
+  --node-accent: var(--node-string);
+}
+
+.graph-node[data-color="syntax"] {
+  --node-accent: var(--node-syntax);
+}
+
 .graph-node {
+  --node-accent: var(--node-call);
   overflow: visible;
-  border: 1px solid var(--crease);
+  background: color-mix(in oklab, var(--node-accent) 4%, var(--sheet));
+  border: 1px solid color-mix(in oklab, var(--node-accent) 48%, var(--crease));
   box-shadow: 0 7px 18px color-mix(in oklab, var(--sumi) 11%, transparent);
   isolation: isolate;
   transition:
@@ -293,10 +379,15 @@
   height: 1.15rem;
   pointer-events: none;
   content: "";
-  background: linear-gradient(135deg, transparent 48%, var(--sheet-muted) 49%);
-  border-top: 1px solid var(--crease);
-  border-left: 1px solid var(--crease);
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    135deg,
+    transparent 48%,
+    color-mix(in oklab, var(--node-accent) 15%, var(--sheet-muted)) 49%
+  );
+  border-top: 1px solid
+    color-mix(in oklab, var(--node-accent) 48%, var(--crease));
+  border-left: 1px solid
+    color-mix(in oklab, var(--node-accent) 48%, var(--crease));
 }
 
 .graph-node-selected {
@@ -445,12 +536,10 @@
 }
 
 .graph-node-header {
+  background: color-mix(in oklab, var(--node-accent) 12%, var(--sheet));
+  border-bottom: 1px solid
+    color-mix(in oklab, var(--node-accent) 32%, var(--crease));
   border-radius: 0.875rem 0.875rem 0 0;
-}
-
-.graph-node-presented > .graph-node-header {
-  background: color-mix(in oklab, var(--sheet-muted) 58%, var(--sheet));
-  border-bottom: 1px solid var(--crease);
 }
 
 .graph-node-summary {
@@ -539,9 +628,9 @@
   place-items: center;
   width: 2rem;
   height: 2rem;
-  color: var(--sumi);
-  background: var(--warm-secondary, var(--secondary));
-  border: 1px solid var(--crease);
+  color: var(--node-accent);
+  background: color-mix(in oklab, var(--node-accent) 14%, var(--sheet));
+  border: 1px solid color-mix(in oklab, var(--node-accent) 62%, var(--crease));
   border-radius: 0.5rem;
 }
 
@@ -579,14 +668,13 @@
 .graph-node[data-mark="cond"] .graph-node-mark,
 .graph-node[data-mark="match"] .graph-node-mark,
 .graph-node[data-mark="record"] .graph-node-mark {
-  background: color-mix(in oklab, var(--accent) 72%, var(--sheet));
+  background: color-mix(in oklab, var(--node-accent) 19%, var(--sheet));
 }
 
 .graph-node[data-mark="quote"] .graph-node-mark,
 .graph-node[data-mark="reference"] .graph-node-mark,
 .graph-node[data-mark="string"] .graph-node-mark,
 .graph-node[data-mark="syntax"] .graph-node-mark {
-  background: var(--sheet);
   border-style: dashed;
 }
 

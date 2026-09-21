@@ -41,6 +41,7 @@ describe("analyze", () => {
     const node = analyze(["quote", ["number/add", 1, 2]]);
     const flat = flattenAnalysis(node);
     expect(flat).toHaveLength(6);
+    expect(flat.find(({ pointer }) => pointer === "/1/0")?.quoted).toBe(true);
     expect(flat.find(({ pointer }) => pointer === "/1/2")?.quoted).toBe(true);
     expect(childRoles(["quote", 1])).toEqual(["operator", "quoted-value"]);
   });
@@ -48,7 +49,8 @@ describe("analyze", () => {
   it("treats quoted form-shaped arrays as literal data", () => {
     const flat = flattenAnalysis(analyze(["quote", ["define", "x"]]));
     const array = flat.find(({ pointer }) => pointer === "/1");
-    expect(array?.kind).toBe("call");
+    expect(array?.kind).toBe("array");
+    expect(array?.label).toBe("array · 2");
     expect(array?.specialForm).toBeUndefined();
     expect(array?.children.map(({ role }) => role)).toEqual(["item", "item"]);
     expect(flat.some(({ kind }) => kind === "invalid-call")).toBe(false);

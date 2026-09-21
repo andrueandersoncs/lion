@@ -111,6 +111,29 @@ test("graph keyboard navigation replaces the detached outline", async ({
   ).toBeVisible();
 });
 
+test("selecting a graph node preserves the camera", async ({ page }) => {
+  await gotoEditor(page);
+  const viewport = page.locator(".react-flow__viewport");
+  await expect(viewport).toBeVisible();
+  await page.waitForTimeout(700);
+  const cameraBeforeSelection = await viewport.evaluate(
+    (element) => getComputedStyle(element).transform
+  );
+
+  await page
+    .locator('.graph-node[aria-label="primitive: 1"]')
+    .evaluate((element: HTMLElement) => element.click());
+  await expect(page.locator(".graph-node-selected")).toHaveAttribute(
+    "aria-label",
+    "primitive: 1"
+  );
+  await page.waitForTimeout(500);
+
+  expect(
+    await viewport.evaluate((element) => getComputedStyle(element).transform)
+  ).toBe(cameraBeforeSelection);
+});
+
 test("literal nodes fit their editors without empty body space", async ({
   page,
 }) => {
@@ -165,6 +188,12 @@ test("node runs evaluate only expression-like subtrees", async ({ page }) => {
   await expect(
     page.locator('.graph-node[title^="/5/1 "] button[aria-label^="Run "]')
   ).toHaveCount(0);
+
+  const quotedArray = page.locator('.graph-node[title^="/5/1 "]');
+  await expect(quotedArray).toHaveAttribute("data-kind", "array");
+  await expect(quotedArray.locator(".graph-node-header")).toHaveText(
+    "array · 3"
+  );
 
   await page
     .getByRole("button", { name: "Run number/add" })
