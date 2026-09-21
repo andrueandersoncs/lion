@@ -18,6 +18,7 @@ The result is a small homoiconic language that can describe both computation and
 ```text
 packages/
   core/         evaluator, special forms, stdlib
+  cli/          Effect CLI executable for evaluating Lion JSON programs
   typesafe-ai/  TypeSafe AI and Jev expression bindings
   repl/         interactive graph editor
   agent/        real-world Lion program driving an OpenTUI + AI agent
@@ -34,6 +35,17 @@ bun run dev --filter=@lionlang/repl
 ```
 
 Open `http://localhost:3000`, import or open a Lion JSON file, edit through either synchronized view, run against the standard library, then save to the original file handle or download the exact source. See [`packages/repl/README.md`](packages/repl/README.md) for shortcuts, browser fallback behavior, verification, and architecture.
+
+## Command Line
+
+Install `@lionlang/cli` globally, then pass it a Lion JSON file:
+
+```bash
+bun add --global @lionlang/cli
+lion program.json
+```
+
+The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.
 
 ## Basic Usage
 

@@ -1,0 +1,40 @@
+{
+  "name": "@lionlang/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Command-line interface for evaluating Lion programs.",
+  "license": "MIT",
+  "author": "Andrue Anderson <andrueanderson.cs@gmail.com>",
+  "homepage": "https://lionlang.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrueandersoncs/lion.git",
+    "directory": "packages/cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "lion": "./dist/bin.mjs"
+  },
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@lionlang/core": "workspace:*",
+    "tsdown": "^0.21.10"
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.0-rc.115",
+    "@effect/platform-node-shared": "4.0.0-rc.115",
+    "effect": "catalog:"
+  }
+}
