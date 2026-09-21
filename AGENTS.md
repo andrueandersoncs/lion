@@ -293,6 +293,7 @@ packages/repl/
 - For CLI, backend, configuration, or documentation work, record the relevant terminal command, runtime scenario, or rendered artifact and its successful result.
 - Screenshots, logs, and automated tests may supplement the recording but never replace it.
 - Provide the recording artifact with the final response. Do not claim completion without it.
+- Do not commit proof into git.
 
 
 ### Performance Considerations
