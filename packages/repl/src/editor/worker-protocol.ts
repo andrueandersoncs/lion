@@ -19,6 +19,8 @@ const layout = async (
     layoutOptions: {
       "elk.algorithm": "layered",
       "elk.direction": "RIGHT",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+      "elk.layered.crossingMinimization.forceNodeModelOrder": "true",
       "elk.spacing.nodeNode": "32",
       "elk.layered.spacing.nodeNodeBetweenLayers": "144",
     },

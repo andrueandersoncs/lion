@@ -53,4 +53,36 @@ describe("editor worker protocol", () => {
       );
     }
   });
+
+  it("places sibling nodes top-to-bottom in model order", async () => {
+    const response = await handleWorkerRequest({
+      type: "layout",
+      requestId: 3,
+      revision: 4,
+      nodes: [
+        { id: "$", parentId: null, width: 240, height: 186 },
+        { id: "/0", parentId: "$", width: 240, height: 138 },
+        { id: "/0/0", parentId: "/0", width: 240, height: 138 },
+        { id: "/0/0/0", parentId: "/0/0", width: 240, height: 138 },
+        { id: "/0/0/1", parentId: "/0/0", width: 240, height: 138 },
+        { id: "/0/0/2", parentId: "/0/0", width: 240, height: 138 },
+        { id: "/0/0/3", parentId: "/0/0", width: 240, height: 138 },
+        { id: "/1", parentId: "$", width: 240, height: 138 },
+        { id: "/2", parentId: "$", width: 240, height: 138 },
+        { id: "/2/a", parentId: "/2", width: 240, height: 138 },
+        { id: "/2/b", parentId: "/2", width: 240, height: 138 },
+        { id: "/2/c", parentId: "/2", width: 240, height: 138 },
+        { id: "/3", parentId: "$", width: 240, height: 138 },
+      ],
+    });
+    expect(response.type).toBe("layout");
+    if (response.type === "layout") {
+      const siblingPositions = ["/0/0/0", "/0/0/1", "/0/0/2", "/0/0/3"].map(
+        (id) => response.positions[id]?.y
+      );
+      expect(siblingPositions).toEqual(
+        [...siblingPositions].sort((left, right) => (left ?? 0) - (right ?? 0))
+      );
+    }
+  });
 });

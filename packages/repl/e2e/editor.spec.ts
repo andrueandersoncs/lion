@@ -111,6 +111,31 @@ test("graph keyboard navigation replaces the detached outline", async ({
   ).toBeVisible();
 });
 
+test("literal nodes fit their editors without empty body space", async ({
+  page,
+}) => {
+  await gotoEditor(page);
+  const literalNodes = page.locator('.graph-node[data-kind="primitive"]');
+  await expect(literalNodes).toHaveCount(2);
+  await expect
+    .poll(async () =>
+      literalNodes.evaluateAll((nodes) =>
+        Math.max(
+          ...nodes.map((node) => {
+            const summary = node.querySelector(".graph-literal-summary");
+            return summary
+              ? Math.round(
+                  node.getBoundingClientRect().height -
+                    summary.getBoundingClientRect().height
+                )
+              : 999;
+          })
+        )
+      )
+    )
+    .toBeLessThanOrEqual(2);
+});
+
 test("node runs evaluate only expression-like subtrees", async ({ page }) => {
   await gotoEditor(page);
   await page.locator('input[type="file"]').setInputFiles({

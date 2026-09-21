@@ -863,7 +863,11 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
       )}
       data-kind={semantic.kind}
       data-mark={presentation?.mark}
-      style={{ minHeight: getGraphNodeContentHeight(inputPorts.length) }}
+      style={
+        literalKind
+          ? undefined
+          : { minHeight: getGraphNodeContentHeight(inputPorts.length) }
+      }
       title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
     >
       {outputPorts.map((port, index) => (
