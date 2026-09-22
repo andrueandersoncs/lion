@@ -41,7 +41,7 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
     .poll(async () => (await selectedNode.boundingBox())?.width ?? 0)
     .toBeGreaterThan(220);
 
-  await page.getByRole("button", { name: "Run" }).click();
+  await page.getByRole("button", { exact: true, name: "Run" }).click();
   const outputDock = page.getByRole("region", {
     name: "Evaluation output: succeeded",
   });
@@ -70,7 +70,7 @@ test("new, edit, graph mutation, run, and shared undo remain synchronized", asyn
   await numberInput.fill("4");
   await numberInput.press("Enter");
   await expect(page.getByText("Unsaved", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Run" }).click();
+  await page.getByRole("button", { exact: true, name: "Run" }).click();
   await expect(
     page
       .getByRole("region", { name: "Evaluation output: succeeded" })

@@ -6,6 +6,7 @@ import {
   ArrowUpIcon,
   BracesIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   CircleAlertIcon,
   CopyIcon,
@@ -485,6 +486,7 @@ function EvaluationBody({ editor }: { readonly editor: EditorController }) {
   );
 }
 function EvaluationDock({ editor }: { readonly editor: EditorController }) {
+  const [expanded, setExpanded] = useState(true);
   const { evaluation } = editor;
   if (evaluation.status === "idle") {
     return null;
@@ -493,6 +495,7 @@ function EvaluationDock({ editor }: { readonly editor: EditorController }) {
   const targetLabel = evaluation.target
     ? `${evaluation.target.label} · ${evaluation.target.pointer || "/"}`
     : `Revision ${evaluation.revision ?? "—"}`;
+  const toggleLabel = `${expanded ? "Hide" : "Show"} evaluation output: ${evaluation.status}`;
   const copyResult = () => {
     if (!value) {
       toast.info("No evaluation output to copy");
@@ -510,22 +513,35 @@ function EvaluationDock({ editor }: { readonly editor: EditorController }) {
       className="evaluation-dock"
     >
       <header className="evaluation-dock-header">
-        <div className="evaluation-dock-meta">
-          <span
-            aria-hidden
-            className="evaluation-status-mark"
-            data-status={evaluation.status}
-          />
-          <SquareTerminalIcon aria-hidden />
-          <strong>Output</strong>
-          <Badge
-            variant={evaluation.status === "failed" ? "destructive" : "outline"}
-          >
-            {evaluation.status}
-          </Badge>
-          {evaluation.stale ? <Badge variant="secondary">Stale</Badge> : null}
-          <span className="evaluation-dock-preview">{targetLabel}</span>
-        </div>
+        <button
+          aria-controls="evaluation-dock-body"
+          aria-expanded={expanded}
+          aria-label={toggleLabel}
+          className="evaluation-dock-summary"
+          onClick={() => setExpanded((current) => !current)}
+          title={toggleLabel}
+          type="button"
+        >
+          <div className="evaluation-dock-meta">
+            <span
+              aria-hidden
+              className="evaluation-status-mark"
+              data-status={evaluation.status}
+            />
+            <SquareTerminalIcon aria-hidden />
+            <strong>Output</strong>
+            <Badge
+              variant={
+                evaluation.status === "failed" ? "destructive" : "outline"
+              }
+            >
+              {evaluation.status}
+            </Badge>
+            {evaluation.stale ? <Badge variant="secondary">Stale</Badge> : null}
+            <span className="evaluation-dock-preview">{targetLabel}</span>
+          </div>
+          <ChevronDownIcon aria-hidden className="evaluation-dock-chevron" />
+        </button>
         <Button
           aria-label="Copy evaluation output"
           disabled={!value}
@@ -537,9 +553,15 @@ function EvaluationDock({ editor }: { readonly editor: EditorController }) {
           <CopyIcon />
         </Button>
       </header>
-      <div aria-live="polite" className="evaluation-dock-body">
-        <EvaluationBody editor={editor} />
-      </div>
+      {expanded ? (
+        <div
+          aria-live="polite"
+          className="evaluation-dock-body"
+          id="evaluation-dock-body"
+        >
+          <EvaluationBody editor={editor} />
+        </div>
+      ) : null}
     </section>
   );
 }
