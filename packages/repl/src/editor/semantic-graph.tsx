@@ -1659,7 +1659,7 @@ export function SemanticGraph({
             zoomable
           />
         ) : null}
-        <Background color="#000" gap={32} size={2} />
+        <Background color="#000" gap={32} size={1.5} />
       </ReactFlow>
     </div>
   );
