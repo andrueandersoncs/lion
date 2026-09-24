@@ -192,8 +192,8 @@ The system is crease-first and lightly lifted. Borders, tonal sheet changes, gut
 ### Shadow Vocabulary
 
 - **Command Lift** (`0 8px 24px color-mix(in oklab, var(--sumi) 8%, transparent)`): Separates the global command strip from the working sheet.
-- **Map Lift** (`0 3px 8px color-mix(in oklab, var(--sumi) 14%, transparent), 0 16px 40px color-mix(in oklab, var(--sumi) 28%, transparent)`): Gives graph nodes, graph controls, and the document overview a weighty tactile lift with both contact and cast shadows.
-- **Selected Map Lift** (`0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent), 0 4px 10px color-mix(in oklab, var(--sumi) 16%, transparent), 0 20px 48px color-mix(in oklab, var(--sumi) 32%, transparent)`): Marks the current semantic node with the strongest contact and cast shadows.
+- **Map Lift** (`0 2px 6px color-mix(in oklab, var(--sumi) 28%, transparent), 0 12px 30px color-mix(in oklab, var(--sumi) 56%, transparent)`): Gives graph nodes, graph controls, and the document overview a compact, weighty lift with dark contact and cast shadows.
+- **Selected Map Lift** (`0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent), 0 3px 8px color-mix(in oklab, var(--sumi) 32%, transparent), 0 15px 36px color-mix(in oklab, var(--sumi) 64%, transparent)`): Marks the current semantic node with the darkest compact contact and cast shadows.
 
 ### Named Rules
 

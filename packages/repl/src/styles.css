@@ -364,8 +364,8 @@
   background: color-mix(in oklab, var(--node-accent) 4%, var(--sheet));
   border: 1px solid color-mix(in oklab, var(--node-accent) 48%, var(--crease));
   box-shadow:
-    0 3px 8px color-mix(in oklab, var(--sumi) 14%, transparent),
-    0 16px 40px color-mix(in oklab, var(--sumi) 28%, transparent);
+    0 2px 6px color-mix(in oklab, var(--sumi) 28%, transparent),
+    0 12px 30px color-mix(in oklab, var(--sumi) 56%, transparent);
   isolation: isolate;
   transition:
     border-color 140ms ease-out,
@@ -396,8 +396,8 @@
   border-color: var(--vermilion);
   box-shadow:
     0 0 0 3px color-mix(in oklab, var(--vermilion) 18%, transparent),
-    0 4px 10px color-mix(in oklab, var(--sumi) 16%, transparent),
-    0 20px 48px color-mix(in oklab, var(--sumi) 32%, transparent);
+    0 3px 8px color-mix(in oklab, var(--sumi) 32%, transparent),
+    0 15px 36px color-mix(in oklab, var(--sumi) 64%, transparent);
 }
 
 .graph-node-selected {
