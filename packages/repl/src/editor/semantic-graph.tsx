@@ -1467,7 +1467,10 @@ export function SemanticGraph({
                 target: node.parentId,
                 sourceHandle: `${SOURCE_HANDLE_PREFIX}${node.id}`,
                 targetHandle: `${TARGET_HANDLE_PREFIX}${node.id}`,
-                markerEnd: { type: MarkerType.ArrowClosed },
+                markerEnd: {
+                  color: "var(--graph-edge-ink)",
+                  type: MarkerType.ArrowClosed,
+                },
                 className: node.quoted ? "graph-edge-quoted" : "graph-edge",
               },
             ]

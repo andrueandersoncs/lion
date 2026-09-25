@@ -728,7 +728,7 @@
   text-overflow: ellipsis;
   font-family: var(--font-code);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
   color: var(--muted-foreground);
   white-space: nowrap;
@@ -747,12 +747,20 @@
 }
 
 .semantic-flow {
+  --graph-edge-ink: color-mix(
+    in oklab,
+    var(--sumi) 75%,
+    var(--muted-foreground)
+  );
+  --xy-edge-label-color: var(--graph-edge-ink);
+  --xy-edge-stroke: var(--graph-edge-ink);
+  --xy-edge-stroke-width: 2;
   background: var(--background);
 }
 
 .react-flow__edge-path {
-  stroke: var(--sumi);
-  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .graph-edge-quoted .react-flow__edge-path {
@@ -767,6 +775,7 @@
 .react-flow__edge-text {
   font-family: var(--font-code);
   font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .react-flow__edge-textbg {
