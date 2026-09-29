@@ -553,6 +553,15 @@
   min-height: 3.5rem;
   padding: 0.5rem 0.75rem;
 }
+
+.graph-node:has(> .graph-port-target)
+  > :is(.graph-node-header, .graph-node-summary, .graph-node-command-bar) {
+  padding-left: 5rem;
+}
+
+.graph-node:has(> .graph-port-target) > .graph-node-command-bar {
+  flex-wrap: wrap;
+}
 .graph-literal-summary {
   grid-template-columns: 2rem minmax(0, 1fr);
 }
@@ -705,7 +714,7 @@
 
 .graph-port-target {
   left: 0;
-  transform: translate(-100%, -50%);
+  transform: translateY(-50%);
 }
 
 .graph-port-source {
@@ -721,8 +730,13 @@
   transform: none;
 }
 
+.graph-port-target .react-flow__handle {
+  order: -1;
+  transform: translateX(-50%);
+}
+
 .graph-port-label {
-  max-width: 7rem;
+  max-width: 4rem;
   padding: 0.1rem 0.35rem;
   overflow: hidden;
   text-overflow: ellipsis;
