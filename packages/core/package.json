@@ -1,6 +1,6 @@
 {
   "name": "@lionlang/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "Lion is a JSON-based Lisp.",
   "license": "MIT",
@@ -57,7 +57,7 @@
     "build": "tsdown"
   },
   "devDependencies": {
-    "@effect/vitest": "4.0.0-rc.115",
+    "@effect/vitest": "4.1.2",
     "@types/bun": "latest",
     "tsdown": "^0.21.10",
     "vitest": "^5.0.1"

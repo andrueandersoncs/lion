@@ -2,7 +2,7 @@ import { run } from "@lionlang/core/evaluation/evaluate";
 import { stdlib } from "@lionlang/core/modules";
 import { LionExpressionSchema } from "@lionlang/core/schemas/lion-expression";
 import { Console, Effect } from "effect";
-import { Argument, CliError, Command, Flag } from "effect/unstable/cli";
+import { Argument, CliError, Command, Flag } from "effect/cli";
 
 export const VERSION = "0.1.0";
 

@@ -34,8 +34,8 @@
     "tsdown": "^0.21.10"
   },
   "dependencies": {
-    "@effect/platform-node": "4.0.0-rc.115",
-    "@effect/platform-node-shared": "4.0.0-rc.115",
+    "@effect/platform-node": "4.1.2",
+    "@effect/platform-node-shared": "4.1.2",
     "effect": "catalog:"
   }
 }

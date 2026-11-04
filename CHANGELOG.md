@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2026-11-03 — @lionlang/core 0.2.0, @lionlang/cli 0.1.0, @lionlang/typesafe-ai 0.1.0
 
 ### Added
 
@@ -15,3 +15,4 @@
 
 - Replaced the former REPL and `/stream` prototype with the graph editor.
 - Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies.
+- Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.

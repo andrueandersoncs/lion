@@ -15,13 +15,16 @@ describe("define special form", () => {
     [TestSchema],
     ([expression]) =>
       Effect.gen(function* () {
-        // should return the value of the evaluated "value" argument
-        const environment = yield* makeEnvironment({});
-        const result = yield* evaluate(expression).pipe(
-          Effect.provideService(LionEnvironmentService, environment),
+        // should return the value of the evaluated "value" argument; define
+        // evaluates it before binding, so compute the expectation in a separate
+        // environment where the defined name is never bound
+        const valueEnvironment = yield* makeEnvironment({});
+        const value = yield* evaluate(expression[2]).pipe(
+          Effect.provideService(LionEnvironmentService, valueEnvironment),
           Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
         );
-        const value = yield* evaluate(expression[2]).pipe(
+        const environment = yield* makeEnvironment({});
+        const result = yield* evaluate(expression).pipe(
           Effect.provideService(LionEnvironmentService, environment),
           Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
         );
