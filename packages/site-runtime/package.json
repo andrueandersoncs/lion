@@ -1,0 +1,18 @@
+{
+  "name": "@lionlang/site-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "In-browser Lion evaluator (Web Worker) that powers the live examples on lionlang.dev.",
+  "scripts": {
+    "build": "bun build src/worker.ts --outfile ../../docs/lion-worker.js --target browser --format esm --minify",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lionlang/core": "workspace:*",
+    "effect": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "catalog:"
+  }
+}

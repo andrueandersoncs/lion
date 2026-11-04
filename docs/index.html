@@ -38,6 +38,7 @@
     </script>
     <script type="module" src="constellation.js"></script>
     <script type="module" src="script.js"></script>
+    <script type="module" src="playground.js"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -120,7 +121,7 @@
             runtime.
           </p>
           <div class="hero-actions">
-            <a href="#docs" class="btn btn-primary magnetic">
+            <a href="#docs" class="btn btn-primary">
               Get started
               <span aria-hidden="true">→</span>
             </a>
@@ -128,7 +129,7 @@
               href="https://github.com/andrueandersoncs/lion"
               target="_blank"
               rel="noopener"
-              class="btn btn-secondary magnetic"
+              class="btn btn-secondary"
               >View on GitHub</a
             >
           </div>
@@ -375,85 +376,122 @@
 
       <section id="examples" class="section examples">
         <div class="section-header reveal">
-          <span class="section-badge">See it in action</span>
+          <span class="section-badge">Try it live</span>
           <h2 class="section-title">Code examples</h2>
           <p class="section-description">
-            Every snippet below runs against the standard library, and the
-            results shown are what it returns.
+            Every card is a live editor running <code>@lionlang/core</code> in
+            your browser. Change a program and it re-runs as you type, or press
+            <kbd>⌘</kbd>/<kbd>Ctrl</kbd>
+            + <kbd>Enter</kbd>.
           </p>
         </div>
         <div class="examples-grid spotlight-group">
           <article class="example-card spotlight reveal">
             <h3>Arithmetic</h3>
             <p>Function calls use prefix notation inside JSON arrays.</p>
-            <div class="code-block">
-              <pre><code data-highlight>["number/add", 1, 2]
-// => 3
-
-["number/multiply", 5, 4]
-// => 20</code></pre>
+            <div class="playground" data-playground="Arithmetic">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["number/multiply",
+  ["number/add", 1, 2],
+  4]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>12</code></pre>
+              </div>
             </div>
           </article>
           <article class="example-card spotlight reveal">
             <h3>Lambdas &amp; define</h3>
             <p>Lambdas close over lexical scope; define binds globally.</p>
-            <div class="code-block">
-              <pre><code data-highlight>["begin",
+            <div class="playground" data-playground="Lambdas and define">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
   ["define", "inc",
     ["lambda", ["x"],
       ["number/add", "x", 1]]],
-  ["inc", 41]]
-// => 42</code></pre>
+  ["inc", 41]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>42</code></pre>
+              </div>
             </div>
           </article>
           <article class="example-card spotlight reveal">
             <h3>Conditionals</h3>
-            <p>cond returns the first matching branch; else is optional.</p>
-            <div class="code-block">
-              <pre><code data-highlight>["begin",
+            <p>
+              cond returns the first matching branch; else is optional. Try
+              another score.
+            </p>
+            <div class="playground" data-playground="Conditionals">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
   ["define", "score", 82],
   ["cond",
     [["number/greaterThan", "score", 90], "great"],
     [["number/greaterThan", "score", 70], "pass"],
-    ["else", "retry"]]]
-// => "pass"</code></pre>
+    ["else", "retry"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>"pass"</code></pre>
+              </div>
             </div>
           </article>
           <article class="example-card spotlight reveal">
             <h3>Pattern matching</h3>
             <p>
               match applies the first branch whose predicate accepts the value.
+              Try matching a number instead.
             </p>
-            <div class="code-block">
-              <pre><code data-highlight>["match", "roar",
+            <div class="playground" data-playground="Pattern matching">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["match", "roar",
   ["value/number?",
     ["lambda", ["x"], ["number/add", "x", 1]]],
   ["value/string?",
     ["lambda", ["x"], ["string/concat", "x", "!"]]],
-  ["lambda", ["x"], "x"]]
-// => "roar!"</code></pre>
+  ["lambda", ["x"], "x"]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>"roar!"</code></pre>
+              </div>
             </div>
           </article>
           <article class="example-card spotlight reveal">
             <h3>Records</h3>
             <p>Objects keep their keys and evaluate each value.</p>
-            <div class="code-block">
-              <pre><code data-highlight>{
+            <div class="playground" data-playground="Records">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>{
   "sum": ["number/add", 1, 2],
   "ok": true
-}
-// => { "sum": 3, "ok": true }</code></pre>
+}</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>{"sum":3,"ok":true}</code></pre>
+              </div>
             </div>
           </article>
           <article class="example-card spotlight reveal">
             <h3>Quote &amp; eval</h3>
-            <p>Hold code as data, then evaluate it when you choose.</p>
-            <div class="code-block">
-              <pre><code data-highlight>["quote", ["number/add", 1, 2]]
-// => ["number/add", 1, 2]
-
-["eval", ["quote", ["number/add", 1, 2]]]
-// => 3</code></pre>
+            <p>quote holds code as data; eval runs it when you choose.</p>
+            <div class="playground" data-playground="Quote and eval">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["define", "code",
+    ["quote", ["number/add", 1, 2]]],
+  ["eval", "code"]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>3</code></pre>
+              </div>
             </div>
           </article>
         </div>
@@ -655,7 +693,7 @@ bun run lion repl           # serve the graph editor</code></pre>
               href="https://github.com/andrueandersoncs/lion"
               target="_blank"
               rel="noopener"
-              class="btn btn-primary magnetic"
+              class="btn btn-primary"
             >
               <svg
                 aria-hidden="true"
@@ -674,7 +712,7 @@ bun run lion repl           # serve the graph editor</code></pre>
               href="https://github.com/andrueandersoncs/lion/blob/main/README.md"
               target="_blank"
               rel="noopener"
-              class="btn btn-secondary magnetic"
+              class="btn btn-secondary"
               >Read the docs</a
             >
           </div>

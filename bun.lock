@@ -165,6 +165,17 @@
         "typescript": "catalog:",
       },
     },
+    "packages/site-runtime": {
+      "name": "@lionlang/site-runtime",
+      "version": "0.0.0",
+      "dependencies": {
+        "@lionlang/core": "workspace:*",
+        "effect": "catalog:",
+      },
+      "peerDependencies": {
+        "typescript": "catalog:",
+      },
+    },
     "packages/typesafe-ai": {
       "name": "@lionlang/typesafe-ai",
       "version": "0.1.0",
@@ -439,6 +450,8 @@
     "@lionlang/examples": ["@lionlang/examples@workspace:packages/examples"],
 
     "@lionlang/repl": ["@lionlang/repl@workspace:packages/repl"],
+
+    "@lionlang/site-runtime": ["@lionlang/site-runtime@workspace:packages/site-runtime"],
 
     "@lionlang/typesafe-ai": ["@lionlang/typesafe-ai@workspace:packages/typesafe-ai"],
 

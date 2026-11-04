@@ -1,3 +1,5 @@
+import { highlight } from "./highlight.js";
+
 const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"
 ).matches;
@@ -28,75 +30,7 @@ const updateNav = () => {
 window.addEventListener("scroll", updateNav, { passive: true });
 updateNav();
 
-// Syntax highlighting for Lion JSON and the TypeScript snippets
-const KEYWORDS = new Set([
-  "import",
-  "from",
-  "const",
-  "await",
-  "true",
-  "false",
-  "null",
-]);
-const SPECIAL_FORMS = new Set([
-  "begin",
-  "cond",
-  "define",
-  "eval",
-  "function",
-  "lambda",
-  "match",
-  "quote",
-]);
-const TOKEN_PATTERN =
-  /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?)|(-?\d+(?:\.\d+)?)|([A-Za-z_$][\w$]*)|([[\]{}])|(\s+)|(.)/g;
-
-const KEY_FOLLOWS = /^\s*:/;
-const escapeHtml = (text) =>
-  text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-
-const span = (className, text) =>
-  `<span class="${className}">${escapeHtml(text)}</span>`;
-
-const stringClass = (text, token, end, isHead) => {
-  if (KEY_FOLLOWS.test(text.slice(end))) {
-    return "code-key";
-  }
-  const name = token.slice(1, -1);
-  if (isHead && (SPECIAL_FORMS.has(name) || name.includes("/"))) {
-    return "code-fn";
-  }
-  return "code-string";
-};
-
-const highlight = (text) => {
-  let html = "";
-  let isHead = false;
-  for (const match of text.matchAll(TOKEN_PATTERN)) {
-    const [token, comment, string, number, word, bracket, space] = match;
-    if (space) {
-      html += token;
-      continue;
-    }
-    if (comment) {
-      html += span("code-comment", token);
-    } else if (string) {
-      const end = match.index + token.length;
-      html += span(stringClass(text, token, end, isHead), token);
-    } else if (number) {
-      html += span("code-number", token);
-    } else if (word && KEYWORDS.has(word)) {
-      html += span("code-keyword", token);
-    } else if (bracket) {
-      html += span("code-bracket", token);
-    } else {
-      html += escapeHtml(token);
-    }
-    isHead = bracket === "[";
-  }
-  return html;
-};
-
+// Syntax highlighting for static snippets (live editors highlight themselves)
 for (const code of document.querySelectorAll("code[data-highlight]")) {
   code.innerHTML = highlight(code.textContent);
 }
@@ -164,7 +98,7 @@ if (prefersReducedMotion || !("IntersectionObserver" in window)) {
   }
 }
 
-// Pointer-driven effects: card spotlight, magnetic buttons, tilting panels
+// Pointer-driven effects: card spotlight and tilting panels
 const visible = new Set();
 const visibilityObserver = new IntersectionObserver((entries) => {
   for (const entry of entries) {
@@ -177,27 +111,12 @@ const visibilityObserver = new IntersectionObserver((entries) => {
 });
 
 const spotlights = [...document.querySelectorAll(".spotlight")];
-const magnets = [...document.querySelectorAll(".magnetic")];
 const tilts = [...document.querySelectorAll(".tilt")];
-const magnetOffsets = new WeakMap();
 
 const updateSpotlight = (element, x, y) => {
   const rect = element.getBoundingClientRect();
   element.style.setProperty("--mx", `${x - rect.left}px`);
   element.style.setProperty("--my", `${y - rect.top}px`);
-};
-
-const updateMagnet = (element, x, y) => {
-  const rect = element.getBoundingClientRect();
-  const [offsetX, offsetY] = magnetOffsets.get(element) ?? [0, 0];
-  const dx = x - (rect.left - offsetX + rect.width / 2);
-  const dy = y - (rect.top - offsetY + rect.height / 2);
-  const near =
-    Math.abs(dx) < rect.width / 2 + 36 && Math.abs(dy) < rect.height / 2 + 36;
-  const next = near ? [dx * 0.22, dy * 0.32] : [0, 0];
-  magnetOffsets.set(element, next);
-  element.style.setProperty("--tx", `${next[0]}px`);
-  element.style.setProperty("--ty", `${next[1]}px`);
 };
 
 const updateTilt = (element, x, y) => {
@@ -215,11 +134,6 @@ const updateTilt = (element, x, y) => {
 };
 
 const resetPointerEffects = () => {
-  for (const element of magnets) {
-    magnetOffsets.set(element, [0, 0]);
-    element.style.setProperty("--tx", "0px");
-    element.style.setProperty("--ty", "0px");
-  }
   for (const element of tilts) {
     element.style.setProperty("--rx", "0deg");
     element.style.setProperty("--ry", "0deg");
@@ -228,7 +142,7 @@ const resetPointerEffects = () => {
 };
 
 if (finePointer && !prefersReducedMotion) {
-  for (const element of [...spotlights, ...magnets, ...tilts]) {
+  for (const element of [...spotlights, ...tilts]) {
     visibilityObserver.observe(element);
   }
 
@@ -241,9 +155,6 @@ if (finePointer && !prefersReducedMotion) {
     for (const element of visible) {
       if (element.classList.contains("spotlight")) {
         updateSpotlight(element, pointerX, pointerY);
-      }
-      if (element.classList.contains("magnetic")) {
-        updateMagnet(element, pointerX, pointerY);
       }
       if (element.classList.contains("tilt")) {
         updateTilt(element, pointerX, pointerY);

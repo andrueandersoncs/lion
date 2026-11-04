@@ -22,6 +22,7 @@ packages/
   typesafe-ai/  TypeSafe AI and Jev expression bindings
   repl/         interactive graph editor
   agent/        real-world Lion program driving an OpenTUI + AI agent
+  site-runtime/ in-browser evaluator (Web Worker) for the live examples on lionlang.dev
 ```
 
 ## Graph Editor
@@ -428,4 +429,12 @@ To work on a specific package:
 ```bash
 turbo test --filter=@lionlang/core
 turbo dev --filter=@lionlang/repl
+```
+
+## Website
+
+[lionlang.dev](https://lionlang.dev) is served by GitHub Pages straight from `docs/`, with no build step. The live examples run `docs/lion-worker.js`, a bundle of `@lionlang/core` built by `@lionlang/site-runtime`. After changing the core evaluator, rebuild and commit it:
+
+```bash
+turbo build --filter=@lionlang/site-runtime
 ```
