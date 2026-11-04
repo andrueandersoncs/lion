@@ -3,15 +3,28 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lion - A JSON-Based Lisp</title>
+    <title>Lion — The JSON-based Lisp</title>
     <meta
       name="description"
-      content="Lion is a homoiconic programming language where all code is valid JSON, and all JSON is valid code. Serializable, composable, and trivially parseable."
+      content="Lion is a homoiconic Lisp where every program is valid JSON. Store it, send it, generate it, and evaluate it on a type-safe Effect runtime."
     >
+    <meta name="theme-color" content="#09090b">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lionlang.dev/">
+    <meta property="og:title" content="Lion — The JSON-based Lisp">
+    <meta
+      property="og:description"
+      content="Every Lion program is valid JSON. Evaluate it on Effect, edit it as a graph, and run it from the command line."
+    >
+    <meta
+      property="og:image"
+      content="https://lionlang.dev/assets/fold-map.webp"
+    >
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
     <link rel="stylesheet" href="styles.css">
@@ -19,18 +32,30 @@
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
     >
+    <script>
+    "use strict";
+    document.documentElement.classList.add("js");
+    </script>
+    <script type="module" src="constellation.js"></script>
+    <script type="module" src="script.js"></script>
   </head>
   <body>
-    <div class="noise"></div>
+    <canvas class="constellation" aria-hidden="true"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="noise" aria-hidden="true"></div>
 
-    <!-- Navigation -->
     <nav class="nav">
       <div class="nav-content">
-        <a href="#" class="logo"> <span class="logo-icon">Lion</span> </a>
+        <a href="#top" class="logo" aria-label="Lion home">
+          <span class="logo-mark" aria-hidden="true">[ ]</span>
+          <span class="logo-icon">Lion</span>
+        </a>
         <div class="nav-links">
           <a href="#features">Features</a>
           <a href="#examples">Examples</a>
-          <a href="#docs">Docs</a>
+          <a href="#editor">Editor</a>
+          <a href="#packages">Packages</a>
+          <a href="#docs">Get started</a>
           <a
             href="https://github.com/andrueandersoncs/lion"
             target="_blank"
@@ -39,8 +64,8 @@
           >
             <svg
               aria-hidden="true"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="currentColor"
             >
@@ -51,449 +76,617 @@
             GitHub
           </a>
         </div>
-        <button type="button" class="mobile-menu-btn" aria-label="Toggle menu">
+        <button
+          type="button"
+          class="mobile-menu-btn"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
           <span></span>
           <span></span>
           <span></span>
         </button>
       </div>
+      <div class="mobile-menu" id="mobile-menu">
+        <a href="#features">Features</a>
+        <a href="#examples">Examples</a>
+        <a href="#editor">Editor</a>
+        <a href="#packages">Packages</a>
+        <a href="#docs">Get started</a>
+        <a
+          href="https://github.com/andrueandersoncs/lion"
+          target="_blank"
+          rel="noopener"
+          >GitHub</a
+        >
+      </div>
     </nav>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu">
-      <a href="#features">Features</a>
-      <a href="#examples">Examples</a>
-      <a href="#docs">Docs</a>
-      <a
-        href="https://github.com/andrueandersoncs/lion"
-        target="_blank"
-        rel="noopener"
-        >GitHub</a
-      >
-    </div>
-
-    <!-- Hero Section -->
-    <header class="hero">
-      <div class="hero-content">
-        <div class="hero-badge">A New Kind of Language</div>
-        <h1 class="hero-title">The JSON-Based Lisp<br>for Modern Systems</h1>
-        <p class="hero-description">
-          All code is valid JSON. All JSON is valid code. Serializable,
-          homoiconic, and trivially parseable by any system.
-        </p>
-        <div class="hero-actions">
-          <a href="#examples" class="btn btn-primary">Get Started</a>
-          <a
-            href="https://github.com/andrueandersoncs/lion"
-            target="_blank"
-            rel="noopener"
-            class="btn btn-secondary"
-            >View on GitHub</a
-          >
-        </div>
-        <div class="hero-code">
-          <div class="code-header">
-            <span class="code-dot"></span>
-            <span class="code-dot"></span>
-            <span class="code-dot"></span>
-            <span class="code-filename">example.lion.json</span>
-          </div>
-          <pre
-          ><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">3</span>, <span class="code-number">4</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-string">"number/subtract"</span>, <span class="code-number">10</span>, <span class="code-number">5</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-
-<span class="code-comment">// Evaluates to: 17</span></code></pre>
-        </div>
-      </div>
-    </header>
-
-    <!-- Stats Section -->
-    <section class="stats">
-      <div class="stats-grid">
-        <div class="stat">
-          <span class="stat-value">100%</span>
-          <span class="stat-label">JSON Compatible</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">0</span>
-          <span class="stat-label">Custom Parsers Needed</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">Type</span>
-          <span class="stat-label">Safe with Effect</span>
-        </div>
-        <div class="stat">
-          <span class="stat-value">MIT</span>
-          <span class="stat-label">Licensed</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="features">
-      <div class="section-header">
-        <span class="section-badge">Core Concepts</span>
-        <h2 class="section-title">Why Lion?</h2>
-        <p class="section-description">
-          A language designed for the modern web, where data and code seamlessly
-          interoperate.
-        </p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
-              ></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <line x1="10" y1="9" x2="8" y2="9"></line>
-            </svg>
-          </div>
-          <h3>Homoiconic</h3>
-          <p>
-            Code is data, data is code. Manipulate programs as easily as you
-            manipulate JSON objects.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-          </div>
-          <h3>Serializable</h3>
-          <p>
-            Store programs in databases, send them over APIs, or persist them to
-            files. It&apos;s just JSON.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="4 17 10 11 4 5"></polyline>
-              <line x1="12" y1="19" x2="20" y2="19"></line>
-            </svg>
-          </div>
-          <h3>Extensible</h3>
-          <p>
-            Add custom functions to the environment. Your functions become
-            first-class citizens.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
-          </div>
-          <h3>Type-Safe</h3>
-          <p>
-            Built with Effect and Schema for runtime type validation and
-            powerful error handling.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <path
-                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-              ></path>
-            </svg>
-          </div>
-          <h3>Universal</h3>
-          <p>
-            Any system that reads JSON can work with Lion programs. No special
-            tooling required.
-          </p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg
-              aria-hidden="true"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-              ></path>
-            </svg>
-          </div>
-          <h3>Composable</h3>
-          <p>
-            Expressions nest naturally. Build complex logic from simple,
-            reusable building blocks.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Examples Section -->
-    <section id="examples" class="examples">
-      <div class="section-header">
-        <span class="section-badge">See It In Action</span>
-        <h2 class="section-title">Code Examples</h2>
-        <p class="section-description">
-          Explore how Lion handles everything from basic arithmetic to complex
-          logic.
-        </p>
-      </div>
-      <div class="examples-grid">
-        <div class="example-card">
-          <h3>Basic Arithmetic</h3>
-          <p>
-            Function calls use Lisp-style prefix notation within JSON arrays.
-          </p>
-          <div class="code-block">
-            <pre
-            ><code><span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 3</span>
-
-<span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>, <span class="code-number">5</span>, <span class="code-number">4</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 20</span></code></pre>
-          </div>
-        </div>
-        <div class="example-card">
-          <h3>Conditionals</h3>
-          <p>Use cond for multi-branch conditionals with pattern matching.</p>
-          <div class="code-block">
-            <pre
-            ><code><span class="code-bracket">[</span><span class="code-string">"cond"</span>,
-  <span class="code-bracket">[</span><span class="code-bracket">[</span><span class="code-string">"number/greaterThan"</span>, <span class="code-string">"score"</span>, <span class="code-number">90</span><span class="code-bracket">]</span>, <span class="code-string">"great"</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-bracket">[</span><span class="code-string">"number/greaterThan"</span>, <span class="code-string">"score"</span>, <span class="code-number">70</span><span class="code-bracket">]</span>, <span class="code-string">"pass"</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-string">"else"</span>, <span class="code-string">"retry"</span><span class="code-bracket">]</span>
-<span class="code-bracket">]</span></code></pre>
-          </div>
-        </div>
-        <div class="example-card">
-          <h3>Record Evaluation</h3>
-          <p>Objects preserve keys and evaluate each value.</p>
-          <div class="code-block">
-            <pre><code><span class="code-bracket">{</span>
-  <span class="code-key">"sum"</span>: <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>,
-  <span class="code-key">"ok"</span>: <span class="code-keyword">true</span>
-<span class="code-bracket">}</span>
-<span class="code-comment">// => { "sum": 3, "ok": true }</span></code></pre>
-          </div>
-        </div>
-        <div class="example-card">
-          <h3>Lambda Functions</h3>
-          <p>Create functions with lexical scope using lambda.</p>
-          <div class="code-block">
-            <pre
-            ><code><span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-
-<span class="code-comment">// Define and use:</span>
-<span class="code-bracket">[</span><span class="code-string">"begin"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"define"</span>, <span class="code-string">"inc"</span>,
-    <span class="code-bracket">[</span><span class="code-string">"lambda"</span>, <span class="code-bracket">[</span><span class="code-string">"x"</span><span class="code-bracket">]</span>,
-      <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"x"</span>, <span class="code-number">1</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>,
-  <span class="code-bracket">[</span><span class="code-string">"inc"</span>, <span class="code-number">41</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 42</span></code></pre>
-          </div>
-        </div>
-        <div class="example-card">
-          <h3>Custom Environment</h3>
-          <p>Extend stdlib with your own values and functions.</p>
-          <div class="code-block">
-            <pre><code><span class="code-keyword">const</span> env = {
-  ...stdlib,
-  price: <span class="code-number">100</span>,
-  taxRate: <span class="code-number">0.08</span>,
-};
-
-<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>,
-    <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 108</span></code></pre>
-          </div>
-        </div>
-        <div class="example-card">
-          <h3>Quote &amp; Eval</h3>
-          <p>Control evaluation with quote and eval special forms.</p>
-          <div class="code-block">
-            <pre
-            ><code><span class="code-bracket">[</span><span class="code-string">"quote"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-<span class="code-comment">// => ["number/add", 1, 2]</span>
-
-<span class="code-bracket">[</span><span class="code-string">"eval"</span>,
-  <span class="code-bracket">[</span><span class="code-string">"quote"</span>,
-    <span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span><span class="code-bracket">]</span><span class="code-bracket">]</span>
-<span class="code-comment">// => 3</span></code></pre>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Docs Section -->
-    <section id="docs" class="docs">
-      <div class="section-header">
-        <span class="section-badge">Get Started</span>
-        <h2 class="section-title">Quick Start</h2>
-        <p class="section-description">
-          Start using Lion in your TypeScript projects today.
-        </p>
-      </div>
-      <div class="docs-content">
-        <div class="docs-step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h3>Install the package</h3>
-            <div class="code-block terminal">
-              <pre><code>npm install @lionlang/core</code></pre>
-            </div>
-          </div>
-        </div>
-        <div class="docs-step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h3>Import and run</h3>
-            <div class="code-block">
-              <pre
-              ><code><span class="code-keyword">import</span> { Effect } <span class="code-keyword">from</span> <span class="code-string">"effect"</span>;
-<span class="code-keyword">import</span> { run } <span class="code-keyword">from</span> <span class="code-string">"@lionlang/core/evaluation/evaluate"</span>;
-<span class="code-keyword">import</span> { stdlib } <span class="code-keyword">from</span> <span class="code-string">"@lionlang/core/modules"</span>;
-
-<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-number">1</span>, <span class="code-number">2</span><span class="code-bracket">]</span>, stdlib)
-);
-<span class="code-comment">// => 3</span></code></pre>
-            </div>
-          </div>
-        </div>
-        <div class="docs-step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h3>Extend the environment</h3>
-            <div class="code-block">
-              <pre><code><span class="code-keyword">const</span> env = {
-  ...stdlib,
-  price: <span class="code-number">100</span>,
-  taxRate: <span class="code-number">0.08</span>,
-};
-
-<span class="code-keyword">await</span> Effect.runPromise(
-  run(<span class="code-bracket">[</span><span class="code-string">"number/add"</span>, <span class="code-string">"price"</span>,
-    <span class="code-bracket">[</span><span class="code-string">"number/multiply"</span>,
-      <span class="code-string">"price"</span>, <span class="code-string">"taxRate"</span><span class="code-bracket">]</span><span class="code-bracket">]</span>, env)
-);
-<span class="code-comment">// => 108</span></code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-      <div class="cta-content">
-        <h2>Ready to try Lion?</h2>
-        <p>
-          Join the community and start building with a language where code and
-          data are one.
-        </p>
-        <div class="cta-actions">
-          <a
-            href="https://github.com/andrueandersoncs/lion"
-            target="_blank"
-            rel="noopener"
-            class="btn btn-primary"
-          >
-            <svg
-              aria-hidden="true"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path
-                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-              />
-            </svg>
-            Star on GitHub
+    <main id="top">
+      <header class="hero">
+        <div class="hero-content">
+          <a class="hero-badge" href="#packages">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            @lionlang/core 0.2 — now on Effect 4.1
+            <span aria-hidden="true">→</span>
           </a>
-          <a
-            href="https://github.com/andrueandersoncs/lion/blob/main/README.md"
-            target="_blank"
-            rel="noopener"
-            class="btn btn-secondary"
-            >Read the Docs</a
-          >
-        </div>
-      </div>
-    </section>
+          <h1 class="hero-title">
+            Code is JSON.<br><span class="shine">JSON is code.</span>
+          </h1>
+          <p class="hero-description">
+            Lion is a homoiconic Lisp where every program is valid JSON. Store
+            it, send it, generate it, and evaluate it on a type-safe Effect
+            runtime.
+          </p>
+          <div class="hero-actions">
+            <a href="#docs" class="btn btn-primary magnetic">
+              Get started
+              <span aria-hidden="true">→</span>
+            </a>
+            <a
+              href="https://github.com/andrueandersoncs/lion"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-secondary magnetic"
+              >View on GitHub</a
+            >
+          </div>
 
-    <!-- Footer -->
+          <div class="hero-stage">
+            <figure
+              class="hero-code tilt"
+              aria-label="Lion programs and the values they evaluate to"
+            >
+              <div class="tilt-sheen" aria-hidden="true"></div>
+              <div class="code-header">
+                <span class="code-dot"></span>
+                <span class="code-dot"></span>
+                <span class="code-dot"></span>
+                <span class="code-filename" data-hero-filename
+                  >arithmetic.lion.json</span
+                >
+              </div>
+              <pre
+                class="hero-pre"
+              ><code data-hero-code data-highlight>["number/add",
+  ["number/multiply", 3, 4],
+  ["number/subtract", 10, 5]]</code></pre>
+              <div class="hero-result" data-hero-result>
+                <span class="result-label">result</span>
+                <code class="result-value" data-hero-value>17</code>
+              </div>
+            </figure>
+          </div>
+          <p class="hero-hint">
+            The background is a live expression graph. Move to bend it, click to
+            send an evaluation through it.
+          </p>
+        </div>
+      </header>
+
+      <section class="marquee" aria-label="Standard library and special forms">
+        <div class="marquee-row">
+          <div class="marquee-track">
+            <span>"lambda"</span><span>"define"</span><span>"cond"</span
+            ><span>"match"</span><span>"quote"</span><span>"eval"</span
+            ><span>"begin"</span><span>"number/add"</span
+            ><span>"number/multiply"</span><span>"array/map"</span
+            ><span>"array/reduce"</span><span>"array/flat-map"</span
+            ><span>"string/concat"</span><span>"object/get-path"</span
+            ><span>"func/callback"</span><span>"value/identity"</span>
+          </div>
+          <div class="marquee-track" aria-hidden="true">
+            <span>"lambda"</span><span>"define"</span><span>"cond"</span
+            ><span>"match"</span><span>"quote"</span><span>"eval"</span
+            ><span>"begin"</span><span>"number/add"</span
+            ><span>"number/multiply"</span><span>"array/map"</span
+            ><span>"array/reduce"</span><span>"array/flat-map"</span
+            ><span>"string/concat"</span><span>"object/get-path"</span
+            ><span>"func/callback"</span><span>"value/identity"</span>
+          </div>
+        </div>
+        <div class="marquee-row marquee-reverse">
+          <div class="marquee-track">
+            <span>"boolean/xor"</span><span>"string/startsWith"</span
+            ><span>"array/includes?"</span><span>"object/new"</span
+            ><span>"object/call-method"</span><span>"func/partial"</span
+            ><span>"value/number?"</span><span>"value/string?"</span
+            ><span>"number/greaterThan"</span><span>"array/concat"</span
+            ><span>"object/keys"</span><span>"console/log"</span
+            ><span>"typesafe/choice"</span><span>"typesafe/score"</span
+            ><span>"typesafe/system-one"</span>
+          </div>
+          <div class="marquee-track" aria-hidden="true">
+            <span>"boolean/xor"</span><span>"string/startsWith"</span
+            ><span>"array/includes?"</span><span>"object/new"</span
+            ><span>"object/call-method"</span><span>"func/partial"</span
+            ><span>"value/number?"</span><span>"value/string?"</span
+            ><span>"number/greaterThan"</span><span>"array/concat"</span
+            ><span>"object/keys"</span><span>"console/log"</span
+            ><span>"typesafe/choice"</span><span>"typesafe/score"</span
+            ><span>"typesafe/system-one"</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section features">
+        <div class="section-header reveal">
+          <span class="section-badge">Core concepts</span>
+          <h2 class="section-title">Why Lion?</h2>
+          <p class="section-description">
+            One format for code and data, so programs can be stored, shipped,
+            generated, and inspected by anything that speaks JSON.
+          </p>
+        </div>
+        <div class="features-grid spotlight-group">
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <h3>Homoiconic</h3>
+            <p>
+              Programs are plain arrays and objects. Generate, rewrite, and
+              analyze code with the same tools you use for data.
+            </p>
+          </article>
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              </svg>
+            </div>
+            <h3>Serializable</h3>
+            <p>
+              Store programs in a database, stream them over an API, or diff
+              them in Git. It&apos;s just JSON.
+            </p>
+          </article>
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <polyline points="9 12 11 14 15 10"></polyline>
+              </svg>
+            </div>
+            <h3>Effect-native</h3>
+            <p>
+              The evaluator runs on Effect 4.1. Inputs are validated with
+              Schema, and failures are typed errors you can catch and recover
+              from.
+            </p>
+          </article>
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                ></path>
+                <path
+                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                ></path>
+              </svg>
+            </div>
+            <h3>Host interop</h3>
+            <p>
+              Spread your own values, functions, and classes into the
+              environment. <code>object/new</code> and
+              <code>func/callback</code>
+              let Lion drive real JavaScript APIs.
+            </p>
+          </article>
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="5" cy="6" r="2"></circle>
+                <circle cx="19" cy="6" r="2"></circle>
+                <circle cx="12" cy="18" r="2"></circle>
+                <path d="M7 6h10M6 8l5 8M18 8l-5 8"></path>
+              </svg>
+            </div>
+            <h3>Visual editing</h3>
+            <p>
+              The Fold Map editor keeps a semantic graph and the exact JSON
+              source in sync, and runs programs against the standard library.
+            </p>
+          </article>
+          <article class="feature-card spotlight reveal">
+            <div class="feature-icon">
+              <svg
+                aria-hidden="true"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12 3l1.9 5.8L20 10l-5 3.6L16.8 20 12 16.6 7.2 20 9 13.6 4 10l6.1-1.2z"
+                ></path>
+              </svg>
+            </div>
+            <h3>AI-native</h3>
+            <p>
+              Models already write JSON. Let them write Lion, and call TypeSafe
+              AI&apos;s Jev primitives from inside programs with
+              <code>@lionlang/typesafe-ai</code>.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="examples" class="section examples">
+        <div class="section-header reveal">
+          <span class="section-badge">See it in action</span>
+          <h2 class="section-title">Code examples</h2>
+          <p class="section-description">
+            Every snippet below runs against the standard library, and the
+            results shown are what it returns.
+          </p>
+        </div>
+        <div class="examples-grid spotlight-group">
+          <article class="example-card spotlight reveal">
+            <h3>Arithmetic</h3>
+            <p>Function calls use prefix notation inside JSON arrays.</p>
+            <div class="code-block">
+              <pre><code data-highlight>["number/add", 1, 2]
+// => 3
+
+["number/multiply", 5, 4]
+// => 20</code></pre>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Lambdas &amp; define</h3>
+            <p>Lambdas close over lexical scope; define binds globally.</p>
+            <div class="code-block">
+              <pre><code data-highlight>["begin",
+  ["define", "inc",
+    ["lambda", ["x"],
+      ["number/add", "x", 1]]],
+  ["inc", 41]]
+// => 42</code></pre>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Conditionals</h3>
+            <p>cond returns the first matching branch; else is optional.</p>
+            <div class="code-block">
+              <pre><code data-highlight>["begin",
+  ["define", "score", 82],
+  ["cond",
+    [["number/greaterThan", "score", 90], "great"],
+    [["number/greaterThan", "score", 70], "pass"],
+    ["else", "retry"]]]
+// => "pass"</code></pre>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Pattern matching</h3>
+            <p>
+              match applies the first branch whose predicate accepts the value.
+            </p>
+            <div class="code-block">
+              <pre><code data-highlight>["match", "roar",
+  ["value/number?",
+    ["lambda", ["x"], ["number/add", "x", 1]]],
+  ["value/string?",
+    ["lambda", ["x"], ["string/concat", "x", "!"]]],
+  ["lambda", ["x"], "x"]]
+// => "roar!"</code></pre>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Records</h3>
+            <p>Objects keep their keys and evaluate each value.</p>
+            <div class="code-block">
+              <pre><code data-highlight>{
+  "sum": ["number/add", 1, 2],
+  "ok": true
+}
+// => { "sum": 3, "ok": true }</code></pre>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Quote &amp; eval</h3>
+            <p>Hold code as data, then evaluate it when you choose.</p>
+            <div class="code-block">
+              <pre><code data-highlight>["quote", ["number/add", 1, 2]]
+// => ["number/add", 1, 2]
+
+["eval", ["quote", ["number/add", 1, 2]]]
+// => 3</code></pre>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="editor" class="section editor">
+        <div class="editor-layout">
+          <div class="editor-copy reveal">
+            <span class="section-badge">Lion Fold Map</span>
+            <h2 class="section-title">See your program as a graph</h2>
+            <p class="section-description">
+              A local-first semantic graph and exact JSON workbench. The source
+              text stays canonical while the graph, outline, inspector,
+              diagnostics, and results track explicit revisions.
+            </p>
+            <ul class="editor-points">
+              <li>
+                Edit literals directly in graph nodes. Every edit is one
+                undoable transaction.
+              </li>
+              <li>
+                Run against the standard library, or turn on Live evaluation.
+              </li>
+              <li>
+                Open and save local files with the File System Access API, with
+                import and download fallback elsewhere.
+              </li>
+              <li>
+                Ships inside <code>@lionlang/cli</code>. No monorepo checkout
+                needed.
+              </li>
+            </ul>
+            <div class="code-block terminal">
+              <pre><code>bun add --dev @lionlang/cli
+bun run lion repl</code></pre>
+            </div>
+          </div>
+          <figure class="editor-shot tilt reveal">
+            <div class="tilt-sheen" aria-hidden="true"></div>
+            <img
+              src="assets/fold-map.webp"
+              width="1800"
+              height="1125"
+              loading="lazy"
+              decoding="async"
+              alt="Lion Fold Map showing a sum-of-squares program as a node graph, with the output panel reporting 14"
+            >
+          </figure>
+        </div>
+      </section>
+
+      <section id="packages" class="section packages">
+        <div class="section-header reveal">
+          <span class="section-badge">On npm</span>
+          <h2 class="section-title">Packages</h2>
+          <p class="section-description">
+            All packages are MIT licensed and built on Effect 4.1.
+          </p>
+        </div>
+        <div class="packages-grid spotlight-group">
+          <article class="package-card spotlight reveal">
+            <div class="package-head">
+              <h3>@lionlang/core</h3>
+              <span class="package-version">v0.2.0</span>
+            </div>
+            <p>The evaluator, special forms, and the standard library.</p>
+            <div class="code-block terminal">
+              <pre><code>bun add @lionlang/core effect</code></pre>
+            </div>
+            <a
+              class="package-link"
+              href="https://www.npmjs.com/package/@lionlang/core"
+              target="_blank"
+              rel="noopener"
+              >View on npm →</a
+            >
+          </article>
+          <article class="package-card spotlight reveal">
+            <div class="package-head">
+              <h3>@lionlang/cli</h3>
+              <span class="package-version">v0.1.0</span>
+            </div>
+            <p>
+              The <code>lion</code> command: evaluate Lion JSON files and serve
+              the bundled graph editor.
+            </p>
+            <div class="code-block terminal">
+              <pre><code>bun add --dev @lionlang/cli</code></pre>
+            </div>
+            <a
+              class="package-link"
+              href="https://www.npmjs.com/package/@lionlang/cli"
+              target="_blank"
+              rel="noopener"
+              >View on npm →</a
+            >
+          </article>
+          <article class="package-card spotlight reveal">
+            <div class="package-head">
+              <h3>@lionlang/typesafe-ai</h3>
+              <span class="package-version">v0.1.0</span>
+            </div>
+            <p>
+              TypeSafe AI and Jev bindings: <code>typesafe/noul</code>,
+              <code>typesafe/choice</code>, <code>typesafe/score</code>,
+              <code>typesafe/system-one</code>, and
+              <code>typesafe/models</code>.
+            </p>
+            <div class="code-block terminal">
+              <pre><code>bun add @lionlang/typesafe-ai</code></pre>
+            </div>
+            <a
+              class="package-link"
+              href="https://www.npmjs.com/package/@lionlang/typesafe-ai"
+              target="_blank"
+              rel="noopener"
+              >View on npm →</a
+            >
+          </article>
+        </div>
+      </section>
+
+      <section id="docs" class="section docs">
+        <div class="section-header reveal">
+          <span class="section-badge">Get started</span>
+          <h2 class="section-title">Quick start</h2>
+          <p class="section-description">
+            Evaluate Lion from TypeScript, or straight from your terminal.
+          </p>
+        </div>
+        <ol class="docs-content">
+          <li class="docs-step reveal">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Install the package</h3>
+              <div class="code-block terminal">
+                <pre><code>bun add @lionlang/core effect</code></pre>
+              </div>
+            </div>
+          </li>
+          <li class="docs-step reveal">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Import and run</h3>
+              <div class="code-block">
+                <pre><code data-highlight>import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+
+const result = await Effect.runPromise(
+  run(["number/add", 1, 2], stdlib)
+);
+// => 3</code></pre>
+              </div>
+            </div>
+          </li>
+          <li class="docs-step reveal">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Extend the environment</h3>
+              <div class="code-block">
+                <pre><code data-highlight>const env = {
+  ...stdlib,
+  price: 100,
+  taxRate: 0.08,
+};
+
+await Effect.runPromise(
+  run(["number/add", "price",
+    ["number/multiply", "price", "taxRate"]], env)
+);
+// => 108</code></pre>
+              </div>
+            </div>
+          </li>
+          <li class="docs-step reveal">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Use the CLI</h3>
+              <div class="code-block terminal">
+                <pre><code>bun add --dev @lionlang/cli
+bun run lion program.json   # evaluate a file
+bun run lion repl           # serve the graph editor</code></pre>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="cta">
+        <div class="cta-content reveal">
+          <h2>Ready to try Lion?</h2>
+          <p>
+            Write your first program in plain JSON, then watch it run in your
+            terminal, your app, or the graph editor.
+          </p>
+          <div class="cta-actions">
+            <a
+              href="https://github.com/andrueandersoncs/lion"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-primary magnetic"
+            >
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                />
+              </svg>
+              Star on GitHub
+            </a>
+            <a
+              href="https://github.com/andrueandersoncs/lion/blob/main/README.md"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-secondary magnetic"
+              >Read the docs</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-logo">
           <span class="logo-icon">Lion</span>
-          <p>A JSON-based Lisp for the modern web.</p>
+          <p>The JSON-based Lisp.</p>
         </div>
         <div class="footer-links">
           <div class="footer-column">
@@ -505,15 +698,43 @@
               >Documentation</a
             >
             <a href="#examples">Examples</a>
+            <a href="#editor">Graph editor</a>
+            <a
+              href="https://github.com/andrueandersoncs/lion/blob/main/CHANGELOG.md"
+              target="_blank"
+              rel="noopener"
+              >Changelog</a
+            >
+          </div>
+          <div class="footer-column">
+            <h4>Packages</h4>
+            <a
+              href="https://www.npmjs.com/package/@lionlang/core"
+              target="_blank"
+              rel="noopener"
+              >@lionlang/core</a
+            >
+            <a
+              href="https://www.npmjs.com/package/@lionlang/cli"
+              target="_blank"
+              rel="noopener"
+              >@lionlang/cli</a
+            >
+            <a
+              href="https://www.npmjs.com/package/@lionlang/typesafe-ai"
+              target="_blank"
+              rel="noopener"
+              >@lionlang/typesafe-ai</a
+            >
+          </div>
+          <div class="footer-column">
+            <h4>Community</h4>
             <a
               href="https://github.com/andrueandersoncs/lion"
               target="_blank"
               rel="noopener"
               >GitHub</a
             >
-          </div>
-          <div class="footer-column">
-            <h4>Community</h4>
             <a
               href="https://github.com/andrueandersoncs/lion/issues"
               target="_blank"
@@ -533,7 +754,5 @@
         <p>Released under the MIT License.</p>
       </div>
     </footer>
-
-    <script src="script.js"></script>
   </body>
 </html>
