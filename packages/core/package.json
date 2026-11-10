@@ -35,6 +35,7 @@
     "./logic/algorithms": "./dist/logic/algorithms.mjs",
     "./logic/compile": "./dist/logic/compile.mjs",
     "./logic/database": "./dist/logic/database.mjs",
+    "./logic/magic": "./dist/logic/magic.mjs",
     "./logic/query-options": "./dist/logic/query-options.mjs",
     "./logic/terms": "./dist/logic/terms.mjs",
     "./modules": "./dist/modules/index.mjs",

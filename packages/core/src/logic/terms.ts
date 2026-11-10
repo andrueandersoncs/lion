@@ -326,10 +326,19 @@ export const valueKey = (value: unknown): string =>
   JSON.stringify(canonical(value)) ?? "undefined";
 
 /** Structural equality for JSON data, identity for everything else. */
-export const sameValue = (a: unknown, b: unknown): boolean =>
-  isGroundValue(a) && isGroundValue(b)
+export const sameValue = (a: unknown, b: unknown): boolean => {
+  if (
+    typeof a !== "object" ||
+    typeof b !== "object" ||
+    a === null ||
+    b === null
+  ) {
+    return Object.is(a, b);
+  }
+  return isGroundValue(a) && isGroundValue(b)
     ? valueKey(a) === valueKey(b)
     : Object.is(a, b);
+};
 
 const typeRank = (value: unknown): number => {
   if (value === null) {

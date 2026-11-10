@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=ea3595bf87">
+    <link rel="stylesheet" href="styles.css?v=4ca76213a0">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=ea3595bf87"></script>
-    <script type="module" src="script.js?v=ea3595bf87"></script>
-    <script type="module" src="playground.js?v=ea3595bf87"></script>
+    <script type="module" src="constellation.js?v=4ca76213a0"></script>
+    <script type="module" src="script.js?v=4ca76213a0"></script>
+    <script type="module" src="playground.js?v=4ca76213a0"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -795,6 +795,33 @@
   {"page":"blog","rank":0.195824},
   {"page":"faq","rank":0.0375}
 ]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Goal-directed queries</h3>
+            <p>
+              A query with a known argument derives only what it can reach. All
+              paths along these 3,000 edges would be 4.5 million rows; this
+              query needs three. Try another start.
+            </p>
+            <div class="playground" data-playground="Goal-directed queries">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["rule", ["edge", "?n", ["number/add", "?n", 1]],
+    ["in", "?n", ["array/range", 0, 3000]]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"],
+    ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["query", ["path", 2997, "?to"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"to":2998},{"to":2999},{"to":3000}]</code></pre>
               </div>
             </div>
           </article>

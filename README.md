@@ -457,6 +457,28 @@ Evaluates to `[{ "to": "a", "km": 0, "path": ["a"] }, { "to": "c", "km": 1, "pat
 - `why` shows a computed row as `{ "fact": ["graph/shortestPath", "road", "a", "d", 8, ["a", "c", "b", "d"]], "computed": true }`.
 - Hosts can add their own algorithms with `defineAlgorithm`; see [Host Interop](#host-interop).
 
+### Goal-directed queries
+
+Bottom-up evaluation derives everything a program implies, but a query usually needs much less. When a query gives a rule-defined relation a known argument, such as `"a"` in `["path", "a", "?to"]`, Lion rewrites the rules with the magic-sets technique: each relation gets a copy for that pattern of known arguments, and extra rules pass the known values down through the rule bodies. Evaluation then derives only the facts the query can reach.
+
+```json
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["rule", ["edge", "?n", ["number/add", "?n", 1]], ["in", "?n", ["array/range", 0, 3000]]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["query", ["path", 2997, "?to"]]]
+```
+
+Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds. Computing `path` in full would derive about 4.5 million rows.
+
+- Known arguments are values, or variables bound by an earlier relation goal in the query, as in `["and", ["start", "?s"], ["path", "?s", "?to"]]`.
+- Relations that are aggregated, computed by an algorithm, or used under `not` are computed in full first, along with everything they depend on.
+- The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters.
+- `why` explains facts with every relation computed in full.
+- Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to compute every relation for every query instead.
+
 ### Guarantees
 
 Rules are checked when they are added:
@@ -466,7 +488,7 @@ Rules are checked when they are added:
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
 - A recursive rule cannot compute new values in its head columns, so evaluation always finishes. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
-Answers are computed bottom-up with semi-naive evaluation and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
+Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
 
 ## Standard Library
 

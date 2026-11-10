@@ -1,7 +1,13 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
-import type { CompiledQuery, CompiledRule, Literal } from "@/logic/compile";
+import {
+  type CompiledQuery,
+  type CompiledRule,
+  type Literal,
+  planLiterals,
+} from "@/logic/compile";
+import { type MagicProgram, rewriteQueries } from "@/logic/magic";
 import {
   Aggregate,
   type Atom,
@@ -22,10 +28,31 @@ type Tuple = readonly unknown[];
 
 type LogicEffect<A> = Effect.Effect<A, EvaluationError, LionEnvironmentService>;
 
-/** A set of tuples with hash indexes built on demand per bound-column set. */
+const getOrCreate = <K, V>(map: Map<K, V>, key: K, make: () => V): V => {
+  let value = map.get(key);
+  if (value === undefined) {
+    value = make();
+    map.set(key, value);
+  }
+  return value;
+};
+
+interface Index {
+  readonly buckets: Map<string, Tuple[]>;
+  readonly positions: readonly number[];
+}
+
+const bucketKey = (positions: readonly number[], tuple: Tuple) =>
+  valueKey(positions.map((position) => tuple[position]));
+
+/**
+ * A set of tuples with hash indexes built on demand per bound-column set.
+ * Adding a tuple updates the existing indexes, so a relation that grows one
+ * round at a time never rebuilds them.
+ */
 class TupleSet {
   private readonly tuples = new Map<string, Tuple>();
-  private readonly indexes = new Map<string, Map<string, Tuple[]>>();
+  private readonly indexes = new Map<string, Index>();
 
   get size(): number {
     return this.tuples.size;
@@ -45,7 +72,9 @@ class TupleSet {
       return false;
     }
     this.tuples.set(key, tuple);
-    this.indexes.clear();
+    for (const { buckets, positions } of this.indexes.values()) {
+      getOrCreate(buckets, bucketKey(positions, tuple), () => []).push(tuple);
+    }
     return true;
   }
 
@@ -72,19 +101,15 @@ class TupleSet {
     const indexKey = positions.join(",");
     let index = this.indexes.get(indexKey);
     if (index === undefined) {
-      index = new Map();
+      index = { buckets: new Map(), positions };
       for (const tuple of this.tuples.values()) {
-        const key = valueKey(positions.map((position) => tuple[position]));
-        const bucket = index.get(key);
-        if (bucket === undefined) {
-          index.set(key, [tuple]);
-        } else {
-          bucket.push(tuple);
-        }
+        getOrCreate(index.buckets, bucketKey(positions, tuple), () => []).push(
+          tuple
+        );
       }
       this.indexes.set(indexKey, index);
     }
-    return index.get(valueKey(values)) ?? [];
+    return index.buckets.get(valueKey(values)) ?? [];
   }
 }
 
@@ -117,6 +142,14 @@ interface Model {
   readonly relations: Map<string, TupleSet>;
 }
 
+export interface LogicDatabaseOptions {
+  /**
+   * Derive only what each query can reach (the default). When false, every
+   * query computes every relation, which is useful to compare results.
+   */
+  readonly goalDirected?: boolean;
+}
+
 /**
  * Relations, base facts, and rules for one evaluation. The derived model is
  * computed on demand and cached until a fact or rule changes.
@@ -127,6 +160,13 @@ export class LogicDatabase {
   rules: readonly CompiledRule[] = [];
   version = 0;
   cache: { readonly model: Model; readonly version: number } | undefined;
+  /** Models for goal-directed queries, by query, for the current version. */
+  readonly goals = new Map<string, Model>();
+  readonly goalDirected: boolean;
+
+  constructor(options: LogicDatabaseOptions = {}) {
+    this.goalDirected = options.goalDirected ?? true;
+  }
 }
 
 const fail = (message: string) => Effect.fail(new LogicError({ message }));
@@ -184,6 +224,7 @@ const groundTuple = (
 const touch = (database: LogicDatabase) => {
   database.version += 1;
   database.cache = undefined;
+  database.goals.clear();
 };
 
 const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
@@ -625,6 +666,18 @@ const unify =
       return [{ vars, trail: binding.trail }];
     });
 
+// Rules test the same list over and over, so remember each list's item keys.
+const listKeys = new WeakMap<readonly unknown[], ReadonlySet<string>>();
+
+const itemKeys = (items: readonly unknown[]) => {
+  let keys = listKeys.get(items);
+  if (keys === undefined) {
+    keys = new Set(items.map(valueKey));
+    listKeys.set(items, keys);
+  }
+  return keys;
+};
+
 /** Binds the element to each item of the list, or tests that it is one. */
 const member =
   (element: unknown, list: unknown): Step =>
@@ -651,7 +704,7 @@ const member =
         return out;
       }
       const value = yield* evaluateTerm(element, binding.vars);
-      return items.some((item) => sameValue(item, value)) ? [binding] : [];
+      return itemKeys(items).has(valueKey(value)) ? [binding] : [];
     });
 
 const literalStep = (literal: Literal, source: Source): Step => {
@@ -716,15 +769,6 @@ const headTuple = (rule: CompiledRule, binding: Binding) =>
     return tuple as Tuple;
   });
 
-const getOrCreate = <K, V>(map: Map<K, V>, key: K, make: () => V): V => {
-  let value = map.get(key);
-  if (value === undefined) {
-    value = make();
-    map.set(key, value);
-  }
-  return value;
-};
-
 /** Adds a derived tuple, remembering the first derivation for `why`. */
 const recordDerived = (
   model: Model,
@@ -734,7 +778,9 @@ const recordDerived = (
   binding: Binding
 ) => {
   const relation = rule.head.relation.name;
-  if (!model.relations.get(relation)?.add(tuple)) {
+  if (
+    !getOrCreate(model.relations, relation, () => new TupleSet()).add(tuple)
+  ) {
     return;
   }
   getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
@@ -766,6 +812,72 @@ const hasChanges = (delta: ReadonlyMap<string, TupleSet>) =>
 const fullRelation = (model: Model) => (relation: string) =>
   model.relations.get(relation) ?? EMPTY;
 
+interface DeltaPlan {
+  readonly body: readonly Literal[];
+  /** The body position each premise of a match comes from, in run order. */
+  readonly premises: readonly number[];
+}
+
+const deltaPlans = new WeakMap<CompiledRule, Map<number, DeltaPlan>>();
+
+const leavesPremise = (literal: Literal) =>
+  literal.kind === "atom" ||
+  literal.kind === "absent" ||
+  literal.kind === "check";
+
+/**
+ * The rule's body reordered to start from the goal at `position`, so a round
+ * starts from the few new tuples instead of scanning everything else first.
+ */
+const deltaPlan = (rule: CompiledRule, position: number): DeltaPlan => {
+  let plans = deltaPlans.get(rule);
+  if (plans === undefined) {
+    plans = new Map();
+    deltaPlans.set(rule, plans);
+  }
+  const known = plans.get(position);
+  if (known !== undefined) {
+    return known;
+  }
+  const first = rule.body[position];
+  const unchanged = {
+    body: rule.body,
+    premises: rule.body.flatMap((literal, at) =>
+      leavesPremise(literal) ? [at] : []
+    ),
+  };
+  let plan: DeltaPlan = unchanged;
+  if (
+    first?.kind === "atom" &&
+    first.atom.args.every((arg) => !(arg instanceof DeferredCall))
+  ) {
+    const rest = planLiterals(
+      rule.body.filter((_, at) => at !== position),
+      first.atom.args.flatMap((arg) =>
+        arg instanceof LogicVariable ? [arg.name] : []
+      )
+    );
+    if (typeof rest !== "string") {
+      const body = [first, ...rest];
+      plan = {
+        body,
+        premises: body.flatMap((literal) =>
+          leavesPremise(literal) ? [rule.body.indexOf(literal)] : []
+        ),
+      };
+    }
+  }
+  plans.set(position, plan);
+  return plan;
+};
+
+/** Puts a match's premises back in the rule's body order, for `why`. */
+const inBodyOrder = (trail: readonly Premise[], premises: readonly number[]) =>
+  trail
+    .map((premise, at) => [premises[at] ?? at, premise] as const)
+    .sort(([a], [b]) => a - b)
+    .map(([, premise]) => premise);
+
 /**
  * Re-runs a rule once per body goal that matches tuples new in the last round,
  * so every returned binding uses at least one new tuple.
@@ -786,10 +898,17 @@ const changedBindings = (
       if (changes === undefined || changes.size === 0) {
         continue;
       }
-      const bindings = yield* evaluateBody(rule.body, (at, relation) =>
-        at === position ? changes : full(relation)
+      const plan = deltaPlan(rule, position);
+      const changedAt = plan.body.indexOf(literal);
+      const bindings = yield* evaluateBody(plan.body, (at, relation) =>
+        at === changedAt ? changes : full(relation)
       );
-      out.push(...bindings);
+      for (const binding of bindings) {
+        out.push({
+          vars: binding.vars,
+          trail: inBodyOrder(binding.trail, plan.premises),
+        });
+      }
     }
     return out;
   });
@@ -1139,8 +1258,11 @@ const computeUsed = (model: Model, body: readonly Literal[]) =>
     }
   });
 
-/** Semi-naive bottom-up evaluation, one component at a time. */
-const computeModel = (database: LogicDatabase) =>
+/**
+ * Semi-naive bottom-up evaluation, one component at a time. With `only`, a
+ * set closed under dependencies, it skips components outside the set.
+ */
+const computeModel = (database: LogicDatabase, only?: ReadonlySet<string>) =>
   Effect.gen(function* () {
     const relations = new Map<string, TupleSet>();
     for (const [name, facts] of database.facts) {
@@ -1153,6 +1275,12 @@ const computeModel = (database: LogicDatabase) =>
     };
     const computed = computedRelations(database.rules);
     for (const component of components(database.rules)) {
+      if (
+        only !== undefined &&
+        ![...component].some((name) => only.has(name))
+      ) {
+        continue;
+      }
       const rules = database.rules.filter((rule) =>
         component.has(rule.head.relation.name)
       );
@@ -1180,13 +1308,93 @@ const currentModel = (database: LogicDatabase) =>
     return model;
   });
 
-/** Runs a query and returns one record per distinct answer. */
-export const queryDatabase = (
+/**
+ * Evaluates a rewritten query program: the relations it leaves alone in
+ * full, then the rewritten rules on top of them.
+ */
+const goalModel = (database: LogicDatabase, program: MagicProgram) =>
+  Effect.gen(function* () {
+    const model = yield* computeModel(database, program.full);
+    for (const rule of program.rules) {
+      yield* computeUsed(model, rule.body);
+    }
+    for (const component of components(program.rules)) {
+      yield* evaluateComponent(
+        model,
+        program.rules.filter((rule) => component.has(rule.head.relation.name))
+      );
+    }
+    return model;
+  });
+
+/** A key that tells variables apart from strings that look like them. */
+const termKey = (term: unknown): unknown => {
+  if (term instanceof LogicVariable) {
+    return { variable: term.name };
+  }
+  if (term instanceof DeferredCall) {
+    return { call: term.name, args: term.args.map(termKey) };
+  }
+  return { value: term };
+};
+
+const literalKey = (literal: Literal): unknown => {
+  switch (literal.kind) {
+    case "atom":
+    case "absent":
+      return [
+        literal.kind,
+        literal.atom.relation.name,
+        literal.atom.args.map(termKey),
+      ];
+    case "check":
+      return [literal.kind, termKey(literal.call)];
+    case "unify":
+      return [literal.kind, termKey(literal.left), termKey(literal.right)];
+    default:
+      return [literal.kind, termKey(literal.element), termKey(literal.list)];
+  }
+};
+
+const queryKey = (queries: readonly CompiledQuery[]) =>
+  valueKey(queries.map((query) => [query.outputs, query.body.map(literalKey)]));
+
+/**
+ * The model and query bodies to answer with. A query that asks a rule-defined
+ * relation about known arguments derives only what it can reach.
+ */
+const answerModel = (
   database: LogicDatabase,
   queries: readonly CompiledQuery[]
 ) =>
   Effect.gen(function* () {
-    const model = yield* currentModel(database);
+    const program = database.goalDirected
+      ? rewriteQueries(
+          database.rules,
+          queries,
+          (relation) => (database.facts.get(relation)?.size ?? 0) > 0
+        )
+      : undefined;
+    if (program === undefined) {
+      return { model: yield* currentModel(database), queries };
+    }
+    const key = queryKey(queries);
+    const cached = database.goals.get(key);
+    if (cached !== undefined) {
+      return { model: cached, queries: program.queries };
+    }
+    const model = yield* goalModel(database, program);
+    database.goals.set(key, model);
+    return { model, queries: program.queries };
+  });
+
+/** Runs a query and returns one record per distinct answer. */
+export const queryDatabase = (
+  database: LogicDatabase,
+  compiled: readonly CompiledQuery[]
+) =>
+  Effect.gen(function* () {
+    const { model, queries } = yield* answerModel(database, compiled);
     const rows = new Map<string, Record<string, unknown>>();
     for (const query of queries) {
       yield* computeUsed(model, query.body);

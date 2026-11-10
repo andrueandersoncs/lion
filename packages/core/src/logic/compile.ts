@@ -252,7 +252,8 @@ const boundArguments = (atom: Atom, bound: ReadonlySet<string>) =>
     (arg) => !(arg instanceof LogicVariable) || bound.has(arg.name)
   ).length;
 
-const literalGoal = (literal: Literal): unknown => {
+/** The goal a literal came from, for messages and cache keys. */
+export const literalGoal = (literal: Literal): unknown => {
   switch (literal.kind) {
     case "atom":
       return literal.atom;
@@ -273,10 +274,13 @@ const literalGoal = (literal: Literal): unknown => {
  * Orders literals so each one runs only after the variables it needs are
  * bound: filters as early as possible, then the most constrained relation.
  */
-const plan = (literals: readonly Literal[]): Literal[] | string => {
+export const planLiterals = (
+  literals: readonly Literal[],
+  initiallyBound: Iterable<string> = []
+): Literal[] | string => {
   const remaining = [...literals];
   const ordered: Literal[] = [];
-  const bound = new Set<string>();
+  const bound = new Set<string>(initiallyBound);
   while (remaining.length > 0) {
     let index = remaining.findIndex(
       (literal) => literal.kind !== "atom" && isReady(literal, bound)
@@ -375,7 +379,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
     );
     const rules: CompiledRule[] = [];
     for (const literals of expanded) {
-      const ordered = plan(literals);
+      const ordered = planLiterals(literals);
       if (typeof ordered === "string") {
         return yield* fail(ordered);
       }
@@ -405,7 +409,7 @@ export const compileQuery = (goal: unknown) =>
     ];
     const queries: CompiledQuery[] = [];
     for (const literals of expanded) {
-      const ordered = plan(literals);
+      const ordered = planLiterals(literals);
       if (typeof ordered === "string") {
         return yield* fail(ordered);
       }
