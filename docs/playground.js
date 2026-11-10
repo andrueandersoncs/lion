@@ -1,9 +1,13 @@
 // Live Lion editors for the example cards. Programs run in a Web Worker
 // (docs/lion-worker.js, built by @lionlang/site-runtime) so a runaway program
 // can be terminated without freezing the page.
-import { escapeHtml, highlight } from "./highlight.js";
+// docs/index.html loads this module as playground.js?v=<hash of the site's
+// assets>. Passing the same version on keeps a cached worker or highlighter
+// from another release from pairing with this page.
+const VERSION = new URL(import.meta.url).search;
+const { escapeHtml, highlight } = await import(`./highlight.js${VERSION}`);
 
-const WORKER_URL = new URL("./lion-worker.js", import.meta.url);
+const WORKER_URL = new URL(`./lion-worker.js${VERSION}`, import.meta.url);
 const TIMEOUT_MS = 1500;
 const DEBOUNCE_MS = 300;
 const SHOW_RUNNING_AFTER_MS = 120;

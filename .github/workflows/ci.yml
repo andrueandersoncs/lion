@@ -29,6 +29,9 @@ jobs:
       - name: Check formatting and lint rules
         run: bun run check
 
+      - name: Check site asset versions
+        run: bun run --cwd packages/site-runtime stamp --check
+
       - name: Typecheck workspaces
         run: bun run typecheck
 

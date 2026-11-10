@@ -1,4 +1,7 @@
-import { highlight } from "./highlight.js";
+// Load the highlighter with this module's ?v= version (see playground.js).
+const { highlight } = await import(
+  `./highlight.js${new URL(import.meta.url).search}`
+);
 
 const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"

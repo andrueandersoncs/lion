@@ -489,3 +489,11 @@ turbo dev --filter=@lionlang/repl
 ```bash
 turbo build --filter=@lionlang/site-runtime
 ```
+
+GitHub Pages lets browsers cache every file for ten minutes, so `docs/index.html` loads its scripts and stylesheet with a `?v=` hash of the site's assets, and the scripts pass it on to the worker and highlighter. A returning visitor therefore never runs new examples on a cached evaluator. The build above updates the hash. After editing only files in `docs/`, update it with:
+
+```bash
+bun run --cwd packages/site-runtime stamp
+```
+
+CI fails when the hash in `docs/index.html` is out of date.
