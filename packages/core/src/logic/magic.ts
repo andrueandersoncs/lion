@@ -22,7 +22,7 @@ import {
 } from "@/logic/compile";
 import {
   Atom,
-  isLogicTerm,
+  isGroundValue,
   LogicVariable,
   type RelationInfo,
 } from "@/logic/terms";
@@ -154,9 +154,13 @@ export const originalName = (name: string) => {
   return relation.slice(0, relation.lastIndexOf("^"));
 };
 
-/** A term is known when it is a value or a variable an earlier atom bound. */
+/**
+ * A term is known when it is JSON data or a variable an earlier atom bound.
+ * Other values, such as functions, can never match a fact, so they are left
+ * to filter the rewritten relation instead of seeding its magic.
+ */
 const isKnown = (term: unknown, bound: ReadonlySet<string>) =>
-  term instanceof LogicVariable ? bound.has(term.name) : !isLogicTerm(term);
+  term instanceof LogicVariable ? bound.has(term.name) : isGroundValue(term);
 
 const pick = <T>(items: readonly T[], adornment: Adornment) =>
   items.filter((_, position) => adornment[position]);
