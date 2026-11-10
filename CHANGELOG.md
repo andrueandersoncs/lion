@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2026-11-10 — @lionlang/core 0.4.0, @lionlang/cli 0.3.0
 
 ### Added
 
