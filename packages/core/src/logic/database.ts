@@ -5,6 +5,7 @@ import type { CompiledQuery, CompiledRule, Literal } from "@/logic/compile";
 import {
   Aggregate,
   type Atom,
+  type ComputedRelation,
   DeferredCall,
   isGroundValue,
   isLogicTerm,
@@ -28,6 +29,10 @@ class TupleSet {
 
   get size(): number {
     return this.tuples.size;
+  }
+
+  values(): IterableIterator<Tuple> {
+    return this.tuples.values();
   }
 
   has(tuple: Tuple): boolean {
@@ -106,6 +111,8 @@ interface Derivation {
 }
 
 interface Model {
+  /** Computed relations evaluated so far, by relation name. */
+  readonly computed: Map<string, ComputedRelation>;
   readonly derivations: Map<string, Map<string, Derivation>>;
   readonly relations: Map<string, TupleSet>;
 }
@@ -148,10 +155,20 @@ export const declareRelation = (
   return Effect.succeed(relation);
 };
 
+/** How a computed relation's call reads in Lion, for messages. */
+const computedCall = (computed: ComputedRelation) =>
+  show([computed.callee, ...computed.inputs]);
+
 const groundTuple = (
   database: LogicDatabase,
   atom: Atom
 ): Effect.Effect<Tuple, LogicError> => {
+  const { computed } = atom.relation;
+  if (computed !== undefined) {
+    return fail(
+      `${computedCall(computed)} is computed from its inputs, so it cannot have facts.`
+    );
+  }
   if (!database.relations.has(atom.relation.name)) {
     return fail(`Relation "${atom.relation.name}" is not declared here.`);
   }
@@ -215,7 +232,11 @@ const components = (rules: readonly CompiledRule[]) => {
     const targets = edges.get(rule.head.relation.name) ?? new Set();
     for (const literal of rule.body) {
       if (literal.kind === "atom" || literal.kind === "absent") {
-        targets.add(literal.atom.relation.name);
+        const { computed, name } = literal.atom.relation;
+        targets.add(name);
+        if (computed !== undefined) {
+          edges.set(name, new Set(computed.dependencies));
+        }
       }
     }
     edges.set(rule.head.relation.name, targets);
@@ -327,42 +348,91 @@ const recursiveAggregateProblem = (
   return undefined;
 };
 
+/** Computed relations that rule bodies use, by relation name. */
+const computedRelations = (rules: readonly CompiledRule[]) => {
+  const found = new Map<string, RelationInfo>();
+  for (const rule of rules) {
+    for (const literal of rule.body) {
+      if (
+        (literal.kind === "atom" || literal.kind === "absent") &&
+        literal.atom.relation.computed !== undefined
+      ) {
+        found.set(literal.atom.relation.name, literal.atom.relation);
+      }
+    }
+  }
+  return found;
+};
+
+type Components = readonly Set<string>[];
+
+const computedCycleProblem = (
+  rules: readonly CompiledRule[],
+  ordered: Components
+) => {
+  for (const [name, { computed }] of computedRelations(rules)) {
+    const others = [...(componentOf(ordered, name) ?? [])].filter(
+      (member) => member !== name
+    );
+    if (computed !== undefined && others.length > 0) {
+      return `${computedCall(computed)} reads relations that depend on its own results, through ${others.map((other) => `"${other}"`).join(", ")}. A computed relation cannot be part of a recursive cycle.`;
+    }
+  }
+  return undefined;
+};
+
+/** Checks one rule's recursion against the rest of the program. */
+const recursionProblem = (
+  rules: readonly CompiledRule[],
+  rule: CompiledRule,
+  ordered: Components
+) => {
+  const component = componentOf(ordered, rule.head.relation.name) ?? new Set();
+  const recursive = rule.body.find(
+    (literal) =>
+      literal.kind === "atom" && component.has(literal.atom.relation.name)
+  );
+  if (recursive?.kind === "atom" && rule.aggregates.length > 0) {
+    const problem = recursiveAggregateProblem(
+      rules,
+      rule,
+      component,
+      recursive.atom.relation.name
+    );
+    if (problem !== undefined) {
+      return problem;
+    }
+  }
+  const negated = rule.body.find(
+    (literal) =>
+      literal.kind === "absent" && component.has(literal.atom.relation.name)
+  );
+  if (negated?.kind === "absent") {
+    return `Rule ${show(rule.source)} negates "${negated.atom.relation.name}", which depends on "${rule.head.relation.name}". Negation cannot go through recursion.`;
+  }
+  if (
+    recursive !== undefined &&
+    rule.head.args.some((arg) => arg instanceof DeferredCall)
+  ) {
+    return `Rule ${show(rule.source)} computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule instead.`;
+  }
+  return undefined;
+};
+
 const checkProgram = (rules: readonly CompiledRule[]) => {
   const shapeProblem = checkAggregateShapes(rules);
   if (shapeProblem !== undefined) {
     return shapeProblem;
   }
   const ordered = components(rules);
+  const cycle = computedCycleProblem(rules, ordered);
+  if (cycle !== undefined) {
+    return cycle;
+  }
   for (const rule of rules) {
-    const component = componentOf(ordered, rule.head.relation.name);
-    const recursive = rule.body.find(
-      (literal) =>
-        literal.kind === "atom" && component?.has(literal.atom.relation.name)
-    );
-    if (recursive?.kind === "atom" && rule.aggregates.length > 0) {
-      const problem = recursiveAggregateProblem(
-        rules,
-        rule,
-        component ?? new Set(),
-        recursive.atom.relation.name
-      );
-      if (problem !== undefined) {
-        return problem;
-      }
-    }
-    for (const literal of rule.body) {
-      if (
-        literal.kind === "absent" &&
-        component?.has(literal.atom.relation.name)
-      ) {
-        return `Rule ${show(rule.source)} negates "${literal.atom.relation.name}", which depends on "${rule.head.relation.name}". Negation cannot go through recursion.`;
-      }
-    }
-    if (
-      recursive !== undefined &&
-      rule.head.args.some((arg) => arg instanceof DeferredCall)
-    ) {
-      return `Rule ${show(rule.source)} computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule instead.`;
+    const problem = recursionProblem(rules, rule, ordered);
+    if (problem !== undefined) {
+      return problem;
     }
   }
   return undefined;
@@ -373,10 +443,14 @@ export const addRules = (
   rules: readonly CompiledRule[]
 ): Effect.Effect<void, LogicError> => {
   for (const rule of rules) {
-    if (!database.relations.has(rule.head.relation.name)) {
+    const { computed, name } = rule.head.relation;
+    if (computed !== undefined) {
       return fail(
-        `Relation "${rule.head.relation.name}" is not declared here.`
+        `Rules cannot add to ${computedCall(computed)}: it is computed from its inputs.`
       );
+    }
+    if (!database.relations.has(name)) {
+      return fail(`Relation "${name}" is not declared here.`);
     }
   }
   for (const rule of rules) {
@@ -499,12 +573,17 @@ const matchAbsent =
         const at = positions.indexOf(position);
         return at === -1 ? "?_" : values[at];
       });
+      const { computed } = atom.relation;
+      const head =
+        computed === undefined
+          ? [relation]
+          : [computed.callee, ...computed.inputs];
       return [
         {
           vars: binding.vars,
           trail: [
             ...binding.trail,
-            { kind: "absent", pattern: [relation, ...shown] },
+            { kind: "absent", pattern: [...head, ...shown] },
           ],
         },
       ];
@@ -1019,6 +1098,47 @@ const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
     }
   });
 
+/** Runs a computed relation's algorithm over its complete inputs. */
+const computeRelation = (model: Model, relation: RelationInfo) =>
+  Effect.gen(function* () {
+    const { computed, name } = relation;
+    if (computed === undefined || model.relations.has(name)) {
+      return;
+    }
+    for (const dependency of computed.dependencies) {
+      if (!model.relations.has(dependency)) {
+        return yield* fail(`Relation "${dependency}" is not declared here.`);
+      }
+    }
+    const rows = computed.compute((input) => [
+      ...(model.relations.get(input)?.values() ?? []),
+    ]);
+    if (typeof rows === "string") {
+      return yield* fail(rows);
+    }
+    const tuples = new TupleSet();
+    for (const row of rows) {
+      if (row.length !== relation.columns.length || !row.every(isGroundValue)) {
+        return yield* fail(
+          `${computedCall(computed)} produced a row that is not ${relation.columns.length} JSON values: ${show(row)}.`
+        );
+      }
+      tuples.add(row);
+    }
+    model.relations.set(name, tuples);
+    model.computed.set(name, computed);
+  });
+
+/** Computes the relations a query or explanation reads but no rule did. */
+const computeUsed = (model: Model, body: readonly Literal[]) =>
+  Effect.gen(function* () {
+    for (const literal of body) {
+      if (literal.kind === "atom" || literal.kind === "absent") {
+        yield* computeRelation(model, literal.atom.relation);
+      }
+    }
+  });
+
 /** Semi-naive bottom-up evaluation, one component at a time. */
 const computeModel = (database: LogicDatabase) =>
   Effect.gen(function* () {
@@ -1026,12 +1146,25 @@ const computeModel = (database: LogicDatabase) =>
     for (const [name, facts] of database.facts) {
       relations.set(name, facts.clone());
     }
-    const model: Model = { relations, derivations: new Map() };
+    const model: Model = {
+      computed: new Map(),
+      relations,
+      derivations: new Map(),
+    };
+    const computed = computedRelations(database.rules);
     for (const component of components(database.rules)) {
-      yield* evaluateComponent(
-        model,
-        database.rules.filter((rule) => component.has(rule.head.relation.name))
+      const rules = database.rules.filter((rule) =>
+        component.has(rule.head.relation.name)
       );
+      if (rules.length > 0) {
+        yield* evaluateComponent(model, rules);
+      }
+      for (const name of component) {
+        const relation = computed.get(name);
+        if (relation !== undefined) {
+          yield* computeRelation(model, relation);
+        }
+      }
     }
     return model;
   });
@@ -1056,6 +1189,7 @@ export const queryDatabase = (
     const model = yield* currentModel(database);
     const rows = new Map<string, Record<string, unknown>>();
     for (const query of queries) {
+      yield* computeUsed(model, query.body);
       const bindings = yield* evaluateBody(
         query.body,
         (_, relation) => model.relations.get(relation) ?? EMPTY
@@ -1082,6 +1216,13 @@ const explainPremise = (model: Model, premise: Premise): unknown => {
 };
 
 const explain = (model: Model, relation: string, tuple: Tuple): unknown => {
+  const computed = model.computed.get(relation);
+  if (computed !== undefined) {
+    return {
+      fact: [computed.callee, ...computed.inputs, ...tuple],
+      computed: true,
+    };
+  }
   const fact = [relation, ...tuple];
   const derivation = model.derivations.get(relation)?.get(valueKey(tuple));
   if (derivation === undefined) {
@@ -1098,8 +1239,19 @@ const explain = (model: Model, relation: string, tuple: Tuple): unknown => {
 /** Explains how a fact was derived, or returns null when it does not hold. */
 export const explainFact = (database: LogicDatabase, atom: Atom) =>
   Effect.gen(function* () {
-    const tuple = yield* groundTuple(database, atom);
     const model = yield* currentModel(database);
+    if (atom.relation.computed !== undefined) {
+      if (!atom.args.every(isGroundValue)) {
+        return yield* fail(
+          `why expects a fact without variables: ${show(atom)}.`
+        );
+      }
+      yield* computeRelation(model, atom.relation);
+      return model.relations.get(atom.relation.name)?.has(atom.args)
+        ? explain(model, atom.relation.name, atom.args)
+        : null;
+    }
+    const tuple = yield* groundTuple(database, atom);
     return model.relations.get(atom.relation.name)?.has(tuple)
       ? explain(model, atom.relation.name, tuple)
       : null;

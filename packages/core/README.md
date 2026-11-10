@@ -332,6 +332,34 @@ Evaluates to `[{ "to": "c", "km": 1 }, { "to": "b", "km": 3 }, { "to": "d", "km"
 - Every relation in a recursive cycle through an aggregate must aggregate too, so replacing a value never leaves rows derived from the old one behind.
 - If values are still improving after 10,000 rounds, as with a negative-weight cycle under `aggregate/min`, the query fails with an error instead of running forever.
 
+### Graph algorithms
+
+Some questions are easier to answer with a classic algorithm than with rules. The `graph` module turns algorithms into goals: call one with an edge relation, any other inputs, and one term per output column, and it builds a goal the way calling a relation does. The engine runs the algorithm once its input relation is complete, so its rows work in queries, rule bodies, `not`, and aggregates.
+
+```json
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["query", ["graph/shortestPath", "road", "a", "?to", "?km", "?path"]]]
+```
+
+Evaluates to `[{ "to": "a", "km": 0, "path": ["a"] }, { "to": "c", "km": 1, "path": ["a", "c"] }, { "to": "b", "km": 3, "path": ["a", "c", "b"] }, { "to": "d", "km": 8, "path": ["a", "c", "b", "d"] }]`.
+
+| Goal | Rows |
+|---|---|
+| `["graph/shortestPath", edges, start, to, cost, path]` | Dijkstra's algorithm from `start`, in order of cost, starting with `start` itself at cost 0. A third edge column is the weight, at least 0; without one, every edge costs 1. |
+| `["graph/pageRank", edges, node, rank]` | PageRank with damping 0.85, rounded to 6 decimal places. The ranks add up to 1. |
+| `["graph/components", edges, node, component]` | Connected components, ignoring edge direction. |
+| `["graph/stronglyConnected", edges, node, component]` | Strongly connected components. |
+| `["graph/topologicalOrder", edges, node, position]` | Positions from 0 in a topological order, or an error that names a cycle. |
+
+- The first two columns of `edges` are the edge's from and to.
+- Components are named after their smallest node, and ties go to the smaller value, so results never depend on the order facts were added.
+- Inputs such as `start` must be values when the goal is built. Output terms can be variables or values, so `["graph/shortestPath", "road", "a", "d", "?km", "?_"]` asks for one distance.
+- A computed relation cannot have facts or rules of its own, and it cannot be part of a recursive cycle.
+- `why` shows a computed row as `{ "fact": ["graph/shortestPath", "road", "a", "d", 8, ["a", "c", "b", "d"]], "computed": true }`.
+- Hosts can add their own algorithms with `defineAlgorithm`; see [Host Interop](#host-interop).
+
 ### Guarantees
 
 Rules are checked when they are added:
@@ -434,6 +462,18 @@ Called on a list, each function combines it. Called on a logic variable in a rul
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
 
+### `graph`
+
+Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms).
+
+```json
+["graph/shortestPath", "road", "a", "?to", "?cost", "?path"]
+["graph/pageRank", "edge", "?node", "?rank"]
+["graph/components", "edge", "?node", "?component"]
+["graph/stronglyConnected", "edge", "?node", "?component"]
+["graph/topologicalOrder", "edge", "?node", "?position"]
+```
+
 ### `func`
 
 ```json
@@ -489,6 +529,33 @@ Then Lion code in [`packages/agent/src/agent.json`](/Users/andrueanderson/Worksp
 - `match`, `cond`, `begin`, and `define` to orchestrate application flow
 
 That lets Lion drive a non-trivial terminal UI agent entirely from JSON.
+
+### Custom algorithms
+
+`defineAlgorithm` turns a TypeScript function into an algorithm goal like those in the `graph` module. It receives the tuples of each relation input and the value of each other input, and returns the output rows, or a string that explains why it cannot.
+
+```ts
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { defineAlgorithm } from "@lionlang/core/logic/algorithms";
+import { stdlib } from "@lionlang/core/modules";
+
+const outDegree = defineAlgorithm({
+  name: "my/outDegree",
+  inputs: [{ kind: "relation", name: "edges" }],
+  columns: ["node", "degree"],
+  run: ([edges]) => {
+    const counts = new Map<unknown, number>();
+    for (const [from] of edges as unknown[][]) {
+      counts.set(from, (counts.get(from) ?? 0) + 1);
+    }
+    return [...counts];
+  },
+});
+
+run(program, { ...stdlib, "my/outDegree": outDegree });
+```
+
+In the program, `["my/outDegree", "edge", "?node", "?degree"]` is then a goal.
 
 ## Development
 

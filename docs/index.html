@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=9e5a0333ec">
+    <link rel="stylesheet" href="styles.css?v=ea3595bf87">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=9e5a0333ec"></script>
-    <script type="module" src="script.js?v=9e5a0333ec"></script>
-    <script type="module" src="playground.js?v=9e5a0333ec"></script>
+    <script type="module" src="constellation.js?v=ea3595bf87"></script>
+    <script type="module" src="script.js?v=ea3595bf87"></script>
+    <script type="module" src="playground.js?v=ea3595bf87"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -202,7 +202,7 @@
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
             ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
-            ><span>"in"</span>
+            ><span>"in"</span><span>"graph/pageRank"</span>
           </div>
           <div class="marquee-track" aria-hidden="true">
             <span>"boolean/xor"</span><span>"string/startsWith"</span
@@ -214,7 +214,7 @@
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
             ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
-            ><span>"in"</span>
+            ><span>"in"</span><span>"graph/pageRank"</span>
           </div>
         </div>
       </section>
@@ -766,6 +766,35 @@
                 <pre
                   class="playground-result"
                 ><code>[{"post":"p1"},{"post":"p2"}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Graph algorithms</h3>
+            <p>
+              Algorithms such as <code>graph/pageRank</code> and
+              <code>graph/shortestPath</code>
+              are goals too. Link another page to <code>"faq"</code> and watch
+              the ranks shift.
+            </p>
+            <div class="playground" data-playground="Graph algorithms">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "link", ["from", "to"]],
+  ["fact", ["link", "home", "docs"], ["link", "home", "blog"],
+    ["link", "blog", "docs"], ["link", "docs", "home"],
+    ["link", "faq", "docs"]],
+  ["query", ["graph/pageRank", "link", "?page", "?rank"],
+    {"order": "-rank"}]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  {"page":"docs","rank":0.394149},
+  {"page":"home","rank":0.372527},
+  {"page":"blog","rank":0.195824},
+  {"page":"faq","rank":0.0375}
+]</code></pre>
               </div>
             </div>
           </article>

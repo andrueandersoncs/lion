@@ -4,6 +4,7 @@ import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
 import { module as console } from "./console.ts";
 import { module as func } from "./func.ts";
+import { module as graph } from "./graph.ts";
 import { module as number } from "./number.ts";
 import { module as object } from "./object.ts";
 import { module as string } from "./string.ts";
@@ -25,13 +26,15 @@ export const namespaceEntries = (
 
 // Pure modules can be used inside rules: called with a logic variable, their
 // functions wait until the variable is bound instead of running. Aggregates
-// called with a logic variable become aggregates for a rule head instead.
+// called with a logic variable become aggregates for a rule head instead, and
+// graph algorithms build goals over computed relations.
 export const stdlib = {
   ...namespaceEntries("aggregate", aggregate),
   ...namespaceEntries("array", markPure(array)),
   ...namespaceEntries("boolean", markPure(boolean)),
   ...namespaceEntries("console", console),
   ...namespaceEntries("func", func),
+  ...namespaceEntries("graph", graph),
   ...namespaceEntries("number", markPure(number)),
   ...namespaceEntries("object", object),
   ...namespaceEntries("string", markPure(string)),

@@ -74,8 +74,27 @@ export class Aggregate {
   }
 }
 
+/**
+ * A relation whose tuples a host function computes from other relations,
+ * such as `["graph/pageRank", "edge", "?node", "?rank"]`.
+ */
+export interface ComputedRelation {
+  /** The function that builds it, such as `"graph/pageRank"`. */
+  readonly callee: string;
+  /** Returns the tuples, or a message explaining why it cannot. */
+  readonly compute: (
+    tuples: (relation: string) => readonly (readonly unknown[])[]
+  ) => readonly (readonly unknown[])[] | string;
+  /** Relations whose tuples the computation reads. */
+  readonly dependencies: readonly string[];
+  /** Input relation names and parameter values, as written in the call. */
+  readonly inputs: readonly unknown[];
+}
+
 export interface RelationInfo {
   readonly columns: readonly string[];
+  /** Set for relations computed from other relations instead of declared. */
+  readonly computed?: ComputedRelation;
   readonly name: string;
 }
 
@@ -237,7 +256,10 @@ export const render = (value: unknown): unknown => {
     return [`aggregate/${value.kind}`, render(value.arg)];
   }
   if (value instanceof Atom) {
-    return [value.relation.name, ...value.args.map(render)];
+    const { computed, name } = value.relation;
+    return computed === undefined
+      ? [name, ...value.args.map(render)]
+      : [computed.callee, ...computed.inputs, ...value.args.map(render)];
   }
   if (value instanceof Negation) {
     return ["not", render(value.atom)];
