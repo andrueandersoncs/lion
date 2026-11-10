@@ -1,9 +1,12 @@
 // Web Worker that evaluates Lion programs for the live examples on
 // lionlang.dev. The page owns timeouts: it terminates this worker when a
 // program runs too long, so nothing here needs to guard against runaway code.
+// For the same reason the evaluator never yields to the scheduler: in a
+// browser each yield waits on a clamped setTimeout, which made long logic
+// queries spend most of their time idle.
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { stdlib } from "@lionlang/core/modules";
-import { Cause, Console, Effect, Exit } from "effect";
+import { Cause, Console, Effect, Exit, Scheduler } from "effect";
 
 interface EvaluateRequest {
   readonly id: number;
@@ -183,7 +186,8 @@ const evaluateSource = async ({
   }
   const exit = await Effect.runPromiseExit(
     run(program, stdlib).pipe(
-      Effect.provideService(Console.Console, makeConsole(logs))
+      Effect.provideService(Console.Console, makeConsole(logs)),
+      Effect.provideService(Scheduler.PreventSchedulerYield, true)
     )
   );
   const ms = performance.now() - started;
