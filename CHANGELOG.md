@@ -1,12 +1,13 @@
 # Changelog
 
-## Unreleased
+## 2026-11-10 — @lionlang/core 0.3.0, @lionlang/cli 0.2.0
 
 ### Added
 
 - A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `"?name"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.
 - lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.
 - The Fold Map graph editor recognizes the logic forms and gives them their own node color.
+- `@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor.
 - Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.
 
 ### Changed
