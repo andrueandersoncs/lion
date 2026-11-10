@@ -95,6 +95,8 @@ export interface RelationInfo {
   readonly columns: readonly string[];
   /** Set for relations computed from other relations instead of declared. */
   readonly computed?: ComputedRelation;
+  /** Positions of the key columns; a keyed relation has one row per key. */
+  readonly key?: readonly number[];
   readonly name: string;
 }
 

@@ -7,7 +7,7 @@ import {
   type Literal,
   planLiterals,
 } from "@/logic/compile";
-import { type MagicProgram, rewriteQueries } from "@/logic/magic";
+import { type MagicProgram, originalName, rewriteQueries } from "@/logic/magic";
 import {
   Aggregate,
   type Atom,
@@ -79,11 +79,22 @@ class TupleSet {
   }
 
   delete(tuple: Tuple): boolean {
-    const deleted = this.tuples.delete(valueKey(tuple));
-    if (deleted) {
-      this.indexes.clear();
+    const key = valueKey(tuple);
+    const stored = this.tuples.get(key);
+    if (stored === undefined) {
+      return false;
     }
-    return deleted;
+    this.tuples.delete(key);
+    for (const { buckets, positions } of this.indexes.values()) {
+      const bucket = bucketKey(positions, stored);
+      const remaining = buckets.get(bucket)?.filter((item) => item !== stored);
+      if (remaining === undefined || remaining.length === 0) {
+        buckets.delete(bucket);
+      } else {
+        buckets.set(bucket, remaining);
+      }
+    }
+    return true;
   }
 
   clone(): TupleSet {
@@ -173,23 +184,61 @@ const fail = (message: string) => Effect.fail(new LogicError({ message }));
 
 const show = (value: unknown) => JSON.stringify(render(value));
 
+const keyProblem = (
+  name: string,
+  columns: readonly string[],
+  key: readonly string[]
+) => {
+  if (key.length === 0) {
+    return `Relation "${name}" needs at least one key column.`;
+  }
+  const unknown = key.find((column) => !columns.includes(column));
+  if (unknown !== undefined) {
+    return `Relation "${name}" has no column "${unknown}" to use as a key. Its columns are ${JSON.stringify(columns)}.`;
+  }
+  return new Set(key).size === key.length
+    ? undefined
+    : `Relation "${name}" repeats a key column.`;
+};
+
+const describeRelation = (relation: RelationInfo) =>
+  relation.key === undefined
+    ? `columns ${JSON.stringify(relation.columns)}`
+    : `columns ${JSON.stringify(relation.columns)} and key ${JSON.stringify(keyColumns(relation))}`;
+
+/** The names of a keyed relation's key columns. */
+export const keyColumns = (relation: RelationInfo) =>
+  (relation.key ?? []).map((position) => relation.columns[position]);
+
 export const declareRelation = (
   database: LogicDatabase,
   name: string,
-  columns: readonly string[]
+  columns: readonly string[],
+  key?: readonly string[]
 ): Effect.Effect<RelationInfo, LogicError> => {
   if (new Set(columns).size !== columns.length) {
     return fail(`Relation "${name}" repeats a column name.`);
   }
+  const problem =
+    key === undefined ? undefined : keyProblem(name, columns, key);
+  if (problem !== undefined) {
+    return fail(problem);
+  }
+  const relation: RelationInfo = {
+    name,
+    columns: [...columns],
+    ...(key === undefined
+      ? {}
+      : { key: key.map((column) => columns.indexOf(column)) }),
+  };
   const existing = database.relations.get(name);
   if (existing !== undefined) {
-    return valueKey(existing.columns) === valueKey(columns)
+    return describeRelation(existing) === describeRelation(relation)
       ? Effect.succeed(existing)
       : fail(
-          `Relation "${name}" is already declared with columns ${JSON.stringify(existing.columns)}.`
+          `Relation "${name}" is already declared with ${describeRelation(existing)}.`
         );
   }
-  const relation: RelationInfo = { name, columns: [...columns] };
   database.relations.set(name, relation);
   database.facts.set(name, new TupleSet());
   return Effect.succeed(relation);
@@ -244,7 +293,16 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
     for (const [atom, tuple] of tuples) {
-      database.facts.get(atom.relation.name)?.add(tuple);
+      const facts = database.facts.get(atom.relation.name);
+      const key = database.relations.get(atom.relation.name)?.key;
+      if (facts !== undefined && key !== undefined) {
+        // A fact with a key that is already present replaces the old row.
+        const keyValues = key.map((position) => tuple[position]);
+        for (const old of [...facts.lookup(key, keyValues)]) {
+          facts.delete(old);
+        }
+      }
+      facts?.add(tuple);
     }
     touch(database);
     return atoms.map(render);
@@ -837,6 +895,25 @@ const recordDerived = (
   );
 };
 
+/** Fails when a derived row has the key of a different row already there. */
+const checkKey = (model: Model, rule: CompiledRule, tuple: Tuple) => {
+  const { key, name } = rule.head.relation;
+  if (key === undefined) {
+    return Effect.void;
+  }
+  const keyValues = key.map((position) => tuple[position]);
+  const tupleKey = valueKey(tuple);
+  for (const other of model.relations.get(name)?.lookup(key, keyValues) ?? []) {
+    if (valueKey(other) !== tupleKey) {
+      const relation = originalName(name);
+      return fail(
+        `"${relation}" is keyed by ${JSON.stringify(keyColumns(rule.head.relation))}, but ${show(rule.source)} derived ${show([relation, ...tuple])} while ${show([relation, ...other])} holds.`
+      );
+    }
+  }
+  return Effect.void;
+};
+
 const deriveHeads = (
   rule: CompiledRule,
   bindings: readonly Binding[],
@@ -849,6 +926,7 @@ const deriveHeads = (
       derived.push([yield* headTuple(rule, binding), binding]);
     }
     for (const [tuple, binding] of derived) {
+      yield* checkKey(model, rule, tuple);
       recordDerived(model, delta, rule, tuple, binding);
     }
   });

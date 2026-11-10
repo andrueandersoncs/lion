@@ -104,11 +104,19 @@ export const MatchPatternSchema = Schema.Tuple([
   LionExpressionSchema,
 ]);
 
-// ["relation", <name>, [<column>, ...]]
-export const RelationFormSchema = Schema.Tuple([
-  Schema.Literal("relation"),
-  ValidIdentifierSchema,
-  Schema.Array(Schema.String),
+// ["relation", <name>, [<column>, ...]] or with {"key": [<column>, ...]}
+export const RelationFormSchema = Schema.Union([
+  Schema.Tuple([
+    Schema.Literal("relation"),
+    ValidIdentifierSchema,
+    Schema.Array(Schema.String),
+  ]),
+  Schema.Tuple([
+    Schema.Literal("relation"),
+    ValidIdentifierSchema,
+    Schema.Array(Schema.String),
+    LionExpressionSchema,
+  ]),
 ]);
 
 // ["rule", <head>, <goal>, ...]

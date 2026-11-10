@@ -211,7 +211,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 ### Building blocks
 
 - `"?name"` evaluates to a logic variable when `?name` is not bound. `"?_"` is anonymous: each occurrence is a separate variable, and inside `not` it matches anything.
-- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself.
+- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A record after the columns, such as `{"key": ["id"]}`, gives the relation a key; see [Keys](#keys).
 - Functions from the pure modules (`number`, `string`, `boolean`, `value`, `array`) wait when called with a logic variable. `["number/greaterThan", "?amount", 100]` becomes a filter in a rule body, and `["number/add", "?n", 1]` becomes a value computed once `?n` is bound.
 - Ordinary lambdas run as usual, so a lambda can build and return goals.
 
@@ -229,6 +229,26 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
 | `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. Without logic variables it is plain membership. See [Lists](#lists). |
+
+### Keys
+
+A record after the columns gives a relation a key. A keyed relation holds at most one row per key, so a fact whose key is already present replaces the old row, like an upsert.
+
+```json
+["begin",
+  ["relation", "order", ["id", "status"], {"key": ["id"]}],
+  ["fact", ["order", 1, "open"], ["order", 2, "open"]],
+  ["fact", ["order", 1, "shipped"]],
+  ["query", ["order", "?id", "?status"], {"order": "id"}]]
+```
+
+Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`.
+
+- A key can span several columns, as in `{"key": ["warehouse", "sku"]}`, and a single column can be written without the list, as in `{"key": "id"}`.
+- When one `fact` form repeats a key, the last row wins.
+- `retract` removes a row only when every column matches.
+- Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error.
+- Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.
 
 ### Query options
 

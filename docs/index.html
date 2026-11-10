@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=312c60438d">
+    <link rel="stylesheet" href="styles.css?v=ef0056d889">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=312c60438d"></script>
-    <script type="module" src="script.js?v=312c60438d"></script>
-    <script type="module" src="playground.js?v=312c60438d"></script>
+    <script type="module" src="constellation.js?v=ef0056d889"></script>
+    <script type="module" src="script.js?v=ef0056d889"></script>
+    <script type="module" src="playground.js?v=ef0056d889"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -822,6 +822,31 @@
                 <pre
                   class="playground-result"
                 ><code>[{"to":2998},{"to":2999},{"to":3000}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Keys and upserts</h3>
+            <p>
+              With a key, a fact for an existing key replaces the old row, so
+              each order has one status. Mark order 2 as paid.
+            </p>
+            <div class="playground" data-playground="Keys and upserts">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "order", ["id", "status", "total"],
+    {"key": ["id"]}],
+  ["fact", ["order", 1, "open", 30], ["order", 2, "open", 12]],
+  ["fact", ["order", 1, "shipped", 30]],
+  ["query", ["order", "?id", "?status", "?total"],
+    {"order": "id"}]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  {"id":1,"status":"shipped","total":30},
+  {"id":2,"status":"open","total":12}
+]</code></pre>
               </div>
             </div>
           </article>

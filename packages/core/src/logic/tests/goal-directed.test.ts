@@ -194,6 +194,25 @@ const CORPUS: Record<string, unknown[]> = {
     ],
     ["query", ["tagged", "b", "?post"]],
   ],
+  "keyed relations": [
+    ["relation", "manager", ["person", "boss"], { key: "person" }],
+    ["relation", "above", ["person", "boss"]],
+    [
+      "fact",
+      ["manager", "ana", "bo"],
+      ["manager", "bo", "cy"],
+      ["manager", "ana", "dee"],
+      ["manager", "dee", "cy"],
+    ],
+    ["rule", ["above", "?p", "?b"], ["manager", "?p", "?b"]],
+    [
+      "rule",
+      ["above", "?p", "?b"],
+      ["above", "?p", "?m"],
+      ["manager", "?m", "?b"],
+    ],
+    ["query", ["above", "ana", "?boss"]],
+  ],
   "computed arguments in recursive calls": [
     ["relation", "num", ["n"]],
     ["relation", "down", ["n"]],

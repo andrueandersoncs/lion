@@ -141,6 +141,19 @@ const adornedName = (relation: string, adornment: Adornment) =>
 const magicName = (relation: string, adornment: Adornment) =>
   `\u0000magic^${relation}^${adornmentKey(adornment)}`;
 
+const REWRITTEN = "\u0000";
+const MAGIC = "magic^";
+
+/** The relation a rewritten copy stands for, for messages. */
+export const originalName = (name: string) => {
+  if (!name.startsWith(REWRITTEN)) {
+    return name;
+  }
+  const inner = name.slice(REWRITTEN.length);
+  const relation = inner.startsWith(MAGIC) ? inner.slice(MAGIC.length) : inner;
+  return relation.slice(0, relation.lastIndexOf("^"));
+};
+
 /** A term is known when it is a value or a variable an earlier atom bound. */
 const isKnown = (term: unknown, bound: ReadonlySet<string>) =>
   term instanceof LogicVariable ? bound.has(term.name) : !isLogicTerm(term);

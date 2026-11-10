@@ -76,14 +76,50 @@ const atoms = (form: string, values: readonly unknown[]) =>
     return result;
   });
 
-/** ["relation", "dep", ["from", "to"]] declares a relation and binds it. */
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** Reads `{"key": [...]}`; relation options are read as written. */
+const relationKey = (name: string, options: unknown) => {
+  if (options === undefined) {
+    return Effect.succeed(undefined);
+  }
+  if (!isRecord(options)) {
+    return fail(
+      `Relation options must be a record such as {"key": ["id"]}, but "${name}" has ${show(options)}.`
+    );
+  }
+  const unknown = Object.keys(options).find((option) => option !== "key");
+  if (unknown !== undefined) {
+    return fail(
+      `Unknown relation option "${unknown}" for "${name}". The only relation option is "key".`
+    );
+  }
+  const key = typeof options.key === "string" ? [options.key] : options.key;
+  return Array.isArray(key) && key.every((column) => typeof column === "string")
+    ? Effect.succeed(key as readonly string[])
+    : fail(
+        `The key of "${name}" must be a column name or a list of them, but found ${show(options.key)}.`
+      );
+};
+
+/**
+ * ["relation", "dep", ["from", "to"]] declares a relation and binds it.
+ * ["relation", "order", ["id", "status"], {"key": ["id"]}] gives it a key.
+ */
 export const evaluateRelation = ([
   _,
   name,
   columns,
+  options,
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
-    const relation = yield* declareRelation(yield* database, name, columns);
+    const relation = yield* declareRelation(
+      yield* database,
+      name,
+      columns,
+      yield* relationKey(name, options)
+    );
     const value = makeRelationValue(relation, (...args: unknown[]) =>
       args.length === relation.columns.length
         ? Effect.succeed(new Atom(relation, args))

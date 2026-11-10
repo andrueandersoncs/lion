@@ -310,9 +310,10 @@ const describeSpecialForm = (
       )?.name;
       const columns = children.find(({ role }) => role === "columns");
       const columnCount = columns?.children.length ?? 0;
+      const keyed = children.some(({ role }) => role === "options");
       return {
         mark: form,
-        description: "relation",
+        description: keyed ? "keyed relation" : "relation",
         detail: `${binding ?? "relation"} · ${pluralize(columnCount, "column")}`,
       };
     }

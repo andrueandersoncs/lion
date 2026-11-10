@@ -133,7 +133,7 @@ const SPECIAL_FORMS: readonly FormDefinition[] = [
   {
     name: "relation",
     matches: Schema.is(RelationFormSchema),
-    role: roleByIndex(["operator", "binding", "columns"], "columns"),
+    role: roleByIndex(["operator", "binding", "columns", "options"], "options"),
   },
   {
     name: "rule",
