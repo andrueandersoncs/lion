@@ -38,6 +38,16 @@ const DISALLOWED_IDENTIFIERS = [
   "lambda",
   "cond",
   "match",
+  "relation",
+  "rule",
+  "fact",
+  "retract",
+  "query",
+  "why",
+  "not",
+  "and",
+  "or",
+  "=",
   "__proto__",
 ];
 
@@ -90,6 +100,72 @@ export const CondFormSchema = Schema.Union([
 
 // ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
 export const MatchPatternSchema = Schema.Tuple([
+  LionExpressionSchema,
+  LionExpressionSchema,
+]);
+
+// ["relation", <name>, [<column>, ...]]
+export const RelationFormSchema = Schema.Tuple([
+  Schema.Literal("relation"),
+  ValidIdentifierSchema,
+  Schema.Array(Schema.String),
+]);
+
+// ["rule", <head>, <goal>, ...]
+export const RuleFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([
+    Schema.Literal("rule"),
+    LionExpressionSchema,
+    LionExpressionSchema,
+  ]),
+  [LionExpressionSchema]
+);
+
+// ["fact", <relation call>, ...]
+export const FactFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("fact"), LionExpressionSchema]),
+  [LionExpressionSchema]
+);
+
+// ["retract", <relation call>, ...]
+export const RetractFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("retract"), LionExpressionSchema]),
+  [LionExpressionSchema]
+);
+
+// ["query", <goal>]
+export const QueryFormSchema = Schema.Tuple([
+  Schema.Literal("query"),
+  LionExpressionSchema,
+]);
+
+// ["why", <relation call>]
+export const WhyFormSchema = Schema.Tuple([
+  Schema.Literal("why"),
+  LionExpressionSchema,
+]);
+
+// ["not", <goal>]
+export const NotFormSchema = Schema.Tuple([
+  Schema.Literal("not"),
+  LionExpressionSchema,
+]);
+
+// ["and", <goal>, ...]
+export const AndFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("and"), LionExpressionSchema]),
+  [LionExpressionSchema]
+);
+
+// ["or", <goal>, ...]
+export const OrFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("or"), LionExpressionSchema]),
+  [LionExpressionSchema]
+);
+
+// ["=", <term>, <term>]
+export const UnifyFormSchema = Schema.Tuple([
+  Schema.Literal("="),
   LionExpressionSchema,
   LionExpressionSchema,
 ]);

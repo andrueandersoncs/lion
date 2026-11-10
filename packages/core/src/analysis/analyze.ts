@@ -1,12 +1,22 @@
 import { Schema } from "effect";
 import {
+  AndFormSchema,
   BeginFormSchema,
   CondFormSchema,
   DefineFormSchema,
   EvalFormSchema,
+  FactFormSchema,
   LambdaFormSchema,
   MatchFormSchema,
+  NotFormSchema,
+  OrFormSchema,
+  QueryFormSchema,
   QuoteFormSchema,
+  RelationFormSchema,
+  RetractFormSchema,
+  RuleFormSchema,
+  UnifyFormSchema,
+  WhyFormSchema,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 
@@ -28,7 +38,17 @@ export type SpecialFormName =
   | "eval"
   | "lambda"
   | "match"
-  | "quote";
+  | "quote"
+  | "relation"
+  | "rule"
+  | "fact"
+  | "retract"
+  | "query"
+  | "why"
+  | "not"
+  | "and"
+  | "or"
+  | "=";
 
 export interface SemanticRelationship {
   readonly kind: "definition" | "reference-candidate";
@@ -108,6 +128,56 @@ const SPECIAL_FORMS: readonly FormDefinition[] = [
       return index === length - 1 ? "fallback" : "pattern";
     },
   },
+  {
+    name: "relation",
+    matches: Schema.is(RelationFormSchema),
+    role: roleByIndex(["operator", "binding", "columns"], "columns"),
+  },
+  {
+    name: "rule",
+    matches: Schema.is(RuleFormSchema),
+    role: roleByIndex(["operator", "head"], "goal"),
+  },
+  {
+    name: "fact",
+    matches: Schema.is(FactFormSchema),
+    role: roleByIndex(["operator"], "fact"),
+  },
+  {
+    name: "retract",
+    matches: Schema.is(RetractFormSchema),
+    role: roleByIndex(["operator"], "fact"),
+  },
+  {
+    name: "query",
+    matches: Schema.is(QueryFormSchema),
+    role: roleByIndex(["operator", "goal"], "goal"),
+  },
+  {
+    name: "why",
+    matches: Schema.is(WhyFormSchema),
+    role: roleByIndex(["operator", "fact"], "fact"),
+  },
+  {
+    name: "not",
+    matches: Schema.is(NotFormSchema),
+    role: roleByIndex(["operator", "goal"], "goal"),
+  },
+  {
+    name: "and",
+    matches: Schema.is(AndFormSchema),
+    role: roleByIndex(["operator"], "goal"),
+  },
+  {
+    name: "or",
+    matches: Schema.is(OrFormSchema),
+    role: roleByIndex(["operator"], "goal"),
+  },
+  {
+    name: "=",
+    matches: Schema.is(UnifyFormSchema),
+    role: roleByIndex(["operator", "left", "right"], "right"),
+  },
 ];
 
 const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
@@ -118,6 +188,16 @@ const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
   lambda: true,
   match: true,
   quote: true,
+  relation: true,
+  rule: true,
+  fact: true,
+  retract: true,
+  query: true,
+  why: true,
+  not: true,
+  and: true,
+  or: true,
+  "=": true,
 };
 
 const escapePointerSegment = (segment: number | string) =>
@@ -194,7 +274,7 @@ const analyzeNode = (
   const relationships: SemanticRelationship[] = [];
   if (
     !quoted &&
-    validForm?.name === "define" &&
+    (validForm?.name === "define" || validForm?.name === "relation") &&
     typeof expression[1] === "string"
   ) {
     relationships.push({ kind: "definition", name: expression[1] });

@@ -1,3 +1,4 @@
+import { markPure } from "@/logic/terms";
 import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
 import { module as console } from "./console.ts";
@@ -21,13 +22,15 @@ export const namespaceEntries = (
   return result;
 };
 
+// Pure modules can be used inside rules: called with a logic variable, their
+// functions wait until the variable is bound instead of running.
 export const stdlib = {
-  ...namespaceEntries("array", array),
-  ...namespaceEntries("boolean", boolean),
+  ...namespaceEntries("array", markPure(array)),
+  ...namespaceEntries("boolean", markPure(boolean)),
   ...namespaceEntries("console", console),
   ...namespaceEntries("func", func),
-  ...namespaceEntries("number", number),
+  ...namespaceEntries("number", markPure(number)),
   ...namespaceEntries("object", object),
-  ...namespaceEntries("string", string),
-  ...namespaceEntries("value", value),
+  ...namespaceEntries("string", markPure(string)),
+  ...namespaceEntries("value", markPure(value)),
 };

@@ -4,9 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build index.ts jev.ts --outdir dist --target bun",
+    "build": "bun build index.ts jev.ts logic.ts --outdir dist --target bun",
     "dev": "bun run index.ts",
     "jev": "bun --env-file=../typesafe-ai/.env run jev.ts",
+    "logic": "bun run logic.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

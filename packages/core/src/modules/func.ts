@@ -1,4 +1,5 @@
 import { Context, Effect, Match, Option, pipe } from "effect";
+import { LionDatabaseService } from "@/services/database";
 import { LionEnvironmentService } from "@/services/evaluation";
 
 export const module = {
@@ -19,17 +20,24 @@ export const module = {
   callback: (fn: unknown) =>
     pipe(
       Effect.context<never>(),
-      Effect.map((context) =>
-        Context.getOption(context, LionEnvironmentService)
-      ),
-      Effect.map((environmentRef) => (...args: unknown[]) => {
+      Effect.map((context) => ({
+        environmentRef: Context.getOption(context, LionEnvironmentService),
+        database: Context.getOption(context, LionDatabaseService),
+      })),
+      Effect.map(({ environmentRef, database }) => (...args: unknown[]) => {
         if (typeof fn !== "function") {
           return fn;
         }
 
-        const result = fn(...args);
+        const called = fn(...args);
 
-        if (Effect.isEffect(result)) {
+        if (Effect.isEffect(called)) {
+          // Keep relations and rules visible when host code calls back in.
+          const result = Option.isSome(database)
+            ? called.pipe(
+                Effect.provideService(LionDatabaseService, database.value)
+              )
+            : called;
           const callbackEffect = pipe(
             Match.value(environmentRef),
             Match.when(
@@ -51,7 +59,7 @@ export const module = {
           });
         }
 
-        return result;
+        return called;
       })
     ),
 

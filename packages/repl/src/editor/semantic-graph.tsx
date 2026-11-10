@@ -99,6 +99,16 @@ const NODE_COLOR_BY_KEY = {
   reference: "var(--node-reference)",
   string: "var(--node-string)",
   syntax: "var(--node-syntax)",
+  relation: "var(--node-logic)",
+  rule: "var(--node-logic)",
+  fact: "var(--node-logic)",
+  retract: "var(--node-logic)",
+  query: "var(--node-logic)",
+  why: "var(--node-logic)",
+  not: "var(--node-logic)",
+  and: "var(--node-logic)",
+  or: "var(--node-logic)",
+  "=": "var(--node-logic)",
 } satisfies Readonly<Record<GraphNodeColorKey, string>>;
 
 const getGraphNodeColorKey = (
@@ -292,6 +302,72 @@ const describeSpecialForm = (
         mark: form,
         description: "literal syntax",
         detail: "not evaluated",
+      };
+    case "relation": {
+      const binding = semantic.relationships.find(
+        ({ kind }) => kind === "definition"
+      )?.name;
+      const columns = children.find(({ role }) => role === "columns");
+      const columnCount = columns?.children.length ?? 0;
+      return {
+        mark: form,
+        description: "relation",
+        detail: `${binding ?? "relation"} · ${pluralize(columnCount, "column")}`,
+      };
+    }
+    case "rule":
+      return {
+        mark: form,
+        description: "derivation rule",
+        detail: `${pluralize(roleCount("goal"), "goal")} → head`,
+      };
+    case "fact":
+      return {
+        mark: form,
+        description: "add facts",
+        detail: pluralize(roleCount("fact"), "fact"),
+      };
+    case "retract":
+      return {
+        mark: form,
+        description: "remove facts",
+        detail: pluralize(roleCount("fact"), "fact"),
+      };
+    case "query":
+      return {
+        mark: form,
+        description: "find answers",
+        detail: "goal → rows",
+      };
+    case "why":
+      return {
+        mark: form,
+        description: "explain a fact",
+        detail: "fact → derivation",
+      };
+    case "not":
+      return {
+        mark: form,
+        description: "negated goal",
+        detail: "holds when absent",
+      };
+    case "and":
+      return {
+        mark: form,
+        description: "every goal holds",
+        detail: pluralize(roleCount("goal"), "goal"),
+      };
+    case "or":
+      return {
+        mark: form,
+        description: "any goal holds",
+        detail: pluralize(roleCount("goal"), "goal"),
+      };
+    case "=":
+      return {
+        mark: form,
+        description: "unify terms",
+        detail: "left = right",
       };
     default:
       return form satisfies never;

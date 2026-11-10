@@ -9,6 +9,7 @@ Lion evaluates:
 - JSON primitives directly
 - strings as environment references when a binding exists
 - arrays as special forms or function-call expressions
+- unbound `"?name"` strings as logic variables for relations, rules, and queries
 - objects by recursively evaluating their values
 
 The result is a small homoiconic language that can describe both computation and data interchange without a separate parser.
@@ -174,6 +175,8 @@ null
 
 With `{ "x": 10 }` in the environment, `"x"` evaluates to `10`. Otherwise it evaluates to `"x"`.
 
+An unbound string of the form `"?name"` evaluates to a logic variable instead. See [Logic](#logic).
+
 ### Arrays
 
 Arrays are always treated as executable expressions:
@@ -201,6 +204,8 @@ Objects preserve their keys and evaluate each value.
 Evaluates to `{ "sum": 3, "ok": true }`.
 
 ## Special Forms
+
+The logic forms (`relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`) are covered in [Logic](#logic).
 
 ### `quote`
 
@@ -283,6 +288,52 @@ Pattern matches a value against predicate/function pairs, then applies the first
   ],
   ["lambda", ["x"], null]]
 ```
+
+## Logic
+
+Lion includes a Datalog-style logic layer. Relations, goals, and logic variables are ordinary values, so rules and queries use the same JSON syntax as the rest of the language and query results are plain Lion data.
+
+```json
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", "a", "?to"]]]
+```
+
+Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
+
+### Building blocks
+
+- `"?name"` evaluates to a logic variable when `?name` is not bound. `"?_"` is anonymous: each occurrence is a separate variable, and inside `not` it matches anything.
+- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself.
+- Functions from the pure modules (`number`, `string`, `boolean`, `value`, `array`) wait when called with a logic variable. `["number/greaterThan", "?amount", 100]` becomes a filter in a rule body, and `["number/add", "?n", 1]` becomes a value computed once `?n` is bound.
+- Ordinary lambdas run as usual, so a lambda can build and return goals.
+
+### Forms
+
+| Form | Meaning |
+|---|---|
+| `["fact", goal, ...]` | Adds ground facts. Returns the facts added. |
+| `["retract", goal, ...]` | Removes facts. Derived answers update on the next query. |
+| `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. |
+| `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
+| `["why", goal]` | Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. |
+| `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. With only booleans, they are boolean operators. |
+| `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
+| `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+
+### Guarantees
+
+Rules are checked when they are added:
+
+- Every variable in a rule head, filter, or `not` must first be bound by a relation goal or `=`.
+- Negation cannot go through recursion, so every program has a single well-defined answer.
+- A recursive rule cannot compute new values in its head, so evaluation always finishes.
+
+Answers are computed bottom-up with semi-naive evaluation and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
 
 ## Standard Library
 

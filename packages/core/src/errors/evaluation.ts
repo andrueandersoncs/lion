@@ -10,3 +10,8 @@ export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunction
   "InvalidFunctionCallError",
   { expression: LionExpressionSchema }
 ) {}
+
+/** Raised by relations, rules, facts, and queries. */
+export class LogicError extends Schema.TaggedError<LogicError>()("LogicError", {
+  message: Schema.String,
+}) {}

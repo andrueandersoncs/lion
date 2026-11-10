@@ -84,6 +84,7 @@
   --node-reference: oklch(0.5 0.14 45);
   --node-string: oklch(0.47 0.12 130);
   --node-syntax: oklch(0.45 0.075 80);
+  --node-logic: oklch(0.48 0.14 305);
   --font-display: "IBM Plex Sans Condensed", sans-serif;
   --font-code: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   color-scheme: light;
@@ -352,6 +353,19 @@
 
 .graph-node[data-color="string"] {
   --node-accent: var(--node-string);
+}
+
+.graph-node[data-color="relation"],
+.graph-node[data-color="rule"],
+.graph-node[data-color="fact"],
+.graph-node[data-color="retract"],
+.graph-node[data-color="query"],
+.graph-node[data-color="why"],
+.graph-node[data-color="not"],
+.graph-node[data-color="and"],
+.graph-node[data-color="or"],
+.graph-node[data-color="="] {
+  --node-accent: var(--node-logic);
 }
 
 .graph-node[data-color="syntax"] {

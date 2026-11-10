@@ -1,0 +1,57 @@
+[
+  "begin",
+  ["relation", "holds", ["owner", "position"]],
+  ["relation", "allocates", ["vault", "market"]],
+  ["relation", "collateral", ["market", "token"]],
+  ["relation", "priced_by", ["token", "oracle"]],
+  ["relation", "changed", ["node"]],
+  ["relation", "dep", ["from", "to"]],
+  ["relation", "needs_review", ["owner", "position", "dependency"]],
+  ["relation", "untouched", ["owner", "position"]],
+
+  ["fact", ["holds", "alice", "vault_a"], ["holds", "alice", "vault_b"]],
+  [
+    "fact",
+    ["allocates", "vault_a", "market_1"],
+    ["allocates", "vault_b", "market_2"]
+  ],
+  [
+    "fact",
+    ["collateral", "market_1", "token_x"],
+    ["collateral", "market_2", "token_y"]
+  ],
+  [
+    "fact",
+    ["priced_by", "token_x", "oracle_7"],
+    ["priced_by", "token_y", "oracle_9"]
+  ],
+
+  ["rule", ["dep", "?x", "?y"], ["allocates", "?x", "?y"]],
+  ["rule", ["dep", "?x", "?y"], ["collateral", "?x", "?y"]],
+  ["rule", ["dep", "?x", "?y"], ["priced_by", "?x", "?y"]],
+  ["rule", ["dep", "?x", "?z"], ["dep", "?x", "?y"], ["dep", "?y", "?z"]],
+  [
+    "rule",
+    ["needs_review", "?who", "?p", "?d"],
+    ["holds", "?who", "?p"],
+    ["dep", "?p", "?d"],
+    ["changed", "?d"]
+  ],
+  [
+    "rule",
+    ["untouched", "?who", "?p"],
+    ["holds", "?who", "?p"],
+    ["not", ["needs_review", "?who", "?p", "?_"]]
+  ],
+
+  ["fact", ["changed", "oracle_7"]],
+
+  {
+    "needsReview": [
+      "query",
+      ["needs_review", "alice", "?position", "?because"]
+    ],
+    "untouched": ["query", ["untouched", "alice", "?position"]],
+    "explanation": ["why", ["needs_review", "alice", "vault_a", "oracle_7"]]
+  }
+]

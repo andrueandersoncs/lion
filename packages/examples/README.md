@@ -12,6 +12,7 @@ The example script demonstrates:
 - host interop through injected JavaScript values and functions
 - nested lookup with `object/get-path`
 - TypeSafe AI Jev evaluation from a standalone Lion JSON program
+- relations, recursive rules, negation, queries, and `why` explanations in `logic.json`
 
 ## Run
 
@@ -19,6 +20,12 @@ From the repo root:
 
 ```bash
 bun run packages/examples/index.ts
+```
+
+Run the logic example:
+
+```bash
+bun run --cwd packages/examples logic
 ```
 
 Run the Jev example with the API key stored in `packages/typesafe-ai/.env`:

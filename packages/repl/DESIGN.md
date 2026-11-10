@@ -132,7 +132,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 - **Restrained Gold:** Confirms the current revision and highlights selected overview nodes.
 
 ### Semantic Node Inks
-- **Type colors:** Calls, special forms, structured values, literals, references, syntax, and invalid forms each receive a distinct muted OKLCH hue across the node border, header, mark, fold, and overview map.
+- **Type colors:** Calls, special forms, structured values, literals, references, syntax, and invalid forms each receive a distinct muted OKLCH hue; the logic forms (`relation`, `rule`, `fact`, `retract`, `query`, `why`, `not`, `and`, `or`, `=`) share one violet logic hue across the node border, header, mark, fold, and overview map.
 - **Redundant cues:** Color supplements the existing icon silhouette, operation label, literal control, and invalid-state treatment; it never carries node identity alone.
 
 ### Neutral
