@@ -1,7 +1,9 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
+import { aggregator } from "@/logic/aggregates";
 import type { CompiledQuery, CompiledRule, Literal } from "@/logic/compile";
 import {
+  Aggregate,
   type Atom,
   DeferredCall,
   isGroundValue,
@@ -94,6 +96,11 @@ interface Binding {
 }
 
 interface Derivation {
+  /**
+   * For an aggregated fact, the body matches it combines. A selecting
+   * aggregate such as min keeps only the match that produced its value.
+   */
+  readonly matches?: readonly (readonly Premise[])[];
   readonly rule: CompiledRule;
   readonly trail: readonly Premise[];
 }
@@ -162,10 +169,20 @@ const touch = (database: LogicDatabase) => {
   database.cache = undefined;
 };
 
+const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
+  rules.some(
+    (rule) => rule.head.relation.name === relation && rule.aggregates.length > 0
+  );
+
 export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
     for (const atom of atoms) {
+      if (isAggregated(database.rules, atom.relation.name)) {
+        return yield* fail(
+          `"${atom.relation.name}" is computed by aggregate rules, so it cannot have facts.`
+        );
+      }
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
     for (const [atom, tuple] of tuples) {
@@ -258,14 +275,44 @@ const components = (rules: readonly CompiledRule[]) => {
 const componentOf = (ordered: readonly Set<string>[], relation: string) =>
   ordered.find((component) => component.has(relation));
 
+/** Which head columns aggregate, and how, such as `"1:sum"`. */
+const aggregateShape = (rule: CompiledRule) =>
+  rule.aggregates
+    .map(
+      (position) =>
+        `${position}:${(rule.head.args[position] as Aggregate).kind}`
+    )
+    .join(",");
+
+const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
+  const shapes = new Map<string, string>();
+  for (const rule of rules) {
+    const relation = rule.head.relation.name;
+    const shape = aggregateShape(rule);
+    const earlier = shapes.get(relation);
+    if (earlier !== undefined && earlier !== shape) {
+      return `Every rule for "${relation}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`;
+    }
+    shapes.set(relation, shape);
+  }
+  return undefined;
+};
+
 const checkProgram = (rules: readonly CompiledRule[]) => {
+  const shapeProblem = checkAggregateShapes(rules);
+  if (shapeProblem !== undefined) {
+    return shapeProblem;
+  }
   const ordered = components(rules);
   for (const rule of rules) {
     const component = componentOf(ordered, rule.head.relation.name);
-    const recursive = rule.body.some(
+    const recursive = rule.body.find(
       (literal) =>
         literal.kind === "atom" && component?.has(literal.atom.relation.name)
     );
+    if (recursive?.kind === "atom" && rule.aggregates.length > 0) {
+      return `Rule ${show(rule.source)} aggregates over "${recursive.atom.relation.name}", which depends on "${rule.head.relation.name}". Aggregation cannot go through recursion.`;
+    }
     for (const literal of rule.body) {
       if (
         literal.kind === "absent" &&
@@ -275,7 +322,7 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
       }
     }
     if (
-      recursive &&
+      recursive !== undefined &&
       rule.head.args.some((arg) => arg instanceof DeferredCall)
     ) {
       return `Rule ${show(rule.source)} computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule instead.`;
@@ -292,6 +339,17 @@ export const addRules = (
     if (!database.relations.has(rule.head.relation.name)) {
       return fail(
         `Relation "${rule.head.relation.name}" is not declared here.`
+      );
+    }
+  }
+  for (const rule of rules) {
+    const relation = rule.head.relation.name;
+    if (
+      rule.aggregates.length > 0 &&
+      (database.facts.get(relation)?.size ?? 0) > 0
+    ) {
+      return fail(
+        `"${relation}" has facts, so rules cannot aggregate into it. Aggregate into a relation of its own.`
       );
     }
   }
@@ -585,8 +643,119 @@ const applyChanges = (
     }
   });
 
+/** A key that is equal for bindings of the same variables to the same values. */
+const bindingKey = (vars: ReadonlyMap<string, unknown>) =>
+  valueKey([...vars.entries()].sort(([a], [b]) => (a < b ? -1 : 1)));
+
+interface Group {
+  /** Head values, with null where the head aggregates. */
+  readonly key: Tuple;
+  readonly rule: CompiledRule;
+  readonly trails: (readonly Premise[])[];
+  /** For each aggregate, the value each match contributed. */
+  readonly values: unknown[][];
+}
+
+/** The head values of one match, and the value it gives each aggregate. */
+const matchValues = (rule: CompiledRule, binding: Binding) =>
+  Effect.gen(function* () {
+    const key: unknown[] = [];
+    const values: unknown[] = [];
+    for (const arg of rule.head.args) {
+      if (arg instanceof Aggregate) {
+        key.push(null);
+        values.push(yield* evaluateTerm(arg.arg, binding.vars));
+      } else {
+        key.push(yield* evaluateTerm(arg, binding.vars));
+      }
+    }
+    return { key, values };
+  });
+
+const collectGroups = (model: Model, rules: readonly CompiledRule[]) =>
+  Effect.gen(function* () {
+    const full = fullRelation(model);
+    // Each rule's body is a set of matches, so a match that several
+    // alternatives of one rule find counts once. Separate rules add up.
+    const seen = new Map<unknown, Set<string>>();
+    const groups = new Map<string, Group>();
+    for (const rule of rules) {
+      const matched = getOrCreate(seen, rule.source, () => new Set<string>());
+      const bindings = yield* evaluateBody(rule.body, (_, relation) =>
+        full(relation)
+      );
+      for (const binding of bindings) {
+        const id = bindingKey(binding.vars);
+        if (matched.has(id)) {
+          continue;
+        }
+        matched.add(id);
+        const { key, values } = yield* matchValues(rule, binding);
+        const group = getOrCreate(groups, valueKey(key), () => ({
+          key,
+          rule,
+          trails: [],
+          values: rule.aggregates.map(() => []),
+        }));
+        for (const [index, value] of values.entries()) {
+          group.values[index]?.push(value);
+        }
+        group.trails.push(binding.trail);
+      }
+    }
+    return groups.values();
+  });
+
+/** Combines one group's matches into the aggregated tuple. */
+const foldGroup = (group: Group) =>
+  Effect.gen(function* () {
+    const { rule } = group;
+    const tuple = [...group.key];
+    let derivation: Derivation = { rule, trail: [], matches: group.trails };
+    for (const [index, position] of rule.aggregates.entries()) {
+      const { kind } = rule.head.args[position] as Aggregate;
+      const { check, fold, selects } = aggregator(kind);
+      const values = group.values[index] ?? [];
+      const problem = check(values);
+      if (problem !== undefined) {
+        return yield* fail(
+          `Rule ${show(rule.source)}: aggregate/${kind} ${problem}.`
+        );
+      }
+      const result = fold(values);
+      tuple[position] = result;
+      if (selects && rule.aggregates.length === 1) {
+        const winner = values.findIndex((value) => sameValue(value, result));
+        derivation = { rule, trail: group.trails[winner] ?? [] };
+      }
+    }
+    if (!tuple.every(isGroundValue)) {
+      return yield* fail(
+        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
+      );
+    }
+    return { derivation, tuple: tuple as Tuple };
+  });
+
+/** Aggregate rules run once their inputs are complete; they never recurse. */
+const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
+  Effect.gen(function* () {
+    for (const group of yield* collectGroups(model, rules)) {
+      const { derivation, tuple } = yield* foldGroup(group);
+      const relation = group.rule.head.relation.name;
+      getOrCreate(model.relations, relation, () => new TupleSet()).add(tuple);
+      getOrCreate(model.derivations, relation, () => new Map()).set(
+        valueKey(tuple),
+        derivation
+      );
+    }
+  });
+
 const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
   Effect.gen(function* () {
+    if (rules.some((rule) => rule.aggregates.length > 0)) {
+      return yield* evaluateAggregates(model, rules);
+    }
     const full = fullRelation(model);
     let delta = new Map<string, TupleSet>();
     for (const rule of rules) {
@@ -655,26 +824,29 @@ export const queryDatabase = (
     return [...rows.values()];
   });
 
+const explainPremise = (model: Model, premise: Premise): unknown => {
+  switch (premise.kind) {
+    case "atom":
+      return explain(model, premise.relation, premise.tuple);
+    case "check":
+      return { check: premise.call };
+    default:
+      return { absent: premise.pattern };
+  }
+};
+
 const explain = (model: Model, relation: string, tuple: Tuple): unknown => {
   const fact = [relation, ...tuple];
   const derivation = model.derivations.get(relation)?.get(valueKey(tuple));
   if (derivation === undefined) {
     return { fact, given: true };
   }
-  return {
-    fact,
-    rule: derivation.rule.source,
-    because: derivation.trail.map((premise) => {
-      switch (premise.kind) {
-        case "atom":
-          return explain(model, premise.relation, premise.tuple);
-        case "check":
-          return { check: premise.call };
-        default:
-          return { absent: premise.pattern };
-      }
-    }),
-  };
+  const explainTrail = (trail: readonly Premise[]) =>
+    trail.map((premise) => explainPremise(model, premise));
+  const rule = derivation.rule.source;
+  return derivation.matches === undefined
+    ? { fact, rule, because: explainTrail(derivation.trail) }
+    : { fact, rule, matches: derivation.matches.map(explainTrail) };
 };
 
 /** Explains how a fact was derived, or returns null when it does not hold. */

@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=65b1437399">
+    <link rel="stylesheet" href="styles.css?v=65c2225d8f">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=65b1437399"></script>
-    <script type="module" src="script.js?v=65b1437399"></script>
-    <script type="module" src="playground.js?v=65b1437399"></script>
+    <script type="module" src="constellation.js?v=65c2225d8f"></script>
+    <script type="module" src="script.js?v=65c2225d8f"></script>
+    <script type="module" src="playground.js?v=65c2225d8f"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -201,7 +201,7 @@
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
-            ><span>"not"</span><span>"?x"</span>
+            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span>
           </div>
           <div class="marquee-track" aria-hidden="true">
             <span>"boolean/xor"</span><span>"string/startsWith"</span
@@ -212,7 +212,7 @@
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
-            ><span>"not"</span><span>"?x"</span>
+            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span>
           </div>
         </div>
       </section>
@@ -508,10 +508,10 @@
           <span class="section-badge">Logic programming</span>
           <h2 class="section-title">Relations, rules, and queries</h2>
           <p class="section-description">
-            Declare relations, add facts, and write recursive rules in the same
-            JSON as the rest of your program. Queries return plain Lion data,
-            and <code>why</code> shows the rules and facts behind any answer.
-            These cards are live too. Read the
+            Declare relations, add facts, and write recursive rules and
+            aggregates in the same JSON as the rest of your program. Queries
+            return plain Lion data, and <code>why</code> shows the rules and
+            facts behind any answer. These cards are live too. Read the
             <a
               href="https://github.com/andrueandersoncs/lion/blob/main/README.md#logic"
               target="_blank"
@@ -649,6 +649,35 @@
     {"fact":["edge","b","c"],"given":true}
   ]
 }</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Aggregates</h3>
+            <p>
+              An <code>aggregate/…</code> call in a rule head combines every
+              match, grouped by the head's other columns. Add an order and the
+              totals change.
+            </p>
+            <div class="playground" data-playground="Aggregates">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total", "orders"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20],
+    ["order", 3, "bo", 50], ["order", 4, "bo", 15]],
+  ["rule",
+    ["spend", "?c", ["aggregate/sum", "?amount"],
+      ["aggregate/count", "?id"]],
+    ["order", "?id", "?c", "?amount"]],
+  ["query", ["spend", "?customer", "?total", "?orders"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  {"customer":"ana","total":50,"orders":2},
+  {"customer":"bo","total":65,"orders":2}
+]</code></pre>
               </div>
             </div>
           </article>

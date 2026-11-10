@@ -1,6 +1,7 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import {
+  Aggregate,
   Atom,
   Conjunction,
   containsNestedLogic,
@@ -23,8 +24,11 @@ export type Literal =
   | { readonly kind: "unify"; readonly left: unknown; readonly right: unknown };
 
 export interface CompiledRule {
+  /** Head positions that hold an aggregate; empty for an ordinary rule. */
+  readonly aggregates: readonly number[];
   readonly body: readonly Literal[];
   readonly head: Atom;
+  /** The rendered `rule` form. Alternatives of one `or` share it. */
   readonly source: unknown;
 }
 
@@ -72,18 +76,28 @@ const renameAnonymous = (counter: { next: number }) => {
   return renameGoal;
 };
 
+/**
+ * Checks that logic values are direct arguments. Aggregates are allowed only
+ * when `inHead` is set, and only as direct arguments of the head.
+ */
 const checkTerms = (
   owner: unknown,
-  terms: readonly unknown[]
+  terms: readonly unknown[],
+  inHead = false
 ): string | undefined => {
   for (const term of terms) {
-    if (term instanceof DeferredCall) {
-      const nested = checkTerms(owner, term.args);
-      if (nested !== undefined) {
-        return nested;
-      }
+    let nested: string | undefined;
+    if (term instanceof Aggregate) {
+      nested = inHead
+        ? checkTerms(owner, [term.arg])
+        : `Aggregates such as "aggregate/${term.kind}" can only be arguments of a rule head, but found one in ${show(owner)}.`;
+    } else if (term instanceof DeferredCall) {
+      nested = checkTerms(owner, term.args);
     } else if (!(term instanceof LogicVariable) && containsNestedLogic(term)) {
-      return `Logic variables must be direct arguments, not nested inside arrays or records: ${show(owner)}`;
+      nested = `Logic variables must be direct arguments, not nested inside arrays or records: ${show(owner)}`;
+    }
+    if (nested !== undefined) {
+      return nested;
     }
   }
   return undefined;
@@ -308,13 +322,14 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
         `A rule head must be a relation call, but found ${show(head)}.`
       );
     }
-    const headIssue = checkTerms(head, head.args);
+    const headIssue = checkTerms(head, head.args, true);
     if (headIssue !== undefined) {
       return yield* fail(headIssue);
     }
-    if (
-      head.args.some((arg) => arg instanceof LogicVariable && arg.anonymous)
-    ) {
+    const isAnonymous = (arg: unknown): boolean =>
+      (arg instanceof LogicVariable && arg.anonymous) ||
+      (arg instanceof Aggregate && isAnonymous(arg.arg));
+    if (head.args.some(isAnonymous)) {
       return yield* fail(
         `A rule head cannot use the anonymous variable "?_": ${show(head)}.`
       );
@@ -323,6 +338,9 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
     if (typeof expanded === "string") {
       return yield* fail(expanded);
     }
+    const aggregates = head.args.flatMap((arg, position) =>
+      arg instanceof Aggregate ? [position] : []
+    );
     const rules: CompiledRule[] = [];
     for (const literals of expanded) {
       const ordered = plan(literals);
@@ -338,7 +356,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
           `Unsafe rule head ${show(head)}: ${[...new Set(unbound)].map((name) => `?${name}`).join(", ")} never appears in a relation in the body.`
         );
       }
-      rules.push({ head, body: ordered, source });
+      rules.push({ aggregates, head, body: ordered, source });
     }
     return rules;
   });

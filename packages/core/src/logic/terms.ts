@@ -53,6 +53,27 @@ export class DeferredCall {
   }
 }
 
+/**
+ * An aggregate in a rule head, such as `["aggregate/sum", "?amount"]`. The
+ * engine groups the body's matches by the head's other columns and combines
+ * the values of `arg` within each group.
+ */
+export class Aggregate {
+  readonly _tag = "Aggregate";
+  /** The aggregate's name in the `aggregate` module, such as `"sum"`. */
+  readonly kind: string;
+  readonly arg: unknown;
+
+  constructor(kind: string, arg: unknown) {
+    this.kind = kind;
+    this.arg = arg;
+  }
+
+  toJSON() {
+    return render(this);
+  }
+}
+
 export interface RelationInfo {
   readonly columns: readonly string[];
   readonly name: string;
@@ -147,8 +168,10 @@ export const isGoal = (value: unknown): value is Goal =>
 /** True for values that stand in for something not yet known. */
 export const isLogicTerm = (
   value: unknown
-): value is LogicVariable | DeferredCall =>
-  value instanceof LogicVariable || value instanceof DeferredCall;
+): value is LogicVariable | DeferredCall | Aggregate =>
+  value instanceof LogicVariable ||
+  value instanceof DeferredCall ||
+  value instanceof Aggregate;
 
 const RELATION = Symbol.for("lion/relation");
 const PURE = Symbol.for("lion/pure");
@@ -191,6 +214,9 @@ export const render = (value: unknown): unknown => {
   }
   if (value instanceof DeferredCall) {
     return [value.name, ...value.args.map(render)];
+  }
+  if (value instanceof Aggregate) {
+    return [`aggregate/${value.kind}`, render(value.arg)];
   }
   if (value instanceof Atom) {
     return [value.relation.name, ...value.args.map(render)];
@@ -262,6 +288,68 @@ export const sameValue = (a: unknown, b: unknown): boolean =>
     ? valueKey(a) === valueKey(b)
     : Object.is(a, b);
 
+const typeRank = (value: unknown): number => {
+  if (value === null) {
+    return 0;
+  }
+  switch (typeof value) {
+    case "boolean":
+      return 1;
+    case "number":
+      return 2;
+    case "string":
+      return 3;
+    default:
+      break;
+  }
+  if (Array.isArray(value)) {
+    return 4;
+  }
+  return isPlainObject(value) ? 5 : 6;
+};
+
+const compareLists = (a: readonly unknown[], b: readonly unknown[]): number => {
+  for (let index = 0; index < Math.min(a.length, b.length); index += 1) {
+    const order = compareValues(a[index], b[index]);
+    if (order !== 0) {
+      return order;
+    }
+  }
+  return a.length - b.length;
+};
+
+/**
+ * A total order on JSON data: null, then booleans, numbers, strings, arrays,
+ * and records. Arrays compare element by element and records by their sorted
+ * entries, so sorting never depends on how an answer was found.
+ */
+export const compareValues = (a: unknown, b: unknown): number => {
+  const rank = typeRank(a) - typeRank(b);
+  if (rank !== 0) {
+    return Math.sign(rank);
+  }
+  if (typeof a === "number" && typeof b === "number") {
+    return Math.sign(a - b);
+  }
+  if (typeof a === "boolean" || typeof a === "string") {
+    if (a === b) {
+      return 0;
+    }
+    return (a as string) < (b as string) ? -1 : 1;
+  }
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return compareLists(a, b);
+  }
+  if (isPlainObject(a) && isPlainObject(b)) {
+    const entries = (record: Record<string, unknown>) =>
+      Object.keys(record)
+        .sort()
+        .map((key) => [key, record[key]]);
+    return compareLists(entries(a), entries(b));
+  }
+  return 0;
+};
+
 /** Variable names mentioned by a term, including inside deferred calls. */
 export const termVariables = (term: unknown): readonly string[] => {
   if (term instanceof LogicVariable) {
@@ -269,6 +357,9 @@ export const termVariables = (term: unknown): readonly string[] => {
   }
   if (term instanceof DeferredCall) {
     return term.args.flatMap(termVariables);
+  }
+  if (term instanceof Aggregate) {
+    return termVariables(term.arg);
   }
   return [];
 };

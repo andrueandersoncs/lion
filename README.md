@@ -325,12 +325,45 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
 
+### Aggregates
+
+A rule head can aggregate. An argument such as `["aggregate/sum", "?amount"]` combines the values of `?amount` across every match of the rule body, and the head's other columns group the matches, like `GROUP BY` in SQL.
+
+```json
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total", "orders"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+  ["rule", ["spend", "?c", ["aggregate/sum", "?amount"], ["aggregate/count", "?id"]],
+    ["order", "?id", "?c", "?amount"]],
+  ["query", ["spend", "?customer", "?total", "?orders"]]]
+```
+
+Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "bo", "total": 50, "orders": 1 }]`.
+
+| Aggregate | Result |
+|---|---|
+| `aggregate/count` | Number of matches |
+| `aggregate/countUnique` | Number of distinct values |
+| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers (`mean` of nothing is `null`) |
+| `aggregate/min`, `aggregate/max` | Smallest and largest value; all numbers or all strings |
+| `aggregate/collect` | Every value, sorted, duplicates kept |
+| `aggregate/unique` | Distinct values, sorted |
+
+- Each match of a rule body counts once. A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up.
+- A group exists only when something matches, so a count is never `0`.
+- An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`.
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
+- `why` on an aggregated fact lists every match it combines under `matches`. For `min` and `max`, it explains the one match that produced the value.
+- Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
+
 ### Guarantees
 
 Rules are checked when they are added:
 
 - Every variable in a rule head, filter, or `not` must first be bound by a relation goal or `=`.
 - Negation cannot go through recursion, so every program has a single well-defined answer.
+- Aggregation cannot go through recursion either, so an aggregate runs only once its inputs are complete.
 - A recursive rule cannot compute new values in its head, so evaluation always finishes.
 
 Answers are computed bottom-up with semi-naive evaluation and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
@@ -363,6 +396,21 @@ The default environment exported as `stdlib` namespaces entries as `<module>/<na
 ["boolean/nand", true, true]
 ["boolean/nor", false, false]
 ["boolean/equals?", true, true]
+```
+
+### `aggregate`
+
+Called on a list, each function combines it. Called on a logic variable in a rule head, each becomes an aggregate; see [Aggregates](#aggregates).
+
+```json
+["aggregate/count", ["array/make", 3, 1, 3]]
+["aggregate/countUnique", ["array/make", 3, 1, 3]]
+["aggregate/sum", ["array/make", 3, 1, 3]]
+["aggregate/mean", ["array/make", 3, 1, 3]]
+["aggregate/min", ["array/make", 3, 1, 3]]
+["aggregate/max", ["array/make", 3, 1, 3]]
+["aggregate/collect", ["array/make", 3, 1, 3]]
+["aggregate/unique", ["array/make", 3, 1, 3]]
 ```
 
 ### `array`

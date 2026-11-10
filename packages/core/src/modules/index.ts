@@ -1,4 +1,5 @@
 import { markPure } from "@/logic/terms";
+import { module as aggregate } from "./aggregate.ts";
 import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
 import { module as console } from "./console.ts";
@@ -23,8 +24,10 @@ export const namespaceEntries = (
 };
 
 // Pure modules can be used inside rules: called with a logic variable, their
-// functions wait until the variable is bound instead of running.
+// functions wait until the variable is bound instead of running. Aggregates
+// called with a logic variable become aggregates for a rule head instead.
 export const stdlib = {
+  ...namespaceEntries("aggregate", aggregate),
   ...namespaceEntries("array", markPure(array)),
   ...namespaceEntries("boolean", markPure(boolean)),
   ...namespaceEntries("console", console),
