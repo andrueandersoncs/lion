@@ -29,6 +29,7 @@ type EvaluateResponse =
 const MAX_OUTPUT_LENGTH = 4000;
 const MAX_LOG_LINES = 50;
 const COMPACT_LENGTH = 60;
+const INLINE_WIDTH = 64;
 const FUNCTION_MARKER = "\u0000function\u0000";
 
 const truncate = (text: string) =>
@@ -43,11 +44,38 @@ const replacer = (_key: string, value: unknown) => {
   return value === undefined ? null : value;
 };
 
-const stringify = (value: unknown, indent?: number) =>
-  JSON.stringify(value, replacer, indent)?.replaceAll(
-    `"${FUNCTION_MARKER}"`,
-    "<function>"
-  );
+// JSON escapes the marker's control characters, so match its encoded form.
+const showFunctions = (json: string) =>
+  json.replaceAll(JSON.stringify(FUNCTION_MARKER), "<function>");
+
+const stringify = (value: unknown) => {
+  const json = JSON.stringify(value, replacer);
+  return json === undefined ? undefined : showFunctions(json);
+};
+
+/**
+ * Indents arrays and objects, keeping any part that fits within the width on
+ * one line so nested results such as `why` explanations stay readable.
+ */
+const pretty = (value: unknown, indent = ""): string => {
+  const compact = JSON.stringify(value);
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    indent.length + compact.length <= INLINE_WIDTH
+  ) {
+    return compact;
+  }
+  const inner = `${indent}  `;
+  const lines = Array.isArray(value)
+    ? value.map((item) => inner + pretty(item, inner))
+    : Object.entries(value).map(
+        ([key, item]) =>
+          `${inner}${JSON.stringify(key)}: ${pretty(item, inner)}`
+      );
+  const [open, close] = Array.isArray(value) ? ["[", "]"] : ["{", "}"];
+  return `${open}\n${lines.join(",\n")}\n${indent}${close}`;
+};
 
 /** Renders a Lion value as JSON, compact when short and indented otherwise. */
 const formatValue = (value: unknown): string => {
@@ -58,11 +86,14 @@ const formatValue = (value: unknown): string => {
     return "undefined";
   }
   try {
-    const compact = stringify(value) ?? String(value);
+    const json = JSON.stringify(value, replacer);
+    if (json === undefined) {
+      return String(value);
+    }
     return truncate(
-      compact.length <= COMPACT_LENGTH
-        ? compact
-        : (stringify(value, 2) ?? compact)
+      showFunctions(
+        json.length <= COMPACT_LENGTH ? json : pretty(JSON.parse(json))
+      )
     );
   } catch {
     // Cyclic host values cannot be serialized.

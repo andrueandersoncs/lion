@@ -54,6 +54,7 @@
         <div class="nav-links">
           <a href="#features">Features</a>
           <a href="#examples">Examples</a>
+          <a href="#logic">Logic</a>
           <a href="#editor">Editor</a>
           <a href="#packages">Packages</a>
           <a href="#docs">Get started</a>
@@ -92,6 +93,7 @@
       <div class="mobile-menu" id="mobile-menu">
         <a href="#features">Features</a>
         <a href="#examples">Examples</a>
+        <a href="#logic">Logic</a>
         <a href="#editor">Editor</a>
         <a href="#packages">Packages</a>
         <a href="#docs">Get started</a>
@@ -171,7 +173,8 @@
           <div class="marquee-track">
             <span>"lambda"</span><span>"define"</span><span>"cond"</span
             ><span>"match"</span><span>"quote"</span><span>"eval"</span
-            ><span>"begin"</span><span>"number/add"</span
+            ><span>"begin"</span><span>"relation"</span><span>"rule"</span
+            ><span>"query"</span><span>"why"</span><span>"number/add"</span
             ><span>"number/multiply"</span><span>"array/map"</span
             ><span>"array/reduce"</span><span>"array/flat-map"</span
             ><span>"string/concat"</span><span>"object/get-path"</span
@@ -180,7 +183,8 @@
           <div class="marquee-track" aria-hidden="true">
             <span>"lambda"</span><span>"define"</span><span>"cond"</span
             ><span>"match"</span><span>"quote"</span><span>"eval"</span
-            ><span>"begin"</span><span>"number/add"</span
+            ><span>"begin"</span><span>"relation"</span><span>"rule"</span
+            ><span>"query"</span><span>"why"</span><span>"number/add"</span
             ><span>"number/multiply"</span><span>"array/map"</span
             ><span>"array/reduce"</span><span>"array/flat-map"</span
             ><span>"string/concat"</span><span>"object/get-path"</span
@@ -196,7 +200,8 @@
             ><span>"number/greaterThan"</span><span>"array/concat"</span
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
-            ><span>"typesafe/system-one"</span>
+            ><span>"typesafe/system-one"</span><span>"fact"</span
+            ><span>"not"</span><span>"?x"</span>
           </div>
           <div class="marquee-track" aria-hidden="true">
             <span>"boolean/xor"</span><span>"string/startsWith"</span
@@ -206,7 +211,8 @@
             ><span>"number/greaterThan"</span><span>"array/concat"</span
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
-            ><span>"typesafe/system-one"</span>
+            ><span>"typesafe/system-one"</span><span>"fact"</span
+            ><span>"not"</span><span>"?x"</span>
           </div>
         </div>
       </section>
@@ -497,6 +503,158 @@
         </div>
       </section>
 
+      <section id="logic" class="section examples logic">
+        <div class="section-header reveal">
+          <span class="section-badge">Logic programming</span>
+          <h2 class="section-title">Relations, rules, and queries</h2>
+          <p class="section-description">
+            Declare relations, add facts, and write recursive rules in the same
+            JSON as the rest of your program. Queries return plain Lion data,
+            and <code>why</code> shows the rules and facts behind any answer.
+            These cards are live too. Read the
+            <a
+              href="https://github.com/andrueandersoncs/lion/blob/main/README.md#logic"
+              target="_blank"
+              rel="noopener"
+              >logic guide</a
+            >
+            for every form.
+          </p>
+        </div>
+        <div class="examples-grid spotlight-group">
+          <article class="example-card spotlight reveal">
+            <h3>Recursive rules</h3>
+            <p>
+              A rule can use its own relation, so <code>path</code> follows
+              edges any distance. Add another edge and the answer grows.
+            </p>
+            <div class="playground" data-playground="Recursive rules">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"],
+    ["edge", "c", "d"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"],
+    ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", "a", "?to"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"to":"b"},{"to":"c"},{"to":"d"}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Negation</h3>
+            <p>
+              <code>not</code>
+              holds when nothing matches. Add
+              <code>["done", "test"]</code>
+              to the facts and
+              <code>ship</code>
+              becomes ready.
+            </p>
+            <div class="playground" data-playground="Negation">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "task", ["id"]],
+  ["relation", "needs", ["task", "dep"]],
+  ["relation", "done", ["task"]],
+  ["relation", "blocked", ["task"]],
+  ["fact", ["task", "build"], ["task", "test"],
+    ["task", "ship"]],
+  ["fact", ["needs", "test", "build"],
+    ["needs", "ship", "test"], ["done", "build"]],
+  ["rule", ["blocked", "?t"],
+    ["needs", "?t", "?d"], ["not", ["done", "?d"]]],
+  ["query", ["and", ["task", "?ready"],
+    ["not", ["done", "?ready"]],
+    ["not", ["blocked", "?ready"]]]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"ready":"test"}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Filters &amp; computed values</h3>
+            <p>
+              Pure functions called on <code>?variables</code> become filters,
+              and <code>=</code> binds a computed value. Try another budget.
+            </p>
+            <div
+              class="playground"
+              data-playground="Filters and computed values"
+            >
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["define", "budget", 100],
+  ["relation", "spend", ["team", "amount"]],
+  ["fact", ["spend", "web", 80], ["spend", "data", 140],
+    ["spend", "infra", 260]],
+  ["query", ["and", ["spend", "?team", "?amount"],
+    ["number/greaterThan", "?amount", "budget"],
+    ["=", "?over", ["number/subtract", "?amount", "budget"]]]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  {"team":"data","amount":140,"over":40},
+  {"team":"infra","amount":260,"over":160}
+]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Explain with why</h3>
+            <p>
+              <code>why</code>
+              returns the rules and facts that derived an answer. Ask about
+              another path.
+            </p>
+            <div class="playground" data-playground="Explain with why">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"],
+    ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["why", ["path", "a", "c"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>{
+  "fact": ["path","a","c"],
+  "rule": [
+    "rule",
+    ["path","?x","?z"],
+    ["path","?x","?y"],
+    ["edge","?y","?z"]
+  ],
+  "because": [
+    {
+      "fact": ["path","a","b"],
+      "rule": ["rule",["path","?x","?y"],["edge","?x","?y"]],
+      "because": [{"fact":["edge","a","b"],"given":true}]
+    },
+    {"fact":["edge","b","c"],"given":true}
+  ]
+}</code></pre>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section id="editor" class="section editor">
         <div class="editor-layout">
           <div class="editor-copy reveal">
@@ -557,7 +715,10 @@ bun run lion repl</code></pre>
               <h3>@lionlang/core</h3>
               <span class="package-version">v0.2.0</span>
             </div>
-            <p>The evaluator, special forms, and the standard library.</p>
+            <p>
+              The evaluator, special forms, the standard library, and the
+              built-in logic layer.
+            </p>
             <div class="code-block terminal">
               <pre><code>bun add @lionlang/core effect</code></pre>
             </div>
@@ -736,6 +897,7 @@ bun run lion repl           # serve the graph editor</code></pre>
               >Documentation</a
             >
             <a href="#examples">Examples</a>
+            <a href="#logic">Logic programming</a>
             <a href="#editor">Graph editor</a>
             <a
               href="https://github.com/andrueandersoncs/lion/blob/main/CHANGELOG.md"

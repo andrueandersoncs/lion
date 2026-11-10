@@ -28,6 +28,7 @@
   --code-keyword: #ff7b72;
   --code-key: #7ee787;
   --code-fn: #fbbf24;
+  --code-var: #ffa657;
   --radius: 14px;
   --radius-sm: 8px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -593,6 +594,9 @@ main,
 }
 .code-fn {
   color: var(--code-fn);
+}
+.code-var {
+  color: var(--code-var);
 }
 .code-number {
   color: var(--code-number);
@@ -1183,6 +1187,18 @@ main,
   flex: 1;
   font-size: 0.92rem;
   color: var(--muted);
+}
+
+.section-description a {
+  color: var(--accent-bright);
+  text-decoration: underline;
+  text-decoration-color: rgba(251, 191, 36, 0.4);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s;
+}
+
+.section-description a:hover {
+  text-decoration-color: currentColor;
 }
 
 .package-link {

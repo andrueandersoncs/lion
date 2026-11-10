@@ -17,7 +17,18 @@ const SPECIAL_FORMS = new Set([
   "lambda",
   "match",
   "quote",
+  "relation",
+  "rule",
+  "fact",
+  "retract",
+  "query",
+  "why",
+  "not",
+  "and",
+  "or",
+  "=",
 ]);
+const LOGIC_VARIABLE = /^\?[A-Za-z_][\w-]*$/;
 const TOKEN_PATTERN =
   /(\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"?)|(-?\d+(?:\.\d+)?)|([A-Za-z_$][\w$]*)|([[\]{}])|(\s+)|(.)/g;
 const KEY_FOLLOWS = /^\s*:/;
@@ -35,6 +46,9 @@ const stringClass = (text, token, end, isHead) => {
   const name = token.slice(1, -1);
   if (isHead && (SPECIAL_FORMS.has(name) || name.includes("/"))) {
     return "code-fn";
+  }
+  if (LOGIC_VARIABLE.test(name)) {
+    return "code-var";
   }
   return "code-string";
 };
