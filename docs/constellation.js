@@ -19,6 +19,7 @@ const TOKENS = [
   ['"rule"', "#fbbf24"],
   ['"query"', "#fbbf24"],
   ['"why"', "#fbbf24"],
+  ['"snapshot"', "#fbbf24"],
   ['"?x"', "#ffa657"],
   ['"?who"', "#ffa657"],
   ['"number/add"', "#a5d6ff"],

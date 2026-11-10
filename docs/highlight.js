@@ -28,6 +28,7 @@ const SPECIAL_FORMS = new Set([
   "or",
   "=",
   "in",
+  "snapshot",
 ]);
 const LOGIC_VARIABLE = /^\?[A-Za-z_][\w-]*$/;
 const TOKEN_PATTERN =

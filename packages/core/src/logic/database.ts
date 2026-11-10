@@ -10,12 +10,13 @@ import {
 import { type MagicProgram, originalName, rewriteQueries } from "@/logic/magic";
 import {
   Aggregate,
-  type Atom,
+  Atom,
   type ComputedRelation,
   DeferredCall,
   isGroundValue,
   isLogicTerm,
   LogicVariable,
+  makeRelationValue,
   type RelationInfo,
   render,
   sameValue,
@@ -243,6 +244,28 @@ export const declareRelation = (
   database.facts.set(name, new TupleSet());
   return Effect.succeed(relation);
 };
+
+/**
+ * The Lion value bound to a relation's name: calling it with one term per
+ * column builds a goal.
+ */
+export const relationValue = (relation: RelationInfo) =>
+  makeRelationValue(relation, (...args: unknown[]) =>
+    args.length === relation.columns.length
+      ? Effect.succeed(new Atom(relation, args))
+      : fail(
+          `"${relation.name}" takes ${relation.columns.length} arguments (${relation.columns.join(", ")}) but got ${args.length}.`
+        )
+  );
+
+/** A binding for every relation declared in the database. */
+export const relationBindings = (database: LogicDatabase) =>
+  Object.fromEntries(
+    [...database.relations.values()].map((relation) => [
+      relation.name,
+      relationValue(relation),
+    ])
+  );
 
 /** How a computed relation's call reads in Lion, for messages. */
 const computedCall = (computed: ComputedRelation) =>

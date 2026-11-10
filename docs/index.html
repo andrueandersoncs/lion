@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=ef0056d889">
+    <link rel="stylesheet" href="styles.css?v=0f29658686">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=ef0056d889"></script>
-    <script type="module" src="script.js?v=ef0056d889"></script>
-    <script type="module" src="playground.js?v=ef0056d889"></script>
+    <script type="module" src="constellation.js?v=0f29658686"></script>
+    <script type="module" src="script.js?v=0f29658686"></script>
+    <script type="module" src="playground.js?v=0f29658686"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -202,7 +202,8 @@
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
             ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
-            ><span>"in"</span><span>"graph/pageRank"</span>
+            ><span>"in"</span><span>"graph/pageRank"</span
+            ><span>"snapshot"</span>
           </div>
           <div class="marquee-track" aria-hidden="true">
             <span>"boolean/xor"</span><span>"string/startsWith"</span
@@ -214,7 +215,8 @@
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
             ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
-            ><span>"in"</span><span>"graph/pageRank"</span>
+            ><span>"in"</span><span>"graph/pageRank"</span
+            ><span>"snapshot"</span>
           </div>
         </div>
       </section>
@@ -850,6 +852,43 @@
               </div>
             </div>
           </article>
+          <article class="example-card spotlight reveal">
+            <h3>Snapshots</h3>
+            <p>
+              <code>snapshot</code>
+              returns a Lion program that rebuilds the database. Save it, and
+              evaluate it later to pick up where you left off. Add a fact and
+              see it in the program.
+            </p>
+            <div class="playground" data-playground="Snapshots">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"],
+    ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["snapshot"]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  "begin",
+  ["relation","edge",["from","to"]],
+  ["relation","path",["from","to"]],
+  ["fact",["edge","a","b"],["edge","b","c"]],
+  ["rule",["path","?x","?y"],["edge","?x","?y"]],
+  [
+    "rule",
+    ["path","?x","?z"],
+    ["path","?x","?y"],
+    ["edge","?y","?z"]
+  ]
+]</code></pre>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -934,7 +973,8 @@ bun run lion repl</code></pre>
               <span class="package-version">v0.2.0</span>
             </div>
             <p>
-              The <code>lion</code> command: evaluate Lion JSON files and serve
+              The <code>lion</code> command: evaluate Lion JSON files, keep a
+              logic database in a file with <code>--database</code>, and serve
               the bundled graph editor.
             </p>
             <div class="code-block terminal">

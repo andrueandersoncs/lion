@@ -102,6 +102,7 @@ export const defineAlgorithm =
         columns: algorithm.columns,
         computed: {
           callee: algorithm.name,
+          inputKinds: algorithm.inputs.map((input) => input.kind),
           inputs,
           dependencies: inputs.filter((_, index) =>
             isRelation(index)

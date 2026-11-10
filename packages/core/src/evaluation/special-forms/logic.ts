@@ -1,6 +1,6 @@
 import { Effect, Option } from "effect";
 import { LogicError } from "@/errors/evaluation";
-import { setGlobalBinding } from "@/evaluation/environment";
+import { boundNames, setGlobalBinding } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
 import { compileQuery, compileRule } from "@/logic/compile";
 import {
@@ -9,9 +9,11 @@ import {
   declareRelation,
   explainFact,
   queryDatabase,
+  relationValue,
   retractFacts,
 } from "@/logic/database";
 import { applyQueryOptions, parseQueryOptions } from "@/logic/query-options";
+import { saveDatabase } from "@/logic/snapshot";
 import {
   Atom,
   Conjunction,
@@ -20,7 +22,6 @@ import {
   isGoal,
   isLogicTerm,
   Membership,
-  makeRelationValue,
   Negation,
   render,
   sameValue,
@@ -120,13 +121,7 @@ export const evaluateRelation = ([
       columns,
       yield* relationKey(name, options)
     );
-    const value = makeRelationValue(relation, (...args: unknown[]) =>
-      args.length === relation.columns.length
-        ? Effect.succeed(new Atom(relation, args))
-        : fail(
-            `"${name}" takes ${relation.columns.length} arguments (${relation.columns.join(", ")}) but got ${args.length}.`
-          )
-    );
+    const value = relationValue(relation);
     yield* setGlobalBinding(yield* LionEnvironmentService, name, value);
     return value;
   });
@@ -246,4 +241,16 @@ export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
       return yield* fail(`"in" expects a list, but found ${show(listValue)}.`);
     }
     return listValue.some((item) => sameValue(item, elementValue));
+  });
+
+/**
+ * ["snapshot"] returns a Lion program that rebuilds the current database.
+ * Strings bound in the environment are quoted so they load as strings.
+ */
+export const evaluateSnapshot = () =>
+  Effect.gen(function* () {
+    const names = yield* boundNames(yield* LionEnvironmentService);
+    return yield* saveDatabase(yield* database, {
+      isBound: (name) => names.has(name),
+    });
   });

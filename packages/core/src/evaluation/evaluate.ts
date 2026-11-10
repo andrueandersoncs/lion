@@ -3,7 +3,7 @@ import { evaluateArray } from "@/evaluation/base-forms/array";
 import { evaluatePrimitive } from "@/evaluation/base-forms/primitive";
 import { evaluateRecord } from "@/evaluation/base-forms/record";
 import { makeEnvironment } from "@/evaluation/environment";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, relationBindings } from "@/logic/database";
 import {
   LionArrayExpressionSchema,
   LionExpressionSchema,
@@ -25,7 +25,11 @@ export const evaluate = (expression: LionExpressionType): EvaluateResult => {
 };
 
 export interface RunOptions {
-  /** Relations, facts, and rules to start from. Defaults to an empty database. */
+  /**
+   * Relations, facts, and rules to start from. Defaults to an empty database.
+   * The database's relations are bound by name, unless the environment
+   * binds the same name.
+   */
   readonly database?: LogicDatabase;
 }
 
@@ -34,15 +38,15 @@ export const run = (
   environment: Record<string, unknown>,
   options: RunOptions = {}
 ) =>
-  pipe(
-    Schema.decodeUnknownEffect(LionExpressionSchema)(expression),
-    Effect.flatMap(evaluate),
-    Effect.provideServiceEffect(
-      LionEnvironmentService,
-      makeEnvironment(environment)
-    ),
-    Effect.provideServiceEffect(
-      LionDatabaseService,
-      Effect.sync(() => options.database ?? new LogicDatabase())
-    )
-  );
+  Effect.suspend(() => {
+    const database = options.database ?? new LogicDatabase();
+    return pipe(
+      Schema.decodeUnknownEffect(LionExpressionSchema)(expression),
+      Effect.flatMap(evaluate),
+      Effect.provideServiceEffect(
+        LionEnvironmentService,
+        makeEnvironment({ ...relationBindings(database), ...environment })
+      ),
+      Effect.provideService(LionDatabaseService, database)
+    );
+  });

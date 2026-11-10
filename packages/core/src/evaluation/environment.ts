@@ -69,3 +69,17 @@ export const setGlobalBinding = (
     : Ref.update(environment.bindingsRef, Record.set(name, value));
   return update.pipe(Effect.as(environment));
 };
+
+/** Every name bound in the environment or its parents. */
+export const boundNames = (
+  environment: Environment
+): Effect.Effect<ReadonlySet<string>> =>
+  Effect.gen(function* () {
+    const names = new Set(Object.keys(yield* Ref.get(environment.bindingsRef)));
+    if (isInnerEnvironment(environment)) {
+      for (const name of yield* boundNames(environment.parent)) {
+        names.add(name);
+      }
+    }
+    return names;
+  });

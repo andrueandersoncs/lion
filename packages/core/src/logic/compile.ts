@@ -33,6 +33,11 @@ export interface CompiledRule {
   /** Head positions that hold an aggregate; empty for an ordinary rule. */
   readonly aggregates: readonly number[];
   readonly body: readonly Literal[];
+  /**
+   * The rule's evaluated head and goals, before compiling, so a snapshot can
+   * write the rule back out. Rules made by the query rewrite leave it out.
+   */
+  readonly definition?: readonly unknown[];
   readonly head: Atom;
   /** The rendered `rule` form. Alternatives of one `or` share it. */
   readonly source: unknown;
@@ -353,6 +358,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
   Effect.gen(function* () {
     const rename = renameAnonymous({ next: 0 });
     const source = ["rule", render(head), ...body.map(render)];
+    const definition = [head, ...body];
     if (!(head instanceof Atom)) {
       return yield* fail(
         `A rule head must be a relation call, but found ${show(head)}.`
@@ -392,7 +398,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
           `Unsafe rule head ${show(head)}: ${[...new Set(unbound)].map((name) => `?${name}`).join(", ")} never appears in a relation in the body.`
         );
       }
-      rules.push({ aggregates, head, body: ordered, source });
+      rules.push({ aggregates, head, body: ordered, definition, source });
     }
     return rules;
   });

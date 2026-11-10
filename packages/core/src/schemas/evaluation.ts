@@ -175,6 +175,9 @@ export const OrFormSchema = Schema.TupleWithRest(
   [LionExpressionSchema]
 );
 
+// ["snapshot"]
+export const SnapshotFormSchema = Schema.Tuple([Schema.Literal("snapshot")]);
+
 // ["in", <element>, <list>]
 export const InFormSchema = Schema.Tuple([
   Schema.Literal("in"),

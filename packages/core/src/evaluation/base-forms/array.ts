@@ -16,6 +16,7 @@ import {
   evaluateRelation,
   evaluateRetract,
   evaluateRule,
+  evaluateSnapshot,
   evaluateUnify,
   evaluateWhy,
 } from "@/evaluation/special-forms/logic";
@@ -39,11 +40,26 @@ import {
   RelationFormSchema,
   RetractFormSchema,
   RuleFormSchema,
+  SnapshotFormSchema,
   UnifyFormSchema,
   WhyFormSchema,
 } from "@/schemas/evaluation.ts";
 import type { LionArrayExpressionType } from "@/schemas/lion-expression.ts";
 import type { EvaluateResult } from "@/types/evaluation";
+
+// Plain checks instead of another Match keep the matcher types shallow
+// enough for TypeScript.
+const isInForm = Schema.is(InFormSchema);
+const isSnapshotForm = Schema.is(SnapshotFormSchema);
+
+const evaluateDataForm = (
+  expression: LionArrayExpressionType
+): EvaluateResult | undefined => {
+  if (isInForm(expression)) {
+    return evaluateIn(expression);
+  }
+  return isSnapshotForm(expression) ? evaluateSnapshot() : undefined;
+};
 
 const evaluateLogicForm = (
   expression: LionArrayExpressionType
@@ -60,8 +76,7 @@ const evaluateLogicForm = (
     Match.when(Schema.is(AndFormSchema), (_) => evaluateAnd(_)),
     Match.when(Schema.is(OrFormSchema), (_) => evaluateOr(_)),
     Match.when(Schema.is(UnifyFormSchema), (_) => evaluateUnify(_)),
-    Match.when(Schema.is(InFormSchema), (_) => evaluateIn(_)),
-    Match.orElse(() => undefined)
+    Match.orElse(() => evaluateDataForm(expression))
   );
 
 export const evaluateArray = (

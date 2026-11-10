@@ -16,6 +16,7 @@ import {
   RelationFormSchema,
   RetractFormSchema,
   RuleFormSchema,
+  SnapshotFormSchema,
   UnifyFormSchema,
   WhyFormSchema,
 } from "@/schemas/evaluation";
@@ -50,7 +51,8 @@ export type SpecialFormName =
   | "and"
   | "or"
   | "="
-  | "in";
+  | "in"
+  | "snapshot";
 
 export interface SemanticRelationship {
   readonly kind: "definition" | "reference-candidate";
@@ -185,6 +187,11 @@ const SPECIAL_FORMS: readonly FormDefinition[] = [
     matches: Schema.is(InFormSchema),
     role: roleByIndex(["operator", "element", "list"], "list"),
   },
+  {
+    name: "snapshot",
+    matches: Schema.is(SnapshotFormSchema),
+    role: roleByIndex(["operator"], "argument"),
+  },
 ];
 
 const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
@@ -206,6 +213,7 @@ const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
   or: true,
   "=": true,
   in: true,
+  snapshot: true,
 };
 
 const escapePointerSegment = (segment: number | string) =>

@@ -228,6 +228,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. With only booleans, they are boolean operators. |
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+| `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
 | `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. Without logic variables it is plain membership. See [Lists](#lists). |
 
 ### Keys
@@ -402,6 +403,43 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 - `why` explains facts with every relation computed in full.
 - Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to compute every relation for every query instead.
 
+### Snapshots
+
+`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `fact` form with the facts of each, and every `rule`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
+
+```json
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["snapshot"]]
+```
+
+Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path", ["from", "to"]], ["fact", ["edge", "a", "b"], ["edge", "b", "c"]], ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]]]`.
+
+- Strings that would evaluate to something else when loaded, such as relation names, names bound in the environment, namespaced names like `"number/add"`, and `?variable` names, are written inside `quote`. So are lists and records.
+- Rules are written as they were evaluated, so a name like `budget` in a rule appears as its value.
+- A rule that holds something other than JSON data, such as a function, cannot be saved, and `snapshot` fails with an error.
+
+From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
+
+```ts
+import { readFileSync } from "node:fs";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
+import { stdlib } from "@lionlang/core/modules";
+import { Effect } from "effect";
+
+const saved = JSON.parse(readFileSync("store.json", "utf8"));
+
+const program = Effect.gen(function* () {
+  const database = yield* loadDatabase(saved, stdlib);
+  const rows = yield* run(["query", ["path", "a", "?to"]], stdlib, { database });
+  return { rows, saved: yield* saveDatabase(database) };
+});
+```
+
 ### Guarantees
 
 Rules are checked when they are added:
@@ -411,7 +449,7 @@ Rules are checked when they are added:
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
 - A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are fine. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
-Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
+Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
 
 ## Standard Library
 

@@ -87,6 +87,8 @@ export interface ComputedRelation {
   ) => readonly (readonly unknown[])[] | string;
   /** Relations whose tuples the computation reads. */
   readonly dependencies: readonly string[];
+  /** Which inputs are relations, by position; the rest are values. */
+  readonly inputKinds: readonly ("relation" | "value")[];
   /** Input relation names and parameter values, as written in the call. */
   readonly inputs: readonly unknown[];
 }
