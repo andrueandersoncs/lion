@@ -497,13 +497,14 @@ Bottom-up evaluation derives everything a program implies, but a query usually n
   ["relation", "path", ["from", "to"]],
   ["rule", ["edge", "?n", ["number/add", "?n", 1]], ["in", "?n", ["array/range", 0, 3000]]],
   ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
-  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
   ["query", ["path", 2997, "?to"]]]
 ```
 
 Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds. Computing `path` in full would derive about 4.5 million rows.
 
 - Known arguments are values, or variables bound by an earlier relation goal in the query, as in `["and", ["start", "?s"], ["path", "?s", "?to"]]`.
+- How a recursive rule is written matters. With a known start, recursion on the left, as in `["path", "?x", "?y"], ["edge", "?y", "?z"]`, asks only about that start. Recursion on the right, as in `["edge", "?x", "?y"], ["path", "?y", "?z"]`, asks about every node the paths pass through, which can cost as much as full evaluation.
 - Relations that are aggregated, computed by an algorithm, or used under `not` are computed in full first, along with everything they depend on.
 - The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters.
 - `why` explains facts with every relation computed in full.
