@@ -27,6 +27,7 @@ const TOKENS = [
   ['"string/concat"', "#a5d6ff"],
   ['"value/identity"', "#a5d6ff"],
   ['"aggregate/sum"', "#a5d6ff"],
+  ['"aggregate/min"', "#a5d6ff"],
   ['"x"', "#a5d6ff"],
   ["42", "#79c0ff"],
   ["0", "#79c0ff"],

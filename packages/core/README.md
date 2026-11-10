@@ -250,6 +250,8 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 | `aggregate/countUnique` | Number of distinct values |
 | `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers (`mean` of nothing is `null`) |
 | `aggregate/min`, `aggregate/max` | Smallest and largest value; all numbers or all strings |
+| `aggregate/shortest` | Shortest list or string; ties go to the smaller value |
+| `aggregate/union` | Every element of every list, distinct and sorted |
 | `aggregate/collect` | Every value, sorted, duplicates kept |
 | `aggregate/unique` | Distinct values, sorted |
 
@@ -257,8 +259,36 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 - A group exists only when something matches, so a count is never `0`.
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`.
 - Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
-- `why` on an aggregated fact lists every match it combines under `matches`. For `min` and `max`, it explains the one match that produced the value.
+- `why` on an aggregated fact lists every match it combines under `matches`. For `min`, `max`, and `shortest`, it explains the one match that produced the value.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
+
+#### Recursion through aggregates
+
+`aggregate/min`, `aggregate/max`, `aggregate/shortest`, and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive. A recursive rule can aggregate with them, and the aggregate can compute its value, which an ordinary recursive rule cannot do. Each group keeps its best value so far, and evaluation stops once no value improves.
+
+```json
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "dist", ["to", "km"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["rule", ["dist", "?to", ["aggregate/min", "?km"]], ["road", "a", "?to", "?km"]],
+  ["rule", ["dist", "?to", ["aggregate/min", ["number/add", "?d", "?km"]]],
+    ["dist", "?via", "?d"], ["road", "?via", "?to", "?km"]],
+  ["query", ["dist", "?to", "?km"]]]
+```
+
+Evaluates to `[{ "to": "c", "km": 1 }, { "to": "b", "km": 3 }, { "to": "d", "km": 8 }]`.
+
+`aggregate/shortest` keeps a path itself. With `route` edges `a→b`, `b→c`, `a→c`, and `c→d`, these rules make `["query", ["best", "d", "?path"]]` return `[{ "path": ["a", "c", "d"] }]`:
+
+```json
+["rule", ["best", "?to", ["aggregate/shortest", ["array/make", "a", "?to"]]], ["route", "a", "?to"]],
+["rule", ["best", "?to", ["aggregate/shortest", ["array/concat", "?path", ["array/make", "?to"]]]],
+  ["best", "?via", "?path"], ["route", "?via", "?to"]]
+```
+
+- Every relation in a recursive cycle through an aggregate must aggregate too, so replacing a value never leaves rows derived from the old one behind.
+- If values are still improving after 10,000 rounds, as with a negative-weight cycle under `aggregate/min`, the query fails with an error instead of running forever.
 
 ### Guarantees
 
@@ -266,8 +296,8 @@ Rules are checked when they are added:
 
 - Every variable in a rule head, filter, or `not` must first be bound by a relation goal or `=`.
 - Negation cannot go through recursion, so every program has a single well-defined answer.
-- Aggregation cannot go through recursion either, so an aggregate runs only once its inputs are complete.
-- A recursive rule cannot compute new values in its head, so evaluation always finishes.
+- Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
+- A recursive rule cannot compute new values in its head columns, so evaluation always finishes. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
 Answers are computed bottom-up with semi-naive evaluation and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
 
@@ -314,6 +344,8 @@ Called on a list, each function combines it. Called on a logic variable in a rul
 ["aggregate/max", ["array/make", 3, 1, 3]]
 ["aggregate/collect", ["array/make", 3, 1, 3]]
 ["aggregate/unique", ["array/make", 3, 1, 3]]
+["aggregate/shortest", ["array/make", ["array/make", 1, 2], ["array/make", 3]]]
+["aggregate/union", ["array/make", ["array/make", 1, 2], ["array/make", 2, 3]]]
 ```
 
 ### `array`

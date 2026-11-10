@@ -5,6 +5,7 @@
 ### Added
 
 - Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.
+- Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.
 
 ### Fixed
 

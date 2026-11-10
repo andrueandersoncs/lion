@@ -300,7 +300,8 @@ describe("aggregate checks", () => {
           ["edge", "?x", "?y"],
         ],
       ]);
-      expect(message).toContain("Aggregation cannot go through recursion");
+      expect(message).toContain('aggregates with aggregate/count over "hops"');
+      expect(message).toContain("can go through recursion");
     })
   );
 

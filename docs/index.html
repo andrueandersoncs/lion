@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=65c2225d8f">
+    <link rel="stylesheet" href="styles.css?v=49875654a5">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=65c2225d8f"></script>
-    <script type="module" src="script.js?v=65c2225d8f"></script>
-    <script type="module" src="playground.js?v=65c2225d8f"></script>
+    <script type="module" src="constellation.js?v=49875654a5"></script>
+    <script type="module" src="script.js?v=49875654a5"></script>
+    <script type="module" src="playground.js?v=49875654a5"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -678,6 +678,36 @@
   {"customer":"ana","total":50,"orders":2},
   {"customer":"bo","total":65,"orders":2}
 ]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Shortest distances</h3>
+            <p>
+              <code>aggregate/min</code>
+              only moves down, so a recursive rule can use it and still finish.
+              Add a shortcut road and watch the distances drop.
+            </p>
+            <div class="playground" data-playground="Shortest distances">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "dist", ["to", "km"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1],
+    ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["rule", ["dist", "?to", ["aggregate/min", "?km"]],
+    ["road", "a", "?to", "?km"]],
+  ["rule",
+    ["dist", "?to",
+      ["aggregate/min", ["number/add", "?d", "?km"]]],
+    ["dist", "?via", "?d"], ["road", "?via", "?to", "?km"]],
+  ["query", ["dist", "?to", "?km"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"to":"c","km":1},{"to":"b","km":3},{"to":"d","km":8}]</code></pre>
               </div>
             </div>
           </article>

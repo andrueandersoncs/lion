@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
-import { aggregator } from "@/logic/aggregates";
+import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
 import type { CompiledQuery, CompiledRule, Literal } from "@/logic/compile";
 import {
   Aggregate,
@@ -298,6 +298,35 @@ const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
   return undefined;
 };
 
+const LATTICE_NAMES = LATTICE_AGGREGATES.map((kind) => `aggregate/${kind}`)
+  .join(", ")
+  .replace(/, ([^,]*)$/, ", and $1");
+
+/**
+ * A recursive rule may aggregate only with lattice aggregates, whose values
+ * move one way, and only when every relation in its cycle aggregates too:
+ * replacing an aggregated row must not strand rows derived from the old one.
+ */
+const recursiveAggregateProblem = (
+  rules: readonly CompiledRule[],
+  rule: CompiledRule,
+  component: ReadonlySet<string>,
+  dependency: string
+) => {
+  const head = rule.head.relation.name;
+  const other = rule.aggregates
+    .map((position) => (rule.head.args[position] as Aggregate).kind)
+    .find((kind) => aggregator(kind).join === undefined);
+  if (other !== undefined) {
+    return `Rule ${show(rule.source)} aggregates with aggregate/${other} over "${dependency}", which depends on "${head}". Only ${LATTICE_NAMES} can go through recursion.`;
+  }
+  const plain = [...component].find((name) => !isAggregated(rules, name));
+  if (plain !== undefined) {
+    return `"${plain}" and "${head}" depend on each other, so "${plain}" must aggregate too. Every relation in a recursive cycle through an aggregate must aggregate with ${LATTICE_NAMES}.`;
+  }
+  return undefined;
+};
+
 const checkProgram = (rules: readonly CompiledRule[]) => {
   const shapeProblem = checkAggregateShapes(rules);
   if (shapeProblem !== undefined) {
@@ -311,7 +340,15 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
         literal.kind === "atom" && component?.has(literal.atom.relation.name)
     );
     if (recursive?.kind === "atom" && rule.aggregates.length > 0) {
-      return `Rule ${show(rule.source)} aggregates over "${recursive.atom.relation.name}", which depends on "${rule.head.relation.name}". Aggregation cannot go through recursion.`;
+      const problem = recursiveAggregateProblem(
+        rules,
+        rule,
+        component ?? new Set(),
+        recursive.atom.relation.name
+      );
+      if (problem !== undefined) {
+        return problem;
+      }
     }
     for (const literal of rule.body) {
       if (
@@ -619,15 +656,18 @@ const hasChanges = (delta: ReadonlyMap<string, TupleSet>) =>
 const fullRelation = (model: Model) => (relation: string) =>
   model.relations.get(relation) ?? EMPTY;
 
-/** Re-runs a rule once per body goal that matches tuples new in the last round. */
-const applyChanges = (
+/**
+ * Re-runs a rule once per body goal that matches tuples new in the last round,
+ * so every returned binding uses at least one new tuple.
+ */
+const changedBindings = (
   rule: CompiledRule,
   delta: ReadonlyMap<string, TupleSet>,
-  model: Model,
-  next: Map<string, TupleSet>
+  model: Model
 ) =>
   Effect.gen(function* () {
     const full = fullRelation(model);
+    const out: Binding[] = [];
     for (const [position, literal] of rule.body.entries()) {
       const changes =
         literal.kind === "atom"
@@ -639,8 +679,9 @@ const applyChanges = (
       const bindings = yield* evaluateBody(rule.body, (at, relation) =>
         at === position ? changes : full(relation)
       );
-      yield* deriveHeads(rule, bindings, model, next);
+      out.push(...bindings);
     }
+    return out;
   });
 
 /** A key that is equal for bindings of the same variables to the same values. */
@@ -706,35 +747,62 @@ const collectGroups = (model: Model, rules: readonly CompiledRule[]) =>
     return groups.values();
   });
 
+const selectsAlone = (rule: CompiledRule) => {
+  const [position, ...others] = rule.aggregates;
+  return (
+    others.length === 0 &&
+    aggregator((rule.head.args[position ?? 0] as Aggregate).kind).selects
+  );
+};
+
+/** Checks values against an aggregate, naming the rule when they do not fit. */
+const checkAggregate = (
+  rule: CompiledRule,
+  kind: string,
+  values: readonly unknown[]
+) => {
+  const problem = aggregator(kind).check(values);
+  return problem === undefined
+    ? Effect.void
+    : fail(`Rule ${show(rule.source)}: aggregate/${kind} ${problem}.`);
+};
+
+/** The head tuple with each aggregate's result in its column. */
+const aggregatedTuple = (
+  rule: CompiledRule,
+  key: Tuple,
+  results: readonly unknown[]
+) => {
+  const tuple = [...key];
+  for (const [index, position] of rule.aggregates.entries()) {
+    tuple[position] = results[index];
+  }
+  return tuple.every(isGroundValue)
+    ? Effect.succeed(tuple as Tuple)
+    : fail(
+        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
+      );
+};
+
 /** Combines one group's matches into the aggregated tuple. */
 const foldGroup = (group: Group) =>
   Effect.gen(function* () {
     const { rule } = group;
-    const tuple = [...group.key];
+    const results: unknown[] = [];
     let derivation: Derivation = { rule, trail: [], matches: group.trails };
     for (const [index, position] of rule.aggregates.entries()) {
       const { kind } = rule.head.args[position] as Aggregate;
-      const { check, fold, selects } = aggregator(kind);
       const values = group.values[index] ?? [];
-      const problem = check(values);
-      if (problem !== undefined) {
-        return yield* fail(
-          `Rule ${show(rule.source)}: aggregate/${kind} ${problem}.`
-        );
-      }
-      const result = fold(values);
-      tuple[position] = result;
-      if (selects && rule.aggregates.length === 1) {
+      yield* checkAggregate(rule, kind, values);
+      const result = aggregator(kind).fold(values);
+      results.push(result);
+      if (selectsAlone(rule)) {
         const winner = values.findIndex((value) => sameValue(value, result));
         derivation = { rule, trail: group.trails[winner] ?? [] };
       }
     }
-    if (!tuple.every(isGroundValue)) {
-      return yield* fail(
-        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
-      );
-    }
-    return { derivation, tuple: tuple as Tuple };
+    const tuple = yield* aggregatedTuple(rule, group.key, results);
+    return { derivation, tuple };
   });
 
 /** Aggregate rules run once their inputs are complete; they never recurse. */
@@ -751,10 +819,156 @@ const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
     }
   });
 
+/** Recursion through lattice aggregates stops after this many rounds. */
+export const MAX_LATTICE_ROUNDS = 10_000;
+
+interface Best {
+  readonly derivation: Derivation;
+  readonly relation: string;
+  readonly tuple: Tuple;
+  /** The current value of each aggregate. */
+  readonly values: readonly unknown[];
+}
+
+/** Joins one match into its group's current best, or returns undefined. */
+const improve = (
+  rule: CompiledRule,
+  binding: Binding,
+  match: { readonly key: Tuple; readonly values: readonly unknown[] },
+  current: Best | undefined
+) =>
+  Effect.gen(function* () {
+    const joined: unknown[] = [];
+    let improved = current === undefined;
+    for (const [index, position] of rule.aggregates.entries()) {
+      const { kind } = rule.head.args[position] as Aggregate;
+      const { fold, join } = aggregator(kind);
+      const value = match.values[index];
+      const previous = current?.values[index];
+      yield* checkAggregate(
+        rule,
+        kind,
+        current === undefined ? [value] : [previous, value]
+      );
+      const result =
+        current === undefined || join === undefined
+          ? fold([value])
+          : join(previous, value);
+      improved ||= !sameValue(result, previous);
+      joined.push(result);
+    }
+    if (!improved) {
+      return undefined;
+    }
+    const tuple = yield* aggregatedTuple(rule, match.key, joined);
+    const derivation: Derivation = selectsAlone(rule)
+      ? { rule, trail: binding.trail }
+      : {
+          rule,
+          trail: [],
+          matches: [...(current?.derivation.matches ?? []), binding.trail],
+        };
+    return {
+      derivation,
+      relation: rule.head.relation.name,
+      tuple,
+      values: joined,
+    };
+  });
+
+/**
+ * Recursion through lattice aggregates. Each group keeps its best value so
+ * far; a round re-runs the rules on the rows that improved in the last round,
+ * and evaluation stops once no group improves.
+ */
+const evaluateLattice = (model: Model, rules: readonly CompiledRule[]) =>
+  Effect.gen(function* () {
+    const best = new Map<string, Best>();
+    let changed = new Map<string, Best>();
+    const offer = (rule: CompiledRule, bindings: readonly Binding[]) =>
+      Effect.gen(function* () {
+        for (const binding of bindings) {
+          const match = yield* matchValues(rule, binding);
+          const id = `${rule.head.relation.name}\u0000${valueKey(match.key)}`;
+          const next = yield* improve(
+            rule,
+            binding,
+            match,
+            changed.get(id) ?? best.get(id)
+          );
+          if (next !== undefined) {
+            changed.set(id, next);
+          }
+        }
+      });
+    const settle = () => {
+      const delta = new Map<string, TupleSet>();
+      for (const [id, entry] of changed) {
+        const tuples = getOrCreate(
+          model.relations,
+          entry.relation,
+          () => new TupleSet()
+        );
+        const old = best.get(id);
+        if (old !== undefined) {
+          tuples.delete(old.tuple);
+        }
+        tuples.add(entry.tuple);
+        // Replaced rows keep their derivations, so explanations that pass
+        // through an earlier best value still read correctly.
+        getOrCreate(model.derivations, entry.relation, () => new Map()).set(
+          valueKey(entry.tuple),
+          entry.derivation
+        );
+        getOrCreate(delta, entry.relation, () => new TupleSet()).add(
+          entry.tuple
+        );
+        best.set(id, entry);
+      }
+      changed = new Map();
+      return delta;
+    };
+
+    const full = fullRelation(model);
+    for (const rule of rules) {
+      yield* offer(
+        rule,
+        yield* evaluateBody(rule.body, (_, relation) => full(relation))
+      );
+    }
+    let delta = settle();
+    for (let round = 1; hasChanges(delta); round += 1) {
+      if (round > MAX_LATTICE_ROUNDS) {
+        const names = [
+          ...new Set(rules.map((rule) => `"${rule.head.relation.name}"`)),
+        ];
+        return yield* fail(
+          `${names.join(" and ")} kept improving after ${MAX_LATTICE_ROUNDS} rounds, so evaluation stopped. A cycle can improve a value forever, such as a negative-weight cycle under aggregate/min.`
+        );
+      }
+      for (const rule of rules) {
+        yield* offer(rule, yield* changedBindings(rule, delta, model));
+      }
+      delta = settle();
+    }
+  });
+
+const isRecursive = (rules: readonly CompiledRule[]) => {
+  const heads = new Set(rules.map((rule) => rule.head.relation.name));
+  return rules.some((rule) =>
+    rule.body.some(
+      (literal) =>
+        literal.kind === "atom" && heads.has(literal.atom.relation.name)
+    )
+  );
+};
+
 const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
   Effect.gen(function* () {
     if (rules.some((rule) => rule.aggregates.length > 0)) {
-      return yield* evaluateAggregates(model, rules);
+      return yield* isRecursive(rules)
+        ? evaluateLattice(model, rules)
+        : evaluateAggregates(model, rules);
     }
     const full = fullRelation(model);
     let delta = new Map<string, TupleSet>();
@@ -767,7 +981,8 @@ const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
     while (hasChanges(delta)) {
       const next = new Map<string, TupleSet>();
       for (const rule of rules) {
-        yield* applyChanges(rule, delta, model, next);
+        const bindings = yield* changedBindings(rule, delta, model);
+        yield* deriveHeads(rule, bindings, model, next);
       }
       delta = next;
     }
