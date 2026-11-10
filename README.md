@@ -320,10 +320,32 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["retract", goal, ...]` | Removes facts. Derived answers update on the next query. |
 | `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
+| `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["why", goal]` | Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. With only booleans, they are boolean operators. |
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+
+### Query options
+
+A record as the third argument of `query` sorts and pages the answers, or asserts that there are some or none. Options are read as written, like a relation's column list.
+
+```json
+["begin",
+  ["relation", "score", ["player", "points"]],
+  ["fact", ["score", "ana", 12], ["score", "bo", 30], ["score", "cy", 30], ["score", "dee", 7]],
+  ["query", ["score", "?player", "?points"], {"order": ["-points", "player"], "limit": 3}]]
+```
+
+Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 }, { "player": "ana", "points": 12 }]`.
+
+| Option | Meaning |
+|---|---|
+| `"order"` | A variable name or a list of them, compared in turn. A leading `-` sorts that variable in descending order, and the `?` is optional. |
+| `"offset"`, `"limit"` | Skip `offset` answers, then return at most `limit`. |
+| `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
+
+Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, then records.
 
 ### Aggregates
 

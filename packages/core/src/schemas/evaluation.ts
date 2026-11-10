@@ -133,10 +133,14 @@ export const RetractFormSchema = Schema.TupleWithRest(
   [LionExpressionSchema]
 );
 
-// ["query", <goal>]
-export const QueryFormSchema = Schema.Tuple([
-  Schema.Literal("query"),
-  LionExpressionSchema,
+// ["query", <goal>] or ["query", <goal>, <options>]
+export const QueryFormSchema = Schema.Union([
+  Schema.Tuple([Schema.Literal("query"), LionExpressionSchema]),
+  Schema.Tuple([
+    Schema.Literal("query"),
+    LionExpressionSchema,
+    LionExpressionSchema,
+  ]),
 ]);
 
 // ["why", <relation call>]

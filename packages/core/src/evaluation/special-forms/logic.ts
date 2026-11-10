@@ -11,6 +11,7 @@ import {
   queryDatabase,
   retractFacts,
 } from "@/logic/database";
+import { applyQueryOptions, parseQueryOptions } from "@/logic/query-options";
 import {
   Atom,
   Conjunction,
@@ -113,10 +114,18 @@ export const evaluateRetract = ([_, ...facts]: typeof RetractFormSchema.Type) =>
     return yield* retractFacts(yield* database, values);
   });
 
-export const evaluateQuery = ([_, goal]: typeof QueryFormSchema.Type) =>
+/** ["query", goal, options?]; options are read as written, not evaluated. */
+export const evaluateQuery = ([
+  _,
+  goal,
+  options,
+]: typeof QueryFormSchema.Type) =>
   Effect.gen(function* () {
-    const queries = yield* compileQuery(yield* evaluate(goal));
-    return yield* queryDatabase(yield* database, queries);
+    const goalValue = yield* evaluate(goal);
+    const queries = yield* compileQuery(goalValue);
+    const parsed = yield* parseQueryOptions(options, queries[0]?.outputs ?? []);
+    const rows = yield* queryDatabase(yield* database, queries);
+    return yield* applyQueryOptions(rows, parsed, goalValue);
   });
 
 export const evaluateWhy = ([_, fact]: typeof WhyFormSchema.Type) =>

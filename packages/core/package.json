@@ -34,6 +34,7 @@
     "./logic/aggregates": "./dist/logic/aggregates.mjs",
     "./logic/compile": "./dist/logic/compile.mjs",
     "./logic/database": "./dist/logic/database.mjs",
+    "./logic/query-options": "./dist/logic/query-options.mjs",
     "./logic/terms": "./dist/logic/terms.mjs",
     "./modules": "./dist/modules/index.mjs",
     "./modules/aggregate": "./dist/modules/aggregate.mjs",

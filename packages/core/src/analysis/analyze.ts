@@ -151,7 +151,7 @@ const SPECIAL_FORMS: readonly FormDefinition[] = [
   {
     name: "query",
     matches: Schema.is(QueryFormSchema),
-    role: roleByIndex(["operator", "goal"], "goal"),
+    role: roleByIndex(["operator", "goal", "options"], "options"),
   },
   {
     name: "why",

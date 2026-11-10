@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=49875654a5">
+    <link rel="stylesheet" href="styles.css?v=62518bd914">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=49875654a5"></script>
-    <script type="module" src="script.js?v=49875654a5"></script>
-    <script type="module" src="playground.js?v=49875654a5"></script>
+    <script type="module" src="constellation.js?v=62518bd914"></script>
+    <script type="module" src="script.js?v=62518bd914"></script>
+    <script type="module" src="playground.js?v=62518bd914"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -708,6 +708,34 @@
                 <pre
                   class="playground-result"
                 ><code>[{"to":"c","km":1},{"to":"b","km":3},{"to":"d","km":8}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Order and limit</h3>
+            <p>
+              A record after the goal sorts and pages the answers. A leading
+              <code>-</code>
+              sorts descending. Raise the limit or sort by
+              <code>"player"</code>.
+            </p>
+            <div class="playground" data-playground="Order and limit">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "game", ["player", "points"]],
+  ["relation", "total", ["player", "points"]],
+  ["fact", ["game", "ana", 12], ["game", "bo", 30],
+    ["game", "cy", 18], ["game", "ana", 9], ["game", "cy", 14]],
+  ["rule", ["total", "?p", ["aggregate/sum", "?n"]],
+    ["game", "?p", "?n"]],
+  ["query", ["total", "?player", "?points"],
+    {"order": "-points", "limit": 2}]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"player":"cy","points":32},{"player":"bo","points":30}]</code></pre>
               </div>
             </div>
           </article>
