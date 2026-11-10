@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=62518bd914">
+    <link rel="stylesheet" href="styles.css?v=9e5a0333ec">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=62518bd914"></script>
-    <script type="module" src="script.js?v=62518bd914"></script>
-    <script type="module" src="playground.js?v=62518bd914"></script>
+    <script type="module" src="constellation.js?v=9e5a0333ec"></script>
+    <script type="module" src="script.js?v=9e5a0333ec"></script>
+    <script type="module" src="playground.js?v=9e5a0333ec"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -201,7 +201,8 @@
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
-            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span>
+            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
+            ><span>"in"</span>
           </div>
           <div class="marquee-track" aria-hidden="true">
             <span>"boolean/xor"</span><span>"string/startsWith"</span
@@ -212,7 +213,8 @@
             ><span>"object/keys"</span><span>"console/log"</span
             ><span>"typesafe/choice"</span><span>"typesafe/score"</span
             ><span>"typesafe/system-one"</span><span>"fact"</span
-            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span>
+            ><span>"not"</span><span>"?x"</span><span>"aggregate/sum"</span
+            ><span>"in"</span>
           </div>
         </div>
       </section>
@@ -736,6 +738,34 @@
                 <pre
                   class="playground-result"
                 ><code>[{"player":"cy","points":32},{"player":"bo","points":30}]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Lists with in</h3>
+            <p>
+              <code>in</code>
+              binds a variable to each item of a list stored in a fact. Tag
+              another post with <code>"json"</code>, or ask for
+              <code>"logic"</code>.
+            </p>
+            <div class="playground" data-playground="Lists with in">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "post", ["id", "tags"]],
+  ["relation", "tagged", ["tag", "post"]],
+  ["fact",
+    ["post", "p1", ["array/make", "lisp", "json"]],
+    ["post", "p2", ["array/make", "json", "logic"]]],
+  ["rule", ["tagged", "?tag", "?p"],
+    ["post", "?p", "?tags"], ["in", "?tag", "?tags"]],
+  ["query", ["tagged", "json", "?post"]]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"post":"p1"},{"post":"p2"}]</code></pre>
               </div>
             </div>
           </article>

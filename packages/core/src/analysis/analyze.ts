@@ -6,6 +6,7 @@ import {
   DefineFormSchema,
   EvalFormSchema,
   FactFormSchema,
+  InFormSchema,
   LambdaFormSchema,
   MatchFormSchema,
   NotFormSchema,
@@ -48,7 +49,8 @@ export type SpecialFormName =
   | "not"
   | "and"
   | "or"
-  | "=";
+  | "="
+  | "in";
 
 export interface SemanticRelationship {
   readonly kind: "definition" | "reference-candidate";
@@ -178,6 +180,11 @@ const SPECIAL_FORMS: readonly FormDefinition[] = [
     matches: Schema.is(UnifyFormSchema),
     role: roleByIndex(["operator", "left", "right"], "right"),
   },
+  {
+    name: "in",
+    matches: Schema.is(InFormSchema),
+    role: roleByIndex(["operator", "element", "list"], "list"),
+  },
 ];
 
 const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
@@ -198,6 +205,7 @@ const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
   and: true,
   or: true,
   "=": true,
+  in: true,
 };
 
 const escapePointerSegment = (segment: number | string) =>

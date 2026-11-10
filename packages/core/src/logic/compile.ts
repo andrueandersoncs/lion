@@ -10,6 +10,7 @@ import {
   type Goal,
   isGoal,
   LogicVariable,
+  Membership,
   Negation,
   render,
   termVariables,
@@ -21,7 +22,12 @@ export type Literal =
   | { readonly kind: "atom"; readonly atom: Atom }
   | { readonly kind: "absent"; readonly atom: Atom }
   | { readonly kind: "check"; readonly call: DeferredCall }
-  | { readonly kind: "unify"; readonly left: unknown; readonly right: unknown };
+  | { readonly kind: "unify"; readonly left: unknown; readonly right: unknown }
+  | {
+      readonly kind: "member";
+      readonly element: unknown;
+      readonly list: unknown;
+    };
 
 export interface CompiledRule {
   /** Head positions that hold an aggregate; empty for an ordinary rule. */
@@ -71,6 +77,9 @@ const renameAnonymous = (counter: { next: number }) => {
     if (goal instanceof Unification) {
       return new Unification(renameTerm(goal.left), renameTerm(goal.right));
     }
+    if (goal instanceof Membership) {
+      return new Membership(renameTerm(goal.element), renameTerm(goal.list));
+    }
     return renameTerm(goal);
   };
   return renameGoal;
@@ -106,8 +115,15 @@ const checkTerms = (
 type Alternatives = readonly Literal[][] | string;
 
 const literalAlternatives = (
-  goal: Atom | Negation | DeferredCall | Unification
+  goal: Atom | Negation | DeferredCall | Unification | Membership
 ): Alternatives => {
+  if (goal instanceof Membership) {
+    return (
+      checkTerms(goal, [goal.element, goal.list]) ?? [
+        [{ kind: "member", element: goal.element, list: goal.list }],
+      ]
+    );
+  }
   if (goal instanceof Atom) {
     return checkTerms(goal, goal.args) ?? [[{ kind: "atom", atom: goal }]];
   }
@@ -200,6 +216,12 @@ const isReady = (literal: Literal, bound: ReadonlySet<string>): boolean => {
         (right && literal.left instanceof LogicVariable)
       );
     }
+    case "member":
+      return (
+        allBound(literal.list, bound) &&
+        (literal.element instanceof LogicVariable ||
+          allBound(literal.element, bound))
+      );
     default:
       return false;
   }
@@ -220,6 +242,9 @@ const bindVariables = (literal: Literal, bound: Set<string>) => {
       }
     }
   }
+  if (literal.kind === "member" && literal.element instanceof LogicVariable) {
+    bound.add(literal.element.name);
+  }
 };
 
 const boundArguments = (atom: Atom, bound: ReadonlySet<string>) =>
@@ -237,6 +262,8 @@ const literalGoal = (literal: Literal): unknown => {
       return literal.call;
     case "unify":
       return new Unification(literal.left, literal.right);
+    case "member":
+      return new Membership(literal.element, literal.list);
     default:
       return undefined;
   }
@@ -282,7 +309,7 @@ const plan = (literals: readonly Literal[]): Literal[] | string => {
           )
         ),
       ].map((name) => `?${name}`);
-      return `Unsafe goal ${show(literalGoal(stuck))}: ${unbound.join(", ") || "its inputs"} must first be bound by a relation or "=".`;
+      return `Unsafe goal ${show(literalGoal(stuck))}: ${unbound.join(", ") || "its inputs"} must first be bound by a relation, "=", or "in".`;
     }
     remaining.splice(index, 1);
     ordered.push(next);
@@ -300,6 +327,11 @@ const literalVariables = (literal: Literal): readonly string[] => {
       return termVariables(literal.call);
     case "unify":
       return [...termVariables(literal.left), ...termVariables(literal.right)];
+    case "member":
+      return [
+        ...termVariables(literal.element),
+        ...termVariables(literal.list),
+      ];
     default:
       return [];
   }
@@ -395,6 +427,9 @@ const goalVariables = (goal: unknown): readonly string[] => {
   }
   if (goal instanceof Unification) {
     return [...termVariables(goal.left), ...termVariables(goal.right)];
+  }
+  if (goal instanceof Membership) {
+    return [...termVariables(goal.element), ...termVariables(goal.list)];
   }
   return termVariables(goal);
 };

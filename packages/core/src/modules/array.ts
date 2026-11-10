@@ -1,5 +1,8 @@
 import { Array as Arr, Effect, flow, Option, pipe, Schema } from "effect";
+import { LogicError } from "@/errors/evaluation";
 import { decode } from "@/modules/lib/shared";
+
+const MAX_RANGE = 1_000_000;
 
 export const module = {
   symbol: Symbol("array"),
@@ -64,6 +67,26 @@ export const module = {
           )
         )
       )
+    )
+  ),
+
+  /** Whole numbers from start up to, but not including, end. */
+  range: flow(
+    (start: unknown, end: unknown) => [start, end],
+    decode(Schema.Tuple([Schema.Int, Schema.Int])),
+    Effect.flatMap(([start, end]) =>
+      end - start > MAX_RANGE
+        ? Effect.fail(
+            new LogicError({
+              message: `array/range can make at most ${MAX_RANGE} numbers, but was asked for ${end - start}.`,
+            })
+          )
+        : Effect.succeed(
+            Array.from(
+              { length: Math.max(0, end - start) },
+              (_, index) => start + index
+            )
+          )
     )
   ),
 };

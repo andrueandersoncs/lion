@@ -109,6 +109,7 @@ const NODE_COLOR_BY_KEY = {
   and: "var(--node-logic)",
   or: "var(--node-logic)",
   "=": "var(--node-logic)",
+  in: "var(--node-logic)",
 } satisfies Readonly<Record<GraphNodeColorKey, string>>;
 
 const getGraphNodeColorKey = (
@@ -368,6 +369,12 @@ const describeSpecialForm = (
         mark: form,
         description: "unify terms",
         detail: "left = right",
+      };
+    case "in":
+      return {
+        mark: form,
+        description: "list membership",
+        detail: "element ∈ list",
       };
     default:
       return form satisfies never;

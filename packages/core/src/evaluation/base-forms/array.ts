@@ -9,6 +9,7 @@ import { evaluateLambda } from "@/evaluation/special-forms/lambda";
 import {
   evaluateAnd,
   evaluateFact,
+  evaluateIn,
   evaluateNot,
   evaluateOr,
   evaluateQuery,
@@ -28,6 +29,7 @@ import {
   EvalFormSchema,
   FactFormSchema,
   FunctionCallFormSchema,
+  InFormSchema,
   LambdaFormSchema,
   MatchFormSchema,
   NotFormSchema,
@@ -58,6 +60,7 @@ const evaluateLogicForm = (
     Match.when(Schema.is(AndFormSchema), (_) => evaluateAnd(_)),
     Match.when(Schema.is(OrFormSchema), (_) => evaluateOr(_)),
     Match.when(Schema.is(UnifyFormSchema), (_) => evaluateUnify(_)),
+    Match.when(Schema.is(InFormSchema), (_) => evaluateIn(_)),
     Match.orElse(() => undefined)
   );
 

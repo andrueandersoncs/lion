@@ -546,6 +546,35 @@ const unify =
       return [{ vars, trail: binding.trail }];
     });
 
+/** Binds the element to each item of the list, or tests that it is one. */
+const member =
+  (element: unknown, list: unknown): Step =>
+  (binding) =>
+    Effect.gen(function* () {
+      const items = yield* evaluateTerm(list, binding.vars);
+      if (!Array.isArray(items)) {
+        return yield* fail(
+          `"in" expects a list, but ${show(list)} is ${show(items)}.`
+        );
+      }
+      if (element instanceof LogicVariable && !binding.vars.has(element.name)) {
+        const seen = new Set<string>();
+        const out: Binding[] = [];
+        for (const item of items) {
+          const key = valueKey(item);
+          if (!seen.has(key)) {
+            seen.add(key);
+            const vars = new Map(binding.vars);
+            vars.set(element.name, item);
+            out.push({ vars, trail: binding.trail });
+          }
+        }
+        return out;
+      }
+      const value = yield* evaluateTerm(element, binding.vars);
+      return items.some((item) => sameValue(item, value)) ? [binding] : [];
+    });
+
 const literalStep = (literal: Literal, source: Source): Step => {
   switch (literal.kind) {
     case "atom":
@@ -554,6 +583,8 @@ const literalStep = (literal: Literal, source: Source): Step => {
       return matchAbsent(literal.atom, source);
     case "check":
       return runCheck(literal.call);
+    case "member":
+      return member(literal.element, literal.list);
     default:
       return unify(literal.left, literal.right);
   }

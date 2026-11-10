@@ -325,6 +325,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. With only booleans, they are boolean operators. |
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+| `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. Without logic variables it is plain membership. See [Lists](#lists). |
 
 ### Query options
 
@@ -346,6 +347,25 @@ Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 
 | `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
 
 Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, then records.
+
+### Lists
+
+`in` lets rules use list values. With the element unbound, it binds the element to each item of the list; once the element is bound, it tests membership.
+
+```json
+["begin",
+  ["relation", "post", ["id", "tags"]],
+  ["relation", "tagged", ["tag", "post"]],
+  ["fact", ["post", "p1", ["array/make", "lisp", "json"]], ["post", "p2", ["array/make", "json", "logic"]]],
+  ["rule", ["tagged", "?tag", "?p"], ["post", "?p", "?tags"], ["in", "?tag", "?tags"]],
+  ["query", ["tagged", "json", "?post"]]]
+```
+
+Evaluates to `[{ "post": "p1" }, { "post": "p2" }]`.
+
+- The list must be bound before `in` runs. It can be a variable, a computed value such as `["array/make", "?x", "?y"]`, or a list such as `["array/range", 0, 10]`.
+- A list that repeats an item binds it once.
+- Without logic variables, `["in", "b", ["array/make", "a", "b"]]` is plain membership and evaluates to `true`.
 
 ### Aggregates
 
@@ -413,7 +433,7 @@ Evaluates to `[{ "to": "c", "km": 1 }, { "to": "b", "km": 3 }, { "to": "d", "km"
 
 Rules are checked when they are added:
 
-- Every variable in a rule head, filter, or `not` must first be bound by a relation goal or `=`.
+- Every variable in a rule head, filter, or `not` must first be bound by a relation goal, `=`, or `in`.
 - Negation cannot go through recursion, so every program has a single well-defined answer.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
 - A recursive rule cannot compute new values in its head columns, so evaluation always finishes. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
@@ -476,6 +496,7 @@ Called on a list, each function combines it. Called on a logic variable in a rul
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
 ["array/includes?", ["array/make", 1, 2, 3], 2]
+["array/range", 0, 5]
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]
 ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]]
 ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]]

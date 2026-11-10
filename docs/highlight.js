@@ -27,6 +27,7 @@ const SPECIAL_FORMS = new Set([
   "and",
   "or",
   "=",
+  "in",
 ]);
 const LOGIC_VARIABLE = /^\?[A-Za-z_][\w-]*$/;
 const TOKEN_PATTERN =

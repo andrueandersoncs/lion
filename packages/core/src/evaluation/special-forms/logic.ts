@@ -19,6 +19,7 @@ import {
   type Goal,
   isGoal,
   isLogicTerm,
+  Membership,
   makeRelationValue,
   Negation,
   render,
@@ -28,6 +29,7 @@ import {
 import type {
   AndFormSchema,
   FactFormSchema,
+  InFormSchema,
   NotFormSchema,
   OrFormSchema,
   QueryFormSchema,
@@ -191,4 +193,21 @@ export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>
       return sameValue(leftValue, rightValue);
     }
     return new Unification(leftValue, rightValue);
+  });
+
+/**
+ * ["in", element, list] binds the element to each item of the list, or tests
+ * that it is one. Without logic variables it is plain membership.
+ */
+export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
+  Effect.gen(function* () {
+    const elementValue = yield* evaluate(element);
+    const listValue = yield* evaluate(list);
+    if (isLogicTerm(elementValue) || isLogicTerm(listValue)) {
+      return new Membership(elementValue, listValue);
+    }
+    if (!Array.isArray(listValue)) {
+      return yield* fail(`"in" expects a list, but found ${show(listValue)}.`);
+    }
+    return listValue.some((item) => sameValue(item, elementValue));
   });

@@ -149,12 +149,29 @@ export class Unification {
   }
 }
 
+/** `["in", element, list]`: the element is one of the list's items. */
+export class Membership {
+  readonly _tag = "Membership";
+  readonly element: unknown;
+  readonly list: unknown;
+
+  constructor(element: unknown, list: unknown) {
+    this.element = element;
+    this.list = list;
+  }
+
+  toJSON() {
+    return render(this);
+  }
+}
+
 export type Goal =
   | Atom
   | Negation
   | Conjunction
   | Disjunction
   | Unification
+  | Membership
   | DeferredCall;
 
 export const isGoal = (value: unknown): value is Goal =>
@@ -163,6 +180,7 @@ export const isGoal = (value: unknown): value is Goal =>
   value instanceof Conjunction ||
   value instanceof Disjunction ||
   value instanceof Unification ||
+  value instanceof Membership ||
   value instanceof DeferredCall;
 
 /** True for values that stand in for something not yet known. */
@@ -232,6 +250,9 @@ export const render = (value: unknown): unknown => {
   }
   if (value instanceof Unification) {
     return ["=", render(value.left), render(value.right)];
+  }
+  if (value instanceof Membership) {
+    return ["in", render(value.element), render(value.list)];
   }
   return value;
 };

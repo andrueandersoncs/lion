@@ -364,7 +364,8 @@
 .graph-node[data-color="not"],
 .graph-node[data-color="and"],
 .graph-node[data-color="or"],
-.graph-node[data-color="="] {
+.graph-node[data-color="="],
+.graph-node[data-color="in"] {
   --node-accent: var(--node-logic);
 }
 
