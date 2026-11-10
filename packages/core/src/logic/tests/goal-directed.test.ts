@@ -196,17 +196,28 @@ const CORPUS: Record<string, unknown[]> = {
   ],
   "computed arguments in recursive calls": [
     ["relation", "num", ["n"]],
+    ["relation", "down", ["n"]],
+    ["rule", ["num", "?n"], ["in", "?n", ["array/range", 0, 15]]],
+    ["fact", ["down", 14]],
+    ["rule", ["down", "?n"], ["num", "?n"], ["down", ["number/add", "?n", 1]]],
+    ["query", ["down", 3]],
+  ],
+  "lattice aggregates of computed values": [
+    ["relation", "num", ["n"]],
     ["relation", "fib", ["n", "f"]],
     ["rule", ["num", "?n"], ["in", "?n", ["array/range", 0, 15]]],
-    ["fact", ["fib", 0, 0], ["fib", 1, 1]],
     [
       "rule",
-      ["fib", "?n", "?f"],
+      ["fib", "?n", ["aggregate/max", "?n"]],
+      ["in", "?n", ["array/make", 0, 1]],
+    ],
+    [
+      "rule",
+      ["fib", "?n", ["aggregate/max", ["number/add", "?a", "?b"]]],
       ["num", "?n"],
       ["number/greaterThan", "?n", 1],
       ["fib", ["number/subtract", "?n", 1], "?a"],
       ["fib", ["number/subtract", "?n", 2], "?b"],
-      ["=", "?f", ["number/add", "?a", "?b"]],
     ],
     ["query", ["fib", 12, "?f"]],
   ],
@@ -239,10 +250,16 @@ describe("goal-directed queries", () => {
       ).toEqual(sorted(["a", "b", "c", "d"].map((to) => ({ to }))));
       expect(
         yield* runWith(
-          CORPUS["computed arguments in recursive calls"] ?? [],
+          CORPUS["lattice aggregates of computed values"] ?? [],
           true
         )
       ).toEqual([{ f: 144 }]);
+      expect(
+        yield* runWith(
+          CORPUS["computed arguments in recursive calls"] ?? [],
+          true
+        )
+      ).toEqual([{}]);
     })
   );
 

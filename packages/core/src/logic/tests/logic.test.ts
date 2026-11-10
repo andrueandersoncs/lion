@@ -470,6 +470,73 @@ describe("logic forms outside rules", () => {
   );
 });
 
+describe("recursion safety", () => {
+  const counter = (...body: unknown[]) => [
+    "begin",
+    ["relation", "c", ["n"]],
+    ["fact", ["c", 0]],
+    ["rule", ["c", "?m"], ["c", "?n"], ...body],
+    ["query", ["c", "?x"]],
+  ];
+
+  it.effect("reject head values computed through = or in while recursing", () =>
+    Effect.gen(function* () {
+      const viaUnify = yield* logicError(
+        counter(["=", "?m", ["number/add", "?n", 1]])
+      );
+      expect(viaUnify.message).toContain(
+        'computes a new value for "?m" in its head while recursing'
+      );
+      expect(viaUnify.message).toContain(
+        "aggregate/shortest, or aggregate/union"
+      );
+      const viaIn = yield* logicError(
+        counter(["in", "?m", ["array/make", ["number/add", "?n", 1]]])
+      );
+      expect(viaIn.message).toContain('a new value for "?m"');
+    })
+  );
+
+  it.effect("allow = and in when the values come from facts", () =>
+    Effect.gen(function* () {
+      const rows = yield* run(
+        [
+          "begin",
+          ["relation", "edge", ["from", "to"]],
+          ["relation", "tags", ["node", "list"]],
+          ["relation", "reach", ["node"]],
+          ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+          ["fact", ["tags", "c", ["array/make", "x", "y"]]],
+          ["rule", ["reach", "?n"], ["=", "?n", "a"]],
+          [
+            "rule",
+            ["reach", "?m"],
+            ["reach", "?n"],
+            ["edge", "?n", "?to"],
+            ["=", "?m", "?to"],
+          ],
+          [
+            "rule",
+            ["reach", "?t"],
+            ["reach", "?n"],
+            ["tags", "?n", "?list"],
+            ["in", "?t", "?list"],
+          ],
+          ["query", ["reach", "?n"]],
+        ],
+        stdlib
+      );
+      expect(rows).toEqual([
+        { n: "a" },
+        { n: "b" },
+        { n: "c" },
+        { n: "x" },
+        { n: "y" },
+      ]);
+    })
+  );
+});
+
 describe("analysis", () => {
   it("classifies logic forms and relation definitions", () => {
     expect(analyze(["relation", "edge", ["a", "b"]]).specialForm).toBe(

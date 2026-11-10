@@ -14,6 +14,7 @@
 
 ### Fixed
 
+- A recursive rule could compute a new head value through `=` or `in`, such as `["rule", ["c", "?m"], ["c", "?n"], ["=", "?m", ["number/add", "?n", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.
 - lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.
 
 ## 2026-11-10 — @lionlang/core 0.3.0, @lionlang/cli 0.2.0

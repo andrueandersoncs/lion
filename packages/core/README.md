@@ -389,7 +389,7 @@ Rules are checked when they are added:
 - Every variable in a rule head, filter, or `not` must first be bound by a relation goal, `=`, or `in`.
 - Negation cannot go through recursion, so every program has a single well-defined answer.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
-- A recursive rule cannot compute new values in its head columns, so evaluation always finishes. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
+- A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are fine. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
 Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs.
 

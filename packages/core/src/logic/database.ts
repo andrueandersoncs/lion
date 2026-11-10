@@ -360,9 +360,14 @@ const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
   return undefined;
 };
 
-const LATTICE_NAMES = LATTICE_AGGREGATES.map((kind) => `aggregate/${kind}`)
-  .join(", ")
-  .replace(/, ([^,]*)$/, ", and $1");
+const LAST_SEPARATOR = /, ([^,]*)$/;
+
+const latticeNames = (conjunction: string) =>
+  LATTICE_AGGREGATES.map((kind) => `aggregate/${kind}`)
+    .join(", ")
+    .replace(LAST_SEPARATOR, `, ${conjunction} $1`);
+
+const LATTICE_NAMES = latticeNames("and");
 
 /**
  * A recursive rule may aggregate only with lattice aggregates, whose values
@@ -422,6 +427,38 @@ const computedCycleProblem = (
   return undefined;
 };
 
+/**
+ * Variables whose values come from facts rather than from computation: bound
+ * by a relation goal, or by "=" or "in" from such variables or plain values.
+ * Only these can feed a recursive rule's head, so recursion never invents
+ * values without end.
+ */
+const dataBound = (body: readonly Literal[]) => {
+  const bound = new Set<string>();
+  const known = (term: unknown) =>
+    term instanceof LogicVariable ? bound.has(term.name) : !isLogicTerm(term);
+  const bind = (term: unknown) => {
+    if (term instanceof LogicVariable) {
+      bound.add(term.name);
+    }
+  };
+  for (const literal of body) {
+    if (literal.kind === "atom") {
+      literal.atom.args.forEach(bind);
+    } else if (literal.kind === "unify") {
+      if (known(literal.right)) {
+        bind(literal.left);
+      }
+      if (known(literal.left)) {
+        bind(literal.right);
+      }
+    } else if (literal.kind === "member" && known(literal.list)) {
+      bind(literal.element);
+    }
+  }
+  return bound;
+};
+
 /** Checks one rule's recursion against the rest of the program. */
 const recursionProblem = (
   rules: readonly CompiledRule[],
@@ -451,11 +488,21 @@ const recursionProblem = (
   if (negated?.kind === "absent") {
     return `Rule ${show(rule.source)} negates "${negated.atom.relation.name}", which depends on "${rule.head.relation.name}". Negation cannot go through recursion.`;
   }
-  if (
-    recursive !== undefined &&
-    rule.head.args.some((arg) => arg instanceof DeferredCall)
-  ) {
-    return `Rule ${show(rule.source)} computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule instead.`;
+  if (recursive === undefined) {
+    return undefined;
+  }
+  const fromData = dataBound(rule.body);
+  const computed = rule.head.args.find(
+    (arg) =>
+      arg instanceof DeferredCall ||
+      (arg instanceof LogicVariable && !fromData.has(arg.name))
+  );
+  if (computed !== undefined) {
+    const what =
+      computed instanceof LogicVariable
+        ? `a new value for ${show(computed)}`
+        : "a new value";
+    return `Rule ${show(rule.source)} computes ${what} in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with ${latticeNames("or")}.`;
   }
   return undefined;
 };
