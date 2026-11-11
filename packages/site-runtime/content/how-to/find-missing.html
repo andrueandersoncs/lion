@@ -1,0 +1,43 @@
+<article id="find-missing" data-title="Find what is missing" data-summary="Ask for things that have no matching fact, such as customers without orders or tasks without an owner.">
+<p>This guide shows how to use <code>not</code> to find what lacks something.</p>
+
+<h2>Keep only what has no match</h2>
+<p>Start from a relation that lists every candidate, then rule out the ones that have a match. <code>?_</code> stands for any value:</p>
+<lion-example name="Not">
+["begin",
+  ["relation", "customer", ["name"]],
+  ["relation", "order", ["id", "customer"]],
+  ["fact", ["customer", "ana"], ["customer", "bo"], ["customer", "cy"]],
+  ["fact", ["order", 1, "ana"], ["order", 2, "cy"]],
+  ["query", ["and", ["customer", "?name"], ["not", ["order", "?_", "?name"]]]]]
+</lion-example>
+
+<h2>Name the result with a rule</h2>
+<p>To reuse the answer, derive it into a relation of its own:</p>
+<lion-example name="Rule with not">
+["begin",
+  ["relation", "task", ["id"]],
+  ["relation", "owner", ["task", "person"]],
+  ["relation", "unowned", ["task"]],
+  ["fact", ["task", 1], ["task", 2], ["task", 3]],
+  ["fact", ["owner", 2, "ana"]],
+  ["rule", ["unowned", "?t"], ["task", "?t"], ["not", ["owner", "?t", "?_"]]],
+  ["query", ["unowned", "?task"], {"order": "task"}]]
+</lion-example>
+
+<h2>Bind variables before you negate them</h2>
+<p><code>not</code> can only rule out values that are already known, so every named variable in it must be bound by another goal first. Here <code>?name</code> comes from nowhere, so Lion refuses the query:</p>
+<lion-example name="Unsafe not" expect="error">
+["begin",
+  ["relation", "order", ["id", "customer"]],
+  ["query", ["not", ["order", "?_", "?name"]]]]
+</lion-example>
+
+<h2>Know what negation cannot do</h2>
+<p>A relation cannot depend on its own negation, directly or through other rules, because then it would have no single answer. Lion rejects such a rule when you add it. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-not"><code>not</code></a> in the reference.</li>
+</ul>
+</article>

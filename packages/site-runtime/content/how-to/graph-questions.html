@@ -1,0 +1,60 @@
+<article id="graph-questions" data-title="Answer graph questions" data-summary="Find shortest routes, rank nodes, group connected nodes, detect cycles, and order dependencies with the graph module.">
+<p>This guide shows how to run classic graph algorithms over an edge relation with the <code>graph</code> module. Each algorithm is called like a relation, so its rows work in queries, rules, <code>not</code>, and aggregates.</p>
+
+<h2>Find shortest routes</h2>
+<p>Give <code>graph/shortestPath</code> an edge relation and a start node, then one term each for the destination, the cost, and the path. A third edge column is the weight:</p>
+<lion-example name="Shortest path">
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["query", ["graph/shortestPath", "road", "a", "?to", "?km", "?path"]]]
+</lion-example>
+<p>To ask about one destination, give it as a value: <code>["graph/shortestPath", "road", "a", "d", "?km", "?_"]</code>. Without a weight column, every edge costs 1.</p>
+
+<h2>Rank nodes</h2>
+<lion-example name="PageRank">
+["begin",
+  ["relation", "link", ["from", "to"]],
+  ["fact", ["link", "a", "b"], ["link", "b", "c"], ["link", "c", "a"], ["link", "d", "c"]],
+  ["query", ["graph/pageRank", "link", "?page", "?rank"], {"order": "-rank"}]]
+</lion-example>
+
+<h2>Group connected nodes</h2>
+<p><code>graph/components</code> ignores edge direction; <code>graph/stronglyConnected</code> follows it. Groups are named after their smallest node:</p>
+<lion-example name="Components">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "a"], ["edge", "b", "c"], ["edge", "x", "y"]],
+  {"connected": ["query", ["graph/components", "edge", "?node", "?group"], {"order": "node"}],
+   "strong": ["query", ["graph/stronglyConnected", "edge", "?node", "?group"], {"order": "node"}]}]
+</lion-example>
+
+<h2>Order dependencies</h2>
+<p><code>graph/topologicalOrder</code> numbers nodes so every edge points forward, or fails with an error that names a cycle:</p>
+<lion-example name="Topological order">
+["begin",
+  ["relation", "before", ["first", "then"]],
+  ["fact", ["before", "socks", "shoes"], ["before", "pants", "shoes"], ["before", "shirt", "tie"]],
+  ["query", ["graph/topologicalOrder", "before", "?step", "?position"], {"order": "position"}]]
+</lion-example>
+
+<h2>Use results in rules</h2>
+<p>Algorithm rows can feed rules. Here, nodes far from the start are flagged:</p>
+<lion-example name="Algorithm in a rule">
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "remote", ["place"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["rule", ["remote", "?p"],
+    ["graph/shortestPath", "road", "a", "?p", "?km", "?_"],
+    ["number/greaterThan", "?km", 5]],
+  ["query", ["remote", "?place"]]]
+</lion-example>
+<p>An algorithm runs once its input relation is complete, so it cannot be part of a recursive cycle, and its relation cannot have facts or rules of its own.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#module-graph">The <code>graph</code> module</a> describes each algorithm's columns.</li>
+  <li><a href="#extend-with-host-code">Add your own functions and algorithms</a> shows how to write one.</li>
+</ul>
+</article>

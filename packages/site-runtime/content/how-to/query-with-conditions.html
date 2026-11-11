@@ -1,0 +1,74 @@
+<article id="query-with-conditions" data-title="Query with conditions and computed values" data-summary="Narrow answers with comparisons, compute new values in rules and queries, combine alternatives, and look inside lists.">
+<p>This guide shows how to go beyond matching facts: filter answers with conditions, compute values, accept alternatives, and match items of a list.</p>
+
+<h2>Filter answers with a condition</h2>
+<p>Call a function from a pure module (<code>number</code>, <code>string</code>, <code>boolean</code>, <code>array</code>, <code>value</code>) on a logic variable, and it becomes a filter. Combine goals with <code>and</code>:</p>
+<lion-example name="Filter">
+["begin",
+  ["relation", "order", ["id", "amount"]],
+  ["fact", ["order", 1, 30], ["order", 2, 120], ["order", 3, 75]],
+  ["query",
+    ["and", ["order", "?id", "?amount"], ["number/greaterThan", "?amount", 50]],
+    {"order": "id"}]]
+</lion-example>
+<p>A filter runs once its variables are bound, so its position among the goals does not matter.</p>
+
+<h2>Compute a value</h2>
+<p>Use <code>=</code> to bind a variable to a computed value:</p>
+<lion-example name="Compute">
+["begin",
+  ["relation", "order", ["id", "amount"]],
+  ["fact", ["order", 1, 30], ["order", 2, 120]],
+  ["query",
+    ["and", ["order", "?id", "?amount"],
+      ["=", "?withTax", ["number/multiply", "?amount", 1.25]]],
+    {"order": "id"}]]
+</lion-example>
+<p>In a rule, a computed value can also go straight into the head:</p>
+<lion-example name="Compute in a rule">
+["begin",
+  ["relation", "user", ["id", "first", "last"]],
+  ["relation", "fullName", ["id", "name"]],
+  ["fact", ["user", 1, "Ada", "Lovelace"], ["user", 2, "Alan", "Turing"]],
+  ["rule", ["fullName", "?id", ["string/concat", ["string/concat", "?first", " "], "?last"]],
+    ["user", "?id", "?first", "?last"]],
+  ["query", ["fullName", "?id", "?name"], {"order": "id"}]]
+</lion-example>
+
+<h2>Accept alternatives</h2>
+<p><code>or</code> holds when any of its goals does:</p>
+<lion-example name="Or">
+["begin",
+  ["relation", "order", ["id", "status"]],
+  ["fact", ["order", 1, "open"], ["order", 2, "paid"], ["order", 3, "held"]],
+  ["query",
+    ["or", ["order", "?id", "open"], ["order", "?id", "held"]],
+    {"order": "id"}]]
+</lion-example>
+
+<h2>Match items of a list</h2>
+<p>When a fact holds a list, <code>in</code> binds a variable to each item:</p>
+<lion-example name="In">
+["begin",
+  ["relation", "post", ["id", "tags"]],
+  ["fact",
+    ["post", "p1", ["array/make", "lisp", "json"]],
+    ["post", "p2", ["array/make", "json", "logic"]]],
+  ["query",
+    ["and", ["post", "?post", "?tags"], ["in", "json", "?tags"]],
+    {"order": "post"}]]
+</lion-example>
+<p>With an unbound first argument, <code>in</code> binds it to each item; with a bound one, it tests membership, as above.</p>
+
+<h2>Keep goals safe</h2>
+<p>Every variable in a filter, a computed value, or a <code>not</code> must be bound by a relation, <code>=</code>, or <code>in</code> somewhere in the same goal. Otherwise there would be infinitely many answers, so Lion refuses the goal and names the variable:</p>
+<lion-example name="Unsafe goal" expect="error">
+["query", ["number/greaterThan", "?amount", 50]]
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#logic-forms">Logic forms</a> describes <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code> exactly.</li>
+  <li><a href="#logic-guarantees">Logic database guarantees</a> lists the safety rules.</li>
+</ul>
+</article>

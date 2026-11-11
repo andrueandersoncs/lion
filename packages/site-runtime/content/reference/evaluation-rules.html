@@ -1,0 +1,67 @@
+<article id="evaluation-rules" data-title="Evaluation rules" data-summary="How Lion evaluates each kind of JSON value: numbers, booleans, null, strings, arrays, and records.">
+<p>A Lion program is any JSON value. Evaluation depends only on the value's JSON type.</p>
+
+<table>
+  <thead><tr><th>JSON type</th><th>Evaluates to</th></tr></thead>
+  <tbody>
+    <tr><td>number</td><td>Itself.</td></tr>
+    <tr><td>boolean</td><td>Itself.</td></tr>
+    <tr><td>null</td><td>Itself.</td></tr>
+    <tr><td>string</td><td>The value bound to that name; otherwise a logic variable, for a name like <code>"?x"</code>; otherwise itself. See <a href="#rule-strings">Strings</a>.</td></tr>
+    <tr><td>array</td><td><code>[]</code> for an empty array; otherwise a special form or a function call. See <a href="#rule-arrays">Arrays</a>.</td></tr>
+    <tr><td>object (record)</td><td>A record with the same keys, each value evaluated. See <a href="#rule-records">Records</a>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="rule-strings">Strings</h2>
+<p>A string is looked up in this order:</p>
+<ol>
+  <li>If the environment binds the name, the string evaluates to the bound value.</li>
+  <li>If the name has the form <code>?name</code>, where <code>name</code> starts with a letter or <code>_</code> and continues with letters, digits, <code>_</code>, or <code>-</code>, it evaluates to a logic variable. <code>"?_"</code> and names starting with <code>?_</code> are anonymous variables.</li>
+  <li>Otherwise the string evaluates to itself.</li>
+</ol>
+<lion-example name="Strings">
+["begin",
+  ["define", "name", "lion"],
+  {"bound": "name", "unbound": "unbound text", "quoted": ["quote", "name"]}]
+</lion-example>
+<p>To use a string that might be bound as plain text, wrap it in <a href="#form-quote"><code>quote</code></a>.</p>
+
+<h2 id="rule-arrays">Arrays</h2>
+<ul>
+  <li>An empty array evaluates to <code>[]</code>.</li>
+  <li>An array whose first element is the name of a <a href="#special-forms">special form</a> or <a href="#logic-forms">logic form</a>, and whose shape fits that form, is evaluated by the form's own rules.</li>
+  <li>Any other array is a function call. Every element is evaluated, from left to right. The first must evaluate to a function, which is called with the rest as arguments. If it does not, evaluation fails with <code>InvalidFunctionCallError</code>.</li>
+  <li>An array that starts with a form's name but does not fit the form's shape, such as <code>["define", "x"]</code>, is treated as a call, and so fails with <code>InvalidFunctionCallError</code>.</li>
+</ul>
+<lion-example name="A non-function call" expect="error">
+[1, 2, 3]
+</lion-example>
+
+<h2 id="rule-records">Records</h2>
+<p>A record evaluates each value and keeps its keys as written, in order. Keys are never evaluated. A key must not be empty or <code>__proto__</code>; a program with such a key fails with <code>SchemaError</code> before it runs.</p>
+<lion-example name="Records">
+{"sum": ["number/add", 1, 2], "nested": {"ok": ["boolean/not", false]}}
+</lion-example>
+
+<h2 id="rule-calls">Function calls</h2>
+<ul>
+  <li>Arguments are evaluated before the call, from left to right.</li>
+  <li>A function may return a value or an Effect. Lion runs an Effect and uses its result.</li>
+  <li>A <a href="#form-lambda">lambda</a> called with fewer arguments than it has parameters fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
+  <li>A function from a pure module (<code>array</code>, <code>boolean</code>, <code>number</code>, <code>string</code>, <code>value</code>, and any module marked with <code>markPure</code>) called with a logic variable among its arguments does not run. It returns a deferred call, which a rule or query runs once the variables are bound.</li>
+</ul>
+<lion-example name="A deferred call">
+["number/add", "?n", 1]
+</lion-example>
+
+<h2 id="rule-truthiness">Truthiness</h2>
+<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>.</p>
+
+<h2 id="rule-reserved">Reserved names</h2>
+<p>These names belong to forms and cannot be bound with <code>define</code>, used as <code>lambda</code> parameters, or declared as relations:</p>
+<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
+
+<h2 id="rule-runs">Each run</h2>
+<p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>
+</article>

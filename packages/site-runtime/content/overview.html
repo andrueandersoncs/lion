@@ -1,0 +1,26 @@
+<article id="overview" data-title="Lion documentation" data-summary="Everything Lion can do, organized by what you need right now: to learn, to get a job done, to look something up, or to understand why.">
+<p class="lede">Lion is a small Lisp whose programs are JSON. It evaluates on Effect, edits as a graph, runs from the command line, and includes a Datalog-style logic database.</p>
+
+<p>These docs follow the <a href="https://diataxis.fr/" target="_blank" rel="noopener">Diátaxis</a> framework. There are four kinds of documentation, each written for a different need, and they are kept apart so each one can do its own job. Tutorials teach and how-to guides direct; both are practical. Reference and explanation inform; both are theoretical.</p>
+
+<docs-map></docs-map>
+
+<h2>Where to start</h2>
+<ul>
+  <li><strong>New to Lion?</strong> Take the tutorial <a href="#first-program">Your first Lion program</a>. It takes about ten minutes, and every step runs in your browser.</li>
+  <li><strong>Have a job to do?</strong> Pick a how-to guide, such as <a href="#run-from-typescript">Run Lion from TypeScript</a> or <a href="#enforce-rules">Enforce rules on your data</a>.</li>
+  <li><strong>Need an exact answer?</strong> The reference describes every <a href="#special-forms">special form</a>, <a href="#logic-forms">logic form</a>, <a href="#standard-library">standard library function</a>, and <a href="#cli">command</a>.</li>
+  <li><strong>Wondering why Lion works the way it does?</strong> Start with <a href="#why-json">Why programs are JSON</a>.</li>
+</ul>
+
+<h2>Every example is live</h2>
+<p>A program with a result under it is a live example. Edit the program and it runs again; press <kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run it at once, or Reset to bring back the original.</p>
+
+<lion-example name="Try it">
+["number/multiply", ["number/add", 1, 2], 4]
+</lion-example>
+
+<p>Examples run in your browser on the same evaluator as <code>@lionlang/core</code>. Each one starts from the standard library, a fresh environment, and an empty logic database, so examples never affect each other. The results printed on this page were computed by that evaluator when the docs were built.</p>
+
+<p>Press <kbd>/</kbd> anywhere to search. Search finds documents, sections, and every form and function by name.</p>
+</article>

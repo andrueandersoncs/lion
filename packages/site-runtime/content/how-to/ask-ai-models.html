@@ -1,0 +1,47 @@
+<article id="ask-ai-models" data-title="Ask AI models with TypeSafe" data-summary="Turn natural language into typed judgments inside a Lion program with the TypeSafe AI and Jev bindings.">
+<p>This guide shows how to call TypeSafe's System One models from Lion with <code>@lionlang/typesafe-ai</code>. You need a TypeSafe API key. These examples call a paid API, so they are not live on this page.</p>
+
+<h2>Add the bindings</h2>
+<code-block lang="shell">
+bun add @lionlang/typesafe-ai
+export TYPESAFE_API_KEY=...
+</code-block>
+<code-block lang="ts">
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+import { makeTypeSafeBindings } from "@lionlang/typesafe-ai";
+
+const env = { ...stdlib, ...makeTypeSafeBindings() };
+</code-block>
+<p><code>makeTypeSafeBindings</code> takes the TypeSafe client configuration and an optional namespace, <code>"typesafe"</code> by default.</p>
+
+<h2>Ask several questions about one input</h2>
+<p><code>typesafe/system-one</code> takes the state to judge and a record of questions. Build each question with <code>typesafe/noul</code> (yes or no), <code>typesafe/choice</code> (one of several labels), or <code>typesafe/score</code> (a point on a scale):</p>
+<code-block lang="json">
+["typesafe/system-one", {
+  "state": "Help! My payouts have been failing for 3 days.",
+  "questions": {
+    "urgent": ["typesafe/noul", "Does this convey urgency?",
+      {"true": "Explicitly time-sensitive", "false": "No urgency expressed"}],
+    "team": ["typesafe/choice", "Which team should handle this?",
+      {"billing": "Payments and refunds", "technical": "Bugs and outages"}],
+    "frustration": ["typesafe/score", "How frustrated is the customer?",
+      ["quote", ["Calm", "Frustrated", "Very angry"]]]}}]
+</code-block>
+<p>Lists in the request are data, so they are quoted. Each answer comes back with its probabilities, so a program can branch on confidence with <code>cond</code>.</p>
+
+<h2>List the available models</h2>
+<code-block lang="json">
+["typesafe/models"]
+</code-block>
+
+<h2>Try it in the editor</h2>
+<p>In the graph editor (<code>lion repl</code>), the <strong>Jev</strong> button loads a starter System One program. The editor asks for a key on the first run and keeps it only in the tab's memory.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="https://typesafe.ai" target="_blank" rel="noopener">TypeSafe documentation</a>.</li>
+  <li><a href="#typescript-api">TypeScript API</a> lists <code>makeTypeSafeBindings</code> and <code>makeTypeSafeModule</code>.</li>
+</ul>
+</article>

@@ -1,0 +1,36 @@
+<article id="query-options" data-title="Query options" data-summary="The options record of a query: order, offset, limit, and assert, and the order Lion sorts values in.">
+<p>A record after a query's goal sorts, pages, and asserts on its answers. Options are read as written, not evaluated. An unknown option, or an option with a value of the wrong kind, fails with a message that names it.</p>
+<code-block lang="json">
+["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]
+</code-block>
+
+<table>
+  <thead><tr><th>Option</th><th>Value</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="order"><td><code>"order"</code></td><td>A variable name, or a list of them</td><td>Sorts answers by each variable in turn. A leading <code>-</code> sorts that variable from largest to smallest. The <code>?</code> is optional. Each must be a variable of the query.</td></tr>
+    <tr data-entry="offset"><td><code>"offset"</code></td><td>A whole number of at least 0</td><td>Skips that many answers, after sorting.</td></tr>
+    <tr data-entry="limit"><td><code>"limit"</code></td><td>A whole number of at least 0</td><td>Returns at most that many answers, after the offset.</td></tr>
+    <tr data-entry="assert"><td><code>"assert"</code></td><td><code>"some"</code> or <code>"none"</code></td><td>Fails the query when it has no answers (<code>"some"</code>) or any (<code>"none"</code>). It sees every answer, before offset and limit.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="value-order">Value order</h2>
+<p>Sorting compares values of different types in a fixed order: <code>null</code>, then booleans (<code>false</code> before <code>true</code>), numbers, strings, lists, and records. Lists compare item by item, and records by their entries sorted by key. Strings compare by UTF-16 code units, so uppercase letters sort before lowercase ones.</p>
+<lion-example name="Value order">
+["begin",
+  ["relation", "item", ["value"]],
+  ["fact", ["item", "b"], ["item", 2], ["item", null], ["item", true],
+    ["item", "B"], ["item", ["array/make", 1]], ["item", {"k": 1}]],
+  ["query", ["item", "?value"], {"order": "value"}]]
+</lion-example>
+
+<h2 id="assertion-messages">Assertion messages</h2>
+<p>A failed assertion reports the goal and, for <code>"none"</code>, how many answers it found and the first one:</p>
+<lion-example name="Assertion" expect="error">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"]],
+  ["query", ["edge", "?from", "?to"], {"assert": "none"}]]
+</lion-example>
+<p>An <a href="#form-invariant">invariant</a> uses the same assertions and the same wording.</p>
+</article>

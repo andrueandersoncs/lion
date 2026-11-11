@@ -5,8 +5,10 @@
   "type": "module",
   "description": "In-browser Lion evaluator (Web Worker) that powers the live examples on lionlang.dev.",
   "scripts": {
-    "build": "bun build src/worker.ts --outfile ../../docs/lion-worker.js --target browser --format esm --minify && bun run stamp",
+    "build": "bun build src/worker.ts --outfile ../../docs/lion-worker.js --target browser --format esm --minify && bun run docs && bun run stamp",
+    "docs": "bun run build-docs.ts",
     "stamp": "bun run stamp-assets.ts",
+    "test": "bun run build-docs.ts --check",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,0 +1,101 @@
+<article id="order-desk" data-title="Run an order desk" data-summary="Track orders whose status changes over time, keep the data consistent with an invariant, and save the whole desk as a Lion program.">
+<p>In this tutorial we will run a small order desk. Orders change status as they move along, the desk refuses changes that would leave the data inconsistent, and at the end we save everything to a file. We will build on the logic forms from <a href="#family-tree">Build a family tree</a>.</p>
+
+<h2>Step 1: Keep one row per order</h2>
+<p>Each order has an id, a customer, a status, and an amount. Give the relation a key, <code>{"key": "id"}</code>, so it holds at most one row per id:</p>
+<lion-example name="A keyed relation">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["fact",
+    ["order", 1, "ana", "open", 30],
+    ["order", 2, "ana", "open", 20],
+    ["order", 3, "bo", "open", 50]],
+  ["query", ["order", "?id", "?customer", "?status", "?amount"], {"order": "id"}]]
+</lion-example>
+
+<h2>Step 2: Change an order's status</h2>
+<p>To move order 1 along, add a fact with the same id. Because <code>id</code> is the key, the new row replaces the old one instead of sitting next to it:</p>
+<lion-example name="An update">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["fact",
+    ["order", 1, "ana", "open", 30],
+    ["order", 2, "ana", "open", 20],
+    ["order", 3, "bo", "open", 50]],
+  ["fact", ["order", 1, "ana", "paid", 30]],
+  ["query", ["order", "?id", "?customer", "?status", "?amount"], {"order": "id"}]]
+</lion-example>
+
+<h2>Step 3: Total what each customer owes</h2>
+<p>A rule with <code>aggregate/sum</code> in its head adds up the amounts of each customer's open orders:</p>
+<lion-example name="A running total">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["relation", "owed", ["customer", "total"]],
+  ["fact",
+    ["order", 1, "ana", "paid", 30],
+    ["order", 2, "ana", "open", 20],
+    ["order", 3, "bo", "open", 50]],
+  ["rule", ["owed", "?c", ["aggregate/sum", "?amount"]],
+    ["order", "?_", "?c", "open", "?amount"]],
+  ["query", ["owed", "?customer", "?total"], {"order": "customer"}]]
+</lion-example>
+<p>Change order 3 to <code>"paid"</code>, and Bo drops out of the answer.</p>
+
+<h2>Step 4: Refuse to ship without an address</h2>
+<p>An order must not ship to a customer without an address. Store addresses, and add an invariant: a question that must never have an answer. Then try to ship Bo's order:</p>
+<lion-example name="An invariant" expect="error">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["relation", "address", ["customer", "street"], {"key": "customer"}],
+  ["fact",
+    ["order", 1, "ana", "paid", 30],
+    ["order", 3, "bo", "open", 50]],
+  ["fact", ["address", "ana", "1 Elm St"]],
+  ["invariant",
+    ["and", ["order", "?id", "?c", "shipped", "?_"], ["not", ["address", "?c", "?_"]]],
+    {"assert": "none"}],
+  ["fact", ["order", 3, "bo", "shipped", 50]]]
+</lion-example>
+<p>The desk refuses: the change would ship order 3 to a customer with no address. Nothing changed, so order 3 is still open.</p>
+
+<h2>Step 5: Make both changes at once</h2>
+<p>Bo sends an address. A single <code>fact</code> form can add the address and ship the order together. The invariant is checked once the whole form is done, so this succeeds:</p>
+<lion-example name="One change, two facts">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["relation", "address", ["customer", "street"], {"key": "customer"}],
+  ["fact",
+    ["order", 1, "ana", "paid", 30],
+    ["order", 3, "bo", "open", 50]],
+  ["fact", ["address", "ana", "1 Elm St"]],
+  ["invariant",
+    ["and", ["order", "?id", "?c", "shipped", "?_"], ["not", ["address", "?c", "?_"]]],
+    {"assert": "none"}],
+  ["fact", ["address", "bo", "9 Oak Ave"], ["order", 3, "bo", "shipped", 50]],
+  ["query", ["order", "?id", "?customer", "?status", "?_"], {"order": "id"}]]
+</lion-example>
+
+<h2>Step 6: Save the desk</h2>
+<p><code>["snapshot"]</code> writes the whole database as a Lion program: its relations, facts, and invariant. Running that program rebuilds the desk exactly.</p>
+<lion-example name="A snapshot">
+["begin",
+  ["relation", "order", ["id", "customer", "status", "amount"], {"key": "id"}],
+  ["relation", "address", ["customer", "street"], {"key": "customer"}],
+  ["fact", ["order", 1, "ana", "paid", 30], ["order", 3, "bo", "shipped", 50]],
+  ["fact", ["address", "ana", "1 Elm St"], ["address", "bo", "9 Oak Ave"]],
+  ["invariant",
+    ["and", ["order", "?id", "?c", "shipped", "?_"], ["not", ["address", "?c", "?_"]]],
+    {"assert": "none"}],
+  ["snapshot"]]
+</lion-example>
+<p>On your own machine, the <code>lion</code> command does this for you. Save the program from Step 5 as <code>desk.json</code> and run it with a database file; later programs then run against the saved desk, and the invariant still guards it:</p>
+<code-block lang="shell">
+bun add --dev @lionlang/cli
+bun run lion desk.json --database store.json
+</code-block>
+
+<h2>What we built</h2>
+<p>We kept one row per order with a key, changed statuses by adding facts, totaled what customers owe, refused an inconsistent change with an invariant, made two changes together, and saved the desk as a Lion program.</p>
+<p>To use these features in your own project, see <a href="#enforce-rules">Enforce rules on your data</a> and <a href="#save-and-load">Save and load a logic database</a>. To understand why a change is all or nothing, read <a href="#consistent-semantics">One set of rules for every feature</a>.</p>
+</article>

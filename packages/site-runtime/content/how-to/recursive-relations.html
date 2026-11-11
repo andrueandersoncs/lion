@@ -1,0 +1,48 @@
+<article id="recursive-relations" data-title="Follow relationships of any length" data-summary="Derive paths, reachability, and hierarchies with recursive rules, and write them so queries stay fast.">
+<p>This guide shows how to follow a relationship through any number of steps, such as routes through a network or managers up an org chart.</p>
+
+<h2>Write the two rules</h2>
+<p>A path is an edge, or a path followed by an edge. Write one rule for each case:</p>
+<lion-example name="Paths">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", "a", "?to"], {"order": "to"}]]
+</lion-example>
+<p>Cycles are fine: evaluation stops when no new facts appear.</p>
+
+<h2>Put the recursion first when you ask from a known start</h2>
+<p>When a query gives the start, as in <code>["path", "a", "?to"]</code>, Lion only derives what that query can reach. Writing the recursive goal first, <code>["path", "?x", "?y"], ["edge", "?y", "?z"]</code>, keeps every step anchored at that start. This query along a 3,000-node chain stays fast:</p>
+<lion-example name="Left recursion">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["rule", ["edge", "?n", ["number/add", "?n", 1]], ["in", "?n", ["array/range", 0, 3000]]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", 2997, "?to"]]]
+</lion-example>
+<p>Written the other way, <code>["edge", "?x", "?y"], ["path", "?y", "?z"]</code>, the rule asks about every node along the way, which can cost as much as deriving every path. <a href="#goal-directed-evaluation">Goal-directed evaluation</a> explains why.</p>
+
+<h2>Carry a value along the path</h2>
+<p>A recursive rule cannot compute a new value in its head, because that could go on forever. To carry a distance or a route, aggregate it with <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, or <code>aggregate/union</code>, whose values only move one way:</p>
+<lion-example name="Shortest distance">
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "dist", ["to", "km"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["rule", ["dist", "?to", ["aggregate/min", "?km"]], ["road", "a", "?to", "?km"]],
+  ["rule", ["dist", "?to", ["aggregate/min", ["number/add", "?d", "?km"]]],
+    ["dist", "?via", "?d"], ["road", "?via", "?to", "?km"]],
+  ["query", ["dist", "?to", "?km"], {"order": "km"}]]
+</lion-example>
+<p>For weighted shortest paths with the route itself, <a href="#graph-questions"><code>graph/shortestPath</code></a> is simpler.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#logic-guarantees">Logic database guarantees</a> explains what recursion may and may not compute.</li>
+</ul>
+</article>

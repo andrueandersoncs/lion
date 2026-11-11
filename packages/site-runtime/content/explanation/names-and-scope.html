@@ -1,0 +1,37 @@
+<article id="names-and-scope" data-title="Names, scope, and environments" data-summary="How Lion looks up names, why define is global while lambdas are lexical, and what lasts from one run to the next.">
+<p>Every string in a Lion program might be a name. This page explains where names come from, how a lookup finds them, and how long they last.</p>
+
+<h2>Environments are chains</h2>
+<p>An environment is a record of bindings with an optional parent. Looking up a name checks the current environment, then its parent, and so on to the top. A run starts with one top-level environment holding whatever the host gave it, usually the standard library.</p>
+<p>Calling a <a href="#form-lambda">lambda</a> makes a new environment for its parameters whose parent is the environment where the lambda was created, not where it is called. That is lexical scope: a lambda remembers the names around it.</p>
+<lion-example name="Closures">
+["begin",
+  ["define", "counterFrom", ["lambda", ["start"],
+    ["lambda", ["step"], ["number/add", "start", "step"]]]],
+  ["define", "fromTen", ["counterFrom", 10]],
+  ["define", "start", 1000],
+  ["fromTen", 5]]
+</lion-example>
+<p>The global <code>start</code> is 1000, but the inner lambda sees the <code>start</code> it was created with, 10.</p>
+
+<h2>Why define is global</h2>
+<p><a href="#form-define"><code>define</code></a> always writes to the top-level environment, even inside a lambda. Lion has no local variables beyond parameters; to name an intermediate value inside a function, pass it to another lambda, or compute it in a <code>begin</code> at the top level.</p>
+<p>This keeps the model small: there is exactly one place where definitions go, and a program reads top to bottom like a script. It also means lambdas see later definitions, because they look names up when they run:</p>
+<lion-example name="Late binding">
+["begin",
+  ["define", "greet", ["lambda", [], ["string/concat", "hello, ", "name"]]],
+  ["define", "name", "Ada"],
+  ["greet"]]
+</lion-example>
+<p>So top-level functions can refer to each other in any order, which mutual recursion needs.</p>
+
+<h2>Parameters shadow globals</h2>
+<p>A parameter with the same name as a global hides the global inside the lambda's body. Because standard library names contain a <code>/</code>, choosing parameter names without one keeps them from shadowing a library function by accident.</p>
+
+<h2>What lasts between runs</h2>
+<p>Names last for one run. Each run, whether a call to <code>run</code>, one file on the command line, or one example on this page, starts with a fresh environment, so nothing a program defines leaks into the next.</p>
+<p>The logic database is different. It is not part of the environment; it is a separate store that a host can pass to several runs, and that the command line keeps in a file. Relations declared in a shared database are bound by name in every run that uses it, unless the host binds the same name. This split is deliberate: definitions are code, and code is re-run, while facts are state, and state persists.</p>
+
+<h2>Functions are Effects</h2>
+<p>A Lion function returns an <a href="https://effect.website" target="_blank" rel="noopener">Effect</a>, a description of work, rather than a plain value. Evaluation is itself an Effect, so a function can do anything an Effect can, such as wait for a network call or fail with a typed error, and the evaluator composes it with everything else. Host functions may return plain values or Effects; Lion handles both. This is why <a href="#module-func"><code>func/callback</code></a> exists: it turns a Lion function into an ordinary JavaScript function for APIs that expect one.</p>
+</article>

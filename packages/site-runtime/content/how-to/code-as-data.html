@@ -1,0 +1,49 @@
+<article id="code-as-data" data-title="Build and run code as data" data-summary="Hold a program as data, assemble one from parts, and run it with eval.">
+<p>This guide shows how to treat Lion code as a value: keep it from running with <code>quote</code>, build it with ordinary functions, and run it with <code>eval</code>.</p>
+
+<h2>Hold code without running it</h2>
+<p><code>quote</code> returns its argument exactly as written:</p>
+<lion-example name="Quote">
+["quote", ["number/add", 1, 2]]
+</lion-example>
+
+<h2>Run code you hold</h2>
+<p><code>eval</code> evaluates its argument, then evaluates the result as a program:</p>
+<lion-example name="Eval">
+["begin",
+  ["define", "formula", ["quote", ["number/multiply", "price", 2]]],
+  ["define", "price", 21],
+  ["eval", "formula"]]
+</lion-example>
+<p>The code runs where <code>eval</code> is, so it sees the names defined there, including <code>price</code>, defined after the formula.</p>
+
+<h2>Assemble a program from parts</h2>
+<p>A program is a list, so build it with list functions. Here a list of numbers becomes a chain of additions:</p>
+<lion-example name="Build a program">
+["begin",
+  ["define", "program",
+    ["array/reduce", ["array/make", 2, 3, 4], 0,
+      ["lambda", ["code", "n"],
+        ["array/make", ["quote", "number/add"], "code", "n"]]]],
+  {"program": "program", "result": ["eval", "program"]}]
+</lion-example>
+<p>The name is quoted because <code>array/make</code> evaluates its arguments: unquoted, <code>"number/add"</code> would become the function itself, which is not JSON, so <code>eval</code> would refuse the program.</p>
+
+<h2>Keep programs in records</h2>
+<p>Records evaluate their values, so quote programs you store as configuration and run the one you need:</p>
+<lion-example name="Programs as config">
+["begin",
+  ["define", "rules", {
+    "short": ["quote", ["number/lessThan", ["string/length", "name"], 5]],
+    "long": ["quote", ["number/greaterThan", ["string/length", "name"], 8]]}],
+  ["define", "name", "Lion"],
+  {"short": ["eval", ["object/get", "rules", "short"]],
+   "long": ["eval", ["object/get", "rules", "long"]]}]
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-quote"><code>quote</code></a> and <a href="#form-eval"><code>eval</code></a> in the reference.</li>
+  <li><a href="#why-json">Why programs are JSON</a> explains why code and data share one shape.</li>
+</ul>
+</article>

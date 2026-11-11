@@ -1,0 +1,85 @@
+<article id="first-program" data-title="Your first Lion program" data-summary="Build a small checkout calculator, one working step at a time, and learn how Lion reads JSON as code along the way.">
+<p>In this tutorial we will build a checkout calculator: given a cart total, it applies a discount for large orders and reports what the customer pays. Each step adds one idea and runs right here, so you can see every result as you go. You don't need to install anything.</p>
+
+<h2>Step 1: Write a value</h2>
+<p>Every Lion program is JSON. Start with the simplest program there is, a number. Edit it to any other number and watch the result follow.</p>
+<lion-example name="A value">
+42
+</lion-example>
+<p>A record is a program too. Lion evaluates each of its values and keeps its keys:</p>
+<lion-example name="A record">
+{"item": "lamp", "price": 120, "inStock": true}
+</lion-example>
+<p>Numbers, booleans, <code>null</code>, and records of them come back as they are.</p>
+
+<h2>Step 2: Call a function</h2>
+<p>An array is a call. Its first element names the function, and the rest are its arguments. Add two prices:</p>
+<lion-example name="A call">
+["number/add", 120, 35]
+</lion-example>
+<p>The name <code>number/add</code> comes from Lion's standard library, which groups functions by module: <code>number/</code>, <code>string/</code>, <code>array/</code>, and so on.</p>
+
+<h2>Step 3: Nest calls</h2>
+<p>An argument can be another call. Lion evaluates the inner call first and passes its result on. Here is the cart total with 10% taken off:</p>
+<lion-example name="Nested calls">
+["number/multiply",
+  ["number/add", 120, 35],
+  0.9]
+</lion-example>
+
+<h2>Step 4: Name a value</h2>
+<p>To use the total more than once, give it a name with <code>define</code>. To run several steps in order, wrap them in <code>begin</code>, which returns the last result:</p>
+<lion-example name="Naming a value">
+["begin",
+  ["define", "total", ["number/add", 120, 35]],
+  ["number/multiply", "total", 0.9]]
+</lion-example>
+<p>Notice that the string <code>"total"</code> now stands for 155. A string that names something evaluates to what it names.</p>
+
+<h2>Step 5: Write a function</h2>
+<p>A <code>lambda</code> is a function you write yourself: a list of parameter names and a body. Define one that applies a discount rate to any amount:</p>
+<lion-example name="A function">
+["begin",
+  ["define", "discounted",
+    ["lambda", ["amount", "rate"],
+      ["number/multiply", "amount", ["number/subtract", 1, "rate"]]]],
+  ["discounted", 155, 0.1]]
+</lion-example>
+<p>Change <code>0.1</code> to <code>0.25</code> and the result changes with it.</p>
+
+<h2>Step 6: Make a decision</h2>
+<p>Only large orders get the discount. <code>cond</code> checks conditions in order and returns the result next to the first one that holds:</p>
+<lion-example name="A decision">
+["begin",
+  ["define", "total", 155],
+  ["cond",
+    [["number/greaterThan", "total", 100], "discount"],
+    ["else", "full price"]]]
+</lion-example>
+<p>Try a total of <code>80</code>.</p>
+
+<h2>Step 7: Put it together</h2>
+<p>Now combine everything into the calculator. A function that takes a list of prices adds them up, works out the discount, and returns a record, so the result shows each part of the checkout:</p>
+<lion-example name="Checkout calculator">
+["begin",
+  ["define", "rate",
+    ["lambda", ["total"],
+      ["cond",
+        [["number/greaterThan", "total", 100], 0.1],
+        ["else", 0]]]],
+  ["define", "receipt",
+    ["lambda", ["total"],
+      {"total": "total",
+       "discount": ["number/multiply", "total", ["rate", "total"]],
+       "pay": ["number/multiply", "total", ["number/subtract", 1, ["rate", "total"]]]}]],
+  ["define", "checkout",
+    ["lambda", ["prices"],
+      ["receipt", ["aggregate/sum", "prices"]]]],
+  ["checkout", ["array/make", 120, 35]]]
+</lion-example>
+<p>Change the prices in <code>["array/make", 120, 35]</code> to <code>40, 35</code> and the discount disappears.</p>
+
+<h2>What we built</h2>
+<p>We wrote a working program in plain JSON. Along the way we used values, calls, names, functions, decisions, and records, which is most of the core language. Because the program is JSON, you could store it in a database, send it over HTTP, or have another program write it.</p>
+<p>Next, the tutorial <a href="#family-tree">Build a family tree</a> uses the same JSON to ask questions of a logic database. To look up the forms used here, see <a href="#special-forms">Special forms</a>; to learn how names work, read <a href="#names-and-scope">Names, scope, and environments</a>.</p>
+</article>

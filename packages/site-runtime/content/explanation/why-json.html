@@ -1,0 +1,27 @@
+<article id="why-json" data-title="Why programs are JSON" data-summary="What Lion gains by making every program a JSON value, what it costs, and how the evaluation rules make it work.">
+<p>Most languages have a syntax of their own, and a parser that turns text into a tree the evaluator walks. Lion skips the syntax. A Lion program is already the tree, written as JSON, and the evaluator walks it directly. This page explains why that is worth doing, and what it costs.</p>
+
+<h2>Code that other systems can handle</h2>
+<p>JSON is the one data format almost every system already speaks. Databases store it, HTTP carries it, queues pass it along, and every language can read and write it without a new library. When programs are JSON, all of that infrastructure works on programs too. A rule can live in a database row and be edited by an admin screen. A workflow can arrive in a request body. A diff of a program is a diff of JSON.</p>
+<p>It also matters for programs that write programs. A language model, a form builder, or another service can produce a Lion program by producing JSON, and a JSON schema can describe what it may produce. There is no grammar to get wrong and no string escaping to forget.</p>
+
+<h2>Code is data, so data can become code</h2>
+<p>Lisp's old idea is that code and data share one shape, so a program can build and inspect programs with the same tools it uses on any list. Lion inherits this, which is why it is called a Lisp. A program is a list; <a href="#form-quote"><code>quote</code></a> holds one without running it, list functions take it apart and put it together, and <a href="#form-eval"><code>eval</code></a> runs the result. The <a href="#code-as-data">how-to guide on code as data</a> shows this in practice, and the graph editor relies on it: it edits the JSON tree and nothing else.</p>
+
+<h2>How JSON becomes code</h2>
+<p>Every JSON value has to mean something when evaluated, and Lion's rules are chosen so that the common case needs no ceremony:</p>
+<ul>
+  <li>Numbers, booleans, and <code>null</code> mean themselves, so plain data is a valid program.</li>
+  <li>Records evaluate their values and keep their keys, so a record is both a data structure and a way to return several results at once.</li>
+  <li>Arrays are calls, because calls are the heart of a Lisp, and an array is the only JSON shape with an obvious first element.</li>
+  <li>Strings are the one compromise. JSON has no separate type for names, so a string is a name when something is bound to it and text otherwise.</li>
+</ul>
+<p>The full rules are in <a href="#evaluation-rules">Evaluation rules</a>.</p>
+
+<h2>What it costs</h2>
+<p>The string compromise is the main cost. A string in your data that happens to match a bound name, such as <code>"number/add"</code>, evaluates to that function, and a list in your data is a call. <code>quote</code> is the way out, and the reason snapshots quote such strings when they save a database. Namespacing every library name with a <code>/</code> makes accidental matches rare.</p>
+<p>JSON is also more verbose than a syntax designed for people, and it has no comments. Lion leans on tools for this: the graph editor shows the tree with each form labeled, and records can carry descriptions alongside code. For programs that machines write and people review, the trade is usually worth it.</p>
+
+<h2>Why not just use JavaScript?</h2>
+<p>A host language like JavaScript can do everything Lion can, but its programs are text that must be parsed, and running untrusted JavaScript means trusting it with everything the host can reach. A Lion program can only call what its environment binds. The host decides exactly which functions a program may use, so a program from a database, a user, or a model is as safe as the environment it runs in.</p>
+</article>

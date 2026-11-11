@@ -1,0 +1,63 @@
+<article id="summarize-groups" data-title="Summarize groups of facts" data-summary="Count, total, average, and collect values per group, like GROUP BY in SQL.">
+<p>This guide shows how to compute totals per group with aggregates in a rule's head.</p>
+
+<h2>Group and total</h2>
+<p>Put an aggregate such as <code>["aggregate/sum", "?amount"]</code> in a column of the head. The head's other columns are the group:</p>
+<lion-example name="Sum per customer">
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total", "orders"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+  ["rule", ["spend", "?c", ["aggregate/sum", "?amount"], ["aggregate/count", "?id"]],
+    ["order", "?id", "?c", "?amount"]],
+  ["query", ["spend", "?customer", "?total", "?orders"], {"order": "customer"}]]
+</lion-example>
+<p>A group only exists when something matches, so a count is never 0. To report zeros, combine the aggregate with <a href="#find-missing"><code>not</code></a> in a second rule.</p>
+
+<h2>Pick the aggregate you need</h2>
+<lion-example name="Every aggregate">
+["begin",
+  ["relation", "reading", ["sensor", "n", "value"]],
+  ["relation", "stats",
+    ["sensor", "count", "unique", "sum", "mean", "min", "max", "values", "distinct"]],
+  ["fact",
+    ["reading", "s1", 1, 3], ["reading", "s1", 2, 5], ["reading", "s1", 3, 3],
+    ["reading", "s2", 1, 9]],
+  ["rule", ["stats", "?s",
+      ["aggregate/count", "?v"], ["aggregate/countUnique", "?v"],
+      ["aggregate/sum", "?v"], ["aggregate/mean", "?v"],
+      ["aggregate/min", "?v"], ["aggregate/max", "?v"],
+      ["aggregate/collect", "?v"], ["aggregate/unique", "?v"]],
+    ["reading", "?s", "?_", "?v"]],
+  ["query",
+    ["stats", "?sensor", "?count", "?unique", "?sum", "?mean", "?min", "?max", "?values", "?distinct"],
+    {"order": "sensor"}]]
+</lion-example>
+<p>Each reading has a number, <code>n</code>. Facts are a set, so without it the two readings of 3 from <code>s1</code> would be a single fact and would count once. Every match of a rule's body counts once, so give repeated values something that tells them apart.</p>
+
+<h2>Aggregate computed values</h2>
+<p>An aggregate can combine a computed value:</p>
+<lion-example name="Aggregate a product">
+["begin",
+  ["relation", "line", ["order", "price", "quantity"]],
+  ["relation", "total", ["order", "amount"]],
+  ["fact", ["line", 1, 10, 3], ["line", 1, 5, 2], ["line", 2, 8, 1]],
+  ["rule", ["total", "?o", ["aggregate/sum", ["number/multiply", "?price", "?quantity"]]],
+    ["line", "?o", "?price", "?quantity"]],
+  ["query", ["total", "?order", "?amount"], {"order": "order"}]]
+</lion-example>
+
+<h2>Summarize a plain list</h2>
+<p>Outside a rule, every aggregate function combines a list right away:</p>
+<lion-example name="Aggregate a list">
+{"sum": ["aggregate/sum", ["array/make", 3, 1, 3]],
+ "mean": ["aggregate/mean", ["array/make", 3, 1, 3]],
+ "unique": ["aggregate/unique", ["array/make", 3, 1, 3]]}
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#module-aggregate">The <code>aggregate</code> module</a> describes each aggregate.</li>
+  <li><a href="#recursive-relations">Follow relationships of any length</a> shows aggregates that recurse.</li>
+</ul>
+</article>

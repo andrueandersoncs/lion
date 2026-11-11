@@ -1,0 +1,57 @@
+<article id="save-and-load" data-title="Save and load a logic database" data-summary="Write a database out as a Lion program, store it anywhere, and rebuild it later from the command line or TypeScript.">
+<p>This guide shows how to persist a logic database. A saved database is a snapshot: an ordinary Lion program of <code>relation</code>, <code>fact</code>, <code>rule</code>, and <code>invariant</code> forms that rebuilds it when run.</p>
+
+<h2>Take a snapshot in Lion</h2>
+<lion-example name="Snapshot">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["invariant", ["edge", "?x", "?x"], {"assert": "none"}],
+  ["snapshot"]]
+</lion-example>
+<p>Strings that would load as something else, such as relation names, logic variable names, and namespaced names, are written inside <code>quote</code>, and so are lists and records. Rules are written with values as they were evaluated.</p>
+
+<h2>Restore facts from a snapshot</h2>
+<p>A snapshot is a program, so evaluating it puts back what it holds. Here a fact is removed after the snapshot, and running the snapshot with <code>eval</code> restores it:</p>
+<lion-example name="Restore">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["define", "saved", ["snapshot"]],
+  ["retract", ["edge", "a", "b"]],
+  {"before": ["query", ["edge", "?from", "?to"]],
+   "restored": ["begin", ["eval", "saved"], ["query", ["edge", "?from", "?to"]]]}]
+</lion-example>
+<p>Evaluating a snapshot adds to the database; it does not remove facts the snapshot lacks. To start over, load it into an empty database.</p>
+
+<h2>Save and load from TypeScript</h2>
+<p><code>saveDatabase</code> and <code>loadDatabase</code> do the same with a <code>LogicDatabase</code>:</p>
+<code-block lang="ts">
+import { readFileSync, writeFileSync } from "node:fs";
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
+import { stdlib } from "@lionlang/core/modules";
+
+const program = Effect.gen(function* () {
+  const database = yield* loadDatabase(JSON.parse(readFileSync("store.json", "utf8")), stdlib);
+  yield* run(["fact", ["edge", "c", "d"]], stdlib, { database });
+  writeFileSync("store.json", JSON.stringify(yield* saveDatabase(database)));
+});
+</code-block>
+<p>A rule or invariant that holds something other than JSON data, such as a function, cannot be saved, and <code>saveDatabase</code> fails with an error.</p>
+
+<h2>Save from the command line</h2>
+<code-block lang="shell">
+bun run lion program.json --database store.json
+</code-block>
+<p>The command loads <code>store.json</code>, runs the program against it, and saves it back one form and one fact per line, unless the program fails.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-snapshot"><code>snapshot</code></a> in the reference.</li>
+  <li><a href="#use-the-cli">Run programs from the command line</a>.</li>
+</ul>
+</article>

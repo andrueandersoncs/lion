@@ -1,0 +1,53 @@
+<article id="call-host-objects" data-title="Call JavaScript objects and methods" data-summary="Read properties, call methods, construct classes, and pass Lion functions to JavaScript callbacks.">
+<p>This guide shows how to work with JavaScript values that your host puts in the environment, using the <code>object</code> and <code>func</code> modules.</p>
+
+<h2>Read values</h2>
+<p><code>object/get</code> reads one key; <code>object/get-path</code> follows a dot path, with numbers for list positions:</p>
+<lion-example name="Read values">
+["begin",
+  ["define", "config", ["quote", {"users": [{"name": "ana"}, {"name": "bo"}], "port": 8080}]],
+  {"port": ["object/get", "config", "port"],
+   "second": ["object/get-path", "config", "users.1.name"],
+   "keys": ["object/keys", "config"]}]
+</lion-example>
+<p>A record in a program evaluates its values, and a list inside it would be a call, so the data here is quoted.</p>
+
+<h2>Call a method</h2>
+<p><code>object/call-method</code> calls a method by name with <code>this</code> set to the value. Every method function works on any value except <code>null</code>, including strings and lists:</p>
+<lion-example name="Call a method">
+{"upper": ["object/call-method", "lion", "toUpperCase"],
+ "padded": ["object/call-method", "7", "padStart", 3, "0"],
+ "joined": ["object/call-method", ["array/make", "a", "b"], "join", "-"]}
+</lion-example>
+<p><code>object/call-method-path</code> follows a dot path through objects and calls the method at its end, such as <code>"console.log"</code> on a host value or <code>"user.name.trim"</code> on a record.</p>
+
+<h2>Construct an instance</h2>
+<p>When the host binds a class, <code>object/new</code> constructs it:</p>
+<code-block lang="ts">
+const env = { ...stdlib, URL };
+await Effect.runPromise(run(
+  ["object/get", ["object/new", "URL", "https://lionlang.dev/docs"], "pathname"], env));
+// => "/docs"
+</code-block>
+
+<h2>Pass a Lion function to JavaScript</h2>
+<p>Lion functions return Effects, which JavaScript callbacks cannot use. <code>func/callback</code> wraps a Lion function so JavaScript can call it: the result comes back as a value, or as a Promise when the function's work is asynchronous. It keeps the relations and names of the program that created it.</p>
+<code-block lang="json">
+["object/call-method", "button", "addEventListener", "click",
+  ["func/callback", ["lambda", ["event"], ["console/log", "clicked"]]]]
+</code-block>
+
+<h2>Prepare functions in advance</h2>
+<lion-example name="Partial application">
+["begin",
+  ["define", "addTax", ["func/partial", "number/multiply", 1.25]],
+  ["array/map", ["array/make", 10, 20], "addTax"]]
+</lion-example>
+<p><code>func/bind</code> fixes <code>this</code> and leading arguments, and <code>func/apply</code> calls a function with a given <code>this</code> and arguments.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#module-object">The <code>object</code> module</a> and <a href="#module-func">the <code>func</code> module</a> in the reference.</li>
+  <li><a href="#extend-with-host-code">Add your own functions and algorithms</a>.</li>
+</ul>
+</article>

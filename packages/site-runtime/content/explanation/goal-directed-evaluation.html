@@ -1,0 +1,21 @@
+<article id="goal-directed-evaluation" data-title="Goal-directed evaluation" data-summary="How Lion avoids deriving everything a program implies when a query only needs a little, and why the shape of a recursive rule matters.">
+<p>Bottom-up evaluation derives every fact a program implies. Usually a query needs far less: asking for the paths from one node does not need the paths from every other node. This page explains how Lion narrows the work, and what that means for how you write rules.</p>
+
+<h2>Passing the question down</h2>
+<p>When a query gives a rule-defined relation a known argument, as <code>"a"</code> in <code>["path", "a", "?to"]</code>, Lion rewrites the rules before evaluating them, using a technique called magic sets. Each relation gets a copy specialized to which of its arguments are known, and extra rules pass those known values down through the rule bodies. Evaluation then only derives facts the query can reach. A query along a 3,000-node chain that would derive about 4.5 million paths in full returns its three answers in milliseconds.</p>
+<p>The rewrite changes how much is computed, never what the answers are. Lion still evaluates bottom-up; it just starts from the question's own values.</p>
+
+<h2>Why the shape of a rule matters</h2>
+<p>The rewrite passes known values from left to right through a rule's body. Compare two ways of writing paths from a known start:</p>
+<ul>
+  <li><strong>Recursion first</strong>: <code>["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]</code>. The known start <code>?x</code> passes straight into the recursive call, so every step asks about the same start.</li>
+  <li><strong>Edge first</strong>: <code>["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]</code>. The recursive call asks about <code>?y</code>, each node along the way, so the question spreads to every reachable node, which can cost as much as computing everything.</li>
+</ul>
+<p>Both give the same answers. With a known start, write the recursion first; with a known end, put it last. <a href="#recursive-relations">Follow relationships of any length</a> shows both.</p>
+
+<h2>What is still computed in full</h2>
+<p>Some relations cannot be narrowed safely. A relation that is aggregated, computed by a graph algorithm, or used under <code>not</code> needs its complete contents to be right, so Lion computes it, and everything it depends on, in full before running the rewritten rules. Explanations from <code>why</code> also use full evaluation, so they describe the program as written.</p>
+
+<h2>Turning it off</h2>
+<p>A host can create a database with <code>new LogicDatabase({ goalDirected: false })</code> to compute every relation in full for every query. This is useful for comparing results; Lion's own tests check that both ways agree.</p>
+</article>

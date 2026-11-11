@@ -1,0 +1,44 @@
+<article id="cli" data-title="Command line" data-summary="The lion command from @lionlang/cli: evaluating files, keeping a database file, and serving the graph editor.">
+<p>Install with <code>bun add --dev @lionlang/cli</code>. The package provides the <code>lion</code> command.</p>
+
+<h2 id="cli-evaluate"><code>lion &lt;file&gt;</code></h2>
+<code-block lang="shell">
+lion [--database &lt;path&gt;] &lt;file&gt;
+</code-block>
+<p>Reads <code>file</code> as JSON, evaluates it with the standard library, and prints the result as JSON indented by two spaces.</p>
+<table>
+  <thead><tr><th>Argument or flag</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="lion file"><td><code>file</code></td><td>Path to a Lion program in JSON. Required.</td></tr>
+    <tr data-entry="--database"><td><code>--database &lt;path&gt;</code></td><td>A JSON file that holds the logic database. It is loaded before the program runs; if it does not exist, the database starts empty. After the program succeeds, the database is saved back as a <a href="#form-snapshot">snapshot</a>, one form and one fact per line. If the program fails, the file is not written.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="cli-repl"><code>lion repl</code></h2>
+<code-block lang="shell">
+lion repl [--host &lt;address&gt;] [--port &lt;number&gt;]
+</code-block>
+<p>Serves the Fold Map graph editor bundled with the command, and prints its address. It runs until stopped.</p>
+<table>
+  <thead><tr><th>Flag</th><th>Default</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="--host"><td><code>--host</code></td><td><code>127.0.0.1</code></td><td>Address to listen on.</td></tr>
+    <tr data-entry="--port"><td><code>--port</code></td><td><code>3000</code></td><td>Port to listen on, from 1 to 65535.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="cli-global">Global flags</h2>
+<table>
+  <thead><tr><th>Flag</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr data-entry="--help"><td><code>--help</code>, <code>-h</code></td><td>Show help for the command or subcommand.</td></tr>
+    <tr data-entry="--version"><td><code>--version</code>, <code>-v</code></td><td>Show the version.</td></tr>
+    <tr data-entry="--wizard"><td><code>--wizard</code></td><td>Build the command interactively.</td></tr>
+    <tr data-entry="--completions"><td><code>--completions &lt;shell&gt;</code></td><td>Print a completion script for <code>bash</code>, <code>zsh</code>, <code>fish</code>, <code>powershell</code>, <code>sh</code>, or <code>pwsh</code>.</td></tr>
+    <tr data-entry="--log-level"><td><code>--log-level &lt;level&gt;</code></td><td>Minimum log level: <code>all</code>, <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>fatal</code>, or <code>none</code>.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="cli-exit">Exit status</h2>
+<p><code>0</code> when the program succeeds. <code>1</code> when the file cannot be read or parsed, the program fails, or the database cannot be loaded or saved; the error is printed.</p>
+</article>

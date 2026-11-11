@@ -1,0 +1,59 @@
+<article id="branch-on-shape" data-title="Branch on a value's shape" data-summary="Choose what to do with a value based on its type or its structure, with match and cond.">
+<p>This guide shows how to pick a branch based on what a value is. Use <code>match</code> when the choice depends on the value's type or structure, and <code>cond</code> when it depends on conditions you compute.</p>
+
+<h2>Branch on a value's type</h2>
+<p>Give <code>match</code> the value, then pairs of a predicate and a function, then a fallback function. The first predicate that returns <code>true</code> picks its function, which receives the value:</p>
+<lion-example name="Match on type">
+["begin",
+  ["define", "describe",
+    ["lambda", ["value"],
+      ["match", "value",
+        ["value/number?", ["lambda", ["n"], "a number"]],
+        ["value/string?", ["lambda", ["s"], ["string/concat", "a string: ", "s"]]],
+        ["value/array?", ["lambda", ["xs"], "a list"]],
+        ["lambda", ["other"], "something else"]]]],
+  ["array/map", ["quote", [7, "hi", [1, 2], null]], "describe"]]
+</lion-example>
+
+<h2>Branch on a record's structure</h2>
+<p>A record can be a predicate too. It matches a record that has every one of its keys, where each value passes the predicate under that key. Records nest:</p>
+<lion-example name="Match on structure">
+["begin",
+  ["define", "route",
+    ["lambda", ["message"],
+      ["match", "message",
+        [{"type": ["func/partial", "string/equals?", "order"],
+          "order": {"id": "value/number?"}},
+         ["lambda", ["m"], ["object/get-path", "m", "order.id"]]],
+        [{"type": ["func/partial", "string/equals?", "ping"]},
+         ["lambda", ["m"], "pong"]],
+        ["lambda", ["m"], "unknown message"]]]],
+  ["array/map",
+    ["quote", [
+      {"type": "order", "order": {"id": 42}},
+      {"type": "ping"},
+      {"type": "order", "order": {"id": "x"}}]],
+    "route"]]
+</lion-example>
+<p>A predicate that fails, or returns something other than a boolean, counts as no match, so a pattern never crashes on data of the wrong type.</p>
+
+<h2>Branch on computed conditions</h2>
+<p>When the choice depends on comparisons, list condition and result pairs in <code>cond</code>, with an optional <code>else</code> at the end:</p>
+<lion-example name="Cond">
+["begin",
+  ["define", "grade",
+    ["lambda", ["score"],
+      ["cond",
+        [["number/greaterThanOrEqualTo", "score", 90], "A"],
+        [["number/greaterThanOrEqualTo", "score", 75], "B"],
+        ["else", "C"]]]],
+  ["array/map", ["array/make", 95, 80, 40], "grade"]]
+</lion-example>
+<p>Without an <code>else</code>, a <code>cond</code> with no matching condition returns <code>null</code>. Conditions use JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, and <code>""</code> do not match, and every list and record does.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-match"><code>match</code></a> and <a href="#form-cond"><code>cond</code></a> in the reference.</li>
+  <li><a href="#module-value">The <code>value</code> module</a> lists the type predicates.</li>
+</ul>
+</article>

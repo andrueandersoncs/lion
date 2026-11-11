@@ -1,0 +1,66 @@
+<article id="enforce-rules" data-title="Enforce rules on your data" data-summary="State conditions your data must always meet, and have the database refuse any change that would break them.">
+<p>This guide shows how to keep a logic database consistent with invariants. An invariant is a query assertion the database keeps: after every change, it asks the question again, and a change that breaks the answer is refused.</p>
+
+<h2>Forbid a situation</h2>
+<p>Write a goal that describes the bad situation, and assert it has <code>"none"</code> answers:</p>
+<lion-example name="Forbid" expect="error">
+["begin",
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["relation", "cancelled", ["id"]],
+  ["fact", ["order", 1, "open"], ["order", 2, "shipped"]],
+  ["invariant",
+    ["and", ["order", "?id", "shipped"], ["cancelled", "?id"]],
+    {"assert": "none"}],
+  ["fact", ["cancelled", 2]]]
+</lion-example>
+<p>The error names the invariant and one answer that breaks it, here order 2.</p>
+
+<h2>Require something to exist</h2>
+<p>Assert <code>"some"</code> to require at least one answer at all times, such as at least one admin:</p>
+<lion-example name="Require" expect="error">
+["begin",
+  ["relation", "role", ["user", "name"]],
+  ["fact", ["role", "ana", "admin"], ["role", "bo", "admin"]],
+  ["invariant", ["role", "?_", "admin"], {"assert": "some"}],
+  ["retract", ["role", "ana", "admin"]],
+  ["retract", ["role", "bo", "admin"]]]
+</lion-example>
+<p>Retracting Ana's role is fine; retracting the last admin is refused.</p>
+
+<h2>Check derived data</h2>
+<p>An invariant can ask anything a query can, including relations that rules derive, <code>not</code>, aggregates, and graph algorithms. Here no customer may owe more than 100:</p>
+<lion-example name="Derived" expect="error">
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "owed", ["customer", "total"]],
+  ["rule", ["owed", "?c", ["aggregate/sum", "?a"]], ["order", "?_", "?c", "?a"]],
+  ["invariant",
+    ["and", ["owed", "?c", "?total"], ["number/greaterThan", "?total", 100]],
+    {"assert": "none"}],
+  ["fact", ["order", 1, "ana", 60]],
+  ["fact", ["order", 2, "ana", 50]]]
+</lion-example>
+
+<h2>Make changes that only hold together</h2>
+<p>Each <code>fact</code>, <code>retract</code>, or <code>rule</code> form is checked once it has made all of its changes. Put changes that only satisfy the invariants together in one form:</p>
+<lion-example name="Together">
+["begin",
+  ["relation", "employee", ["name"]],
+  ["relation", "manager", ["employee", "manager"], {"key": "employee"}],
+  ["invariant",
+    ["and", ["employee", "?e"], ["not", ["manager", "?e", "?_"]], ["not", ["manager", "?_", "?e"]]],
+    {"assert": "none"}],
+  ["fact", ["employee", "ana"], ["employee", "bo"], ["manager", "bo", "ana"]],
+  ["query", ["manager", "?employee", "?manager"]]]
+</lion-example>
+<p>Separate forms in a <code>begin</code> are separate changes, each checked on its own.</p>
+
+<h2>Keep invariants across runs</h2>
+<p>Invariants live in the database, so they persist wherever it does: in a shared <code>LogicDatabase</code> from TypeScript, and in a <code>--database</code> file on the command line. Snapshots save them, and running a setup again adds no second copy.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-invariant"><code>invariant</code></a> in the reference.</li>
+  <li><a href="#consistent-semantics">One set of rules for every feature</a> explains why changes are all or nothing.</li>
+</ul>
+</article>

@@ -797,10 +797,16 @@ turbo dev --filter=@lionlang/repl
 turbo build --filter=@lionlang/site-runtime
 ```
 
-GitHub Pages lets browsers cache every file for ten minutes, so `docs/index.html` loads its scripts and stylesheet with a `?v=` hash of the site's assets, and the scripts pass it on to the worker and highlighter. A returning visitor therefore never runs new examples on a cached evaluator. The build above updates the hash. After editing only files in `docs/`, update it with:
+The documentation page, [`docs/docs.html`](https://lionlang.dev/docs.html), is generated from the fragments in `packages/site-runtime/content/`, one per document, organized by the [Diátaxis](https://diataxis.fr/) framework into tutorials, how-to guides, reference, and explanation. A fragment's `<lion-example>` becomes a live editor, and the build runs every example with the same evaluator the page uses and writes its real result, so a published result can never drift from what Lion does. The build fails on an example that errors unexpectedly, on one too slow for the browser, and on a link to an id the page lacks. After editing a fragment, or the core evaluator, rebuild the page:
+
+```bash
+bun run --cwd packages/site-runtime docs
+```
+
+GitHub Pages lets browsers cache every file for ten minutes, so `docs/index.html` and `docs/docs.html` load their scripts and stylesheet with a `?v=` hash of the site's assets, and the scripts pass it on to the worker and highlighter. A returning visitor therefore never runs new examples on a cached evaluator. The build above updates the hash. After editing only files in `docs/`, update it with:
 
 ```bash
 bun run --cwd packages/site-runtime stamp
 ```
 
-CI fails when the hash in `docs/index.html` is out of date.
+CI fails when either page's hash is out of date, and the site-runtime tests fail when `docs/docs.html` is not what its fragments build.

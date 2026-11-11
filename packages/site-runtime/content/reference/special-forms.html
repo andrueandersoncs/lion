@@ -1,0 +1,97 @@
+<article id="special-forms" data-title="Special forms" data-summary="The forms that control evaluation: quote, eval, begin, define, lambda, cond, and match.">
+<p>A special form is an array whose first element is the form's name. Unlike a function call, a special form decides which of its parts to evaluate, and when. The logic layer's forms are in <a href="#logic-forms">Logic forms</a>.</p>
+
+<h2 id="form-quote"><code>quote</code></h2>
+<code-block lang="json">
+["quote", expression]
+</code-block>
+<p>Returns <code>expression</code> without evaluating it. Use it for literal lists, records that contain lists, and strings that might be bound names.</p>
+<lion-example name="quote">
+["quote", ["number/add", 1, 2]]
+</lion-example>
+
+<h2 id="form-eval"><code>eval</code></h2>
+<code-block lang="json">
+["eval", expression]
+</code-block>
+<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
+<lion-example name="eval">
+["eval", ["quote", ["number/add", 1, 2]]]
+</lion-example>
+
+<h2 id="form-begin"><code>begin</code></h2>
+<code-block lang="json">
+["begin", expression, ...]
+</code-block>
+<p>Evaluates each expression in order and returns the last result. <code>["begin"]</code> returns <code>[]</code>.</p>
+<lion-example name="begin">
+["begin", ["define", "x", 1], ["define", "x", 2], "x"]
+</lion-example>
+
+<h2 id="form-define"><code>define</code></h2>
+<code-block lang="json">
+["define", name, expression]
+</code-block>
+<ul>
+  <li>Evaluates <code>expression</code>, binds <code>name</code> to the result in the global environment, and returns the result.</li>
+  <li>Always binds globally, even inside a lambda.</li>
+  <li>Binding a name again replaces its value. Functions that use the name see the new value when they next run.</li>
+  <li><code>name</code> must be a non-empty string that is not a <a href="#rule-reserved">reserved name</a>.</li>
+</ul>
+<lion-example name="define">
+["begin",
+  ["define", "greet", ["lambda", [], ["string/concat", "hello, ", "who"]]],
+  ["define", "who", "world"],
+  ["greet"]]
+</lion-example>
+
+<h2 id="form-lambda"><code>lambda</code></h2>
+<code-block lang="json">
+["lambda", [parameter, ...], body]
+</code-block>
+<ul>
+  <li>Returns a function. Calling it binds each parameter to the matching argument, in a new environment whose parent is the one where the lambda was created, then evaluates <code>body</code>.</li>
+  <li>Called with fewer arguments than parameters, it fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
+  <li>The body is one expression; use <code>begin</code> for several.</li>
+  <li>Parameters must be non-empty strings that are not <a href="#rule-reserved">reserved names</a>.</li>
+</ul>
+<lion-example name="lambda">
+["begin",
+  ["define", "makeAdder", ["lambda", ["n"], ["lambda", ["x"], ["number/add", "x", "n"]]]],
+  ["define", "addTen", ["makeAdder", 10]],
+  ["addTen", 5]]
+</lion-example>
+
+<h2 id="form-cond"><code>cond</code></h2>
+<code-block lang="json">
+["cond", [condition, result], ..., ["else", result]]
+</code-block>
+<ul>
+  <li>Evaluates each <code>condition</code> in order and returns the evaluated <code>result</code> of the first one that is <a href="#rule-truthiness">truthy</a>. Later conditions are not evaluated.</li>
+  <li>An <code>else</code> branch, allowed only last, always matches.</li>
+  <li>With no match and no <code>else</code>, returns <code>null</code>.</li>
+</ul>
+<lion-example name="cond">
+["cond",
+  [["number/greaterThan", 3, 5], "big"],
+  [["number/greaterThan", 3, 1], "medium"],
+  ["else", "small"]]
+</lion-example>
+
+<h2 id="form-match"><code>match</code></h2>
+<code-block lang="json">
+["match", value, [predicate, function], ..., fallback]
+</code-block>
+<ul>
+  <li>Evaluates <code>value</code>, then tries each pair in order. The first whose predicate holds is chosen, and its function is called with the value. If none holds, <code>fallback</code> is called with the value.</li>
+  <li>A predicate is a function, or a record of predicates. A function holds when it returns <code>true</code>; a failure, or any result other than a boolean, counts as not holding.</li>
+  <li>A record predicate holds for a record that has every one of its keys, where each value satisfies the predicate under the same key. Record predicates nest.</li>
+  <li>At least one pair and the fallback are required.</li>
+</ul>
+<lion-example name="match">
+["match", {"type": "user", "name": "Ada"},
+  [{"type": ["func/partial", "string/equals?", "user"], "name": "value/string?"},
+   ["lambda", ["u"], ["string/concat", "user ", ["object/get", "u", "name"]]]],
+  ["lambda", ["other"], "unknown"]]
+</lion-example>
+</article>

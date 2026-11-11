@@ -1,0 +1,53 @@
+<article id="transform-lists" data-title="Transform lists" data-summary="Make lists, map over them, filter them, flatten them, and fold them into a single value.">
+<p>This guide shows how to work with lists using the <code>array</code> module and lambdas.</p>
+
+<h2>Make a list</h2>
+<p>An array in a program is a call, so <code>[1, 2, 3]</code> on its own fails: <code>1</code> is not a function. Make a list with <code>array/make</code>, which evaluates its arguments, or with <code>quote</code>, which takes the list as written:</p>
+<lion-example name="Make lists">
+{"made": ["array/make", 1, ["number/add", 1, 1], 3],
+ "quoted": ["quote", [1, ["number/add", 1, 1], 3]],
+ "range": ["array/range", 0, 5]}
+</lion-example>
+
+<h2>Change every item</h2>
+<p>Pass a list and a function to <code>array/map</code>:</p>
+<lion-example name="Map">
+["array/map", ["array/range", 1, 6],
+  ["lambda", ["n"], ["number/multiply", "n", "n"]]]
+</lion-example>
+
+<h2>Keep some items</h2>
+<p>There is no filter function; use <code>array/flat-map</code> and return a one-item list to keep an item or an empty list to drop it:</p>
+<lion-example name="Filter">
+["array/flat-map", ["array/range", 1, 11],
+  ["lambda", ["n"],
+    ["cond",
+      [["number/greaterThan", "n", 6], ["array/make", "n"]],
+      ["else", ["array/make"]]]]]
+</lion-example>
+
+<h2>Combine items into one value</h2>
+<p><code>array/reduce</code> takes a list, a starting value, and a function of the running value and the next item:</p>
+<lion-example name="Reduce">
+["array/reduce", ["array/make", 3, 9, 4], 0,
+  ["lambda", ["sum", "n"], ["number/add", "sum", "n"]]]
+</lion-example>
+<p>For sums, counts, and other common totals, the <a href="#module-aggregate"><code>aggregate</code> module</a> is shorter: <code>["aggregate/sum", list]</code>.</p>
+
+<h2>Take lists apart</h2>
+<lion-example name="Take apart">
+{"first": ["array/head", ["array/make", "a", "b", "c"]],
+ "rest": ["array/tail", ["array/make", "a", "b", "c"]],
+ "length": ["array/length", ["array/make", "a", "b", "c"]],
+ "hasB": ["array/includes?", ["array/make", "a", "b", "c"], "b"],
+ "joined": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
+ "emptyFirst": ["array/head", ["array/make"]]}
+</lion-example>
+<p>The first item of an empty list is <code>null</code>, and the rest of it is an empty list.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#module-array">The <code>array</code> module</a> describes every list function.</li>
+  <li><a href="#form-lambda"><code>lambda</code></a> in the reference.</li>
+</ul>
+</article>

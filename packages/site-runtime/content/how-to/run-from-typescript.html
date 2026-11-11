@@ -1,0 +1,67 @@
+<article id="run-from-typescript" data-title="Run Lion from TypeScript" data-summary="Evaluate Lion programs inside your own application, give them your values and functions, and handle their results and errors.">
+<p>This guide shows how to evaluate Lion from a TypeScript or JavaScript project with <code>@lionlang/core</code>. It assumes you know the basics of <a href="https://effect.website" target="_blank" rel="noopener">Effect</a>; every evaluation is an Effect you run.</p>
+
+<h2>Install the package</h2>
+<code-block lang="shell">
+bun add @lionlang/core effect
+</code-block>
+
+<h2>Evaluate a program</h2>
+<p>Pass the program and an environment to <code>run</code>. The standard library, <code>stdlib</code>, is the usual environment. A program can be any JSON value, so it can come straight from <code>JSON.parse</code>, a database, or a request body.</p>
+<code-block lang="ts">
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+
+const program = JSON.parse('["number/add", 1, 2]');
+const result = await Effect.runPromise(run(program, stdlib));
+// => 3
+</code-block>
+
+<h2>Give programs your own values and functions</h2>
+<p>Spread <code>stdlib</code> into an object and add names. Any value can be bound. A function can return a plain value or an Effect; Lion waits for an Effect to finish.</p>
+<code-block lang="ts">
+const env = {
+  ...stdlib,
+  taxRate: 0.08,
+  "shop/price": (sku: string) => Effect.succeed(sku === "lamp" ? 120 : 35),
+};
+
+await Effect.runPromise(
+  run(["number/multiply", ["shop/price", "lamp"], ["number/add", 1, "taxRate"]], env)
+);
+// => 129.6
+</code-block>
+<p>Prefix your names with a module, as the standard library does, so they never collide with Lion's names or with strings in your data.</p>
+
+<h2>Handle errors</h2>
+<p>A failed evaluation is a typed failure, not a thrown exception. Run with <code>Effect.runPromiseExit</code>, or catch by tag:</p>
+<code-block lang="ts">
+const safe = run(["number/add", "one", 2], stdlib).pipe(
+  Effect.catchTag("SchemaError", (error) => Effect.succeed(`Bad input: ${error.message}`))
+);
+</code-block>
+<p>See <a href="#errors">Errors</a> for every error a program can fail with.</p>
+
+<h2>Keep a logic database between runs</h2>
+<p>Each <code>run</code> starts with an empty logic database. To keep relations, facts, rules, and invariants across runs, create a <code>LogicDatabase</code> and pass it to each run:</p>
+<code-block lang="ts">
+import { LogicDatabase } from "@lionlang/core/logic/database";
+
+const database = new LogicDatabase();
+await Effect.runPromise(run(["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"]]], stdlib, { database }));
+
+await Effect.runPromise(run(["query", ["edge", "a", "?to"]], stdlib, { database }));
+// => [{ to: "b" }]
+</code-block>
+<p>Later runs see the database's relations by name, so they can query <code>edge</code> without declaring it again. Names you bind in the environment win over relations with the same name.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#typescript-api">TypeScript API</a> lists every export and option.</li>
+  <li><a href="#extend-with-host-code">Add your own functions and algorithms</a> covers functions that work inside rules.</li>
+  <li><a href="#names-and-scope">Names, scope, and environments</a> explains how lookups work.</li>
+</ul>
+</article>

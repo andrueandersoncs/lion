@@ -1,0 +1,91 @@
+<article id="typescript-api" data-title="TypeScript API" data-summary="The exports of @lionlang/core and @lionlang/typesafe-ai that host applications use.">
+<p>Every module of <code>@lionlang/core</code> is importable by path, such as <code>@lionlang/core/evaluation/evaluate</code>. These are the exports meant for host applications. Evaluation results are Effects; see <a href="#run-from-typescript">Run Lion from TypeScript</a>.</p>
+
+<h2 id="api-evaluate"><code>@lionlang/core/evaluation/evaluate</code></h2>
+<dl class="entries">
+  <dt data-entry="run"><code>run(expression, environment, options?)</code></dt>
+  <dd>
+    <p>Decodes <code>expression</code> as a Lion program and evaluates it with <code>environment</code>, a record of bindings. Returns an <code>Effect</code> of the result, failing with a <a href="#errors">Lion error</a>.</p>
+    <p><code>options.database</code>: a <code>LogicDatabase</code> to use instead of an empty one. Its relations are bound by name, unless <code>environment</code> binds the same name.</p>
+  </dd>
+  <dt data-entry="evaluate"><code>evaluate(expression)</code></dt>
+  <dd><p>Evaluates an already decoded expression. Requires <code>LionEnvironmentService</code> and, for logic forms, <code>LionDatabaseService</code>. Most hosts use <code>run</code>.</p></dd>
+</dl>
+
+<h2 id="api-modules"><code>@lionlang/core/modules</code></h2>
+<dl class="entries">
+  <dt data-entry="stdlib"><code>stdlib</code></dt>
+  <dd><p>The <a href="#standard-library">standard library</a> as a record of bindings.</p></dd>
+  <dt data-entry="namespaceEntries"><code>namespaceEntries(namespace, record)</code></dt>
+  <dd><p>Returns a copy of <code>record</code> with every key prefixed by <code>namespace/</code>.</p></dd>
+</dl>
+
+<h2 id="api-database"><code>@lionlang/core/logic/database</code></h2>
+<dl class="entries">
+  <dt data-entry="LogicDatabase"><code>new LogicDatabase(options?)</code></dt>
+  <dd>
+    <p>A logic database to share across runs. It holds relations, facts, rules, and invariants.</p>
+    <p><code>options.goalDirected</code>: when <code>false</code>, every query computes every relation in full instead of only what it can reach. Defaults to <code>true</code>.</p>
+  </dd>
+  <dt data-entry="MAX_LATTICE_ROUNDS"><code>MAX_LATTICE_ROUNDS</code></dt>
+  <dd><p>10,000: the rounds recursion through lattice aggregates may take before failing.</p></dd>
+</dl>
+
+<h2 id="api-snapshot"><code>@lionlang/core/logic/snapshot</code></h2>
+<dl class="entries">
+  <dt data-entry="saveDatabase"><code>saveDatabase(database, options?)</code></dt>
+  <dd>
+    <p>Returns an <code>Effect</code> of the database as a snapshot program. Fails with <code>LogicError</code> if a rule or invariant holds a value that is not JSON.</p>
+    <p><code>options.isBound(name)</code>: names bound where the snapshot will be loaded; strings equal to them are quoted.</p>
+  </dd>
+  <dt data-entry="loadDatabase"><code>loadDatabase(program, environment)</code></dt>
+  <dd><p>Evaluates <code>program</code> into a new <code>LogicDatabase</code> and returns an <code>Effect</code> of it.</p></dd>
+</dl>
+
+<h2 id="api-algorithms"><code>@lionlang/core/logic/algorithms</code></h2>
+<dl class="entries">
+  <dt data-entry="defineAlgorithm"><code>defineAlgorithm({ name, inputs, columns, run })</code></dt>
+  <dd>
+    <p>Returns a function to bind under <code>name</code>. Called in Lion with its inputs and one term per column, it builds a goal over the rows <code>run</code> computes.</p>
+    <ul>
+      <li><code>inputs</code>: a list of <code>{ kind: "relation" | "value", name }</code>. A relation input is given as a relation's name or value; a value input as JSON data.</li>
+      <li><code>columns</code>: the output column names.</li>
+      <li><code>run(inputs)</code>: receives each relation input as its list of tuples and each value input as itself. Returns a list of rows, each with one value per column, or a string that explains why it cannot.</li>
+    </ul>
+  </dd>
+</dl>
+
+<h2 id="api-terms"><code>@lionlang/core/logic/terms</code></h2>
+<dl class="entries">
+  <dt data-entry="markPure"><code>markPure(record)</code></dt>
+  <dd><p>Marks every function in <code>record</code> as pure and returns the record. A pure function called with a logic variable waits until it is bound, so it can serve as a filter or computed value in rules. Only mark functions that always return the same result for the same arguments.</p></dd>
+  <dt data-entry="render"><code>render(value)</code></dt>
+  <dd><p>Converts logic values, such as goals and variables, back into the Lion JSON that produces them.</p></dd>
+  <dt data-entry="compareValues"><code>compareValues(a, b)</code></dt>
+  <dd><p>The <a href="#value-order">value order</a> Lion sorts by: negative, zero, or positive.</p></dd>
+</dl>
+
+<h2 id="api-analyze"><code>@lionlang/core/analysis/analyze</code></h2>
+<dl class="entries">
+  <dt data-entry="analyze"><code>analyze(expression)</code></dt>
+  <dd><p>Returns a tree describing each part of a program without evaluating it: its kind, its special form, the role of each child, and a diagnostic for a malformed form. The graph editor is built on it.</p></dd>
+  <dt data-entry="flattenAnalysis"><code>flattenAnalysis(node)</code></dt>
+  <dd><p>The nodes of an analysis tree, in order.</p></dd>
+  <dt data-entry="isSpecialFormName"><code>isSpecialFormName(value)</code></dt>
+  <dd><p>Whether <code>value</code> names a special or logic form.</p></dd>
+</dl>
+
+<h2 id="api-errors"><code>@lionlang/core/errors/evaluation</code></h2>
+<p><code>ArgumentMismatchError</code>, <code>InvalidFunctionCallError</code>, and <code>LogicError</code>, the tagged error classes described in <a href="#errors">Errors</a>.</p>
+
+<h2 id="api-services">Services</h2>
+<p><code>LionEnvironmentService</code> (<code>@lionlang/core/services/evaluation</code>) and <code>LionDatabaseService</code> (<code>@lionlang/core/services/database</code>) carry the environment and database through evaluation. <code>run</code> provides both.</p>
+
+<h2 id="api-typesafe"><code>@lionlang/typesafe-ai</code></h2>
+<dl class="entries">
+  <dt data-entry="makeTypeSafeBindings"><code>makeTypeSafeBindings(config?, namespace?)</code></dt>
+  <dd><p>Returns bindings to spread into an environment: <code>noul</code>, <code>choice</code>, <code>score</code>, <code>system-one</code>, and <code>models</code>, under <code>namespace/</code>, <code>"typesafe"</code> by default. <code>config</code> is the TypeSafe client configuration. See <a href="#ask-ai-models">Ask AI models with TypeSafe</a>.</p></dd>
+  <dt data-entry="makeTypeSafeModule"><code>makeTypeSafeModule(config?)</code></dt>
+  <dd><p>The same functions without a namespace.</p></dd>
+</dl>
+</article>

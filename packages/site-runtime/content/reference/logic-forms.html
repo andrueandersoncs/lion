@@ -1,0 +1,179 @@
+<article id="logic-forms" data-title="Logic forms" data-summary="The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, snapshots, and invariants.">
+<p>The logic layer stores facts in relations, derives more with rules, and answers queries. Relations, goals, and logic variables are ordinary Lion values, and answers are plain Lion data. For the rules every program must follow, see <a href="#logic-guarantees">Logic database guarantees</a>.</p>
+
+<h2 id="logic-variables">Logic variables</h2>
+<ul>
+  <li>An unbound string of the form <code>"?name"</code> evaluates to a logic variable. See <a href="#rule-strings">Strings</a> for the exact form.</li>
+  <li>The same name refers to the same variable throughout one goal or rule.</li>
+  <li><code>"?_"</code>, and any name starting with <code>?_</code>, is anonymous: each occurrence is a separate variable, it never appears in answers, and inside <code>not</code> it matches anything.</li>
+  <li>Logic variables must be direct arguments of a goal or call, not nested inside lists or records.</li>
+</ul>
+
+<h2 id="logic-goals">Goals</h2>
+<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling a pure function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold.</p>
+
+<h2 id="form-relation"><code>relation</code></h2>
+<code-block lang="json">
+["relation", name, [column, ...]]
+["relation", name, [column, ...], {"key": column-or-columns}]
+</code-block>
+<ul>
+  <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal.</li>
+  <li>Column names must be distinct. Options are read as written, not evaluated; the only option is <code>"key"</code>.</li>
+  <li>With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.</li>
+  <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails.</li>
+</ul>
+<lion-example name="relation">
+["begin",
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["fact", ["order", 1, "open"], ["order", 1, "paid"]],
+  ["query", ["order", "?id", "?status"]]]
+</lion-example>
+
+<h2 id="form-fact"><code>fact</code></h2>
+<code-block lang="json">
+["fact", goal, ...]
+</code-block>
+<ul>
+  <li>Adds each fact, a relation call with JSON data and no logic variables, and returns the facts given.</li>
+  <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
+  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins.</li>
+  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
+  <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
+</ul>
+
+<h2 id="form-retract"><code>retract</code></h2>
+<code-block lang="json">
+["retract", goal, ...]
+</code-block>
+<ul>
+  <li>Removes each fact, and returns the facts that were present and removed.</li>
+  <li>A row of a keyed relation is removed only when every column matches.</li>
+  <li>Facts derived by rules cannot be retracted; derived answers update on the next query.</li>
+  <li>Like <code>fact</code>, the form is one all-or-nothing change.</li>
+</ul>
+<lion-example name="retract">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["retract", ["edge", "a", "b"], ["edge", "x", "y"]]]
+</lion-example>
+
+<h2 id="form-rule"><code>rule</code></h2>
+<code-block lang="json">
+["rule", head, goal, ...]
+</code-block>
+<ul>
+  <li>Adds a rule: <code>head</code>, a relation call, holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.</li>
+  <li>Head arguments can be values, variables bound by the body, computed values from pure functions, and <a href="#module-aggregate">aggregates</a>.</li>
+  <li>The rule is checked when added: every head variable must be bound by the body, every goal must be <a href="#logic-guarantees">safe</a>, and the whole program must stay stratified and terminating. A rule that fails a check is not added.</li>
+  <li>An <code>or</code> in the body makes one rule with several alternatives.</li>
+  <li>Adding a rule the database already holds, one a snapshot would write the same way, changes nothing.</li>
+  <li>Adding a rule is one all-or-nothing change, checked against every invariant.</li>
+</ul>
+
+<h2 id="form-query"><code>query</code></h2>
+<code-block lang="json">
+["query", goal]
+["query", goal, options]
+</code-block>
+<ul>
+  <li>Returns one record per distinct answer, with one key per named variable, without its <code>?</code>. A goal with no variables returns <code>[{}]</code> when it holds and <code>[]</code> when it does not.</li>
+  <li>Without the <code>"order"</code> option, answers come in the order they are found, which can change between versions of Lion.</li>
+  <li>Options sort, page, and assert on the answers; see <a href="#query-options">Query options</a>.</li>
+</ul>
+<lion-example name="query">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "a", "c"]],
+  {"targets": ["query", ["edge", "a", "?to"], {"order": "to"}],
+   "holds": ["query", ["edge", "a", "b"]],
+   "fails": ["query", ["edge", "b", "a"]]}]
+</lion-example>
+
+<h2 id="form-why"><code>why</code></h2>
+<code-block lang="json">
+["why", fact]
+</code-block>
+<ul>
+  <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables, holds, or <code>null</code> when it does not.</li>
+  <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
+  <li>Premises are facts, <code>{"check": call}</code> for filters, and <code>{"absent": pattern}</code> for negations.</li>
+  <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
+  <li>Explanations use every relation computed in full.</li>
+</ul>
+
+<h2 id="form-not"><code>not</code></h2>
+<code-block lang="json">
+["not", goal]
+</code-block>
+<p>With a relation call, holds when the call has no matches. Every named variable in it must be bound by an earlier goal. With a boolean, returns its negation.</p>
+
+<h2 id="form-and"><code>and</code></h2>
+<code-block lang="json">
+["and", goal, ...]
+</code-block>
+<p>Holds when every goal holds, sharing variables between them. With only booleans, returns their conjunction.</p>
+
+<h2 id="form-or"><code>or</code></h2>
+<code-block lang="json">
+["or", goal, ...]
+</code-block>
+<p>Holds when any goal holds. With only booleans, returns their disjunction. Goals combining <code>and</code> and <code>or</code> may expand to at most 64 alternatives.</p>
+<lion-example name="Booleans">
+{"and": ["and", true, false], "or": ["or", false, true], "not": ["not", true]}
+</lion-example>
+
+<h2 id="form-unify"><code>=</code></h2>
+<code-block lang="json">
+["=", term, term]
+</code-block>
+<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. Without logic variables, it is structural equality of JSON values, and identity for other values.</p>
+<lion-example name="Equality">
+["=", ["quote", {"a": [1, 2]}], {"a": ["array/make", 1, 2]}]
+</lion-example>
+
+<h2 id="form-in"><code>in</code></h2>
+<code-block lang="json">
+["in", element, list]
+</code-block>
+<p>With an unbound element, binds it to each distinct item of the list; with a bound one, tests membership. The list must be bound first. Without logic variables, it is plain membership and returns a boolean.</p>
+<lion-example name="Membership">
+["in", "b", ["array/make", "a", "b"]]
+</lion-example>
+
+<h2 id="form-snapshot"><code>snapshot</code></h2>
+<code-block lang="json">
+["snapshot"]
+</code-block>
+<ul>
+  <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>fact</code> form per relation with facts, every <code>rule</code>, and every <code>invariant</code>, in that order.</li>
+  <li>Strings that would evaluate to something else are written inside <code>quote</code>: logic variable names, relation names, names bound in the environment, and namespaced names such as <code>"number/add"</code>. Lists and records are quoted too.</li>
+  <li>Fails if a rule or invariant holds a value that is not JSON data, such as a function.</li>
+</ul>
+<lion-example name="snapshot">
+["begin",
+  ["relation", "note", ["text"]],
+  ["fact", ["note", "plain"], ["note", ["quote", "?x"]], ["note", ["array/make", 1, 2]]],
+  ["snapshot"]]
+</lion-example>
+
+<h2 id="form-invariant"><code>invariant</code></h2>
+<code-block lang="json">
+["invariant", goal, {"assert": "none"}]
+["invariant", goal, {"assert": "some"}]
+</code-block>
+<ul>
+  <li>Adds a query assertion the database keeps: the goal must have no answers (<code>"none"</code>) or at least one (<code>"some"</code>). Returns the invariant as written.</li>
+  <li>The goal is compiled and checked like a query's. The options record is read as written and must hold exactly <code>"assert"</code>.</li>
+  <li>The invariant must hold when added; otherwise it is not added.</li>
+  <li>After that, every <code>fact</code>, <code>retract</code>, and <code>rule</code> form is checked against every invariant once it has made all of its changes. A form that breaks one, or whose check fails, is undone and fails, leaving the database exactly as it was.</li>
+  <li>Adding an invariant the database already holds changes nothing. Invariants cannot be removed.</li>
+</ul>
+<lion-example name="invariant" expect="error">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["invariant", ["edge", "?x", "?x"], {"assert": "none"}],
+  ["fact", ["edge", "a", "b"], ["edge", "c", "c"]]]
+</lion-example>
+</article>

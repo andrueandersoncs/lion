@@ -1,0 +1,43 @@
+<article id="use-the-cli" data-title="Run programs from the command line" data-summary="Evaluate Lion files with the lion command, keep a logic database in a file between runs, and open the graph editor.">
+<p>This guide shows how to use the <code>lion</code> command from <code>@lionlang/cli</code>.</p>
+
+<h2>Install the command</h2>
+<code-block lang="shell">
+bun add --dev @lionlang/cli
+</code-block>
+<p>In a project, run it with <code>bun run lion</code>. Installed globally, it is just <code>lion</code>.</p>
+
+<h2>Evaluate a file</h2>
+<p>Write a program to a JSON file and pass the file's path. The result prints as formatted JSON:</p>
+<code-block lang="shell">
+echo '["number/add", 1, 2]' > add.json
+bun run lion add.json
+</code-block>
+<p>If the file is not valid JSON, or the program fails, <code>lion</code> prints the error and exits with status 1.</p>
+
+<h2>Keep a logic database in a file</h2>
+<p>Add <code>--database</code> with a path. The file is loaded before the program runs and saved after it succeeds, so relations, facts, rules, and invariants carry over to the next run:</p>
+<code-block lang="shell">
+bun run lion setup.json --database store.json
+bun run lion more-facts.json --database store.json
+</code-block>
+<ul>
+  <li>A database file that does not exist yet starts empty.</li>
+  <li>The file is a <a href="#save-and-load">snapshot</a>: an ordinary Lion program, one form and one fact per line, so it diffs well in version control.</li>
+  <li>If the program fails, for example because it would break an <a href="#enforce-rules">invariant</a>, the file is left as it was.</li>
+  <li>Running the same setup again keeps one copy of each rule and invariant.</li>
+</ul>
+
+<h2>Open the graph editor</h2>
+<code-block lang="shell">
+bun run lion repl
+bun run lion repl --host 0.0.0.0 --port 8080
+</code-block>
+<p>The editor listens on <code>127.0.0.1:3000</code> unless you pass <code>--host</code> or <code>--port</code>. Open the address it prints, then open a <code>.json</code> program.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#cli">Command line</a> lists every command and flag.</li>
+  <li><a href="#save-and-load">Save and load a logic database</a> shows the file format.</li>
+</ul>
+</article>

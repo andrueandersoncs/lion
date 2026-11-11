@@ -1,0 +1,36 @@
+<article id="sort-and-page" data-title="Sort, page, and check query answers" data-summary="Order answers by one or more variables, take a page of them, and make a query fail when it finds too few or too many.">
+<p>This guide shows how to use query options, the record after a query's goal.</p>
+
+<h2>Sort answers</h2>
+<p>Give <code>"order"</code> a variable name, or a list of them to break ties. A leading <code>-</code> sorts that variable from largest to smallest:</p>
+<lion-example name="Order">
+["begin",
+  ["relation", "score", ["player", "points"]],
+  ["fact", ["score", "ana", 12], ["score", "bo", 30], ["score", "cy", 30], ["score", "dee", 7]],
+  ["query", ["score", "?player", "?points"], {"order": ["-points", "player"]}]]
+</lion-example>
+
+<h2>Take a page</h2>
+<p><code>"offset"</code> skips answers and <code>"limit"</code> caps how many come back. Sort first, so pages are stable:</p>
+<lion-example name="Page">
+["begin",
+  ["relation", "score", ["player", "points"]],
+  ["fact", ["score", "ana", 12], ["score", "bo", 30], ["score", "cy", 30], ["score", "dee", 7]],
+  ["query", ["score", "?player", "?points"], {"order": "-points", "offset": 1, "limit": 2}]]
+</lion-example>
+
+<h2>Fail when there are no answers, or some</h2>
+<p><code>"assert": "some"</code> makes the query fail when it has no answers, and <code>"assert": "none"</code> when it has any. Use it to stop a program early when data is not as expected:</p>
+<lion-example name="Assert" expect="error">
+["begin",
+  ["relation", "score", ["player", "points"]],
+  ["fact", ["score", "ana", 12]],
+  ["query", ["score", "?player", "?points"], {"assert": "none"}]]
+</lion-example>
+<p>The assertion sees every answer, before <code>offset</code> and <code>limit</code>. To keep a check like this in force after every change, use an <a href="#enforce-rules">invariant</a>.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#query-options">Query options</a> describes each option and the order of values across types.</li>
+</ul>
+</article>

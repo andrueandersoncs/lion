@@ -121,9 +121,11 @@ const buildEditor = (codeBlock, label, source) => {
 };
 
 const buildOutput = (output, initialResult) => {
+  // An example that is meant to fail ships with its error already shown.
+  const failed = output.querySelector(".playground-status.is-error") !== null;
   output.innerHTML = `
     <div class="playground-bar">
-      <span class="playground-status is-ok" data-status>result</span>
+      <span class="playground-status ${failed ? "is-error" : "is-ok"}" data-status>${failed ? "error" : "result"}</span>
       <span class="playground-time" data-time></span>
       <span class="playground-actions">
         <button type="button" class="playground-btn" data-reset disabled>Reset</button>
@@ -133,7 +135,7 @@ const buildOutput = (output, initialResult) => {
       </span>
     </div>
     <div class="playground-logs" data-logs hidden></div>
-    <pre class="playground-result"><code data-result>${highlight(initialResult)}</code></pre>`;
+    <pre class="playground-result${failed ? " is-error" : ""}"><code data-result>${failed ? escapeHtml(initialResult) : highlight(initialResult)}</code></pre>`;
   output.setAttribute("aria-live", "polite");
   return {
     status: output.querySelector("[data-status]"),

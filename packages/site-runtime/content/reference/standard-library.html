@@ -1,0 +1,267 @@
+<article id="standard-library" data-title="Standard library" data-summary="Every function in Lion's default environment, by module: number, boolean, string, array, value, object, func, console, aggregate, and graph.">
+<p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each module's example below calls every function in the module.</p>
+<p>The <code>array</code>, <code>boolean</code>, <code>number</code>, <code>string</code>, and <code>value</code> modules are pure: called with a logic variable among their arguments, their functions wait until it is bound, so they work as filters and computed values in rules and queries. See <a href="#rule-calls">Function calls</a>.</p>
+
+<h2 id="module-number">number</h2>
+<p>Pure. Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="number/add"><td><code>["number/add", a, b]</code></td><td><code>a + b</code></td></tr>
+    <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
+    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b]</code></td><td><code>a × b</code></td></tr>
+    <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
+    <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
+    <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
+    <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
+    <tr data-entry="number/lessThanOrEqualTo"><td><code>["number/lessThanOrEqualTo", a, b]</code></td><td>Whether <code>a ≤ b</code></td></tr>
+    <tr data-entry="number/greaterThanOrEqualTo"><td><code>["number/greaterThanOrEqualTo", a, b]</code></td><td>Whether <code>a ≥ b</code></td></tr>
+  </tbody>
+</table>
+<lion-example name="number">
+{"add": ["number/add", 7, 3],
+ "subtract": ["number/subtract", 7, 3],
+ "multiply": ["number/multiply", 7, 3],
+ "divide": ["number/divide", 7, 2],
+ "equals?": ["number/equals?", 7, 7],
+ "lessThan": ["number/lessThan", 7, 3],
+ "greaterThan": ["number/greaterThan", 7, 3],
+ "lessThanOrEqualTo": ["number/lessThanOrEqualTo", 3, 3],
+ "greaterThanOrEqualTo": ["number/greaterThanOrEqualTo", 2, 3]}
+</lion-example>
+<lion-example name="Division by zero" expect="error">
+["number/divide", 1, 0]
+</lion-example>
+
+<h2 id="module-boolean">boolean</h2>
+<p>Pure. Every argument must be a boolean.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="boolean/not"><td><code>["boolean/not", a]</code></td><td>The negation of <code>a</code></td></tr>
+    <tr data-entry="boolean/and"><td><code>["boolean/and", a, b]</code></td><td>Whether both are true</td></tr>
+    <tr data-entry="boolean/or"><td><code>["boolean/or", a, b]</code></td><td>Whether either is true</td></tr>
+    <tr data-entry="boolean/xor"><td><code>["boolean/xor", a, b]</code></td><td>Whether exactly one is true</td></tr>
+    <tr data-entry="boolean/nand"><td><code>["boolean/nand", a, b]</code></td><td>Whether not both are true</td></tr>
+    <tr data-entry="boolean/nor"><td><code>["boolean/nor", a, b]</code></td><td>Whether neither is true</td></tr>
+    <tr data-entry="boolean/equals?"><td><code>["boolean/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
+  </tbody>
+</table>
+<lion-example name="boolean">
+{"not": ["boolean/not", true],
+ "and": ["boolean/and", true, false],
+ "or": ["boolean/or", true, false],
+ "xor": ["boolean/xor", true, false],
+ "nand": ["boolean/nand", true, true],
+ "nor": ["boolean/nor", false, false],
+ "equals?": ["boolean/equals?", true, true]}
+</lion-example>
+
+<h2 id="module-string">string</h2>
+<p>Pure. Every argument must be a string. Functions that search take the text first. Lengths and positions count UTF-16 code units, as JavaScript does.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="string/length"><td><code>["string/length", text]</code></td><td>The length of <code>text</code></td></tr>
+    <tr data-entry="string/concat"><td><code>["string/concat", a, b]</code></td><td><code>a</code> followed by <code>b</code></td></tr>
+    <tr data-entry="string/startsWith"><td><code>["string/startsWith", text, prefix]</code></td><td>Whether <code>text</code> starts with <code>prefix</code></td></tr>
+    <tr data-entry="string/endsWith"><td><code>["string/endsWith", text, suffix]</code></td><td>Whether <code>text</code> ends with <code>suffix</code></td></tr>
+    <tr data-entry="string/includes"><td><code>["string/includes", text, search]</code></td><td>Whether <code>text</code> contains <code>search</code></td></tr>
+    <tr data-entry="string/indexOf"><td><code>["string/indexOf", text, search]</code></td><td>The position of the first <code>search</code> in <code>text</code>, or <code>-1</code></td></tr>
+    <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
+  </tbody>
+</table>
+<lion-example name="string">
+{"length": ["string/length", "lion"],
+ "concat": ["string/concat", "lion", "ized"],
+ "startsWith": ["string/startsWith", "lion", "li"],
+ "endsWith": ["string/endsWith", "lion", "on"],
+ "includes": ["string/includes", "lion", "io"],
+ "indexOf": ["string/indexOf", "lion", "o"],
+ "missing": ["string/indexOf", "lion", "z"],
+ "equals?": ["string/equals?", "lion", "lion"]}
+</lion-example>
+
+<h2 id="module-array">array</h2>
+<p>Pure. List arguments must be lists; function arguments are called with each item.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="array/make"><td><code>["array/make", item, ...]</code></td><td>A list of the evaluated items</td></tr>
+    <tr data-entry="array/range"><td><code>["array/range", start, end]</code></td><td>Whole numbers from <code>start</code> up to, but not including, <code>end</code>; at most 1,000,000 of them. Both must be whole numbers.</td></tr>
+    <tr data-entry="array/length"><td><code>["array/length", list]</code></td><td>The number of items</td></tr>
+    <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item, or <code>null</code> for an empty list</td></tr>
+    <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first; <code>[]</code> for an empty list</td></tr>
+    <tr data-entry="array/concat"><td><code>["array/concat", a, b]</code></td><td>The items of <code>a</code> followed by those of <code>b</code></td></tr>
+    <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
+    <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
+    <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
+    <tr data-entry="array/reduce"><td><code>["array/reduce", list, initial, function]</code></td><td>The result of calling <code>function</code> with the running value, starting at <code>initial</code>, and each item in turn</td></tr>
+  </tbody>
+</table>
+<lion-example name="array">
+{"make": ["array/make", 1, 2, 3],
+ "range": ["array/range", 0, 4],
+ "length": ["array/length", ["array/make", 1, 2, 3]],
+ "head": ["array/head", ["array/make", 1, 2, 3]],
+ "tail": ["array/tail", ["array/make", 1, 2, 3]],
+ "concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
+ "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
+ "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],
+ "flat-map": ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]],
+ "reduce": ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]]}
+</lion-example>
+
+<h2 id="module-value">value</h2>
+<p>Pure. Predicates tell JSON's kinds of value apart: <code>value/object?</code> is true for records, and <code>value/array?</code> for lists.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="value/number?"><td><code>["value/number?", x]</code></td><td>Whether <code>x</code> is a number</td></tr>
+    <tr data-entry="value/string?"><td><code>["value/string?", x]</code></td><td>Whether <code>x</code> is a string</td></tr>
+    <tr data-entry="value/boolean?"><td><code>["value/boolean?", x]</code></td><td>Whether <code>x</code> is a boolean</td></tr>
+    <tr data-entry="value/null?"><td><code>["value/null?", x]</code></td><td>Whether <code>x</code> is <code>null</code></td></tr>
+    <tr data-entry="value/array?"><td><code>["value/array?", x]</code></td><td>Whether <code>x</code> is a list</td></tr>
+    <tr data-entry="value/object?"><td><code>["value/object?", x]</code></td><td>Whether <code>x</code> is a record, or another object that is not a list, such as a host object</td></tr>
+    <tr data-entry="value/function?"><td><code>["value/function?", x]</code></td><td>Whether <code>x</code> is a function</td></tr>
+    <tr data-entry="value/undefined?"><td><code>["value/undefined?", x]</code></td><td>Whether <code>x</code> is JavaScript's <code>undefined</code>, which only host values produce</td></tr>
+    <tr data-entry="value/symbol?"><td><code>["value/symbol?", x]</code></td><td>Whether <code>x</code> is a JavaScript symbol</td></tr>
+    <tr data-entry="value/identity"><td><code>["value/identity", x]</code></td><td><code>x</code></td></tr>
+  </tbody>
+</table>
+<lion-example name="value">
+{"number?": ["value/number?", 1],
+ "string?": ["value/string?", "a"],
+ "boolean?": ["value/boolean?", false],
+ "null?": ["value/null?", null],
+ "array?": ["value/array?", ["array/make"]],
+ "object? of a record": ["value/object?", {}],
+ "object? of a list": ["value/object?", ["array/make"]],
+ "function?": ["value/function?", "number/add"],
+ "undefined?": ["value/undefined?", null],
+ "identity": ["value/identity", 42]}
+</lion-example>
+
+<h2 id="module-object">object</h2>
+<p>For records and host objects. Paths are dot-separated keys; a numeric segment indexes a list. Keys belong to objects, so reading one needs an object, but a method can belong to any value except <code>null</code>, so the method functions also work on strings, numbers, and lists.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="object/get"><td><code>["object/get", object, key]</code></td><td>The value under <code>key</code>, or <code>null</code> when there is none. Fails with <code>NotAnObjectError</code> for a non-object.</td></tr>
+    <tr data-entry="object/get-path"><td><code>["object/get-path", object, path]</code></td><td>The value at <code>path</code>, such as <code>"users.1.name"</code>. Fails with <code>KeyNotFoundError</code>, <code>IndexOutOfBoundsError</code>, <code>NotAnArrayError</code>, or <code>PathTraversalError</code> when the path does not lead to a value.</td></tr>
+    <tr data-entry="object/keys"><td><code>["object/keys", record]</code></td><td>The record's keys</td></tr>
+    <tr data-entry="object/values"><td><code>["object/values", record]</code></td><td>The record's values</td></tr>
+    <tr data-entry="object/json-stringify"><td><code>["object/json-stringify", object, replacer, space]</code></td><td>The object as JSON text, like <code>JSON.stringify</code></td></tr>
+    <tr data-entry="object/call-method"><td><code>["object/call-method", value, name, argument, ...]</code></td><td>The result of calling <code>value</code>'s method <code>name</code>. Fails with <code>NotAFunctionError</code> when there is no such method, and <code>NotAnObjectError</code> when <code>value</code> is <code>null</code>.</td></tr>
+    <tr data-entry="object/get-method"><td><code>["object/get-method", value, name]</code></td><td>The method <code>name</code> of <code>value</code>, bound to it. Fails like <code>object/call-method</code>.</td></tr>
+    <tr data-entry="object/call-method-path"><td><code>["object/call-method-path", object, path, argument, ...]</code></td><td>The result of calling the method at the end of <code>path</code>, with <code>this</code> set to the value before it. Every value the path passes through must be an object; the last can be any value except <code>null</code>.</td></tr>
+    <tr data-entry="object/get-method-path"><td><code>["object/get-method-path", object, path]</code></td><td>The method at the end of <code>path</code>, bound to the value before it</td></tr>
+    <tr data-entry="object/new"><td><code>["object/new", class, argument, ...]</code></td><td>A new instance of <code>class</code>. Fails with <code>NotAConstructorError</code> for a non-function.</td></tr>
+  </tbody>
+</table>
+<lion-example name="object">
+["begin",
+  ["define", "data", ["quote", {"users": [{"name": "ana"}, {"name": "bo"}], "port": 8080}]],
+  {"get": ["object/get", "data", "port"],
+   "get-path": ["object/get-path", "data", "users.1.name"],
+   "keys": ["object/keys", "data"],
+   "values": ["object/values", ["quote", {"a": 1, "b": 2}]],
+   "json-stringify": ["object/json-stringify", ["quote", {"a": [1, 2]}], null, 0],
+   "missing": ["object/get", "data", "host"],
+   "call-method": ["object/call-method", "lion", "toUpperCase"],
+   "call-method-path": ["object/call-method-path", "data", "users.0.name.toUpperCase"],
+   "get-method": [["object/get-method", ["array/make", 1, 2], "join"], "+"]}]
+</lion-example>
+
+<h2 id="module-func">func</h2>
+<p>For working with functions, especially host functions.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own</td></tr>
+    <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
+    <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
+    <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
+  </tbody>
+</table>
+<lion-example name="func">
+{"partial": [["func/partial", "number/add", 10], 5],
+ "apply": ["func/apply", "number/subtract", null, 10, 4],
+ "bind": [["func/bind", "number/multiply", null, 3], 7]}
+</lion-example>
+
+<h2 id="module-console">console</h2>
+<p>Effects for output. On this page, output appears above the result.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th></tr></thead>
+  <tbody>
+    <tr data-entry="console/log"><td><code>["console/log", message]</code></td><td>Prints <code>message</code> and returns it</td></tr>
+    <tr data-entry="console/log-json"><td><code>["console/log-json", value]</code></td><td>Prints <code>value</code> as indented JSON and returns that text</td></tr>
+  </tbody>
+</table>
+<lion-example name="console">
+["begin",
+  ["console/log", "starting"],
+  ["console/log-json", {"step": 1}],
+  "done"]
+</lion-example>
+
+<h2 id="module-aggregate">aggregate</h2>
+<p>Called on a list, each function combines the list. Called on a logic variable or computed value in a rule's head, each becomes an aggregate over the rule's matches, grouped by the head's other columns; see <a href="#summarize-groups">Summarize groups of facts</a>. Each function takes exactly one argument.</p>
+<table>
+  <thead><tr><th>Function</th><th>Returns</th><th>Of nothing</th></tr></thead>
+  <tbody>
+    <tr data-entry="aggregate/count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/countUnique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The mean; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/shortest"><td><code>["aggregate/shortest", values]</code></td><td>The shortest list or string; ties go to the smaller value. Lattice.</td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/union"><td><code>["aggregate/union", values]</code></td><td>Every item of every list, distinct and sorted. Lattice.</td><td><code>[]</code></td></tr>
+    <tr data-entry="aggregate/collect"><td><code>["aggregate/collect", values]</code></td><td>Every value, sorted, duplicates kept</td><td><code>[]</code></td></tr>
+    <tr data-entry="aggregate/unique"><td><code>["aggregate/unique", values]</code></td><td>The distinct values, sorted</td><td><code>[]</code></td></tr>
+  </tbody>
+</table>
+<p>Lattice aggregates only move one way as values arrive, so they may aggregate through recursion. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
+<lion-example name="aggregate">
+["begin",
+  ["define", "values", ["array/make", 3, 1, 3, 2]],
+  {"count": ["aggregate/count", "values"],
+   "countUnique": ["aggregate/countUnique", "values"],
+   "sum": ["aggregate/sum", "values"],
+   "mean": ["aggregate/mean", "values"],
+   "min": ["aggregate/min", "values"],
+   "max": ["aggregate/max", "values"],
+   "shortest": ["aggregate/shortest", ["quote", [[1, 2], [3], "ab"]]],
+   "union": ["aggregate/union", ["quote", [[2, 1], [3, 1]]]],
+   "collect": ["aggregate/collect", "values"],
+   "unique": ["aggregate/unique", "values"]}]
+</lion-example>
+
+<h2 id="module-graph">graph</h2>
+<p>Algorithms over an edge relation whose first two columns are from and to. Each call is a goal: give the edge relation, any other inputs as values, then one term per output column. Results never depend on the order facts were added.</p>
+<table>
+  <thead><tr><th>Goal</th><th>Rows</th></tr></thead>
+  <tbody>
+    <tr data-entry="graph/shortestPath"><td><code>["graph/shortestPath", edges, start, to, cost, path]</code></td><td>Dijkstra's algorithm from <code>start</code>, in order of cost, starting with <code>start</code> itself at cost 0. A third edge column is the weight, at least 0; without one, each edge costs 1.</td></tr>
+    <tr data-entry="graph/pageRank"><td><code>["graph/pageRank", edges, node, rank]</code></td><td>PageRank with damping 0.85, rounded to 6 decimal places. Ranks add up to 1.</td></tr>
+    <tr data-entry="graph/components"><td><code>["graph/components", edges, node, component]</code></td><td>Connected components, ignoring direction, named after their smallest node</td></tr>
+    <tr data-entry="graph/stronglyConnected"><td><code>["graph/stronglyConnected", edges, node, component]</code></td><td>Strongly connected components, named after their smallest node</td></tr>
+    <tr data-entry="graph/topologicalOrder"><td><code>["graph/topologicalOrder", edges, node, position]</code></td><td>Positions from 0 in a topological order, or an error that names a cycle</td></tr>
+  </tbody>
+</table>
+<lion-example name="graph">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "c", "d"]],
+  {"shortestPath": ["query", ["graph/shortestPath", "edge", "a", "d", "?cost", "?path"]],
+   "pageRank": ["query", ["graph/pageRank", "edge", "?node", "?rank"], {"order": "-rank", "limit": 1}],
+   "components": ["query", ["graph/components", "edge", "?node", "?c"], {"limit": 1}],
+   "stronglyConnected": ["query", ["graph/stronglyConnected", "edge", "c", "?c"]],
+   "topologicalOrder": ["query", ["graph/topologicalOrder", "edge", "?node", "?position"], {"order": "position"}]}]
+</lion-example>
+
+<h2 id="module-symbols">Module symbols</h2>
+<p>Every module except <code>console</code> also binds <code>module/symbol</code>, such as <code>number/symbol</code>, to a JavaScript symbol that identifies the module.</p>
+</article>

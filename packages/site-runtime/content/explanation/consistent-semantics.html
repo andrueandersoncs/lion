@@ -1,0 +1,29 @@
+<article id="consistent-semantics" data-title="One set of rules for every feature" data-summary="Why Lion's features share the same few rules, how that follows from the principle of least astonishment, and how Lion settles the places where JavaScript and JSON disagree.">
+<p>Lion is small, and its value comes from features that combine: a query option inside an invariant, a graph algorithm under <code>not</code>, a snapshot run by the command line. Features only combine well if they agree on the basics. This page explains the rules they share, and the principle behind them.</p>
+
+<h2>The principle of least astonishment</h2>
+<p>A feature should do what someone who already knows Lion expects, both on its own and next to every other feature. In practice that means reusing what exists before inventing more, and when a feature needs a rule, following the rule a similar feature already has. A user who learns one rule then knows how every feature behaves.</p>
+
+<h2>Reuse before invention</h2>
+<p>Invariants are the clearest example. Lion already had a way to say "this question must have no answers": the query option <code>"assert": "none"</code>. An invariant is that same assertion, kept by the database. It takes the same option, compiles its goal like a query, is answered by the same engine, and fails with the same words. There is no second vocabulary to learn, and anything a query can ask, an invariant can require.</p>
+
+<h2>Changes are all or nothing</h2>
+<p>Every form that changes the database, <code>fact</code>, <code>retract</code>, or <code>rule</code>, either completes or changes nothing. This one rule answers many questions at once. What happens to the facts before a bad one in a <code>retract</code>? Nothing, because the form fails as a whole. What does a broken invariant leave behind? Nothing, because the change is undone, down to the order facts come back in. What if checking an invariant itself fails? The same: the change is undone.</p>
+<p>The unit of change is one form, not one run. That keeps the rule simple and lets several facts that only make sense together go in a single <code>fact</code> form, while each later form is checked against the result.</p>
+
+<h2>Adding what is held changes nothing</h2>
+<p>Facts are a set, so adding a fact twice changes nothing; declaring a relation twice the same way changes nothing. Rules and invariants follow the same rule: adding one the database already holds, one a snapshot would write the same way, changes nothing. Before this was true for rules, running a setup program twice against a saved database added each rule again, and aggregates silently counted every match twice. One rule for every kind of definition removed that whole class of surprise.</p>
+
+<h2>Equivalent programs behave the same</h2>
+<p>A snapshot is a program that rebuilds the database, so loading one must give the same answers, and saving again must give the same program. Goal-directed and full evaluation must give the same answers. A name and the value bound to it are the same inside a rule, because rules hold values as evaluated. Each of these is tested as a property over generated programs, so a change that breaks one fails the test suite.</p>
+
+<h2>Where JavaScript and JSON disagree</h2>
+<p>Lion runs on JavaScript, but its values are JSON, and the two disagree in a few places. Each time, Lion follows JSON, and applies the choice everywhere it comes up:</p>
+<ul>
+  <li><strong>Numbers are finite.</strong> JavaScript has <code>Infinity</code> and <code>NaN</code>; JSON does not. So arithmetic whose result is not a finite number, such as dividing by zero, fails with <code>ArithmeticError</code> rather than producing a value that cannot be printed, stored as a fact, or saved in a snapshot. Facts and rule results already refused such numbers; the <code>number</code> functions and list aggregates now refuse them at the source.</li>
+  <li><strong>Nothing is <code>null</code>.</strong> JavaScript has both <code>undefined</code> and <code>null</code>; JSON only has <code>null</code>. So every "there is nothing here" answer is <code>null</code>: a missing key from <code>object/get</code>, the first item of an empty list, the mean of no values, a <code>cond</code> with no match.</li>
+  <li><strong>Records and lists are different kinds.</strong> To JavaScript's <code>typeof</code>, a list is an object; to JSON, it is not. So <code>value/object?</code> is true for records and not for lists, and <code>value/array?</code> is the test for lists.</li>
+  <li><strong>Keys belong to objects; methods belong to any value.</strong> Reading a key needs an object, so <code>object/get</code> and paths pass only through objects. But a string has methods, as JavaScript's <code>"lion".toUpperCase()</code> shows, so every method function works on any value except <code>null</code>.</li>
+</ul>
+<p>One difference remains by design: without the <code>"order"</code> query option, the order of answers is deterministic for a given program and version of Lion, but not part of the language. Sort when order matters.</p>
+</article>

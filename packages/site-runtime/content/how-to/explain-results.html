@@ -1,0 +1,56 @@
+<article id="explain-results" data-title="Explain a result" data-summary="Find out why a fact holds: which rule derived it, from which facts, all the way down.">
+<p>This guide shows how to use <code>why</code> to trace a derived fact back to its sources.</p>
+
+<h2>Ask why a fact holds</h2>
+<p>Give <code>why</code> the fact, with no variables:</p>
+<lion-example name="Why">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["why", ["path", "a", "c"]]]
+</lion-example>
+<p>Each level names the <code>fact</code>, the <code>rule</code> that derived it, and the facts <code>because</code> of which it holds. A fact you added says <code>"given": true</code>.</p>
+
+<h2>Read filters and negations</h2>
+<p>Filters appear as <code>check</code>, with the values they were called on, and negations as <code>absent</code>, with the pattern that had no match:</p>
+<lion-example name="Why with filters">
+["begin",
+  ["relation", "user", ["name", "age"]],
+  ["relation", "banned", ["name"]],
+  ["relation", "eligible", ["name"]],
+  ["fact", ["user", "ana", 34]],
+  ["rule", ["eligible", "?n"],
+    ["user", "?n", "?age"],
+    ["number/greaterThan", "?age", 18],
+    ["not", ["banned", "?n"]]],
+  ["why", ["eligible", "ana"]]]
+</lion-example>
+
+<h2>See what an aggregate combined</h2>
+<p>For an aggregated fact, <code>why</code> lists every match it combined under <code>matches</code>. For <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the one match that produced the value.</p>
+<lion-example name="Why an aggregate">
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20]],
+  ["rule", ["spend", "?c", ["aggregate/sum", "?a"]], ["order", "?_", "?c", "?a"]],
+  ["why", ["spend", "ana", 50]]]
+</lion-example>
+
+<h2>Handle facts that do not hold</h2>
+<p><code>why</code> returns <code>null</code> when the fact does not hold, so you can test the result:</p>
+<lion-example name="Why not">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["fact", ["edge", "a", "b"]],
+  ["why", ["edge", "b", "a"]]]
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-why"><code>why</code></a> in the reference.</li>
+</ul>
+</article>

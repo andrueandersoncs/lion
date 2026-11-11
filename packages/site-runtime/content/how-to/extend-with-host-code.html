@@ -1,0 +1,78 @@
+<article id="extend-with-host-code" data-title="Add your own functions and algorithms" data-summary="Give Lion programs your own values and functions, make functions usable inside logic rules, and add graph-style algorithms.">
+<p>This guide shows how to extend the environment from TypeScript. It assumes you can already <a href="#run-from-typescript">run Lion from TypeScript</a>.</p>
+
+<h2>Add a function</h2>
+<p>Bind a function under a namespaced name. It receives evaluated arguments and returns a plain value or an Effect:</p>
+<code-block lang="ts">
+import { Effect } from "effect";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
+
+const env = {
+  ...stdlib,
+  "text/upper": (text: string) => text.toUpperCase(),
+  "shop/stock": (sku: string) => Effect.promise(() => fetchStock(sku)),
+};
+
+await Effect.runPromise(run(["text/upper", "lion"], env)); // => "LION"
+</code-block>
+<p>Return an Effect for anything asynchronous or anything that can fail, so Lion can wait for it and report failures as typed errors.</p>
+
+<h2>Add a module of functions</h2>
+<p><code>namespaceEntries</code> prefixes every key of a record, the way the standard library is built:</p>
+<code-block lang="ts">
+import { namespaceEntries, stdlib } from "@lionlang/core/modules";
+
+const text = {
+  upper: (s: string) => s.toUpperCase(),
+  lower: (s: string) => s.toLowerCase(),
+};
+
+const env = { ...stdlib, ...namespaceEntries("text", text) };
+// "text/upper" and "text/lower"
+</code-block>
+
+<h2>Make functions usable inside rules</h2>
+<p>In a rule or query, an ordinary function would run immediately, before its logic variables have values. Mark a module pure with <code>markPure</code>: its functions then wait until their variables are bound, so they work as filters and computed values, as <code>number/</code> and <code>string/</code> do.</p>
+<code-block lang="ts">
+import { markPure } from "@lionlang/core/logic/terms";
+
+const text = markPure({
+  upper: (s: string) => s.toUpperCase(),
+  "long?": (s: string) => s.length > 8,
+});
+
+const env = { ...stdlib, ...namespaceEntries("text", text) };
+// ["rule", ["shout", "?n", ["text/upper", "?n"]], ["name", "?n"]]
+</code-block>
+<p>Only mark functions pure if they always return the same result for the same arguments and have no side effects; the engine may call them any number of times, in any order.</p>
+
+<h2>Add an algorithm</h2>
+<p>For work that rules do badly, <code>defineAlgorithm</code> turns a function over whole relations into a goal, like those in the <code>graph</code> module. It receives each relation input as its tuples and each value input as itself, and returns rows, or a string that explains why it cannot:</p>
+<code-block lang="ts">
+import { defineAlgorithm } from "@lionlang/core/logic/algorithms";
+
+const outDegree = defineAlgorithm({
+  name: "my/outDegree",
+  inputs: [{ kind: "relation", name: "edges" }],
+  columns: ["node", "degree"],
+  run: ([edges]) => {
+    const counts = new Map&lt;unknown, number&gt;();
+    for (const [from] of edges as unknown[][]) {
+      counts.set(from, (counts.get(from) ?? 0) + 1);
+    }
+    return [...counts];
+  },
+});
+
+const env = { ...stdlib, "my/outDegree": outDegree };
+// ["query", ["my/outDegree", "edge", "?node", "?degree"]]
+</code-block>
+<p>The engine runs the algorithm once its input relations are complete, and its rows can feed rules, <code>not</code>, and aggregates. <code>why</code> marks them as computed.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#typescript-api">TypeScript API</a> describes <code>markPure</code>, <code>namespaceEntries</code>, and <code>defineAlgorithm</code>.</li>
+  <li><a href="#logic-programming">How Lion answers logic questions</a> explains deferred calls.</li>
+</ul>
+</article>
