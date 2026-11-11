@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-11 — @lionlang/core 0.5.0, @lionlang/cli 0.4.0
+
+### Added
+
+- Invariants. `["invariant", goal, {"assert": "none"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `"some"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.
+- [lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.
+- `ArithmeticError`, raised when arithmetic has no finite result.
+
+### Changed
+
+- `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.
+- Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.
+- `value/object?` is true for records and other objects, but no longer for lists.
+- `object/get` returns `null` for a missing key instead of `undefined`.
+- `object/get-method`, `object/get-method-path`, and `object/call-method-path` work on any value except `null`, as `object/call-method` does.
+- `in`, `snapshot`, and `invariant` are reserved names, like the other special forms.
+- `@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.
+
+### Fixed
+
+- Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing.
+- A `retract` with one invalid fact still removed the facts listed before it. Every form that changes the database is now all or nothing.
+- `array/head` and `array/tail` crashed on an empty list; they return `null` and `[]`.
+- `func/apply` returned an Effect that never ran instead of the function's result.
+- `string/indexOf` returned an Effect `Option` instead of a number.
+- `object/call-method` on `null` crashed with a `TypeError`; it fails with `NotAnObjectError`.
+- Errors from the `object` module had no message, so the CLI printed only "An error occurred". Each now says what went wrong, such as `There is no key "email".`
+
 ## 2026-11-10 — @lionlang/core 0.4.0, @lionlang/cli 0.3.0
 
 ### Added
