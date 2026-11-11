@@ -10,6 +10,7 @@ import {
   type Goal,
   isGoal,
   LogicVariable,
+  logicKey,
   Membership,
   Negation,
   render,
@@ -39,6 +40,13 @@ export interface CompiledRule {
    */
   readonly definition?: readonly unknown[];
   readonly head: Atom;
+  /**
+   * Equal for rule forms a snapshot would write the same way, so adding a
+   * rule the database already holds changes nothing. Alternatives of one `or`
+   * share it. Undefined for rules that hold a value with no written form,
+   * such as a lambda, and for rules made by the query rewrite.
+   */
+  readonly key?: string;
   /** The rendered `rule` form. Alternatives of one `or` share it. */
   readonly source: unknown;
 }
@@ -383,6 +391,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
     const aggregates = head.args.flatMap((arg, position) =>
       arg instanceof Aggregate ? [position] : []
     );
+    const key = logicKey(definition);
     const rules: CompiledRule[] = [];
     for (const literals of expanded) {
       const ordered = planLiterals(literals);
@@ -398,7 +407,14 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
           `Unsafe rule head ${show(head)}: ${[...new Set(unbound)].map((name) => `?${name}`).join(", ")} never appears in a relation in the body.`
         );
       }
-      rules.push({ aggregates, head, body: ordered, definition, source });
+      rules.push({
+        aggregates,
+        head,
+        body: ordered,
+        definition,
+        source,
+        ...(key === undefined ? {} : { key }),
+      });
     }
     return rules;
   });

@@ -8,6 +8,7 @@ import {
   planLiterals,
 } from "@/logic/compile";
 import { type MagicProgram, originalName, rewriteQueries } from "@/logic/magic";
+import { type Assertion, assertionProblem } from "@/logic/query-options";
 import {
   Aggregate,
   Atom,
@@ -16,6 +17,7 @@ import {
   isGroundValue,
   isLogicTerm,
   LogicVariable,
+  logicKey,
   makeRelationValue,
   type RelationInfo,
   render,
@@ -163,13 +165,30 @@ export interface LogicDatabaseOptions {
 }
 
 /**
- * Relations, base facts, and rules for one evaluation. The derived model is
- * computed on demand and cached until a fact or rule changes.
+ * A goal the database must never answer ("none"), or must always answer
+ * ("some"). Every change to facts or rules is checked against it.
+ */
+export interface Invariant {
+  readonly assert: Assertion;
+  /** The evaluated goal, so a snapshot can write the invariant back out. */
+  readonly goal: unknown;
+  /**
+   * Equal for invariants a snapshot would write the same way. Set when the
+   * database adds the invariant; undefined when it has no written form.
+   */
+  readonly key?: string;
+  readonly queries: readonly CompiledQuery[];
+}
+
+/**
+ * Relations, base facts, rules, and invariants for one evaluation. The
+ * derived model is computed on demand and cached until a fact or rule changes.
  */
 export class LogicDatabase {
   readonly relations = new Map<string, RelationInfo>();
   readonly facts = new Map<string, TupleSet>();
   rules: readonly CompiledRule[] = [];
+  invariants: readonly Invariant[] = [];
   version = 0;
   cache: { readonly model: Model; readonly version: number } | undefined;
   /** Models for goal-directed queries, by query, for the current version. */
@@ -304,6 +323,106 @@ const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
     (rule) => rule.head.relation.name === relation && rule.aggregates.length > 0
   );
 
+/**
+ * Undoes a change to the database, or is undefined when the change left the
+ * database as it was.
+ */
+type Undo = (() => void) | undefined;
+
+/**
+ * Adds and removes facts for one change. While the database has invariants,
+ * a change writes to copies of the fact sets it touches and swaps them in, so
+ * undoing it puts back the very sets it replaced, with their facts in the
+ * same order. Without invariants nothing can fail after the change, so it
+ * writes in place.
+ */
+class FactChange {
+  private readonly copies = new Map<string, TupleSet>();
+  private changed = false;
+  private readonly database: LogicDatabase;
+  private readonly undoable: boolean;
+
+  constructor(database: LogicDatabase) {
+    this.database = database;
+    this.undoable = database.invariants.length > 0;
+  }
+
+  /** The facts of a relation, to read and write during this change. */
+  facts(relation: string): TupleSet | undefined {
+    const live = this.database.facts.get(relation);
+    if (live === undefined || !this.undoable) {
+      return live;
+    }
+    return getOrCreate(this.copies, relation, () => live.clone());
+  }
+
+  add(facts: TupleSet, tuple: Tuple): void {
+    if (facts.add(tuple)) {
+      this.changed = true;
+    }
+  }
+
+  delete(facts: TupleSet, tuple: Tuple): boolean {
+    const deleted = facts.delete(tuple);
+    this.changed ||= deleted;
+    return deleted;
+  }
+
+  /** Puts the changed facts in place, and returns how to undo that. */
+  apply(): Undo {
+    if (!this.changed) {
+      return undefined;
+    }
+    const originals = new Map<string, TupleSet>();
+    for (const [relation, copy] of this.copies) {
+      const original = this.database.facts.get(relation);
+      if (original !== undefined) {
+        originals.set(relation, original);
+      }
+      this.database.facts.set(relation, copy);
+    }
+    return () => {
+      for (const [relation, original] of originals) {
+        this.database.facts.set(relation, original);
+      }
+    };
+  }
+}
+
+/**
+ * Makes a change, then checks every invariant. When a check fails, or an
+ * invariant does not hold, the change is undone, so a form that changes the
+ * database either completes or leaves the database as it was. `describe`
+ * starts the message, such as "Adding this rule".
+ */
+const commit = (
+  database: LogicDatabase,
+  describe: string,
+  change: () => Undo
+) =>
+  Effect.suspend(() => {
+    const undo = change();
+    if (undo === undefined) {
+      return Effect.void;
+    }
+    touch(database);
+    return checkInvariants(
+      database,
+      database.invariants,
+      `${describe} breaks an invariant, so nothing changed.`
+    ).pipe(
+      Effect.onError(() =>
+        Effect.sync(() => {
+          undo();
+          touch(database);
+        })
+      )
+    );
+  });
+
+const these = (atoms: readonly Atom[]) =>
+  atoms.length === 1 ? "this fact" : "these facts";
+
 export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
@@ -315,32 +434,55 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       }
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
-    for (const [atom, tuple] of tuples) {
-      const facts = database.facts.get(atom.relation.name);
-      const key = database.relations.get(atom.relation.name)?.key;
-      if (facts !== undefined && key !== undefined) {
-        // A fact with a key that is already present replaces the old row.
-        const keyValues = key.map((position) => tuple[position]);
-        for (const old of [...facts.lookup(key, keyValues)]) {
-          facts.delete(old);
-        }
+    yield* commit(database, `Adding ${these(atoms)}`, () => {
+      const change = new FactChange(database);
+      for (const [atom, tuple] of tuples) {
+        // The declared relation decides the key, as when the fact was checked.
+        const { name } = atom.relation;
+        addFact(change, database.relations.get(name) ?? atom.relation, tuple);
       }
-      facts?.add(tuple);
-    }
-    touch(database);
+      return change.apply();
+    });
     return atoms.map(render);
   });
 
-export const retractFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
-  Effect.gen(function* () {
-    const removed: unknown[] = [];
-    for (const atom of atoms) {
-      const tuple = yield* groundTuple(database, atom);
-      if (database.facts.get(atom.relation.name)?.delete(tuple)) {
-        removed.push(render(atom));
+/** Adds a fact. One whose key is already present replaces the old row. */
+const addFact = (change: FactChange, relation: RelationInfo, tuple: Tuple) => {
+  const facts = change.facts(relation.name);
+  if (facts === undefined) {
+    return;
+  }
+  const { key } = relation;
+  if (key !== undefined) {
+    const keyValues = key.map((position) => tuple[position]);
+    for (const old of [...facts.lookup(key, keyValues)]) {
+      if (valueKey(old) !== valueKey(tuple)) {
+        change.delete(facts, old);
       }
     }
-    touch(database);
+  }
+  change.add(facts, tuple);
+};
+
+export const retractFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
+  Effect.gen(function* () {
+    // Every fact is checked before any is removed, so a retract that fails
+    // removes nothing.
+    const tuples: (readonly [Atom, Tuple])[] = [];
+    for (const atom of atoms) {
+      tuples.push([atom, yield* groundTuple(database, atom)] as const);
+    }
+    const removed: unknown[] = [];
+    yield* commit(database, `Retracting ${these(atoms)}`, () => {
+      const change = new FactChange(database);
+      for (const [atom, tuple] of tuples) {
+        const facts = change.facts(atom.relation.name);
+        if (facts !== undefined && change.delete(facts, tuple)) {
+          removed.push(render(atom));
+        }
+      }
+      return change.apply();
+    });
     return removed;
   });
 
@@ -607,10 +749,21 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
   return undefined;
 };
 
+/**
+ * Adds rules. A rule the database already holds, one a snapshot would write
+ * the same way, is not added again, so adding it changes nothing.
+ */
 export const addRules = (
   database: LogicDatabase,
-  rules: readonly CompiledRule[]
-): Effect.Effect<void, LogicError> => {
+  added: readonly CompiledRule[]
+): LogicEffect<void> => {
+  const held = new Set(database.rules.map((rule) => rule.key));
+  const rules = added.filter(
+    (rule) => rule.key === undefined || !held.has(rule.key)
+  );
+  if (rules.length === 0) {
+    return Effect.void;
+  }
   for (const rule of rules) {
     const { computed, name } = rule.head.relation;
     if (computed !== undefined) {
@@ -633,14 +786,18 @@ export const addRules = (
       );
     }
   }
-  const next = [...database.rules, ...rules];
+  const previous = database.rules;
+  const next = [...previous, ...rules];
   const problem = checkProgram(next);
   if (problem !== undefined) {
     return fail(problem);
   }
-  database.rules = next;
-  touch(database);
-  return Effect.void;
+  return commit(database, "Adding this rule", () => {
+    database.rules = next;
+    return () => {
+      database.rules = previous;
+    };
+  });
 };
 
 const evaluateCall = (call: DeferredCall, vars: ReadonlyMap<string, unknown>) =>
@@ -1558,6 +1715,55 @@ export const queryDatabase = (
       }
     }
     return [...rows.values()];
+  });
+
+/**
+ * Answers each invariant's goal as a query would, and fails with the first
+ * one whose answers break its assertion. `context` starts the message.
+ */
+const checkInvariants = (
+  database: LogicDatabase,
+  invariants: readonly Invariant[],
+  context: string
+) =>
+  Effect.gen(function* () {
+    for (const invariant of invariants) {
+      const rows = yield* queryDatabase(database, invariant.queries);
+      const problem = assertionProblem(
+        "invariant",
+        invariant.assert,
+        rows,
+        invariant.goal
+      );
+      if (problem !== undefined) {
+        return yield* fail(`${context} ${problem}`);
+      }
+    }
+  });
+
+/**
+ * Adds an invariant that holds now. From then on, every change to facts or
+ * rules that would break it fails and is undone. An invariant the database
+ * already holds, one a snapshot would write the same way, is not added again.
+ */
+export const addInvariant = (database: LogicDatabase, invariant: Invariant) =>
+  Effect.gen(function* () {
+    const key = logicKey([invariant.assert, invariant.goal]);
+    if (
+      key !== undefined &&
+      database.invariants.some((held) => held.key === key)
+    ) {
+      return;
+    }
+    yield* checkInvariants(
+      database,
+      [invariant],
+      "This invariant does not hold, so it was not added."
+    );
+    database.invariants = [
+      ...database.invariants,
+      { ...invariant, ...(key === undefined ? {} : { key }) },
+    ];
   });
 
 const explainPremise = (model: Model, premise: Premise): unknown => {

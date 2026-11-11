@@ -111,6 +111,7 @@ const NODE_COLOR_BY_KEY = {
   "=": "var(--node-logic)",
   in: "var(--node-logic)",
   snapshot: "var(--node-logic)",
+  invariant: "var(--node-logic)",
 } satisfies Readonly<Record<GraphNodeColorKey, string>>;
 
 const getGraphNodeColorKey = (
@@ -222,6 +223,12 @@ const canRunSemanticNode = (semantic: IndexedSemanticNode) => {
   }
   return RUNNABLE_NODE_KINDS[semantic.kind] === true;
 };
+
+/** What an invariant's "assert" option promises, for its node's detail. */
+const INVARIANT_DETAILS = new Map<unknown, string>([
+  ["none", "0 rows"],
+  ["some", "≥ 1 row"],
+]);
 
 const describeSpecialForm = (
   semantic: IndexedSemanticNode,
@@ -384,6 +391,17 @@ const describeSpecialForm = (
         description: "save the database",
         detail: "database → program",
       };
+    case "invariant": {
+      const options = children.find(({ role }) => role === "options");
+      const assert = options?.children
+        .map((id) => byId.get(id))
+        .find((child) => child?.role === "assert")?.value;
+      return {
+        mark: form,
+        description: "invariant",
+        detail: INVARIANT_DETAILS.get(assert) ?? "goal + assert",
+      };
+    }
     default:
       return form satisfies never;
   }

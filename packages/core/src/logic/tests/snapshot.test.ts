@@ -64,6 +64,16 @@ const program = [
     ["=", "?copy", "?tag"],
   ],
   ["rule", ["group", "?n", "?c"], ["graph/components", "edge", "?n", "?c"]],
+  [
+    "invariant",
+    [
+      "and",
+      ["edge", ["quote", "budget"], "?n"],
+      ["number/greaterThan", "?n", "budget"],
+    ],
+    { assert: "none" },
+  ],
+  ["invariant", ["group", "a", "?_"], { assert: "some" }],
 ];
 
 const queries = [

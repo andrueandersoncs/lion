@@ -10,6 +10,7 @@ import {
   evaluateAnd,
   evaluateFact,
   evaluateIn,
+  evaluateInvariant,
   evaluateNot,
   evaluateOr,
   evaluateQuery,
@@ -31,6 +32,7 @@ import {
   FactFormSchema,
   FunctionCallFormSchema,
   InFormSchema,
+  InvariantFormSchema,
   LambdaFormSchema,
   MatchFormSchema,
   NotFormSchema,
@@ -51,12 +53,16 @@ import type { EvaluateResult } from "@/types/evaluation";
 // enough for TypeScript.
 const isInForm = Schema.is(InFormSchema);
 const isSnapshotForm = Schema.is(SnapshotFormSchema);
+const isInvariantForm = Schema.is(InvariantFormSchema);
 
 const evaluateDataForm = (
   expression: LionArrayExpressionType
 ): EvaluateResult | undefined => {
   if (isInForm(expression)) {
     return evaluateIn(expression);
+  }
+  if (isInvariantForm(expression)) {
+    return evaluateInvariant(expression);
   }
   return isSnapshotForm(expression) ? evaluateSnapshot() : undefined;
 };

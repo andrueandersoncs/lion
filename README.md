@@ -59,7 +59,7 @@ bun run lion setup.json --database store.json
 bun run lion more-facts.json --database store.json
 ```
 
-The file is loaded before the program runs, so the program can use its relations without declaring them, and is saved afterwards as a [snapshot](#snapshots) program, one form and one fact per line. A file that does not exist yet starts empty.
+The file is loaded before the program runs, so the program can use its relations without declaring them, and is saved afterwards as a [snapshot](#snapshots) program, one form and one fact per line. A file that does not exist yet starts empty. A program that fails, such as one that would break an [invariant](#invariants) saved in the file, leaves the file as it was. Running the same setup again keeps one copy of each rule and invariant.
 
 Serve the bundled graph editor locally:
 
@@ -334,6 +334,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. With only booleans, they are boolean operators. |
 | `["not", goal]` | Holds when the goal has no matches. With a boolean, it negates it. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+| `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
 | `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
 | `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. Without logic variables it is plain membership. See [Lists](#lists). |
 
@@ -377,6 +378,28 @@ Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 
 | `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
 
 Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, then records.
+
+### Invariants
+
+An invariant is a query assertion the database keeps. `["invariant", goal, {"assert": "none"}]` says the goal never has answers, and `{"assert": "some"}` says it always has at least one. The invariant must hold when it is added, and from then on every `fact`, `retract`, and `rule` form is checked against it. A form that would break an invariant fails and changes nothing.
+
+```json
+["begin",
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["relation", "cancelled", ["id"]],
+  ["fact", ["order", 1, "open"], ["order", 2, "shipped"]],
+  ["invariant", ["and", ["order", "?id", "shipped"], ["cancelled", "?id"]], {"assert": "none"}],
+  ["fact", ["cancelled", 1]],
+  ["fact", ["order", 1, "shipped"]]]
+```
+
+Fails with `Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":1}: ["and",["order","?id","shipped"],["cancelled","?id"]].` Order 1 is still open.
+
+- The goal can be anything a query can ask, including relations that rules derive, `not`, aggregates, and graph algorithms. It is answered the same way a query is, goal-directed when it has known arguments.
+- A form is checked once it has made all of its changes, so one `fact` form can add several facts that only keep an invariant together. Separate forms in a `begin` are separate changes, each checked on its own.
+- If checking an invariant fails, for example because `graph/topologicalOrder` finds a cycle, the change is undone too.
+- Invariants take only the `"assert"` option, read as written. Like rules, they cannot be removed.
+- Snapshots write invariants after the rules, so loading one checks them against the whole database.
 
 ### Lists
 
@@ -424,7 +447,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 | `aggregate/collect` | Every value, sorted, duplicates kept |
 | `aggregate/unique` | Distinct values, sorted |
 
-- Each match of a rule body counts once. A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up.
+- Each match of a rule body counts once. A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. Adding a rule the database already holds changes nothing, so its matches never count twice.
 - A group exists only when something matches, so a count is never `0`.
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`.
 - Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
@@ -512,7 +535,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 ### Snapshots
 
-`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `fact` form with the facts of each, and every `rule`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
+`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `fact` form with the facts of each, every `rule`, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
 
 ```json
 ["begin",
@@ -527,7 +550,7 @@ Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path
 
 - Strings that would evaluate to something else when loaded, such as relation names, names bound in the environment, namespaced names like `"number/add"`, and `?variable` names, are written inside `quote`. So are lists and records.
 - Rules are written as they were evaluated, so a name like `budget` in a rule appears as its value.
-- A rule that holds something other than JSON data, such as a function, cannot be saved, and `snapshot` fails with an error.
+- A rule or invariant that holds something other than JSON data, such as a function, cannot be saved, and `snapshot` fails with an error.
 
 From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
 
@@ -556,7 +579,11 @@ Rules are checked when they are added:
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
 - A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are fine. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
-Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, and rules across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
+A form that changes the database, `fact`, `retract`, or `rule`, either makes all of its changes or fails and makes none of them. When the database has [invariants](#invariants), a change that breaks one is undone the same way.
+
+Adding what the database already holds changes nothing: a fact that is already there, a relation declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
+
+Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, rules, and invariants across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
 
 ## Standard Library
 

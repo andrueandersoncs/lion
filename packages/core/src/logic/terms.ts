@@ -329,6 +329,70 @@ const canonical = (value: unknown): unknown => {
 export const valueKey = (value: unknown): string =>
   JSON.stringify(canonical(value)) ?? "undefined";
 
+class NoKey extends Error {}
+
+/** Tags every kind of logic value, so no two kinds encode alike. */
+const encodeLogic = (value: unknown): unknown => {
+  if (isGroundValue(value)) {
+    return { value };
+  }
+  if (value instanceof LogicVariable) {
+    return { variable: value.name };
+  }
+  if (value instanceof DeferredCall) {
+    return { call: value.name, args: value.args.map(encodeLogic) };
+  }
+  if (value instanceof Aggregate) {
+    return { aggregate: value.kind, arg: encodeLogic(value.arg) };
+  }
+  if (value instanceof Atom) {
+    const { computed, name } = value.relation;
+    return computed === undefined
+      ? { atom: name, args: value.args.map(encodeLogic) }
+      : {
+          computed: computed.callee,
+          inputs: computed.inputs.map(encodeLogic),
+          args: value.args.map(encodeLogic),
+        };
+  }
+  if (value instanceof Negation) {
+    return { not: encodeLogic(value.atom) };
+  }
+  if (value instanceof Conjunction) {
+    return { and: value.goals.map(encodeLogic) };
+  }
+  if (value instanceof Disjunction) {
+    return { or: value.goals.map(encodeLogic) };
+  }
+  if (value instanceof Unification) {
+    return { unify: [encodeLogic(value.left), encodeLogic(value.right)] };
+  }
+  if (value instanceof Membership) {
+    return { in: [encodeLogic(value.element), encodeLogic(value.list)] };
+  }
+  if (Array.isArray(value)) {
+    return { list: value.map(encodeLogic) };
+  }
+  throw new NoKey();
+};
+
+/**
+ * A key that is equal for logic values a snapshot would write the same way:
+ * JSON data by value, variables apart from strings that look like them, and
+ * functions and relations by name. Undefined for a value with no such form,
+ * such as a lambda, so it is never taken for another value.
+ */
+export const logicKey = (value: unknown): string | undefined => {
+  try {
+    return valueKey(encodeLogic(value));
+  } catch (error) {
+    if (error instanceof NoKey) {
+      return undefined;
+    }
+    throw error;
+  }
+};
+
 /** Structural equality for JSON data, identity for everything else. */
 export const sameValue = (a: unknown, b: unknown): boolean => {
   if (

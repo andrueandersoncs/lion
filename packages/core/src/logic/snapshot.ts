@@ -1,8 +1,10 @@
 /**
  * Snapshots write a logic database out as a Lion program: its relations,
- * facts, and rules as `relation`, `fact`, and `rule` forms. Evaluating the
- * program into an empty database rebuilds it, so a snapshot is both the save
- * format and ordinary Lion that can be read, edited, and run.
+ * facts, rules, and invariants as `relation`, `fact`, `rule`, and `invariant`
+ * forms. Evaluating the program into an empty database rebuilds it, so a
+ * snapshot is both the save format and ordinary Lion that can be read,
+ * edited, and run. Invariants come last, so loading never checks them
+ * against a half-built database.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
@@ -104,8 +106,8 @@ const writer = (database: LogicDatabase, options: SnapshotOptions) => {
 };
 
 /**
- * Writes a database as a Lion program that rebuilds it. Fails when a rule
- * holds a value that is not JSON data, such as a function.
+ * Writes a database as a Lion program that rebuilds it. Fails when a rule or
+ * invariant holds a value that is not JSON data, such as a function.
  */
 export const saveDatabase = (
   database: LogicDatabase,
@@ -144,6 +146,13 @@ export const saveDatabase = (
           const [head, ...body] = rule.definition ?? [];
           forms.push(["rule", goal(head), ...body.map(goal)]);
         }
+      }
+      for (const invariant of database.invariants) {
+        forms.push([
+          "invariant",
+          goal(invariant.goal),
+          { assert: invariant.assert },
+        ]);
       }
       return ["begin", ...forms];
     },

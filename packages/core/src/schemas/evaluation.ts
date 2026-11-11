@@ -48,6 +48,9 @@ const DISALLOWED_IDENTIFIERS = [
   "and",
   "or",
   "=",
+  "in",
+  "snapshot",
+  "invariant",
   "__proto__",
 ];
 
@@ -177,6 +180,13 @@ export const OrFormSchema = Schema.TupleWithRest(
 
 // ["snapshot"]
 export const SnapshotFormSchema = Schema.Tuple([Schema.Literal("snapshot")]);
+
+// ["invariant", <goal>, <options>]
+export const InvariantFormSchema = Schema.Tuple([
+  Schema.Literal("invariant"),
+  LionExpressionSchema,
+  LionExpressionSchema,
+]);
 
 // ["in", <element>, <list>]
 export const InFormSchema = Schema.Tuple([

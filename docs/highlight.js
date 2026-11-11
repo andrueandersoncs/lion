@@ -29,6 +29,7 @@ const SPECIAL_FORMS = new Set([
   "=",
   "in",
   "snapshot",
+  "invariant",
 ]);
 const LOGIC_VARIABLE = /^\?[A-Za-z_][\w-]*$/;
 const TOKEN_PATTERN =

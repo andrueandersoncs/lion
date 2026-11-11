@@ -4,6 +4,7 @@ import { boundNames, setGlobalBinding } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
 import { compileQuery, compileRule } from "@/logic/compile";
 import {
+  addInvariant,
   addRules,
   assertFacts,
   declareRelation,
@@ -12,7 +13,11 @@ import {
   relationValue,
   retractFacts,
 } from "@/logic/database";
-import { applyQueryOptions, parseQueryOptions } from "@/logic/query-options";
+import {
+  applyQueryOptions,
+  parseInvariantOptions,
+  parseQueryOptions,
+} from "@/logic/query-options";
 import { saveDatabase } from "@/logic/snapshot";
 import {
   Atom,
@@ -31,6 +36,7 @@ import type {
   AndFormSchema,
   FactFormSchema,
   InFormSchema,
+  InvariantFormSchema,
   NotFormSchema,
   OrFormSchema,
   QueryFormSchema,
@@ -159,6 +165,24 @@ export const evaluateQuery = ([
     const parsed = yield* parseQueryOptions(options, queries[0]?.outputs ?? []);
     const rows = yield* queryDatabase(yield* database, queries);
     return yield* applyQueryOptions(rows, parsed, goalValue);
+  });
+
+/**
+ * ["invariant", goal, {"assert": "none"}] keeps a query assertion in the
+ * database: the goal must have no answers ("none"), or at least one ("some"),
+ * now and after every later change. Options are read as written.
+ */
+export const evaluateInvariant = ([
+  _,
+  goal,
+  options,
+]: typeof InvariantFormSchema.Type) =>
+  Effect.gen(function* () {
+    const goalValue = yield* evaluate(goal);
+    const queries = yield* compileQuery(goalValue);
+    const assert = yield* parseInvariantOptions(options);
+    yield* addInvariant(yield* database, { assert, goal: goalValue, queries });
+    return ["invariant", render(goalValue), { assert }];
   });
 
 export const evaluateWhy = ([_, fact]: typeof WhyFormSchema.Type) =>

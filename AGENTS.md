@@ -8,6 +8,34 @@ Lion is a TypeScript monorepo with two main packages:
 - **@lionlang/core**: Core library built with Effect v4 for functional programming
 - **@lionlang/repl**: React-based web application using TanStack Router and Vite
 
+## Designing Features and Semantics
+
+> **IMPORTANT**: Follow the principle of least astonishment. Before adding a feature or changing how something behaves, ask what someone who already knows Lion would expect it to do, both on its own and combined with every existing feature. Then make it do that.
+
+Lion's value comes from features that compose, so one surprising interaction costs more than a missing feature.
+
+- **Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example, invariants take the query option `"assert"` instead of a new keyword, and report failures in the same words as a failed query assertion.
+- **Apply one rule everywhere.** When a feature needs a rule, look for a similar feature that already has one and follow it. If the existing rule falls short, change it for every feature at once rather than letting the new one differ. For example:
+  - Every form that changes the logic database either makes all of its changes or none.
+  - Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant.
+- **Walk through the combinations.** Surprises hide where two features meet. Before settling a behavior, trace how it interacts with each existing one. For the logic layer, that includes:
+  - logic variables and `quote`
+  - `define`, and the fresh environment each `run` gets
+  - recursion and negation
+  - aggregates and keyed relations
+  - graph algorithms
+  - goal-directed queries and `why`
+  - snapshots and the CLI's `--database` file
+- **Keep equivalent programs equivalent.** These pairs should behave the same:
+  - a program and its snapshot
+  - goal-directed and full evaluation
+  - a name and the value bound to it
+
+  Where results may differ, such as answer order without the `"order"` query option, say so in the docs.
+- **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.
+- **Pin the expectation down.** State the behavior users expect as a property and test it (see [Write Property-Based Tests](#write-property-based-tests)), so a later change can't quietly break it.
+- **Document how features combine.** Describe each feature's semantics in the README, including what it does alongside the features it touches.
+
 ## Build, Lint, and Test Commands
 
 All commands should be run from the root directory using Turbo:
@@ -57,19 +85,42 @@ turbo typecheck --filter=@lionlang/core
 - **Test files**: `src/**/*.test.ts` pattern
 - **Test runner**: `vitest run` for CI, `vitest` for watch mode
 
-### Testing Patterns
+### Write Property-Based Tests
+
+> **IMPORTANT**: Write property-based tests, not example-based unit tests. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior.
+
+A property-based test states something that holds for every input a generator produces. The runner checks it against many generated inputs (100 by default), and shrinks any failing input to a small counterexample.
+
+- Use `it.prop` for synchronous properties and `it.effect.prop` for Effect properties, both from `@effect/vitest`. Pass the inputs as Schemas, or as generators from `effect/Arbitrary` (`Arbitrary.schema`, `array`, `all`, `map`, `flatMap`, `filter`).
+- Check behavior against something independent of the code under test:
+  - a simpler model, such as the same change made without invariants, or a count computed with a `Set`
+  - a round trip, such as save, load, and save again
+  - an equivalence, such as two ways of computing the same answer
+
+  A property that restates the implementation proves little.
+- Shape generators so they reach the interesting cases, then confirm they do. Sample with `Arbitrary.sampleEffect` and count which branches the generated inputs take.
+- Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it.
+- Keep a domain's generators in a module next to its tests and reuse them across files, as `packages/core/src/logic/tests/programs.ts` does for logic programs.
+- When a property rarely reaches its interesting cases, raise its runs with the fourth argument, `{ arbitrary: { runs: 300 } }`. A failure prints a `Replay` token; pass it back as `{ arbitrary: { replay } }` to reproduce that exact run.
+
 ```typescript
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
+import { run } from "@/evaluation/evaluate";
+import { stdlib } from "@/modules";
 
-describe("moduleName", () => {
-  it("should perform operation", () => {
-    expect(Effect.runSync(operation())).toBe(expectedResult);
-  });
+const small = Arbitrary.schema(
+  Schema.Int.check(Schema.isBetween({ minimum: -100, maximum: 100 }))
+);
 
-  it("should handle errors", () => {
-    expect(() => Effect.runSync(failingOperation())).toThrow();
-  });
+describe("number/add", () => {
+  it.effect.prop("does not depend on argument order", { a: small, b: small }, ({ a, b }) =>
+    Effect.gen(function* () {
+      expect(yield* run(["number/add", a, b], stdlib)).toBe(
+        yield* run(["number/add", b, a], stdlib)
+      );
+    })
+  );
 });
 ```
 

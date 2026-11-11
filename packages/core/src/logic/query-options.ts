@@ -1,6 +1,9 @@
 /**
  * Options for `["query", goal, options]`: sort, page, and assert on the
  * answers. Options are read as written, like a relation's column list.
+ *
+ * An invariant, `["invariant", goal, {"assert": "none"}]`, is the same
+ * assertion kept by the database, so it reads its option here too.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
@@ -11,8 +14,11 @@ interface SortKey {
   readonly name: string;
 }
 
+/** A goal must have at least one answer ("some"), or none ("none"). */
+export type Assertion = "some" | "none";
+
 export interface QueryOptions {
-  readonly assert?: "some" | "none";
+  readonly assert?: Assertion;
   readonly limit?: number;
   readonly offset?: number;
   readonly order: readonly SortKey[];
@@ -29,6 +35,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const isCount = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;
+
+const isAssertion = (value: unknown): value is Assertion =>
+  value === "some" || value === "none";
 
 /** `"-points"` sorts by `?points` in descending order; a `?` is optional. */
 const SORT_KEY = /^(-?)\??([A-Za-z_][\w-]*)$/;
@@ -72,8 +81,58 @@ const optionsProblem = (options: Record<string, unknown>) => {
     return `The query option "${count}" must be a whole number of at least 0, but found ${show(options[count])}.`;
   }
   const { assert } = options;
-  if (!(assert === undefined || assert === "some" || assert === "none")) {
+  if (!(assert === undefined || isAssertion(assert))) {
     return `The query option "assert" must be "some" or "none", but found ${show(assert)}.`;
+  }
+  return undefined;
+};
+
+/**
+ * Reads an invariant's options record. Its one option, "assert", is required,
+ * since an invariant with no assertion would check nothing.
+ */
+export const parseInvariantOptions = (
+  options: unknown
+): Effect.Effect<Assertion, LogicError> => {
+  if (!isRecord(options)) {
+    return fail(
+      `Invariant options must be a record such as {"assert": "none"}, but found ${show(options)}.`
+    );
+  }
+  const unknown = Object.keys(options).find((key) => key !== "assert");
+  if (unknown !== undefined) {
+    return fail(
+      `Unknown invariant option "${unknown}". The only invariant option is "assert".`
+    );
+  }
+  const { assert } = options;
+  if (assert === undefined) {
+    return fail(
+      `An invariant needs the option "assert", set to "some" or "none", such as {"assert": "none"}.`
+    );
+  }
+  return isAssertion(assert)
+    ? Effect.succeed(assert)
+    : fail(
+        `The invariant option "assert" must be "some" or "none", but found ${show(assert)}.`
+      );
+};
+
+/**
+ * Describes how a goal's answers break an assertion, or returns undefined.
+ * `subject` names what made the assertion, such as "query" or "invariant".
+ */
+export const assertionProblem = (
+  subject: string,
+  assert: Assertion | undefined,
+  rows: readonly Record<string, unknown>[],
+  goal: unknown
+) => {
+  if (assert === "some" && rows.length === 0) {
+    return `The ${subject} expected at least one answer but found none: ${show(goal)}.`;
+  }
+  if (assert === "none" && rows.length > 0) {
+    return `The ${subject} expected no answers but found ${rows.length}, such as ${JSON.stringify(rows[0])}: ${show(goal)}.`;
   }
   return undefined;
 };
@@ -97,7 +156,7 @@ export const parseQueryOptions = (
       return yield* fail(problem);
     }
     const { assert, limit, offset } = options as {
-      readonly assert?: "some" | "none";
+      readonly assert?: Assertion;
       readonly limit?: number;
       readonly offset?: number;
     };
@@ -132,15 +191,9 @@ export const applyQueryOptions = (
   goal: unknown
 ) =>
   Effect.gen(function* () {
-    if (options.assert === "some" && rows.length === 0) {
-      return yield* fail(
-        `The query expected at least one answer but found none: ${show(goal)}.`
-      );
-    }
-    if (options.assert === "none" && rows.length > 0) {
-      return yield* fail(
-        `The query expected no answers but found ${rows.length}, such as ${JSON.stringify(rows[0])}: ${show(goal)}.`
-      );
+    const problem = assertionProblem("query", options.assert, rows, goal);
+    if (problem !== undefined) {
+      return yield* fail(problem);
     }
     const sorted =
       options.order.length === 0
