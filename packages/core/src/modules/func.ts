@@ -11,11 +11,21 @@ export const module = {
     ...args: unknown[]
   ) => Effect.succeed(fn.bind(obj, ...args)),
 
+  /**
+   * Calls a function with `obj` as `this`. A Lion function returns an Effect,
+   * which runs, so the result is what calling the function directly returns.
+   */
   apply: (
     fn: (...args: unknown[]) => unknown,
     obj: unknown,
     ...args: unknown[]
-  ) => Effect.succeed(fn.apply(obj, args)),
+  ) =>
+    Effect.suspend(() => {
+      const result = fn.apply(obj, args);
+      return Effect.isEffect(result)
+        ? (result as Effect.Effect<unknown, unknown>)
+        : Effect.succeed(result);
+    }),
 
   callback: (fn: unknown) =>
     pipe(

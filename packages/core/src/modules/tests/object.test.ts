@@ -21,10 +21,10 @@ describe("object", () => {
           }
         })
     );
-    it.effect("should return undefined for missing keys", () =>
+    it.effect("should return null for missing keys", () =>
       Effect.gen(function* () {
         const result = yield* object.get({ a: 1 }, "b");
-        expect(result).toBeUndefined();
+        expect(result).toBeNull();
       })
     );
   });
@@ -223,15 +223,11 @@ describe("object", () => {
         expect(result).toEqual("hello");
       })
     );
-    it.effect(
-      "should fail with NotAnObjectError when obj is not an object",
-      () =>
-        Effect.gen(function* () {
-          const error = yield* Effect.flip(
-            object["get-method"]("not an object", "method")
-          );
-          expect(error._tag).toBe("NotAnObjectError");
-        })
+    it.effect("should fail with NotAnObjectError when the target is null", () =>
+      Effect.gen(function* () {
+        const error = yield* Effect.flip(object["get-method"](null, "method"));
+        expect(error._tag).toBe("NotAnObjectError");
+      })
     );
     it.effect(
       "should fail with NotAFunctionError when method is not a function",
@@ -322,15 +318,13 @@ describe("object", () => {
         expect(method()).toBe("hello from nested");
       })
     );
-    it.effect(
-      "should fail with NotAnObjectError when obj is not an object",
-      () =>
-        Effect.gen(function* () {
-          const error = yield* Effect.flip(
-            object["get-method-path"]("not an object", "path")
-          );
-          expect(error._tag).toBe("NotAnObjectError");
-        })
+    it.effect("should fail with NotAnObjectError when the target is null", () =>
+      Effect.gen(function* () {
+        const error = yield* Effect.flip(
+          object["get-method-path"](null, "path")
+        );
+        expect(error._tag).toBe("NotAnObjectError");
+      })
     );
     it.effect(
       "should fail with PathTraversalError when intermediate value is not an object",
@@ -338,7 +332,7 @@ describe("object", () => {
         Effect.gen(function* () {
           const obj = { a: "not an object" };
           const error = yield* Effect.flip(
-            object["get-method-path"](obj, "a.method")
+            object["get-method-path"](obj, "a.b.method")
           );
           expect(error._tag).toBe("PathTraversalError");
         })
@@ -439,15 +433,13 @@ describe("object", () => {
         expect(result).toBe(6);
       })
     );
-    it.effect(
-      "should fail with NotAnObjectError when obj is not an object",
-      () =>
-        Effect.gen(function* () {
-          const error = yield* Effect.flip(
-            object["call-method-path"]("not an object", "path")
-          );
-          expect(error._tag).toBe("NotAnObjectError");
-        })
+    it.effect("should fail with NotAnObjectError when the target is null", () =>
+      Effect.gen(function* () {
+        const error = yield* Effect.flip(
+          object["call-method-path"](null, "path")
+        );
+        expect(error._tag).toBe("NotAnObjectError");
+      })
     );
     it.effect(
       "should fail with PathTraversalError when intermediate value is not an object",
@@ -455,7 +447,7 @@ describe("object", () => {
         Effect.gen(function* () {
           const obj = { a: "not an object" };
           const error = yield* Effect.flip(
-            object["call-method-path"](obj, "a.method")
+            object["call-method-path"](obj, "a.b.method")
           );
           expect(error._tag).toBe("PathTraversalError");
         })

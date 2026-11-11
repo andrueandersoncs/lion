@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import { ArithmeticError, LogicError } from "@/errors/evaluation";
 import { AGGREGATORS, aggregator } from "@/logic/aggregates";
 import { Aggregate, isLogicTerm } from "@/logic/terms";
 import { decode } from "@/modules/lib/shared";
@@ -23,14 +23,25 @@ const aggregate =
     }
     const { check, fold } = aggregator(kind);
     return decode(Schema.Array(Schema.Any))(values).pipe(
-      Effect.flatMap((list) => {
-        const problem = check(list);
-        return problem === undefined
-          ? Effect.succeed(fold(list))
-          : Effect.fail(
+      Effect.flatMap(
+        (list): Effect.Effect<unknown, LogicError | ArithmeticError> => {
+          const problem = check(list);
+          if (problem !== undefined) {
+            return Effect.fail(
               new LogicError({ message: `aggregate/${kind} ${problem}.` })
             );
-      })
+          }
+          const result = fold(list);
+          // Sums of large numbers can overflow; JSON holds only finite ones.
+          return typeof result === "number" && !Number.isFinite(result)
+            ? Effect.fail(
+                new ArithmeticError({
+                  message: `aggregate/${kind}: the result is not a finite number.`,
+                })
+              )
+            : Effect.succeed(result);
+        }
+      )
     );
   };
 

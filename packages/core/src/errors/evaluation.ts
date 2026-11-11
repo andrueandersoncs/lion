@@ -15,3 +15,12 @@ export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunction
 export class LogicError extends Schema.TaggedError<LogicError>()("LogicError", {
   message: Schema.String,
 }) {}
+
+/**
+ * Raised when arithmetic has no finite result, such as division by zero.
+ * Lion's numbers are JSON numbers, which cannot be Infinity or NaN.
+ */
+export class ArithmeticError extends Schema.TaggedError<ArithmeticError>()(
+  "ArithmeticError",
+  { message: Schema.String }
+) {}

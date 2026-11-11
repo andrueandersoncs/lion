@@ -9,9 +9,24 @@ describe("function call evaluation", () => {
     [Schema.Number, Schema.Number],
     ([a, b]) =>
       Effect.gen(function* () {
-        expect(yield* run(["number/add", a, b], stdlib)).toBe(a + b);
-        expect(yield* run(["number/subtract", a, b], stdlib)).toBe(a - b);
-        expect(yield* run(["number/multiply", a, b], stdlib)).toBe(a * b);
+        // A result JSON cannot hold, such as an overflow, is an error.
+        for (const [name, expected] of [
+          ["number/add", a + b],
+          ["number/subtract", a - b],
+          ["number/multiply", a * b],
+        ] as const) {
+          const outcome = yield* run([name, a, b], stdlib).pipe(
+            Effect.map((value) => ({ value })),
+            Effect.catch((error) =>
+              Effect.succeed({ tag: (error as { _tag?: unknown })._tag })
+            )
+          );
+          expect(outcome).toEqual(
+            Number.isFinite(expected)
+              ? { value: expected }
+              : { tag: "ArithmeticError" }
+          );
+        }
       })
   );
 });

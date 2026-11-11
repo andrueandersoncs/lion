@@ -9,16 +9,18 @@ export const module = {
 
   make: (...args: unknown[]) => Effect.succeed(args),
 
+  /** The first item, or null for an empty list. */
   head: flow(
     decode(Schema.Array(Schema.Any)),
     Effect.map(Arr.head),
-    Effect.map(Option.getOrThrow)
+    Effect.map(Option.getOrNull)
   ),
 
+  /** Every item after the first; an empty list has none. */
   tail: flow(
     decode(Schema.Array(Schema.Any)),
     Effect.map(Arr.tail),
-    Effect.map(Option.getOrThrow)
+    Effect.map(Option.getOrElse((): unknown[] => []))
   ),
 
   length: flow(decode(Schema.Array(Schema.Any)), Effect.map(Arr.length)),

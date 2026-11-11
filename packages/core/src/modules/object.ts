@@ -1,24 +1,50 @@
 import { Effect, flow, Record, Schema } from "effect";
 
+const show = (value: unknown) => {
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
+};
+
+// Each error describes itself, so a failure reads as more than its tag.
+
 class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>()(
   "NotAnObjectError",
   { actual: Schema.Unknown }
-) {}
+) {
+  override get message() {
+    return `Expected an object, but found ${show(this.actual)}.`;
+  }
+}
 
 class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>()(
   "KeyNotFoundError",
   { key: Schema.String }
-) {}
+) {
+  override get message() {
+    return `There is no key "${this.key}".`;
+  }
+}
 
 class NotAFunctionError extends Schema.TaggedError<NotAFunctionError>()(
   "NotAFunctionError",
   { key: Schema.String, actual: Schema.Unknown }
-) {}
+) {
+  override get message() {
+    return `"${this.key}" is not a method; it is ${show(this.actual)}.`;
+  }
+}
 
 class NotAConstructorError extends Schema.TaggedError<NotAConstructorError>()(
   "NotAConstructorError",
   { actual: Schema.Unknown }
-) {}
+) {
+  override get message() {
+    return `Expected a class to construct, but found ${show(this.actual)}.`;
+  }
+}
 
 class PathTraversalError extends Schema.TaggedError<PathTraversalError>()(
   "PathTraversalError",
@@ -27,12 +53,20 @@ class PathTraversalError extends Schema.TaggedError<PathTraversalError>()(
     key: Schema.String,
     current: Schema.Unknown,
   }
-) {}
+) {
+  override get message() {
+    return `Cannot follow "${this.path}" at "${this.key}": ${show(this.current)} has no such key.`;
+  }
+}
 
 class EmptyPathError extends Schema.TaggedError<EmptyPathError>()(
   "EmptyPathError",
   { path: Schema.String }
-) {}
+) {
+  override get message() {
+    return `The path "${this.path}" does not end in a method name.`;
+  }
+}
 
 class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>()(
   "MethodNotFoundError",
@@ -41,7 +75,11 @@ class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>()(
     methodKey: Schema.String,
     actual: Schema.Unknown,
   }
-) {}
+) {
+  override get message() {
+    return `"${this.path}" does not end in a method: "${this.methodKey}" is ${show(this.actual)}.`;
+  }
+}
 
 class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
   "IndexOutOfBoundsError",
@@ -49,17 +87,29 @@ class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>()(
     index: Schema.Number,
     length: Schema.Number,
   }
-) {}
+) {
+  override get message() {
+    return `Index ${this.index} is past the end of a list of length ${this.length}.`;
+  }
+}
 
 class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>()(
   "NotAnArrayError",
   { actual: Schema.Unknown }
-) {}
+) {
+  override get message() {
+    return `A numeric path segment needs a list, but found ${show(this.actual)}.`;
+  }
+}
 
 class InvalidPathError extends Schema.TaggedError<InvalidPathError>()(
   "InvalidPathError",
   { path: Schema.Unknown }
-) {}
+) {
+  override get message() {
+    return `A path must be a string such as "a.b.0", but found ${show(this.path)}.`;
+  }
+}
 
 const NUMERIC_KEY_REGEX = /^\d+$/;
 
@@ -90,11 +140,15 @@ const validateKeyExists = (current: unknown, key: string) =>
     }
   });
 
+/**
+ * Follows every key of a path but the last, through objects. The last key
+ * names a method, which can belong to any value but null.
+ */
 const traversePath = (
-  obj: object,
+  obj: unknown,
   path: string,
   keys: string[]
-): Effect.Effect<object, PathTraversalError> =>
+): Effect.Effect<unknown, PathTraversalError> =>
   Effect.gen(function* () {
     let current: unknown = obj;
     for (let i = 0; i < keys.length - 1; i++) {
@@ -122,29 +176,29 @@ const traversePath = (
       }
       current = getValueAtKey(current, key);
     }
-    return current as object;
+    return current;
   });
 
+/** Only null and undefined have no methods. */
+const hasNoMethods = (value: unknown): value is null | undefined =>
+  value === null || value === undefined;
+
 const getMethodFromObject = (
-  obj: object,
+  target: unknown,
   methodKey: string,
   path: string
 ): Effect.Effect<
   (...args: unknown[]) => unknown,
-  EmptyPathError | PathTraversalError | MethodNotFoundError
+  EmptyPathError | NotAnObjectError | MethodNotFoundError
 > =>
   Effect.gen(function* () {
     if (methodKey === undefined || methodKey === "") {
       return yield* new EmptyPathError({ path });
     }
-    if (typeof obj !== "object" || obj === null) {
-      return yield* new PathTraversalError({
-        path,
-        key: String(methodKey),
-        current: obj,
-      });
+    if (hasNoMethods(target)) {
+      return yield* new NotAnObjectError({ actual: target });
     }
-    const method = (obj as Record<string, unknown>)[methodKey];
+    const method = (target as Record<string, unknown>)[methodKey];
     if (typeof method !== "function") {
       return yield* new MethodNotFoundError({
         path,
@@ -158,12 +212,13 @@ const getMethodFromObject = (
 export const module = {
   symbol: Symbol("object"),
 
+  /** The value under a key, or null when there is none. */
   get: (obj: unknown, key: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
       }
-      return (obj as Record<string, unknown>)[key];
+      return (obj as Record<string, unknown>)[key] ?? null;
     }),
 
   "get-path": (obj: unknown, path: string) =>
@@ -224,9 +279,10 @@ export const module = {
       );
     }),
 
+  // The method functions work on any value but null, such as a string.
   "get-method": (obj: unknown, key: unknown) =>
     Effect.gen(function* () {
-      if (typeof obj !== "object" || obj === null) {
+      if (hasNoMethods(obj)) {
         return yield* new NotAnObjectError({ actual: obj });
       }
       const method = (obj as Record<string, unknown>)[key as string];
@@ -239,9 +295,11 @@ export const module = {
       return method.bind(obj);
     }),
 
-  // FIXME: technically any value can have a method through its prototype chain
   "call-method": (obj: unknown, key: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {
+      if (hasNoMethods(obj)) {
+        return yield* new NotAnObjectError({ actual: obj });
+      }
       const method = (obj as Record<string, unknown>)[key as string];
       if (typeof method !== "function") {
         return yield* new NotAFunctionError({
@@ -254,7 +312,7 @@ export const module = {
 
   "get-method-path": (obj: unknown, path: string) =>
     Effect.gen(function* () {
-      if (typeof obj !== "object" || obj === null) {
+      if (hasNoMethods(obj)) {
         return yield* new NotAnObjectError({ actual: obj });
       }
       if (typeof path !== "string") {
@@ -269,7 +327,7 @@ export const module = {
 
   "call-method-path": (obj: unknown, path: string, ...args: unknown[]) =>
     Effect.gen(function* () {
-      if (typeof obj !== "object" || obj === null) {
+      if (hasNoMethods(obj)) {
         return yield* new NotAnObjectError({ actual: obj });
       }
       if (typeof path !== "string") {

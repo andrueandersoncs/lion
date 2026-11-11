@@ -11,8 +11,9 @@ export const module = {
 
   "boolean?": (a: unknown) => Effect.succeed(typeof a === "boolean"),
 
+  /** A record or other object, but not a list, as JSON tells them apart. */
   "object?": (a: unknown) =>
-    Effect.succeed(typeof a === "object" && a !== null),
+    Effect.succeed(typeof a === "object" && a !== null && !Array.isArray(a)),
 
   "array?": (a: unknown) => Effect.succeed(Array.isArray(a)),
 
