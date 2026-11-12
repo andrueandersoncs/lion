@@ -10,7 +10,11 @@
     "check": "ultracite check",
     "fix": "ultracite fix",
     "build": "turbo build",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "measure": "bun run --cwd packages/metrics measure",
+    "bench": "bun run --cwd packages/metrics bench",
+    "mutate": "bun run --cwd packages/metrics mutate",
+    "compare": "bun run --cwd packages/metrics compare"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.7",

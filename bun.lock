@@ -79,6 +79,19 @@
         "typescript": "catalog:",
       },
     },
+    "packages/metrics": {
+      "name": "@lionlang/metrics",
+      "version": "0.0.0",
+      "dependencies": {
+        "effect": "catalog:",
+        "typescript": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/vitest": "4.1.2",
+        "@types/node": "latest",
+        "vitest": "^5.0.1",
+      },
+    },
     "packages/repl": {
       "name": "@lionlang/repl",
       "version": "0.0.1",
@@ -448,6 +461,8 @@
     "@lionlang/core": ["@lionlang/core@workspace:packages/core"],
 
     "@lionlang/examples": ["@lionlang/examples@workspace:packages/examples"],
+
+    "@lionlang/metrics": ["@lionlang/metrics@workspace:packages/metrics"],
 
     "@lionlang/repl": ["@lionlang/repl@workspace:packages/repl"],
 
@@ -1532,6 +1547,8 @@
     "@jimp/types/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@lionlang/core/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
+
+    "@lionlang/metrics/typescript": ["typescript@6.0.2", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-bGdAIrZ0wiGDo5l8c++HWtbaNCWTS4UTv7RaTH/ThVIgjkveJt83m74bBHMJkuCbslY8ixgLBVZJIOiQlQTjfQ=="],
 
     "@lionlang/repl/@types/bun": ["@types/bun@1.4.4", "", { "dependencies": { "bun-types": "1.4.4" } }, "sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ=="],
 

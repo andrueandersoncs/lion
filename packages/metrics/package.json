@@ -1,0 +1,24 @@
+{
+  "name": "@lionlang/metrics",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Measures Lion's complexity: how much code there is and how it branches, and how many exceptions the semantics have.",
+  "scripts": {
+    "measure": "bun run measure.ts",
+    "bench": "bun run bench.ts",
+    "mutate": "bun run mutate.ts",
+    "compare": "bun run compare.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "effect": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.1.2",
+    "@types/node": "latest",
+    "vitest": "^5.0.1"
+  }
+}

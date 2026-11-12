@@ -8,6 +8,26 @@ Lion is a TypeScript monorepo with two main packages:
 - **@lionlang/core**: Core library built with Effect v4 for functional programming
 - **@lionlang/repl**: React-based web application using TanStack Router and Vite
 
+It also holds **@lionlang/metrics**, private tools that measure Lion's complexity, speed, and tests (see [Measuring Complexity](#measuring-complexity)).
+
+## Goals for Every Change
+
+> **IMPORTANT**: These goals apply to every feature, fix, and refactor. Treat the codebase as your own: leave Lion more unified, simpler, and better tested than you found it.
+
+What Lion is does not change:
+
+- Lion MUST be a JSON-based Lisp: every program is valid JSON.
+- A Lion program MUST be able to be evaluated entirely in memory.
+- The semantics are approximately those of Scheme and Racket, plus the logic layer.
+
+Every change aims for these:
+
+1. **Integrate deeply.** A new feature works together with every existing feature when it ships, in plain code and in the logic layer. The logic features and the Lisp features are one language: an expression gives in a rule, a query, a `find`, or anywhere else what it gives in plain code. A feature that works only on its own is not finished. See [Designing Features and Semantics](#designing-features-and-semantics).
+2. **Reduce complexity.** Each change should leave Lion simpler, in its code and in its semantics, without removing a feature. Before adding a special case, look for one rule that replaces several. Measure before and after, and aim for the numbers to go down. See [Measuring Complexity](#measuring-complexity).
+3. **Test with properties.** Every new feature and every bug you come across gets property-based tests that fail without your change. See [Write Property-Based Tests](#write-property-based-tests).
+4. **Be ambitious.** When the unified design needs deeper work, do that work: research how other languages solved the problem, design a new algorithm, or rewrite the part of the engine that stands in the way. A larger change that removes exceptions is better than a smaller one that adds them.
+5. **Report what you measured.** Give the numbers as they are, including the complexity that grew, the benchmark that got slower, and the exception that remains, and say why.
+
 ## Designing Features and Semantics
 
 > **IMPORTANT**: Follow the principle of least astonishment. Before adding a feature or changing how something behaves, ask what someone who already knows Lion would expect it to do, both on its own and combined with every existing feature. Then make it do that.
@@ -29,6 +49,7 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - graph algorithms
   - goal-directed queries and `why`
   - snapshots and the CLI's `--database` file
+- **Add it to the interop grid.** The grid in `packages/metrics/src/grid-cases.ts` runs every kind of expression in every place an expression can stand, and compares each with plain code. Add a row for a new kind of expression and a column for a new place, then run `bun run measure --grid`. A cell that does not give what plain code gives is an exception users have to remember: change the feature until the cell agrees, or, when the exception is the right design, document it and list it in `KNOWN`.
 - **Keep equivalent programs equivalent.** These pairs should behave the same:
   - a program and its snapshot
   - goal-directed and full evaluation
@@ -41,6 +62,42 @@ Lion's value comes from features that compose, so one surprising interaction cos
 - **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.
 - **Pin the expectation down.** State the behavior users expect as a property and test it (see [Write Property-Based Tests](#write-property-based-tests)), so a later change can't quietly break it.
 - **Document how features combine.** Describe each feature's semantics in the README, including what it does alongside the features it touches.
+
+## Measuring Complexity
+
+> **IMPORTANT**: Measure every change to `@lionlang/core` before you call it done, in the code and in the semantics, and aim for both to go down. Put the numbers in your final report and in the commit message, also when they went up.
+
+`packages/metrics` holds the tools, and its README explains each number. Run them from the root. `--against` takes any commit: `main`, a tag, or a hash.
+
+```bash
+# Code and semantic complexity of the working tree, beside main
+bun run measure --against main
+
+# The same with every file, or with the whole interop grid
+bun run measure --against main --files
+bun run measure --grid
+
+# Speed, beside main
+bun run bench --against main
+
+# Break the code in each listed place and check that the tests notice
+bun run mutate
+
+# Run the same programs on main and on the working tree
+bun run compare main programs.json
+```
+
+- **Code complexity** is counted from the source of `@lionlang/core` without its tests: code lines, functions, paths through functions, decisions weighted by how deep they nest, and `instanceof` tests of a value's kind.
+- **Semantic complexity** is how much a Lion programmer has to know: the special forms, library functions, and kinds of error; the distinct messages that tell a program it broke a rule; and the exceptions in the interop grid, the cells where an expression in some place does not give what plain code gives.
+
+How to use the numbers:
+
+- **Pay for what you add.** A feature usually adds code. Pay for it in the same change: find the rule that makes special cases redundant, and delete them. The waiting rule and the asking rule each replaced a list of cases this way.
+- **Keep the grid's exceptions at the documented ones.** A new exception fails the tests of `packages/metrics`. Fix the feature rather than add to `KNOWN`.
+- **Never buy a lower number with a worse Lion.** Do not remove a feature, a test, or a message a user needs, and do not squeeze code until it is hard to read.
+- **Check the speed.** Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.
+- **Check what you say about behavior.** Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`.
+- **Do not edit code while `bun run mutate` runs.** It rewrites source files while their tests run, then puts them back.
 
 ## Build, Lint, and Test Commands
 
@@ -66,6 +123,11 @@ bun run fix
 
 # Prepare development environment (Effect language service)
 bun run prepare
+
+# Measure complexity, speed, and how well the tests catch broken code
+bun run measure --against main
+bun run bench --against main
+bun run mutate
 ```
 
 ### Package-Specific Commands
@@ -76,6 +138,7 @@ For running commands in a specific package, use Turbo's filter syntax:
 # Run tests for a specific package
 turbo test --filter=@lionlang/core
 turbo test --filter=@lionlang/repl
+turbo test --filter=@lionlang/metrics
 
 # Run dev server for repl package
 turbo dev --filter=@lionlang/repl
@@ -93,7 +156,7 @@ turbo typecheck --filter=@lionlang/core
 
 ### Write Property-Based Tests
 
-> **IMPORTANT**: Write property-based tests, not example-based unit tests. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior.
+> **IMPORTANT**: Write property-based tests, not example-based unit tests. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior. Every new feature, and every bug you come across, gets a property.
 
 A property-based test states something that holds for every input a generator produces. The runner checks it against many generated inputs (100 by default), and shrinks any failing input to a small counterexample.
 
@@ -105,7 +168,10 @@ A property-based test states something that holds for every input a generator pr
 
   A property that restates the implementation proves little.
 - Shape generators so they reach the interesting cases, then confirm they do. Sample with `Arbitrary.sampleEffect` and count which branches the generated inputs take.
-- Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it.
+- Cover every case of a new feature: each form it adds, each place the form can stand, and each existing feature it meets. If you cannot name a property for a case, the case is not specified yet.
+- Turn every bug into a property. When you find a bug, in your own change or in old code, first write the property it breaks. State it for every input, not for the one input that failed, and watch it fail. Then fix the bug, and keep the property.
+- Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it. `bun run mutate` does this for the breaks listed in `packages/metrics/src/mutations.ts`. Add a mutation for each behavior you add, and add a property for any mutation it reports as `MISSED`.
+- Before you finish a change to the evaluator or the logic engine, run its properties once with a few thousand runs each, by raising `runs`, and then put the number back.
 - Keep a domain's generators in a module next to its tests and reuse them across files, as `packages/core/src/logic/tests/programs.ts` does for logic programs.
 - When a property rarely reaches its interesting cases, raise its runs with the fourth argument, `{ arbitrary: { runs: 300 } }`. A failure prints a `Replay` token; pass it back as `{ arbitrary: { replay } }` to reproduce that exact run.
 
@@ -313,6 +379,22 @@ packages/core/
 └── package.json
 ```
 
+#### Metrics Package Structure
+```
+packages/metrics/
+├── src/
+│   ├── tests/
+│   ├── grid-cases.ts   # the interop grid's rows, columns, and known exceptions
+│   ├── mutations.ts    # the breaks `bun run mutate` checks
+│   ├── benchmarks.ts   # the programs `bun run bench` times
+│   └── *.ts
+├── measure.ts
+├── bench.ts
+├── mutate.ts
+├── compare.ts
+└── package.json
+```
+
 #### REPL Package Structure
 ```
 packages/repl/
@@ -329,6 +411,7 @@ packages/repl/
 ### Commit Guidelines
 
 - Use conventional commit format when possible
+- For a change to `@lionlang/core`, state the measured change in complexity and speed in the commit message
 - Run tests and linting before committing
 - Ensure type checking passes
 - For multi-package changes, test both packages
@@ -341,6 +424,7 @@ packages/repl/
    - Run `bun run check`
    - Run `bun test`
    - Run `bun run build`
+   - For a change to `@lionlang/core`, run `bun run measure --against main` and `bun run bench --against main`, and `bun run mutate` when you added behavior
 4. **After changes**: Update this AGENTS.md if development practices change
 
 ### Completion Proof

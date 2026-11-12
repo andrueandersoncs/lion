@@ -1,0 +1,26 @@
+{
+  "include": ["src/**/*.ts", "*.ts"],
+  "compilerOptions": {
+    "isolatedModules": true,
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "exactOptionalPropertyTypes": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "types": ["node"],
+    "plugins": [
+      {
+        "name": "@effect/language-service"
+      }
+    ]
+  }
+}
