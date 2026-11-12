@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-11-12 — @lionlang/core 0.6.0, @lionlang/cli 0.5.0
+
+Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.
+
+### Added
+
+- Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` or the record `{"id": "?x", "twice": ["number/multiply", "?x", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.
+- Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `["array/map", ["array/make", "ada", "zed"], "person"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.
+- `["find", template, goal]` returns the template's value for every match of the goal, as a sorted list: `["find", "?c", ["parent", "ada", "?c"]]` is `["ben", "cy"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.
+- Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `["=", "?total", ["aggregate/sum", "?items"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `["aggregate/count", ["find", "?c", ["parent", "?p", "?c"]]]` can be 0. An aggregate's argument can also be a constant, as in `["aggregate/sum", 1]`.
+- Questions have variables of their own. When a question is asked, the variables that the rule or query around it has bound are fixed, and every other variable belongs to the question. So a goal under `not` no longer needs every variable bound first: `["not", ["and", ["parent", "?p", "?c"], ["retired", "?c"]]]` asks whether `?p` has a retired child.
+- An algorithm's value input can be a variable that another goal binds: `["and", ["depot", "?s"], ["graph/shortestPath", "road", "?s", "?to", "?km", "?_"]]` runs the algorithm once for each depot.
+- `number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.
+- For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.
+- The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking.
+
+### Changed
+
+- A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.
+- A filter must be `true` or `false`. A goal such as `["number/add", "?x", 1]` used to pass as true; now the rule or query fails and shows the value.
+- `and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false` instead of an error.
+- Query answers must be JSON data. A variable bound to a function used to be left out of the answer; now the query fails and shows the answer.
+- A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.
+- A query that is not goal-directed derives only the relations it reads, instead of every relation that rules define.
+- Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.
+- For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.
+- For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.
+- `@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0.
+
+### Fixed
+
+- A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` in a rule head gave `"big"` for 1, and a snapshot saved the rule with `"big"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.
+- A `cond` whose condition was a relation goal took that case whether or not the goal had a match.
+- A snapshot wrote a function under the name the program called it by, such as a name bound with `define`, which is not there when the snapshot loads. It now writes the name the environment gives the function.
+- A query that held `false` and the `"order"` option failed with "Cannot order by" instead of returning no answers.
+- `match` read a fallback written as a two-item call, such as `["mk", 10]`, as one more pattern.
+- `["=", 0, -0]` was `false`. JSON writes both as `0`, so they are the same number.
+
 ## 2026-11-11 — @lionlang/core 0.5.0, @lionlang/cli 0.4.0
 
 ### Added
