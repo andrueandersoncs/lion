@@ -10,43 +10,17 @@ import { LogicDatabase } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
 import { element, oneOf } from "./programs";
+import {
+  DOMAIN,
+  everyone,
+  member,
+  setup,
+  subset,
+  type World,
+  world,
+} from "./worlds";
 
 type Goal = unknown;
-
-const DOMAIN = [0, 1, 2, 3, 4, 5];
-
-const member = element(DOMAIN);
-
-const subset = Arbitrary.map(
-  Arbitrary.array(member, { maxLength: 6 }),
-  (items) => [...new Set(items)]
-);
-
-interface World {
-  /** Pairs of the `link` relation. */
-  readonly links: readonly (readonly [number, number])[];
-  readonly p: readonly number[];
-  readonly q: readonly number[];
-}
-
-const world: Arbitrary.Arbitrary<World> = Arbitrary.all({
-  p: subset,
-  q: subset,
-  links: Arbitrary.array(Arbitrary.all([member, member]), { maxLength: 5 }),
-});
-
-/** `big` holds for the members of `p` above 2: a relation a rule derives. */
-const setup = ({ links, p, q }: World) => [
-  ["relation", "p", ["x"]],
-  ["relation", "q", ["x"]],
-  ["relation", "link", ["from", "to"]],
-  ["relation", "big", ["x"]],
-  ["relation", "answer", ["x"]],
-  ["fact", ["p", -1], ...p.map((x) => ["p", x])],
-  ["fact", ["q", -1], ...q.map((x) => ["q", x])],
-  ["fact", ["link", -1, -1], ...links.map(([from, to]) => ["link", from, to])],
-  ["rule", ["big", "?x"], ["p", "?x"], ["number/greaterThan", "?x", 2]],
-];
 
 type Truth = (world: World, x: number) => boolean;
 
@@ -123,8 +97,6 @@ const formula = (depth: number): Arbitrary.Arbitrary<Case> => {
 };
 
 const rows = (values: readonly number[]) => values.map((x) => ({ x }));
-
-const everyone = ["in", "?x", ["quote", DOMAIN]];
 
 const OPTIONS = { timeout: 120_000, arbitrary: { runs: 200 } };
 
@@ -258,34 +230,6 @@ describe("and and or on plain values", () => {
           reached.some(({ fails }) => fails)
             ? "failed"
             : (stop !== -1) === decides
-        );
-      }),
-    OPTIONS
-  );
-});
-
-describe("a relation goal", () => {
-  it.effect.prop(
-    "has no value, so cond cannot test it and = cannot bind it",
-    { world, x: member, form: element(["cond", "="] as const) },
-    ({ form, world: facts, x }) =>
-      Effect.gen(function* () {
-        const use =
-          form === "cond"
-            ? ["cond", [["p", "?x"], "yes"], ["else", "no"]]
-            : ["p", "?x"];
-        const error = yield* run(
-          [
-            "begin",
-            ...setup(facts),
-            ["query", ["and", ["=", "?x", x], ["=", "?y", use]]],
-          ],
-          stdlib
-        ).pipe(Effect.flip);
-        expect(String((error as { message?: unknown }).message)).toContain(
-          form === "cond"
-            ? `cond cannot test the goal ["p",${x}]`
-            : `["p",${x}] is a relation goal, so it has no value`
         );
       }),
     OPTIONS

@@ -2,7 +2,7 @@
 <p>Lion's logic layer lets a program state facts and rules and ask questions, instead of spelling out how to find answers. This page explains the model behind it, and why its rules are what they are.</p>
 
 <h2>Goals are values</h2>
-<p>In most logic languages, rules and queries are a separate syntax. In Lion, calling a relation, such as <code>["parent", "?p", "eli"]</code>, just returns a goal value. Goals can be stored, passed to functions, and combined with <code>and</code>, <code>or</code>, and <code>not</code>, like any other value. A <code>query</code>, <code>rule</code>, or <code>invariant</code> is what finally solves them. This keeps the logic layer inside the language: a lambda can build goals, and answers come back as ordinary records.</p>
+<p>In most logic languages, rules and queries are a separate syntax. In Lion, calling a relation, such as <code>["parent", "?p", "eli"]</code>, just returns a goal value. Goals can be stored, passed to functions, and combined with <code>and</code>, <code>or</code>, and <code>not</code>, like any other value. A <code>query</code>, <code>rule</code>, or <code>invariant</code> solves them, and so does any expression that needs their answer. This keeps the logic layer inside the language: a lambda can build goals, answers come back as ordinary data, and a relation can be tested like any other condition.</p>
 
 <h2>Datalog, not Prolog</h2>
 <p>Prolog answers a question by searching backward from it, trying rules in order. That is powerful, but a query can run forever, and the answer can depend on the order rules were written in.</p>
@@ -12,7 +12,7 @@
 <p>Re-applying every rule to every fact in each round would redo the same work again and again. Lion's evaluation is semi-naive: each round only considers matches that use at least one fact that is new since the last round, and starts each join from those new facts. A query along a 3,000-step chain takes milliseconds rather than seconds this way.</p>
 
 <h2>Stratification</h2>
-<p>Negation and aggregation need a complete picture. "Customers with no orders" is only right once every order is known, and so is a total. Lion therefore groups relations into strata, ordered by what depends on what, and computes each stratum fully before any relation that negates or aggregates it. A relation that negates itself, directly or through others, has no correct stratum, so such a rule is rejected when added.</p>
+<p>A question needs a complete picture. "Customers with no orders" is only right once every order is known, and so is a total, a list of what a goal matches, or the plain fact that it matches anything. Lion therefore groups relations into strata, ordered by what depends on what, and derives a relation fully before any rule that asks about it or aggregates it. It does so the first time something reads the relation, and keeps the rows until a fact or rule changes. A rule that asks about a relation that depends on its own head has no correct stratum, so such a rule is rejected when added.</p>
 <p>Lattice aggregates are the exception. <code>min</code>, <code>max</code>, <code>shortest</code>, and <code>union</code> only move one way as values arrive: a minimum only gets smaller. A partial result is never wrong, only not yet final, so these may aggregate through recursion. That is how a rule can compute shortest distances, and why a negative-weight cycle, where a distance would shrink forever, is stopped after 10,000 rounds.</p>
 
 <h2>Whatever needs a value waits</h2>
@@ -20,8 +20,12 @@
 <p>The same one rule covers everything else that needs a value. Any function waits, whether it comes from the standard library or the host. A <code>cond</code> waits when its condition is not known, a <code>match</code> when its value is not, and a record when one of its values is not. Each of them is written back out, in a snapshot or an explanation, as the form it was. And each computes exactly what it would compute with the value in place of the variable, so there is nothing new to learn about how an expression behaves inside a rule.</p>
 <p>Only the things that build logic do not wait: relations, aggregates, and graph algorithms take a variable as it is and make a goal of it. A lambda's body runs right away for the same reason, so a lambda can build goals, while whatever inside it needs a value waits.</p>
 
+<h2>Whatever needs an answer asks</h2>
+<p>The waiting rule lets ordinary expressions live inside rules. Its mirror image lets rules live inside ordinary expressions. A goal with a relation in it is a question, and whatever needs its value asks it: a <code>cond</code> condition, a function argument, <code>not</code>, or <a href="#form-find"><code>find</code></a>, which returns what the goal matches as a list. In plain code the question is asked right away. Inside a rule it waits like everything else, and is asked once for each answer, with that answer's values in place.</p>
+<p>The two rules meet without a seam. A question sees the variables its surroundings have bound, and owns the rest, so the same <code>find</code> means the same thing at the top of a program and deep inside a rule. That is also what makes it safe to move code into a lambda: a lambda that asks gives the same answers wherever it is called.</p>
+
 <h2>Explanations come free</h2>
-<p>Because evaluation derives each fact from specific earlier facts, it can remember which rule and which premises produced it. <a href="#form-why"><code>why</code></a> reads that record back as a tree. The same record is what lets an invariant say exactly which answer broke it.</p>
+<p>Because evaluation derives each fact from specific earlier facts, it can remember which rule produced it, and for which answer of the rule's body. <a href="#form-why"><code>why</code></a> reads that record back as a tree of the facts and tests the answer rested on.</p>
 
 <h2>When rules are not enough</h2>
 <p>Some questions are awkward or slow as rules, such as PageRank or Dijkstra's shortest paths. Rather than force them into rules, Lion lets algorithms be goals. A graph algorithm runs once its input relation is complete and contributes rows like a relation, so its answers can feed rules, negation, and aggregates. See <a href="#graph-questions">Answer graph questions</a>.</p>

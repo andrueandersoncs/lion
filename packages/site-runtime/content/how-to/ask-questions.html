@@ -1,0 +1,104 @@
+<article id="ask-questions" data-title="Use answers as values" data-summary="Ask the database from any expression: collect answers into a list with find, test a goal in cond, and use a relation as a predicate.">
+<p>This guide shows how to use what the database knows inside ordinary expressions, in plain code and inside rules.</p>
+
+<h2>Collect answers into a list</h2>
+<p><a href="#form-find"><code>find</code></a> takes a template and a goal, and returns the template's value for every match of the goal, sorted:</p>
+<lion-example name="Find">
+["begin",
+  ["relation", "score", ["player", "points"]],
+  ["fact", ["score", "ana", 12], ["score", "bo", 30], ["score", "cy", 30]],
+  {"players": ["find", "?player", ["score", "?player", "?_"]],
+   "by points": ["find", ["array/make", "?points", "?player"], ["score", "?player", "?points"]],
+   "best": ["aggregate/max", ["find", "?points", ["score", "?_", "?points"]]]}]
+</lion-example>
+<p>The result is a plain list, so every list function works on it. Where <code>query</code> returns one record per answer for you to read, <code>find</code> returns exactly the values you ask for.</p>
+
+<h2>Test a goal</h2>
+<p>A goal is <code>true</code> when it has a match and <code>false</code> when it has none. Use it wherever a value is needed, such as a <code>cond</code> condition or a value of a record:</p>
+<lion-example name="Goal as a value">
+["begin",
+  ["relation", "member", ["name", "plan"]],
+  ["relation", "blocked", ["name"]],
+  ["fact", ["member", "ana", "pro"], ["member", "bo", "free"]],
+  ["fact", ["blocked", "bo"]],
+  ["define", "access",
+    ["lambda", ["who"],
+      ["cond",
+        [["blocked", "who"], "none"],
+        [["member", "who", "pro"], "full"],
+        [["member", "who", "?_"], "limited"],
+        ["else", "guest"]]]],
+  {"ana": ["access", "ana"],
+   "bo": ["access", "bo"],
+   "zed": ["access", "zed"],
+   "anyone blocked": ["blocked", "?_"]}]
+</lion-example>
+<p>A goal with a variable asks whether anything matches. Give a variable a name when the goal joins on it, as in <code>["and", ["member", "?m", "pro"], ["blocked", "?m"]]</code>.</p>
+
+<h2>Use a relation as a predicate</h2>
+<p>A relation is a function that builds a goal, so it works as the predicate of <code>match</code> and of functions that take one:</p>
+<lion-example name="Relation as a predicate">
+["begin",
+  ["relation", "vowel", ["letter"]],
+  ["fact", ["vowel", "a"], ["vowel", "e"], ["vowel", "i"], ["vowel", "o"], ["vowel", "u"]],
+  {"flags": ["array/map", ["array/make", "l", "i", "o", "n"], "vowel"],
+   "kind": ["match", "o",
+     ["vowel", ["lambda", ["letter"], "a vowel"]],
+     ["lambda", ["letter"], "a consonant"]]}]
+</lion-example>
+
+<h2>Ask from inside a rule</h2>
+<p>In a rule or query the same expressions are asked once for each answer, with the answer's variables in place. A variable that only the question mentions, such as <code>?child</code> here, belongs to the question:</p>
+<lion-example name="Ask in a rule">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "parent", ["parent", "child"]],
+  ["relation", "profile", ["name", "summary"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+  ["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"]],
+  ["rule",
+    ["profile", "?p",
+      {"children": ["find", "?child", ["parent", "?p", "?child"]],
+       "kind": ["cond", [["parent", "?p", "?_"], "has children"], ["else", "no children"]]}],
+    ["person", "?p"]],
+  ["query", ["profile", "?name", "?summary"], {"order": "name"}]]
+</lion-example>
+<p>A lambda that asks works in both places, because its body is asked wherever it runs:</p>
+<lion-example name="A lambda that asks">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "parent", ["parent", "child"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"]],
+  ["define", "children", ["lambda", ["p"], ["find", "?c", ["parent", "p", "?c"]]]],
+  {"in plain code": ["children", "ada"],
+   "in a query":
+     ["query", ["and", ["person", "?p"], ["=", "?kids", ["children", "?p"]]], {"order": "p"}]}]
+</lion-example>
+
+<h2>Keep a goal as a goal</h2>
+<p><code>define</code>, <code>and</code>, <code>or</code>, <code>not</code>, and lambdas do not ask a goal: they keep it, so you can name goals and build bigger ones. Here the program's result is the goal itself:</p>
+<lion-example name="Goals stay goals">
+["begin",
+  ["relation", "member", ["name", "plan"]],
+  ["define", "is-pro", ["member", "?who", "pro"]],
+  ["and", "is-pro", ["not", ["member", "?who", "free"]]]]
+</lion-example>
+<p>A goal is asked only where a value is needed. A record holds values, so it asks. To get a goal's truth on its own, give the goal to <code>value/identity</code>:</p>
+<lion-example name="Ask a named goal">
+["begin",
+  ["relation", "member", ["name", "plan"]],
+  ["fact", ["member", "ana", "pro"]],
+  ["define", "is-pro", ["member", "?who", "pro"]],
+  {"in a record": "is-pro",
+   "its truth": ["value/identity", "is-pro"],
+   "its answers": ["query", "is-pro"]}]
+</lion-example>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#logic-asking">Asking questions</a> in the reference gives the exact rules.</li>
+  <li><a href="#summarize-groups">Summarize groups of facts</a> uses <code>find</code> with aggregates.</li>
+  <li><a href="#find-missing">Find what is missing</a> covers <code>not</code>.</li>
+</ul>
+</article>

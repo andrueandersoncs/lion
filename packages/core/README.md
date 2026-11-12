@@ -163,7 +163,7 @@ Evaluates condition/result pairs in order and returns the first matching result.
   ["else", "retry"]]
 ```
 
-If no branch matches and no `else` is provided, `cond` returns `null`. `else` is an ordinary string, and a string counts as true.
+If no branch matches and no `else` is provided, `cond` returns `null`. `else` is an ordinary string, and a string counts as true. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
 
 ### `match`
 
@@ -192,9 +192,11 @@ Pattern matches a value against predicate/function pairs, then applies the first
   ["lambda", ["x"], null]]
 ```
 
+A relation is a predicate too: `["match", "name", ["member", handler], fallback]` takes the first branch when `["member", "name"]` has a match. See [Asking](#asking).
+
 ## Logic
 
-Lion includes a Datalog-style logic layer. Relations, goals, and logic variables are ordinary values, so rules and queries use the same JSON syntax as the rest of the language and query results are plain Lion data.
+Lion includes a Datalog-style logic layer. Relations, goals, and logic variables are ordinary values, so rules and queries use the same JSON syntax as the rest of the language and query results are plain Lion data. The two halves meet in both directions: any expression works inside a rule, and any expression can ask the database a question.
 
 ```json
 ["begin",
@@ -210,10 +212,10 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 
 ### Building blocks
 
-- `"?name"` evaluates to a logic variable when `?name` is not bound. `"?_"` is anonymous: each occurrence is a separate variable, and inside `not` it matches anything.
-- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A record after the columns, such as `{"key": ["id"]}`, gives the relation a key; see [Keys](#keys).
+- `"?name"` evaluates to a logic variable when `?name` is not bound. `"?_"` is anonymous: each occurrence is a separate variable, and it never appears in an answer.
+- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A goal is a question: a rule or query asks it for its matches, and any other expression can ask it too. See [Asking](#asking). A record after the columns, such as `{"key": ["id"]}`, gives the relation a key; see [Keys](#keys).
 - Anything that needs the value of a logic variable waits until the variable is bound. `["number/greaterThan", "?amount", 100]` becomes a filter in a rule body, and `["number/add", "?n", 1]` becomes a value computed once `?n` is bound. See [Waiting for values](#waiting-for-values).
-- A lambda's body runs right away, so a lambda can build and return goals. Whatever in the body needs a value waits.
+- A lambda's body runs right away, so a lambda can build and return goals. Whatever in the body needs a value waits. Only an argument that asks a question makes the call wait, so the question is answered first, as it is in plain code.
 
 ### Forms
 
@@ -224,9 +226,10 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
+| `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
 | `["why", goal]` | Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
-| `["not", goal]` | Holds when the goal does not. The goal can be any goal; a boolean is negated. |
+| `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
 | `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
@@ -257,11 +260,47 @@ Evaluates to `[{ "sensor": "attic", "summary": { "fahrenheit": 86, "level": "hot
 
 - What waits computes what it would compute with the value in place of the variable.
 - As a goal, a waiting call is a filter, and so is a variable that holds true or false. A filter must be true or false: `["string/indexOf", "?s", "a"]` as a goal is an error, since it is a number.
-- A goal with no relation in it is also a value: `["=", "?ok", ["and", ["number/greaterThan", "?x", 0], ["number/lessThan", "?x", 10]]]` binds `?ok` to true or false. A relation goal has no value; it holds or not only as a goal of a rule or query.
+- A goal is also a value: `["=", "?ok", ["and", ["number/greaterThan", "?x", 0], ["number/lessThan", "?x", 10]]]` binds `?ok` to true or false. A goal with a relation in it is asked for its value; see [Asking](#asking).
+- What a rule holds runs when the rule runs. A call on values that are already known may be computed when the rule is written, which changes nothing but when a side effect happens.
 - A filter runs as soon as its variables are bound, and filters that are ready together run in the order written. So a guard written first protects the filter after it, as in `["value/number?", "?v"], ["number/greaterThan", "?v", 0]`. A filter that fails names the call and the values it ran on.
 - A lambda passed to a waiting call, such as the function of `array/map`, waits with it, and can mention the rule's variables.
 - Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule. A lambda that calls itself by name is the exception: it looks its name up each time it runs, as it does outside of rules.
 - Functions run forward only: `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
+
+### Asking
+
+A goal with a relation in it is a question, and any expression can ask it. As a goal of a rule or query it matches rows and binds variables. Anywhere else it is asked:
+
+- Under `not`, it holds when it has no match.
+- As a value, it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of a `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, such as `array/map`.
+- `["find", template, goal]` returns the value of `template` for every match of `goal`, as a list.
+
+```json
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "parent", ["parent", "child"]],
+  ["relation", "family", ["name", "children", "kind"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+  ["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"]],
+  ["rule",
+    ["family", "?p",
+      ["find", "?c", ["parent", "?p", "?c"]],
+      ["cond", [["parent", "?p", "?_"], "has children"], ["else", "no children"]]],
+    ["person", "?p"]],
+  {"in a rule": ["query", ["family", "?name", "?children", "?kind"], {"order": "name"}],
+   "in plain code": ["find", "?c", ["parent", "ada", "?c"]],
+   "as a value": ["parent", "ben", "?_"],
+   "as a predicate": ["array/map", ["array/make", "ada", "zed"], "person"]}]
+```
+
+Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind": "has children" }, { "name": "ben", "children": [], "kind": "no children" }, { "name": "cy", "children": [], "kind": "no children" }], "in plain code": ["ben", "cy"], "as a value": false, "as a predicate": [true, false] }`.
+
+- When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. So `["not", ["and", ["parent", "?p", "?c"], ["retired", "?c"]]]` asks whether `?p` has a retired child, for the `?p` the rule has bound.
+- In plain code a question is asked right away, and every variable in it is its own. In a rule, query, invariant, or `find`, a question is part of what is written, and is asked for each answer when that runs. A question gives in a rule what it gives in plain code with the rule's variables in place.
+- `find` gives one value for every match, sorted in the fixed order values sort in, so its list never depends on how the matches were found. It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values. A `find` must bind every variable of its template that the rule around it does not.
+- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
+- A question sees every row of the relations it asks about, so those are derived in full first. A rule cannot ask about a relation that depends on the rule's own head.
+- Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
 
 ### Keys
 
@@ -373,9 +412,10 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 | `aggregate/unique` | Distinct values, sorted |
 
 - Each match of a rule body counts once. A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. Adding a rule the database already holds changes nothing, so its matches never count twice.
-- A group exists only when something matches, so a count is never `0`.
+- A group exists only when something matches, so a count is never `0`. To count what may be nothing, aggregate a `find`: `["rule", ["activity", "?c", ["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]]], ["customer", "?c"]]` gives every customer a count, `0` included.
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`, or a constant: `["aggregate/count", 1]` counts the matches.
-- An aggregate call combines a rule's matches only as a whole argument of the head. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
+- An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a `find`. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
+- An aggregate of a `find` combines what the `find` found, wherever it is written: in a rule, in a query, or in plain code, as in `["aggregate/sum", ["find", "?amount", ["order", "?_", "?_", "?amount"]]]`.
 - Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
 - `why` on an aggregated fact lists every match it combines under `matches`. For `min`, `max`, and `shortest`, it explains the one match that produced the value.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
@@ -455,10 +495,11 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 - Known arguments are values, variables the query has already bound with a relation, `=`, or `in`, and values computed from them, as in `["and", ["start", "?s"], ["path", ["number/add", "?s", 1], "?to"]]`. Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end.
 - How a recursive rule is written matters. With a known start, recursion on the left, as in `["path", "?x", "?y"], ["edge", "?y", "?z"]`, asks only about that start. Recursion on the right, as in `["edge", "?x", "?y"], ["path", "?y", "?z"]`, asks about every node the paths pass through, which can cost as much as full evaluation.
-- Relations that are aggregated, computed by an algorithm, or used under `not` are computed in full first, along with everything they depend on.
+- Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on.
+- A relation is derived the first time something reads it, and kept until a fact or rule changes, so a query never pays for relations it does not read.
 - The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters. A goal-directed query also never fails on a row it does not derive, where full evaluation would.
 - `why` explains facts with every relation computed in full.
-- Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to compute every relation for every query instead.
+- Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to derive every row of the relations a query reads instead.
 
 ### Snapshots
 
@@ -478,7 +519,7 @@ Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path
 - Strings that would evaluate to something else when loaded, such as relation names, names bound in the environment, namespaced names like `"number/add"`, and `?variable` names, are written inside `quote`. So are lists and records.
 - Rules are written as they were evaluated. A name like `budget` in a rule appears as its value, and a function appears under the name the environment gives it: with `plus` defined as `number/add`, `["plus", "?x", 1]` is written `["number/add", "?x", 1]`.
 - A waiting `cond`, `match`, or record is written as it was, and a lambda as its `lambda` form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in `[["lambda", ["limit"], ["cond", [["number/greaterThan", "?a", "limit"], "big"], ["else", "small"]]], 100]`.
-- A snapshot cannot write a lambda that calls itself, or a function made while the program ran, such as the result of `func/partial` on plain values. `snapshot` then fails with an error that names the function.
+- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda. `snapshot` then fails with an error that names the function.
 
 From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
 
@@ -502,8 +543,9 @@ const program = Effect.gen(function* () {
 
 Rules are checked when they are added:
 
-- Every variable in a rule head, filter, or `not` must first be bound by a relation goal, `=`, or `in`. So must every input of an algorithm goal.
-- Negation cannot go through recursion, so every program has a single well-defined answer.
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, or `in`. So must every input of an algorithm goal.
+- A question, a goal under `not`, a goal used as a value, or a `find`, waits for the variables the rule binds. Any other variable in it is its own, and the question must bind it itself.
+- A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
 - A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are fine. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
@@ -513,7 +555,7 @@ Nothing is guessed at: a filter must be true or false, and the rows a rule deriv
 
 Adding what the database already holds changes nothing: a fact that is already there, a relation declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
 
-Answers are computed bottom-up with semi-naive evaluation, goal-directed when a query has known arguments, and cached until a fact or rule changes. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, rules, and invariants across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
+Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept until a fact or rule changes. What the database has already derived never changes an answer. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, rules, and invariants across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
 
 ## Standard Library
 
@@ -557,7 +599,7 @@ Arithmetic whose result is not a finite number, such as division by zero, fails 
 
 ### `aggregate`
 
-Called on a list, each function combines it. Called on anything else, it waits: as a whole argument of a rule head it combines the rule's matches, and anywhere else it combines the list its argument turns out to be. See [Aggregates](#aggregates).
+Called on a list, each function combines it. Called on anything else, it waits for the list its argument turns out to be; a `find` is the list of what it found. Only as a whole argument of a rule head, and not on a `find`, it combines the rule's matches instead. See [Aggregates](#aggregates).
 
 ```json
 ["aggregate/count", ["array/make", 3, 1, 3]]
@@ -639,7 +681,7 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
 
-`func/partial` gives a function that behaves like the one it wraps: made from a relation, it builds goals.
+`func/partial` gives a function that behaves like the one it wraps: calling it is calling that function with the first arguments filled in, so made from a relation, it builds goals.
 
 ### `value`
 
@@ -695,13 +737,28 @@ const env = { ...stdlib, "text/upper": (text: string) => text.toUpperCase() };
 // ["rule", ["shout", ["text/upper", "?word"]], ["word", "?word"]]
 ```
 
+A goal given to a host function is asked first, so the function receives `true` or `false`. A host function that takes a Lion function, such as a lambda or a relation, calls it with `call`, which gives the callback's value and lets the whole call wait when that value is not known yet:
+
+```ts
+import { call } from "@lionlang/core/evaluation/special-forms/function";
+
+const env = {
+  ...stdlib,
+  "list/keep": (items: unknown[], keep: unknown) =>
+    Effect.filter(items, (item) =>
+      Effect.map(call(keep, item), (kept) => kept === true)
+    ),
+};
+// ["list/keep", ["array/make", "ana", "bo"], "member"]
+```
+
 To write a function that takes logic variables as they are and builds a goal from them, mark it with `logicFunction`:
 
 ```ts
-import { logicFunction, Unification } from "@lionlang/core/logic/terms";
+import { LogicForm, logicFunction } from "@lionlang/core/logic/terms";
 
 const same = logicFunction((left: unknown, right: unknown) =>
-  Effect.succeed(new Unification(left, right))
+  Effect.succeed(new LogicForm("=", [left, right]))
 );
 ```
 

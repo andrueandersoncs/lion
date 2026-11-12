@@ -44,14 +44,32 @@ const env = { ...stdlib, ...namespaceEntries("text", text) };
 // ["rule", ["shout", "?n", ["text/upper", "?n"]], ["name", "?n"], ["text/long?", "?n"]]
 </code-block>
 <p>Use functions that return the same result for the same arguments and have no side effects; the engine may call them any number of times, in any order. A function used as a filter must return <code>true</code> or <code>false</code>.</p>
+<p>A goal given to your function is <a href="#logic-asking">asked</a> first, so the function receives <code>true</code> or <code>false</code>.</p>
+
+<h2>Call back into Lion</h2>
+<p>A function that takes a Lion function, such as a lambda or a relation, calls it with <code>call</code>. It gives the callback's value, with a goal asked, and lets the whole call wait when that value is not known yet:</p>
+<code-block lang="ts">
+import { Effect } from "effect";
+import { call } from "@lionlang/core/evaluation/special-forms/function";
+
+const env = {
+  ...stdlib,
+  "list/keep": (items: unknown[], keep: unknown) =>
+    Effect.filter(items, (item) =>
+      Effect.map(call(keep, item), (kept) => kept === true)
+    ),
+};
+// ["list/keep", ["array/make", "ana", "bo"], "member"]
+// ["rule", ["shortlist", ["list/keep", "?names", "member"]], ["team", "?names"]]
+</code-block>
 
 <h2>Build goals from host code</h2>
 <p>A function that should receive logic variables as they are, to build a goal from them, is marked with <code>logicFunction</code>:</p>
 <code-block lang="ts">
-import { logicFunction, Unification } from "@lionlang/core/logic/terms";
+import { LogicForm, logicFunction } from "@lionlang/core/logic/terms";
 
 const same = logicFunction((left: unknown, right: unknown) =>
-  Effect.succeed(new Unification(left, right))
+  Effect.succeed(new LogicForm("=", [left, right]))
 );
 
 const env = { ...stdlib, "my/same": same };
@@ -79,7 +97,7 @@ const outDegree = defineAlgorithm({
 const env = { ...stdlib, "my/outDegree": outDegree };
 // ["query", ["my/outDegree", "edge", "?node", "?degree"]]
 </code-block>
-<p>The engine runs the algorithm once its input relations are complete, and its rows can feed rules, <code>not</code>, and aggregates. <code>why</code> marks them as computed.</p>
+<p>The engine runs the algorithm once its input relations are complete, and its rows can feed rules, <code>not</code>, <code>find</code>, and aggregates. <code>why</code> marks them as computed.</p>
 
 <h2>Related</h2>
 <ul>

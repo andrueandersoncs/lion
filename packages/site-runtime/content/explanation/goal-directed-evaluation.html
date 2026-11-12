@@ -15,8 +15,9 @@
 <p>Both give the same answers. With a known start, write the recursion first; with a known end, put it last. <a href="#recursive-relations">Follow relationships of any length</a> shows both.</p>
 
 <h2>What is still computed in full</h2>
-<p>Some relations cannot be narrowed safely. A relation that is aggregated, computed by a graph algorithm, or used under <code>not</code> needs its complete contents to be right, so Lion computes it, and everything it depends on, in full before running the rewritten rules. Explanations from <code>why</code> also use full evaluation, so they describe the program as written.</p>
+<p>Some relations cannot be narrowed safely. A relation that is aggregated, computed by a graph algorithm, or <a href="#logic-asking">asked about</a>, under <code>not</code>, in a <code>find</code>, or as a value, needs its complete contents to be right, so Lion derives it, and everything it depends on, in full. Explanations from <code>why</code> also use full evaluation, so they describe the program as written.</p>
+<p>Even then Lion does no more than it must. A relation is derived the first time something reads it, and kept until a fact or rule changes, so a query never pays for relations it does not touch, and later queries reuse what earlier ones derived.</p>
 
 <h2>Turning it off</h2>
-<p>A host can create a database with <code>new LogicDatabase({ goalDirected: false })</code> to compute every relation in full for every query. This is useful for comparing results; Lion's own tests check that both ways agree.</p>
+<p>A host can create a database with <code>new LogicDatabase({ goalDirected: false })</code> to derive every row of the relations a query reads. This is useful for comparing results; Lion's own tests check that both ways agree.</p>
 </article>

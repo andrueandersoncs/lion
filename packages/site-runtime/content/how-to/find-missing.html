@@ -25,19 +25,33 @@
   ["query", ["unowned", "?task"], {"order": "task"}]]
 </lion-example>
 
-<h2>Bind variables before you negate them</h2>
-<p><code>not</code> can only rule out values that are already known, so every named variable in it must be bound by another goal first. Here <code>?name</code> comes from nowhere, so Lion refuses the query:</p>
+<h2>Rule out a combination</h2>
+<p>The goal under <code>not</code> is a question of its own, so it can join relations. A variable that appears nowhere else in the query, such as <code>?paper</code> here, belongs to the question: it is not part of the answer. This finds the authors none of whose papers is cited:</p>
+<lion-example name="Not with a join">
+["begin",
+  ["relation", "author", ["person", "paper"]],
+  ["relation", "cites", ["paper", "cited"]],
+  ["fact", ["author", "ann", "p1"], ["author", "bob", "p2"], ["author", "cyd", "p3"]],
+  ["fact", ["cites", "p1", "p3"], ["cites", "p3", "p1"]],
+  ["query",
+    ["and", ["author", "?person", "?_"],
+      ["not", ["and", ["author", "?person", "?paper"], ["cites", "?_", "?paper"]]]]]]
+</lion-example>
+
+<h2>Give a filter its variables</h2>
+<p>A relation goal can find values for a variable, but a filter cannot: it needs every variable it mentions. Here nothing binds <code>?amount</code>, so Lion refuses the query:</p>
 <lion-example name="Unsafe not" expect="error">
 ["begin",
-  ["relation", "order", ["id", "customer"]],
-  ["query", ["not", ["order", "?_", "?name"]]]]
+  ["relation", "order", ["id", "amount"]],
+  ["query", ["and", ["order", "?id", "?_"], ["not", ["number/greaterThan", "?amount", 100]]]]]
 </lion-example>
 
 <h2>Know what negation cannot do</h2>
-<p>A relation cannot depend on its own negation, directly or through other rules, because then it would have no single answer. Lion rejects such a rule when you add it. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
+<p>A rule cannot ask about a relation that depends on the rule's own head, directly or through other rules, because then it would have no single answer. Lion rejects such a rule when you add it. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 
 <h2>Related</h2>
 <ul>
   <li><a href="#form-not"><code>not</code></a> in the reference.</li>
+  <li><a href="#ask-questions">Use answers as values</a> shows the other ways to ask a question.</li>
 </ul>
 </article>

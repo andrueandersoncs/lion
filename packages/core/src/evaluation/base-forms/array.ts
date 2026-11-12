@@ -8,6 +8,7 @@ import { evaluateLambda } from "@/evaluation/special-forms/lambda";
 import {
   evaluateAnd,
   evaluateFact,
+  evaluateFind,
   evaluateIn,
   evaluateInvariant,
   evaluateNot,
@@ -46,6 +47,7 @@ const SPECIAL_FORMS: Record<
   fact: evaluateFact,
   retract: evaluateRetract,
   query: evaluateQuery,
+  find: evaluateFind,
   why: evaluateWhy,
   not: evaluateNot,
   and: evaluateAnd,

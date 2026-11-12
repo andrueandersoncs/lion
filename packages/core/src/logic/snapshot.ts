@@ -9,7 +9,8 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
-import { keyColumns, LogicDatabase } from "@/logic/database";
+import { LogicDatabase } from "@/logic/database";
+import { keyColumns } from "@/logic/model";
 import { quoted, show, Unwritable, type Writer, write } from "@/logic/terms";
 
 export interface SnapshotOptions {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
 import { run } from "@/evaluation/evaluate";
-import { MAX_LATTICE_ROUNDS } from "@/logic/database";
+import { MAX_LATTICE_ROUNDS } from "@/logic/model";
 import { stdlib } from "@/modules";
 
 const roads = [

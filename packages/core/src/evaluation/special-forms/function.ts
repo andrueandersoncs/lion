@@ -1,62 +1,148 @@
 import { Effect } from "effect";
-import { InvalidFunctionCallError } from "@/errors/evaluation";
-import { isSymbolic } from "@/evaluation/environment";
+import {
+  InvalidFunctionCallError,
+  logicError,
+  WaitingError,
+} from "@/errors/evaluation";
+import { answer, isWriting } from "@/evaluation/asking";
 import { evaluate } from "@/evaluation/evaluate.ts";
 import { suspendArguments } from "@/evaluation/special-forms/lambda";
+import { mentioned } from "@/logic/strata";
 import {
-  call,
   DeferredCall,
+  invoke,
+  isForm,
   isLogicFunction,
+  isQuestion,
   isWaiting,
+  isWaitingForm,
   type LionFunction,
+  LogicValue,
+  lambdaInfo,
+  show,
   termVariables,
 } from "@/logic/terms";
 import type { FunctionCallFormSchema } from "@/schemas/evaluation";
-import type { EvaluateResult } from "@/types/evaluation";
+import type { EvaluateResult, EvaluationError } from "@/types/evaluation";
+
+/** An argument that may keep a function from running right away. */
+const isSpecial = (arg: unknown) =>
+  typeof arg === "function" || arg instanceof LogicValue;
+
+/** True for an argument that mentions a logic variable or a relation. */
+const isLive = (arg: unknown) =>
+  termVariables(arg).length > 0 || mentioned(arg).length > 0;
 
 /**
- * The arguments a call waits with, or undefined when it can run now. A call
- * waits when an argument is a logic term, or a lambda that mentions a logic
- * variable.
+ * True for an argument that asks a question before it has a value: a find,
+ * a `cond`, `match`, or record that waits, or a call on one of those or on
+ * a goal.
  */
-const waitingArguments = (args: readonly unknown[]) =>
-  Effect.gen(function* () {
-    const waits = args.some(isWaiting);
-    if (!(waits || args.some(isSymbolic))) {
-      return;
+const asks = (arg: unknown): boolean =>
+  isForm(arg, "find") ||
+  (arg instanceof DeferredCall &&
+    (isWaitingForm(arg) ||
+      arg.parts.some((part) => isQuestion(part) || asks(part))));
+
+/**
+ * Calls a function with arguments that are already evaluated.
+ *
+ * Relations, aggregates, algorithms, and lambdas take every argument as it
+ * is, so a lambda's body runs right away and can build goals. One kind of
+ * argument is the exception for a lambda: an argument that asks a question
+ * has to be answered first, as it is in plain code, so that call waits.
+ *
+ * Any other function needs values, so the call waits, and becomes a term
+ * that runs later, when
+ * - an argument waits for a logic variable,
+ * - a rule, query, or find is being written, since what it holds runs when
+ *   it does, or
+ * - the function calls back into Lion and gets a value that is not known yet.
+ *
+ * Otherwise the questions among the arguments are asked, and the function
+ * runs on their answers.
+ */
+export const apply = (
+  fn: unknown,
+  args: readonly unknown[],
+  callee?: unknown
+): EvaluateResult => {
+  const later = (closed: readonly unknown[]) =>
+    new DeferredCall(fn, callee, closed);
+  const wait = () => Effect.map(suspendArguments(args), later);
+  if (typeof fn !== "function") {
+    return isWaiting(fn)
+      ? wait()
+      : logicError(`${show(fn)} is not a function, so it cannot be called.`);
+  }
+  const run = (values: readonly unknown[]) =>
+    invoke(fn as LionFunction, values) as EvaluateResult;
+  if (isLogicFunction(fn)) {
+    return args.some(asks) && lambdaInfo(fn) !== undefined
+      ? // The lambda waits with its arguments, closed over what it names now.
+        Effect.map(
+          suspendArguments([fn, ...args]),
+          ([closed, ...rest]) => new DeferredCall(closed, callee, rest)
+        )
+      : run(args);
+  }
+  // What a rule holds runs when the rule runs. A call on known values is
+  // computed ahead of time when that works, which changes only when a side
+  // effect happens: a call that fails waits to fail when the rule runs.
+  const unlessWriting = (error: EvaluationError) =>
+    Effect.flatMap(isWriting, (writing) =>
+      writing ? wait() : Effect.fail(error)
+    );
+  if (!args.some(isSpecial)) {
+    return run(args).pipe(Effect.catch(unlessWriting));
+  }
+  if (args.some(isWaiting)) {
+    return wait();
+  }
+  return Effect.gen(function* () {
+    if (!(yield* isWriting)) {
+      const values = yield* Effect.forEach(args, answer);
+      return yield* run(values).pipe(Effect.catchTag("WaitingError", wait));
     }
     const closed = yield* suspendArguments(args);
-    return waits || closed.some((arg) => termVariables(arg).length > 0)
-      ? closed
-      : undefined;
+    return closed.some(isLive)
+      ? later(closed)
+      : yield* run(args).pipe(Effect.catch(wait));
   });
+};
 
 /**
- * Calls a function with its evaluated arguments. A call that needs the value
- * of a logic variable waits instead: it becomes a term that runs once the
- * variable is bound. Relations, aggregates, algorithms, and lambdas take
- * logic variables as they are, so they always run.
+ * The value of what a Lion function returned to host code. A question is
+ * asked. A value that is not known yet fails with a WaitingError, and the
+ * call the host function is part of waits instead.
  */
+const known = (value: unknown): EvaluateResult => {
+  if (!(value instanceof LogicValue)) {
+    return Effect.succeed(value);
+  }
+  return isQuestion(value)
+    ? answer(value)
+    : Effect.fail(new WaitingError({ value }));
+};
+
+/**
+ * Calls a Lion function from host code, and gives its value. What the
+ * function needs to run is the caller's to provide.
+ */
+export const call = (fn: unknown, ...args: readonly unknown[]) =>
+  Effect.flatMap(apply(fn, args), known) as Effect.Effect<
+    unknown,
+    EvaluationError
+  >;
+
+/** Evaluates the function and its arguments, then calls it. */
 export const evaluateFunctionCall = (
   expression: typeof FunctionCallFormSchema.Type
 ) =>
   Effect.gen(function* () {
     const [head, ...tail] = yield* Effect.all(expression.map(evaluate));
-    if (isWaiting(head)) {
-      return new DeferredCall(
-        head,
-        expression[0],
-        yield* suspendArguments(tail)
-      );
-    }
-    if (typeof head !== "function") {
+    if (!(typeof head === "function" || isWaiting(head))) {
       return yield* new InvalidFunctionCallError({ expression });
     }
-    const waiting = isLogicFunction(head)
-      ? undefined
-      : yield* waitingArguments(tail);
-    if (waiting !== undefined) {
-      return new DeferredCall(head, expression[0], waiting);
-    }
-    return yield* call(head as LionFunction, ...tail) as EvaluateResult;
+    return yield* apply(head, tail, expression[0]);
   });

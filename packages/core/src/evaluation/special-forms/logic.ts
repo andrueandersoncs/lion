@@ -1,8 +1,9 @@
-import { Effect, Option } from "effect";
+import { Effect } from "effect";
 import { logicError } from "@/errors/evaluation";
+import { answer, database, isWriting, writing } from "@/evaluation/asking";
 import { boundNames, setGlobalBinding } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
-import { compileQuery, compileRule, queryOutputs } from "@/logic/compile";
+import { compileQuery, compileRule } from "@/logic/compile";
 import {
   addInvariant,
   addRules,
@@ -17,25 +18,25 @@ import {
   applyQueryOptions,
   parseInvariantOptions,
   parseQueryOptions,
+  readOptions,
 } from "@/logic/query-options";
 import { saveDatabase } from "@/logic/snapshot";
 import {
   Atom,
-  Conjunction,
-  Disjunction,
   type Goal,
   isGoal,
+  isQuestion,
   isWaiting,
-  Membership,
-  Negation,
+  LogicForm,
+  LogicValue,
   render,
   sameValue,
   show,
-  Unification,
 } from "@/logic/terms";
 import type {
   AndFormSchema,
   FactFormSchema,
+  FindFormSchema,
   InFormSchema,
   InvariantFormSchema,
   NotFormSchema,
@@ -48,64 +49,46 @@ import type {
   WhyFormSchema,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
-import { LionDatabaseService } from "@/services/database";
 import { LionEnvironmentService } from "@/services/evaluation";
-
-const database = Effect.serviceOption(LionDatabaseService).pipe(
-  Effect.flatMap(
-    Option.match({
-      onNone: () =>
-        logicError(
-          "No logic database is available. Evaluate with run(), or provide LionDatabaseService."
-        ),
-      onSome: Effect.succeed,
-    })
-  )
-);
 
 const evaluateAll = (expressions: readonly LionExpressionType[]) =>
   Effect.all(expressions.map(evaluate));
 
-const atoms = (form: string, values: readonly unknown[]) =>
+/**
+ * The facts a form names. A fact holds values, so a question among its
+ * arguments is asked.
+ */
+const atoms = (form: string, facts: readonly LionExpressionType[]) =>
   Effect.gen(function* () {
     const result: Atom[] = [];
-    for (const value of values) {
+    for (const value of yield* evaluateAll(facts)) {
       if (!(value instanceof Atom)) {
         return yield* logicError(
           `${form} expects relation calls, but found ${show(value)}.`
         );
       }
-      result.push(value);
+      result.push(
+        value.args.some(isQuestion)
+          ? new Atom(value.relation, yield* Effect.forEach(value.args, answer))
+          : value
+      );
     }
     return result;
   });
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
 /** Reads `{"key": [...]}`; relation options are read as written. */
-const relationKey = (name: string, options: unknown) => {
-  if (options === undefined) {
-    return Effect.succeed(undefined);
-  }
-  if (!isRecord(options)) {
-    return logicError(
-      `Relation options must be a record such as {"key": ["id"]}, but "${name}" has ${show(options)}.`
-    );
-  }
-  const unknown = Object.keys(options).find((option) => option !== "key");
-  if (unknown !== undefined) {
-    return logicError(
-      `Unknown relation option "${unknown}" for "${name}". The only relation option is "key".`
-    );
-  }
-  const key = typeof options.key === "string" ? [options.key] : options.key;
-  return Array.isArray(key) && key.every((column) => typeof column === "string")
-    ? Effect.succeed(key as readonly string[])
-    : logicError(
-        `The key of "${name}" must be a column name or a list of them, but found ${show(options.key)}.`
-      );
-};
+const relationKey = (name: string, options: unknown) =>
+  options === undefined
+    ? Effect.succeed(undefined)
+    : Effect.flatMap(readOptions("relation", options), (record) => {
+        const key = typeof record.key === "string" ? [record.key] : record.key;
+        return Array.isArray(key) &&
+          key.every((column) => typeof column === "string")
+          ? Effect.succeed(key as readonly string[])
+          : logicError(
+              `The key of "${name}" must be a column name or a list of them, but found ${show(record.key)}.`
+            );
+      });
 
 /**
  * ["relation", "dep", ["from", "to"]] declares a relation and binds it.
@@ -131,8 +114,9 @@ export const evaluateRelation = ([
 
 export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
   Effect.gen(function* () {
-    const headValue = yield* evaluate(head);
-    const bodyValues = yield* evaluateAll(body);
+    const [headValue, ...bodyValues] = yield* writing(
+      evaluateAll([head, ...body])
+    );
     const rules = yield* compileRule(headValue, bodyValues);
     yield* addRules(yield* database, rules);
     return ["rule", render(headValue), ...bodyValues.map(render)];
@@ -140,13 +124,13 @@ export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
 
 export const evaluateFact = ([_, ...facts]: typeof FactFormSchema.Type) =>
   Effect.gen(function* () {
-    const values = yield* atoms("fact", yield* evaluateAll(facts));
+    const values = yield* atoms("fact", facts);
     return yield* assertFacts(yield* database, values);
   });
 
 export const evaluateRetract = ([_, ...facts]: typeof RetractFormSchema.Type) =>
   Effect.gen(function* () {
-    const values = yield* atoms("retract", yield* evaluateAll(facts));
+    const values = yield* atoms("retract", facts);
     return yield* retractFacts(yield* database, values);
   });
 
@@ -157,11 +141,26 @@ export const evaluateQuery = ([
   options,
 ]: typeof QueryFormSchema.Type) =>
   Effect.gen(function* () {
-    const goalValue = yield* evaluate(goal);
-    const queries = yield* compileQuery(goalValue);
-    const parsed = yield* parseQueryOptions(options, queryOutputs(goalValue));
-    const rows = yield* queryDatabase(yield* database, queries);
+    const goalValue = yield* writing(evaluate(goal));
+    const query = yield* compileQuery(goalValue);
+    const parsed = yield* parseQueryOptions(options, query.outputs);
+    const rows = yield* queryDatabase(yield* database, query);
     return yield* applyQueryOptions(rows, parsed, goalValue);
+  });
+
+/**
+ * ["find", template, goal] is the template's value for every match of the
+ * goal, as a sorted list. Outside of rules it is asked right away. In a
+ * rule, query, or other find it is part of what is written: it is asked for
+ * each answer of the rule, with the variables the rule has bound.
+ */
+export const evaluateFind = ([_, template, goal]: typeof FindFormSchema.Type) =>
+  Effect.gen(function* () {
+    const [templateValue, goalValue] = yield* writing(
+      evaluateAll([template, goal])
+    );
+    const find = new LogicForm("find", [templateValue, goalValue]);
+    return (yield* isWriting) ? find : yield* answer(find);
   });
 
 /**
@@ -175,16 +174,16 @@ export const evaluateInvariant = ([
   options,
 ]: typeof InvariantFormSchema.Type) =>
   Effect.gen(function* () {
-    const goalValue = yield* evaluate(goal);
-    const queries = yield* compileQuery(goalValue);
+    const goalValue = yield* writing(evaluate(goal));
+    const query = yield* compileQuery(goalValue);
     const assert = yield* parseInvariantOptions(options);
-    yield* addInvariant(yield* database, { assert, goal: goalValue, queries });
+    yield* addInvariant(yield* database, { assert, goal: goalValue, query });
     return ["invariant", render(goalValue), { assert }];
   });
 
 export const evaluateWhy = ([_, fact]: typeof WhyFormSchema.Type) =>
   Effect.gen(function* () {
-    const [atom] = yield* atoms("why", [yield* evaluate(fact)]);
+    const [atom] = yield* atoms("why", [fact]);
     return yield* explainFact(yield* database, atom as Atom);
   });
 
@@ -200,7 +199,7 @@ const goalOrBoolean = (form: string, expression: LionExpressionType) =>
 /** Negates a goal, or a boolean outside of logic. */
 export const evaluateNot = ([_, goal]: typeof NotFormSchema.Type) =>
   Effect.map(goalOrBoolean("not", goal), (value) =>
-    typeof value === "boolean" ? !value : new Negation(value)
+    typeof value === "boolean" ? !value : new LogicForm("not", [value])
   );
 
 /**
@@ -209,8 +208,8 @@ export const evaluateNot = ([_, goal]: typeof NotFormSchema.Type) =>
  * in Scheme. Once an argument is a goal, they combine goals.
  */
 const connective =
-  (form: "and" | "or", combine: (goals: readonly Goal[]) => Goal) =>
-  (items: readonly LionExpressionType[]) =>
+  (form: "and" | "or") =>
+  ([_, ...items]: typeof AndFormSchema.Type | typeof OrFormSchema.Type) =>
     Effect.gen(function* () {
       const decides = form === "or";
       const goals: Goal[] = [];
@@ -223,27 +222,36 @@ const connective =
           goals.push(value);
         }
       }
-      return goals.length === 0 ? !decides : combine(goals);
+      return goals.length === 0 ? !decides : new LogicForm(form, goals);
     });
 
-const conjunction = connective("and", (goals) => new Conjunction(goals));
-const disjunction = connective("or", (goals) => new Disjunction(goals));
+export const evaluateAnd = connective("and");
 
-export const evaluateAnd = ([_, ...items]: typeof AndFormSchema.Type) =>
-  conjunction(items);
+export const evaluateOr = connective("or");
 
-export const evaluateOr = ([_, ...items]: typeof OrFormSchema.Type) =>
-  disjunction(items);
+/**
+ * The values of the operands of "=" or "in", or undefined when the form is
+ * a goal: an operand waits for a logic variable, or a rule is being written
+ * and an operand is a question. Otherwise a question among them is asked.
+ */
+const known = (operands: readonly unknown[]) =>
+  Effect.gen(function* () {
+    if (!operands.some((operand) => operand instanceof LogicValue)) {
+      return operands;
+    }
+    return operands.some(isWaiting) || (yield* isWriting)
+      ? undefined
+      : yield* Effect.forEach(operands, answer);
+  });
 
 /** Unifies two terms; without logic variables it is plain equality. */
 export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>
   Effect.gen(function* () {
-    const leftValue = yield* evaluate(left);
-    const rightValue = yield* evaluate(right);
-    if (!(isWaiting(leftValue) || isWaiting(rightValue))) {
-      return sameValue(leftValue, rightValue);
-    }
-    return new Unification(leftValue, rightValue);
+    const operands = yield* evaluateAll([left, right]);
+    const values = yield* known(operands);
+    return values === undefined
+      ? new LogicForm("=", operands)
+      : sameValue(values[0], values[1]);
   });
 
 /**
@@ -252,11 +260,12 @@ export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>
  */
 export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
   Effect.gen(function* () {
-    const elementValue = yield* evaluate(element);
-    const listValue = yield* evaluate(list);
-    if (isWaiting(elementValue) || isWaiting(listValue)) {
-      return new Membership(elementValue, listValue);
+    const operands = yield* evaluateAll([element, list]);
+    const values = yield* known(operands);
+    if (values === undefined) {
+      return new LogicForm("in", operands);
     }
+    const [elementValue, listValue] = values;
     if (!Array.isArray(listValue)) {
       return yield* logicError(
         `"in" expects a list, but found ${show(listValue)}.`

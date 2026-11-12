@@ -39,7 +39,7 @@
 </lion-example>
 
 <h2 id="rule-records">Records</h2>
-<p>A record evaluates each value and keeps its keys as written, in order. A record with a logic variable among its values <a href="#logic-waiting">waits</a> for it, as a call does. Keys are never evaluated. A key must not be empty or <code>__proto__</code>; a program with such a key fails with <code>SchemaError</code> before it runs.</p>
+<p>A record evaluates each value and keeps its keys as written, in order. A record with a logic variable among its values <a href="#logic-waiting">waits</a> for it, as a call does. A record holds values, so a goal among them is <a href="#logic-asking">asked</a>: the record holds <code>true</code> or <code>false</code>. Keys are never evaluated. A key must not be empty or <code>__proto__</code>; a program with such a key fails with <code>SchemaError</code> before it runs.</p>
 <lion-example name="Records">
 {"sum": ["number/add", 1, 2], "nested": {"ok": ["boolean/not", false]}}
 </lion-example>
@@ -50,17 +50,18 @@
   <li>A function may return a value or an Effect. Lion runs an Effect and uses its result.</li>
   <li>A <a href="#form-lambda">lambda</a> called with fewer arguments than it has parameters fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
   <li>A call with a logic variable among its arguments does not run. It <a href="#logic-waiting">waits</a>: it becomes a value that a rule or query computes once the variable is bound. Every function waits this way, except relations, aggregates, graph algorithms, and lambdas, which take logic variables as they are.</li>
+  <li>A function that is given a goal with a relation in it gets the goal's answer, <code>true</code> or <code>false</code>: the goal is <a href="#logic-asking">asked</a>. Relations, aggregates, graph algorithms, and lambdas take the goal itself.</li>
 </ul>
 <lion-example name="A waiting call">
 ["number/add", "?n", 1]
 </lion-example>
 
 <h2 id="rule-truthiness">Truthiness</h2>
-<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>. So are <code>and</code>, <code>or</code>, <code>not</code>, and the filters of a rule or query, which take only <code>true</code> and <code>false</code>.</p>
+<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. A condition that is a goal with a relation in it is <a href="#logic-asking">asked</a> first. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>. So are <code>and</code>, <code>or</code>, <code>not</code>, and the filters of a rule or query, which take only <code>true</code> and <code>false</code>.</p>
 
 <h2 id="rule-reserved">Reserved names</h2>
 <p>These names belong to forms and cannot be bound with <code>define</code>, used as <code>lambda</code> parameters, or declared as relations:</p>
-<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
+<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
 
 <h2 id="rule-runs">Each run</h2>
 <p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>

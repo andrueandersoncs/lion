@@ -12,7 +12,33 @@
     ["order", "?id", "?c", "?amount"]],
   ["query", ["spend", "?customer", "?total", "?orders"], {"order": "customer"}]]
 </lion-example>
-<p>A group only exists when something matches, so a count is never 0. To report zeros, combine the aggregate with <a href="#find-missing"><code>not</code></a> in a second rule. The argument can also be a constant: <code>["aggregate/count", 1]</code> counts the matches.</p>
+<p>A group only exists when something matches, so a count is never 0; the next section reports zeros. The argument can also be a constant: <code>["aggregate/count", 1]</code> counts the matches.</p>
+
+<h2>Count what may be nothing</h2>
+<p>Give the aggregate a <a href="#form-find"><code>find</code></a>. It lists what a goal matches for each customer, and a list can be empty:</p>
+<lion-example name="Count with zeros">
+["begin",
+  ["relation", "customer", ["name"]],
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "activity", ["customer", "orders", "total"]],
+  ["fact", ["customer", "ana"], ["customer", "bo"], ["customer", "cy"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+  ["rule",
+    ["activity", "?c",
+      ["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]],
+      ["aggregate/sum", ["find", "?amount", ["order", "?_", "?c", "?amount"]]]],
+    ["customer", "?c"]],
+  ["query", ["activity", "?customer", "?orders", "?total"], {"order": "customer"}]]
+</lion-example>
+<p>The same works without a rule, in a query or in plain code:</p>
+<lion-example name="Aggregate without a rule">
+["begin",
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+  {"orders": ["aggregate/count", ["find", "?id", ["order", "?id", "?_", "?_"]]],
+   "largest": ["aggregate/max", ["find", "?amount", ["order", "?_", "?_", "?amount"]]],
+   "customers": ["aggregate/unique", ["find", "?c", ["order", "?_", "?c", "?_"]]]}]
+</lion-example>
 
 <h2>Pick the aggregate you need</h2>
 <lion-example name="Every aggregate">
@@ -48,7 +74,7 @@
 </lion-example>
 
 <h2>Summarize each fact's own list</h2>
-<p>An aggregate call combines a rule's matches only as a whole argument of the head. Anywhere else, in a body or inside another call, it combines the list it is given, once for each match:</p>
+<p>An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a <code>find</code>. Anywhere else, in a body or inside another call, it combines the list it is given, once for each match:</p>
 <lion-example name="Aggregate a list per match">
 ["begin",
   ["relation", "cart", ["id", "prices", "shipping"]],

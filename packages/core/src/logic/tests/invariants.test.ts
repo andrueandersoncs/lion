@@ -240,7 +240,7 @@ describe("invariants", () => {
     ([first, second]) =>
       element<unknown>([
         ["number/greaterThan", first, 10],
-        ["not", ["edge", first, second]],
+        ["not", ["number/greaterThan", first, second]],
         ["=", first, ["number/add", second, 1]],
         ["and", ["edge", first, "?_"], ["number/lessThan", second, 3]],
       ])

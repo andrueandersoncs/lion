@@ -11,12 +11,12 @@ import type { Environment } from "@/schemas/environment";
 export type LionFunction = (...args: unknown[]) => unknown;
 
 /**
- * Calls a function that returns a value, or an Effect that makes one. What
+ * Runs a function that returns a value, or an Effect that makes one. What
  * the Effect can fail with and needs is the caller's to say.
  */
-export const call = (
+export const invoke = (
   fn: LionFunction,
-  ...args: readonly unknown[]
+  args: readonly unknown[]
 ): Effect.Effect<unknown> => {
   const result = fn(...args);
   return Effect.isEffect(result)
@@ -31,14 +31,24 @@ export const isLogicVariableName = (name: string): boolean =>
   LOGIC_VARIABLE_PATTERN.test(name);
 
 /** Every logic value shows as the Lion expression that evaluates to it. */
-class LogicValue {
+export abstract class LogicValue {
+  private mentioned: readonly string[] | undefined;
+
+  /** The terms the value is made of, in the order they are written. */
+  abstract readonly parts: readonly unknown[];
+
+  /** The logic variables the value mentions, in reading order. */
+  get variables(): readonly string[] {
+    this.mentioned ??= this.parts.flatMap(termVariables);
+    return this.mentioned;
+  }
+
   toJSON(): unknown {
     return render(this);
   }
 }
 
 export class LogicVariable extends LogicValue {
-  readonly _tag = "LogicVariable";
   /** The variable name without the leading `?`. */
   readonly name: string;
 
@@ -50,15 +60,22 @@ export class LogicVariable extends LogicValue {
   get anonymous(): boolean {
     return this.name.startsWith("_");
   }
+
+  get parts(): readonly unknown[] {
+    return [];
+  }
+
+  override get variables(): readonly string[] {
+    return [this.name];
+  }
 }
 
 /**
- * A call that waits for logic variables: it runs once the engine has bound
- * every variable it mentions. A `cond`, `match`, `eval`, or record that waits
- * is a call to a lambda that holds the form.
+ * A call that waits: it runs once the engine has bound the variables it
+ * needs, and asked the questions among its arguments. A `cond`, `match`,
+ * `eval`, or record that waits is a call to a lambda that holds the form.
  */
 export class DeferredCall extends LogicValue {
-  readonly _tag = "DeferredCall";
   /** The function to call, or a term that evaluates to one. */
   readonly fn: unknown;
   /** The callee as the program wrote it, shown for a function with no name. */
@@ -70,8 +87,6 @@ export class DeferredCall extends LogicValue {
    * combines a list.
    */
   readonly aggregate: string | undefined;
-  /** The logic variables the call waits for. */
-  readonly variables: readonly string[];
 
   constructor(
     fn: unknown,
@@ -84,7 +99,10 @@ export class DeferredCall extends LogicValue {
     this.callee = callee;
     this.args = args;
     this.aggregate = aggregate;
-    this.variables = [fn, ...args].flatMap(termVariables);
+  }
+
+  get parts(): readonly unknown[] {
+    return [this.fn, ...this.args];
   }
 }
 
@@ -117,114 +135,101 @@ export interface RelationInfo {
   readonly name: string;
 }
 
+const isPlainTerm = (term: unknown) =>
+  !(term instanceof LogicValue) || term instanceof LogicVariable;
+
 /** A relation applied to terms, such as `["dep", "?x", "?y"]`. */
 export class Atom extends LogicValue {
-  readonly _tag = "Atom";
   readonly relation: RelationInfo;
   readonly args: readonly unknown[];
+  /** True when every argument is a variable or a value, with nothing to run. */
+  readonly plain: boolean;
 
   constructor(relation: RelationInfo, args: readonly unknown[]) {
     super();
     this.relation = relation;
     this.args = args;
+    this.plain = args.every(isPlainTerm);
+  }
+
+  get parts(): readonly unknown[] {
+    return this.args;
+  }
+
+  map(change: (part: unknown) => unknown): Atom {
+    return new Atom(this.relation, this.args.map(change));
   }
 }
 
-/** `["not", goal]`: the goal has no match. */
-export class Negation extends LogicValue {
-  readonly _tag = "Negation";
-  readonly goal: Goal;
-
-  constructor(goal: Goal) {
-    super();
-    this.goal = goal;
-  }
-}
-
-export class Conjunction extends LogicValue {
-  readonly _tag = "Conjunction";
-  readonly goals: readonly Goal[];
-
-  constructor(goals: readonly Goal[]) {
-    super();
-    this.goals = goals;
-  }
-}
-
-export class Disjunction extends LogicValue {
-  readonly _tag = "Disjunction";
-  readonly goals: readonly Goal[];
-
-  constructor(goals: readonly Goal[]) {
-    super();
-    this.goals = goals;
-  }
-}
-
-export class Unification extends LogicValue {
-  readonly _tag = "Unification";
-  readonly left: unknown;
-  readonly right: unknown;
-
-  constructor(left: unknown, right: unknown) {
-    super();
-    this.left = left;
-    this.right = right;
-  }
-}
-
-/** `["in", element, list]`: the element is one of the list's items. */
-export class Membership extends LogicValue {
-  readonly _tag = "Membership";
-  readonly element: unknown;
-  readonly list: unknown;
-
-  constructor(element: unknown, list: unknown) {
-    super();
-    this.element = element;
-    this.list = list;
-  }
-}
+/** The logic forms, by the name each is written with. */
+export type FormName = "not" | "and" | "or" | "=" | "in" | "find";
 
 /**
- * What a rule or query can ask. A variable or a waiting call is a filter:
- * it must turn out true or false.
+ * A logic form, held the way it is written: its name, then its parts.
+ *
+ * - `["not", goal]`: the goal has no match.
+ * - `["and", goal, ...]` and `["or", goal, ...]`: all, or any, of the goals.
+ * - `["=", term, term]`: the two terms are the same value.
+ * - `["in", element, list]`: the element is one of the list's items.
+ * - `["find", template, goal]`: the template's value for every match of
+ *   the goal, as a sorted list.
  */
-export type Goal =
-  | Atom
-  | Negation
-  | Conjunction
-  | Disjunction
-  | Unification
-  | Membership
-  | DeferredCall
-  | LogicVariable
-  | boolean;
+export class LogicForm extends LogicValue {
+  readonly form: FormName;
+  readonly parts: readonly unknown[];
+
+  constructor(form: FormName, parts: readonly unknown[]) {
+    super();
+    this.form = form;
+    this.parts = parts;
+  }
+
+  map(change: (part: unknown) => unknown): LogicForm {
+    return new LogicForm(this.form, this.parts.map(change));
+  }
+}
+
+/** True for a logic form written with one of the given names. */
+export const isForm = (
+  value: unknown,
+  ...names: readonly FormName[]
+): value is LogicForm =>
+  value instanceof LogicForm && names.includes(value.form);
+
+/**
+ * What a rule or query can ask. A variable, a waiting call, or a find is a
+ * filter: it must turn out true or false.
+ */
+export type Goal = Atom | LogicForm | DeferredCall | LogicVariable | boolean;
 
 export const isGoal = (value: unknown): value is Goal =>
   typeof value === "boolean" || value instanceof LogicValue;
+
+/** True for a goal that matches the rows of a relation somewhere in it. */
+export const isRelational = (value: unknown): boolean =>
+  value instanceof Atom ||
+  (isForm(value, "not", "and", "or") && value.parts.some(isRelational));
+
+/**
+ * True for a question: a value that the database answers. A goal with a
+ * relation in it is true when it has a match and false when it has none, and
+ * a find is the list of what it found.
+ */
+export const isQuestion = (value: unknown): boolean =>
+  isForm(value, "find") || isRelational(value);
 
 /**
  * True for a value that is not known until logic variables are bound: a
  * variable, a waiting call, or a goal with no relation in it, which is true
  * or false once its variables are.
  */
-export const isWaiting = (value: unknown): boolean => {
-  if (value instanceof Negation) {
-    return isWaiting(value.goal);
-  }
-  if (value instanceof Conjunction || value instanceof Disjunction) {
-    return value.goals.every(
-      (goal) => typeof goal === "boolean" || isWaiting(goal)
-    );
-  }
-  return value instanceof LogicValue && !(value instanceof Atom);
-};
+export const isWaiting = (value: unknown): boolean =>
+  value instanceof LogicValue && !isQuestion(value);
 
 const LOGIC_FUNCTIONS = new WeakSet<object>();
 
 /**
- * Marks a function that takes logic variables as they are and builds logic
+ * Marks a function that takes logic values as they are and builds logic
  * values from them: relations, aggregates, algorithms, and lambdas. Every
  * other function waits until its arguments are known.
  */
@@ -270,8 +275,6 @@ export interface LambdaInfo {
   /** The scope the lambda closes over; undefined when it closes over none. */
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
-  /** True when the body names a logic variable. */
-  readonly symbolic: boolean;
 }
 
 const LAMBDAS = new WeakMap<object, LambdaInfo>();
@@ -286,6 +289,16 @@ export const registerLambda = <F extends LionFunction>(
 
 export const lambdaInfo = (value: unknown): LambdaInfo | undefined =>
   typeof value === "function" ? LAMBDAS.get(value) : undefined;
+
+/**
+ * True for a call to a lambda that closes over nothing: a `cond`, `match`,
+ * record, or lambda that waits. Its body runs as plain Lion once the call
+ * does, so it can ask questions of its own.
+ */
+export const isWaitingForm = (call: DeferredCall): boolean => {
+  const info = lambdaInfo(call.fn);
+  return info !== undefined && info.environment === undefined;
+};
 
 /** Decides how `write` shows the parts that depend on who is reading. */
 export interface Writer {
@@ -348,6 +361,9 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   return prototype === Object.prototype || prototype === null;
 };
 
+const variableName = (variable: LogicVariable) =>
+  `?${variable.anonymous ? "_" : variable.name}`;
+
 /**
  * Writes a logic value as the Lion expression that evaluates to it. Every
  * reader shares this one shape: messages and `why`, the keys that tell rules
@@ -356,9 +372,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 export const write = (item: unknown, writer: Writer): unknown => {
   const inner = (value: unknown) => write(value, writer);
   if (item instanceof LogicVariable) {
-    return writer.variable === undefined
-      ? `?${item.anonymous ? "_" : item.name}`
-      : writer.variable(item);
+    return (writer.variable ?? variableName)(item);
   }
   if (item instanceof DeferredCall) {
     return writeCall(item, writer);
@@ -367,20 +381,8 @@ export const write = (item: unknown, writer: Writer): unknown => {
     const args = item.args.map(inner);
     return item.relation.computed?.form(args) ?? [item.relation.name, ...args];
   }
-  if (item instanceof Negation) {
-    return ["not", inner(item.goal)];
-  }
-  if (item instanceof Conjunction) {
-    return ["and", ...item.goals.map(inner)];
-  }
-  if (item instanceof Disjunction) {
-    return ["or", ...item.goals.map(inner)];
-  }
-  if (item instanceof Unification) {
-    return ["=", inner(item.left), inner(item.right)];
-  }
-  if (item instanceof Membership) {
-    return ["in", inner(item.element), inner(item.list)];
+  if (item instanceof LogicForm) {
+    return [item.form, ...item.parts.map(inner)];
   }
   if (typeof item === "function") {
     return writeFunction(item as LionFunction, writer);
@@ -438,14 +440,21 @@ export const render = (value: unknown): unknown =>
 export const show = (value: unknown): string =>
   JSON.stringify(render(value)) ?? String(value);
 
-/** Writes a goal with the values an answer gave its variables. */
+/**
+ * Writes a goal with the values an answer gave its variables. A variable the
+ * answer does not bind, such as one a question inside the goal binds for
+ * itself, stays a variable.
+ */
 export const instantiate = (
   goal: unknown,
   vars: ReadonlyMap<string, unknown>
 ): unknown =>
   write(goal, {
     ...DISPLAY,
-    variable: ({ name }) => (vars.has(name) ? vars.get(name) : "?_"),
+    variable: (variable) =>
+      vars.has(variable.name)
+        ? DISPLAY.data(vars.get(variable.name))
+        : variableName(variable),
   });
 
 /** Raised by a writer for a value with no Lion form. */
@@ -596,27 +605,7 @@ export const compareValues = (a: unknown, b: unknown): number => {
 
 /** Variable names a term or goal mentions, in reading order. */
 export function termVariables(term: unknown): readonly string[] {
-  if (term instanceof LogicVariable) {
-    return [term.name];
-  }
-  if (term instanceof DeferredCall) {
-    return term.variables;
-  }
-  if (term instanceof Atom) {
-    return term.args.flatMap(termVariables);
-  }
-  if (term instanceof Negation) {
-    return termVariables(term.goal);
-  }
-  if (term instanceof Conjunction || term instanceof Disjunction) {
-    return term.goals.flatMap(termVariables);
-  }
-  if (term instanceof Unification) {
-    return [term.left, term.right].flatMap(termVariables);
-  }
-  return term instanceof Membership
-    ? [term.element, term.list].flatMap(termVariables)
-    : [];
+  return term instanceof LogicValue ? term.variables : [];
 }
 
 /** True when a logic value hides inside an array or record. */

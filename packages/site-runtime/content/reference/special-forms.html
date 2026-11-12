@@ -68,6 +68,7 @@
 </code-block>
 <ul>
   <li>Evaluates each <code>condition</code> in order and returns the evaluated <code>result</code> of the first one that is <a href="#rule-truthiness">truthy</a>. Later conditions are not evaluated.</li>
+  <li>A condition that is a goal with a relation in it, such as a relation call, is <a href="#logic-asking">asked</a>: it holds when the goal has a match.</li>
   <li>An <code>else</code> branch, allowed only last, always matches.</li>
   <li>With no match and no <code>else</code>, returns <code>null</code>.</li>
 </ul>
@@ -84,7 +85,7 @@
 </code-block>
 <ul>
   <li>Evaluates <code>value</code>, then tries each pair in order. The first whose predicate holds is chosen, and its function is called with the value. If none holds, <code>fallback</code> is called with the value.</li>
-  <li>A predicate is a function, or a record of predicates. A function holds when it returns <code>true</code>; a failure, or any result other than a boolean, counts as not holding.</li>
+  <li>A predicate is a function, or a record of predicates. A function holds when it returns <code>true</code>; a failure, or any result other than a boolean, counts as not holding. A relation is a predicate too: it holds when the goal it builds from the value <a href="#logic-asking">has a match</a>.</li>
   <li>A record predicate holds for a record that has every one of its keys, where each value satisfies the predicate under the same key. Record predicates nest.</li>
   <li>At least one pair and the fallback are required.</li>
 </ul>

@@ -3,7 +3,8 @@
  * answers. Options are read as written, like a relation's column list.
  *
  * An invariant, `["invariant", goal, {"assert": "none"}]`, is the same
- * assertion kept by the database, so it reads its option here too.
+ * assertion kept by the database, so it reads its option here too, and so
+ * does a relation, whose one option is its key.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
@@ -24,20 +25,64 @@ export interface QueryOptions {
   readonly order: readonly SortKey[];
 }
 
-const OPTION_NAMES = ["order", "limit", "offset", "assert"];
+/** The options each form takes, and an options record to show in messages. */
+const FORMS = {
+  query: {
+    names: ["order", "limit", "offset", "assert"],
+    example: '{"order": "-points", "limit": 10}',
+  },
+  invariant: { names: ["assert"], example: '{"assert": "none"}' },
+  relation: { names: ["key"], example: '{"key": ["id"]}' },
+};
 
 const fail = (message: string) => Effect.fail(new LogicError({ message }));
 
 const show = (value: unknown) => JSON.stringify(render(value));
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const isCount = (value: unknown): value is number =>
+const isCount = (value: unknown) =>
   typeof value === "number" && Number.isInteger(value) && value >= 0;
 
-const isAssertion = (value: unknown): value is Assertion =>
-  value === "some" || value === "none";
+/**
+ * Reads the options record of a form, and fails with what is wrong with it:
+ * it is not a record, it has an option the form does not take, or an option
+ * has a value it cannot have.
+ */
+export const readOptions = (form: keyof typeof FORMS, options: unknown) => {
+  const { example, names } = FORMS[form];
+  if (
+    typeof options !== "object" ||
+    options === null ||
+    Array.isArray(options)
+  ) {
+    const subject = `${form[0]?.toUpperCase()}${form.slice(1)}`;
+    return fail(
+      `${subject} options must be a record such as ${example}, but found ${show(options)}.`
+    );
+  }
+  const record = options as Record<string, unknown>;
+  const unknown = Object.keys(record).find((key) => !names.includes(key));
+  if (unknown !== undefined) {
+    const known =
+      names.length === 1
+        ? `The only ${form} option is "${names[0]}".`
+        : `Query options are ${names.map((name) => `"${name}"`).join(", ")}.`;
+    return fail(`Unknown ${form} option "${unknown}". ${known}`);
+  }
+  const count = ["limit", "offset"].find(
+    (name) => record[name] !== undefined && !isCount(record[name])
+  );
+  if (count !== undefined) {
+    return fail(
+      `The ${form} option "${count}" must be a whole number of at least 0, but found ${show(record[count])}.`
+    );
+  }
+  const { assert } = record;
+  return assert === undefined || assert === "some" || assert === "none"
+    ? Effect.succeed(record)
+    : fail(
+        `The ${form} option "assert" must be "some" or "none", but found ${show(assert)}.`
+      );
+};
 
 /** `"-points"` sorts by `?points` in descending order; a `?` is optional. */
 const SORT_KEY = /^(-?)\??([A-Za-z_][\w-]*)$/;
@@ -66,57 +111,33 @@ const parseOrder = (order: unknown, outputs: readonly string[]) =>
     return keys;
   });
 
-/** Describes what is wrong with an options record, if anything. */
-const optionsProblem = (options: Record<string, unknown>) => {
-  const unknown = Object.keys(options).find(
-    (key) => !OPTION_NAMES.includes(key)
-  );
-  if (unknown !== undefined) {
-    return `Unknown query option "${unknown}". Query options are ${OPTION_NAMES.map((name) => `"${name}"`).join(", ")}.`;
-  }
-  const count = (["limit", "offset"] as const).find(
-    (name) => options[name] !== undefined && !isCount(options[name])
-  );
-  if (count !== undefined) {
-    return `The query option "${count}" must be a whole number of at least 0, but found ${show(options[count])}.`;
-  }
-  const { assert } = options;
-  if (!(assert === undefined || isAssertion(assert))) {
-    return `The query option "assert" must be "some" or "none", but found ${show(assert)}.`;
-  }
-  return undefined;
-};
-
 /**
  * Reads an invariant's options record. Its one option, "assert", is required,
  * since an invariant with no assertion would check nothing.
  */
-export const parseInvariantOptions = (
-  options: unknown
-): Effect.Effect<Assertion, LogicError> => {
-  if (!isRecord(options)) {
-    return fail(
-      `Invariant options must be a record such as {"assert": "none"}, but found ${show(options)}.`
-    );
-  }
-  const unknown = Object.keys(options).find((key) => key !== "assert");
-  if (unknown !== undefined) {
-    return fail(
-      `Unknown invariant option "${unknown}". The only invariant option is "assert".`
-    );
-  }
-  const { assert } = options;
-  if (assert === undefined) {
-    return fail(
-      `An invariant needs the option "assert", set to "some" or "none", such as {"assert": "none"}.`
-    );
-  }
-  return isAssertion(assert)
-    ? Effect.succeed(assert)
-    : fail(
-        `The invariant option "assert" must be "some" or "none", but found ${show(assert)}.`
-      );
-};
+export const parseInvariantOptions = (options: unknown) =>
+  Effect.flatMap(readOptions("invariant", options), ({ assert }) =>
+    assert === undefined
+      ? fail(
+          `An invariant needs the option "assert", set to "some" or "none", such as {"assert": "none"}.`
+        )
+      : Effect.succeed(assert as Assertion)
+  );
+
+/** Reads and checks a query's options record. */
+export const parseQueryOptions = (
+  options: unknown,
+  outputs: readonly string[]
+): Effect.Effect<QueryOptions, LogicError> =>
+  options === undefined
+    ? Effect.succeed({ order: [] })
+    : Effect.gen(function* () {
+        const { order, ...rest } = yield* readOptions("query", options);
+        return {
+          ...(rest as Omit<QueryOptions, "order">),
+          order: order === undefined ? [] : yield* parseOrder(order, outputs),
+        };
+      });
 
 /**
  * Describes how a goal's answers break an assertion, or returns undefined.
@@ -137,41 +158,6 @@ export const assertionProblem = (
   return undefined;
 };
 
-/** Reads and checks a query's options record. */
-export const parseQueryOptions = (
-  options: unknown,
-  outputs: readonly string[]
-): Effect.Effect<QueryOptions, LogicError> =>
-  Effect.gen(function* () {
-    if (options === undefined) {
-      return { order: [] };
-    }
-    if (!isRecord(options)) {
-      return yield* fail(
-        `Query options must be a record such as {"order": "-points", "limit": 10}, but found ${show(options)}.`
-      );
-    }
-    const problem = optionsProblem(options);
-    if (problem !== undefined) {
-      return yield* fail(problem);
-    }
-    const { assert, limit, offset } = options as {
-      readonly assert?: Assertion;
-      readonly limit?: number;
-      readonly offset?: number;
-    };
-    const order =
-      options.order === undefined
-        ? []
-        : yield* parseOrder(options.order, outputs);
-    return {
-      order,
-      ...(assert === undefined ? {} : { assert }),
-      ...(limit === undefined ? {} : { limit }),
-      ...(offset === undefined ? {} : { offset }),
-    };
-  });
-
 const compareRows =
   (keys: readonly SortKey[]) =>
   (a: Record<string, unknown>, b: Record<string, unknown>) => {
@@ -189,19 +175,20 @@ export const applyQueryOptions = (
   rows: readonly Record<string, unknown>[],
   options: QueryOptions,
   goal: unknown
-) =>
-  Effect.gen(function* () {
-    const problem = assertionProblem("query", options.assert, rows, goal);
-    if (problem !== undefined) {
-      return yield* fail(problem);
-    }
-    const sorted =
-      options.order.length === 0
-        ? rows
-        : [...rows].sort(compareRows(options.order));
-    const start = options.offset ?? 0;
-    return sorted.slice(
+) => {
+  const problem = assertionProblem("query", options.assert, rows, goal);
+  if (problem !== undefined) {
+    return fail(problem);
+  }
+  const sorted =
+    options.order.length === 0
+      ? rows
+      : [...rows].sort(compareRows(options.order));
+  const start = options.offset ?? 0;
+  return Effect.succeed(
+    sorted.slice(
       start,
       options.limit === undefined ? undefined : start + options.limit
-    );
-  });
+    )
+  );
+};

@@ -4,7 +4,8 @@
 <h2 id="guarantee-safety">Safety</h2>
 <ul>
   <li>Every variable in a rule's head must be bound by a goal in its body.</li>
-  <li>Every variable in a filter, in a computed value, in an input of a graph algorithm, or under <code>not</code> must first be bound by a relation goal, <code>=</code>, or <code>in</code>. Anonymous variables in a relation call under <code>not</code> are exempt.</li>
+  <li>Every variable in a filter, in a computed value, or in an input of a graph algorithm must first be bound by a relation goal, <code>=</code>, or <code>in</code>.</li>
+  <li>A <a href="#logic-asking">question</a>, a goal under <code>not</code>, a goal used as a value, or a <code>find</code>, waits for the variables that the rule or query around it binds. Every other variable in it is its own, and the question must bind it itself. A <code>find</code> must bind every variable of its template.</li>
   <li>The list in <code>in</code> must be bound before it runs.</li>
   <li>Lion orders the goals of a body so each runs once its inputs are bound. Filters that are ready together run in the order written, so a guard written first protects the filter after it. Otherwise the order you write goals in only matters for <a href="#goal-directed-evaluation">goal-directed queries</a>.</li>
 </ul>
@@ -12,14 +13,14 @@
 
 <h2 id="guarantee-values">Values</h2>
 <ul>
-  <li>A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for <code>cond</code>, <code>match</code>, <code>eval</code>, and records, and for lambdas.</li>
+  <li>A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for <code>cond</code>, <code>match</code>, <code>eval</code>, and records, for lambdas, and for the questions an expression asks: a goal used as a value and a <code>find</code> give in a rule what they give in plain code.</li>
   <li>A filter must be <code>true</code> or <code>false</code>. The rows a rule derives and the answers a query gives must be JSON data. Anything else fails with an error that shows the call or the value.</li>
   <li>A function that fails while a rule or query runs it fails the rule or query, with an error that names the call and the values it ran on.</li>
 </ul>
 
-<h2 id="guarantee-stratification">Negation and aggregation</h2>
+<h2 id="guarantee-stratification">Questions and aggregation</h2>
 <ul>
-  <li>A relation cannot depend on its own negation, directly or through other rules.</li>
+  <li>A rule cannot ask a <a href="#logic-asking">question</a> about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under <code>not</code>, a goal used as a value, a <code>find</code>, and a relation handed to a function. A question that a rule only builds when it runs, as with <code>eval</code>, fails then instead.</li>
   <li>An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, and <code>aggregate/union</code>, and only when every relation in the recursive cycle aggregates.</li>
   <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts.</li>
 </ul>
@@ -47,10 +48,11 @@
 <h2 id="guarantee-equivalence">Equivalent ways to answer</h2>
 <ul>
   <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives.</li>
+  <li>What the database has derived for earlier queries never changes an answer: a query gives what it would give on a database that has derived nothing yet.</li>
   <li>A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.</li>
   <li>Answers are cached until a fact, rule, or invariant changes; a cached answer is the answer evaluation would give.</li>
 </ul>
 
 <h2 id="guarantee-order">Answer order</h2>
-<p>Without the <code>"order"</code> option, answers come in the order they are found. That order is deterministic for a given program and version of Lion, but it is not part of the language. Sort with <a href="#query-options"><code>"order"</code></a> when order matters.</p>
+<p>Without the <code>"order"</code> option, a query's answers come in the order they are found. That order is deterministic for a given program and version of Lion, but it is not part of the language. Sort with <a href="#query-options"><code>"order"</code></a> when order matters. A <code>find</code> always returns its list sorted, so a value a rule derives from one never depends on how it was found.</p>
 </article>

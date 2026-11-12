@@ -360,6 +360,7 @@
 .graph-node[data-color="fact"],
 .graph-node[data-color="retract"],
 .graph-node[data-color="query"],
+.graph-node[data-color="find"],
 .graph-node[data-color="why"],
 .graph-node[data-color="not"],
 .graph-node[data-color="and"],

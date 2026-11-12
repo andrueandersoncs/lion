@@ -1,7 +1,10 @@
 import { Effect, Schema } from "effect";
+import { WaitingError } from "@/errors/evaluation";
+import { answer, isWriting } from "@/evaluation/asking";
 import { evaluate } from "@/evaluation/evaluate";
+import { apply, call } from "@/evaluation/special-forms/function";
 import { suspend } from "@/evaluation/special-forms/lambda";
-import { call, isWaiting, type LionFunction } from "@/logic/terms";
+import { isWaiting, type LionFunction, LogicValue } from "@/logic/terms";
 import {
   LionFunctionValueSchema,
   type MatchFormSchema,
@@ -27,16 +30,22 @@ const PredicateSchema: Schema.Codec<Predicate> = Schema.Union([
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** A predicate that fails, or answers anything but true, does not match. */
+/**
+ * A predicate that fails, or answers anything but true, does not match. A
+ * relation is a predicate too: it matches when its goal has a match.
+ */
 const matches = (
   value: unknown,
   predicate: Predicate
-): Effect.Effect<boolean, never, unknown> => {
+): Effect.Effect<boolean, WaitingError, unknown> => {
   if (typeof predicate === "function") {
     return call(predicate, value).pipe(
       Effect.map((result) => result === true),
-      Effect.catch(() => Effect.succeed(false))
-    );
+      Effect.catchIf(
+        (error) => !(error instanceof WaitingError),
+        () => Effect.succeed(false)
+      )
+    ) as Effect.Effect<boolean, WaitingError, unknown>;
   }
   return Effect.gen(function* () {
     for (const [key, nested] of Object.entries(predicate)) {
@@ -60,17 +69,21 @@ const evaluateFunction = evaluateTo(LionFunctionValueSchema);
 
 /**
  * Applies the function of the first pattern whose predicate matches the
- * value, or the fallback. A value that is not known yet makes the form wait
- * for its logic variables.
+ * value, or the fallback. A value that is a question is asked. When the
+ * value, or what a predicate says about it, is not known yet, the form
+ * waits.
  */
 export const evaluateMatch = (
   expression: typeof MatchFormSchema.Type
 ): EvaluateResult =>
   Effect.gen(function* () {
     const [_, subject, ...rest] = expression;
-    const value = yield* evaluate(subject);
-    if (isWaiting(value)) {
-      return yield* suspend(expression);
+    let value = yield* evaluate(subject);
+    if (value instanceof LogicValue) {
+      if (isWaiting(value) || (yield* isWriting)) {
+        return yield* suspend(expression);
+      }
+      value = yield* answer(value);
     }
     const patterns = rest.slice(0, -1) as (readonly [
       LionExpressionType,
@@ -80,9 +93,11 @@ export const evaluateMatch = (
       const predicate = yield* evaluateTo(PredicateSchema)(predicateExpression);
       const fn = yield* evaluateFunction(functionExpression);
       if (yield* matches(value, predicate)) {
-        return yield* call(fn, value);
+        return yield* apply(fn, [value]);
       }
     }
     const fallback = yield* evaluateFunction(rest.at(-1) as LionExpressionType);
-    return yield* call(fallback, value);
-  }) as EvaluateResult;
+    return yield* apply(fallback, [value]);
+  }).pipe(
+    Effect.catchTag("WaitingError", () => suspend(expression))
+  ) as EvaluateResult;

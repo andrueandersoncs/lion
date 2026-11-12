@@ -17,6 +17,7 @@
   "exports": {
     "./analysis/analyze": "./dist/analysis/analyze.mjs",
     "./errors/evaluation": "./dist/errors/evaluation.mjs",
+    "./evaluation/asking": "./dist/evaluation/asking.mjs",
     "./evaluation/base-forms/array": "./dist/evaluation/base-forms/array.mjs",
     "./evaluation/base-forms/primitive": "./dist/evaluation/base-forms/primitive.mjs",
     "./evaluation/base-forms/record": "./dist/evaluation/base-forms/record.mjs",
@@ -36,6 +37,7 @@
     "./logic/compile": "./dist/logic/compile.mjs",
     "./logic/database": "./dist/logic/database.mjs",
     "./logic/magic": "./dist/logic/magic.mjs",
+    "./logic/model": "./dist/logic/model.mjs",
     "./logic/query-options": "./dist/logic/query-options.mjs",
     "./logic/snapshot": "./dist/logic/snapshot.mjs",
     "./logic/strata": "./dist/logic/strata.mjs",
@@ -56,6 +58,7 @@
     "./schemas/evaluation": "./dist/schemas/evaluation.mjs",
     "./schemas/json-primitive": "./dist/schemas/json-primitive.mjs",
     "./schemas/lion-expression": "./dist/schemas/lion-expression.mjs",
+    "./services/asker": "./dist/services/asker.mjs",
     "./services/database": "./dist/services/database.mjs",
     "./services/evaluation": "./dist/services/evaluation.mjs",
     "./types/evaluation": "./dist/types/evaluation.mjs",

@@ -55,11 +55,6 @@ const references = (form: unknown): References => {
   return found;
 };
 
-const mentionsVariables = (form: unknown) =>
-  [...references(form)].some(
-    ([name, quoted]) => !quoted && isLogicVariableName(name)
-  );
-
 /**
  * A Lion function over `body`. Without an environment it closes over nothing:
  * its body sees only its parameters.
@@ -82,7 +77,7 @@ export const makeLambda = (
         Effect.provideService(LionEnvironmentService, scope)
       );
     }),
-    { parameters, body, environment, symbolic: mentionsVariables(body) }
+    { parameters, body, environment }
   );
 
 export const evaluateLambda = ([

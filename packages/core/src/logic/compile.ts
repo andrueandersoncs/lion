@@ -1,34 +1,36 @@
+/**
+ * Compiles goals into bodies the engine can run: the alternatives of a goal,
+ * each a list of literals in an order in which every literal has what it
+ * needs when its turn comes.
+ */
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { LogicError } from "@/errors/evaluation";
 import {
   Atom,
-  Conjunction,
   containsNestedLogic,
   DeferredCall,
-  Disjunction,
   type Goal,
+  isForm,
   isGoal,
-  isWaiting,
+  isQuestion,
+  isRelational,
+  isWaitingForm,
+  LogicForm,
+  LogicValue,
   LogicVariable,
   logicKey,
-  Membership,
-  Negation,
   render,
   show,
   termVariables,
-  Unification,
 } from "@/logic/terms";
 
 /**
- * One step of a compiled body, in the order the engine runs it. An atom
- * matches a relation's tuples, "=" and "in" bind a variable or test, and any
- * other goal is a test: a filter, or a choice between filters. With
- * `negated`, the goal must not hold.
+ * One step of a compiled body, in the order the engine runs it. A relation
+ * call matches the relation's rows and binds its variables, "=" and "in"
+ * bind a variable or test, and any other goal is a test: a filter, or a
+ * question such as a goal under "not".
  */
-export interface Literal {
-  readonly goal: Exclude<Goal, Negation | boolean>;
-  readonly negated: boolean;
-}
+export type Literal = Exclude<Goal, boolean>;
 
 export interface CompiledRule {
   /** Head positions that hold an aggregate; empty for an ordinary rule. */
@@ -53,163 +55,211 @@ export interface CompiledRule {
 }
 
 export interface CompiledQuery {
-  readonly body: readonly Literal[];
+  /** The goal's alternatives, each in the order the engine runs it. */
+  readonly bodies: readonly (readonly Literal[])[];
+  /** The variables an answer can bind, in the order the goal mentions them. */
   readonly outputs: readonly string[];
 }
 
+/** One alternative of a goal, and the variables it binds. */
+interface Plan {
+  readonly body: readonly Literal[];
+  readonly bound: ReadonlySet<string>;
+}
+
+/** Why a goal cannot be compiled. `compiling` reports it as a LogicError. */
+class Problem extends Error {}
+
+const problem = (message: string): never => {
+  throw new Problem(message);
+};
+
+/** Runs the compiler, which fails with why a goal cannot be compiled. */
+export const compiling = <A>(compile: () => A) =>
+  Effect.try({
+    try: compile,
+    catch: (error) => {
+      if (error instanceof Problem) {
+        return new LogicError({ message: error.message });
+      }
+      throw error;
+    },
+  });
+
+/** Runs the compiler, and gives undefined when a goal cannot be compiled. */
+export const compilable = <A>(compile: () => A): A | undefined => {
+  try {
+    return compile();
+  } catch (error) {
+    if (error instanceof Problem) {
+      return undefined;
+    }
+    throw error;
+  }
+};
+
 const MAX_ALTERNATIVES = 64;
 
-/** Gives every anonymous variable its own name so occurrences stay independent. */
-const renameAnonymous = () => {
-  let count = 0;
-  const term = (value: unknown): unknown => {
-    if (value instanceof LogicVariable && value.anonymous) {
-      count += 1;
-      return new LogicVariable(`_${count}`);
-    }
-    return value;
-  };
-  const goal = (value: unknown): unknown => {
-    if (value instanceof Atom) {
-      return new Atom(value.relation, value.args.map(term));
-    }
-    if (value instanceof Negation) {
-      return new Negation(goal(value.goal) as Goal);
-    }
-    if (value instanceof Conjunction) {
-      return new Conjunction(value.goals.map(goal) as Goal[]);
-    }
-    if (value instanceof Disjunction) {
-      return new Disjunction(value.goals.map(goal) as Goal[]);
-    }
-    if (value instanceof Unification) {
-      return new Unification(term(value.left), term(value.right));
-    }
-    return value instanceof Membership
-      ? new Membership(term(value.element), term(value.list))
-      : value;
-  };
-  return goal;
+let anonymous = 0;
+
+/**
+ * Gives an anonymous variable a name of its own, so its occurrences stay
+ * independent of each other, and of the variables of every other body.
+ */
+const fresh = (term: unknown) => {
+  if (!(term instanceof LogicVariable && term.anonymous)) {
+    return term;
+  }
+  anonymous += 1;
+  return new LogicVariable(`_${anonymous}`);
+};
+
+const isBinder = (goal: unknown): goal is Atom | LogicForm =>
+  goal instanceof Atom || isForm(goal, "=", "in");
+
+/**
+ * Readies a goal to be expanded: names its anonymous variables, and takes a
+ * goal out from under two `not`s, where it is a goal of the body again
+ * instead of a question.
+ */
+const prepare = (goal: unknown): unknown => {
+  if (isForm(goal, "and", "or")) {
+    return goal.map(prepare);
+  }
+  const [inner] = isForm(goal, "not") ? goal.parts : [];
+  if (isForm(inner, "not")) {
+    return prepare(inner.parts[0]);
+  }
+  return isBinder(goal) ? goal.map(fresh) : goal;
 };
 
 /** Logic values must be whole arguments, never inside a list or record. */
-const nestedProblem = (
-  owner: unknown,
-  terms: readonly unknown[]
-): string | undefined => {
+const checkNested = (owner: unknown, terms: readonly unknown[]): void => {
   for (const term of terms) {
     if (term instanceof DeferredCall) {
-      const problem = nestedProblem(owner, [term.fn, ...term.args]);
-      if (problem !== undefined) {
-        return problem;
-      }
+      checkNested(owner, term.parts);
     } else if (containsNestedLogic(term)) {
-      return `Logic variables must be direct arguments, not nested inside arrays or records: ${show(owner)}`;
+      problem(
+        `Logic variables must be direct arguments, not nested inside arrays or records: ${show(owner)}`
+      );
     }
   }
-  return undefined;
-};
-
-const leafTerms = (goal: Goal): readonly unknown[] => {
-  if (goal instanceof Atom) {
-    return goal.args;
-  }
-  if (goal instanceof Unification) {
-    return [goal.left, goal.right];
-  }
-  return goal instanceof Membership ? [goal.element, goal.list] : [goal];
-};
-
-type Alternatives = readonly Literal[][] | string;
-
-const anyOf = (goals: readonly Goal[], negated: boolean): Alternatives => {
-  const result: Literal[][] = [];
-  for (const branch of goals) {
-    const expanded = alternatives(branch, negated);
-    if (typeof expanded === "string") {
-      return expanded;
-    }
-    result.push(...expanded);
-  }
-  return result;
-};
-
-const allOf = (goals: readonly Goal[], negated: boolean): Alternatives => {
-  let result: Literal[][] = [[]];
-  for (const part of goals) {
-    const expanded = alternatives(part, negated);
-    if (typeof expanded === "string") {
-      return expanded;
-    }
-    result = result.flatMap((prefix) =>
-      expanded.map((suffix) => [...prefix, ...suffix])
-    );
-    if (result.length > MAX_ALTERNATIVES) {
-      return `Goal expands to more than ${MAX_ALTERNATIVES} alternatives; split it into separate rules.`;
-    }
-  }
-  return result;
 };
 
 /**
- * Expands a goal into alternatives, each a list of literals to satisfy.
- * `negated` asks for the goal not to hold, which swaps `and` with `or` on
- * the way down. A choice between filters stays one test, so like the plain
- * `or` it stops at the first filter that holds.
+ * Expands a goal into alternatives, each a list of literals to satisfy. An
+ * `or` of relation goals gives one alternative for each. A choice between
+ * filters stays one test, so like the plain `or` it stops at the first
+ * filter that holds. A goal under `not` stays whole: it is a question.
  */
-const alternatives = (goal: unknown, negated = false): Alternatives => {
+const alternatives = (goal: unknown): Literal[][] => {
   if (typeof goal === "boolean") {
-    return goal === negated ? [] : [[]];
+    return goal ? [[]] : [];
   }
   if (!isGoal(goal)) {
-    return `Expected a goal but found ${show(goal)}. Goals are relation calls, not/and/or/=/in forms, or function calls on logic variables.`;
+    return problem(
+      `Expected a goal but found ${show(goal)}. Goals are relation calls, not/and/or/=/in forms, or function calls on logic variables.`
+    );
   }
-  if (goal instanceof Negation) {
-    return alternatives(goal.goal, !negated);
+  if (isForm(goal, "or") && isRelational(goal)) {
+    return goal.parts.flatMap(alternatives);
   }
-  if (goal instanceof Conjunction || goal instanceof Disjunction) {
-    if (goal instanceof Conjunction !== negated) {
-      return allOf(goal.goals, negated);
-    }
-    return isWaiting(goal) ? [[{ goal, negated }]] : anyOf(goal.goals, negated);
+  if (!isForm(goal, "and")) {
+    checkNested(goal, isBinder(goal) ? goal.parts : [goal]);
+    return [[goal as Literal]];
   }
-  const leaf = goal as Literal["goal"];
-  return nestedProblem(leaf, leafTerms(leaf)) ?? [[{ goal: leaf, negated }]];
+  return goal.parts.reduce<Literal[][]>(
+    (all, part) => {
+      const expanded = alternatives(part);
+      const combined = all.flatMap((prefix) =>
+        expanded.map((suffix) => [...prefix, ...suffix])
+      );
+      return combined.length > MAX_ALTERNATIVES
+        ? problem(
+            `Goal expands to more than ${MAX_ALTERNATIVES} alternatives; split it into separate rules.`
+          )
+        : combined;
+    },
+    [[]]
+  );
 };
 
-const allBound = (term: unknown, bound: ReadonlySet<string>) =>
-  termVariables(term).every((name) => bound.has(name));
+/**
+ * The variables a term needs bound before it can be evaluated. A question
+ * needs only the variables that `scope`, the body around it, can bind: the
+ * rest are the question's own. So does a form that waits, such as a `cond`,
+ * since it may ask questions when it runs.
+ */
+const wants = (
+  term: unknown,
+  scope: ReadonlySet<string>
+): readonly string[] => {
+  if (term instanceof LogicVariable) {
+    return [term.name];
+  }
+  if (!(term instanceof LogicValue)) {
+    return [];
+  }
+  if (isQuestion(term)) {
+    return term.variables.filter((name) => scope.has(name));
+  }
+  const asks = term instanceof DeferredCall && isWaitingForm(term);
+  return term.parts.flatMap((part) =>
+    asks && part instanceof LogicVariable && !scope.has(part.name)
+      ? []
+      : wants(part, scope)
+  );
+};
 
-const isReady = ({ goal, negated }: Literal, bound: ReadonlySet<string>) => {
-  if (goal instanceof Atom) {
-    // An atom binds its variables, except the inputs of a computed relation
-    // and, under `not`, every variable but the anonymous one.
-    const inputs = goal.relation.computed?.inputs ?? 0;
-    return goal.args.every(
-      (arg, position) =>
-        (arg instanceof LogicVariable &&
-          position >= inputs &&
-          (arg.anonymous || !negated)) ||
-        allBound(arg, bound)
+/** The questions a term asks: goals with a relation in them, and finds. */
+const questionsIn = (term: unknown): readonly LogicValue[] => {
+  if (!(term instanceof LogicValue)) {
+    return [];
+  }
+  // A goal under `not` is asked the same question, and then turned around.
+  return isQuestion(term) && !isForm(term, "not")
+    ? [term]
+    : term.parts.flatMap(questionsIn);
+};
+
+/** The variables a goal's relation goals, "=", and "in" can bind. */
+const binders = (goal: unknown): readonly string[] => {
+  if (isForm(goal, "and", "or")) {
+    return goal.parts.flatMap(binders);
+  }
+  return isBinder(goal)
+    ? goal.parts.flatMap((part) =>
+        part instanceof LogicVariable ? [part.name] : []
+      )
+    : [];
+};
+
+const isReady = (
+  literal: Literal,
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>
+) => {
+  const known = (term: unknown) =>
+    wants(term, scope).every((name) => bound.has(name));
+  const free = (term: unknown) => term instanceof LogicVariable;
+  if (literal instanceof Atom) {
+    // A relation goal binds its variables, except the inputs of a computed
+    // relation, which another goal must bind first.
+    const inputs = literal.relation.computed?.inputs ?? 0;
+    return literal.args.every(
+      (arg, position) => (free(arg) && position >= inputs) || known(arg)
     );
   }
-  if (!negated && goal instanceof Membership) {
-    return (
-      allBound(goal.list, bound) &&
-      (goal.element instanceof LogicVariable || allBound(goal.element, bound))
-    );
+  const [first, second] = literal.parts;
+  if (isForm(literal, "in")) {
+    return known(second) && (free(first) || known(first));
   }
-  if (!negated && goal instanceof Unification) {
-    const left = allBound(goal.left, bound);
-    const right = allBound(goal.right, bound);
-    return (
-      (left || goal.left instanceof LogicVariable) &&
-      (right || goal.right instanceof LogicVariable) &&
-      (left || right)
-    );
+  if (isForm(literal, "=")) {
+    const [left, right] = [known(first), known(second)];
+    return (left || free(first)) && (right || free(second)) && (left || right);
   }
-  // Anything else is a test, which needs every variable it mentions.
-  return allBound(goal, bound);
+  // Anything else is a test, which needs every variable it waits for.
+  return known(literal);
 };
 
 /**
@@ -218,7 +268,7 @@ const isReady = ({ goal, negated }: Literal, bound: ReadonlySet<string>) => {
  * goal, or by "=" or "in" from such variables or plain values.
  */
 export const bindVariables = (
-  { goal, negated }: Literal,
+  literal: Literal,
   bound: Set<string>,
   fromData = false
 ) => {
@@ -226,22 +276,23 @@ export const bindVariables = (
     !fromData ||
     (term instanceof LogicVariable
       ? bound.has(term.name)
-      : termVariables(term).length === 0);
+      : !(term instanceof LogicValue));
   const bind = (term: unknown, when: boolean) => {
-    if (when && !negated && term instanceof LogicVariable) {
+    if (when && term instanceof LogicVariable) {
       bound.add(term.name);
     }
   };
-  if (goal instanceof Atom) {
-    for (const arg of goal.args) {
+  const [first, second] = literal.parts;
+  if (literal instanceof Atom) {
+    for (const arg of literal.args) {
       bind(arg, true);
     }
-  } else if (goal instanceof Unification) {
-    const [left, right] = [known(goal.left), known(goal.right)];
-    bind(goal.left, right);
-    bind(goal.right, left);
-  } else if (goal instanceof Membership) {
-    bind(goal.element, known(goal.list));
+  } else if (isForm(literal, "=")) {
+    const [left, right] = [known(first), known(second)];
+    bind(first, right);
+    bind(second, left);
+  } else if (isForm(literal, "in")) {
+    bind(first, known(second));
   }
 };
 
@@ -250,120 +301,186 @@ const boundArguments = (atom: Atom, bound: ReadonlySet<string>) =>
     (arg) => !(arg instanceof LogicVariable) || bound.has(arg.name)
   ).length;
 
-/** The goal a literal came from, for messages. */
-export const literalGoal = ({ goal, negated }: Literal): Goal =>
-  negated ? new Negation(goal) : goal;
+const variableNames = (names: readonly string[]) =>
+  [...new Set(names)].map((name) => `?${name}`).join(", ");
 
-/** True for a literal that matches a relation's tuples. */
-export const matchesAtom = (
-  literal: Literal
-): literal is { readonly goal: Atom; readonly negated: false } =>
-  literal.goal instanceof Atom && !literal.negated;
+/**
+ * The next literal that can run: the first filter that is ready, in the
+ * order written, or else the relation goal with the most known arguments.
+ */
+const nextReady = (
+  remaining: readonly Literal[],
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>
+) => {
+  const ready = remaining.filter((literal) => isReady(literal, bound, scope));
+  return (
+    ready.find((literal) => !(literal instanceof Atom)) ??
+    ready.reduce<Literal | undefined>(
+      (best, atom) =>
+        best !== undefined &&
+        boundArguments(best as Atom, bound) >=
+          boundArguments(atom as Atom, bound)
+          ? best
+          : atom,
+      undefined
+    )
+  );
+};
+
+/** Checks that the questions some terms ask can be asked once `bound` is. */
+const checkQuestions = (
+  terms: readonly unknown[],
+  bound: ReadonlySet<string>
+) => {
+  for (const question of terms.flatMap(questionsIn)) {
+    questionPlans(question, (name) => bound.has(name));
+  }
+};
 
 /**
  * Orders literals so each one runs only after the variables it needs are
  * bound: filters as early as possible, in the order written, then the most
- * constrained relation.
+ * constrained relation. Fails when a literal can never run, or asks a
+ * question that cannot be asked.
  */
 export const planLiterals = (
   literals: readonly Literal[],
   initiallyBound: Iterable<string> = []
-): Literal[] | string => {
+): Literal[] => {
   const remaining = [...literals];
   const ordered: Literal[] = [];
   const bound = new Set<string>(initiallyBound);
-  while (remaining.length > 0) {
-    let index = remaining.findIndex(
-      (literal) => !matchesAtom(literal) && isReady(literal, bound)
-    );
-    if (index === -1) {
-      let most = -1;
-      for (const [position, literal] of remaining.entries()) {
-        if (matchesAtom(literal) && isReady(literal, bound)) {
-          const count = boundArguments(literal.goal, bound);
-          if (count > most) {
-            most = count;
-            index = position;
-          }
-        }
-      }
-    }
-    const next = remaining[index];
+  const scope = new Set([...bound, ...literals.flatMap(binders)]);
+  for (let [stuck] = remaining; stuck !== undefined; [stuck] = remaining) {
+    const next = nextReady(remaining, bound, scope);
     if (next === undefined) {
-      const stuck = literalGoal(remaining[0] as Literal);
-      const unbound = [
-        ...new Set(
-          termVariables(stuck).filter(
-            (name) => !(bound.has(name) || name.startsWith("_"))
-          )
-        ),
-      ].map((name) => `?${name}`);
-      return `Unsafe goal ${show(stuck)}: ${unbound.join(", ") || "its inputs"} must first be bound by a relation, "=", or "in".`;
+      const unbound = (isBinder(stuck) ? stuck.parts : [stuck])
+        .flatMap((part) => wants(part, scope))
+        .filter((name) => !(bound.has(name) || name.startsWith("_")));
+      return problem(
+        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", or "in".`
+      );
     }
-    remaining.splice(index, 1);
+    checkQuestions(next instanceof Atom ? next.args : [next], bound);
+    remaining.splice(remaining.indexOf(next), 1);
     ordered.push(next);
     bindVariables(next, bound);
   }
   return ordered;
 };
 
-/** What is wrong with a rule's head before its body is planned, if anything. */
-const headProblem = (head: unknown) => {
-  if (!(head instanceof Atom)) {
-    return `A rule head must be a relation call, but found ${show(head)}.`;
-  }
-  return termVariables(head).some((name) => name.startsWith("_"))
-    ? `A rule head cannot use the anonymous variable "?_": ${show(head)}.`
-    : nestedProblem(head, head.args);
-};
-
 /** A goal's alternatives, each planned, with the variables it binds. */
-const plan = (goal: unknown) => {
-  const expanded = alternatives(renameAnonymous()(goal));
-  if (typeof expanded === "string") {
-    return expanded;
-  }
-  const planned: { body: Literal[]; bound: Set<string> }[] = [];
-  for (const literals of expanded) {
-    const body = planLiterals(literals);
-    if (typeof body === "string") {
-      return body;
-    }
-    const bound = new Set<string>();
+const plan = (goal: unknown, outer: readonly string[] = []) =>
+  alternatives(prepare(goal)).map((literals): Plan => {
+    const body = planLiterals(literals, outer);
+    const bound = new Set(outer);
     for (const literal of body) {
       bindVariables(literal, bound);
     }
-    planned.push({ body, bound });
+    return { body, bound };
+  });
+
+/**
+ * Checks that values can be computed from a body's answers: no logic value
+ * hides in a list, the body binds every variable they need, and their
+ * questions can be asked. `unbound` words the message for missing variables.
+ */
+const checkValues = (
+  owner: unknown,
+  terms: readonly unknown[],
+  bound: ReadonlySet<string>,
+  unbound: (names: string) => string
+) => {
+  checkNested(owner, terms);
+  const missing = terms
+    .flatMap((term) => wants(term, bound))
+    .filter((name) => !bound.has(name));
+  if (missing.length > 0) {
+    problem(unbound(variableNames(missing)));
+  }
+  checkQuestions(terms, bound);
+};
+
+const planQuestion = (question: LogicValue, outer: readonly string[]) => {
+  if (!isForm(question, "find")) {
+    return plan(question, outer);
+  }
+  const [template, goal] = question.parts;
+  const planned = plan(goal, outer);
+  for (const { bound } of planned) {
+    checkValues(
+      question,
+      [template],
+      bound,
+      (names) =>
+        `Unsafe find ${show(question)}: its goal does not bind ${names}.`
+    );
   }
   return planned;
 };
 
+const PLANS = new WeakMap<LogicValue, Map<string, readonly Plan[]>>();
+
+/**
+ * How to answer a question, a find or a goal with a relation in it, for an
+ * answer that has bound some of its variables. Those variables are fixed and
+ * every other variable is the question's own, so the question plans like a
+ * query that starts with them bound. Fails when it cannot be asked.
+ */
+export const questionPlans = (
+  question: LogicValue,
+  isBound: (name: string) => boolean
+): readonly Plan[] => {
+  const outer = [...new Set(question.variables.filter(isBound))];
+  const key = outer.join(" ");
+  let plans = PLANS.get(question);
+  if (plans === undefined) {
+    plans = new Map();
+    PLANS.set(question, plans);
+  }
+  let planned = plans.get(key);
+  if (planned === undefined) {
+    planned = planQuestion(question, outer);
+    plans.set(key, planned);
+  }
+  return planned;
+};
+
+const NOTHING: ReadonlySet<string> = new Set();
+
 export const compileRule = (head: unknown, body: readonly unknown[]) =>
-  Effect.gen(function* () {
-    const planned = headProblem(head) ?? plan(new Conjunction(body as Goal[]));
-    if (typeof planned === "string") {
-      return yield* logicError(planned);
+  compiling(() => {
+    if (!(head instanceof Atom)) {
+      return problem(
+        `A rule head must be a relation call, but found ${show(head)}.`
+      );
     }
-    const atom = head as Atom;
-    const unbound = planned
-      .map(({ bound }) =>
-        termVariables(atom).filter((name) => !bound.has(name))
-      )
-      .find((names) => names.length > 0);
-    if (unbound !== undefined) {
-      return yield* logicError(
-        `Unsafe rule head ${show(head)}: ${[...new Set(unbound)].map((name) => `?${name}`).join(", ")} never appears in a relation in the body.`
+    const direct = head.args.flatMap((arg) => wants(arg, NOTHING));
+    if (direct.some((name) => name.startsWith("_"))) {
+      problem(
+        `A rule head cannot use the anonymous variable "?_": ${show(head)}.`
+      );
+    }
+    const planned = plan(new LogicForm("and", body));
+    for (const { bound } of planned) {
+      checkValues(
+        head,
+        head.args,
+        bound,
+        (names) =>
+          `Unsafe rule head ${show(head)}: ${names} never appears in a relation in the body.`
       );
     }
     const definition = [head, ...body];
     const key = logicKey(definition);
     const rule = {
-      aggregates: atom.args.flatMap((arg, position) =>
+      aggregates: head.args.flatMap((arg, position) =>
         arg instanceof DeferredCall && arg.aggregate !== undefined
           ? [position]
           : []
       ),
-      head: atom,
+      head,
       definition,
       source: ["rule", render(head), ...body.map(render)],
       ...(key === undefined ? {} : { key }),
@@ -373,17 +490,18 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
     );
   });
 
-/** The variables a query answers with: every named one its goal mentions. */
-export const queryOutputs = (goal: unknown) => [
-  ...new Set(termVariables(goal).filter((name) => !name.startsWith("_"))),
-];
-
-export const compileQuery = (goal: unknown) => {
-  const planned = plan(goal);
-  const outputs = queryOutputs(goal);
-  return typeof planned === "string"
-    ? logicError(planned)
-    : Effect.succeed(
-        planned.map(({ body }): CompiledQuery => ({ body, outputs }))
-      );
-};
+/**
+ * Compiles a goal for a query. An answer can bind the variables that the
+ * goal's own relation goals, "=", and "in" mention; a variable that only a
+ * question inside the goal mentions is the question's own.
+ */
+export const compileQuery = (goal: unknown) =>
+  compiling((): CompiledQuery => {
+    const bindable = new Set(binders(goal));
+    return {
+      bodies: plan(goal).map(({ body }) => body),
+      outputs: [...new Set(termVariables(goal))].filter(
+        (name) => bindable.has(name) && !name.startsWith("_")
+      ),
+    };
+  });

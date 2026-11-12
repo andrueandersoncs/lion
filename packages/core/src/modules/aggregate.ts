@@ -7,6 +7,7 @@ import {
 import { AGGREGATORS, aggregator } from "@/logic/aggregates";
 import {
   DeferredCall,
+  isForm,
   logicFunction,
   nameFunctions,
   show,
@@ -38,26 +39,31 @@ const combine =
   };
 
 /**
- * Called on a list, `["aggregate/sum", list]` combines it right away. Called
- * on anything else, it waits: as a whole argument of a rule head it combines
- * the values of its argument across the rule's matches, and anywhere else it
- * combines the list its argument turns out to be.
+ * An aggregate combines a list. Called on a list it combines it right away,
+ * and called on anything else it waits for the list its argument turns out
+ * to be: a find's list is what the find found. Only as a whole argument of
+ * a rule head, and not on a find, its argument stands for one value from
+ * each of the rule's matches, and it combines those.
  */
 const aggregate = (kind: string) => {
   const onList = combine(kind);
+  const name = `aggregate/${kind}`;
   // A waiting call is written under the name that builds it again.
-  nameFunctions({ [`aggregate/${kind}`]: onList });
+  nameFunctions({ [name]: onList });
   return logicFunction((values: unknown, ...extra: unknown[]) => {
     if (extra.length > 0) {
       return logicError(
-        `aggregate/${kind} takes one argument but got ${extra.length + 1}.`
+        `${name} takes one argument but got ${extra.length + 1}.`
       );
     }
-    return Array.isArray(values)
-      ? onList(values)
-      : Effect.succeed(
-          new DeferredCall(onList, `aggregate/${kind}`, [values], kind)
-        );
+    if (Array.isArray(values)) {
+      return onList(values);
+    }
+    return Effect.succeed(
+      isForm(values, "find")
+        ? new DeferredCall(onList, name, [values])
+        : new DeferredCall(onList, name, [values], kind)
+    );
   });
 };
 

@@ -1,113 +1,61 @@
 /**
  * Goal-directed queries by the magic-sets rewrite.
  *
- * Bottom-up evaluation derives every fact a program implies, so asking for
- * `["path", "a", "?to"]` would otherwise compute paths from every node. The
- * rewrite gives each rule-defined relation a copy per binding pattern
+ * Bottom-up evaluation derives every fact a relation's rules imply, so asking
+ * for `["path", "a", "?to"]` would otherwise compute paths from every node.
+ * The rewrite gives each rule-defined relation a copy per binding pattern
  * ("adornment"), guarded by a "magic" relation that holds the arguments
  * someone asked about. Magic rules pass those arguments down through rule
  * bodies, so evaluation derives only facts the query can reach. The copies
  * hold a subset of the original facts, so the rewritten program still
  * finishes.
  *
- * Relations that are aggregated, computed, or negated somewhere the query
- * reaches are left out of the rewrite: they, and everything they depend on,
- * are computed in full first, as the normal evaluation would.
+ * Only relation goals of a body are swapped for copies. A question, under
+ * `not`, in a find, or as a value, needs every row of the relations it asks
+ * about, and reads them under their own names, so those are derived in
+ * full. So are aggregated and computed relations, which have no copies.
  */
 import {
   bindVariables,
-  type CompiledQuery,
   type CompiledRule,
+  compilable,
   type Literal,
-  matchesAtom,
   planLiterals,
 } from "@/logic/compile";
-import { dependencyEdges } from "@/logic/strata";
 import {
   Atom,
-  DeferredCall,
   isGroundValue,
+  LogicValue,
   LogicVariable,
   type RelationInfo,
 } from "@/logic/terms";
 
 export interface MagicProgram {
-  /** Relations to compute in full before running `rules`. */
-  readonly full: ReadonlySet<string>;
   /** The query bodies, reading the rewritten relations. */
-  readonly queries: readonly CompiledQuery[];
+  readonly bodies: readonly (readonly Literal[])[];
+  /** Relations whose facts the rewritten rules read, under `factsName`. */
+  readonly facts: ReadonlySet<string>;
   /** Rewritten copies of rules, magic rules, and copies of base facts. */
   readonly rules: readonly CompiledRule[];
 }
 
 type Adornment = readonly boolean[];
 
-const closure = (
-  edges: ReadonlyMap<string, ReadonlySet<string>>,
-  roots: Iterable<string>
-) => {
-  const seen = new Set<string>();
-  const pending = [...roots];
-  for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
-    if (!seen.has(name)) {
-      seen.add(name);
-      pending.push(...(edges.get(name) ?? []));
-    }
-  }
-  return seen;
-};
-
-const bodyRelations = (bodies: readonly (readonly Literal[])[]) =>
-  bodies.flatMap((body) =>
-    body.flatMap(({ goal }) =>
-      goal instanceof Atom ? [goal.relation.name] : []
-    )
-  );
-
-/**
- * Relations the rewrite leaves alone: aggregated or computed relations and
- * relations used under `not`, with everything they depend on.
- */
-const fullRelations = (
-  rules: readonly CompiledRule[],
-  queries: readonly CompiledQuery[],
-  edges: ReadonlyMap<string, ReadonlySet<string>>,
-  reachable: ReadonlySet<string>
-) => {
-  const roots = new Set<string>();
-  const visit = (body: readonly Literal[]) => {
-    for (const { goal, negated } of body) {
-      if (goal instanceof Atom && (negated || goal.relation.computed)) {
-        roots.add(goal.relation.name);
-      }
-    }
-  };
-  for (const rule of rules) {
-    if (reachable.has(rule.head.relation.name)) {
-      if (rule.aggregates.length > 0) {
-        roots.add(rule.head.relation.name);
-      }
-      visit(rule.body);
-    }
-  }
-  for (const query of queries) {
-    visit(query.body);
-  }
-  return closure(edges, roots);
-};
-
 const adornmentKey = (adornment: Adornment) =>
   adornment.map((bound) => (bound ? "b" : "f")).join("");
 
 // Rewritten relation names start with a character no Lion program writes.
-const adornedName = (relation: string, adornment: Adornment) =>
-  `\u0000${relation}^${adornmentKey(adornment)}`;
-
-const magicName = (relation: string, adornment: Adornment) =>
-  `\u0000magic^${relation}^${adornmentKey(adornment)}`;
-
 const REWRITTEN = "\u0000";
 const MAGIC = "magic^";
+
+const adornedName = (relation: string, adornment: Adornment) =>
+  `${REWRITTEN}${relation}^${adornmentKey(adornment)}`;
+
+const magicName = (relation: string, adornment: Adornment) =>
+  `${REWRITTEN}${MAGIC}${relation}^${adornmentKey(adornment)}`;
+
+/** The name a rewritten rule reads a relation's facts under. */
+export const factsName = (relation: string) => `${REWRITTEN}facts^${relation}`;
 
 /** The relation a rewritten copy stands for, for messages. */
 export const originalName = (name: string) => {
@@ -122,20 +70,21 @@ export const originalName = (name: string) => {
 /**
  * A term is known when it is JSON data or a variable that is already bound.
  * Inside rules only variables bound from facts count, so recursion never
- * asks about values without end; a query runs once, so there a computed
- * value counts too. Other values, such as functions, can never match a fact,
- * so they are left to filter the rewritten relation instead of seeding it.
+ * asks about values without end; a query runs once, so there a value
+ * computed from bound variables counts too. Other values, such as functions,
+ * can never match a fact, so they are left to filter the rewritten relation
+ * instead of seeding it.
  */
 const isKnown = (
   term: unknown,
   bound: ReadonlySet<string>,
   isQuery: boolean
 ) => {
-  if (term instanceof DeferredCall) {
-    return isQuery && term.variables.every((name) => bound.has(name));
+  if (term instanceof LogicVariable) {
+    return bound.has(term.name);
   }
-  return term instanceof LogicVariable
-    ? bound.has(term.name)
+  return term instanceof LogicValue
+    ? isQuery && term.variables.every((name) => bound.has(name))
     : isGroundValue(term);
 };
 
@@ -144,6 +93,7 @@ const pick = <T>(items: readonly T[], adornment: Adornment) =>
 
 class Rewrite {
   readonly rules: CompiledRule[] = [];
+  readonly facts = new Set<string>();
   /** True once a query asks a rewritten relation about a known argument. */
   directed = false;
   private readonly byRelation: ReadonlyMap<string, readonly CompiledRule[]>;
@@ -168,16 +118,17 @@ class Rewrite {
   }
 
   /**
-   * Swaps eligible atoms in a planned body for their rewritten copies. Each
-   * swap adds a magic rule that asks the copy about the arguments known at
-   * that point: the literals before the atom are the magic rule's body.
+   * Swaps eligible relation goals in a planned body for their rewritten
+   * copies. Each swap adds a magic rule that asks the copy about the
+   * arguments known at that point: the literals before the goal are the
+   * magic rule's body.
    */
   body(planned: readonly Literal[], source: unknown, isQuery: boolean) {
     const out: Literal[] = [];
     const bound = new Set<string>();
     for (const literal of planned) {
-      if (matchesAtom(literal) && this.eligible(literal.goal.relation.name)) {
-        const { args, relation } = literal.goal;
+      if (literal instanceof Atom && this.eligible(literal.relation.name)) {
+        const { args, relation } = literal;
         const adornment = args.map((arg) => isKnown(arg, bound, isQuery));
         this.directed ||= isQuery && adornment.some(Boolean);
         this.rules.push({
@@ -190,10 +141,7 @@ class Rewrite {
           source,
         });
         this.pending.push([relation, adornment]);
-        out.push({
-          goal: new Atom(this.adorned(relation, adornment), args),
-          negated: false,
-        });
+        out.push(new Atom(this.adorned(relation, adornment), args));
       } else {
         out.push(literal);
       }
@@ -202,8 +150,8 @@ class Rewrite {
     return out;
   }
 
-  /** Rewrites every relation queued so far; false if a body cannot be planned. */
-  drain(): boolean {
+  /** Rewrites every relation queued so far. */
+  drain() {
     for (
       let next = this.pending.pop();
       next !== undefined;
@@ -213,12 +161,9 @@ class Rewrite {
       const name = adornedName(relation.name, adornment);
       if (!this.done.has(name)) {
         this.done.add(name);
-        if (!this.relation(relation, adornment)) {
-          return false;
-        }
+        this.relation(relation, adornment);
       }
     }
-    return true;
   }
 
   private adorned(relation: RelationInfo, adornment: Adornment): RelationInfo {
@@ -237,17 +182,14 @@ class Rewrite {
     const magic = this.magic(relation, adornment);
     const head = this.adorned(relation, adornment);
     for (const rule of this.byRelation.get(relation.name) ?? []) {
-      const guard: Literal = {
-        goal: new Atom(magic, pick(rule.head.args, adornment)),
-        negated: false,
-      };
-      const planned = planLiterals([guard, ...rule.body]);
-      if (typeof planned === "string") {
-        return false;
-      }
+      const guard = new Atom(magic, pick(rule.head.args, adornment));
       this.rules.push({
         aggregates: [],
-        body: this.body(planned, rule.source, false),
+        body: this.body(
+          planLiterals([guard, ...rule.body]),
+          rule.source,
+          false
+        ),
         head: new Atom(head, rule.head.args),
         source: rule.source,
       });
@@ -256,47 +198,50 @@ class Rewrite {
       const vars = relation.columns.map(
         (_, position) => new LogicVariable(`_fact${position}`)
       );
+      this.facts.add(relation.name);
       this.rules.push({
         aggregates: [],
         body: [
-          { goal: new Atom(magic, pick(vars, adornment)), negated: false },
-          { goal: new Atom(relation, vars), negated: false },
+          new Atom(magic, pick(vars, adornment)),
+          new Atom({ ...relation, name: factsName(relation.name) }, vars),
         ],
         head: new Atom(head, vars),
         source: ["fact", [relation.name, ...vars.map(() => "?_")]],
       });
     }
-    return true;
   }
 }
 
 /**
- * Rewrites queries to derive only what they can reach, or returns undefined
- * when no query asks a rule-defined relation about a known argument.
+ * Rewrites query bodies to derive only what they can reach, or returns
+ * undefined when none asks a rule-defined relation about a known argument.
  */
 export const rewriteQueries = (
   rules: readonly CompiledRule[],
-  queries: readonly CompiledQuery[],
+  bodies: readonly (readonly Literal[])[],
   hasFacts: (relation: string) => boolean
 ): MagicProgram | undefined => {
-  const edges = dependencyEdges(rules);
-  const reachable = closure(
-    edges,
-    bodyRelations(queries.map((query) => query.body))
-  );
-  const full = fullRelations(rules, queries, edges, reachable);
-  const defined = new Set(rules.map((rule) => rule.head.relation.name));
+  // A relation with a copy is one that rules derive without aggregating.
+  const derived = new Map<string, boolean>();
+  for (const { aggregates, head } of rules) {
+    const plain = aggregates.length === 0;
+    derived.set(
+      head.relation.name,
+      plain && derived.get(head.relation.name) !== false
+    );
+  }
   const rewrite = new Rewrite(
     rules,
-    (relation) => defined.has(relation) && !full.has(relation),
+    (relation) => derived.get(relation) === true,
     hasFacts
   );
-  const rewritten = queries.map((query) => ({
-    body: rewrite.body(query.body, undefined, true),
-    outputs: query.outputs,
-  }));
-  if (!(rewrite.directed && rewrite.drain())) {
+  const rewritten = bodies.map((body) => rewrite.body(body, undefined, true));
+  if (!rewrite.directed) {
     return undefined;
   }
-  return { full, queries: rewritten, rules: rewrite.rules };
+  // A copy whose guarded body cannot be planned leaves the query as it is.
+  return compilable(() => {
+    rewrite.drain();
+    return { bodies: rewritten, facts: rewrite.facts, rules: rewrite.rules };
+  });
 };

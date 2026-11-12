@@ -6,7 +6,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
-import { logicFunction, Unification } from "@/logic/terms";
+import { LogicForm, logicFunction } from "@/logic/terms";
 import { stdlib } from "@/modules";
 import { element } from "./programs";
 
@@ -27,7 +27,7 @@ const host = {
   max: Math.max,
   "host/later": (value: number) => Effect.succeed(value + 0.5),
   "host/same": logicFunction((left: unknown, right: unknown) =>
-    Effect.succeed(new Unification(left, right))
+    Effect.succeed(new LogicForm("=", [left, right]))
   ),
 };
 

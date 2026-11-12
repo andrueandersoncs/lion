@@ -1,4 +1,5 @@
 import { Effect, Schema } from "effect";
+import { show } from "@/logic/terms";
 import { LionExpressionSchema } from "@/schemas/lion-expression";
 
 export class ArgumentMismatchError extends Schema.TaggedError<ArgumentMismatchError>()(
@@ -35,3 +36,17 @@ export class ArithmeticError extends Schema.TaggedError<ArithmeticError>()(
   "ArithmeticError",
   { message: Schema.String }
 ) {}
+
+/**
+ * Raised inside a function that needs a value it cannot have yet: a value
+ * that waits for a logic variable, or the answer to a question while a rule
+ * is being written. The call the function is part of then waits instead.
+ */
+export class WaitingError extends Schema.TaggedError<WaitingError>()(
+  "WaitingError",
+  { value: Schema.Unknown }
+) {
+  override get message() {
+    return `${show(this.value)} has no value yet: it waits for a logic variable, or for the rule it is part of to run.`;
+  }
+}

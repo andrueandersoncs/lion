@@ -1,7 +1,6 @@
-import { Context, Effect, Match, Option, pipe } from "effect";
-import { isLogicFunction, logicFunction } from "@/logic/terms";
-import { LionDatabaseService } from "@/services/database";
-import { LionEnvironmentService } from "@/services/evaluation";
+import { Effect } from "effect";
+import { apply } from "@/evaluation/special-forms/function";
+import { logicFunction } from "@/logic/terms";
 
 export const module = {
   symbol: Symbol("func"),
@@ -28,61 +27,32 @@ export const module = {
         : Effect.succeed(result);
     }),
 
+  /**
+   * A function host code can call later: it calls `fn`, and when that is a
+   * Lion function, runs it with what the evaluation that made the callback
+   * had, so its scope, relations, and rules stay visible.
+   */
   callback: (fn: unknown) =>
-    pipe(
-      Effect.context<never>(),
-      Effect.map((context) => ({
-        environmentRef: Context.getOption(context, LionEnvironmentService),
-        database: Context.getOption(context, LionDatabaseService),
-      })),
-      Effect.map(({ environmentRef, database }) => (...args: unknown[]) => {
-        if (typeof fn !== "function") {
-          return fn;
-        }
-
-        const called = fn(...args);
-
-        if (Effect.isEffect(called)) {
-          // Keep relations and rules visible when host code calls back in.
-          const result = Option.isSome(database)
-            ? called.pipe(
-                Effect.provideService(LionDatabaseService, database.value)
-              )
-            : called;
-          const callbackEffect = pipe(
-            Match.value(environmentRef),
-            Match.when(
-              Option.isSome,
-              ({ value }) =>
-                result.pipe(
-                  Effect.provideService(LionEnvironmentService, value)
-                ) as Effect.Effect<unknown, unknown, never>
-            ),
-            Match.when(Option.isNone, () => result),
-            Match.exhaustive
-          );
-
-          return Effect.runPromise(
-            callbackEffect as Effect.Effect<unknown, unknown, never>
-          ).catch((e) => {
-            console.error(e);
-            throw e;
-          });
-        }
-
-        return called;
-      })
-    ),
+    Effect.map(Effect.context<never>(), (context) => (...args: unknown[]) => {
+      const called = typeof fn === "function" ? fn(...args) : fn;
+      return Effect.isEffect(called)
+        ? Effect.runPromise(
+            Effect.provideContext(called as Effect.Effect<unknown>, context)
+          ).catch((error) => {
+            console.error(error);
+            throw error;
+          })
+        : called;
+    }),
 
   /**
-   * A function with its first arguments filled in. Like the function it
-   * wraps, it either waits for logic variables or takes them as they are.
+   * A function with its first arguments filled in. Calling it is calling
+   * the function it wraps with those arguments first, so like that function
+   * it either waits for logic variables or takes them as they are.
    */
-  partial: (fn: unknown, ...args: unknown[]) => {
-    const partial = (...moreArgs: unknown[]) =>
-      typeof fn === "function" ? fn(...args, ...moreArgs) : fn;
-    return Effect.succeed(
-      isLogicFunction(fn) ? logicFunction(partial) : partial
-    );
-  },
+  partial: logicFunction((fn: unknown, ...args: unknown[]) =>
+    Effect.succeed(
+      logicFunction((...more: unknown[]) => apply(fn, [...args, ...more]))
+    )
+  ),
 };

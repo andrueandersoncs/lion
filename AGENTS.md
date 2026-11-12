@@ -18,9 +18,11 @@ Lion's value comes from features that compose, so one surprising interaction cos
 - **Apply one rule everywhere.** When a feature needs a rule, look for a similar feature that already has one and follow it. If the existing rule falls short, change it for every feature at once rather than letting the new one differ. For example:
   - Every form that changes the logic database either makes all of its changes or none.
   - Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant.
+  - Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.
 - **Walk through the combinations.** Surprises hide where two features meet. Before settling a behavior, trace how it interacts with each existing one. For the logic layer, that includes:
   - logic variables and `quote`
   - everything that waits for a logic variable: function calls, `cond`, `match`, `eval`, records, and lambdas passed to a waiting call
+  - everything that asks a question: `not`, `find`, and a goal used as a value, in plain code and inside a rule, with variables of its own
   - `define`, and the fresh environment each `run` gets
   - recursion and negation
   - aggregates and keyed relations
@@ -32,6 +34,8 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - goal-directed and full evaluation
   - a name and the value bound to it
   - an expression over a logic variable and the same expression with the variable's value in its place
+  - a question asked in a rule and the same question asked in plain code with the rule's variables bound
+  - a database that has derived rows for earlier queries and one that has derived nothing yet
 
   Where results may differ, such as answer order without the `"order"` query option, say so in the docs.
 - **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.

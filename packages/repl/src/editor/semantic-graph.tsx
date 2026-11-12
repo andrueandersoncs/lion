@@ -104,6 +104,7 @@ const NODE_COLOR_BY_KEY = {
   fact: "var(--node-logic)",
   retract: "var(--node-logic)",
   query: "var(--node-logic)",
+  find: "var(--node-logic)",
   why: "var(--node-logic)",
   not: "var(--node-logic)",
   and: "var(--node-logic)",
@@ -348,6 +349,12 @@ const describeSpecialForm = (
         mark: form,
         description: "find answers",
         detail: "goal → rows",
+      };
+    case "find":
+      return {
+        mark: form,
+        description: "collect matches",
+        detail: "goal → list",
       };
     case "why":
       return {

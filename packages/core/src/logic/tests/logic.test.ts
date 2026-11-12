@@ -206,7 +206,9 @@ describe("rules", () => {
         ["rule", ["p", "?x"], ["node", "?x"], ["not", ["q", "?x"]]],
         ["rule", ["q", "?x"], ["node", "?x"], ["not", ["p", "?x"]]],
       ]);
-      expect(error.message).toContain("Negation cannot go through recursion");
+      expect(error.message).toContain(
+        'A question, such as a goal under "not", cannot go through recursion'
+      );
     })
   );
 

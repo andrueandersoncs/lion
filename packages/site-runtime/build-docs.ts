@@ -65,6 +65,7 @@ const KINDS: readonly Kind[] = [
       "transform-lists",
       "code-as-data",
       "query-with-conditions",
+      "ask-questions",
       "sort-and-page",
       "recursive-relations",
       "find-missing",

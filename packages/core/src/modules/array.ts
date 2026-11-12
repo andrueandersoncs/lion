@@ -1,6 +1,6 @@
 import { Array as Arr, Effect, flow, Option, Schema } from "effect";
 import { LogicError } from "@/errors/evaluation";
-import { call } from "@/logic/terms";
+import { call } from "@/evaluation/special-forms/function";
 import { decode } from "@/modules/lib/shared";
 
 const MAX_RANGE = 1_000_000;

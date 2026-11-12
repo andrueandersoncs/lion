@@ -13,6 +13,7 @@ import {
   substitute,
   substituteAll,
   values,
+  WORLD_RULES,
 } from "./expressions";
 import { element, type Outcome } from "./programs";
 
@@ -100,6 +101,12 @@ describe("an expression that mentions a logic variable", () => {
             database
           );
           expectRows(all, expected, paired(inputs));
+          if (database.rules.length === WORLD_RULES) {
+            // The rule was turned down when it was written: its expression
+            // cannot run for any value, so the model fails for every one.
+            expect(first.ok).toBe(false);
+            continue;
+          }
           const one = yield* attempt(
             [["query", ["out", inputs[0], "?y"]]],
             database
@@ -230,7 +237,7 @@ describe("a rule that holds waiting forms", () => {
         for (let run = 0; run < times; run += 1) {
           yield* attempt(program, database);
         }
-        expect(database.rules).toHaveLength(1);
+        expect(database.rules).toHaveLength(WORLD_RULES + 1);
         expectRows(
           yield* attempt([["query", ["total", "?sum"]]], database),
           expected,
@@ -265,7 +272,7 @@ describe("a rule that holds waiting forms", () => {
           ],
           database
         );
-        expect(database.rules).toHaveLength(1);
+        expect(database.rules).toHaveLength(WORLD_RULES + 1);
         expect(rows).toEqual({
           ok: true,
           value: [{ sum: inputs.reduce((sum, x) => sum + x + by, 0) }],
@@ -300,8 +307,11 @@ describe("a rule that holds waiting forms", () => {
           const why = yield* attempt([["why", [relation, input]]], database);
           expect(why.ok).toBe(true);
           const { because } = (why as { value: { because: object[] } }).value;
-          expect(because[0]).toEqual({ fact: ["n", input], given: true });
-          for (const premise of because.slice(1)) {
+          // A test that needs no variable runs before the relation goal.
+          const tests = because.filter((premise) => !("fact" in premise));
+          expect(because).toHaveLength(tests.length + 1);
+          expect(because).toContainEqual({ fact: ["n", input], given: true });
+          for (const premise of tests) {
             const [kind, goal] = Object.entries(premise)[0] ?? [];
             const holds = yield* substitute(goal, input);
             expect(holds).toEqual({ ok: true, value: kind === "check" });

@@ -1,6 +1,6 @@
 <article id="standard-library" data-title="Standard library" data-summary="Every function in Lion's default environment, by module: number, boolean, string, array, value, object, func, console, aggregate, and graph.">
 <p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each module's example below calls every function in the module.</p>
-<p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
+<p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
 <p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
@@ -194,7 +194,7 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own. Made from a relation, it builds goals, as the relation does.</td></tr>
+    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does.</td></tr>
     <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
     <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
@@ -223,7 +223,7 @@
 </lion-example>
 
 <h2 id="module-aggregate">aggregate</h2>
-<p>Called on a list, each function combines the list. Called on anything else, it waits. As a whole argument of a rule's head, it then combines one value from each of the rule's matches, grouped by the head's other columns; see <a href="#summarize-groups">Summarize groups of facts</a>. Anywhere else, it combines the list its argument turns out to be. Each function takes exactly one argument.</p>
+<p>Called on a list, each function combines the list. Called on anything else, it waits for the list its argument turns out to be; a <a href="#form-find"><code>find</code></a> is the list of what it found. Only as a whole argument of a rule's head, and not on a <code>find</code>, it combines one value from each of the rule's matches instead, grouped by the head's other columns; see <a href="#summarize-groups">Summarize groups of facts</a>. Each function takes exactly one argument.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th><th>Of nothing</th></tr></thead>
   <tbody>

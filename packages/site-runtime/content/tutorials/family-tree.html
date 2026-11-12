@@ -105,7 +105,26 @@
   ["query", ["descendants", "?ancestor", "?count"], {"order": "-count"}]]
 </lion-example>
 
-<h2>Step 7: Ask why</h2>
+<h2>Step 7: Collect answers into a list</h2>
+<p>A query gives one record per answer. To put answers inside a value of our own, we use <code>find</code>: it takes a template and a goal, and returns the template's value for every match, as a sorted list. Here the template is a pair, a person and the list of their children, and that list is a <code>find</code> too:</p>
+<lion-example name="Find">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "parent", ["parent", "child"]],
+  ["fact", ["person", "ada"], ["person", "bea"], ["person", "cal"],
+    ["person", "dot"], ["person", "eli"]],
+  ["fact",
+    ["parent", "ada", "bea"],
+    ["parent", "ada", "cal"],
+    ["parent", "bea", "dot"],
+    ["parent", "dot", "eli"]],
+  ["find",
+    ["array/make", "?p", ["find", "?child", ["parent", "?p", "?child"]]],
+    ["person", "?p"]]]
+</lion-example>
+<p>The inner <code>find</code> is asked once for each person. Cal and Eli have no children, so they get an empty list instead of being left out, which the count in step 6 could not do.</p>
+
+<h2>Step 8: Ask why</h2>
 <p><code>why</code> explains a fact: which rule produced it, and from which facts. Ask why Ada is an ancestor of Eli:</p>
 <lion-example name="Why">
 ["begin",
@@ -123,7 +142,7 @@
 </lion-example>
 <p>Read it from the outside in: Ada is an ancestor of Eli because she is an ancestor of Dot, who is Eli's parent, and so on down to facts that were given.</p>
 
-<h2>Step 8: Protect the tree</h2>
+<h2>Step 9: Protect the tree</h2>
 <p>Nobody can be their own ancestor. An <code>invariant</code> tells the database a question that must never have an answer. Add it, then try a fact that would make Eli Ada's parent:</p>
 <lion-example name="An invariant" expect="error">
 ["begin",
@@ -143,6 +162,6 @@
 <p>The database refuses the fact and tells us why: with it, Ada would be her own ancestor. The tree stays as it was. Change the last fact to <code>["parent", "eli", "fay"]</code> and the program succeeds.</p>
 
 <h2>What we built</h2>
-<p>We stored facts, derived new ones with rules, followed a relationship through any number of generations, asked about what was missing, counted, explained an answer, and guarded the data with an invariant. Every part was plain JSON.</p>
+<p>We stored facts, derived new ones with rules, followed a relationship through any number of generations, asked about what was missing, counted, collected answers into lists, explained an answer, and guarded the data with an invariant. Every part was plain JSON.</p>
 <p>Next, <a href="#order-desk">Run an order desk</a> keeps changing data consistent over time. For every logic form and its exact rules, see <a href="#logic-forms">Logic forms</a>; to learn how the database computes answers, read <a href="#logic-programming">How Lion answers logic questions</a>.</p>
 </article>

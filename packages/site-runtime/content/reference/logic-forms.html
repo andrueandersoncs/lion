@@ -1,26 +1,27 @@
-<article id="logic-forms" data-title="Logic forms" data-summary="The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, snapshots, and invariants.">
+<article id="logic-forms" data-title="Logic forms" data-summary="The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, questions, snapshots, and invariants.">
 <p>The logic layer stores facts in relations, derives more with rules, and answers queries. Relations, goals, and logic variables are ordinary Lion values, and answers are plain Lion data. For the rules every program must follow, see <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 
 <h2 id="logic-variables">Logic variables</h2>
 <ul>
   <li>An unbound string of the form <code>"?name"</code> evaluates to a logic variable. See <a href="#rule-strings">Strings</a> for the exact form.</li>
   <li>The same name refers to the same variable throughout one goal or rule.</li>
-  <li><code>"?_"</code>, and any name starting with <code>?_</code>, is anonymous: each occurrence is a separate variable, it never appears in answers, and inside <code>not</code> it matches anything.</li>
+  <li><code>"?_"</code>, and any name starting with <code>?_</code>, is anonymous: each occurrence is a separate variable, and it never appears in answers.</li>
   <li>A call or record that mentions a logic variable <a href="#logic-waiting">waits</a> for it.</li>
+  <li>A variable that only a <a href="#logic-asking">question</a> mentions belongs to the question.</li>
 </ul>
 
 <h2 id="logic-goals">Goals</h2>
-<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling any other function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold.</p>
+<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling any other function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold. Any expression can also <a href="#logic-asking">ask</a> a goal.</p>
 
 <h2 id="logic-waiting">Waiting for values</h2>
 <p>A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.</p>
 <ul>
-  <li>A call waits when one of its arguments is a logic variable, a value that waits, or a lambda that mentions a logic variable. Every function waits this way: standard functions, functions from the host, and functions made by <code>func/partial</code>.</li>
+  <li>A call waits when one of its arguments is a logic variable or a value that waits. Every function waits this way: standard functions, functions from the host, and functions made by <code>func/partial</code>.</li>
   <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, and a record when one of its values is not.</li>
-  <li>Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits.</li>
+  <li>What a rule, query, or find holds runs when it does. A call on values that are already known may be computed when the rule is written, which changes nothing but when a side effect happens.</li>
+  <li>Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits. Only an argument that <a href="#logic-asking">asks a question</a> makes a lambda's call wait, so the question is answered first, as it is in plain code.</li>
   <li>What waits computes what it would compute with the value in place of the variable.</li>
   <li>As a goal, a call that waits is a filter, and so is a variable. A filter must be <code>true</code> or <code>false</code>; any other value fails the query.</li>
-  <li>A goal with no relation in it is also a value, <code>true</code> or <code>false</code>. A relation call has no value: it holds or not only as a goal of a rule or query.</li>
   <li>Names are replaced by their values when the rule or query is written, also inside a <code>cond</code> or lambda that waits. A lambda that calls itself by name still looks that name up each time it runs.</li>
 </ul>
 <lion-example name="Waiting">
@@ -38,6 +39,46 @@
 ["query",
   ["and", ["in", "?word", ["array/make", "apple", "cherry"]],
     ["string/indexOf", "?word", "a"]]]
+</lion-example>
+
+<h2 id="logic-asking">Asking questions</h2>
+<p>A goal with a relation in it is a question, and any expression can ask it. As a goal of a rule or query it matches rows and binds variables. Anywhere else it is asked:</p>
+<ul>
+  <li>Under <code>not</code>, it holds when it has no match.</li>
+  <li>As a value, it is <code>true</code> when it has a match and <code>false</code> when it has none. A goal is a value in a <code>cond</code> condition, as an argument of a function, as an operand of <code>=</code> or <code>in</code>, as a value of a record or an argument of a <code>fact</code>, and as the value <code>match</code> looks at. A relation is a predicate for <code>match</code> and for functions that are given it, such as <code>array/map</code>.</li>
+  <li><a href="#form-find"><code>find</code></a> gives what it matches, as a list.</li>
+</ul>
+<ul>
+  <li>When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. Two questions that use the same name for a variable of their own do not share it.</li>
+  <li>In plain code a question is asked right away, and every variable in it is its own. In a rule, query, invariant, or find, a question is part of what is written: it is asked for each answer, when that runs.</li>
+  <li>A question asked from a rule sees every row of the relations it asks about, so those are derived first. A rule cannot ask about a relation that depends on the rule's own head.</li>
+  <li><code>define</code>, <code>and</code>, <code>or</code>, <code>not</code>, and a lambda keep a goal as it is, so goals can still be named, combined, and passed around.</li>
+</ul>
+<lion-example name="Asking in plain code">
+["begin",
+  ["relation", "parent", ["parent", "child"]],
+  ["relation", "retired", ["name"]],
+  ["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"], ["parent", "ben", "dee"]],
+  ["fact", ["retired", "ada"]],
+  {"children of ada": ["find", "?child", ["parent", "ada", "?child"]],
+   "ada has a grandchild":
+     ["cond", [["and", ["parent", "ada", "?c"], ["parent", "?c", "?_"]], "yes"], ["else", "no"]],
+   "ben is retired": ["retired", "ben"],
+   "who is retired": ["array/map", ["array/make", "ada", "ben"], "retired"]}]
+</lion-example>
+<lion-example name="Asking in a rule">
+["begin",
+  ["relation", "parent", ["parent", "child"]],
+  ["relation", "person", ["name"]],
+  ["relation", "family", ["name", "children", "kind"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+  ["fact", ["parent", "ada", "ben"], ["parent", "ada", "cy"]],
+  ["rule",
+    ["family", "?p",
+      ["find", "?c", ["parent", "?p", "?c"]],
+      ["cond", [["parent", "?p", "?_"], "has children"], [["parent", "?_", "?p"], "has a parent"], ["else", "alone"]]],
+    ["person", "?p"]],
+  ["query", ["family", "?name", "?children", "?kind"], {"order": "name"}]]
 </lion-example>
 
 <h2 id="form-relation"><code>relation</code></h2>
@@ -63,7 +104,7 @@
 ["fact", goal, ...]
 </code-block>
 <ul>
-  <li>Adds each fact, a relation call with JSON data and no logic variables, and returns the facts given.</li>
+  <li>Adds each fact, a relation call with JSON data and no logic variables, and returns the facts given. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
   <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins.</li>
   <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
@@ -93,7 +134,7 @@
 </code-block>
 <ul>
   <li>Adds a rule: <code>head</code>, a relation call, holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.</li>
-  <li>Head arguments can be values, variables bound by the body, <a href="#logic-waiting">computed values</a>, and <a href="#module-aggregate">aggregates</a>.</li>
+  <li>Head arguments can be values, variables bound by the body, <a href="#logic-waiting">computed values</a>, <a href="#logic-asking">questions</a>, and <a href="#module-aggregate">aggregates</a>.</li>
   <li>The rule is checked when added: every head variable must be bound by the body, every goal must be <a href="#logic-guarantees">safe</a>, and the whole program must stay stratified and terminating. A rule that fails a check is not added.</li>
   <li>An <code>or</code> in the body makes one rule with several alternatives.</li>
   <li>Adding a rule the database already holds, one a snapshot would write the same way, changes nothing.</li>
@@ -106,7 +147,7 @@
 ["query", goal, options]
 </code-block>
 <ul>
-  <li>Returns one record per distinct answer, with one key per named variable, without its <code>?</code>. A goal with no variables returns <code>[{}]</code> when it holds and <code>[]</code> when it does not.</li>
+  <li>Returns one record per distinct answer, with one key per named variable, without its <code>?</code>. A goal with no variables returns <code>[{}]</code> when it holds and <code>[]</code> when it does not. A variable that only a <a href="#logic-asking">question</a> in the goal mentions is not part of an answer.</li>
   <li>Without the <code>"order"</code> option, answers come in the order they are found, which can change between versions of Lion.</li>
   <li>Options sort, page, and assert on the answers; see <a href="#query-options">Query options</a>.</li>
 </ul>
@@ -119,6 +160,31 @@
    "fails": ["query", ["edge", "b", "a"]]}]
 </lion-example>
 
+<h2 id="form-find"><code>find</code></h2>
+<code-block lang="json">
+["find", template, goal]
+</code-block>
+<ul>
+  <li>Returns the value of <code>template</code> for every match of <code>goal</code>, as a list. The template is any expression over the goal's variables: a variable, a record, a call, or another <code>find</code>.</li>
+  <li>The list is sorted, in the order that <a href="#query-options">values sort</a> in, so it never depends on how the matches were found. A template such as <code>["array/make", "?points", "?name"]</code> sorts by points first.</li>
+  <li>Every match gives one value, so the list can repeat a value, as <a href="#module-aggregate"><code>aggregate/collect</code></a> does. A match that several alternatives of an <code>or</code> find gives one. Use <code>aggregate/unique</code> for distinct values.</li>
+  <li>The goal must bind every variable of the template that the rule or query around the <code>find</code> does not.</li>
+  <li>A <code>find</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or another <code>find</code> it is asked for each answer, with the variables that answer has bound.</li>
+  <li>An aggregate of a <code>find</code> combines what it found, also as a whole argument of a rule head. A <code>find</code> with no match is an empty list, so a count of it is <code>0</code>.</li>
+</ul>
+<lion-example name="find">
+["begin",
+  ["relation", "customer", ["name"]],
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["fact", ["customer", "ana"], ["customer", "bo"], ["customer", "cy"]],
+  ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20], ["order", 3, "bo", 50]],
+  ["find",
+    {"customer": "?c",
+     "orders": ["find", "?id", ["order", "?id", "?c", "?_"]],
+     "total": ["aggregate/sum", ["find", "?amount", ["order", "?_", "?c", "?amount"]]]},
+    ["customer", "?c"]]]
+</lion-example>
+
 <h2 id="form-why"><code>why</code></h2>
 <code-block lang="json">
 ["why", fact]
@@ -126,7 +192,7 @@
 <ul>
   <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables, holds, or <code>null</code> when it does not.</li>
   <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
-  <li>Premises are facts, <code>{"check": goal}</code> for a filter that held, and <code>{"absent": goal}</code> for a goal under <code>not</code>, each written with the answer's values in place of its variables.</li>
+  <li>Premises are facts, <code>{"check": goal}</code> for a filter that held, and <code>{"absent": goal}</code> for a goal under <code>not</code>, each written with the answer's values in place of its variables. A variable that a question binds for itself keeps its name.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
   <li>Explanations use every relation computed in full.</li>
 </ul>
@@ -135,7 +201,7 @@
 <code-block lang="json">
 ["not", goal]
 </code-block>
-<p>Holds when the goal does not. The goal can be any goal: a relation call, a filter, <code>=</code>, <code>in</code>, or a combination of goals with <code>and</code>, <code>or</code>, and <code>not</code>. Every named variable in it must be bound by another goal. With a boolean, returns its negation.</p>
+<p>Holds when the goal has no match. The goal can be any goal: a relation call, a filter, <code>=</code>, <code>in</code>, or a combination of goals with <code>and</code>, <code>or</code>, and <code>not</code>. It is a <a href="#logic-asking">question</a>, so a variable that appears nowhere else in the rule or query is its own, and it can join relations on such a variable. A filter in it still needs its variables bound. With a boolean, returns its negation.</p>
 <lion-example name="not">
 ["begin",
   ["relation", "order", ["id", "amount"]],
@@ -143,6 +209,16 @@
   ["query",
     ["and", ["order", "?id", "?amount"],
       ["not", ["or", ["number/lessThan", "?amount", 50], ["number/greaterThan", "?amount", 100]]]]]]
+</lion-example>
+<lion-example name="not with a variable of its own">
+["begin",
+  ["relation", "author", ["person", "paper"]],
+  ["relation", "cites", ["paper", "cited"]],
+  ["fact", ["author", "ann", "p1"], ["author", "bob", "p2"], ["author", "cyd", "p3"]],
+  ["fact", ["cites", "p1", "p3"], ["cites", "p3", "p1"]],
+  ["query",
+    ["and", ["author", "?person", "?_"],
+      ["not", ["and", ["author", "?person", "?paper"], ["cites", "?_", "?paper"]]]]]]
 </lion-example>
 
 <h2 id="form-and"><code>and</code></h2>
@@ -190,7 +266,7 @@
   <li>Strings that would evaluate to something else are written inside <code>quote</code>: logic variable names, relation names, names bound in the environment, and namespaced names such as <code>"number/add"</code>. Lists and records are quoted too.</li>
   <li>A function is written by the name the environment binds it to, so a rule that calls <code>number/add</code> under another name is written with <code>number/add</code>.</li>
   <li>A <code>cond</code>, <code>match</code>, or record that waits is written as it was, and a lambda as its <code>lambda</code> form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it.</li>
-  <li>Fails if a rule or invariant holds a lambda that calls itself, or a function made while the program ran, such as the result of <code>func/partial</code> on plain values.</li>
+  <li>Fails if a rule or invariant holds a lambda that calls itself, or a function that the environment does not name and that is not a lambda.</li>
 </ul>
 <lion-example name="snapshot">
 ["begin",

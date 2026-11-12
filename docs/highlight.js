@@ -22,6 +22,7 @@ const SPECIAL_FORMS = new Set([
   "fact",
   "retract",
   "query",
+  "find",
   "why",
   "not",
   "and",
