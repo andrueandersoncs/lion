@@ -1,25 +1,7 @@
-import { Schema } from "effect";
 import {
-  AndFormSchema,
-  BeginFormSchema,
-  CondFormSchema,
-  DefineFormSchema,
-  EvalFormSchema,
-  FactFormSchema,
-  InFormSchema,
-  InvariantFormSchema,
-  LambdaFormSchema,
-  MatchFormSchema,
-  NotFormSchema,
-  OrFormSchema,
-  QueryFormSchema,
-  QuoteFormSchema,
-  RelationFormSchema,
-  RetractFormSchema,
-  RuleFormSchema,
-  SnapshotFormSchema,
-  UnifyFormSchema,
-  WhyFormSchema,
+  isSpecialFormName,
+  type SpecialFormName,
+  specialFormOf,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 
@@ -33,28 +15,6 @@ export type SemanticKind =
   | "call"
   | "special-form"
   | "invalid-call";
-
-export type SpecialFormName =
-  | "begin"
-  | "cond"
-  | "define"
-  | "eval"
-  | "lambda"
-  | "match"
-  | "quote"
-  | "relation"
-  | "rule"
-  | "fact"
-  | "retract"
-  | "query"
-  | "why"
-  | "not"
-  | "and"
-  | "or"
-  | "="
-  | "in"
-  | "snapshot"
-  | "invariant";
 
 export interface SemanticRelationship {
   readonly kind: "definition" | "reference-candidate";
@@ -80,149 +40,46 @@ export interface SemanticNode {
   readonly value?: boolean | null | number | string;
 }
 
-interface FormDefinition {
-  readonly matches: (value: unknown) => boolean;
-  readonly name: SpecialFormName;
-  readonly role: (index: number, length: number) => string;
-}
+type Role = (index: number, length: number) => string;
 
 const roleByIndex =
-  (roles: readonly string[], fallback: string) => (index: number) =>
+  (roles: readonly string[], fallback: string): Role =>
+  (index) =>
     roles[index] ?? fallback;
 
-const SPECIAL_FORMS: readonly FormDefinition[] = [
-  {
-    name: "eval",
-    matches: Schema.is(EvalFormSchema),
-    role: roleByIndex(["operator", "expression"], "argument"),
+/** What each element of a special form is, by position. */
+const ROLES: Record<SpecialFormName, Role> = {
+  eval: roleByIndex(["operator", "expression"], "argument"),
+  quote: roleByIndex(["operator", "quoted-value"], "quoted-value"),
+  begin: roleByIndex(["operator"], "sequence-item"),
+  define: roleByIndex(["operator", "binding", "value"], "value"),
+  lambda: roleByIndex(["operator", "parameters", "body"], "body"),
+  cond: roleByIndex(["operator"], "branch"),
+  match: (index, length) => {
+    if (index < 2) {
+      return index === 0 ? "operator" : "subject";
+    }
+    return index === length - 1 ? "fallback" : "pattern";
   },
-  {
-    name: "quote",
-    matches: Schema.is(QuoteFormSchema),
-    role: roleByIndex(["operator", "quoted-value"], "quoted-value"),
-  },
-  {
-    name: "begin",
-    matches: Schema.is(BeginFormSchema),
-    role: roleByIndex(["operator"], "sequence-item"),
-  },
-  {
-    name: "define",
-    matches: Schema.is(DefineFormSchema),
-    role: roleByIndex(["operator", "binding", "value"], "value"),
-  },
-  {
-    name: "lambda",
-    matches: Schema.is(LambdaFormSchema),
-    role: roleByIndex(["operator", "parameters", "body"], "body"),
-  },
-  {
-    name: "cond",
-    matches: Schema.is(CondFormSchema),
-    role: roleByIndex(["operator"], "branch"),
-  },
-  {
-    name: "match",
-    matches: Schema.is(MatchFormSchema),
-    role: (index, length) => {
-      if (index === 0) {
-        return "operator";
-      }
-      if (index === 1) {
-        return "subject";
-      }
-      return index === length - 1 ? "fallback" : "pattern";
-    },
-  },
-  {
-    name: "relation",
-    matches: Schema.is(RelationFormSchema),
-    role: roleByIndex(["operator", "binding", "columns", "options"], "options"),
-  },
-  {
-    name: "rule",
-    matches: Schema.is(RuleFormSchema),
-    role: roleByIndex(["operator", "head"], "goal"),
-  },
-  {
-    name: "fact",
-    matches: Schema.is(FactFormSchema),
-    role: roleByIndex(["operator"], "fact"),
-  },
-  {
-    name: "retract",
-    matches: Schema.is(RetractFormSchema),
-    role: roleByIndex(["operator"], "fact"),
-  },
-  {
-    name: "query",
-    matches: Schema.is(QueryFormSchema),
-    role: roleByIndex(["operator", "goal", "options"], "options"),
-  },
-  {
-    name: "why",
-    matches: Schema.is(WhyFormSchema),
-    role: roleByIndex(["operator", "fact"], "fact"),
-  },
-  {
-    name: "not",
-    matches: Schema.is(NotFormSchema),
-    role: roleByIndex(["operator", "goal"], "goal"),
-  },
-  {
-    name: "and",
-    matches: Schema.is(AndFormSchema),
-    role: roleByIndex(["operator"], "goal"),
-  },
-  {
-    name: "or",
-    matches: Schema.is(OrFormSchema),
-    role: roleByIndex(["operator"], "goal"),
-  },
-  {
-    name: "=",
-    matches: Schema.is(UnifyFormSchema),
-    role: roleByIndex(["operator", "left", "right"], "right"),
-  },
-  {
-    name: "in",
-    matches: Schema.is(InFormSchema),
-    role: roleByIndex(["operator", "element", "list"], "list"),
-  },
-  {
-    name: "snapshot",
-    matches: Schema.is(SnapshotFormSchema),
-    role: roleByIndex(["operator"], "argument"),
-  },
-  {
-    name: "invariant",
-    matches: Schema.is(InvariantFormSchema),
-    role: roleByIndex(["operator", "goal", "options"], "options"),
-  },
-];
-
-const SPECIAL_FORM_NAMES: Readonly<Record<SpecialFormName, true>> = {
-  begin: true,
-  cond: true,
-  define: true,
-  eval: true,
-  lambda: true,
-  match: true,
-  quote: true,
-  relation: true,
-  rule: true,
-  fact: true,
-  retract: true,
-  query: true,
-  why: true,
-  not: true,
-  and: true,
-  or: true,
-  "=": true,
-  in: true,
-  snapshot: true,
-  invariant: true,
+  relation: roleByIndex(
+    ["operator", "binding", "columns", "options"],
+    "options"
+  ),
+  rule: roleByIndex(["operator", "head"], "goal"),
+  fact: roleByIndex(["operator"], "fact"),
+  retract: roleByIndex(["operator"], "fact"),
+  query: roleByIndex(["operator", "goal", "options"], "options"),
+  why: roleByIndex(["operator", "fact"], "fact"),
+  not: roleByIndex(["operator", "goal"], "goal"),
+  and: roleByIndex(["operator"], "goal"),
+  or: roleByIndex(["operator"], "goal"),
+  "=": roleByIndex(["operator", "left", "right"], "right"),
+  in: roleByIndex(["operator", "element", "list"], "list"),
+  snapshot: roleByIndex(["operator"], "argument"),
+  invariant: roleByIndex(["operator", "goal", "options"], "options"),
 };
+
+const CALL_ROLE = roleByIndex(["callee"], "argument");
 
 const escapePointerSegment = (segment: number | string) =>
   String(segment).replaceAll("~", "~0").replaceAll("/", "~1");
@@ -242,35 +99,27 @@ const analyzeNode = (
   path: StructuralPath,
   quoted: boolean
 ): SemanticNode => {
-  if (
-    !Array.isArray(expression) &&
-    (expression === null || typeof expression !== "object")
-  ) {
-    const relationships: SemanticRelationship[] = [];
-    if (typeof expression === "string") {
-      relationships.push({ kind: "reference-candidate", name: expression });
-    }
+  const base = { path, pointer: pathToPointer(path), quoted };
+  if (expression === null || typeof expression !== "object") {
     return {
-      path,
-      pointer: pathToPointer(path),
+      ...base,
       kind: "primitive",
       label: primitiveLabel(expression),
       value: expression,
-      quoted,
       children: [],
-      relationships,
+      relationships:
+        typeof expression === "string"
+          ? [{ kind: "reference-candidate", name: expression }]
+          : [],
     };
   }
-
   if (!Array.isArray(expression)) {
     const entries = Object.entries(expression);
     return {
-      path,
-      pointer: pathToPointer(path),
+      ...base,
       kind: "record",
       label:
         entries.length === 0 ? "empty record" : `record · ${entries.length}`,
-      quoted,
       children: entries.map(([key, value], order) => ({
         role: key,
         order,
@@ -279,97 +128,60 @@ const analyzeNode = (
       relationships: [],
     };
   }
-
   if (expression.length === 0) {
     return {
-      path,
-      pointer: pathToPointer(path),
+      ...base,
       kind: "empty-array",
       label: "empty array",
-      quoted,
       children: [],
       relationships: [],
     };
   }
 
-  const head = expression[0];
-  const namedForm = SPECIAL_FORMS.find(({ name }) => name === head);
-  const validForm = SPECIAL_FORMS.find(({ matches }) => matches(expression));
-  const relationships: SemanticRelationship[] = [];
-  if (
-    !quoted &&
-    (validForm?.name === "define" || validForm?.name === "relation") &&
-    typeof expression[1] === "string"
-  ) {
-    relationships.push({ kind: "definition", name: expression[1] });
-  }
-  const role = quoted
-    ? () => "item"
-    : (validForm?.role ?? roleByIndex(["callee"], "argument"));
-  const children = expression.map((value, order) => ({
-    role: role(order, expression.length),
-    order,
-    node: analyzeNode(
-      value,
-      [...path, order],
-      quoted || (validForm?.name === "quote" && order > 0)
-    ),
-  }));
-
+  const [head, name] = expression;
+  const form = specialFormOf(expression);
+  const defines = (form === "define" || form === "relation") && !quoted;
+  let role = form === undefined ? CALL_ROLE : ROLES[form];
   if (quoted) {
-    return {
-      path,
-      pointer: pathToPointer(path),
-      kind: "array",
-      label: `array · ${expression.length}`,
-      quoted,
-      children,
-      relationships,
-    };
+    role = () => "item";
   }
-
-  if (!quoted && namedForm && !validForm) {
+  const array = {
+    ...base,
+    children: expression.map((value, order) => ({
+      role: role(order, expression.length),
+      order,
+      node: analyzeNode(
+        value,
+        [...path, order],
+        quoted || (form === "quote" && order > 0)
+      ),
+    })),
+    relationships:
+      defines && typeof name === "string"
+        ? [{ kind: "definition" as const, name }]
+        : [],
+  };
+  if (quoted) {
+    return { ...array, kind: "array", label: `array · ${expression.length}` };
+  }
+  if (form !== undefined) {
+    return { ...array, kind: "special-form", label: form, specialForm: form };
+  }
+  if (isSpecialFormName(head)) {
     return {
-      path,
-      pointer: pathToPointer(path),
+      ...array,
       kind: "invalid-call",
-      label: `invalid ${namedForm.name}`,
-      specialForm: namedForm.name,
-      quoted,
-      children,
-      relationships,
-      diagnostic: `The ${namedForm.name} form has an invalid structure.`,
+      label: `invalid ${head}`,
+      specialForm: head,
+      diagnostic: `The ${head} form has an invalid structure.`,
     };
   }
-
-  if (!quoted && validForm) {
-    return {
-      path,
-      pointer: pathToPointer(path),
-      kind: "special-form",
-      label: validForm.name,
-      specialForm: validForm.name,
-      quoted,
-      children,
-      relationships,
-    };
-  }
-
-  const label = typeof head === "string" ? head : "call";
   return {
-    path,
-    pointer: pathToPointer(path),
+    ...array,
     kind: "call",
-    label,
-    quoted,
-    children,
-    relationships,
+    label: typeof head === "string" ? head : "call",
   };
 };
-
-export const isSpecialFormName = (value: unknown): value is SpecialFormName =>
-  typeof value === "string" &&
-  Object.hasOwn(SPECIAL_FORM_NAMES, value as SpecialFormName);
 
 export const analyze = (expression: LionExpressionType): SemanticNode =>
   analyzeNode(expression, [], false);

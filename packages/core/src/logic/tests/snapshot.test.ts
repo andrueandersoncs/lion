@@ -184,28 +184,6 @@ describe("snapshots", () => {
     })
   );
 
-  it.effect("refuse rules that hold values other than JSON data", () =>
-    Effect.gen(function* () {
-      const error = yield* run(
-        [
-          "begin",
-          ["relation", "list", ["items"]],
-          ["relation", "bigger", ["items"]],
-          [
-            "rule",
-            ["bigger", ["array/map", "?items", ["lambda", ["x"], "x"]]],
-            ["list", "?items"],
-          ],
-          ["snapshot"],
-        ],
-        stdlib
-      ).pipe(Effect.flip);
-      expect(String((error as { message?: unknown }).message)).toContain(
-        "Cannot snapshot the database"
-      );
-    })
-  );
-
   it.effect("bind a shared database's relations in later runs", () =>
     Effect.gen(function* () {
       const database = yield* loadDatabase(

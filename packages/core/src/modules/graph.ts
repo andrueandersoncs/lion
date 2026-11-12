@@ -5,6 +5,7 @@
  * names go to the smaller value.
  */
 import { defineAlgorithm } from "@/logic/algorithms";
+import { stronglyConnected as stronglyConnectedGroups } from "@/logic/strata";
 import { compareValues, valueKey } from "@/logic/terms";
 
 type Row = readonly unknown[];
@@ -216,142 +217,53 @@ const pageRank = (tuples: readonly Row[]) => {
   return nodes.map((node, at) => [node, round(rank[at] ?? 0)]);
 };
 
-/** Names each group of nodes after its smallest member. */
-const labelGroups = (
-  nodes: readonly unknown[],
-  groupOf: (node: unknown) => string
-) => {
-  const names = new Map<string, unknown>();
-  for (const node of nodes) {
-    const group = groupOf(node);
-    if (!names.has(group)) {
-      names.set(group, node);
+/**
+ * Groups nodes that reach each other, and names each group after its
+ * smallest member. With `bothWays` every edge can be followed backwards too,
+ * which makes the groups the connected components.
+ */
+const groups =
+  (name: string, bothWays: boolean) => (tuples: readonly Row[]) => {
+    const edges = readEdges(name, tuples, false);
+    if (typeof edges === "string") {
+      return edges;
     }
-  }
-  return nodes.map((node) => [node, names.get(groupOf(node))]);
-};
-
-/** Connected components, ignoring edge direction. */
-const components = (tuples: readonly Row[]) => {
-  const edges = readEdges("graph/components", tuples, false);
-  if (typeof edges === "string") {
-    return edges;
-  }
-  const parent = new Map<string, string>();
-  const find = (key: string): string => {
-    let root = key;
-    while (parent.get(root) !== root) {
-      root = parent.get(root) ?? root;
+    const targets = new Map<string, string[]>();
+    const link = (from: unknown, to: unknown) => {
+      const list = targets.get(valueKey(from)) ?? [];
+      list.push(valueKey(to));
+      targets.set(valueKey(from), list);
+    };
+    for (const { from, to } of edges) {
+      link(from, to);
+      if (bothWays) {
+        link(to, from);
+      }
     }
-    parent.set(key, root);
-    return root;
+    const nodes = nodesOf(edges);
+    const group = new Map<string, number>();
+    const found = stronglyConnectedGroups(
+      nodes.map(valueKey),
+      (key) => targets.get(key) ?? []
+    );
+    for (const [index, members] of found.entries()) {
+      for (const member of members) {
+        group.set(member, index);
+      }
+    }
+    // Nodes are sorted, so the first node seen of a group is its smallest.
+    const smallest = new Map<number | undefined, unknown>();
+    for (const node of nodes) {
+      const index = group.get(valueKey(node));
+      if (!smallest.has(index)) {
+        smallest.set(index, node);
+      }
+    }
+    return nodes.map((node) => [node, smallest.get(group.get(valueKey(node)))]);
   };
-  const nodes = nodesOf(edges);
-  for (const node of nodes) {
-    parent.set(valueKey(node), valueKey(node));
-  }
-  for (const { from, to } of edges) {
-    parent.set(find(valueKey(from)), find(valueKey(to)));
-  }
-  return labelGroups(nodes, (node) => find(valueKey(node)));
-};
 
-interface Frame {
-  readonly key: string;
-  next: number;
-}
-
-/** Tarjan's algorithm, iterative so deep graphs cannot overflow the stack. */
-class Tarjan {
-  readonly group = new Map<string, string>();
-  private counter = 0;
-  private readonly index = new Map<string, number>();
-  private readonly low = new Map<string, number>();
-  private readonly onStack = new Set<string>();
-  private readonly out: ReadonlyMap<string, readonly Edge[]>;
-  private readonly stack: string[] = [];
-  private readonly work: Frame[] = [];
-
-  constructor(out: ReadonlyMap<string, readonly Edge[]>) {
-    this.out = out;
-  }
-
-  visit(root: string) {
-    if (this.index.has(root)) {
-      return;
-    }
-    this.open(root);
-    for (
-      let frame = this.work.at(-1);
-      frame !== undefined;
-      frame = this.work.at(-1)
-    ) {
-      const edge = this.out.get(frame.key)?.[frame.next];
-      if (edge === undefined) {
-        this.close(frame);
-      } else {
-        frame.next += 1;
-        this.follow(frame, valueKey(edge.to));
-      }
-    }
-  }
-
-  private lower(key: string, value: number | undefined) {
-    this.low.set(key, Math.min(this.low.get(key) ?? 0, value ?? 0));
-  }
-
-  private open(key: string) {
-    this.index.set(key, this.counter);
-    this.low.set(key, this.counter);
-    this.counter += 1;
-    this.stack.push(key);
-    this.onStack.add(key);
-    this.work.push({ key, next: 0 });
-  }
-
-  private follow(frame: Frame, target: string) {
-    if (!this.index.has(target)) {
-      this.open(target);
-    } else if (this.onStack.has(target)) {
-      this.lower(frame.key, this.index.get(target));
-    }
-  }
-
-  private close(frame: Frame) {
-    this.work.pop();
-    const caller = this.work.at(-1);
-    if (caller !== undefined) {
-      this.lower(caller.key, this.low.get(frame.key));
-    }
-    if (this.low.get(frame.key) !== this.index.get(frame.key)) {
-      return;
-    }
-    for (
-      let member = this.stack.pop();
-      member !== undefined;
-      member = this.stack.pop()
-    ) {
-      this.onStack.delete(member);
-      this.group.set(member, frame.key);
-      if (member === frame.key) {
-        break;
-      }
-    }
-  }
-}
-
-const stronglyConnected = (tuples: readonly Row[]) => {
-  const edges = readEdges("graph/stronglyConnected", tuples, false);
-  if (typeof edges === "string") {
-    return edges;
-  }
-  const nodes = nodesOf(edges);
-  const tarjan = new Tarjan(adjacency(edges));
-  for (const node of nodes) {
-    tarjan.visit(valueKey(node));
-  }
-  return labelGroups(nodes, (node) => tarjan.group.get(valueKey(node)) ?? "");
-};
+const components = groups("graph/components", true);
+const stronglyConnected = groups("graph/stronglyConnected", false);
 
 /** Kahn's algorithm; among nodes that are ready, the smaller comes first. */
 const topologicalOrder = (tuples: readonly Row[]) => {

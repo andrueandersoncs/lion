@@ -1,12 +1,28 @@
 /**
  * Values that make up Lion's logic layer.
  *
- * Logic variables, deferred calls, and goals are ordinary Lion values: they are
+ * Logic variables, waiting calls, and goals are ordinary Lion values: they are
  * produced by evaluating expressions and can be passed to functions, stored in
  * bindings, and combined. Relations, rules, and queries consume them.
  */
+import { Effect } from "effect";
+import type { Environment } from "@/schemas/environment";
 
 export type LionFunction = (...args: unknown[]) => unknown;
+
+/**
+ * Calls a function that returns a value, or an Effect that makes one. What
+ * the Effect can fail with and needs is the caller's to say.
+ */
+export const call = (
+  fn: LionFunction,
+  ...args: readonly unknown[]
+): Effect.Effect<unknown> => {
+  const result = fn(...args);
+  return Effect.isEffect(result)
+    ? (result as Effect.Effect<unknown>)
+    : Effect.succeed(result);
+};
 
 const LOGIC_VARIABLE_PATTERN = /^\?[A-Za-z_][\w-]*$/;
 
@@ -14,83 +30,82 @@ const LOGIC_VARIABLE_PATTERN = /^\?[A-Za-z_][\w-]*$/;
 export const isLogicVariableName = (name: string): boolean =>
   LOGIC_VARIABLE_PATTERN.test(name);
 
-export class LogicVariable {
+/** Every logic value shows as the Lion expression that evaluates to it. */
+class LogicValue {
+  toJSON(): unknown {
+    return render(this);
+  }
+}
+
+export class LogicVariable extends LogicValue {
   readonly _tag = "LogicVariable";
   /** The variable name without the leading `?`. */
   readonly name: string;
 
   constructor(name: string) {
+    super();
     this.name = name;
   }
 
   get anonymous(): boolean {
     return this.name.startsWith("_");
   }
-
-  toJSON() {
-    return render(this);
-  }
 }
 
 /**
- * A call to a pure function whose arguments include logic variables. The call
- * runs later, once the engine has bound every variable it mentions.
+ * A call that waits for logic variables: it runs once the engine has bound
+ * every variable it mentions. A `cond`, `match`, `eval`, or record that waits
+ * is a call to a lambda that holds the form.
  */
-export class DeferredCall {
+export class DeferredCall extends LogicValue {
   readonly _tag = "DeferredCall";
-  readonly fn: LionFunction;
-  readonly name: string;
+  /** The function to call, or a term that evaluates to one. */
+  readonly fn: unknown;
+  /** The callee as the program wrote it, shown for a function with no name. */
+  readonly callee: unknown;
   readonly args: readonly unknown[];
+  /**
+   * The kind of an aggregate call, such as `"sum"`. As a whole argument of a
+   * rule head it aggregates over the rule's matches; anywhere else it
+   * combines a list.
+   */
+  readonly aggregate: string | undefined;
+  /** The logic variables the call waits for. */
+  readonly variables: readonly string[];
 
-  constructor(fn: LionFunction, name: string, args: readonly unknown[]) {
+  constructor(
+    fn: unknown,
+    callee: unknown,
+    args: readonly unknown[],
+    aggregate?: string
+  ) {
+    super();
     this.fn = fn;
-    this.name = name;
+    this.callee = callee;
     this.args = args;
-  }
-
-  toJSON() {
-    return render(this);
+    this.aggregate = aggregate;
+    this.variables = [fn, ...args].flatMap(termVariables);
   }
 }
 
 /**
- * An aggregate in a rule head, such as `["aggregate/sum", "?amount"]`. The
- * engine groups the body's matches by the head's other columns and combines
- * the values of `arg` within each group.
- */
-export class Aggregate {
-  readonly _tag = "Aggregate";
-  /** The aggregate's name in the `aggregate` module, such as `"sum"`. */
-  readonly kind: string;
-  readonly arg: unknown;
-
-  constructor(kind: string, arg: unknown) {
-    this.kind = kind;
-    this.arg = arg;
-  }
-
-  toJSON() {
-    return render(this);
-  }
-}
-
-/**
- * A relation whose tuples a host function computes from other relations,
- * such as `["graph/pageRank", "edge", "?node", "?rank"]`.
+ * A relation whose rows a host function computes from other relations, such
+ * as `["graph/shortestPath", "road", "a", "?to", "?cost", "?path"]`.
  */
 export interface ComputedRelation {
-  /** The function that builds it, such as `"graph/pageRank"`. */
+  /** The function that builds it, such as `"graph/shortestPath"`. */
   readonly callee: string;
-  /** Returns the tuples, or a message explaining why it cannot. */
+  /** Returns the rows for some input values, or a message when it cannot. */
   readonly compute: (
-    tuples: (relation: string) => readonly (readonly unknown[])[]
+    tuples: (relation: string) => readonly (readonly unknown[])[],
+    inputs: readonly unknown[]
   ) => readonly (readonly unknown[])[] | string;
   /** Relations whose tuples the computation reads. */
   readonly dependencies: readonly string[];
-  /** Which inputs are relations, by position; the rest are values. */
-  readonly inputKinds: readonly ("relation" | "value")[];
-  /** Input relation names and parameter values, as written in the call. */
-  readonly inputs: readonly unknown[];
+  /** The call that builds a goal: the callee, then its inputs and columns. */
+  readonly form: (args: readonly unknown[]) => unknown[];
+  /** How many leading columns are inputs, bound before the goal runs. */
+  readonly inputs: number;
 }
 
 export interface RelationInfo {
@@ -103,91 +118,78 @@ export interface RelationInfo {
 }
 
 /** A relation applied to terms, such as `["dep", "?x", "?y"]`. */
-export class Atom {
+export class Atom extends LogicValue {
   readonly _tag = "Atom";
   readonly relation: RelationInfo;
   readonly args: readonly unknown[];
 
   constructor(relation: RelationInfo, args: readonly unknown[]) {
+    super();
     this.relation = relation;
     this.args = args;
   }
-
-  toJSON() {
-    return render(this);
-  }
 }
 
-export class Negation {
+/** `["not", goal]`: the goal has no match. */
+export class Negation extends LogicValue {
   readonly _tag = "Negation";
-  readonly atom: Atom;
+  readonly goal: Goal;
 
-  constructor(atom: Atom) {
-    this.atom = atom;
-  }
-
-  toJSON() {
-    return render(this);
+  constructor(goal: Goal) {
+    super();
+    this.goal = goal;
   }
 }
 
-export class Conjunction {
+export class Conjunction extends LogicValue {
   readonly _tag = "Conjunction";
   readonly goals: readonly Goal[];
 
   constructor(goals: readonly Goal[]) {
+    super();
     this.goals = goals;
-  }
-
-  toJSON() {
-    return render(this);
   }
 }
 
-export class Disjunction {
+export class Disjunction extends LogicValue {
   readonly _tag = "Disjunction";
   readonly goals: readonly Goal[];
 
   constructor(goals: readonly Goal[]) {
+    super();
     this.goals = goals;
-  }
-
-  toJSON() {
-    return render(this);
   }
 }
 
-export class Unification {
+export class Unification extends LogicValue {
   readonly _tag = "Unification";
   readonly left: unknown;
   readonly right: unknown;
 
   constructor(left: unknown, right: unknown) {
+    super();
     this.left = left;
     this.right = right;
-  }
-
-  toJSON() {
-    return render(this);
   }
 }
 
 /** `["in", element, list]`: the element is one of the list's items. */
-export class Membership {
+export class Membership extends LogicValue {
   readonly _tag = "Membership";
   readonly element: unknown;
   readonly list: unknown;
 
   constructor(element: unknown, list: unknown) {
+    super();
     this.element = element;
     this.list = list;
   }
-
-  toJSON() {
-    return render(this);
-  }
 }
 
+/**
+ * What a rule or query can ask. A variable or a waiting call is a filter:
+ * it must turn out true or false.
+ */
 export type Goal =
   | Atom
   | Negation
@@ -195,92 +197,147 @@ export type Goal =
   | Disjunction
   | Unification
   | Membership
-  | DeferredCall;
+  | DeferredCall
+  | LogicVariable
+  | boolean;
 
 export const isGoal = (value: unknown): value is Goal =>
-  value instanceof Atom ||
-  value instanceof Negation ||
-  value instanceof Conjunction ||
-  value instanceof Disjunction ||
-  value instanceof Unification ||
-  value instanceof Membership ||
-  value instanceof DeferredCall;
-
-/** True for values that stand in for something not yet known. */
-export const isLogicTerm = (
-  value: unknown
-): value is LogicVariable | DeferredCall | Aggregate =>
-  value instanceof LogicVariable ||
-  value instanceof DeferredCall ||
-  value instanceof Aggregate;
-
-const RELATION = Symbol.for("lion/relation");
-const PURE = Symbol.for("lion/pure");
-
-export type RelationValue = LionFunction & {
-  readonly [RELATION]: RelationInfo;
-};
-
-export const isRelationValue = (value: unknown): value is RelationValue =>
-  typeof value === "function" && RELATION in value;
-
-export const relationInfo = (value: RelationValue): RelationInfo =>
-  value[RELATION];
-
-export const makeRelationValue = (
-  relation: RelationInfo,
-  call: LionFunction
-): RelationValue => Object.assign(call, { [RELATION]: relation });
+  typeof value === "boolean" || value instanceof LogicValue;
 
 /**
- * Marks every function in a module as pure. A pure function called with a
- * logic variable returns a {@link DeferredCall} instead of running.
+ * True for a value that is not known until logic variables are bound: a
+ * variable, a waiting call, or a goal with no relation in it, which is true
+ * or false once its variables are.
  */
-export const markPure = <T extends Record<string, unknown>>(module: T): T => {
-  for (const value of Object.values(module)) {
-    if (typeof value === "function" && !(PURE in value)) {
-      Object.defineProperty(value, PURE, { value: true });
-    }
+export const isWaiting = (value: unknown): boolean => {
+  if (value instanceof Negation) {
+    return isWaiting(value.goal);
   }
-  return module;
+  if (value instanceof Conjunction || value instanceof Disjunction) {
+    return value.goals.every(
+      (goal) => typeof goal === "boolean" || isWaiting(goal)
+    );
+  }
+  return value instanceof LogicValue && !(value instanceof Atom);
 };
 
-export const isPureFunction = (value: unknown): value is LionFunction =>
-  typeof value === "function" && PURE in value;
+const LOGIC_FUNCTIONS = new WeakSet<object>();
 
-/** Converts logic values back into the Lion JSON that would produce them. */
-export const render = (value: unknown): unknown => {
-  if (value instanceof LogicVariable) {
-    return value.anonymous ? "?_" : `?${value.name}`;
+/**
+ * Marks a function that takes logic variables as they are and builds logic
+ * values from them: relations, aggregates, algorithms, and lambdas. Every
+ * other function waits until its arguments are known.
+ */
+export const logicFunction = <F extends LionFunction>(fn: F): F => {
+  LOGIC_FUNCTIONS.add(fn);
+  return fn;
+};
+
+export const isLogicFunction = (value: unknown): boolean =>
+  typeof value === "function" && LOGIC_FUNCTIONS.has(value);
+
+const RELATIONS = new WeakMap<object, RelationInfo>();
+
+/** The relation a function builds goals for, when it is a relation's value. */
+export const relationOf = (value: unknown): RelationInfo | undefined =>
+  typeof value === "function" ? RELATIONS.get(value) : undefined;
+
+export const makeRelationValue = <F extends LionFunction>(
+  relation: RelationInfo,
+  call: F
+): F => {
+  RELATIONS.set(call, relation);
+  return logicFunction(call);
+};
+
+const FUNCTION_NAMES = new WeakMap<object, string>();
+
+/**
+ * Remembers the name each function is bound to, so a waiting call is written
+ * with a name that evaluates to its function. A function keeps its first name.
+ */
+export const nameFunctions = (bindings: Readonly<Record<string, unknown>>) => {
+  for (const [name, value] of Object.entries(bindings)) {
+    if (typeof value === "function" && !FUNCTION_NAMES.has(value)) {
+      FUNCTION_NAMES.set(value, name);
+    }
   }
-  if (value instanceof DeferredCall) {
-    return [value.name, ...value.args.map(render)];
+};
+
+/** What a lambda was made from. */
+export interface LambdaInfo {
+  readonly body: unknown;
+  /** The scope the lambda closes over; undefined when it closes over none. */
+  readonly environment: Environment | undefined;
+  readonly parameters: readonly string[];
+  /** True when the body names a logic variable. */
+  readonly symbolic: boolean;
+}
+
+const LAMBDAS = new WeakMap<object, LambdaInfo>();
+
+export const registerLambda = <F extends LionFunction>(
+  fn: F,
+  info: LambdaInfo
+): F => {
+  LAMBDAS.set(fn, info);
+  return logicFunction(fn);
+};
+
+export const lambdaInfo = (value: unknown): LambdaInfo | undefined =>
+  typeof value === "function" ? LAMBDAS.get(value) : undefined;
+
+/** Decides how `write` shows the parts that depend on who is reading. */
+export interface Writer {
+  /** Writes JSON data. */
+  readonly data: (value: unknown) => unknown;
+  /**
+   * Writes a value with no Lion form, such as a function the environment
+   * does not name. `callee` is how the program wrote it, when it called it.
+   */
+  readonly opaque: (value: unknown, callee?: unknown) => unknown;
+  /** Writes a variable; by default its name. */
+  readonly variable?: (variable: LogicVariable) => unknown;
+}
+
+const lambdaForm = ({ body, parameters }: LambdaInfo) => [
+  "lambda",
+  parameters,
+  body,
+];
+
+const writeFunction = (fn: LionFunction, writer: Writer, callee?: unknown) => {
+  const info = LAMBDAS.get(fn);
+  return (
+    RELATIONS.get(fn)?.name ??
+    FUNCTION_NAMES.get(fn) ??
+    (info !== undefined && info.environment === undefined
+      ? lambdaForm(info)
+      : writer.opaque(fn, callee))
+  );
+};
+
+const writeCall = (call: DeferredCall, writer: Writer) => {
+  const args = call.args.map((arg) => write(arg, writer));
+  const info = lambdaInfo(call.fn);
+  if (info === undefined || info.environment !== undefined) {
+    const head =
+      typeof call.fn === "function"
+        ? writeFunction(call.fn as LionFunction, writer, call.callee)
+        : write(call.fn, writer);
+    return [head, ...args];
   }
-  if (value instanceof Aggregate) {
-    return [`aggregate/${value.kind}`, render(value.arg)];
-  }
-  if (value instanceof Atom) {
-    const { computed, name } = value.relation;
-    return computed === undefined
-      ? [name, ...value.args.map(render)]
-      : [computed.callee, ...computed.inputs, ...value.args.map(render)];
-  }
-  if (value instanceof Negation) {
-    return ["not", render(value.atom)];
-  }
-  if (value instanceof Conjunction) {
-    return ["and", ...value.goals.map(render)];
-  }
-  if (value instanceof Disjunction) {
-    return ["or", ...value.goals.map(render)];
-  }
-  if (value instanceof Unification) {
-    return ["=", render(value.left), render(value.right)];
-  }
-  if (value instanceof Membership) {
-    return ["in", render(value.element), render(value.list)];
-  }
-  return value;
+  // A waiting form is written as it was, with a lambda around it for the
+  // names that would not evaluate to the same values again.
+  const kept = info.parameters.flatMap((name, at) =>
+    args[at] === name ? [] : [at]
+  );
+  return kept.length === 0
+    ? info.body
+    : [
+        ["lambda", kept.map((at) => info.parameters[at]), info.body],
+        ...kept.map((at) => args[at]),
+      ];
 };
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => {
@@ -290,6 +347,109 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
   const prototype = Object.getPrototypeOf(value);
   return prototype === Object.prototype || prototype === null;
 };
+
+/**
+ * Writes a logic value as the Lion expression that evaluates to it. Every
+ * reader shares this one shape: messages and `why`, the keys that tell rules
+ * apart, and snapshots.
+ */
+export const write = (item: unknown, writer: Writer): unknown => {
+  const inner = (value: unknown) => write(value, writer);
+  if (item instanceof LogicVariable) {
+    return writer.variable === undefined
+      ? `?${item.anonymous ? "_" : item.name}`
+      : writer.variable(item);
+  }
+  if (item instanceof DeferredCall) {
+    return writeCall(item, writer);
+  }
+  if (item instanceof Atom) {
+    const args = item.args.map(inner);
+    return item.relation.computed?.form(args) ?? [item.relation.name, ...args];
+  }
+  if (item instanceof Negation) {
+    return ["not", inner(item.goal)];
+  }
+  if (item instanceof Conjunction) {
+    return ["and", ...item.goals.map(inner)];
+  }
+  if (item instanceof Disjunction) {
+    return ["or", ...item.goals.map(inner)];
+  }
+  if (item instanceof Unification) {
+    return ["=", inner(item.left), inner(item.right)];
+  }
+  if (item instanceof Membership) {
+    return ["in", inner(item.element), inner(item.list)];
+  }
+  if (typeof item === "function") {
+    return writeFunction(item as LionFunction, writer);
+  }
+  if (isGroundValue(item)) {
+    return writer.data(item);
+  }
+  if (Array.isArray(item)) {
+    return item.map(inner);
+  }
+  return isPlainObject(item)
+    ? Object.fromEntries(
+        Object.entries(item).map(([key, value]) => [key, inner(value)])
+      )
+    : writer.opaque(item);
+};
+
+/**
+ * Writes JSON data so that it evaluates to itself: lists, records, and
+ * strings that would evaluate to something else go inside `quote`. Logic
+ * variable names and namespaced names such as "number/add" always do;
+ * `isBound` says which other strings are names.
+ */
+export const quoted =
+  (isBound: (text: string) => boolean = () => false) =>
+  (value: unknown): unknown => {
+    if (typeof value === "string") {
+      return isLogicVariableName(value) || value.includes("/") || isBound(value)
+        ? ["quote", value]
+        : value;
+    }
+    return typeof value === "object" && value !== null
+      ? ["quote", value]
+      : value;
+  };
+
+const DISPLAY: Writer = {
+  data: quoted(),
+  opaque: (value, callee) => {
+    const info = lambdaInfo(value);
+    if (info !== undefined) {
+      return lambdaForm(info);
+    }
+    return callee ?? (typeof value === "function" ? "<function>" : value);
+  },
+};
+
+/**
+ * Shows a value to people, in messages and results: data as it is, and a
+ * logic value as the Lion expression that evaluates to it.
+ */
+export const render = (value: unknown): unknown =>
+  isGroundValue(value) ? value : write(value, DISPLAY);
+
+export const show = (value: unknown): string =>
+  JSON.stringify(render(value)) ?? String(value);
+
+/** Writes a goal with the values an answer gave its variables. */
+export const instantiate = (
+  goal: unknown,
+  vars: ReadonlyMap<string, unknown>
+): unknown =>
+  write(goal, {
+    ...DISPLAY,
+    variable: ({ name }) => (vars.has(name) ? vars.get(name) : "?_"),
+  });
+
+/** Raised by a writer for a value with no Lion form. */
+export class Unwritable extends Error {}
 
 /** Facts may only contain JSON data. */
 export const isGroundValue = (value: unknown): boolean => {
@@ -329,64 +489,27 @@ const canonical = (value: unknown): unknown => {
 export const valueKey = (value: unknown): string =>
   JSON.stringify(canonical(value)) ?? "undefined";
 
-class NoKey extends Error {}
-
-/** Tags every kind of logic value, so no two kinds encode alike. */
-const encodeLogic = (value: unknown): unknown => {
-  if (isGroundValue(value)) {
-    return { value };
-  }
-  if (value instanceof LogicVariable) {
-    return { variable: value.name };
-  }
-  if (value instanceof DeferredCall) {
-    return { call: value.name, args: value.args.map(encodeLogic) };
-  }
-  if (value instanceof Aggregate) {
-    return { aggregate: value.kind, arg: encodeLogic(value.arg) };
-  }
-  if (value instanceof Atom) {
-    const { computed, name } = value.relation;
-    return computed === undefined
-      ? { atom: name, args: value.args.map(encodeLogic) }
-      : {
-          computed: computed.callee,
-          inputs: computed.inputs.map(encodeLogic),
-          args: value.args.map(encodeLogic),
-        };
-  }
-  if (value instanceof Negation) {
-    return { not: encodeLogic(value.atom) };
-  }
-  if (value instanceof Conjunction) {
-    return { and: value.goals.map(encodeLogic) };
-  }
-  if (value instanceof Disjunction) {
-    return { or: value.goals.map(encodeLogic) };
-  }
-  if (value instanceof Unification) {
-    return { unify: [encodeLogic(value.left), encodeLogic(value.right)] };
-  }
-  if (value instanceof Membership) {
-    return { in: [encodeLogic(value.element), encodeLogic(value.list)] };
-  }
-  if (Array.isArray(value)) {
-    return { list: value.map(encodeLogic) };
-  }
-  throw new NoKey();
+// Quoting every string keeps data apart from the names, variables, and
+// forms around it.
+const KEYED: Writer = {
+  data: quoted(() => true),
+  opaque: () => {
+    throw new Unwritable();
+  },
 };
 
 /**
  * A key that is equal for logic values a snapshot would write the same way:
  * JSON data by value, variables apart from strings that look like them, and
- * functions and relations by name. Undefined for a value with no such form,
- * such as a lambda, so it is never taken for another value.
+ * functions and relations by name. Undefined for a value with no written
+ * form, such as a lambda that closes over a scope, so it is never taken for
+ * another value.
  */
 export const logicKey = (value: unknown): string | undefined => {
   try {
-    return valueKey(encodeLogic(value));
+    return valueKey(write(value, KEYED));
   } catch (error) {
-    if (error instanceof NoKey) {
+    if (error instanceof Unwritable) {
       return undefined;
     }
     throw error;
@@ -401,7 +524,8 @@ export const sameValue = (a: unknown, b: unknown): boolean => {
     a === null ||
     b === null
   ) {
-    return Object.is(a, b);
+    // JSON writes -0 as 0, so the two are the same number.
+    return a === b || Object.is(a, b);
   }
   return isGroundValue(a) && isGroundValue(b)
     ? valueKey(a) === valueKey(b)
@@ -470,30 +594,36 @@ export const compareValues = (a: unknown, b: unknown): number => {
   return 0;
 };
 
-/** Variable names mentioned by a term, including inside deferred calls. */
-export const termVariables = (term: unknown): readonly string[] => {
+/** Variable names a term or goal mentions, in reading order. */
+export function termVariables(term: unknown): readonly string[] {
   if (term instanceof LogicVariable) {
     return [term.name];
   }
   if (term instanceof DeferredCall) {
+    return term.variables;
+  }
+  if (term instanceof Atom) {
     return term.args.flatMap(termVariables);
   }
-  if (term instanceof Aggregate) {
-    return termVariables(term.arg);
+  if (term instanceof Negation) {
+    return termVariables(term.goal);
   }
-  return [];
-};
+  if (term instanceof Conjunction || term instanceof Disjunction) {
+    return term.goals.flatMap(termVariables);
+  }
+  if (term instanceof Unification) {
+    return [term.left, term.right].flatMap(termVariables);
+  }
+  return term instanceof Membership
+    ? [term.element, term.list].flatMap(termVariables)
+    : [];
+}
 
 /** True when a logic value hides inside an array or record. */
 export const containsNestedLogic = (term: unknown): boolean => {
-  if (isLogicTerm(term) || isGoal(term)) {
-    return true;
-  }
-  if (Array.isArray(term)) {
-    return term.some(containsNestedLogic);
-  }
-  if (isPlainObject(term)) {
-    return Object.values(term).some(containsNestedLogic);
-  }
-  return false;
+  const hides = (item: unknown) =>
+    item instanceof LogicValue || containsNestedLogic(item);
+  return Array.isArray(term)
+    ? term.some(hides)
+    : isPlainObject(term) && Object.values(term).some(hides);
 };

@@ -20,6 +20,7 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant.
 - **Walk through the combinations.** Surprises hide where two features meet. Before settling a behavior, trace how it interacts with each existing one. For the logic layer, that includes:
   - logic variables and `quote`
+  - everything that waits for a logic variable: function calls, `cond`, `match`, `eval`, records, and lambdas passed to a waiting call
   - `define`, and the fresh environment each `run` gets
   - recursion and negation
   - aggregates and keyed relations
@@ -30,6 +31,7 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - a program and its snapshot
   - goal-directed and full evaluation
   - a name and the value bound to it
+  - an expression over a logic variable and the same expression with the variable's value in its place
 
   Where results may differ, such as answer order without the `"order"` query option, say so in the docs.
 - **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.

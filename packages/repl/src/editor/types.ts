@@ -1,9 +1,9 @@
 import type {
   SemanticKind,
   SemanticRelationship,
-  SpecialFormName,
   StructuralPath,
 } from "@lionlang/core/analysis/analyze";
+import type { SpecialFormName } from "@lionlang/core/schemas/evaluation";
 
 export type ParseStatus = "valid" | "invalid-json" | "invalid-lion";
 export type DiagnosticCategory =

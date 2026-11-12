@@ -14,8 +14,12 @@
 <h2>Adding what is held changes nothing</h2>
 <p>Facts are a set, so adding a fact twice changes nothing; declaring a relation twice the same way changes nothing. Rules and invariants follow the same rule: adding one the database already holds, one a snapshot would write the same way, changes nothing. Before this was true for rules, running a setup program twice against a saved database added each rule again, and aggregates silently counted every match twice. One rule for every kind of definition removed that whole class of surprise.</p>
 
+<h2>One rule for everything that waits</h2>
+<p>Inside a rule or query, a logic variable has no value yet. Lion has one answer to that everywhere: whatever needs the value waits until the variable is bound, and then computes what it would compute with the value in its place. That holds for a standard function and a host function, for <code>cond</code>, <code>match</code>, and <code>eval</code>, for a record, and for a lambda passed to <code>array/map</code>. No function has to be marked for it, and no form behaves differently inside a rule than outside.</p>
+<p>The forms that test truth follow one rule too. <code>and</code>, <code>or</code>, and <code>not</code> accept only <code>true</code>, <code>false</code>, and goals, and so does a filter: a filter that gives a number is an error, not a guess at what the number means. <code>and</code> and <code>or</code> stop at the first argument that decides them, as booleans and as goals.</p>
+
 <h2>Equivalent programs behave the same</h2>
-<p>A snapshot is a program that rebuilds the database, so loading one must give the same answers, and saving again must give the same program. Goal-directed and full evaluation must give the same answers. A name and the value bound to it are the same inside a rule, because rules hold values as evaluated. Each of these is tested as a property over generated programs, so a change that breaks one fails the test suite.</p>
+<p>A snapshot is a program that rebuilds the database, so loading one must give the same answers, and saving again must give the same program. Goal-directed and full evaluation must give the same answers. A name and the value bound to it are the same inside a rule, because rules hold values as evaluated; that goes for a function as much as for a number. An expression over a logic variable must give what it gives with the value in the variable's place. Each of these is tested as a property over generated programs, so a change that breaks one fails the test suite.</p>
 
 <h2>Where JavaScript and JSON disagree</h2>
 <p>Lion runs on JavaScript, but its values are JSON, and the two disagree in a few places. Each time, Lion follows JSON, and applies the choice everywhere it comes up:</p>

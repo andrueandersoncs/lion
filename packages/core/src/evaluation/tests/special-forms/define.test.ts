@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Match, Option, pipe, Schema } from "effect";
+import { Arbitrary, Effect, Match, Option, pipe, Schema } from "effect";
 import { InvalidFunctionCallError } from "@/errors/evaluation";
 import { getBinding, makeEnvironment } from "@/evaluation/environment";
 import { evaluate, run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
-import { DefineFormSchema } from "@/schemas/evaluation";
+import { DefineFormSchema, SPECIAL_FORM_NAMES } from "@/schemas/evaluation";
 import { LionEnvironmentService } from "@/services/evaluation";
 
 const TestSchema = DefineFormSchema;
@@ -74,6 +74,23 @@ describe("define special form", () => {
         ];
         const result = yield* run(program, stdlib);
         expect(result).toBe(2);
+      })
+  );
+
+  it.effect.prop(
+    "should say what is wrong when the name belongs to a special form",
+    {
+      name: Arbitrary.schema(Schema.Literals(SPECIAL_FORM_NAMES)),
+      value: Arbitrary.schema(Schema.Int),
+    },
+    ({ name, value }) =>
+      Effect.gen(function* () {
+        const expression = ["define", name, value];
+        const error = yield* run(expression, stdlib).pipe(Effect.flip);
+        expect(error).toBeInstanceOf(InvalidFunctionCallError);
+        expect((error as InvalidFunctionCallError).message).toBe(
+          `${JSON.stringify(expression)} is not a call: its first element must be a special form or evaluate to a function.`
+        );
       })
   );
 });

@@ -225,11 +225,6 @@ describe("graph algorithm checks", () => {
       expect(
         yield* errorMessage(graph(["graph/pageRank", "nowhere", "?n", "?r"]))
       ).toContain('expects a relation for "edges"');
-      expect(
-        yield* errorMessage(
-          graph(["graph/shortestPath", "road", "?start", "?to", "?c", "?p"])
-        )
-      ).toContain("Algorithm inputs must be known when the goal is built");
     })
   );
 

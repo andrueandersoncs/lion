@@ -1,8 +1,16 @@
-import { Array as Arr, Effect, flow, Option, pipe, Schema } from "effect";
+import { Array as Arr, Effect, flow, Option, Schema } from "effect";
 import { LogicError } from "@/errors/evaluation";
+import { call } from "@/logic/terms";
 import { decode } from "@/modules/lib/shared";
 
 const MAX_RANGE = 1_000_000;
+
+/** The function's result for each item of a list, in order. */
+const mapItems = flow(
+  (a: unknown, b: unknown) => [a, b],
+  decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
+  Effect.flatMap(([list, fn]) => Effect.all(list.map((item) => call(fn, item))))
+);
 
 export const module = {
   symbol: Symbol("array"),
@@ -37,37 +45,22 @@ export const module = {
     Effect.map(([list, item]) => Arr.contains(list, item))
   ),
 
-  map: flow(
-    (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
-    Effect.flatMap(([list, fn]) =>
-      Effect.all(Arr.map(list, fn) as Effect.Effect<unknown>[])
-    )
-  ),
+  /** Calls the function on each item, in order. */
+  map: mapItems,
 
   "flat-map": flow(
-    (a: unknown, b: unknown) => [a, b],
-    decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any])),
-    Effect.flatMap(([list, fn]) =>
-      pipe(
-        Arr.map(list, fn) as Effect.Effect<unknown[]>[],
-        Effect.all,
-        Effect.map(Arr.flatten)
-      )
-    )
+    mapItems,
+    Effect.map((lists) => lists.flat())
   ),
 
   reduce: flow(
     (a: unknown, b: unknown, c: unknown) => [a, b, c],
     decode(Schema.Tuple([Schema.Array(Schema.Any), Schema.Any, Schema.Any])),
     Effect.flatMap(([list, initial, fn]) =>
-      Arr.reduce(list, Effect.succeed(initial), (accEffect, item) =>
-        Effect.flatMap(accEffect, (acc) =>
-          (fn as (acc: unknown, item: unknown) => Effect.Effect<unknown>)(
-            acc,
-            item
-          )
-        )
+      Effect.reduce(
+        list,
+        (): unknown => initial,
+        (total, item) => call(fn, total, item)
       )
     )
   ),

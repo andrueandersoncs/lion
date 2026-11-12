@@ -1,8 +1,8 @@
 import { Effect, Option } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import { logicError } from "@/errors/evaluation";
 import { boundNames, setGlobalBinding } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
-import { compileQuery, compileRule } from "@/logic/compile";
+import { compileQuery, compileRule, queryOutputs } from "@/logic/compile";
 import {
   addInvariant,
   addRules,
@@ -25,11 +25,12 @@ import {
   Disjunction,
   type Goal,
   isGoal,
-  isLogicTerm,
+  isWaiting,
   Membership,
   Negation,
   render,
   sameValue,
+  show,
   Unification,
 } from "@/logic/terms";
 import type {
@@ -50,15 +51,11 @@ import type { LionExpressionType } from "@/schemas/lion-expression";
 import { LionDatabaseService } from "@/services/database";
 import { LionEnvironmentService } from "@/services/evaluation";
 
-const fail = (message: string) => Effect.fail(new LogicError({ message }));
-
-const show = (value: unknown) => JSON.stringify(render(value));
-
 const database = Effect.serviceOption(LionDatabaseService).pipe(
   Effect.flatMap(
     Option.match({
       onNone: () =>
-        fail(
+        logicError(
           "No logic database is available. Evaluate with run(), or provide LionDatabaseService."
         ),
       onSome: Effect.succeed,
@@ -74,7 +71,7 @@ const atoms = (form: string, values: readonly unknown[]) =>
     const result: Atom[] = [];
     for (const value of values) {
       if (!(value instanceof Atom)) {
-        return yield* fail(
+        return yield* logicError(
           `${form} expects relation calls, but found ${show(value)}.`
         );
       }
@@ -92,20 +89,20 @@ const relationKey = (name: string, options: unknown) => {
     return Effect.succeed(undefined);
   }
   if (!isRecord(options)) {
-    return fail(
+    return logicError(
       `Relation options must be a record such as {"key": ["id"]}, but "${name}" has ${show(options)}.`
     );
   }
   const unknown = Object.keys(options).find((option) => option !== "key");
   if (unknown !== undefined) {
-    return fail(
+    return logicError(
       `Unknown relation option "${unknown}" for "${name}". The only relation option is "key".`
     );
   }
   const key = typeof options.key === "string" ? [options.key] : options.key;
   return Array.isArray(key) && key.every((column) => typeof column === "string")
     ? Effect.succeed(key as readonly string[])
-    : fail(
+    : logicError(
         `The key of "${name}" must be a column name or a list of them, but found ${show(options.key)}.`
       );
 };
@@ -162,7 +159,7 @@ export const evaluateQuery = ([
   Effect.gen(function* () {
     const goalValue = yield* evaluate(goal);
     const queries = yield* compileQuery(goalValue);
-    const parsed = yield* parseQueryOptions(options, queries[0]?.outputs ?? []);
+    const parsed = yield* parseQueryOptions(options, queryOutputs(goalValue));
     const rows = yield* queryDatabase(yield* database, queries);
     return yield* applyQueryOptions(rows, parsed, goalValue);
   });
@@ -191,60 +188,59 @@ export const evaluateWhy = ([_, fact]: typeof WhyFormSchema.Type) =>
     return yield* explainFact(yield* database, atom as Atom);
   });
 
-const goalsOrBooleans = (form: string, values: readonly unknown[]) =>
-  Effect.gen(function* () {
-    for (const value of values) {
-      if (!(isGoal(value) || typeof value === "boolean")) {
-        return yield* fail(
+const goalOrBoolean = (form: string, expression: LionExpressionType) =>
+  Effect.flatMap(evaluate(expression), (value) =>
+    isGoal(value)
+      ? Effect.succeed(value)
+      : logicError(
           `${form} expects goals or booleans, but found ${show(value)}.`
-        );
-      }
-    }
-    return values as readonly (Goal | boolean)[];
-  });
+        )
+  );
 
-const allBooleans = (
-  values: readonly (Goal | boolean)[]
-): values is readonly boolean[] =>
-  values.every((value) => typeof value === "boolean");
-
-/** Negates a relation call, or a boolean outside of logic. */
+/** Negates a goal, or a boolean outside of logic. */
 export const evaluateNot = ([_, goal]: typeof NotFormSchema.Type) =>
-  Effect.gen(function* () {
-    const value = yield* evaluate(goal);
-    if (typeof value === "boolean") {
-      return !value;
-    }
-    if (!(value instanceof Atom)) {
-      return yield* fail(
-        `not expects a relation call or a boolean, but found ${show(value)}.`
-      );
-    }
-    return new Negation(value);
-  });
+  Effect.map(goalOrBoolean("not", goal), (value) =>
+    typeof value === "boolean" ? !value : new Negation(value)
+  );
 
-export const evaluateAnd = ([_, ...goals]: typeof AndFormSchema.Type) =>
-  Effect.gen(function* () {
-    const values = yield* goalsOrBooleans("and", yield* evaluateAll(goals));
-    return allBooleans(values)
-      ? values.every(Boolean)
-      : new Conjunction(values as Goal[]);
-  });
+/**
+ * `and` and `or` read their arguments in order. On booleans they stop at the
+ * first one that decides the result, false for `and` and true for `or`, as
+ * in Scheme. Once an argument is a goal, they combine goals.
+ */
+const connective =
+  (form: "and" | "or", combine: (goals: readonly Goal[]) => Goal) =>
+  (items: readonly LionExpressionType[]) =>
+    Effect.gen(function* () {
+      const decides = form === "or";
+      const goals: Goal[] = [];
+      for (const item of items) {
+        const value = yield* goalOrBoolean(form, item);
+        if (value === decides && goals.length === 0) {
+          return decides;
+        }
+        if (value !== !decides) {
+          goals.push(value);
+        }
+      }
+      return goals.length === 0 ? !decides : combine(goals);
+    });
 
-export const evaluateOr = ([_, ...goals]: typeof OrFormSchema.Type) =>
-  Effect.gen(function* () {
-    const values = yield* goalsOrBooleans("or", yield* evaluateAll(goals));
-    return allBooleans(values)
-      ? values.some(Boolean)
-      : new Disjunction(values as Goal[]);
-  });
+const conjunction = connective("and", (goals) => new Conjunction(goals));
+const disjunction = connective("or", (goals) => new Disjunction(goals));
+
+export const evaluateAnd = ([_, ...items]: typeof AndFormSchema.Type) =>
+  conjunction(items);
+
+export const evaluateOr = ([_, ...items]: typeof OrFormSchema.Type) =>
+  disjunction(items);
 
 /** Unifies two terms; without logic variables it is plain equality. */
 export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>
   Effect.gen(function* () {
     const leftValue = yield* evaluate(left);
     const rightValue = yield* evaluate(right);
-    if (!(isLogicTerm(leftValue) || isLogicTerm(rightValue))) {
+    if (!(isWaiting(leftValue) || isWaiting(rightValue))) {
       return sameValue(leftValue, rightValue);
     }
     return new Unification(leftValue, rightValue);
@@ -258,11 +254,13 @@ export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
   Effect.gen(function* () {
     const elementValue = yield* evaluate(element);
     const listValue = yield* evaluate(list);
-    if (isLogicTerm(elementValue) || isLogicTerm(listValue)) {
+    if (isWaiting(elementValue) || isWaiting(listValue)) {
       return new Membership(elementValue, listValue);
     }
     if (!Array.isArray(listValue)) {
-      return yield* fail(`"in" expects a list, but found ${show(listValue)}.`);
+      return yield* logicError(
+        `"in" expects a list, but found ${show(listValue)}.`
+      );
     }
     return listValue.some((item) => sameValue(item, elementValue));
   });

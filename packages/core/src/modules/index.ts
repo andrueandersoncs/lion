@@ -1,4 +1,4 @@
-import { markPure } from "@/logic/terms";
+import { nameFunctions } from "@/logic/terms";
 import { module as aggregate } from "./aggregate.ts";
 import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
@@ -24,19 +24,20 @@ export const namespaceEntries = (
   return result;
 };
 
-// Pure modules can be used inside rules: called with a logic variable, their
-// functions wait until the variable is bound instead of running. Aggregates
-// called with a logic variable become aggregates for a rule head instead, and
-// graph algorithms build goals over computed relations.
+// Every function waits when it is called with a logic variable, so all of
+// them work inside rules and queries. Aggregates and graph algorithms take
+// logic variables as they are: they build aggregates and goals from them.
 export const stdlib = {
   ...namespaceEntries("aggregate", aggregate),
-  ...namespaceEntries("array", markPure(array)),
-  ...namespaceEntries("boolean", markPure(boolean)),
+  ...namespaceEntries("array", array),
+  ...namespaceEntries("boolean", boolean),
   ...namespaceEntries("console", console),
   ...namespaceEntries("func", func),
   ...namespaceEntries("graph", graph),
-  ...namespaceEntries("number", markPure(number)),
+  ...namespaceEntries("number", number),
   ...namespaceEntries("object", object),
-  ...namespaceEntries("string", markPure(string)),
-  ...namespaceEntries("value", markPure(value)),
+  ...namespaceEntries("string", string),
+  ...namespaceEntries("value", value),
 };
+
+nameFunctions(stdlib);

@@ -147,32 +147,17 @@ const validateKeyExists = (current: unknown, key: string) =>
 const traversePath = (
   obj: unknown,
   path: string,
-  keys: string[]
+  keys: readonly string[]
 ): Effect.Effect<unknown, PathTraversalError> =>
   Effect.gen(function* () {
     let current: unknown = obj;
-    for (let i = 0; i < keys.length - 1; i++) {
-      const key = keys[i];
-      if (key === undefined) {
-        return yield* new PathTraversalError({
-          path,
-          key: String(i),
-          current,
-        });
-      }
-      if (typeof current !== "object" || current === null) {
-        return yield* new PathTraversalError({
-          path,
-          key: String(key),
-          current,
-        });
-      }
-      if (!(key in current)) {
-        return yield* new PathTraversalError({
-          path,
-          key: String(key),
-          current,
-        });
+    for (const key of keys.slice(0, -1)) {
+      if (
+        typeof current !== "object" ||
+        current === null ||
+        !(key in current)
+      ) {
+        return yield* new PathTraversalError({ path, key, current });
       }
       current = getValueAtKey(current, key);
     }
@@ -183,16 +168,37 @@ const traversePath = (
 const hasNoMethods = (value: unknown): value is null | undefined =>
   value === null || value === undefined;
 
-const getMethodFromObject = (
-  target: unknown,
-  methodKey: string,
-  path: string
-): Effect.Effect<
-  (...args: unknown[]) => unknown,
-  EmptyPathError | NotAnObjectError | MethodNotFoundError
-> =>
+type Method = (...args: unknown[]) => unknown;
+
+/** The method under a key, with the value it belongs to. */
+const methodOf = (obj: unknown, key: unknown) =>
   Effect.gen(function* () {
-    if (methodKey === undefined || methodKey === "") {
+    if (hasNoMethods(obj)) {
+      return yield* new NotAnObjectError({ actual: obj });
+    }
+    const method = (obj as Record<string, unknown>)[key as string];
+    if (typeof method !== "function") {
+      return yield* new NotAFunctionError({
+        key: key as string,
+        actual: method,
+      });
+    }
+    return [method as Method, obj] as const;
+  });
+
+/** The method at the end of a dot path, with the value it belongs to. */
+const methodAt = (obj: unknown, path: unknown) =>
+  Effect.gen(function* () {
+    if (hasNoMethods(obj)) {
+      return yield* new NotAnObjectError({ actual: obj });
+    }
+    if (typeof path !== "string") {
+      return yield* new InvalidPathError({ path });
+    }
+    const keys = path.split(".");
+    const target = yield* traversePath(obj, path, keys);
+    const methodKey = keys.at(-1) ?? "";
+    if (methodKey === "") {
       return yield* new EmptyPathError({ path });
     }
     if (hasNoMethods(target)) {
@@ -202,12 +208,20 @@ const getMethodFromObject = (
     if (typeof method !== "function") {
       return yield* new MethodNotFoundError({
         path,
-        methodKey: String(methodKey),
+        methodKey,
         actual: method,
       });
     }
-    return method as (...args: unknown[]) => unknown;
+    return [method as Method, target] as const;
   });
+
+const bound = ([method, target]: readonly [Method, unknown]) =>
+  method.bind(target);
+
+const applied =
+  (args: readonly unknown[]) =>
+  ([method, target]: readonly [Method, unknown]) =>
+    method.apply(target, args as unknown[]);
 
 export const module = {
   symbol: Symbol("object"),
@@ -280,67 +294,13 @@ export const module = {
     }),
 
   // The method functions work on any value but null, such as a string.
-  "get-method": (obj: unknown, key: unknown) =>
-    Effect.gen(function* () {
-      if (hasNoMethods(obj)) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
-      const method = (obj as Record<string, unknown>)[key as string];
-      if (typeof method !== "function") {
-        return yield* new NotAFunctionError({
-          key: key as string,
-          actual: method,
-        });
-      }
-      return method.bind(obj);
-    }),
+  "get-method": flow(methodOf, Effect.map(bound)),
 
   "call-method": (obj: unknown, key: unknown, ...args: unknown[]) =>
-    Effect.gen(function* () {
-      if (hasNoMethods(obj)) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
-      const method = (obj as Record<string, unknown>)[key as string];
-      if (typeof method !== "function") {
-        return yield* new NotAFunctionError({
-          key: key as string,
-          actual: method,
-        });
-      }
-      return method.apply(obj, args);
-    }),
+    Effect.map(methodOf(obj, key), applied(args)),
 
-  "get-method-path": (obj: unknown, path: string) =>
-    Effect.gen(function* () {
-      if (hasNoMethods(obj)) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
-      if (typeof path !== "string") {
-        return yield* new InvalidPathError({ path });
-      }
-      const keys = path.split(".");
-      const targetObj = yield* traversePath(obj, path, keys);
-      const methodKey = keys.at(-1) ?? "";
-      const method = yield* getMethodFromObject(targetObj, methodKey, path);
-      return method.bind(targetObj);
-    }),
+  "get-method-path": flow(methodAt, Effect.map(bound)),
 
-  "call-method-path": (obj: unknown, path: string, ...args: unknown[]) =>
-    Effect.gen(function* () {
-      if (hasNoMethods(obj)) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
-      if (typeof path !== "string") {
-        return yield* new InvalidPathError({ path });
-      }
-      const keys = (path as string).split(".");
-      const targetObj = yield* traversePath(obj, path as string, keys);
-      const methodKey = keys.at(-1) ?? "";
-      const method = yield* getMethodFromObject(
-        targetObj,
-        methodKey,
-        path as string
-      );
-      return method.apply(targetObj, args);
-    }),
+  "call-method-path": (obj: unknown, path: unknown, ...args: unknown[]) =>
+    Effect.map(methodAt(obj, path), applied(args)),
 };

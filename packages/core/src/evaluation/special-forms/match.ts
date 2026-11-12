@@ -1,103 +1,88 @@
-import { Effect, Record, Schema } from "effect";
+import { Effect, Schema } from "effect";
 import { evaluate } from "@/evaluation/evaluate";
+import { suspend } from "@/evaluation/special-forms/lambda";
+import { call, isWaiting, type LionFunction } from "@/logic/terms";
 import {
   LionFunctionValueSchema,
   type MatchFormSchema,
-  MatchPatternSchema,
 } from "@/schemas/evaluation";
-import type { LionExpressionSchema } from "@/schemas/lion-expression";
-import type { LionEnvironmentService } from "@/services/evaluation";
+import type { LionExpressionType } from "@/schemas/lion-expression";
 import type { EvaluateResult } from "@/types/evaluation";
 
 /*
 ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
 */
 
-type AssumedMatchPredicateType =
-  | { readonly [key: string]: AssumedMatchPredicateType }
-  | typeof LionFunctionValueSchema.Type;
+/** A function, or a record of predicates for the keys a record must have. */
+type Predicate = LionFunction | { readonly [key: string]: Predicate };
 
-const MatchPredicateRecordSchema = Schema.Record(
-  Schema.String,
-  Schema.suspend(
-    (): Schema.Codec<AssumedMatchPredicateType> => MatchPredicateSchema
-  )
-);
-
-const MatchPredicateSchema = Schema.Union([
-  MatchPredicateRecordSchema,
+const PredicateSchema: Schema.Codec<Predicate> = Schema.Union([
+  Schema.Record(
+    Schema.String,
+    Schema.suspend((): Schema.Codec<Predicate> => PredicateSchema)
+  ),
   LionFunctionValueSchema,
 ]);
 
-const AnyRecordSchema = Schema.Record(Schema.String, Schema.Any);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-const evaluatePredicate = (
+/** A predicate that fails, or answers anything but true, does not match. */
+const matches = (
   value: unknown,
-  predicate: typeof MatchPredicateSchema.Type
-): Effect.Effect<boolean, never, LionEnvironmentService> => {
-  if (Schema.is(MatchPredicateRecordSchema)(predicate)) {
-    return Effect.gen(function* () {
-      if (!Schema.is(AnyRecordSchema)(value)) {
-        return false;
-      }
-
-      if (!Record.keys(predicate).every((key) => Record.has(value, key))) {
-        return false;
-      }
-
-      for (const [key, nestedPredicate] of Record.toEntries(predicate)) {
-        if (!(yield* evaluatePredicate(value[key], nestedPredicate))) {
-          return false;
-        }
-      }
-      return true;
-    });
+  predicate: Predicate
+): Effect.Effect<boolean, never, unknown> => {
+  if (typeof predicate === "function") {
+    return call(predicate, value).pipe(
+      Effect.map((result) => result === true),
+      Effect.catch(() => Effect.succeed(false))
+    );
   }
-
-  return predicate(value).pipe(
-    Effect.flatMap(Schema.decodeUnknownEffect(Schema.Boolean)),
-    Effect.catch(() => Effect.succeed(false))
-  );
+  return Effect.gen(function* () {
+    for (const [key, nested] of Object.entries(predicate)) {
+      const present = isRecord(value) && Object.hasOwn(value, key);
+      if (!(present && (yield* matches(value[key], nested)))) {
+        return false;
+      }
+    }
+    return isRecord(value);
+  });
 };
 
-const evaluateMatchPatterns = (
-  value: unknown,
-  patternExprs: ReadonlyArray<
-    typeof MatchPatternSchema.Type | typeof LionExpressionSchema.Type
-  >
+const evaluateTo =
+  <A>(schema: Schema.Codec<A>) =>
+  (expression: LionExpressionType) =>
+    evaluate(expression).pipe(
+      Effect.flatMap(Schema.decodeUnknownEffect(schema))
+    );
+
+const evaluateFunction = evaluateTo(LionFunctionValueSchema);
+
+/**
+ * Applies the function of the first pattern whose predicate matches the
+ * value, or the fallback. A value that is not known yet makes the form wait
+ * for its logic variables.
+ */
+export const evaluateMatch = (
+  expression: typeof MatchFormSchema.Type
 ): EvaluateResult =>
   Effect.gen(function* () {
-    const patternExpr = patternExprs[0];
-    if (patternExpr === undefined) {
-      return yield* Effect.die(
-        new Error("Match expression requires a fallback function")
-      );
+    const [_, subject, ...rest] = expression;
+    const value = yield* evaluate(subject);
+    if (isWaiting(value)) {
+      return yield* suspend(expression);
     }
-
-    if (Schema.is(MatchPatternSchema)(patternExpr)) {
-      const [predicateExpr, functionExpr] = patternExpr;
-      const predicate = yield* evaluate(predicateExpr).pipe(
-        Effect.flatMap(Schema.decodeUnknownEffect(MatchPredicateSchema))
-      );
-      const fn = yield* evaluate(functionExpr).pipe(
-        Effect.flatMap(Schema.decodeUnknownEffect(LionFunctionValueSchema))
-      );
-      return (yield* evaluatePredicate(value, predicate))
-        ? yield* fn(value)
-        : yield* evaluateMatchPatterns(value, patternExprs.slice(1));
+    const patterns = rest.slice(0, -1) as (readonly [
+      LionExpressionType,
+      LionExpressionType,
+    ])[];
+    for (const [predicateExpression, functionExpression] of patterns) {
+      const predicate = yield* evaluateTo(PredicateSchema)(predicateExpression);
+      const fn = yield* evaluateFunction(functionExpression);
+      if (yield* matches(value, predicate)) {
+        return yield* call(fn, value);
+      }
     }
-
-    const fallback = yield* evaluate(patternExpr).pipe(
-      Effect.flatMap(Schema.decodeUnknownEffect(LionFunctionValueSchema))
-    );
-    return yield* fallback(value);
-  });
-
-export const evaluateMatch = ([
-  _,
-  valueExpression,
-  ...patternExpressions
-]: typeof MatchFormSchema.Type) =>
-  evaluate(valueExpression).pipe(
-    Effect.flatMap((value) => evaluateMatchPatterns(value, patternExpressions))
-  );
+    const fallback = yield* evaluateFunction(rest.at(-1) as LionExpressionType);
+    return yield* call(fallback, value);
+  }) as EvaluateResult;

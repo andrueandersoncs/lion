@@ -1,8 +1,8 @@
-<article id="query-with-conditions" data-title="Query with conditions and computed values" data-summary="Narrow answers with comparisons, compute new values in rules and queries, combine alternatives, and look inside lists.">
+<article id="query-with-conditions" data-title="Query with conditions and computed values" data-summary="Narrow answers with comparisons, compute new values in rules and queries, choose between values, combine alternatives, and look inside lists.">
 <p>This guide shows how to go beyond matching facts: filter answers with conditions, compute values, accept alternatives, and match items of a list.</p>
 
 <h2>Filter answers with a condition</h2>
-<p>Call a function from a pure module (<code>number</code>, <code>string</code>, <code>boolean</code>, <code>array</code>, <code>value</code>) on a logic variable, and it becomes a filter. Combine goals with <code>and</code>:</p>
+<p>Call a function that answers <code>true</code> or <code>false</code> on a logic variable, and it becomes a filter. Combine goals with <code>and</code>:</p>
 <lion-example name="Filter">
 ["begin",
   ["relation", "order", ["id", "amount"]],
@@ -11,7 +11,16 @@
     ["and", ["order", "?id", "?amount"], ["number/greaterThan", "?amount", 50]],
     {"order": "id"}]]
 </lion-example>
-<p>A filter runs once its variables are bound, so its position among the goals does not matter.</p>
+<p>A filter runs as soon as its variables are bound, so it can come before the goal that binds them. Filters that are ready together run in the order written. When some values would make a filter fail, put a guard before it:</p>
+<lion-example name="Guard">
+["begin",
+  ["relation", "reading", ["sensor", "value"]],
+  ["fact", ["reading", "s1", 21], ["reading", "s2", "offline"], ["reading", "s3", 34]],
+  ["query",
+    ["and", ["reading", "?sensor", "?value"],
+      ["value/number?", "?value"],
+      ["number/greaterThan", "?value", 30]]]]
+</lion-example>
 
 <h2>Compute a value</h2>
 <p>Use <code>=</code> to bind a variable to a computed value:</p>
@@ -33,6 +42,43 @@
   ["rule", ["fullName", "?id", ["string/concat", ["string/concat", "?first", " "], "?last"]],
     ["user", "?id", "?first", "?last"]],
   ["query", ["fullName", "?id", "?name"], {"order": "id"}]]
+</lion-example>
+
+<h2>Choose between values</h2>
+<p><code>cond</code>, <code>match</code>, and records work on logic variables too. Each waits until its variables are bound, then computes what it would with the values in place:</p>
+<lion-example name="Choose">
+["begin",
+  ["relation", "order", ["id", "amount"]],
+  ["fact", ["order", 1, 30], ["order", 2, 120]],
+  ["query",
+    ["and", ["order", "?id", "?amount"],
+      ["=", "?summary",
+        {"size": ["cond", [["number/greaterThan", "?amount", 100], "large"], ["else", "small"]],
+         "withTax": ["number/multiply", "?amount", 1.25]}]],
+    {"order": "id"}]]
+</lion-example>
+<p>Your own lambdas work the same way, including ones that branch or call themselves:</p>
+<lion-example name="A lambda in a query">
+["begin",
+  ["define", "factorial",
+    ["lambda", ["n"],
+      ["cond", [["number/lessThan", "n", 2], 1],
+        ["else", ["number/multiply", "n", ["factorial", ["number/subtract", "n", 1]]]]]]],
+  ["query",
+    ["and", ["in", "?n", ["array/range", 1, 6]], ["=", "?f", ["factorial", "?n"]]]]]
+</lion-example>
+
+<h2>Leave answers out</h2>
+<p><code>not</code> takes any goal: a relation call, a filter, or goals combined with <code>and</code> and <code>or</code>:</p>
+<lion-example name="Not">
+["begin",
+  ["relation", "order", ["id", "amount"]],
+  ["relation", "refunded", ["id"]],
+  ["fact", ["order", 1, 30], ["order", 2, 120], ["order", 3, 75]],
+  ["fact", ["refunded", 3]],
+  ["query",
+    ["and", ["order", "?id", "?amount"],
+      ["not", ["or", ["refunded", "?id"], ["number/lessThan", "?amount", 50]]]]]]
 </lion-example>
 
 <h2>Accept alternatives</h2>

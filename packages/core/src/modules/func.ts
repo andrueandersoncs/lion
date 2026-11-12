@@ -1,4 +1,5 @@
 import { Context, Effect, Match, Option, pipe } from "effect";
+import { isLogicFunction, logicFunction } from "@/logic/terms";
 import { LionDatabaseService } from "@/services/database";
 import { LionEnvironmentService } from "@/services/evaluation";
 
@@ -73,12 +74,15 @@ export const module = {
       })
     ),
 
-  partial: (fn: unknown, ...args: unknown[]) =>
-    Effect.succeed((...moreArgs: unknown[]) => {
-      if (typeof fn !== "function") {
-        return fn;
-      }
-
-      return fn(...args, ...moreArgs);
-    }),
+  /**
+   * A function with its first arguments filled in. Like the function it
+   * wraps, it either waits for logic variables or takes them as they are.
+   */
+  partial: (fn: unknown, ...args: unknown[]) => {
+    const partial = (...moreArgs: unknown[]) =>
+      typeof fn === "function" ? fn(...args, ...moreArgs) : fn;
+    return Effect.succeed(
+      isLogicFunction(fn) ? logicFunction(partial) : partial
+    );
+  },
 };

@@ -1,4 +1,4 @@
-import type { SpecialFormName } from "@lionlang/core/analysis/analyze";
+import type { SpecialFormName } from "@lionlang/core/schemas/evaluation";
 import {
   Background,
   type Connection,

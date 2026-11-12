@@ -4,12 +4,18 @@
 <h2 id="guarantee-safety">Safety</h2>
 <ul>
   <li>Every variable in a rule's head must be bound by a goal in its body.</li>
-  <li>Every variable in a filter, in a computed value, or under <code>not</code> must first be bound by a relation goal, <code>=</code>, or <code>in</code>. Anonymous variables under <code>not</code> are exempt.</li>
+  <li>Every variable in a filter, in a computed value, in an input of a graph algorithm, or under <code>not</code> must first be bound by a relation goal, <code>=</code>, or <code>in</code>. Anonymous variables in a relation call under <code>not</code> are exempt.</li>
   <li>The list in <code>in</code> must be bound before it runs.</li>
-  <li>Logic variables must be direct arguments, not nested in lists or records.</li>
-  <li>Lion orders the goals of a body so each runs once its inputs are bound; the order you write them in only matters for <a href="#goal-directed-evaluation">goal-directed queries</a>.</li>
+  <li>Lion orders the goals of a body so each runs once its inputs are bound. Filters that are ready together run in the order written, so a guard written first protects the filter after it. Otherwise the order you write goals in only matters for <a href="#goal-directed-evaluation">goal-directed queries</a>.</li>
 </ul>
 <p>A rule, query, or invariant that breaks a safety rule fails when it is added or run, with a message that names the unbound variable.</p>
+
+<h2 id="guarantee-values">Values</h2>
+<ul>
+  <li>A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for <code>cond</code>, <code>match</code>, <code>eval</code>, and records, and for lambdas.</li>
+  <li>A filter must be <code>true</code> or <code>false</code>. The rows a rule derives and the answers a query gives must be JSON data. Anything else fails with an error that shows the call or the value.</li>
+  <li>A function that fails while a rule or query runs it fails the rule or query, with an error that names the call and the values it ran on.</li>
+</ul>
 
 <h2 id="guarantee-stratification">Negation and aggregation</h2>
 <ul>
@@ -36,11 +42,11 @@
 <p>A form that changes the database, <code>fact</code>, <code>retract</code>, or <code>rule</code>, either makes all of its changes or fails and makes none of them. Every fact is checked before any is added or removed, and every rule before it is added. When the database has <a href="#form-invariant">invariants</a>, the form is checked against each one after making its changes, and undone if any breaks or cannot be checked, leaving the database exactly as it was, facts in the same order. Separate forms are separate changes.</p>
 
 <h2 id="guarantee-idempotence">Adding what is already held</h2>
-<p>Adding something the database already holds changes nothing: a fact that is present, a relation declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so a name and the value bound to it are the same, while a variable <code>"?x"</code> and the string <code>["quote", "?x"]</code> differ. Running a program twice against one database therefore leaves it as running it once did.</p>
+<p>Adding something the database already holds changes nothing: a fact that is present, a relation declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so a name and the value bound to it are the same, whether the value is data or a function, while a variable <code>"?x"</code> and the string <code>["quote", "?x"]</code> differ. Running a program twice against one database therefore leaves it as running it once did.</p>
 
 <h2 id="guarantee-equivalence">Equivalent ways to answer</h2>
 <ul>
-  <li>Goal-directed and full evaluation give the same answers, possibly in a different order.</li>
+  <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives.</li>
   <li>A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.</li>
   <li>Answers are cached until a fact, rule, or invariant changes; a cached answer is the answer evaluation would give.</li>
 </ul>

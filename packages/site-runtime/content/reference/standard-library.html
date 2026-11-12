@@ -1,9 +1,9 @@
 <article id="standard-library" data-title="Standard library" data-summary="Every function in Lion's default environment, by module: number, boolean, string, array, value, object, func, console, aggregate, and graph.">
 <p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each module's example below calls every function in the module.</p>
-<p>The <code>array</code>, <code>boolean</code>, <code>number</code>, <code>string</code>, and <code>value</code> modules are pure: called with a logic variable among their arguments, their functions wait until it is bound, so they work as filters and computed values in rules and queries. See <a href="#rule-calls">Function calls</a>.</p>
+<p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
-<p>Pure. Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
+<p>Every argument must be a number. Lion's numbers are JSON numbers, so arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with <code>ArithmeticError</code>.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -11,6 +11,14 @@
     <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
     <tr data-entry="number/multiply"><td><code>["number/multiply", a, b]</code></td><td><code>a × b</code></td></tr>
     <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
+    <tr data-entry="number/remainder"><td><code>["number/remainder", a, b]</code></td><td>What is left of <code>a</code> after dividing by <code>b</code>, with the sign of <code>a</code>. A remainder by 0 fails with <code>ArithmeticError</code>.</td></tr>
+    <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code></td></tr>
+    <tr data-entry="number/min"><td><code>["number/min", a, b]</code></td><td>The smaller of the two</td></tr>
+    <tr data-entry="number/max"><td><code>["number/max", a, b]</code></td><td>The larger of the two</td></tr>
+    <tr data-entry="number/absolute"><td><code>["number/absolute", a]</code></td><td><code>a</code> without its sign</td></tr>
+    <tr data-entry="number/floor"><td><code>["number/floor", a]</code></td><td>The largest whole number that is at most <code>a</code></td></tr>
+    <tr data-entry="number/ceiling"><td><code>["number/ceiling", a]</code></td><td>The smallest whole number that is at least <code>a</code></td></tr>
+    <tr data-entry="number/round"><td><code>["number/round", a]</code></td><td>The nearest whole number; a half rounds up</td></tr>
     <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
     <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
@@ -23,6 +31,14 @@
  "subtract": ["number/subtract", 7, 3],
  "multiply": ["number/multiply", 7, 3],
  "divide": ["number/divide", 7, 2],
+ "remainder": ["number/remainder", 7, 3],
+ "power": ["number/power", 2, 10],
+ "min": ["number/min", 7, 3],
+ "max": ["number/max", 7, 3],
+ "absolute": ["number/absolute", -7],
+ "floor": ["number/floor", 2.7],
+ "ceiling": ["number/ceiling", 2.1],
+ "round": ["number/round", 2.5],
  "equals?": ["number/equals?", 7, 7],
  "lessThan": ["number/lessThan", 7, 3],
  "greaterThan": ["number/greaterThan", 7, 3],
@@ -34,7 +50,7 @@
 </lion-example>
 
 <h2 id="module-boolean">boolean</h2>
-<p>Pure. Every argument must be a boolean.</p>
+<p>Every argument must be a boolean.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -58,7 +74,7 @@
 </lion-example>
 
 <h2 id="module-string">string</h2>
-<p>Pure. Every argument must be a string. Functions that search take the text first. Lengths and positions count UTF-16 code units, as JavaScript does.</p>
+<p>Every argument must be a string. Functions that search take the text first. Lengths and positions count UTF-16 code units, as JavaScript does.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -83,7 +99,7 @@
 </lion-example>
 
 <h2 id="module-array">array</h2>
-<p>Pure. List arguments must be lists; function arguments are called with each item.</p>
+<p>List arguments must be lists. A function argument is called with each item, and can be a lambda, a standard function, or a host function.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -113,7 +129,7 @@
 </lion-example>
 
 <h2 id="module-value">value</h2>
-<p>Pure. Predicates tell JSON's kinds of value apart: <code>value/object?</code> is true for records, and <code>value/array?</code> for lists.</p>
+<p>Predicates tell JSON's kinds of value apart: <code>value/object?</code> is true for records, and <code>value/array?</code> for lists.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -178,7 +194,7 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own</td></tr>
+    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own. Made from a relation, it builds goals, as the relation does.</td></tr>
     <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
     <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>
@@ -207,7 +223,7 @@
 </lion-example>
 
 <h2 id="module-aggregate">aggregate</h2>
-<p>Called on a list, each function combines the list. Called on a logic variable or computed value in a rule's head, each becomes an aggregate over the rule's matches, grouped by the head's other columns; see <a href="#summarize-groups">Summarize groups of facts</a>. Each function takes exactly one argument.</p>
+<p>Called on a list, each function combines the list. Called on anything else, it waits. As a whole argument of a rule's head, it then combines one value from each of the rule's matches, grouped by the head's other columns; see <a href="#summarize-groups">Summarize groups of facts</a>. Anywhere else, it combines the list its argument turns out to be. Each function takes exactly one argument.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th><th>Of nothing</th></tr></thead>
   <tbody>
@@ -240,7 +256,7 @@
 </lion-example>
 
 <h2 id="module-graph">graph</h2>
-<p>Algorithms over an edge relation whose first two columns are from and to. Each call is a goal: give the edge relation, any other inputs as values, then one term per output column. Results never depend on the order facts were added.</p>
+<p>Algorithms over an edge relation whose first two columns are from and to. Each call is a goal: give the edge relation, any other inputs, then one term per output column. An input is a value, or a variable that another goal binds; the algorithm then runs once for each value. Results never depend on the order facts were added.</p>
 <table>
   <thead><tr><th>Goal</th><th>Rows</th></tr></thead>
   <tbody>

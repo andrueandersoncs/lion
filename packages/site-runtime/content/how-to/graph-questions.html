@@ -11,6 +11,20 @@
 </lion-example>
 <p>To ask about one destination, give it as a value: <code>["graph/shortestPath", "road", "a", "d", "?km", "?_"]</code>. Without a weight column, every edge costs 1.</p>
 
+<h2>Start from every node a goal finds</h2>
+<p>The start can be a variable that another goal binds. The algorithm then runs once for each start:</p>
+<lion-example name="Shortest path from each depot">
+["begin",
+  ["relation", "road", ["from", "to", "km"]],
+  ["relation", "depot", ["at"]],
+  ["fact", ["road", "a", "b", 4], ["road", "a", "c", 1], ["road", "c", "b", 2], ["road", "b", "d", 5]],
+  ["fact", ["depot", "a"], ["depot", "c"]],
+  ["query",
+    ["and", ["depot", "?from"],
+      ["graph/shortestPath", "road", "?from", "d", "?km", "?path"]],
+    {"order": "from"}]]
+</lion-example>
+
 <h2>Rank nodes</h2>
 <lion-example name="PageRank">
 ["begin",
@@ -50,7 +64,7 @@
     ["number/greaterThan", "?km", 5]],
   ["query", ["remote", "?place"]]]
 </lion-example>
-<p>An algorithm runs once its input relation is complete, so it cannot be part of a recursive cycle, and its relation cannot have facts or rules of its own.</p>
+<p>An algorithm runs once its input relation is complete, the first time a goal asks for its rows. So it cannot be part of a recursive cycle, and its relation cannot have facts or rules of its own.</p>
 
 <h2>Related</h2>
 <ul>

@@ -38,6 +38,7 @@
     "./logic/magic": "./dist/logic/magic.mjs",
     "./logic/query-options": "./dist/logic/query-options.mjs",
     "./logic/snapshot": "./dist/logic/snapshot.mjs",
+    "./logic/strata": "./dist/logic/strata.mjs",
     "./logic/terms": "./dist/logic/terms.mjs",
     "./modules": "./dist/modules/index.mjs",
     "./modules/aggregate": "./dist/modules/aggregate.mjs",

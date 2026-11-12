@@ -45,6 +45,15 @@
 ["object/get-path", ["quote", {"a": {"b": 1}}], "a.c"]
 </lion-example>
 
+<h2 id="error-rules">Errors inside rules and queries</h2>
+<p>A function that fails while a rule or query runs it fails the rule or query. The failure is a <code>LogicError</code> that names the call and the values it ran on. An <code>ArithmeticError</code> stays as it is, since it already names both. A filter that is not <code>true</code> or <code>false</code>, and an answer that is not JSON data, fail with a <code>LogicError</code> too.</p>
+<lion-example name="A failing filter" expect="error">
+["begin",
+  ["relation", "reading", ["value"]],
+  ["fact", ["reading", 4], ["reading", "n/a"]],
+  ["query", ["and", ["reading", "?v"], ["number/greaterThan", "?v", 3]]]]
+</lion-example>
+
 <h2 id="error-host">Errors from host functions</h2>
 <p>A host function that returns a failed Effect fails the program with that Effect's error. A host function that throws, or a defect inside the evaluator, fails the program as a defect rather than a typed error; <code>Effect.runPromise</code> rejects with it.</p>
 </article>

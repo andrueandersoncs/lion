@@ -39,7 +39,7 @@
 </lion-example>
 
 <h2 id="rule-records">Records</h2>
-<p>A record evaluates each value and keeps its keys as written, in order. Keys are never evaluated. A key must not be empty or <code>__proto__</code>; a program with such a key fails with <code>SchemaError</code> before it runs.</p>
+<p>A record evaluates each value and keeps its keys as written, in order. A record with a logic variable among its values <a href="#logic-waiting">waits</a> for it, as a call does. Keys are never evaluated. A key must not be empty or <code>__proto__</code>; a program with such a key fails with <code>SchemaError</code> before it runs.</p>
 <lion-example name="Records">
 {"sum": ["number/add", 1, 2], "nested": {"ok": ["boolean/not", false]}}
 </lion-example>
@@ -49,14 +49,14 @@
   <li>Arguments are evaluated before the call, from left to right.</li>
   <li>A function may return a value or an Effect. Lion runs an Effect and uses its result.</li>
   <li>A <a href="#form-lambda">lambda</a> called with fewer arguments than it has parameters fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
-  <li>A function from a pure module (<code>array</code>, <code>boolean</code>, <code>number</code>, <code>string</code>, <code>value</code>, and any module marked with <code>markPure</code>) called with a logic variable among its arguments does not run. It returns a deferred call, which a rule or query runs once the variables are bound.</li>
+  <li>A call with a logic variable among its arguments does not run. It <a href="#logic-waiting">waits</a>: it becomes a value that a rule or query computes once the variable is bound. Every function waits this way, except relations, aggregates, graph algorithms, and lambdas, which take logic variables as they are.</li>
 </ul>
-<lion-example name="A deferred call">
+<lion-example name="A waiting call">
 ["number/add", "?n", 1]
 </lion-example>
 
 <h2 id="rule-truthiness">Truthiness</h2>
-<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>.</p>
+<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>. So are <code>and</code>, <code>or</code>, <code>not</code>, and the filters of a rule or query, which take only <code>true</code> and <code>false</code>.</p>
 
 <h2 id="rule-reserved">Reserved names</h2>
 <p>These names belong to forms and cannot be bound with <code>define</code>, used as <code>lambda</code> parameters, or declared as relations:</p>

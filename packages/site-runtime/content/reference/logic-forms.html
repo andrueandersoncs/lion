@@ -6,11 +6,39 @@
   <li>An unbound string of the form <code>"?name"</code> evaluates to a logic variable. See <a href="#rule-strings">Strings</a> for the exact form.</li>
   <li>The same name refers to the same variable throughout one goal or rule.</li>
   <li><code>"?_"</code>, and any name starting with <code>?_</code>, is anonymous: each occurrence is a separate variable, it never appears in answers, and inside <code>not</code> it matches anything.</li>
-  <li>Logic variables must be direct arguments of a goal or call, not nested inside lists or records.</li>
+  <li>A call or record that mentions a logic variable <a href="#logic-waiting">waits</a> for it.</li>
 </ul>
 
 <h2 id="logic-goals">Goals</h2>
-<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling a pure function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold.</p>
+<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling any other function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold.</p>
+
+<h2 id="logic-waiting">Waiting for values</h2>
+<p>A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.</p>
+<ul>
+  <li>A call waits when one of its arguments is a logic variable, a value that waits, or a lambda that mentions a logic variable. Every function waits this way: standard functions, functions from the host, and functions made by <code>func/partial</code>.</li>
+  <li><code>cond</code> waits when a condition is not known yet, <code>match</code> when its value is not, <code>eval</code> when its code is not, and a record when one of its values is not.</li>
+  <li>Relations, aggregates, and graph algorithms take logic variables as they are, and build goals and aggregates from them. A lambda's body runs right away, so a lambda can build goals; whatever in the body needs a value waits.</li>
+  <li>What waits computes what it would compute with the value in place of the variable.</li>
+  <li>As a goal, a call that waits is a filter, and so is a variable. A filter must be <code>true</code> or <code>false</code>; any other value fails the query.</li>
+  <li>A goal with no relation in it is also a value, <code>true</code> or <code>false</code>. A relation call has no value: it holds or not only as a goal of a rule or query.</li>
+  <li>Names are replaced by their values when the rule or query is written, also inside a <code>cond</code> or lambda that waits. A lambda that calls itself by name still looks that name up each time it runs.</li>
+</ul>
+<lion-example name="Waiting">
+["begin",
+  ["relation", "reading", ["sensor", "celsius"]],
+  ["fact", ["reading", "attic", 30], ["reading", "cellar", 10]],
+  ["query",
+    ["and", ["reading", "?sensor", "?c"],
+      ["=", "?summary",
+        {"fahrenheit": ["number/add", ["number/multiply", "?c", 1.8], 32],
+         "level": ["cond", [["number/greaterThan", "?c", 25], "hot"], ["else", "fine"]]}]],
+    {"order": "sensor"}]]
+</lion-example>
+<lion-example name="A filter that is not true or false" expect="error">
+["query",
+  ["and", ["in", "?word", ["array/make", "apple", "cherry"]],
+    ["string/indexOf", "?word", "a"]]]
+</lion-example>
 
 <h2 id="form-relation"><code>relation</code></h2>
 <code-block lang="json">
@@ -65,7 +93,7 @@
 </code-block>
 <ul>
   <li>Adds a rule: <code>head</code>, a relation call, holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.</li>
-  <li>Head arguments can be values, variables bound by the body, computed values from pure functions, and <a href="#module-aggregate">aggregates</a>.</li>
+  <li>Head arguments can be values, variables bound by the body, <a href="#logic-waiting">computed values</a>, and <a href="#module-aggregate">aggregates</a>.</li>
   <li>The rule is checked when added: every head variable must be bound by the body, every goal must be <a href="#logic-guarantees">safe</a>, and the whole program must stay stratified and terminating. A rule that fails a check is not added.</li>
   <li>An <code>or</code> in the body makes one rule with several alternatives.</li>
   <li>Adding a rule the database already holds, one a snapshot would write the same way, changes nothing.</li>
@@ -98,7 +126,7 @@
 <ul>
   <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables, holds, or <code>null</code> when it does not.</li>
   <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
-  <li>Premises are facts, <code>{"check": call}</code> for filters, and <code>{"absent": pattern}</code> for negations.</li>
+  <li>Premises are facts, <code>{"check": goal}</code> for a filter that held, and <code>{"absent": goal}</code> for a goal under <code>not</code>, each written with the answer's values in place of its variables.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
   <li>Explanations use every relation computed in full.</li>
 </ul>
@@ -107,28 +135,39 @@
 <code-block lang="json">
 ["not", goal]
 </code-block>
-<p>With a relation call, holds when the call has no matches. Every named variable in it must be bound by an earlier goal. With a boolean, returns its negation.</p>
+<p>Holds when the goal does not. The goal can be any goal: a relation call, a filter, <code>=</code>, <code>in</code>, or a combination of goals with <code>and</code>, <code>or</code>, and <code>not</code>. Every named variable in it must be bound by another goal. With a boolean, returns its negation.</p>
+<lion-example name="not">
+["begin",
+  ["relation", "order", ["id", "amount"]],
+  ["fact", ["order", 1, 30], ["order", 2, 120], ["order", 3, 75]],
+  ["query",
+    ["and", ["order", "?id", "?amount"],
+      ["not", ["or", ["number/lessThan", "?amount", 50], ["number/greaterThan", "?amount", 100]]]]]]
+</lion-example>
 
 <h2 id="form-and"><code>and</code></h2>
 <code-block lang="json">
 ["and", goal, ...]
 </code-block>
-<p>Holds when every goal holds, sharing variables between them. With only booleans, returns their conjunction.</p>
+<p>Holds when every goal holds, sharing variables between them. On booleans it is the boolean operator: it reads its arguments in order and stops at the first that is <code>false</code>, so later arguments are not evaluated.</p>
 
 <h2 id="form-or"><code>or</code></h2>
 <code-block lang="json">
 ["or", goal, ...]
 </code-block>
-<p>Holds when any goal holds. With only booleans, returns their disjunction. Goals combining <code>and</code> and <code>or</code> may expand to at most 64 alternatives.</p>
+<p>Holds when any goal holds. On booleans it is the boolean operator, and stops at the first argument that is <code>true</code>. An answer leaves out a variable that the alternative it came from does not bind. A choice between filters is one test; goals that combine <code>and</code> and <code>or</code> over relations may expand to at most 64 alternatives.</p>
 <lion-example name="Booleans">
-{"and": ["and", true, false], "or": ["or", false, true], "not": ["not", true]}
+{"and": ["and", true, false],
+ "or": ["or", false, true],
+ "not": ["not", true],
+ "stops early": ["and", false, ["number/divide", 1, 0]]}
 </lion-example>
 
 <h2 id="form-unify"><code>=</code></h2>
 <code-block lang="json">
 ["=", term, term]
 </code-block>
-<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. Without logic variables, it is structural equality of JSON values, and identity for other values.</p>
+<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. Without logic variables, it is structural equality of JSON values, and identity for other values. The numbers <code>0</code> and <code>-0</code> are equal, as JSON writes both as <code>0</code>.</p>
 <lion-example name="Equality">
 ["=", ["quote", {"a": [1, 2]}], {"a": ["array/make", 1, 2]}]
 </lion-example>
@@ -149,7 +188,9 @@
 <ul>
   <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>fact</code> form per relation with facts, every <code>rule</code>, and every <code>invariant</code>, in that order.</li>
   <li>Strings that would evaluate to something else are written inside <code>quote</code>: logic variable names, relation names, names bound in the environment, and namespaced names such as <code>"number/add"</code>. Lists and records are quoted too.</li>
-  <li>Fails if a rule or invariant holds a value that is not JSON data, such as a function.</li>
+  <li>A function is written by the name the environment binds it to, so a rule that calls <code>number/add</code> under another name is written with <code>number/add</code>.</li>
+  <li>A <code>cond</code>, <code>match</code>, or record that waits is written as it was, and a lambda as its <code>lambda</code> form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it.</li>
+  <li>Fails if a rule or invariant holds a lambda that calls itself, or a function made while the program ran, such as the result of <code>func/partial</code> on plain values.</li>
 </ul>
 <lion-example name="snapshot">
 ["begin",

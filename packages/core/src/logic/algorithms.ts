@@ -7,18 +7,20 @@
  *   ["graph/shortestPath", "road", "a", "?to", "?cost", "?path"]
  *
  * The engine runs the algorithm once its input relations are complete, so its
- * rows can feed rules, `not`, aggregates, and queries.
+ * rows can feed rules, `not`, aggregates, and queries. A value input, such as
+ * the start node above, is a column that must be bound before the goal runs:
+ * the algorithm runs once for each value a rule or query gives it.
  */
 import { Effect } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import { logicError } from "@/errors/evaluation";
 import {
   Atom,
   isGroundValue,
-  isLogicTerm,
-  isRelationValue,
+  isWaiting,
+  logicFunction,
   type RelationInfo,
-  relationInfo,
-  render,
+  relationOf,
+  show,
 } from "@/logic/terms";
 
 export interface AlgorithmInput {
@@ -43,77 +45,76 @@ export interface Algorithm {
   ) => readonly (readonly unknown[])[] | string;
 }
 
-const fail = (message: string) => Effect.fail(new LogicError({ message }));
-
-const show = (value: unknown) => JSON.stringify(render(value)) ?? String(value);
-
 const signature = (algorithm: Algorithm) =>
   [...algorithm.inputs.map((input) => input.name), ...algorithm.columns].join(
     ", "
   );
 
-/** Reads one input argument into its name or value for the computed relation. */
-const readInput = (
-  algorithm: Algorithm,
-  input: AlgorithmInput,
-  arg: unknown
+/** The inputs in declared order, each taken from the list for its kind. */
+const arrange = (
+  { inputs }: Algorithm,
+  relations: readonly unknown[],
+  values: readonly unknown[]
 ) => {
-  if (input.kind === "relation") {
-    return isRelationValue(arg)
-      ? Effect.succeed(relationInfo(arg).name)
-      : fail(
-          `${algorithm.name} expects a relation for "${input.name}", but found ${show(arg)}.`
-        );
-  }
-  return isLogicTerm(arg) || !isGroundValue(arg)
-    ? fail(
-        `${algorithm.name} expects a value for "${input.name}", but found ${show(arg)}. Algorithm inputs must be known when the goal is built.`
-      )
-    : Effect.succeed(arg);
+  const next = { relation: 0, value: 0 };
+  return inputs.map(({ kind }) => {
+    next[kind] += 1;
+    return (kind === "relation" ? relations : values)[next[kind] - 1];
+  });
 };
 
 /**
  * Turns an algorithm into a Lion function. Put it in the environment under
  * `algorithm.name` to use it in rules and queries.
  */
-export const defineAlgorithm =
-  (algorithm: Algorithm) =>
-  (...args: unknown[]) =>
+export const defineAlgorithm = (algorithm: Algorithm) =>
+  logicFunction((...args: unknown[]) =>
     Effect.gen(function* () {
       const arity = algorithm.inputs.length + algorithm.columns.length;
       if (args.length !== arity) {
-        return yield* fail(
+        return yield* logicError(
           `${algorithm.name} takes ${arity} arguments (${signature(algorithm)}) but got ${args.length}.`
         );
       }
-      const inputs: unknown[] = [];
-      for (const [index, input] of algorithm.inputs.entries()) {
-        inputs.push(yield* readInput(algorithm, input, args[index]));
+      const relations: string[] = [];
+      const values: unknown[] = [];
+      for (const [index, { kind, name }] of algorithm.inputs.entries()) {
+        const arg = args[index];
+        const relation = relationOf(arg)?.name;
+        if (kind === "relation" && relation !== undefined) {
+          relations.push(relation);
+        } else if (kind === "value" && (isWaiting(arg) || isGroundValue(arg))) {
+          values.push(arg);
+        } else {
+          return yield* logicError(
+            `${algorithm.name} expects a ${kind} for "${name}", but found ${show(arg)}.`
+          );
+        }
       }
-      const isRelation = (index: number) =>
-        algorithm.inputs[index]?.kind === "relation";
-      const label = inputs
-        .map((input, index) =>
-          isRelation(index) ? String(input) : JSON.stringify(input)
-        )
-        .join(", ");
       const relation: RelationInfo = {
-        name: `${algorithm.name}(${label})`,
-        columns: algorithm.columns,
+        name: `${algorithm.name}(${relations.join(", ")})`,
+        columns: [
+          ...algorithm.inputs.flatMap(({ kind, name }) =>
+            kind === "value" ? [name] : []
+          ),
+          ...algorithm.columns,
+        ],
         computed: {
           callee: algorithm.name,
-          inputKinds: algorithm.inputs.map((input) => input.kind),
-          inputs,
-          dependencies: inputs.filter((_, index) =>
-            isRelation(index)
-          ) as string[],
-          compute: (tuples) =>
-            algorithm.run(
-              inputs.map((input, index) =>
-                isRelation(index) ? tuples(input as string) : input
-              )
-            ),
+          dependencies: relations,
+          inputs: values.length,
+          form: (written) => [
+            algorithm.name,
+            ...arrange(algorithm, relations, written),
+            ...written.slice(values.length),
+          ],
+          compute: (tuples, given) =>
+            algorithm.run(arrange(algorithm, relations.map(tuples), given)),
         },
       };
-      return new Atom(relation, args.slice(algorithm.inputs.length));
-    });
+      return new Atom(relation, [
+        ...values,
+        ...args.slice(algorithm.inputs.length),
+      ]);
+    })
+  );

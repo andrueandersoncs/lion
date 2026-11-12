@@ -41,7 +41,7 @@ const program = Effect.gen(function* () {
   writeFileSync("store.json", JSON.stringify(yield* saveDatabase(database)));
 });
 </code-block>
-<p>A rule or invariant that holds something other than JSON data, such as a function, cannot be saved, and <code>saveDatabase</code> fails with an error.</p>
+<p>A rule is saved with everything it holds: a function under the name the environment gives it, and a <code>cond</code>, record, or lambda that waits for a logic variable as its own form. Two things have no written form, a lambda that calls itself and a function made while the program ran, and <code>saveDatabase</code> fails with an error that names them.</p>
 
 <h2>Save from the command line</h2>
 <code-block lang="shell">

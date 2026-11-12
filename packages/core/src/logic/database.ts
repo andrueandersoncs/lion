@@ -1,27 +1,41 @@
 import { Effect } from "effect";
-import { LogicError } from "@/errors/evaluation";
+import { ArithmeticError, LogicError, logicError } from "@/errors/evaluation";
 import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
 import {
+  bindVariables,
   type CompiledQuery,
   type CompiledRule,
   type Literal,
+  literalGoal,
+  matchesAtom,
   planLiterals,
 } from "@/logic/compile";
 import { type MagicProgram, originalName, rewriteQueries } from "@/logic/magic";
 import { type Assertion, assertionProblem } from "@/logic/query-options";
+import { dependencyEdges, stronglyConnected } from "@/logic/strata";
 import {
-  Aggregate,
   Atom,
   type ComputedRelation,
+  Conjunction,
+  call,
   DeferredCall,
+  Disjunction,
+  type Goal,
+  instantiate,
+  isGoal,
   isGroundValue,
-  isLogicTerm,
+  isWaiting,
+  type LionFunction,
   LogicVariable,
   logicKey,
+  Membership,
   makeRelationValue,
+  Negation,
   type RelationInfo,
   render,
   sameValue,
+  show,
+  Unification,
   valueKey,
 } from "@/logic/terms";
 import type { LionEnvironmentService } from "@/services/evaluation";
@@ -56,6 +70,11 @@ const bucketKey = (positions: readonly number[], tuple: Tuple) =>
 class TupleSet {
   private readonly tuples = new Map<string, Tuple>();
   private readonly indexes = new Map<string, Index>();
+  /**
+   * Set for a computed relation: adds the rows for some input values the
+   * first time a goal asks for them, or returns why it cannot.
+   */
+  demand: ((inputs: Tuple) => string | undefined) | undefined;
 
   get size(): number {
     return this.tuples.size;
@@ -129,14 +148,16 @@ class TupleSet {
 
 const EMPTY = new TupleSet();
 
+type Vars = ReadonlyMap<string, unknown>;
+
+/** What a match rests on: a tuple it read, or a test that held for it. */
 type Premise =
-  | { readonly kind: "atom"; readonly relation: string; readonly tuple: Tuple }
-  | { readonly kind: "check"; readonly call: unknown }
-  | { readonly kind: "absent"; readonly pattern: unknown };
+  | { readonly relation: string; readonly tuple: Tuple }
+  | { readonly literal: Literal; readonly vars: Vars };
 
 interface Binding {
   readonly trail: readonly Premise[];
-  readonly vars: ReadonlyMap<string, unknown>;
+  readonly vars: Vars;
 }
 
 interface Derivation {
@@ -200,10 +221,6 @@ export class LogicDatabase {
   }
 }
 
-const fail = (message: string) => Effect.fail(new LogicError({ message }));
-
-const show = (value: unknown) => JSON.stringify(render(value));
-
 const keyProblem = (
   name: string,
   columns: readonly string[],
@@ -237,12 +254,12 @@ export const declareRelation = (
   key?: readonly string[]
 ): Effect.Effect<RelationInfo, LogicError> => {
   if (new Set(columns).size !== columns.length) {
-    return fail(`Relation "${name}" repeats a column name.`);
+    return logicError(`Relation "${name}" repeats a column name.`);
   }
   const problem =
     key === undefined ? undefined : keyProblem(name, columns, key);
   if (problem !== undefined) {
-    return fail(problem);
+    return logicError(problem);
   }
   const relation: RelationInfo = {
     name,
@@ -255,7 +272,7 @@ export const declareRelation = (
   if (existing !== undefined) {
     return describeRelation(existing) === describeRelation(relation)
       ? Effect.succeed(existing)
-      : fail(
+      : logicError(
           `Relation "${name}" is already declared with ${describeRelation(existing)}.`
         );
   }
@@ -272,7 +289,7 @@ export const relationValue = (relation: RelationInfo) =>
   makeRelationValue(relation, (...args: unknown[]) =>
     args.length === relation.columns.length
       ? Effect.succeed(new Atom(relation, args))
-      : fail(
+      : logicError(
           `"${relation.name}" takes ${relation.columns.length} arguments (${relation.columns.join(", ")}) but got ${args.length}.`
         )
   );
@@ -286,28 +303,27 @@ export const relationBindings = (database: LogicDatabase) =>
     ])
   );
 
-/** How a computed relation's call reads in Lion, for messages. */
-const computedCall = (computed: ComputedRelation) =>
-  show([computed.callee, ...computed.inputs]);
+/** How the call that builds a computed relation reads, without its columns. */
+const computedCall = ({ args, relation }: Atom) =>
+  show(relation.computed?.form(args.slice(0, relation.computed.inputs)));
 
 const groundTuple = (
   database: LogicDatabase,
   atom: Atom
 ): Effect.Effect<Tuple, LogicError> => {
-  const { computed } = atom.relation;
-  if (computed !== undefined) {
-    return fail(
-      `${computedCall(computed)} is computed from its inputs, so it cannot have facts.`
+  if (atom.relation.computed !== undefined) {
+    return logicError(
+      `${computedCall(atom)} is computed from its inputs, so it cannot have facts.`
     );
   }
   if (!database.relations.has(atom.relation.name)) {
-    return fail(`Relation "${atom.relation.name}" is not declared here.`);
+    return logicError(`Relation "${atom.relation.name}" is not declared here.`);
   }
-  if (atom.args.some(isLogicTerm)) {
-    return fail(`Facts cannot contain logic variables: ${show(atom)}.`);
+  if (atom.args.some(isWaiting)) {
+    return logicError(`Facts cannot contain logic variables: ${show(atom)}.`);
   }
   if (!atom.args.every(isGroundValue)) {
-    return fail(`Facts may only contain JSON data: ${show(atom)}.`);
+    return logicError(`Facts may only contain JSON data: ${show(atom)}.`);
   }
   return Effect.succeed(atom.args);
 };
@@ -428,7 +444,7 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
     const tuples: (readonly [Atom, Tuple])[] = [];
     for (const atom of atoms) {
       if (isAggregated(database.rules, atom.relation.name)) {
-        return yield* fail(
+        return yield* logicError(
           `"${atom.relation.name}" is computed by aggregate rules, so it cannot have facts.`
         );
       }
@@ -491,82 +507,23 @@ export const retractFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
  * component comes after the components it depends on.
  */
 const components = (rules: readonly CompiledRule[]) => {
-  const edges = new Map<string, Set<string>>();
-  for (const rule of rules) {
-    const targets = edges.get(rule.head.relation.name) ?? new Set();
-    for (const literal of rule.body) {
-      if (literal.kind === "atom" || literal.kind === "absent") {
-        const { computed, name } = literal.atom.relation;
-        targets.add(name);
-        if (computed !== undefined) {
-          edges.set(name, new Set(computed.dependencies));
-        }
-      }
-    }
-    edges.set(rule.head.relation.name, targets);
-  }
-
-  const index = new Map<string, number>();
-  const lowlink = new Map<string, number>();
-  const stack: string[] = [];
-  const onStack = new Set<string>();
-  const ordered: Set<string>[] = [];
-  let counter = 0;
-
-  const lower = (node: string, value: number | undefined) =>
-    lowlink.set(node, Math.min(lowlink.get(node) ?? 0, value ?? 0));
-
-  const popComponent = (root: string) => {
-    const component = new Set<string>();
-    let member = stack.pop();
-    while (member !== undefined) {
-      onStack.delete(member);
-      component.add(member);
-      if (member === root) {
-        break;
-      }
-      member = stack.pop();
-    }
-    ordered.push(component);
-  };
-
-  const visit = (node: string) => {
-    index.set(node, counter);
-    lowlink.set(node, counter);
-    counter += 1;
-    stack.push(node);
-    onStack.add(node);
-    for (const target of edges.get(node) ?? []) {
-      if (!index.has(target)) {
-        visit(target);
-        lower(node, lowlink.get(target));
-      } else if (onStack.has(target)) {
-        lower(node, index.get(target));
-      }
-    }
-    if (lowlink.get(node) === index.get(node)) {
-      popComponent(node);
-    }
-  };
-
-  for (const node of edges.keys()) {
-    if (!index.has(node)) {
-      visit(node);
-    }
-  }
-  return ordered;
+  const edges = dependencyEdges(rules);
+  return stronglyConnected(edges.keys(), (name) => [
+    ...(edges.get(name) ?? []),
+  ]).map((component) => new Set(component));
 };
 
 const componentOf = (ordered: readonly Set<string>[], relation: string) =>
   ordered.find((component) => component.has(relation));
 
+/** The kind of the aggregate at a head position, such as `"sum"`. */
+const aggregateKind = (rule: CompiledRule, position: number) =>
+  (rule.head.args[position] as DeferredCall).aggregate as string;
+
 /** Which head columns aggregate, and how, such as `"1:sum"`. */
 const aggregateShape = (rule: CompiledRule) =>
   rule.aggregates
-    .map(
-      (position) =>
-        `${position}:${(rule.head.args[position] as Aggregate).kind}`
-    )
+    .map((position) => `${position}:${aggregateKind(rule, position)}`)
     .join(",");
 
 const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
@@ -605,7 +562,7 @@ const recursiveAggregateProblem = (
 ) => {
   const head = rule.head.relation.name;
   const other = rule.aggregates
-    .map((position) => (rule.head.args[position] as Aggregate).kind)
+    .map((position) => aggregateKind(rule, position))
     .find((kind) => aggregator(kind).join === undefined);
   if (other !== undefined) {
     return `Rule ${show(rule.source)} aggregates with aggregate/${other} over "${dependency}", which depends on "${head}". Only ${LATTICE_NAMES} can go through recursion.`;
@@ -617,16 +574,13 @@ const recursiveAggregateProblem = (
   return undefined;
 };
 
-/** Computed relations that rule bodies use, by relation name. */
-const computedRelations = (rules: readonly CompiledRule[]) => {
-  const found = new Map<string, RelationInfo>();
+/** A goal for each computed relation that rule bodies use, by name. */
+const computedGoals = (rules: readonly CompiledRule[]) => {
+  const found = new Map<string, Atom>();
   for (const rule of rules) {
-    for (const literal of rule.body) {
-      if (
-        (literal.kind === "atom" || literal.kind === "absent") &&
-        literal.atom.relation.computed !== undefined
-      ) {
-        found.set(literal.atom.relation.name, literal.atom.relation);
+    for (const { goal } of rule.body) {
+      if (goal instanceof Atom && goal.relation.computed !== undefined) {
+        found.set(goal.relation.name, goal);
       }
     }
   }
@@ -639,45 +593,26 @@ const computedCycleProblem = (
   rules: readonly CompiledRule[],
   ordered: Components
 ) => {
-  for (const [name, { computed }] of computedRelations(rules)) {
+  for (const [name, goal] of computedGoals(rules)) {
     const others = [...(componentOf(ordered, name) ?? [])].filter(
       (member) => member !== name
     );
-    if (computed !== undefined && others.length > 0) {
-      return `${computedCall(computed)} reads relations that depend on its own results, through ${others.map((other) => `"${other}"`).join(", ")}. A computed relation cannot be part of a recursive cycle.`;
+    if (others.length > 0) {
+      return `${computedCall(goal)} reads relations that depend on its own results, through ${others.map((other) => `"${other}"`).join(", ")}. A computed relation cannot be part of a recursive cycle.`;
     }
   }
   return undefined;
 };
 
 /**
- * Variables whose values come from facts rather than from computation: bound
- * by a relation goal, or by "=" or "in" from such variables or plain values.
- * Only these can feed a recursive rule's head, so recursion never invents
- * values without end.
+ * Variables whose values come from facts rather than from computation. Only
+ * these can feed a recursive rule's head, so recursion never invents values
+ * without end.
  */
 const dataBound = (body: readonly Literal[]) => {
   const bound = new Set<string>();
-  const known = (term: unknown) =>
-    term instanceof LogicVariable ? bound.has(term.name) : !isLogicTerm(term);
-  const bind = (term: unknown) => {
-    if (term instanceof LogicVariable) {
-      bound.add(term.name);
-    }
-  };
   for (const literal of body) {
-    if (literal.kind === "atom") {
-      literal.atom.args.forEach(bind);
-    } else if (literal.kind === "unify") {
-      if (known(literal.right)) {
-        bind(literal.left);
-      }
-      if (known(literal.left)) {
-        bind(literal.right);
-      }
-    } else if (literal.kind === "member" && known(literal.list)) {
-      bind(literal.element);
-    }
+    bindVariables(literal, bound, true);
   }
   return bound;
 };
@@ -689,35 +624,36 @@ const recursionProblem = (
   ordered: Components
 ) => {
   const component = componentOf(ordered, rule.head.relation.name) ?? new Set();
-  const recursive = rule.body.find(
-    (literal) =>
-      literal.kind === "atom" && component.has(literal.atom.relation.name)
-  );
-  if (recursive?.kind === "atom" && rule.aggregates.length > 0) {
+  const reads = (negated: boolean) =>
+    rule.body.find(
+      (literal) =>
+        literal.goal instanceof Atom &&
+        literal.negated === negated &&
+        component.has(literal.goal.relation.name)
+    )?.goal as Atom | undefined;
+  const recursive = reads(false);
+  if (recursive !== undefined && rule.aggregates.length > 0) {
     const problem = recursiveAggregateProblem(
       rules,
       rule,
       component,
-      recursive.atom.relation.name
+      recursive.relation.name
     );
     if (problem !== undefined) {
       return problem;
     }
   }
-  const negated = rule.body.find(
-    (literal) =>
-      literal.kind === "absent" && component.has(literal.atom.relation.name)
-  );
-  if (negated?.kind === "absent") {
-    return `Rule ${show(rule.source)} negates "${negated.atom.relation.name}", which depends on "${rule.head.relation.name}". Negation cannot go through recursion.`;
+  const negated = reads(true);
+  if (negated !== undefined) {
+    return `Rule ${show(rule.source)} negates "${negated.relation.name}", which depends on "${rule.head.relation.name}". Negation cannot go through recursion.`;
   }
   if (recursive === undefined) {
     return undefined;
   }
   const fromData = dataBound(rule.body);
   const computed = rule.head.args.find(
-    (arg) =>
-      arg instanceof DeferredCall ||
+    (arg, position) =>
+      (arg instanceof DeferredCall && !rule.aggregates.includes(position)) ||
       (arg instanceof LogicVariable && !fromData.has(arg.name))
   );
   if (computed !== undefined) {
@@ -767,12 +703,12 @@ export const addRules = (
   for (const rule of rules) {
     const { computed, name } = rule.head.relation;
     if (computed !== undefined) {
-      return fail(
-        `Rules cannot add to ${computedCall(computed)}: it is computed from its inputs.`
+      return logicError(
+        `Rules cannot add to ${computedCall(rule.head)}: it is computed from its inputs.`
       );
     }
     if (!database.relations.has(name)) {
-      return fail(`Relation "${name}" is not declared here.`);
+      return logicError(`Relation "${name}" is not declared here.`);
     }
   }
   for (const rule of rules) {
@@ -781,7 +717,7 @@ export const addRules = (
       rule.aggregates.length > 0 &&
       (database.facts.get(relation)?.size ?? 0) > 0
     ) {
-      return fail(
+      return logicError(
         `"${relation}" has facts, so rules cannot aggregate into it. Aggregate into a relation of its own.`
       );
     }
@@ -790,7 +726,7 @@ export const addRules = (
   const next = [...previous, ...rules];
   const problem = checkProgram(next);
   if (problem !== undefined) {
-    return fail(problem);
+    return logicError(problem);
   }
   return commit(database, "Adding this rule", () => {
     database.rules = next;
@@ -800,34 +736,54 @@ export const addRules = (
   });
 };
 
-const evaluateCall = (call: DeferredCall, vars: ReadonlyMap<string, unknown>) =>
+const LINE_BREAKS = /\s*\n\s*/g;
+
+/** A failure inside a waiting call names the call and the values it ran on. */
+const inCall =
+  (waiting: DeferredCall, vars: Vars) =>
+  (error: EvaluationError): EvaluationError =>
+    error instanceof LogicError || error instanceof ArithmeticError
+      ? error
+      : new LogicError({
+          message: `${show(instantiate(waiting, vars))} failed: ${String(error.message).replace(LINE_BREAKS, " ")}`,
+        });
+
+const evaluateCall = (
+  waiting: DeferredCall,
+  vars: Vars
+): LogicEffect<unknown> =>
   Effect.gen(function* () {
+    const fn = yield* evaluateTerm(waiting.fn, vars);
+    if (typeof fn !== "function") {
+      return yield* logicError(
+        `${show(fn)} is not a function, so ${show(instantiate(waiting, vars))} cannot run.`
+      );
+    }
     const args: unknown[] = [];
-    for (const arg of call.args) {
+    for (const arg of waiting.args) {
       args.push(yield* evaluateTerm(arg, vars));
     }
-    const result = call.fn(...args);
-    const value = Effect.isEffect(result)
-      ? yield* result as LogicEffect<unknown>
-      : result;
-    return { args, value };
-  });
+    return yield* call(fn as LionFunction, ...args) as LogicEffect<unknown>;
+  }).pipe(Effect.mapError(inCall(waiting, vars)));
 
-const evaluateTerm = (
-  term: unknown,
-  vars: ReadonlyMap<string, unknown>
-): LogicEffect<unknown> => {
+/** The value of a term for an answer that has bound its variables. */
+const evaluateTerm = (term: unknown, vars: Vars): LogicEffect<unknown> => {
   if (term instanceof LogicVariable) {
     return Effect.succeed(vars.get(term.name));
   }
   if (term instanceof DeferredCall) {
-    return Effect.map(evaluateCall(term, vars), ({ value }) => value);
+    return evaluateCall(term, vars);
   }
-  return Effect.succeed(term);
+  // A goal used as a value is true or false.
+  return isGoal(term) ? holds(term, vars) : Effect.succeed(term);
 };
 
-/** Bound positions and values of an atom; unbound variables are left out. */
-const pattern = (atom: Atom, vars: ReadonlyMap<string, unknown>) =>
+type Step = (binding: Binding) => LogicEffect<readonly Binding[]>;
+
+type Source = (relation: string) => TupleSet;
+
+/** The tuples an atom can match, and the variables each would bind. */
+const lookup = (atom: Atom, vars: Vars, source: Source) =>
   Effect.gen(function* () {
     const positions: number[] = [];
     const values: unknown[] = [];
@@ -840,7 +796,13 @@ const pattern = (atom: Atom, vars: ReadonlyMap<string, unknown>) =>
         values.push(yield* evaluateTerm(arg, vars));
       }
     }
-    return { positions, values, free };
+    const tuples = source(atom.relation.name);
+    const inputs = values.slice(0, atom.relation.computed?.inputs ?? 0);
+    const problem = tuples.demand?.(inputs);
+    if (problem !== undefined) {
+      return yield* logicError(problem);
+    }
+    return { free, tuples: tuples.lookup(positions, values) };
   });
 
 const extend = (
@@ -860,24 +822,17 @@ const extend = (
   return vars;
 };
 
-type Step = (binding: Binding) => LogicEffect<readonly Binding[]>;
-
-type Source = (relation: string) => TupleSet;
-
 const matchAtom =
   (atom: Atom, source: Source): Step =>
   (binding) =>
     Effect.gen(function* () {
       const relation = atom.relation.name;
-      const { positions, values, free } = yield* pattern(atom, binding.vars);
+      const { free, tuples } = yield* lookup(atom, binding.vars, source);
       const out: Binding[] = [];
-      for (const tuple of source(relation).lookup(positions, values)) {
+      for (const tuple of tuples) {
         const vars = extend(binding, free, tuple);
         if (vars !== undefined) {
-          out.push({
-            vars,
-            trail: [...binding.trail, { kind: "atom", relation, tuple }],
-          });
+          out.push({ vars, trail: [...binding.trail, { relation, tuple }] });
         }
       }
       return out;
@@ -885,71 +840,6 @@ const matchAtom =
 
 const isEmpty = (tuples: Iterable<Tuple>) =>
   tuples[Symbol.iterator]().next().done === true;
-
-const matchAbsent =
-  (atom: Atom, source: Source): Step =>
-  (binding) =>
-    Effect.gen(function* () {
-      const relation = atom.relation.name;
-      const { positions, values } = yield* pattern(atom, binding.vars);
-      if (!isEmpty(source(relation).lookup(positions, values))) {
-        return [];
-      }
-      const shown = atom.args.map((_, position) => {
-        const at = positions.indexOf(position);
-        return at === -1 ? "?_" : values[at];
-      });
-      const { computed } = atom.relation;
-      const head =
-        computed === undefined
-          ? [relation]
-          : [computed.callee, ...computed.inputs];
-      return [
-        {
-          vars: binding.vars,
-          trail: [
-            ...binding.trail,
-            { kind: "absent", pattern: [...head, ...shown] },
-          ],
-        },
-      ];
-    });
-
-const runCheck =
-  (call: DeferredCall): Step =>
-  (binding) =>
-    Effect.map(evaluateCall(call, binding.vars), ({ args, value }) =>
-      value
-        ? [
-            {
-              vars: binding.vars,
-              trail: [
-                ...binding.trail,
-                { kind: "check", call: [call.name, ...args] },
-              ],
-            },
-          ]
-        : []
-    );
-
-const unify =
-  (left: unknown, right: unknown): Step =>
-  (binding) =>
-    Effect.gen(function* () {
-      const target = [left, right].find(
-        (side): side is LogicVariable =>
-          side instanceof LogicVariable && !binding.vars.has(side.name)
-      );
-      if (target === undefined) {
-        const a = yield* evaluateTerm(left, binding.vars);
-        const b = yield* evaluateTerm(right, binding.vars);
-        return sameValue(a, b) ? [binding] : [];
-      }
-      const from = target === left ? right : left;
-      const vars = new Map(binding.vars);
-      vars.set(target.name, yield* evaluateTerm(from, binding.vars));
-      return [{ vars, trail: binding.trail }];
-    });
 
 // Rules test the same list over and over, so remember each list's item keys.
 const listKeys = new WeakMap<readonly unknown[], ReadonlySet<string>>();
@@ -963,48 +853,133 @@ const itemKeys = (items: readonly unknown[]) => {
   return keys;
 };
 
-/** Binds the element to each item of the list, or tests that it is one. */
-const member =
-  (element: unknown, list: unknown): Step =>
-  (binding) =>
-    Effect.gen(function* () {
-      const items = yield* evaluateTerm(list, binding.vars);
-      if (!Array.isArray(items)) {
-        return yield* fail(
-          `"in" expects a list, but ${show(list)} is ${show(items)}.`
-        );
-      }
-      if (element instanceof LogicVariable && !binding.vars.has(element.name)) {
-        const seen = new Set<string>();
-        const out: Binding[] = [];
-        for (const item of items) {
-          const key = valueKey(item);
-          if (!seen.has(key)) {
-            seen.add(key);
-            const vars = new Map(binding.vars);
-            vars.set(element.name, item);
-            out.push({ vars, trail: binding.trail });
-          }
-        }
-        return out;
-      }
-      const value = yield* evaluateTerm(element, binding.vars);
-      return itemKeys(items).has(valueKey(value)) ? [binding] : [];
-    });
+const listOf = (list: unknown, vars: Vars) =>
+  Effect.flatMap(evaluateTerm(list, vars), (items) =>
+    Array.isArray(items)
+      ? Effect.succeed(items as readonly unknown[])
+      : logicError(`"in" expects a list, but ${show(list)} is ${show(items)}.`)
+  );
 
+/** Tests a goal that has no "and", "or", or "not" in it. */
+const test = (
+  goal: Literal["goal"],
+  vars: Vars,
+  source?: Source
+): LogicEffect<boolean> =>
+  Effect.gen(function* () {
+    if (goal instanceof Atom) {
+      return source === undefined
+        ? yield* logicError(
+            `${show(instantiate(goal, vars))} is a relation goal, so it has no value. A relation holds or not only as a goal of a rule or query.`
+          )
+        : !isEmpty((yield* lookup(goal, vars, source)).tuples);
+    }
+    if (goal instanceof Unification) {
+      return sameValue(
+        yield* evaluateTerm(goal.left, vars),
+        yield* evaluateTerm(goal.right, vars)
+      );
+    }
+    if (goal instanceof Membership) {
+      const items = yield* listOf(goal.list, vars);
+      const element = yield* evaluateTerm(goal.element, vars);
+      return itemKeys(items).has(valueKey(element));
+    }
+    const value = yield* evaluateTerm(goal, vars);
+    return typeof value === "boolean"
+      ? value
+      : yield* logicError(
+          `A filter must be true or false, but ${show(instantiate(goal, vars))} is ${show(value)}.`
+        );
+  });
+
+/**
+ * Whether a goal holds for an answer that has bound all of its variables.
+ * Without a `source` of tuples the goal is being used as a value, and only a
+ * goal with no relation in it has one. Like the plain forms, "and" stops at
+ * the first part that is false and "or" at the first that is true.
+ */
+const holds = (goal: Goal, vars: Vars, source?: Source): LogicEffect<boolean> =>
+  Effect.gen(function* () {
+    if (typeof goal === "boolean") {
+      return goal;
+    }
+    if (goal instanceof Negation) {
+      return !(yield* holds(goal.goal, vars, source));
+    }
+    if (!(goal instanceof Conjunction || goal instanceof Disjunction)) {
+      return yield* test(goal, vars, source);
+    }
+    const stop = goal instanceof Disjunction;
+    for (const part of goal.goals) {
+      if ((yield* holds(part, vars, source)) === stop) {
+        return stop;
+      }
+    }
+    return !stop;
+  });
+
+const isUnbound = (term: unknown, vars: Vars): term is LogicVariable =>
+  term instanceof LogicVariable && !vars.has(term.name);
+
+/**
+ * The variable "=" or "in" binds for an answer that has no value for it
+ * yet, with the values to give it; undefined when the goal only tests.
+ */
+const binds = (
+  goal: Literal["goal"],
+  vars: Vars
+): LogicEffect<readonly [LogicVariable, readonly unknown[]] | undefined> =>
+  Effect.gen(function* () {
+    if (goal instanceof Unification) {
+      const { left, right } = goal;
+      if (isUnbound(left, vars)) {
+        return [left, [yield* evaluateTerm(right, vars)]];
+      }
+      if (isUnbound(right, vars)) {
+        return [right, [yield* evaluateTerm(left, vars)]];
+      }
+    }
+    if (goal instanceof Membership && isUnbound(goal.element, vars)) {
+      // A list that repeats an item binds it once.
+      const items = yield* listOf(goal.list, vars);
+      const distinct = new Map(items.map((item) => [valueKey(item), item]));
+      return [goal.element, [...distinct.values()]];
+    }
+    return undefined;
+  });
+
+/** Atoms, filters, and negated goals show up in `why`; "=" and "in" do not. */
+const leavesPremise = ({ goal, negated }: Literal) =>
+  negated || !(goal instanceof Unification || goal instanceof Membership);
+
+/**
+ * Runs one literal for one answer. An atom matches tuples, "=" and "in"
+ * bind a variable that has no value yet, and everything else is a test.
+ */
 const literalStep = (literal: Literal, source: Source): Step => {
-  switch (literal.kind) {
-    case "atom":
-      return matchAtom(literal.atom, source);
-    case "absent":
-      return matchAbsent(literal.atom, source);
-    case "check":
-      return runCheck(literal.call);
-    case "member":
-      return member(literal.element, literal.list);
-    default:
-      return unify(literal.left, literal.right);
+  if (matchesAtom(literal)) {
+    return matchAtom(literal.goal, source);
   }
+  const { goal, negated } = literal;
+  return ({ trail, vars }) =>
+    Effect.gen(function* () {
+      const bound = negated ? undefined : yield* binds(goal, vars);
+      if (bound !== undefined) {
+        const [{ name }, values] = bound;
+        return values.map((value) => ({
+          vars: new Map(vars).set(name, value),
+          trail,
+        }));
+      }
+      if ((yield* holds(goal, vars, source)) === negated) {
+        return [];
+      }
+      const premises = leavesPremise(literal)
+        ? [...trail, { literal, vars }]
+        : trail;
+      return [{ vars, trail: premises }];
+    });
 };
 
 const stepLiteral = (
@@ -1040,18 +1015,21 @@ const evaluateBody = (
     return bindings;
   });
 
+/** A row a rule derived, which must be JSON data. */
+const derivedRow = (rule: CompiledRule, tuple: readonly unknown[]) =>
+  tuple.every(isGroundValue)
+    ? Effect.succeed(tuple as Tuple)
+    : logicError(
+        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
+      );
+
 const headTuple = (rule: CompiledRule, binding: Binding) =>
   Effect.gen(function* () {
     const tuple: unknown[] = [];
     for (const arg of rule.head.args) {
       tuple.push(yield* evaluateTerm(arg, binding.vars));
     }
-    if (!tuple.every(isGroundValue)) {
-      return yield* fail(
-        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
-      );
-    }
-    return tuple as Tuple;
+    return yield* derivedRow(rule, tuple);
   });
 
 /** Adds a derived tuple, remembering the first derivation for `why`. */
@@ -1086,7 +1064,7 @@ const checkKey = (model: Model, rule: CompiledRule, tuple: Tuple) => {
   for (const other of model.relations.get(name)?.lookup(key, keyValues) ?? []) {
     if (valueKey(other) !== tupleKey) {
       const relation = originalName(name);
-      return fail(
+      return logicError(
         `"${relation}" is keyed by ${JSON.stringify(keyColumns(rule.head.relation))}, but ${show(rule.source)} derived ${show([relation, ...tuple])} while ${show([relation, ...other])} holds.`
       );
     }
@@ -1125,11 +1103,6 @@ interface DeltaPlan {
 
 const deltaPlans = new WeakMap<CompiledRule, Map<number, DeltaPlan>>();
 
-const leavesPremise = (literal: Literal) =>
-  literal.kind === "atom" ||
-  literal.kind === "absent" ||
-  literal.kind === "check";
-
 /**
  * The rule's body reordered to start from the goal at `position`, so a round
  * starts from the few new tuples instead of scanning everything else first.
@@ -1153,12 +1126,13 @@ const deltaPlan = (rule: CompiledRule, position: number): DeltaPlan => {
   };
   let plan: DeltaPlan = unchanged;
   if (
-    first?.kind === "atom" &&
-    first.atom.args.every((arg) => !(arg instanceof DeferredCall))
+    first !== undefined &&
+    matchesAtom(first) &&
+    first.goal.args.every((arg) => !(arg instanceof DeferredCall))
   ) {
     const rest = planLiterals(
       rule.body.filter((_, at) => at !== position),
-      first.atom.args.flatMap((arg) =>
+      first.goal.args.flatMap((arg) =>
         arg instanceof LogicVariable ? [arg.name] : []
       )
     );
@@ -1196,10 +1170,9 @@ const changedBindings = (
     const full = fullRelation(model);
     const out: Binding[] = [];
     for (const [position, literal] of rule.body.entries()) {
-      const changes =
-        literal.kind === "atom"
-          ? delta.get(literal.atom.relation.name)
-          : undefined;
+      const changes = matchesAtom(literal)
+        ? delta.get(literal.goal.relation.name)
+        : undefined;
       if (changes === undefined || changes.size === 0) {
         continue;
       }
@@ -1219,15 +1192,22 @@ const changedBindings = (
   });
 
 /** A key that is equal for bindings of the same variables to the same values. */
-const bindingKey = (vars: ReadonlyMap<string, unknown>) =>
+const bindingKey = (vars: Vars) =>
   valueKey([...vars.entries()].sort(([a], [b]) => (a < b ? -1 : 1)));
 
+/** The matches of an aggregate rule that share their other head values. */
 interface Group {
   /** Head values, with null where the head aggregates. */
   readonly key: Tuple;
   readonly rule: CompiledRule;
-  readonly trails: (readonly Premise[])[];
-  /** For each aggregate, the value each match contributed. */
+  /** The premises of each match, or of the one a selecting aggregate kept. */
+  trails: (readonly Premise[])[];
+  /** The row the group gave when it was last combined. */
+  tuple?: Tuple;
+  /**
+   * For each aggregate, the values to combine: one from each match, or for
+   * a lattice aggregate, its result so far and the values that came since.
+   */
   readonly values: unknown[][];
 }
 
@@ -1236,10 +1216,11 @@ const matchValues = (rule: CompiledRule, binding: Binding) =>
   Effect.gen(function* () {
     const key: unknown[] = [];
     const values: unknown[] = [];
-    for (const arg of rule.head.args) {
-      if (arg instanceof Aggregate) {
+    for (const [position, arg] of rule.head.args.entries()) {
+      if (rule.aggregates.includes(position)) {
+        const [value] = (arg as DeferredCall).args;
         key.push(null);
-        values.push(yield* evaluateTerm(arg.arg, binding.vars));
+        values.push(yield* evaluateTerm(value, binding.vars));
       } else {
         key.push(yield* evaluateTerm(arg, binding.vars));
       }
@@ -1247,262 +1228,187 @@ const matchValues = (rule: CompiledRule, binding: Binding) =>
     return { key, values };
   });
 
-const collectGroups = (model: Model, rules: readonly CompiledRule[]) =>
-  Effect.gen(function* () {
-    const full = fullRelation(model);
-    // Each rule's body is a set of matches, so a match that several
-    // alternatives of one rule find counts once. Separate rules add up.
-    const seen = new Map<unknown, Set<string>>();
-    const groups = new Map<string, Group>();
-    for (const rule of rules) {
-      const matched = getOrCreate(seen, rule.source, () => new Set<string>());
-      const bindings = yield* evaluateBody(rule.body, (_, relation) =>
-        full(relation)
-      );
-      for (const binding of bindings) {
-        const id = bindingKey(binding.vars);
-        if (matched.has(id)) {
-          continue;
-        }
-        matched.add(id);
-        const { key, values } = yield* matchValues(rule, binding);
-        const group = getOrCreate(groups, valueKey(key), () => ({
-          key,
-          rule,
-          trails: [],
-          values: rule.aggregates.map(() => []),
-        }));
-        for (const [index, value] of values.entries()) {
-          group.values[index]?.push(value);
-        }
-        group.trails.push(binding.trail);
-      }
-    }
-    return groups.values();
-  });
-
+/** True when one match explains the row: its only aggregate picked it. */
 const selectsAlone = (rule: CompiledRule) => {
   const [position, ...others] = rule.aggregates;
   return (
     others.length === 0 &&
-    aggregator((rule.head.args[position ?? 0] as Aggregate).kind).selects
+    aggregator(aggregateKind(rule, position ?? 0)).selects
   );
 };
 
-/** Checks values against an aggregate, naming the rule when they do not fit. */
-const checkAggregate = (
+/** Why an aggregate cannot combine some values, naming the rule. */
+const aggregateProblem = (
   rule: CompiledRule,
   kind: string,
   values: readonly unknown[]
 ) => {
   const problem = aggregator(kind).check(values);
-  return problem === undefined
-    ? Effect.void
-    : fail(`Rule ${show(rule.source)}: aggregate/${kind} ${problem}.`);
-};
-
-/** The head tuple with each aggregate's result in its column. */
-const aggregatedTuple = (
-  rule: CompiledRule,
-  key: Tuple,
-  results: readonly unknown[]
-) => {
-  const tuple = [...key];
-  for (const [index, position] of rule.aggregates.entries()) {
-    tuple[position] = results[index];
+  if (problem === undefined) {
+    return;
   }
-  return tuple.every(isGroundValue)
-    ? Effect.succeed(tuple as Tuple)
-    : fail(
-        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
-      );
+  // A list usually means the rule wanted each match's own list combined.
+  const hint = values.some(Array.isArray)
+    ? ` As a whole argument of a rule head, aggregate/${kind} combines one value from every match. To combine each match's own list, do it in the body, as in ["=", "?result", ["aggregate/${kind}", "?list"]].`
+    : "";
+  return `Rule ${show(rule.source)}: aggregate/${kind} ${problem}.${hint}`;
 };
 
-/** Combines one group's matches into the aggregated tuple. */
-const foldGroup = (group: Group) =>
+/**
+ * Combines a group's values into its row. A lattice aggregate then keeps
+ * only its result, which later matches join, so recursion never starts over.
+ */
+const combine = (group: Group) =>
   Effect.gen(function* () {
-    const { rule } = group;
-    const results: unknown[] = [];
-    let derivation: Derivation = { rule, trail: [], matches: group.trails };
+    const { key, rule, values } = group;
+    const tuple = [...key];
     for (const [index, position] of rule.aggregates.entries()) {
-      const { kind } = rule.head.args[position] as Aggregate;
-      const values = group.values[index] ?? [];
-      yield* checkAggregate(rule, kind, values);
-      const result = aggregator(kind).fold(values);
-      results.push(result);
+      const kind = aggregateKind(rule, position);
+      const given = values[index] ?? [];
+      const problem = aggregateProblem(rule, kind, given);
+      if (problem !== undefined) {
+        return yield* logicError(problem);
+      }
+      const { fold, join } = aggregator(kind);
+      const result = fold(given);
+      tuple[position] = result;
+      if (join !== undefined) {
+        values[index] = [result];
+      }
       if (selectsAlone(rule)) {
-        const winner = values.findIndex((value) => sameValue(value, result));
-        derivation = { rule, trail: group.trails[winner] ?? [] };
+        const winner = given.findIndex((value) => sameValue(value, result));
+        group.trails = [group.trails[winner] ?? []];
       }
     }
-    const tuple = yield* aggregatedTuple(rule, group.key, results);
-    return { derivation, tuple };
+    return yield* derivedRow(rule, tuple);
   });
 
-/** Aggregate rules run once their inputs are complete; they never recurse. */
-const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
+/** The groups of the aggregate rules being evaluated. */
+interface Groups {
+  readonly byKey: Map<string, Group>;
+  /** Groups that got matches since they were last combined. */
+  changed: Set<Group>;
+  /**
+   * The matches each rule form has given. A rule's body is a set of matches,
+   * so a match that several alternatives of one rule find counts once.
+   * Separate rules add up.
+   */
+  readonly seen: Map<unknown, Set<string>>;
+}
+
+/** Gives each new match of a rule to the group its head values name. */
+const addMatches = (
+  groups: Groups,
+  rule: CompiledRule,
+  bindings: readonly Binding[]
+) =>
   Effect.gen(function* () {
-    for (const group of yield* collectGroups(model, rules)) {
-      const { derivation, tuple } = yield* foldGroup(group);
-      const relation = group.rule.head.relation.name;
-      getOrCreate(model.relations, relation, () => new TupleSet()).add(tuple);
+    const seen = getOrCreate(groups.seen, rule.source, () => new Set<string>());
+    for (const binding of bindings) {
+      const id = bindingKey(binding.vars);
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      const { key, values } = yield* matchValues(rule, binding);
+      const group = getOrCreate(
+        groups.byKey,
+        `${rule.head.relation.name}\u0000${valueKey(key)}`,
+        (): Group => ({
+          key,
+          rule,
+          trails: [],
+          values: rule.aggregates.map(() => []),
+        })
+      );
+      for (const [index, value] of values.entries()) {
+        group.values[index]?.push(value);
+      }
+      group.trails.push(binding.trail);
+      groups.changed.add(group);
+    }
+  });
+
+/** Combines the groups that changed, and returns the rows that are new. */
+const settle = (groups: Groups, model: Model) =>
+  Effect.gen(function* () {
+    const delta = new Map<string, TupleSet>();
+    for (const group of groups.changed) {
+      const { rule, tuple: old } = group;
+      const tuple = yield* combine(group);
+      if (old !== undefined && valueKey(old) === valueKey(tuple)) {
+        continue;
+      }
+      const relation = rule.head.relation.name;
+      const tuples = getOrCreate(
+        model.relations,
+        relation,
+        () => new TupleSet()
+      );
+      if (old !== undefined) {
+        tuples.delete(old);
+      }
+      tuples.add(tuple);
+      group.tuple = tuple;
+      getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
+      // Replaced rows keep their derivations, so explanations that pass
+      // through an earlier best value still read correctly.
       getOrCreate(model.derivations, relation, () => new Map()).set(
         valueKey(tuple),
-        derivation
+        selectsAlone(rule)
+          ? { rule, trail: group.trails[0] ?? [] }
+          : { rule, trail: [], matches: [...group.trails] }
       );
     }
+    groups.changed = new Set();
+    return delta;
   });
 
 /** Recursion through lattice aggregates stops after this many rounds. */
 export const MAX_LATTICE_ROUNDS = 10_000;
 
-interface Best {
-  readonly derivation: Derivation;
-  readonly relation: string;
-  readonly tuple: Tuple;
-  /** The current value of each aggregate. */
-  readonly values: readonly unknown[];
-}
-
-/** Joins one match into its group's current best, or returns undefined. */
-const improve = (
-  rule: CompiledRule,
-  binding: Binding,
-  match: { readonly key: Tuple; readonly values: readonly unknown[] },
-  current: Best | undefined
-) =>
-  Effect.gen(function* () {
-    const joined: unknown[] = [];
-    let improved = current === undefined;
-    for (const [index, position] of rule.aggregates.entries()) {
-      const { kind } = rule.head.args[position] as Aggregate;
-      const { fold, join } = aggregator(kind);
-      const value = match.values[index];
-      const previous = current?.values[index];
-      yield* checkAggregate(
-        rule,
-        kind,
-        current === undefined ? [value] : [previous, value]
-      );
-      const result =
-        current === undefined || join === undefined
-          ? fold([value])
-          : join(previous, value);
-      improved ||= !sameValue(result, previous);
-      joined.push(result);
-    }
-    if (!improved) {
-      return undefined;
-    }
-    const tuple = yield* aggregatedTuple(rule, match.key, joined);
-    const derivation: Derivation = selectsAlone(rule)
-      ? { rule, trail: binding.trail }
-      : {
-          rule,
-          trail: [],
-          matches: [...(current?.derivation.matches ?? []), binding.trail],
-        };
-    return {
-      derivation,
-      relation: rule.head.relation.name,
-      tuple,
-      values: joined,
-    };
-  });
-
 /**
- * Recursion through lattice aggregates. Each group keeps its best value so
- * far; a round re-runs the rules on the rows that improved in the last round,
- * and evaluation stops once no group improves.
+ * Evaluates the rules of aggregated relations. Every match joins a group,
+ * and a group that got matches is combined again. Rules that do not recurse
+ * are done after one round. Recursion goes only through lattice aggregates,
+ * whose results move one way, so it ends once no group's row changes.
  */
-const evaluateLattice = (model: Model, rules: readonly CompiledRule[]) =>
+const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
   Effect.gen(function* () {
-    const best = new Map<string, Best>();
-    let changed = new Map<string, Best>();
-    const offer = (rule: CompiledRule, bindings: readonly Binding[]) =>
-      Effect.gen(function* () {
-        for (const binding of bindings) {
-          const match = yield* matchValues(rule, binding);
-          const id = `${rule.head.relation.name}\u0000${valueKey(match.key)}`;
-          const next = yield* improve(
-            rule,
-            binding,
-            match,
-            changed.get(id) ?? best.get(id)
-          );
-          if (next !== undefined) {
-            changed.set(id, next);
-          }
-        }
-      });
-    const settle = () => {
-      const delta = new Map<string, TupleSet>();
-      for (const [id, entry] of changed) {
-        const tuples = getOrCreate(
-          model.relations,
-          entry.relation,
-          () => new TupleSet()
-        );
-        const old = best.get(id);
-        if (old !== undefined) {
-          tuples.delete(old.tuple);
-        }
-        tuples.add(entry.tuple);
-        // Replaced rows keep their derivations, so explanations that pass
-        // through an earlier best value still read correctly.
-        getOrCreate(model.derivations, entry.relation, () => new Map()).set(
-          valueKey(entry.tuple),
-          entry.derivation
-        );
-        getOrCreate(delta, entry.relation, () => new TupleSet()).add(
-          entry.tuple
-        );
-        best.set(id, entry);
-      }
-      changed = new Map();
-      return delta;
+    const groups: Groups = {
+      byKey: new Map(),
+      changed: new Set(),
+      seen: new Map(),
     };
-
     const full = fullRelation(model);
     for (const rule of rules) {
-      yield* offer(
-        rule,
-        yield* evaluateBody(rule.body, (_, relation) => full(relation))
+      const bindings = yield* evaluateBody(rule.body, (_, relation) =>
+        full(relation)
       );
+      yield* addMatches(groups, rule, bindings);
     }
-    let delta = settle();
+    let delta = yield* settle(groups, model);
     for (let round = 1; hasChanges(delta); round += 1) {
       if (round > MAX_LATTICE_ROUNDS) {
         const names = [
           ...new Set(rules.map((rule) => `"${rule.head.relation.name}"`)),
         ];
-        return yield* fail(
+        return yield* logicError(
           `${names.join(" and ")} kept improving after ${MAX_LATTICE_ROUNDS} rounds, so evaluation stopped. A cycle can improve a value forever, such as a negative-weight cycle under aggregate/min.`
         );
       }
       for (const rule of rules) {
-        yield* offer(rule, yield* changedBindings(rule, delta, model));
+        const bindings = yield* changedBindings(rule, delta, model);
+        yield* addMatches(groups, rule, bindings);
       }
-      delta = settle();
+      delta = yield* settle(groups, model);
     }
   });
-
-const isRecursive = (rules: readonly CompiledRule[]) => {
-  const heads = new Set(rules.map((rule) => rule.head.relation.name));
-  return rules.some((rule) =>
-    rule.body.some(
-      (literal) =>
-        literal.kind === "atom" && heads.has(literal.atom.relation.name)
-    )
-  );
-};
 
 const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
   Effect.gen(function* () {
     if (rules.some((rule) => rule.aggregates.length > 0)) {
-      return yield* isRecursive(rules)
-        ? evaluateLattice(model, rules)
-        : evaluateAggregates(model, rules);
+      return yield* evaluateAggregates(model, rules);
     }
     const full = fullRelation(model);
     let delta = new Map<string, TupleSet>();
@@ -1522,43 +1428,58 @@ const evaluateComponent = (model: Model, rules: readonly CompiledRule[]) =>
     }
   });
 
-/** Runs a computed relation's algorithm over its complete inputs. */
-const computeRelation = (model: Model, relation: RelationInfo) =>
-  Effect.gen(function* () {
-    const { computed, name } = relation;
-    if (computed === undefined || model.relations.has(name)) {
-      return;
-    }
-    for (const dependency of computed.dependencies) {
-      if (!model.relations.has(dependency)) {
-        return yield* fail(`Relation "${dependency}" is not declared here.`);
-      }
-    }
-    const rows = computed.compute((input) => [
-      ...(model.relations.get(input)?.values() ?? []),
-    ]);
+/**
+ * Makes a computed relation's rows available. Its algorithm runs over its
+ * complete input relations the first time a goal asks for some input values.
+ */
+const computeRelation = (model: Model, relation: RelationInfo) => {
+  const { columns, computed, name } = relation;
+  if (computed === undefined || model.relations.has(name)) {
+    return Effect.void;
+  }
+  const missing = computed.dependencies.find(
+    (dependency) => !model.relations.has(dependency)
+  );
+  if (missing !== undefined) {
+    return logicError(`Relation "${missing}" is not declared here.`);
+  }
+  const tuples = new TupleSet();
+  const asked = new Map<string, string | undefined>();
+  const compute = (inputs: Tuple) => {
+    const rows = computed.compute(
+      (input) => [...(model.relations.get(input)?.values() ?? [])],
+      inputs
+    );
     if (typeof rows === "string") {
-      return yield* fail(rows);
+      return rows;
     }
-    const tuples = new TupleSet();
+    const width = columns.length - inputs.length;
     for (const row of rows) {
-      if (row.length !== relation.columns.length || !row.every(isGroundValue)) {
-        return yield* fail(
-          `${computedCall(computed)} produced a row that is not ${relation.columns.length} JSON values: ${show(row)}.`
-        );
+      if (row.length !== width || !row.every(isGroundValue)) {
+        return `${show(computed.form(inputs))} produced a row that is not ${width} JSON values: ${show(row)}.`;
       }
-      tuples.add(row);
+      tuples.add([...inputs, ...row]);
     }
-    model.relations.set(name, tuples);
-    model.computed.set(name, computed);
-  });
+    return undefined;
+  };
+  tuples.demand = (inputs) => {
+    const key = valueKey(inputs);
+    if (!asked.has(key)) {
+      asked.set(key, compute(inputs));
+    }
+    return asked.get(key);
+  };
+  model.relations.set(name, tuples);
+  model.computed.set(name, computed);
+  return Effect.void;
+};
 
 /** Computes the relations a query or explanation reads but no rule did. */
 const computeUsed = (model: Model, body: readonly Literal[]) =>
   Effect.gen(function* () {
-    for (const literal of body) {
-      if (literal.kind === "atom" || literal.kind === "absent") {
-        yield* computeRelation(model, literal.atom.relation);
+    for (const { goal } of body) {
+      if (goal instanceof Atom) {
+        yield* computeRelation(model, goal.relation);
       }
     }
   });
@@ -1578,7 +1499,7 @@ const computeModel = (database: LogicDatabase, only?: ReadonlySet<string>) =>
       relations,
       derivations: new Map(),
     };
-    const computed = computedRelations(database.rules);
+    const computed = computedGoals(database.rules);
     for (const component of components(database.rules)) {
       if (
         only !== undefined &&
@@ -1593,9 +1514,9 @@ const computeModel = (database: LogicDatabase, only?: ReadonlySet<string>) =>
         yield* evaluateComponent(model, rules);
       }
       for (const name of component) {
-        const relation = computed.get(name);
-        if (relation !== undefined) {
-          yield* computeRelation(model, relation);
+        const goal = computed.get(name);
+        if (goal !== undefined) {
+          yield* computeRelation(model, goal.relation);
         }
       }
     }
@@ -1632,37 +1553,11 @@ const goalModel = (database: LogicDatabase, program: MagicProgram) =>
     return model;
   });
 
-/** A key that tells variables apart from strings that look like them. */
-const termKey = (term: unknown): unknown => {
-  if (term instanceof LogicVariable) {
-    return { variable: term.name };
-  }
-  if (term instanceof DeferredCall) {
-    return { call: term.name, args: term.args.map(termKey) };
-  }
-  return { value: term };
-};
-
-const literalKey = (literal: Literal): unknown => {
-  switch (literal.kind) {
-    case "atom":
-    case "absent":
-      return [
-        literal.kind,
-        literal.atom.relation.name,
-        literal.atom.args.map(termKey),
-      ];
-    case "check":
-      return [literal.kind, termKey(literal.call)];
-    case "unify":
-      return [literal.kind, termKey(literal.left), termKey(literal.right)];
-    default:
-      return [literal.kind, termKey(literal.element), termKey(literal.list)];
-  }
-};
-
+/** A key for a query's rewritten model; undefined when a goal has no key. */
 const queryKey = (queries: readonly CompiledQuery[]) =>
-  valueKey(queries.map((query) => [query.outputs, query.body.map(literalKey)]));
+  logicKey(
+    queries.map((query) => [query.outputs, query.body.map(literalGoal)])
+  );
 
 /**
  * The model and query bodies to answer with. A query that asks a rule-defined
@@ -1684,12 +1579,14 @@ const answerModel = (
       return { model: yield* currentModel(database), queries };
     }
     const key = queryKey(queries);
-    const cached = database.goals.get(key);
+    const cached = key === undefined ? undefined : database.goals.get(key);
     if (cached !== undefined) {
       return { model: cached, queries: program.queries };
     }
     const model = yield* goalModel(database, program);
-    database.goals.set(key, model);
+    if (key !== undefined) {
+      database.goals.set(key, model);
+    }
     return { model, queries: program.queries };
   });
 
@@ -1708,9 +1605,17 @@ export const queryDatabase = (
         (_, relation) => model.relations.get(relation) ?? EMPTY
       );
       for (const binding of bindings) {
+        // An alternative of "or" may leave some of the variables unbound.
         const row = Object.fromEntries(
-          query.outputs.map((name) => [name, binding.vars.get(name)])
+          query.outputs.flatMap((name) =>
+            binding.vars.has(name) ? [[name, binding.vars.get(name)]] : []
+          )
         );
+        if (!isGroundValue(row)) {
+          return yield* logicError(
+            `The query produced an answer that is not JSON data: ${show(row)}.`
+          );
+        }
         rows.set(valueKey(row), row);
       }
     }
@@ -1736,7 +1641,7 @@ const checkInvariants = (
         invariant.goal
       );
       if (problem !== undefined) {
-        return yield* fail(`${context} ${problem}`);
+        return yield* logicError(`${context} ${problem}`);
       }
     }
   });
@@ -1767,23 +1672,17 @@ export const addInvariant = (database: LogicDatabase, invariant: Invariant) =>
   });
 
 const explainPremise = (model: Model, premise: Premise): unknown => {
-  switch (premise.kind) {
-    case "atom":
-      return explain(model, premise.relation, premise.tuple);
-    case "check":
-      return { check: premise.call };
-    default:
-      return { absent: premise.pattern };
+  if ("tuple" in premise) {
+    return explain(model, premise.relation, premise.tuple);
   }
+  const { goal, negated } = premise.literal;
+  return { [negated ? "absent" : "check"]: instantiate(goal, premise.vars) };
 };
 
 const explain = (model: Model, relation: string, tuple: Tuple): unknown => {
   const computed = model.computed.get(relation);
   if (computed !== undefined) {
-    return {
-      fact: [computed.callee, ...computed.inputs, ...tuple],
-      computed: true,
-    };
+    return { fact: computed.form(tuple), computed: true };
   }
   const fact = [relation, ...tuple];
   const derivation = model.derivations.get(relation)?.get(valueKey(tuple));
@@ -1804,12 +1703,12 @@ export const explainFact = (database: LogicDatabase, atom: Atom) =>
     const model = yield* currentModel(database);
     if (atom.relation.computed !== undefined) {
       if (!atom.args.every(isGroundValue)) {
-        return yield* fail(
+        return yield* logicError(
           `why expects a fact without variables: ${show(atom)}.`
         );
       }
       yield* computeRelation(model, atom.relation);
-      return model.relations.get(atom.relation.name)?.has(atom.args)
+      return (yield* holds(atom, new Map(), fullRelation(model)))
         ? explain(model, atom.relation.name, atom.args)
         : null;
     }

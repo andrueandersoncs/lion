@@ -25,7 +25,26 @@ const OPERATIONS: Record<string, (a: number, b: number) => number> = {
   "number/subtract": (a, b) => a - b,
   "number/multiply": (a, b) => a * b,
   "number/divide": (a, b) => a / b,
+  "number/remainder": (a, b) => a % b,
+  "number/power": (a, b) => a ** b,
+  "number/min": Math.min,
+  "number/max": Math.max,
 };
+
+const ROUNDING: Record<string, (a: number) => number> = {
+  "number/absolute": Math.abs,
+  "number/floor": Math.floor,
+  "number/ceiling": Math.ceil,
+  "number/round": Math.round,
+};
+
+/** Eighths, so halves and quarters come up and stay exact. */
+const fraction = Arbitrary.map(
+  Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: -80, maximum: 80 }))
+  ),
+  (eighths) => eighths / 8
+);
 
 /** The result, or the tag and message of the error. */
 const outcome = (program: unknown) =>
@@ -54,6 +73,26 @@ describe("arithmetic", () => {
             expect(result).toMatchObject({ tag: "ArithmeticError" });
             expect((result as { message: string }).message).toContain(name);
           }
+        }
+      })
+  );
+
+  it.effect.prop(
+    "on one number agrees with JavaScript, and zero equals negative zero",
+    { a: fraction },
+    ({ a }) =>
+      Effect.gen(function* () {
+        for (const [name, operate] of Object.entries(ROUNDING)) {
+          const expected = operate(a);
+          // JSON writes -0 as 0, so Lion treats them as one number.
+          expect(yield* outcome(["=", [name, a], expected + 0])).toEqual({
+            value: true,
+          });
+          expect(
+            yield* outcome(["number/equals?", [name, a], expected])
+          ).toEqual({
+            value: true,
+          });
         }
       })
   );

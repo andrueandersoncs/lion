@@ -30,7 +30,8 @@ export const BeginFormSchema = Schema.TupleWithRest(
   [LionExpressionSchema]
 );
 
-const DISALLOWED_IDENTIFIERS = [
+/** The special forms, by the name an array starts with. */
+export const SPECIAL_FORM_NAMES = [
   "begin",
   "define",
   "eval",
@@ -51,6 +52,13 @@ const DISALLOWED_IDENTIFIERS = [
   "in",
   "snapshot",
   "invariant",
+] as const;
+
+export type SpecialFormName = (typeof SPECIAL_FORM_NAMES)[number];
+
+// A special form's name cannot be defined or used as a parameter.
+const DISALLOWED_IDENTIFIERS: readonly string[] = [
+  ...SPECIAL_FORM_NAMES,
   "__proto__",
 ];
 
@@ -75,31 +83,17 @@ export const LambdaFormSchema = Schema.Tuple([
   LionExpressionSchema,
 ]);
 
-// ["cond", [<predicate>, <result>], ..., ["else", <result>]]
+// ["cond", [<predicate>, <result>], ..., ["else", <result>]]. "else" is a
+// string like any other: it holds unless the environment binds it.
 export const CondCaseSchema = Schema.Tuple([
   LionExpressionSchema,
   LionExpressionSchema,
 ]);
 
-export const CondElseCaseSchema = Schema.Tuple([
-  Schema.Literal("else"),
-  LionExpressionSchema,
-]);
-
-export const CondFormWithoutElseSchema = Schema.TupleWithRest(
+export const CondFormSchema = Schema.TupleWithRest(
   Schema.Tuple([Schema.Literal("cond"), CondCaseSchema]),
   [CondCaseSchema]
 );
-
-export const CondFormWithElseSchema = Schema.TupleWithRest(
-  Schema.Tuple([Schema.Literal("cond"), CondCaseSchema]),
-  [CondCaseSchema, CondElseCaseSchema]
-);
-
-export const CondFormSchema = Schema.Union([
-  CondFormWithoutElseSchema,
-  CondFormWithElseSchema,
-]);
 
 // ["match", <value>, [<predicate>, <fn>], ..., <fallback-fn>]
 export const MatchPatternSchema = Schema.Tuple([
@@ -210,3 +204,41 @@ export const MatchFormSchema = Schema.TupleWithRest(
   ]),
   [MatchPatternSchema, LionExpressionSchema]
 );
+
+/** The shape an array must have to be each special form. */
+const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
+  begin: Schema.is(BeginFormSchema),
+  define: Schema.is(DefineFormSchema),
+  eval: Schema.is(EvalFormSchema),
+  quote: Schema.is(QuoteFormSchema),
+  lambda: Schema.is(LambdaFormSchema),
+  cond: Schema.is(CondFormSchema),
+  match: Schema.is(MatchFormSchema),
+  relation: Schema.is(RelationFormSchema),
+  rule: Schema.is(RuleFormSchema),
+  fact: Schema.is(FactFormSchema),
+  retract: Schema.is(RetractFormSchema),
+  query: Schema.is(QueryFormSchema),
+  why: Schema.is(WhyFormSchema),
+  not: Schema.is(NotFormSchema),
+  and: Schema.is(AndFormSchema),
+  or: Schema.is(OrFormSchema),
+  "=": Schema.is(UnifyFormSchema),
+  in: Schema.is(InFormSchema),
+  snapshot: Schema.is(SnapshotFormSchema),
+  invariant: Schema.is(InvariantFormSchema),
+};
+
+export const isSpecialFormName = (value: unknown): value is SpecialFormName =>
+  typeof value === "string" && Object.hasOwn(SHAPES, value);
+
+/**
+ * The special form an array is: its first element names the form, and the
+ * array has the form's shape. Any other array is a function call.
+ */
+export const specialFormOf = (
+  expression: readonly unknown[]
+): SpecialFormName | undefined => {
+  const [name] = expression;
+  return isSpecialFormName(name) && SHAPES[name](expression) ? name : undefined;
+};

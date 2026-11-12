@@ -15,13 +15,17 @@
  * are computed in full first, as the normal evaluation would.
  */
 import {
+  bindVariables,
   type CompiledQuery,
   type CompiledRule,
   type Literal,
+  matchesAtom,
   planLiterals,
 } from "@/logic/compile";
+import { dependencyEdges } from "@/logic/strata";
 import {
   Atom,
+  DeferredCall,
   isGroundValue,
   LogicVariable,
   type RelationInfo,
@@ -37,40 +41,6 @@ export interface MagicProgram {
 }
 
 type Adornment = readonly boolean[];
-
-const getOrCreate = <K, V>(map: Map<K, V>, key: K, make: () => V): V => {
-  let value = map.get(key);
-  if (value === undefined) {
-    value = make();
-    map.set(key, value);
-  }
-  return value;
-};
-
-/** Which relations each relation reads, through rules and computations. */
-const dependencyEdges = (rules: readonly CompiledRule[]) => {
-  const edges = new Map<string, Set<string>>();
-  for (const rule of rules) {
-    const targets = getOrCreate(
-      edges,
-      rule.head.relation.name,
-      () => new Set()
-    );
-    for (const literal of rule.body) {
-      if (literal.kind === "atom" || literal.kind === "absent") {
-        const { computed, name } = literal.atom.relation;
-        targets.add(name);
-        if (computed !== undefined) {
-          const inputs = getOrCreate(edges, name, () => new Set());
-          for (const dependency of computed.dependencies) {
-            inputs.add(dependency);
-          }
-        }
-      }
-    }
-  }
-  return edges;
-};
 
 const closure = (
   edges: ReadonlyMap<string, ReadonlySet<string>>,
@@ -89,10 +59,8 @@ const closure = (
 
 const bodyRelations = (bodies: readonly (readonly Literal[])[]) =>
   bodies.flatMap((body) =>
-    body.flatMap((literal) =>
-      literal.kind === "atom" || literal.kind === "absent"
-        ? [literal.atom.relation.name]
-        : []
+    body.flatMap(({ goal }) =>
+      goal instanceof Atom ? [goal.relation.name] : []
     )
   );
 
@@ -108,12 +76,9 @@ const fullRelations = (
 ) => {
   const roots = new Set<string>();
   const visit = (body: readonly Literal[]) => {
-    for (const literal of body) {
-      if (literal.kind === "absent") {
-        roots.add(literal.atom.relation.name);
-      }
-      if (literal.kind === "atom" && literal.atom.relation.computed) {
-        roots.add(literal.atom.relation.name);
+    for (const { goal, negated } of body) {
+      if (goal instanceof Atom && (negated || goal.relation.computed)) {
+        roots.add(goal.relation.name);
       }
     }
   };
@@ -155,12 +120,24 @@ export const originalName = (name: string) => {
 };
 
 /**
- * A term is known when it is JSON data or a variable an earlier atom bound.
- * Other values, such as functions, can never match a fact, so they are left
- * to filter the rewritten relation instead of seeding its magic.
+ * A term is known when it is JSON data or a variable that is already bound.
+ * Inside rules only variables bound from facts count, so recursion never
+ * asks about values without end; a query runs once, so there a computed
+ * value counts too. Other values, such as functions, can never match a fact,
+ * so they are left to filter the rewritten relation instead of seeding it.
  */
-const isKnown = (term: unknown, bound: ReadonlySet<string>) =>
-  term instanceof LogicVariable ? bound.has(term.name) : isGroundValue(term);
+const isKnown = (
+  term: unknown,
+  bound: ReadonlySet<string>,
+  isQuery: boolean
+) => {
+  if (term instanceof DeferredCall) {
+    return isQuery && term.variables.every((name) => bound.has(name));
+  }
+  return term instanceof LogicVariable
+    ? bound.has(term.name)
+    : isGroundValue(term);
+};
 
 const pick = <T>(items: readonly T[], adornment: Adornment) =>
   items.filter((_, position) => adornment[position]);
@@ -182,7 +159,8 @@ class Rewrite {
   ) {
     const byRelation = new Map<string, CompiledRule[]>();
     for (const rule of rules) {
-      getOrCreate(byRelation, rule.head.relation.name, () => []).push(rule);
+      const name = rule.head.relation.name;
+      byRelation.set(name, [...(byRelation.get(name) ?? []), rule]);
     }
     this.byRelation = byRelation;
     this.eligible = eligible;
@@ -198,12 +176,9 @@ class Rewrite {
     const out: Literal[] = [];
     const bound = new Set<string>();
     for (const literal of planned) {
-      const { kind } = literal;
-      if (kind === "atom" && this.eligible(literal.atom.relation.name)) {
-        const { args, relation } = literal.atom;
-        // Only values and variables bound by atoms count as known. Values
-        // computed by functions could grow without end through recursion.
-        const adornment = args.map((arg) => isKnown(arg, bound));
+      if (matchesAtom(literal) && this.eligible(literal.goal.relation.name)) {
+        const { args, relation } = literal.goal;
+        const adornment = args.map((arg) => isKnown(arg, bound, isQuery));
         this.directed ||= isQuery && adornment.some(Boolean);
         this.rules.push({
           aggregates: [],
@@ -216,19 +191,13 @@ class Rewrite {
         });
         this.pending.push([relation, adornment]);
         out.push({
-          kind: "atom",
-          atom: new Atom(this.adorned(relation, adornment), args),
+          goal: new Atom(this.adorned(relation, adornment), args),
+          negated: false,
         });
       } else {
         out.push(literal);
       }
-      if (kind === "atom") {
-        for (const arg of literal.atom.args) {
-          if (arg instanceof LogicVariable) {
-            bound.add(arg.name);
-          }
-        }
-      }
+      bindVariables(literal, bound, !isQuery);
     }
     return out;
   }
@@ -269,8 +238,8 @@ class Rewrite {
     const head = this.adorned(relation, adornment);
     for (const rule of this.byRelation.get(relation.name) ?? []) {
       const guard: Literal = {
-        kind: "atom",
-        atom: new Atom(magic, pick(rule.head.args, adornment)),
+        goal: new Atom(magic, pick(rule.head.args, adornment)),
+        negated: false,
       };
       const planned = planLiterals([guard, ...rule.body]);
       if (typeof planned === "string") {
@@ -290,8 +259,8 @@ class Rewrite {
       this.rules.push({
         aggregates: [],
         body: [
-          { kind: "atom", atom: new Atom(magic, pick(vars, adornment)) },
-          { kind: "atom", atom: new Atom(relation, vars) },
+          { goal: new Atom(magic, pick(vars, adornment)), negated: false },
+          { goal: new Atom(relation, vars), negated: false },
         ],
         head: new Atom(head, vars),
         source: ["fact", [relation.name, ...vars.map(() => "?_")]],

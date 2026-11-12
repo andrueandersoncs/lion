@@ -305,26 +305,6 @@ describe("aggregate checks", () => {
     })
   );
 
-  it.effect("reject aggregates outside rule heads", () =>
-    Effect.gen(function* () {
-      const message = yield* logicError(
-        program(["query", ["order", ["aggregate/count", "?id"], "?_", "?_"]])
-      );
-      expect(message).toContain("can only be arguments of a rule head");
-      const nested = yield* logicError(
-        program(
-          ["relation", "total", ["n"]],
-          [
-            "rule",
-            ["total", ["number/add", ["aggregate/sum", "?a"], 1]],
-            ["order", "?_", "?_", "?a"],
-          ]
-        )
-      );
-      expect(nested).toContain("can only be arguments of a rule head");
-    })
-  );
-
   it.effect("require every rule for a relation to aggregate the same way", () =>
     Effect.gen(function* () {
       const message = yield* logicError(

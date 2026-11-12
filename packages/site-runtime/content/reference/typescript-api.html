@@ -35,7 +35,7 @@
 <dl class="entries">
   <dt data-entry="saveDatabase"><code>saveDatabase(database, options?)</code></dt>
   <dd>
-    <p>Returns an <code>Effect</code> of the database as a snapshot program. Fails with <code>LogicError</code> if a rule or invariant holds a value that is not JSON.</p>
+    <p>Returns an <code>Effect</code> of the database as a snapshot program. Fails with <code>LogicError</code> if a rule or invariant holds a value with no written form: a lambda that calls itself, or a function the environment does not name.</p>
     <p><code>options.isBound(name)</code>: names bound where the snapshot will be loaded; strings equal to them are quoted.</p>
   </dd>
   <dt data-entry="loadDatabase"><code>loadDatabase(program, environment)</code></dt>
@@ -48,17 +48,19 @@
   <dd>
     <p>Returns a function to bind under <code>name</code>. Called in Lion with its inputs and one term per column, it builds a goal over the rows <code>run</code> computes.</p>
     <ul>
-      <li><code>inputs</code>: a list of <code>{ kind: "relation" | "value", name }</code>. A relation input is given as a relation's name or value; a value input as JSON data.</li>
+      <li><code>inputs</code>: a list of <code>{ kind: "relation" | "value", name }</code>. A relation input is given as a relation's name or value; a value input as JSON data, or as a logic variable that another goal binds.</li>
       <li><code>columns</code>: the output column names.</li>
-      <li><code>run(inputs)</code>: receives each relation input as its list of tuples and each value input as itself. Returns a list of rows, each with one value per column, or a string that explains why it cannot.</li>
+      <li><code>run(inputs)</code>: receives each relation input as its list of tuples and each value input as itself. Returns a list of rows, each with one value per column, or a string that explains why it cannot. It runs once for each combination of input values a goal asks about.</li>
     </ul>
   </dd>
 </dl>
 
 <h2 id="api-terms"><code>@lionlang/core/logic/terms</code></h2>
 <dl class="entries">
-  <dt data-entry="markPure"><code>markPure(record)</code></dt>
-  <dd><p>Marks every function in <code>record</code> as pure and returns the record. A pure function called with a logic variable waits until it is bound, so it can serve as a filter or computed value in rules. Only mark functions that always return the same result for the same arguments.</p></dd>
+  <dt data-entry="logicFunction"><code>logicFunction(fn)</code></dt>
+  <dd><p>Marks a function that takes logic variables as they are, and returns it. Every other function <a href="#logic-waiting">waits</a> when it is called with a logic variable, so mark a function only when it builds a goal from the variables it is given, as a relation does.</p></dd>
+  <dt data-entry="Unification"><code>new Unification(left, right)</code></dt>
+  <dd><p>The goal <code>["=", left, right]</code> makes, for a logic function to return. The other goals, <code>Atom</code>, <code>Negation</code>, <code>Conjunction</code>, <code>Disjunction</code>, and <code>Membership</code>, are classes of the same module.</p></dd>
   <dt data-entry="render"><code>render(value)</code></dt>
   <dd><p>Converts logic values, such as goals and variables, back into the Lion JSON that produces them.</p></dd>
   <dt data-entry="compareValues"><code>compareValues(a, b)</code></dt>

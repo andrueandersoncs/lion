@@ -3,6 +3,7 @@
 
 <h2>Passing the question down</h2>
 <p>When a query gives a rule-defined relation a known argument, as <code>"a"</code> in <code>["path", "a", "?to"]</code>, Lion rewrites the rules before evaluating them, using a technique called magic sets. Each relation gets a copy specialized to which of its arguments are known, and extra rules pass those known values down through the rule bodies. Evaluation then only derives facts the query can reach. A query along a 3,000-node chain that would derive about 4.5 million paths in full returns its three answers in milliseconds.</p>
+<p>An argument is known when it is a value, a variable the query has already bound with a relation, <code>=</code>, or <code>in</code>, or a value computed from such variables, as in <code>["path", ["number/add", "?s", 1], "?to"]</code>. Inside a rule, only values and variables bound from facts count, so the rewritten rules never ask about values without end.</p>
 <p>The rewrite changes how much is computed, never what the answers are. Lion still evaluates bottom-up; it just starts from the question's own values.</p>
 
 <h2>Why the shape of a rule matters</h2>

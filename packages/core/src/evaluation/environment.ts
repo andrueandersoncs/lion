@@ -1,4 +1,5 @@
 import { Effect, Option, pipe, Record, Ref } from "effect";
+import { isWaiting, lambdaInfo } from "@/logic/terms";
 import type {
   Environment,
   InnerEnvironment,
@@ -8,6 +9,28 @@ import type {
 const isInnerEnvironment = (
   environment: Environment
 ): environment is InnerEnvironment => "parent" in environment;
+
+/** Scopes that have bound a value that can produce a logic term. */
+const SYMBOLIC = new WeakSet<Environment>();
+
+const closesOverLogic = (environment: Environment): boolean =>
+  SYMBOLIC.has(environment) ||
+  (isInnerEnvironment(environment) && closesOverLogic(environment.parent));
+
+/**
+ * True for a value that can produce a logic term: a logic term itself, or a
+ * lambda that names a logic variable or closes over a scope that holds one.
+ */
+export const isSymbolic = (value: unknown): boolean => {
+  const info = lambdaInfo(value);
+  if (info === undefined) {
+    return isWaiting(value);
+  }
+  return (
+    info.symbolic ||
+    (info.environment !== undefined && closesOverLogic(info.environment))
+  );
+};
 
 export function makeEnvironment(
   bindings: Record<string, unknown>
@@ -23,11 +46,16 @@ export function makeEnvironment(
   parent?: Environment
 ) {
   return Ref.make(bindings).pipe(
-    Effect.map((bindingsRef) =>
-      typeof parent === "undefined"
-        ? ({ bindingsRef } as ToplevelEnvironment)
-        : ({ bindingsRef, parent } as InnerEnvironment)
-    )
+    Effect.map((bindingsRef) => {
+      const environment: Environment =
+        typeof parent === "undefined"
+          ? { bindingsRef }
+          : { bindingsRef, parent };
+      if (Object.values(bindings).some(isSymbolic)) {
+        SYMBOLIC.add(environment);
+      }
+      return environment;
+    })
   );
 }
 
@@ -64,10 +92,17 @@ export const setGlobalBinding = (
   name: string,
   value: unknown
 ): Effect.Effect<Environment> => {
-  const update = isInnerEnvironment(environment)
-    ? setGlobalBinding(environment.parent, name, value)
-    : Ref.update(environment.bindingsRef, Record.set(name, value));
-  return update.pipe(Effect.as(environment));
+  if (isInnerEnvironment(environment)) {
+    return setGlobalBinding(environment.parent, name, value).pipe(
+      Effect.as(environment)
+    );
+  }
+  if (isSymbolic(value)) {
+    SYMBOLIC.add(environment);
+  }
+  return Ref.update(environment.bindingsRef, Record.set(name, value)).pipe(
+    Effect.as(environment)
+  );
 };
 
 /** Every name bound in the environment or its parents. */

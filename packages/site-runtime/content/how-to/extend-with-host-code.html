@@ -1,4 +1,4 @@
-<article id="extend-with-host-code" data-title="Add your own functions and algorithms" data-summary="Give Lion programs your own values and functions, make functions usable inside logic rules, and add graph-style algorithms.">
+<article id="extend-with-host-code" data-title="Add your own functions and algorithms" data-summary="Give Lion programs your own values and functions, use them inside logic rules, and add graph-style algorithms.">
 <p>This guide shows how to extend the environment from TypeScript. It assumes you can already <a href="#run-from-typescript">run Lion from TypeScript</a>.</p>
 
 <h2>Add a function</h2>
@@ -32,23 +32,34 @@ const env = { ...stdlib, ...namespaceEntries("text", text) };
 // "text/upper" and "text/lower"
 </code-block>
 
-<h2>Make functions usable inside rules</h2>
-<p>In a rule or query, an ordinary function would run immediately, before its logic variables have values. Mark a module pure with <code>markPure</code>: its functions then wait until their variables are bound, so they work as filters and computed values, as <code>number/</code> and <code>string/</code> do.</p>
+<h2>Use functions inside rules</h2>
+<p>A host function needs nothing more to work in a rule or query. Like every function, it waits when it is called with a logic variable, and runs once the variable is bound, so it works as a filter or a computed value:</p>
 <code-block lang="ts">
-import { markPure } from "@lionlang/core/logic/terms";
-
-const text = markPure({
+const text = {
   upper: (s: string) => s.toUpperCase(),
   "long?": (s: string) => s.length > 8,
-});
+};
 
 const env = { ...stdlib, ...namespaceEntries("text", text) };
-// ["rule", ["shout", "?n", ["text/upper", "?n"]], ["name", "?n"]]
+// ["rule", ["shout", "?n", ["text/upper", "?n"]], ["name", "?n"], ["text/long?", "?n"]]
 </code-block>
-<p>Only mark functions pure if they always return the same result for the same arguments and have no side effects; the engine may call them any number of times, in any order.</p>
+<p>Use functions that return the same result for the same arguments and have no side effects; the engine may call them any number of times, in any order. A function used as a filter must return <code>true</code> or <code>false</code>.</p>
+
+<h2>Build goals from host code</h2>
+<p>A function that should receive logic variables as they are, to build a goal from them, is marked with <code>logicFunction</code>:</p>
+<code-block lang="ts">
+import { logicFunction, Unification } from "@lionlang/core/logic/terms";
+
+const same = logicFunction((left: unknown, right: unknown) =>
+  Effect.succeed(new Unification(left, right))
+);
+
+const env = { ...stdlib, "my/same": same };
+// ["query", ["and", ["name", "?n"], ["my/same", "?shout", ["text/upper", "?n"]]]]
+</code-block>
 
 <h2>Add an algorithm</h2>
-<p>For work that rules do badly, <code>defineAlgorithm</code> turns a function over whole relations into a goal, like those in the <code>graph</code> module. It receives each relation input as its tuples and each value input as itself, and returns rows, or a string that explains why it cannot:</p>
+<p>For work that rules do badly, <code>defineAlgorithm</code> turns a function over whole relations into a goal, like those in the <code>graph</code> module. It receives each relation input as its tuples and each value input as itself, and returns rows, or a string that explains why it cannot. A value input can be a variable that another goal binds; the function then runs once for each value:</p>
 <code-block lang="ts">
 import { defineAlgorithm } from "@lionlang/core/logic/algorithms";
 
@@ -72,7 +83,7 @@ const env = { ...stdlib, "my/outDegree": outDegree };
 
 <h2>Related</h2>
 <ul>
-  <li><a href="#typescript-api">TypeScript API</a> describes <code>markPure</code>, <code>namespaceEntries</code>, and <code>defineAlgorithm</code>.</li>
-  <li><a href="#logic-programming">How Lion answers logic questions</a> explains deferred calls.</li>
+  <li><a href="#typescript-api">TypeScript API</a> describes <code>logicFunction</code>, <code>namespaceEntries</code>, and <code>defineAlgorithm</code>.</li>
+  <li><a href="#logic-waiting">Waiting for values</a> says exactly what waits for a logic variable.</li>
 </ul>
 </article>
