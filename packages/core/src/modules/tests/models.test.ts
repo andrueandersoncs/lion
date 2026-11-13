@@ -176,10 +176,21 @@ describe("value/integer? and value/any?", () => {
       value: Arbitrary.flatMap(whole, (n) =>
         Arbitrary.map(
           Arbitrary.schema(
-            Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 6 }))
+            Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 7 }))
           ),
-          (pick): unknown =>
-            [n, n / 4, n + 0.5, String(n), n > 0, null, [n], { n }][pick] ?? n
+          (pick): unknown => {
+            const values: readonly unknown[] = [
+              n,
+              n / 4,
+              n + 0.5,
+              String(n),
+              n > 0,
+              null,
+              [n],
+              { n },
+            ];
+            return values[pick];
+          }
         )
       ),
     },
