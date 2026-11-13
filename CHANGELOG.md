@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2026-11-12 — @lionlang/core 0.7.0, @lionlang/cli 0.6.0
 
 Schemas say what a value must be, and one rule says what fits: whatever checks a value against a schema asks whether the value fits it. A logic variable in a schema is the value it meets, so a schema is also a pattern that takes data apart.
 
@@ -35,6 +35,7 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - An unsafe goal's message names `"schema/fits?"` among the goals that bind a variable.
 - An unknown relation option is reported with the relation's options, `"key"` and `"schema"`.
 - For hosts: `applyQueryOptions` from `@lionlang/core/logic/query-options` only sorts and pages; `checkAssertion` from `@lionlang/core/logic/database` checks a query's assertion.
+- `@lionlang/cli` 0.6.0 bundles `@lionlang/core` 0.7.0, so `lion --database` keeps a database's schemas with its data, and the graph editor reads the `schema` form.
 
 ### Fixed
 
