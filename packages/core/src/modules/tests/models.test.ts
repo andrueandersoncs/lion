@@ -122,7 +122,7 @@ describe("func/apply", () => {
 
 const NAME = /^[a-z]{1,6}$/;
 
-/** A record key: Lion rejects empty keys and __proto__. */
+/** A short record key. */
 const Name = Schema.String.check(Schema.isPattern(NAME));
 
 const name = Arbitrary.schema(Name);

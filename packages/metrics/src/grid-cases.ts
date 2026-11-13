@@ -110,6 +110,10 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   { name: "record", form: { next: ["number/add", X, 1], x: X } },
+  {
+    name: "record with the empty key",
+    form: { "": ["number/add", X, 1], x: X },
+  },
   { name: "list", form: ["array/make", X, ["number/add", X, 1]] },
   {
     name: "lambda call",

@@ -448,7 +448,8 @@ const integer = (minimum: number, maximum: number) =>
 const constant = <A>(value: A): Arbitrary.Arbitrary<A> =>
   Arbitrary.Constant(value);
 
-const KEYS = ["a", "b", "id"] as const;
+/** Record keys, the empty key among them, as JSON allows. */
+const KEYS = ["a", "b", "id", ""] as const;
 
 /**
  * Strings that are also the names of things: a function, a relation, a

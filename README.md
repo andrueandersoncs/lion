@@ -209,7 +209,7 @@ Evaluates to `3`.
 
 ### Objects
 
-Objects preserve their keys and evaluate each value.
+Objects preserve their keys and evaluate each value. A key can be any string JSON allows, the empty string among them, except `__proto__`, which is left out.
 
 ```json
 {

@@ -247,9 +247,10 @@ const compileValueIntent = (
       path = [...intent.parentPath, intent.index];
       isArrayInsertion = true;
     } else if (parent.type === "object" && intent.key !== undefined) {
+      // An empty name is a name not typed yet; Lion itself allows the key "".
       if (!intent.key || intent.key === "__proto__") {
         throw new InvalidEditError(
-          "Object keys must be non-empty and cannot be __proto__."
+          "Enter a property name other than __proto__."
         );
       }
       path = [...intent.parentPath, intent.key];

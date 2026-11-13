@@ -943,4 +943,16 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "arg instanceof LogicValue",
     tests: ["src/logic/tests/fact-data.test.ts"],
   },
+  {
+    name: "a record drops the empty key",
+    file: core("schemas/lion-expression.ts"),
+    find: "Schema.makeFilter((key) => !Arr.contains(DISALLOWED_KEYS, key))",
+    replace:
+      'Schema.makeFilter((key) => key !== "" && !Arr.contains(DISALLOWED_KEYS, key))',
+    tests: [
+      "src/evaluation/tests/special-forms/quote.test.ts",
+      "src/evaluation/tests/base-forms/record.test.ts",
+      "src/logic/tests/schemas.test.ts",
+    ],
+  },
 ];

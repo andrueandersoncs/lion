@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — @lionlang/core
+
+### Fixed
+
+- A record keeps the key `""`, as JSON does. `{"": 1, "a": 2}` used to evaluate to `{"a": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `["object/keys", ["quote", {"": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{"": "?v"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.
+
 ## 2026-11-13 — lion-research skill
 
 No package changed. `skills/lion-research` is a new agent skill that uses Lion as the working memory of a deep research run, and the README has a section on it.
