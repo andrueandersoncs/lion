@@ -28,15 +28,15 @@ export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunction
  */
 export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
   "UnboundNameError",
-  { name: Schema.String, nearest: Schema.NullOr(Schema.String) }
+  { nearest: Schema.NullOr(Schema.String), unbound: Schema.String }
 ) {
   override get message() {
-    const module = this.name.slice(0, this.name.indexOf("/") + 1);
+    const module = this.unbound.slice(0, this.unbound.indexOf("/") + 1);
     const why =
       this.nearest === null
         ? `Other names begin with "${module}", so it reads as a misspelled name.`
         : `Did you mean "${this.nearest}"?`;
-    return `Nothing is bound to "${this.name}". ${why} To mean the string itself, write ["quote", "${this.name}"].`;
+    return `Nothing is bound to "${this.unbound}". ${why} To mean the string itself, write ["quote", "${this.unbound}"].`;
   }
 }
 

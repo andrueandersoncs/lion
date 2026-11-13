@@ -12,6 +12,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
+import { readsOnlyArguments } from "@/logic/terms";
 import { stdlib } from "@/modules";
 import { attempt, element, oneOf } from "./programs";
 
@@ -180,6 +181,13 @@ const CASES: readonly Case[] = [
     goal: ["and", ["p", "?x"], ["not", ["hosted", "?x"]]],
     answered: (world) => some(world.p, (x) => !rowsOfQ(world).has(x)),
   },
+  // A function from the host that reads nothing but its arguments, and
+  // says so: the invariant is then asked only about what a change can break.
+  {
+    goal: ["and", ["p", "?x"], ["host/odd?", "?x"], ["not", ["q", "?x"]]],
+    answered: (world) =>
+      some(world.p, (x) => x % 2 === 1 && !rowsOfQ(world).has(x)),
+  },
   // A filter that divides by zero on a row that links to itself, and is
   // false on every other row.
   {
@@ -298,8 +306,13 @@ const change = (
  * The standard library, and a function that asks the database which members
  * `q` holds without being handed the relation.
  */
+const odd = (x: unknown) => typeof x === "number" && x % 2 === 1;
+
+readsOnlyArguments({ odd });
+
 const environment = (database: LogicDatabase) => ({
   ...stdlib,
+  "host/odd?": odd,
   "host/in-q?": (x: unknown) =>
     Effect.map(
       run(["find", "?v", ["q", "?v"]], stdlib, { database }),

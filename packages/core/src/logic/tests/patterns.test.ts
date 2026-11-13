@@ -548,6 +548,38 @@ describe("a relation call", () => {
   );
 
   it.effect.prop(
+    "in a rule gives the same rows after a snapshot",
+    { given: matched(pattern(2)) },
+    ({ given: { pattern: schema, values } }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        resultOf(
+          yield* evaluate(
+            [
+              ...setup(values),
+              ["relation", "hit", ["n"]],
+              ["rule", ["hit", "?n"], ["tagged", "?n", lion(schema)]],
+              true,
+            ],
+            database
+          )
+        );
+        const ask = ["find", "?n", ["hit", "?n"]];
+        const rows = resultOf(yield* attempt(ask, database));
+        expect(rows).toEqual(
+          values.flatMap((value, n) =>
+            bindings(schema, value).length > 0 ? [n] : []
+          )
+        );
+        const saved = yield* saveDatabase(database);
+        const loaded = yield* loadDatabase(saved, stdlib);
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+        expect(resultOf(yield* attempt(ask, loaded))).toEqual(rows);
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
     "is explained by the row it matched",
     { given: matched(pattern(2)) },
     ({ given: { pattern: schema, values } }) =>
@@ -815,6 +847,55 @@ describe("a predicate made from a variable", () => {
             )
           )
         );
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "held by a rule, is saved and loaded with it",
+    {
+      limits: Arbitrary.array(number, { minLength: 1, maxLength: 3 }),
+      values: Arbitrary.array(number, { minLength: 1, maxLength: 4 }),
+      how: element(Object.keys(ABOVE)),
+      where: element(Object.keys(FITS)),
+    },
+    ({ limits, values, how, where }) =>
+      Effect.gen(function* () {
+        const fits = (FITS[where] as (above: Form) => readonly Form[])(
+          ABOVE[how]
+        );
+        const database = new LogicDatabase();
+        resultOf(
+          yield* evaluate(
+            [
+              ["relation", "item", ["v"]],
+              ["relation", "kept", ["v"]],
+              ["relation", "limit", ["n"]],
+              ["relation", "twice", ["v", "again"]],
+              ["relation", "over", ["n", "v"]],
+              ["fact", ...values.map((value) => ["item", value])],
+              ["fact", ...values.map((value) => ["twice", value, value])],
+              ["fact", ...limits.map((n) => ["limit", n])],
+              ["rule", ["kept", "?v"], ["item", "?v"]],
+              ["rule", ["over", "?n", "?v"], ...fits, ["limit", "?n"]],
+              true,
+            ],
+            database
+          )
+        );
+        const ask = ["find", ["array/make", "?n", "?v"], ["over", "?n", "?v"]];
+        const rows = resultOf(yield* attempt(ask, database));
+        expect(keysOf(rows)).toEqual(
+          sorted(
+            [...new Set(limits)].flatMap((n) =>
+              values.filter((value) => n < value).map((v) => keyOf([n, v]))
+            )
+          )
+        );
+        const saved = yield* saveDatabase(database);
+        const loaded = yield* loadDatabase(saved, stdlib);
+        expect(yield* saveDatabase(loaded)).toEqual(saved);
+        expect(resultOf(yield* attempt(ask, loaded))).toEqual(rows);
       }),
     OPTIONS
   );

@@ -116,8 +116,10 @@ const edits = (a: string, b: string): number => {
 interface Failure {
   readonly _tag?: string;
   readonly message?: string;
+  /** What kind of error it is, as every Error says. */
   readonly name?: string;
   readonly nearest?: string | null;
+  readonly unbound?: string;
 }
 
 /** The error a program fails with, or undefined when it does not fail. */
@@ -187,10 +189,13 @@ describe("a string of the form module/name", () => {
         const error = yield* failure(name, stdlib);
         if (readsAsName(name)) {
           const nearest = nearestTo(name);
+          // The error says what kind it is where every Error does, so code
+          // that shows `name: message` shows the kind, and not the string.
           expect(error).toMatchObject({
             _tag: "UnboundNameError",
-            name,
+            name: "UnboundNameError",
             nearest,
+            unbound: name,
           });
           expect(error?.message).toContain(
             nearest === null
@@ -233,7 +238,10 @@ describe("a string of the form module/name", () => {
     ({ name }) =>
       Effect.gen(function* () {
         const error = yield* failure(name, stdlib);
-        expect(error).toMatchObject({ _tag: "UnboundNameError", name });
+        expect(error).toMatchObject({
+          _tag: "UnboundNameError",
+          unbound: name,
+        });
         const nearest = error?.nearest ?? "";
         expect(Object.hasOwn(stdlib, nearest)).toBe(true);
         expect(edits(name, nearest)).toBeLessThanOrEqual(2);

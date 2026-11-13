@@ -60,7 +60,7 @@ export const nameOrString = (environment: Environment, name: string) =>
         }
       }
       return inModule || nearest !== null
-        ? Effect.fail(new UnboundNameError({ name, nearest }))
+        ? Effect.fail(new UnboundNameError({ nearest, unbound: name }))
         : Effect.succeed(name);
     }
   );

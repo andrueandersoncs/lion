@@ -957,6 +957,328 @@ describe("schemas in a database", () => {
   );
 });
 
+describe("a schema in a rule", () => {
+  it.effect.prop(
+    "schema/assert gives each value when all fit, and fails the find when one does not",
+    { given: checkedMany(1), goalDirected: element(MODES) },
+    ({ given: { shape: schema, values }, goalDirected }) =>
+      Effect.gen(function* () {
+        const outcome = yield* evaluate(
+          [
+            ["relation", "item", ["v"]],
+            ["fact", ...values.map((value) => ["item", quote(value)])],
+            ["find", ["schema/assert", "?v", lion(schema)], ["item", "?v"]],
+          ],
+          new LogicDatabase({ goalDirected })
+        );
+        if (values.every((value) => fits(schema, value))) {
+          expect(keysOf(resultOf(outcome) as unknown[])).toEqual(
+            keysOf(values)
+          );
+        } else {
+          expect(outcome).toMatchObject({
+            ok: false,
+            message: expect.stringContaining("does not fit"),
+          });
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "is a check that why shows, after the row the rule matched",
+    { given: checkedMany(1) },
+    ({ given: { shape: schema, values } }) =>
+      Effect.gen(function* () {
+        const explained = resultOf(
+          yield* evaluate([
+            ["schema", "Wanted", lion(schema)],
+            ["relation", "item", ["v"]],
+            ["relation", "wanted", ["v"]],
+            ["fact", ...values.map((value) => ["item", quote(value)])],
+            ["rule", ["wanted", "?v"], ["item", "?v"], ["Wanted", "?v"]],
+            [
+              "array/make",
+              ...values.map((value) => ["why", ["wanted", quote(value)]]),
+            ],
+          ])
+        ) as ({ because: { check?: unknown[]; fact?: unknown }[] } | null)[];
+        for (const [at, value] of values.entries()) {
+          const reason = explained[at];
+          if (!fits(schema, value)) {
+            expect(reason).toBeNull();
+            continue;
+          }
+          const [row, check] = reason?.because ?? [];
+          expect(keyOf(row)).toBe(
+            keyOf({ fact: ["item", value], given: true })
+          );
+          expect(check?.check?.[0]).toBe("Wanted");
+        }
+      }),
+    OPTIONS
+  );
+});
+
+describe("the schema of a relation's rows names its columns", () => {
+  it.effect.prop(
+    "all of them, or some of them when the schema is open",
+    { given: checkedMany(1) },
+    ({ given: { shape: schema, values } }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        resultOf(
+          yield* evaluate(
+            [
+              ["schema", "Body", { body: lion(schema) }],
+              ["schema", "OpenBody", ["schema/open", { body: lion(schema) }]],
+              ["relation", "strict", ["id", "body"], { schema: "Body" }],
+              ["relation", "loose", ["id", "body"], { schema: "OpenBody" }],
+            ],
+            database
+          )
+        );
+        for (const [id, value] of values.entries()) {
+          // A row is a record of every column, so `id` is a key too many.
+          expect(
+            yield* attempt(["fact", ["strict", id, quote(value)]], database)
+          ).toMatchObject({
+            ok: false,
+            message: expect.stringContaining('does not fit "Body"'),
+          });
+          const problems = resultOf(
+            yield* attempt(
+              ["schema/problems", { id, body: quote(value) }, "Body"],
+              database
+            )
+          ) as unknown[];
+          expect(problems.map(keyOf)).toContain(
+            keyOf({ path: ["id"], found: id })
+          );
+          const kept = yield* attempt(
+            ["fact", ["loose", id, quote(value)]],
+            database
+          );
+          expect(kept.ok).toBe(fits(schema, value));
+        }
+        const rows = resultOf(
+          yield* attempt(
+            {
+              loose: ["find", "?body", ["loose", "?_", "?body"]],
+              strict: ["find", "?body", ["strict", "?_", "?body"]],
+            },
+            database
+          )
+        ) as { loose: unknown[]; strict: unknown[] };
+        expect(rows.strict).toEqual([]);
+        expect(keysOf(rows.loose)).toEqual(
+          keysOf(values.filter((value) => fits(schema, value)))
+        );
+      }),
+    OPTIONS
+  );
+});
+
+describe("a schema used or declared wrongly", () => {
+  const ARGUMENT = { a: 1 };
+
+  /** What can be called, how many arguments it takes, and what it says. */
+  const CALLS: Record<
+    string,
+    { call: (args: readonly Form[]) => Form; says: string; takes: number }
+  > = {
+    "a named schema": {
+      call: (args) => ["Tree", ...args],
+      says: 'Schema "Tree" takes 1 argument, the value to check',
+      takes: 1,
+    },
+    "a built schema": {
+      call: (args) => [["schema/arrayOf", "value/number?"], ...args],
+      says: "takes 1 argument, the value to check",
+      takes: 1,
+    },
+    ...Object.fromEntries(
+      ["arrayOf", "recordOf", "optional", "open"].map((name) => [
+        `schema/${name}`,
+        {
+          call: (args: readonly Form[]) => [`schema/${name}`, ...args],
+          says: `schema/${name} takes 1 argument, a schema`,
+          takes: 1,
+        },
+      ])
+    ),
+    ...Object.fromEntries(
+      ["fits?", "problems", "assert"].map((name) => [
+        `schema/${name}`,
+        {
+          call: (args: readonly Form[]) => [`schema/${name}`, ...args],
+          says: `schema/${name} takes 2 arguments, a value and a schema`,
+          takes: 2,
+        },
+      ])
+    ),
+  };
+
+  it.effect.prop(
+    "a call with the wrong number of arguments fails, and says how many it takes",
+    { what: element(Object.keys(CALLS)), count: element([0, 1, 2, 3, 4]) },
+    ({ what, count }) =>
+      Effect.gen(function* () {
+        const { call, says, takes } = CALLS[what] as (typeof CALLS)[string];
+        const args = Array.from({ length: count }, () => ARGUMENT);
+        const outcome = yield* evaluate([call(args), true]);
+        if (count === takes) {
+          expect(outcome).toEqual({ ok: true, value: true });
+          return;
+        }
+        expect(outcome).toMatchObject({
+          ok: false,
+          message: expect.stringContaining(says),
+        });
+        expect(outcome).toMatchObject({
+          message: expect.stringContaining(`but got ${count}.`),
+        });
+      }),
+    OPTIONS
+  );
+
+  /** What cannot name a schema: a special form's name, or not a string. */
+  const NOT_NAMES: readonly Form[] = [
+    "begin",
+    "quote",
+    "schema",
+    5,
+    null,
+    ["quote", "Named"],
+    { a: 1 },
+  ];
+
+  it.effect.prop(
+    "the schema form refuses what is not a name, and a name with no shape, and declares nothing",
+    {
+      schema: shape(1),
+      notName: element(NOT_NAMES),
+      how: element(["first", "second", "no shape"] as const),
+    },
+    ({ schema, notName, how }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        resultOf(yield* evaluate([true], database));
+        const saved = yield* saveDatabase(database);
+        const written = lion(schema);
+        const form = {
+          first: ["schema", notName, written, "Good", written],
+          second: ["schema", "Good", written, notName, written],
+          "no shape": ["schema", "Good", written, "Other"],
+        }[how];
+        const outcome = yield* evaluate([form], database);
+        expect(outcome.ok).toBe(false);
+        if (!outcome.ok && how === "second") {
+          expect(outcome.message).toContain(
+            "A schema's name must be a string that is not the name of a special form"
+          );
+        }
+        if (!outcome.ok && how === "no shape") {
+          expect(outcome.message).toContain('"Other" has no shape');
+        }
+        // Nothing was declared: not even the schema that came before.
+        expect(yield* saveDatabase(database)).toEqual(saved);
+        resultOf(
+          yield* evaluate([["schema", "Good", ["quote", "x"]]], database)
+        );
+      }),
+    OPTIONS
+  );
+
+  /** Options that do not name a declared schema, and what each is told. */
+  const NOT_SCHEMAS: Record<string, { options: Form; says: string }> = {
+    "a name nothing is declared under": {
+      options: { schema: "Missing" },
+      says: 'names the schema "Missing" for its rows, but no schema is declared under that name',
+    },
+    "the name of a relation": {
+      options: { schema: "even" },
+      says: 'names the schema "even" for its rows, but no schema is declared under that name',
+    },
+    "a shape written in place": {
+      options: { schema: { id: "value/integer?" } },
+      says: 'The schema of "rows" must be the name of a declared schema, but found',
+    },
+    "a number": {
+      options: { schema: 5 },
+      says: 'The schema of "rows" must be the name of a declared schema, but found 5',
+    },
+    "an option that is not one": {
+      options: { shape: "Tree" },
+      says: 'Unknown relation option "shape". Relation options are "key", "schema".',
+    },
+  };
+
+  it.effect.prop(
+    "the relation option schema takes the name of a declared schema, and nothing else",
+    {
+      what: element(Object.keys(NOT_SCHEMAS)),
+      columns: element([["id"], ["id", "body"], ["id", "body", "note"]]),
+    },
+    ({ what, columns }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        resultOf(yield* evaluate([true], database));
+        const saved = yield* saveDatabase(database);
+        const { options, says } = NOT_SCHEMAS[
+          what
+        ] as (typeof NOT_SCHEMAS)[string];
+        expect(
+          yield* evaluate([["relation", "rows", columns, options]], database)
+        ).toMatchObject({ ok: false, message: expect.stringContaining(says) });
+        // The relation was not declared, so it can be, another way.
+        expect(yield* saveDatabase(database)).toEqual(saved);
+        resultOf(
+          yield* evaluate(
+            [["relation", "rows", [...columns, "more"], { schema: "Tree" }]],
+            database
+          )
+        );
+      }),
+    OPTIONS
+  );
+
+  /** Shapes that are not known yet: each waits for a logic variable. */
+  const WAITING: readonly Form[] = [
+    "?x",
+    { a: "?x" },
+    ["array/make", 1, "?x"],
+    ["schema/arrayOf", "?x"],
+    ["schema/anyOf", 1, { a: "?y" }],
+    ["number/add", "?x", 1],
+  ];
+
+  it.effect.prop(
+    "a shape that waits for a logic variable is refused, and nothing is declared",
+    { waiting: element(WAITING), schema: shape(1), second: element(MODES) },
+    ({ waiting, schema, second }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        resultOf(yield* evaluate([true], database));
+        const saved = yield* saveDatabase(database);
+        const form = second
+          ? ["schema", "Good", lion(schema), "Waits", waiting]
+          : ["schema", "Waits", waiting];
+        expect(yield* evaluate([form], database)).toMatchObject({
+          ok: false,
+          message: expect.stringContaining(
+            'The shape of schema "Waits" must be known when it is declared'
+          ),
+        });
+        expect(yield* saveDatabase(database)).toEqual(saved);
+        resultOf(
+          yield* evaluate([["schema", "Waits", lion(schema)]], database)
+        );
+      }),
+    OPTIONS
+  );
+});
+
 describe("match", () => {
   const branch = Arbitrary.schema(
     Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 }))

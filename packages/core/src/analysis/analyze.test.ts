@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
+import { Arbitrary, Schema } from "effect";
 import { analyze, flattenAnalysis } from "@/analysis/analyze";
 
 const childRoles = (value: Parameters<typeof analyze>[0]) =>
@@ -62,4 +63,57 @@ describe("analyze", () => {
     expect(analyze({}).kind).toBe("record");
     expect(analyze(null).kind).toBe("primitive");
   });
+});
+
+describe("analyze: a schema form", () => {
+  const index = (count: number) =>
+    Arbitrary.schema(
+      Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: count - 1 }))
+    );
+
+  const NAMES = ["Order", "Line", "Expr", "Sum"];
+
+  const SHAPES: readonly unknown[] = [
+    "value/number?",
+    { id: "value/integer?", lines: ["schema/arrayOf", "Line"] },
+    ["schema/anyOf", "Order", 1],
+    ["quote", "open"],
+  ];
+
+  /** One to four schemas, each a name and a shape. */
+  const declared = Arbitrary.array(index(SHAPES.length), {
+    minLength: 1,
+    maxLength: NAMES.length,
+  });
+
+  it.prop(
+    "names a schema at every second place, and reads each shape as an expression",
+    { picks: declared },
+    ({ picks }) => {
+      const pairs = picks.map((pick, at) => [NAMES[at], SHAPES[pick]]);
+      const node = analyze(["schema", ...pairs.flat()] as never);
+      expect(node.specialForm).toBe("schema");
+      expect(node.children.map(({ role }) => role)).toEqual([
+        "operator",
+        ...pairs.flatMap(() => ["binding", "shape"]),
+      ]);
+      // Every name is a definition, in the order written.
+      expect(node.relationships).toEqual(
+        pairs.map(([name]) => ({ kind: "definition", name }))
+      );
+      // A shape is read like any expression: the same node, one place in.
+      for (const [at, [, shape]] of pairs.entries()) {
+        const child = node.children[2 * at + 2]?.node;
+        expect(child?.kind).toBe(analyze(shape as never).kind);
+        expect(child?.pointer).toBe(`/${2 * at + 2}`);
+      }
+      // Inside quote the form is data, and defines nothing.
+      const quoted = analyze(["quote", ["schema", ...pairs.flat()]] as never);
+      expect(
+        flattenAnalysis(quoted).flatMap(({ relationships }) =>
+          relationships.filter(({ kind }) => kind === "definition")
+        )
+      ).toEqual([]);
+    }
+  );
 });

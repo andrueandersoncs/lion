@@ -164,6 +164,42 @@ const record = Arbitrary.schema(Schema.Record(Name, Schema.Int));
 const property = (data: Record<string, unknown>, key: string) =>
   (data as Record<string, unknown>)[key] ?? null;
 
+describe("value/integer? and value/any?", () => {
+  const whole = Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: -1000, maximum: 1000 }))
+  );
+
+  it.effect.prop(
+    "say what Number.isInteger says, and true",
+    {
+      // Whole numbers, fractions, and values that are not numbers at all.
+      value: Arbitrary.flatMap(whole, (n) =>
+        Arbitrary.map(
+          Arbitrary.schema(
+            Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 6 }))
+          ),
+          (pick): unknown =>
+            [n, n / 4, n + 0.5, String(n), n > 0, null, [n], { n }][pick] ?? n
+        )
+      ),
+    },
+    ({ value }) =>
+      Effect.gen(function* () {
+        expect(yield* evaluate(["value/integer?", quote(value)])).toBe(
+          Number.isInteger(value)
+        );
+        expect(yield* evaluate(["value/any?", quote(value)])).toBe(true);
+        // As schemas, they fit the same values.
+        expect(
+          yield* evaluate(["schema/fits?", quote(value), "value/integer?"])
+        ).toBe(Number.isInteger(value));
+        expect(
+          yield* evaluate(["schema/fits?", quote(value), "value/any?"])
+        ).toBe(true);
+      })
+  );
+});
+
 describe("object/get", () => {
   it.effect.prop(
     "returns the value under a key, or null when there is none",
