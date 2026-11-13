@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased — @lionlang/core
+## 2026-11-13 — @lionlang/core 0.9.0, @lionlang/cli 0.8.0
+
+Text from lists and numbers, and a record that keeps its empty key. The research skill writes its page's words with the new functions, so it needs this release.
 
 ### Added
 

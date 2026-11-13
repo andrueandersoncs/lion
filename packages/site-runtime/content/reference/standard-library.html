@@ -19,7 +19,7 @@
     <tr data-entry="number/floor"><td><code>["number/floor", a]</code></td><td>The largest whole number that is at most <code>a</code></td></tr>
     <tr data-entry="number/ceiling"><td><code>["number/ceiling", a]</code></td><td>The smallest whole number that is at least <code>a</code></td></tr>
     <tr data-entry="number/round"><td><code>["number/round", a]</code></td><td>The nearest whole number; a half rounds up</td></tr>
-    <tr data-entry="number/toString"><td><code>["number/toString", a]</code></td><td><code>a</code> as text, the way JSON writes it</td></tr>
+    <tr data-entry="number/toString"><td><code>["number/toString", a]</code><br><code>["number/toString", a, separator]</code></td><td><code>a</code> as text, the way JSON writes it. With a separator, a string, the whole part is written in groups of three digits with it between them: <code>"1,234,567.5"</code></td></tr>
     <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
     <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
@@ -42,6 +42,7 @@
  "ceiling": ["number/ceiling", 2.1],
  "round": ["number/round", 2.5],
  "toString": ["string/concat", "order ", ["number/toString", 42]],
+ "grouped": ["number/toString", 1234567.5, ","],
  "equals?": ["number/equals?", 7, 7],
  "lessThan": ["number/lessThan", 7, 3],
  "greaterThan": ["number/greaterThan", 7, 3],
@@ -87,6 +88,10 @@
     <tr data-entry="string/endsWith"><td><code>["string/endsWith", text, suffix]</code></td><td>Whether <code>text</code> ends with <code>suffix</code></td></tr>
     <tr data-entry="string/includes"><td><code>["string/includes", text, search]</code></td><td>Whether <code>text</code> contains <code>search</code></td></tr>
     <tr data-entry="string/indexOf"><td><code>["string/indexOf", text, search]</code></td><td>The position of the first <code>search</code> in <code>text</code>, or <code>-1</code></td></tr>
+    <tr data-entry="string/join"><td><code>["string/join", list, separator]</code><br><code>["string/join", list, separator, last]</code></td><td>The strings of <code>list</code> with <code>separator</code> between them. With <code>last</code>, that string stands before the last item in place of the separator: <code>"a, b and c"</code>. Every item must be a string</td></tr>
+    <tr data-entry="string/split"><td><code>["string/split", text, separator]</code></td><td>The parts of <code>text</code> between each <code>separator</code>; joining them with the same separator gives <code>text</code> back</td></tr>
+    <tr data-entry="string/padStart"><td><code>["string/padStart", text, length, fill]</code></td><td><code>text</code> made <code>length</code> long with copies of <code>fill</code> before it; unchanged when it is already that long</td></tr>
+    <tr data-entry="string/padEnd"><td><code>["string/padEnd", text, length, fill]</code></td><td>The same, with the copies after it</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
   </tbody>
 </table>
@@ -98,6 +103,11 @@
  "includes": ["string/includes", "lion", "io"],
  "indexOf": ["string/indexOf", "lion", "o"],
  "missing": ["string/indexOf", "lion", "z"],
+ "join": ["string/join", ["array/make", "a", "b", "c"], ", "],
+ "listed": ["string/join", ["array/make", "a", "b", "c"], ", ", " and "],
+ "split": ["string/split", "2026-11-13", "-"],
+ "padStart": ["string/padStart", "7", 2, "0"],
+ "padEnd": ["string/padEnd", "7", 3, "."],
  "equals?": ["string/equals?", "lion", "lion"]}
 </lion-example>
 
