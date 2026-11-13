@@ -55,6 +55,9 @@
 </lion-example>
 <p>Separate forms in a <code>begin</code> are separate changes, each checked on its own.</p>
 
+<h2>Check the shape of each row</h2>
+<p>A condition on a single row, such as "the status is one of these", is a schema. The relation option <code>"schema"</code> keeps it as an invariant for you; see <a href="#check-data">Check the shape of data</a>. Checking a write costs what its new rows cost: an invariant is asked again only after a change to a relation it reads, and one that says no row of a relation fails a test is asked about the new rows alone.</p>
+
 <h2>Keep invariants across runs</h2>
 <p>Invariants live in the database, so they persist wherever it does: in a shared <code>LogicDatabase</code> from TypeScript, and in a <code>--database</code> file on the command line. Snapshots save them, and running a setup again adds no second copy.</p>
 

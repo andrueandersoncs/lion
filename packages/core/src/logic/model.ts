@@ -23,6 +23,7 @@ import {
   planLiterals,
   questionPlans,
 } from "@/logic/compile";
+import { matching } from "@/logic/fit";
 import { originalName } from "@/logic/magic";
 import { mentioned, reads, type Stratum, strataOf } from "@/logic/strata";
 import {
@@ -32,6 +33,7 @@ import {
   type Goal,
   instantiate,
   invoke,
+  isData,
   isForm,
   isGroundValue,
   isQuestion,
@@ -40,6 +42,7 @@ import {
   LogicForm,
   LogicValue,
   LogicVariable,
+  patternParts,
   type RelationInfo,
   sameValue,
   show,
@@ -285,9 +288,50 @@ export const term = (
 };
 
 /**
+ * True when a term still has a variable to bind for an answer: a variable
+ * with no value, or a pattern that holds one.
+ */
+const hasFree = (value: unknown, vars: Vars, asSchema = false): boolean =>
+  value instanceof LogicVariable
+    ? !vars.has(value.name)
+    : (patternParts(value, asSchema)?.some((part) =>
+        hasFree(part, vars, asSchema)
+      ) ?? false);
+
+/**
+ * The answers under which a value matches a pattern: each is the answer
+ * with the variables the match bound. `equal` asks for the same value, as
+ * "=" does, and otherwise the pattern is a schema.
+ */
+const match = (
+  model: Model,
+  pattern: unknown,
+  value: unknown,
+  vars: Vars,
+  equal: boolean
+): LogicEffect<readonly Vars[]> => {
+  // The pattern most goals have: one variable, which takes the value.
+  if (
+    pattern instanceof LogicVariable &&
+    !(pattern.anonymous || vars.has(pattern.name))
+  ) {
+    return Effect.succeed([new Map(vars).set(pattern.name, value)]);
+  }
+  return matching(pattern, value, vars, {
+    equal,
+    term: (part, answered) =>
+      term(model, part, answered) as unknown as Effect.Effect<unknown, Error>,
+  }) as LogicEffect<readonly Vars[]>;
+};
+
+/**
  * The rows a relation call can match for an answer, and the variables each
- * row would bind. `values` holds the arguments' values when they had to be
- * computed. A string says why a computed relation has no rows to give.
+ * row would bind. An argument is a schema for its column. One that is data
+ * fits the rows equal to it, which an index finds. Any other is a pattern
+ * for the rows found to be matched against: one with a variable to bind, or
+ * one that holds a function. `values` holds the arguments' values when they
+ * had to be computed. A string says why a computed relation has no rows to
+ * give.
  */
 const candidates = (
   atom: Atom,
@@ -298,33 +342,51 @@ const candidates = (
   const positions: number[] = [];
   const known: unknown[] = [];
   const free: [number, string][] = [];
+  const patterns: [number, unknown][] = [];
+  const { computed } = atom.relation;
+  const inputs = computed?.inputs ?? 0;
   for (const [position, arg] of atom.args.entries()) {
-    if (!(arg instanceof LogicVariable)) {
-      positions.push(position);
-      known.push(values === undefined ? arg : values[position]);
-    } else if (vars.has(arg.name)) {
-      positions.push(position);
-      known.push(vars.get(arg.name));
-    } else {
+    const isVariable = arg instanceof LogicVariable;
+    if (isVariable && !vars.has(arg.name)) {
       free.push([position, arg.name]);
+      continue;
+    }
+    const computedValue = values === undefined ? arg : values[position];
+    const value = isVariable ? vars.get(arg.name) : computedValue;
+    if (isData(value)) {
+      positions.push(position);
+      known.push(value);
+    } else if (position < inputs) {
+      // An input is a value the computation is given, not a schema for one.
+      return `${computed?.callee} expects a value for "${atom.relation.columns[position]}", but found ${show(value)}.`;
+    } else {
+      patterns.push([position, value]);
     }
   }
-  const inputs = atom.relation.computed?.inputs ?? 0;
   return (
     tuples.demand?.(known.slice(0, inputs)) ?? {
       free,
+      patterns,
       tuples: tuples.lookup(positions, known),
     }
   );
 };
 
-/** The rows a relation call can match, once its arguments are computed. */
+/**
+ * The rows a relation call can match, once its arguments are computed. An
+ * argument that still has a variable to bind is a pattern, and is left for
+ * the rows to be matched against.
+ */
 const lookup = (model: Model, atom: Atom, vars: Vars, tuples: TupleSet) =>
-  Effect.flatMap(tupleOf(model, atom.args, vars), (values) => {
+  Effect.gen(function* () {
+    const values: unknown[] = [];
+    for (const arg of atom.args) {
+      values.push(
+        hasFree(arg, vars, true) ? arg : yield* term(model, arg, vars)
+      );
+    }
     const found = candidates(atom, vars, tuples, values);
-    return typeof found === "string"
-      ? logicError(found)
-      : Effect.succeed(found);
+    return typeof found === "string" ? yield* logicError(found) : found;
   });
 
 /** The answer with the variables a row binds, or undefined if they clash. */
@@ -451,6 +513,12 @@ const matchesAny = (model: Model, atom: Atom, vars: Vars) => {
   if (typeof found === "string") {
     return logicError(found);
   }
+  if (found.patterns.length > 0) {
+    return Effect.map(
+      solve(model, atom, vars),
+      (matched) => matched.length > 0
+    );
+  }
   // Each anonymous variable is separate, so it matches any value.
   const named = found.free.filter(([, name]) => !name.startsWith("_"));
   for (const tuple of found.tuples) {
@@ -487,16 +555,27 @@ export const holds = (
         ? Effect.map(solve(model, goal, vars), (found) => found.length > 0)
         : decide(model, goal as LogicForm, vars);
     case "=":
-      return Effect.zipWith(
-        term(model, first, vars),
-        term(model, second, vars),
-        sameValue
-      );
     case "in":
-      return Effect.zipWith(
-        listOf(model, second, vars),
-        term(model, first, vars),
-        (items, element) => itemKeys(items).has(valueKey(element))
+    case "schema/fits?":
+      // With a variable left to bind, the goal holds when it has an answer.
+      return Effect.flatMap(
+        bound(model, goal as LogicForm, vars),
+        (found): LogicEffect<boolean> => {
+          if (found !== undefined) {
+            return Effect.succeed(found.length > 0);
+          }
+          return (goal as LogicForm).form === "="
+            ? Effect.zipWith(
+                term(model, first, vars),
+                term(model, second, vars),
+                sameValue
+              )
+            : Effect.zipWith(
+                listOf(model, second, vars),
+                term(model, first, vars),
+                (items, element) => itemKeys(items).has(valueKey(element))
+              );
+        }
       );
     default:
       return Effect.flatMap(term(model, goal, vars), (value) =>
@@ -509,34 +588,76 @@ export const holds = (
   }
 };
 
-const isUnbound = (value: unknown, vars: Vars): value is LogicVariable =>
-  value instanceof LogicVariable && !vars.has(value.name);
-
 /**
- * The variable "=" or "in" binds for an answer that has no value for it
- * yet, with the values to give it; undefined when the goal only tests.
+ * The answers a goal that can bind gives for an answer that leaves it a
+ * variable to bind, each with what it bound; undefined when nothing is left
+ * to bind, and the goal only tests. "=" matches one side against the value
+ * of the other, "in" matches the element against each item of the list, and
+ * "schema/fits?" always answers this way: its schema says what fits.
  */
-const binds = (
+const bound = (
   model: Model,
   goal: LogicForm,
   vars: Vars
-): LogicEffect<readonly [LogicVariable, readonly unknown[]] | undefined> =>
+): LogicEffect<readonly Vars[] | undefined> =>
   Effect.gen(function* () {
     const [first, second] = goal.parts;
-    if (goal.form === "=") {
-      if (isUnbound(first, vars)) {
-        return [first, [yield* term(model, second, vars)]];
-      }
-      if (isUnbound(second, vars)) {
-        return [second, [yield* term(model, first, vars)]];
-      }
-    } else if (isUnbound(first, vars)) {
-      // A list that repeats an item binds it once.
-      const items = yield* listOf(model, second, vars);
-      const unique = new Map(items.map((item) => [valueKey(item), item]));
-      return [first, [...unique.values()]];
+    if (goal.form === "schema/fits?") {
+      const value = yield* term(model, first, vars);
+      return yield* match(model, second, value, vars, false);
     }
-    return undefined;
+    if (goal.form === "=") {
+      const [pattern, other] = hasFree(first, vars)
+        ? [first, second]
+        : [second, first];
+      return hasFree(pattern, vars)
+        ? yield* match(
+            model,
+            pattern,
+            yield* term(model, other, vars),
+            vars,
+            true
+          )
+        : undefined;
+    }
+    if (!hasFree(first, vars)) {
+      return undefined;
+    }
+    // A list that repeats an item gives it once.
+    const items = yield* listOf(model, second, vars);
+    const out: Vars[] = [];
+    for (const item of new Map(
+      items.map((each) => [valueKey(each), each])
+    ).values()) {
+      out.push(...(yield* match(model, first, item, vars, true)));
+    }
+    return out;
+  });
+
+/**
+ * The answers with what a row binds, for a relation call with patterns
+ * among its arguments: the row's values there must fit them. None when the
+ * row does not match, and more than one when a pattern fits in several ways.
+ */
+const matchRow = (
+  model: Model,
+  found: Exclude<ReturnType<typeof candidates>, string>,
+  tuple: Tuple,
+  vars: Vars
+) =>
+  Effect.gen(function* () {
+    const first = extend(vars, found.free, tuple);
+    let answers: readonly Vars[] = first === undefined ? [] : [first];
+    for (const [position, pattern] of found.patterns) {
+      const next: Vars[] = [];
+      for (const answered of answers) {
+        next.push(
+          ...(yield* match(model, pattern, tuple[position], answered, false))
+        );
+      }
+      answers = next;
+    }
+    return answers;
   });
 
 /** Extends each answer with every row a relation goal matches for it. */
@@ -556,6 +677,10 @@ const matchRows = (
         return yield* logicError(found);
       }
       for (const tuple of found.tuples) {
+        if (found.patterns.length > 0) {
+          out.push(...(yield* matchRow(model, found, tuple, vars)));
+          continue;
+        }
         const next = extend(vars, found.free, tuple);
         if (next !== undefined) {
           out.push(next);
@@ -566,22 +691,19 @@ const matchRows = (
   });
 
 /**
- * Runs a goal that is not a relation goal for each answer: "=" and "in"
- * bind a variable that has no value yet, and everything else is a test that
- * keeps the answer or drops it.
+ * Runs a goal that is not a relation goal for each answer: "=", "in", and
+ * "schema/fits?" bind the variables that have no value yet, and everything
+ * else is a test that keeps the answer or drops it.
  */
 const testEach = (model: Model, literal: Literal, answers: readonly Vars[]) =>
   Effect.gen(function* () {
     const out: Vars[] = [];
     for (const vars of answers) {
-      const bound = isForm(literal, "=", "in")
-        ? yield* binds(model, literal, vars)
+      const found = isForm(literal, "=", "in", "schema/fits?")
+        ? yield* bound(model, literal, vars)
         : undefined;
-      if (bound !== undefined) {
-        const [{ name }, values] = bound;
-        for (const value of values) {
-          out.push(new Map(vars).set(name, value));
-        }
+      if (found !== undefined) {
+        out.push(...found);
       } else if (yield* holds(model, literal, vars)) {
         out.push(vars);
       }
@@ -619,13 +741,26 @@ export const matches = (
     return answers;
   });
 
+/**
+ * Fails a goal-directed query that cannot be directed: it asked a relation
+ * about an argument that is not data, such as a schema a variable holds,
+ * and only data can be looked up. The query is then answered in full.
+ */
+export const UNDIRECTED = new LogicError({
+  message: "A goal-directed query asked about a value that is not JSON data.",
+});
+
 /** A row a rule derived, which must be JSON data. */
-const derivedRow = (rule: CompiledRule, tuple: readonly unknown[]) =>
-  tuple.every(isGroundValue)
-    ? Effect.succeed(tuple as Tuple)
+const derivedRow = (rule: CompiledRule, tuple: readonly unknown[]) => {
+  if (tuple.every(isGroundValue)) {
+    return Effect.succeed(tuple as Tuple);
+  }
+  return rule.demand
+    ? Effect.fail(UNDIRECTED)
     : logicError(
         `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
       );
+};
 
 /** Adds a derived row, remembering the first answer that gave it. */
 const recordDerived = (
@@ -692,53 +827,56 @@ const deriveHeads = (
 const hasChanges = (delta: ReadonlyMap<string, TupleSet>) =>
   [...delta.values()].some((changes) => changes.size > 0);
 
-const deltaPlans = new WeakMap<CompiledRule, Map<number, readonly Literal[]>>();
+type Body = readonly Literal[];
+
+const deltaPlans = new WeakMap<Body, Map<number, Body>>();
 
 /**
- * The rule's body reordered to start from the goal at `position`, so a round
- * starts from the few new rows instead of scanning everything else first.
+ * A body reordered to start from the goal at `position`, so a round starts
+ * from the few new rows instead of scanning everything else first.
  */
-const deltaPlan = (rule: CompiledRule, position: number) => {
-  let plans = deltaPlans.get(rule);
+const deltaPlan = (body: Body, position: number) => {
+  let plans = deltaPlans.get(body);
   if (plans === undefined) {
     plans = new Map();
-    deltaPlans.set(rule, plans);
+    deltaPlans.set(body, plans);
   }
   return getOrCreate(plans, position, () => {
-    const first = rule.body[position];
+    const first = body[position];
     if (!(first instanceof Atom && first.plain)) {
-      return rule.body;
+      return body;
     }
     const rest = compilable(() =>
       planLiterals(
-        rule.body.filter((_, at) => at !== position),
+        body.filter((_, at) => at !== position),
         first.variables
       )
     );
-    return rest === undefined ? rule.body : [first, ...rest];
+    return rest === undefined ? body : [first, ...rest];
   });
 };
 
 /**
- * Re-runs a rule once per body goal that matches rows new in the last round,
- * so every answer it returns uses at least one new row.
+ * Runs a body once per goal that matches rows that are new, in a round of
+ * rules or in a change to facts, so every answer it returns uses at least
+ * one new row.
  */
-const changedAnswers = (
+export const changedAnswers = (
   model: Model,
-  rule: CompiledRule,
+  body: Body,
   delta: ReadonlyMap<string, TupleSet>
 ) =>
   Effect.gen(function* () {
     const out: Vars[] = [];
-    for (const [position, literal] of rule.body.entries()) {
+    for (const [position, literal] of body.entries()) {
       const changes =
         literal instanceof Atom ? delta.get(literal.relation.name) : undefined;
       if (changes === undefined || changes.size === 0) {
         continue;
       }
-      const body = deltaPlan(rule, position);
-      const changedAt = body.indexOf(literal);
-      const answers = yield* matches(model, body, NO_VARS, (at) =>
+      const planned = deltaPlan(body, position);
+      const changedAt = planned.indexOf(literal);
+      const answers = yield* matches(model, planned, NO_VARS, (at) =>
         at === changedAt ? changes : undefined
       );
       for (const vars of answers) {
@@ -952,7 +1090,7 @@ const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
         );
       }
       for (const rule of rules) {
-        const answers = yield* changedAnswers(model, rule, delta);
+        const answers = yield* changedAnswers(model, rule.body, delta);
         yield* addMatches(model, groups, rule, answers);
       }
       delta = yield* settle(model, groups);
@@ -973,7 +1111,7 @@ const evaluate = (model: Model, rules: readonly CompiledRule[]) =>
     while (hasChanges(delta)) {
       const next = new Map<string, TupleSet>();
       for (const rule of rules) {
-        const answers = yield* changedAnswers(model, rule, delta);
+        const answers = yield* changedAnswers(model, rule.body, delta);
         yield* deriveHeads(model, rule, answers, next);
       }
       delta = next;
@@ -1108,6 +1246,27 @@ export const answer = (model: Model, question: unknown): LogicEffect<unknown> =>
   });
 
 /**
+ * The row a relation goal matched for an answer. The answer says what the
+ * goal's variables are, and the row is the first that fits its arguments
+ * with them: a schema among the arguments does not say which row that is.
+ */
+const matchedRow = (model: Model, atom: Atom, vars: Vars) =>
+  Effect.gen(function* () {
+    const found = yield* lookup(
+      model,
+      atom,
+      vars,
+      rowsOf(model, atom.relation.name)
+    );
+    for (const tuple of found.tuples) {
+      if ((yield* matchRow(model, found, tuple, vars)).length > 0) {
+        return tuple;
+      }
+    }
+    return yield* tupleOf(model, atom.args, vars);
+  });
+
+/**
  * What a rule's body rested on for one answer: the rows its relation goals
  * matched, each explained in turn, and the tests that held.
  */
@@ -1119,7 +1278,7 @@ const premises = (
     const out: unknown[] = [];
     for (const literal of rule.body) {
       if (literal instanceof Atom) {
-        const tuple = yield* tupleOf(model, literal.args, vars);
+        const tuple = yield* matchedRow(model, literal, vars);
         out.push(yield* explain(model, literal.relation, tuple));
       } else if (isForm(literal, "not")) {
         out.push({ absent: instantiate(literal.parts[0], vars) });

@@ -10,6 +10,7 @@ import {
   isForm,
   logicFunction,
   nameFunctions,
+  readsOnlyArguments,
   show,
 } from "@/logic/terms";
 
@@ -50,6 +51,7 @@ const aggregate = (kind: string) => {
   const name = `aggregate/${kind}`;
   // A waiting call is written under the name that builds it again.
   nameFunctions({ [name]: onList });
+  readsOnlyArguments({ onList });
   return logicFunction((values: unknown, ...extra: unknown[]) => {
     if (extra.length > 0) {
       return logicError(

@@ -1,8 +1,8 @@
 <article id="branch-on-shape" data-title="Branch on a value's shape" data-summary="Choose what to do with a value based on its type or its structure, with match and cond.">
-<p>This guide shows how to pick a branch based on what a value is. Use <code>match</code> when the choice depends on the value's type or structure, and <code>cond</code> when it depends on conditions you compute.</p>
+<p>This guide shows how to pick a branch based on what a value is. Use <code>match</code> when the choice depends on the value's type or structure, and <code>cond</code> when it depends on conditions you compute. The patterns of <code>match</code> are <a href="#check-data">schemas</a>.</p>
 
 <h2>Branch on a value's type</h2>
-<p>Give <code>match</code> the value, then pairs of a predicate and a function, then a fallback function. The first predicate that returns <code>true</code> picks its function, which receives the value:</p>
+<p>Give <code>match</code> the value, then pairs of a schema and a function, then a fallback function. A predicate is a schema: the first one that returns <code>true</code> picks its function, which receives the value:</p>
 <lion-example name="Match on type">
 ["begin",
   ["define", "describe",
@@ -16,26 +16,28 @@
 </lion-example>
 
 <h2>Branch on a record's structure</h2>
-<p>A record can be a predicate too. It matches a record that has every one of its keys, where each value passes the predicate under that key. Records nest:</p>
+<p>A record is a schema too. A record fits it when it has the same keys, with a value that fits the schema under each. A plain value fits a value equal to it, so a field can pick the branch. Records nest, and <code>schema/open</code> fits a record whatever other keys it has:</p>
 <lion-example name="Match on structure">
 ["begin",
   ["define", "route",
     ["lambda", ["message"],
       ["match", "message",
-        [{"type": ["func/partial", "string/equals?", "order"],
-          "order": {"id": "value/number?"}},
+        [{"type": "order", "order": {"id": "value/number?"}},
          ["lambda", ["m"], ["object/get-path", "m", "order.id"]]],
-        [{"type": ["func/partial", "string/equals?", "ping"]},
+        [{"type": ["schema/anyOf", "ping", "hello"]},
          ["lambda", ["m"], "pong"]],
+        [["schema/open", {"type": "note"}],
+         ["lambda", ["m"], ["object/get", "m", "text"]]],
         ["lambda", ["m"], "unknown message"]]]],
   ["array/map",
     ["quote", [
       {"type": "order", "order": {"id": 42}},
       {"type": "ping"},
+      {"type": "note", "text": "call back", "from": "ada"},
       {"type": "order", "order": {"id": "x"}}]],
     "route"]]
 </lion-example>
-<p>A predicate that fails, or returns something other than a boolean, counts as no match, so a pattern never crashes on data of the wrong type.</p>
+<p>A predicate that fails, or returns something other than <code>true</code>, counts as no match, so a pattern never crashes on data of the wrong type. A string in a pattern is a name first, as everywhere: <code>"order"</code> is the string unless something is bound to <code>order</code>, and <code>["quote", "order"]</code> is always the string.</p>
 
 <h2>Branch on computed conditions</h2>
 <p>When the choice depends on comparisons, list condition and result pairs in <code>cond</code>, with an optional <code>else</code> at the end:</p>
@@ -54,6 +56,7 @@
 <h2>Related</h2>
 <ul>
   <li><a href="#form-match"><code>match</code></a> and <a href="#form-cond"><code>cond</code></a> in the reference.</li>
-  <li><a href="#module-value">The <code>value</code> module</a> lists the type predicates.</li>
+  <li><a href="#module-value">The <code>value</code> module</a> lists the type predicates, and <a href="#module-schema">the <code>schema</code> module</a> the functions that build schemas.</li>
+  <li><a href="#check-data">Check the shape of data</a> shows what else a schema can do.</li>
 </ul>
 </article>

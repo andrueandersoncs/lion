@@ -24,9 +24,19 @@
 <dl class="entries">
   <dt data-entry="LogicDatabase"><code>new LogicDatabase(options?)</code></dt>
   <dd>
-    <p>A logic database to share across runs. It holds relations, facts, rules, and invariants.</p>
+    <p>A logic database to share across runs. It holds relations, schemas, facts, rules, and invariants.</p>
     <p><code>options.goalDirected</code>: when <code>false</code>, every query derives every row of the relations it reads instead of only what it can reach. Defaults to <code>true</code>.</p>
   </dd>
+</dl>
+
+<h2 id="api-fit"><code>@lionlang/core/logic/fit</code></h2>
+<dl class="entries">
+  <dt data-entry="fits"><code>fits(schema, value)</code></dt>
+  <dd><p>An Effect that gives whether a value <a href="#schema-fitting">fits</a> a schema. A host function that takes a schema can check values with it. Like <code>call</code>, it needs what an evaluation provides.</p></dd>
+  <dt data-entry="problemsOf"><code>problemsOf(schema, value)</code></dt>
+  <dd><p>An Effect that gives every place where the value does not fit, as <a href="#module-schema"><code>schema/problems</code></a> does.</p></dd>
+  <dt data-entry="misfit"><code>misfit(schema, value)</code></dt>
+  <dd><p>An Effect that gives the sentence <code>schema/assert</code> fails with, or <code>undefined</code> when the value fits.</p></dd>
 </dl>
 
 <h2 id="api-model"><code>@lionlang/core/logic/model</code></h2>
@@ -73,6 +83,10 @@
   <dd><p>Marks a function that takes logic variables as they are, and returns it. Every other function <a href="#logic-waiting">waits</a> when it is called with a logic variable, so mark a function only when it builds a goal from the variables it is given, as a relation does.</p></dd>
   <dt data-entry="LogicForm"><code>new LogicForm(name, parts)</code></dt>
   <dd><p>A logic form, held the way it is written: <code>new LogicForm("=", [left, right])</code> is the goal <code>["=", left, right]</code> makes, for a logic function to return. The names are <code>"not"</code>, <code>"and"</code>, <code>"or"</code>, <code>"="</code>, <code>"in"</code>, and <code>"find"</code>. A relation call is an <code>Atom</code>, of the same module.</p></dd>
+  <dt data-entry="builtBy"><code>builtBy(fn, by, args)</code></dt>
+  <dd><p>Records that calling <code>by</code> with <code>args</code> built <code>fn</code>, and returns <code>fn</code>. The function is then written as that call, in messages and snapshots, as the functions that <code>func/partial</code> and the <code>schema</code> module make are.</p></dd>
+  <dt data-entry="readsOnlyArguments"><code>readsOnlyArguments(bindings)</code></dt>
+  <dd><p>Marks the functions among the values of a record as reading nothing but their arguments, as every function of the standard library does. Lion cannot see what any other host function reads, so an <a href="#form-invariant">invariant</a> that calls one is asked in full after every change to facts. Marking a function lets such an invariant be asked only about what a change can have broken.</p></dd>
   <dt data-entry="render"><code>render(value)</code></dt>
   <dd><p>Converts logic values, such as goals and variables, back into the Lion JSON that produces them.</p></dd>
   <dt data-entry="compareValues"><code>compareValues(a, b)</code></dt>

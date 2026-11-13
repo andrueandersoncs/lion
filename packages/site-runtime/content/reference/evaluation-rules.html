@@ -18,7 +18,8 @@
 <ol>
   <li>If the environment binds the name, the string evaluates to the bound value.</li>
   <li>If the name has the form <code>?name</code>, where <code>name</code> starts with a letter or <code>_</code> and continues with letters, digits, <code>_</code>, or <code>-</code>, it evaluates to a logic variable. <code>"?_"</code> and names starting with <code>?_</code> are anonymous variables.</li>
-  <li>Otherwise the string evaluates to itself.</li>
+  <li>If the name has the form <code>module/name</code> and reads as a misspelled name, it is an <a href="#errors"><code>UnboundNameError</code></a> that suggests the name: other names of its module are bound, as for <code>"number/ad"</code>, or a bound name is a letter or two away, as for <code>"numbr/add"</code>.</li>
+  <li>Otherwise the string evaluates to itself, as <code>"n/a"</code> and <code>"text/plain"</code> do.</li>
 </ol>
 <lion-example name="Strings">
 ["begin",

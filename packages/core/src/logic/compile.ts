@@ -19,6 +19,7 @@ import {
   LogicValue,
   LogicVariable,
   logicKey,
+  patternParts,
   render,
   show,
   termVariables,
@@ -26,9 +27,9 @@ import {
 
 /**
  * One step of a compiled body, in the order the engine runs it. A relation
- * call matches the relation's rows and binds its variables, "=" and "in"
- * bind a variable or test, and any other goal is a test: a filter, or a
- * question such as a goal under "not".
+ * call matches the relation's rows and binds its variables, "=", "in", and
+ * "schema/fits?" bind variables or test, and any other goal is a test: a
+ * filter, or a question such as a goal under "not".
  */
 export type Literal = Exclude<Goal, boolean>;
 
@@ -41,6 +42,11 @@ export interface CompiledRule {
    * write the rule back out. Rules made by the query rewrite leave it out.
    */
   readonly definition?: readonly unknown[];
+  /**
+   * Set for a rule the query rewrite makes to say which arguments a
+   * goal-directed query asks a relation about.
+   */
+  readonly demand?: true;
   readonly head: Atom;
   /**
    * Equal for rule forms a snapshot would write the same way, so adding a
@@ -115,7 +121,28 @@ const fresh = (term: unknown) => {
 };
 
 const isBinder = (goal: unknown): goal is Atom | LogicForm =>
-  goal instanceof Atom || isForm(goal, "=", "in");
+  goal instanceof Atom || isForm(goal, "=", "in", "schema/fits?");
+
+/**
+ * The variables a value binds when it is matched against a term: the term
+ * itself when it is a variable, and the variables that stand in a pattern,
+ * a record or list that waits, or for a schema, what a `schema` function
+ * waits to build. An anonymous variable inside a pattern fits any value and
+ * binds nothing.
+ */
+const holes = (
+  term: unknown,
+  asSchema: boolean,
+  inside = false
+): readonly string[] => {
+  if (term instanceof LogicVariable) {
+    return inside && term.anonymous ? [] : [term.name];
+  }
+  const parts = patternParts(term, asSchema);
+  return parts === undefined
+    ? []
+    : parts.flatMap((part) => holes(part, asSchema, true));
+};
 
 /**
  * Readies a goal to be expanded: names its anonymous variables, and takes a
@@ -203,6 +230,18 @@ const wants = (
   if (isQuestion(term)) {
     return term.variables.filter((name) => scope.has(name));
   }
+  if (isForm(term, "=", "in", "schema/fits?")) {
+    // As a test, a goal that could bind needs its variables bound, except
+    // the anonymous ones in a pattern, which fit anything.
+    const [first, second] = term.parts;
+    const asSchema = term.form === "schema/fits?";
+    return [
+      ...(asSchema ? wants(first, scope) : needs(first, false, scope, true)),
+      ...(term.form === "in"
+        ? wants(second, scope)
+        : needs(second, asSchema, scope, true)),
+    ];
+  }
   const asks = term instanceof DeferredCall && isWaitingForm(term);
   return term.parts.flatMap((part) =>
     asks && part instanceof LogicVariable && !scope.has(part.name)
@@ -210,6 +249,27 @@ const wants = (
       : wants(part, scope)
   );
 };
+
+/**
+ * The variables a pattern needs bound before a value can be matched against
+ * it: those of everything in it that is not itself a variable or a pattern.
+ * With `tested`, the pattern binds nothing, so its variables are needed
+ * too, except the anonymous ones.
+ */
+function needs(
+  term: unknown,
+  asSchema: boolean,
+  scope: ReadonlySet<string>,
+  tested = false
+): readonly string[] {
+  if (term instanceof LogicVariable) {
+    return tested && !term.anonymous ? [term.name] : [];
+  }
+  const parts = patternParts(term, asSchema);
+  return parts === undefined
+    ? wants(term, scope)
+    : parts.flatMap((part) => needs(part, asSchema, scope, tested));
+}
 
 /** The questions a term asks: goals with a relation in them, and finds. */
 const questionsIn = (term: unknown): readonly LogicValue[] => {
@@ -222,16 +282,22 @@ const questionsIn = (term: unknown): readonly LogicValue[] => {
     : term.parts.flatMap(questionsIn);
 };
 
-/** The variables a goal's relation goals, "=", and "in" can bind. */
+/**
+ * The variables a goal's relation goals, "=", "in", and "schema/fits?" can
+ * bind.
+ */
 const binders = (goal: unknown): readonly string[] => {
   if (isForm(goal, "and", "or")) {
     return goal.parts.flatMap(binders);
   }
-  return isBinder(goal)
-    ? goal.parts.flatMap((part) =>
-        part instanceof LogicVariable ? [part.name] : []
-      )
-    : [];
+  if (!isBinder(goal)) {
+    return [];
+  }
+  if (isForm(goal, "schema/fits?")) {
+    return holes(goal.parts[1], true);
+  }
+  // The arguments of a relation goal are schemas for its columns.
+  return goal.parts.flatMap((part) => holes(part, goal instanceof Atom));
 };
 
 const isReady = (
@@ -241,13 +307,18 @@ const isReady = (
 ) => {
   const known = (term: unknown) =>
     wants(term, scope).every((name) => bound.has(name));
-  const free = (term: unknown) => term instanceof LogicVariable;
+  // A value can be matched against a variable, or against a pattern once
+  // everything in it but its variables is known.
+  const free = (term: unknown, asSchema = false) =>
+    (term instanceof LogicVariable ||
+      patternParts(term, asSchema) !== undefined) &&
+    needs(term, asSchema, scope).every((name) => bound.has(name));
   if (literal instanceof Atom) {
     // A relation goal binds its variables, except the inputs of a computed
     // relation, which another goal must bind first.
     const inputs = literal.relation.computed?.inputs ?? 0;
     return literal.args.every(
-      (arg, position) => (free(arg) && position >= inputs) || known(arg)
+      (arg, position) => (free(arg, true) && position >= inputs) || known(arg)
     );
   }
   const [first, second] = literal.parts;
@@ -257,6 +328,9 @@ const isReady = (
   if (isForm(literal, "=")) {
     const [left, right] = [known(first), known(second)];
     return (left || free(first)) && (right || free(second)) && (left || right);
+  }
+  if (isForm(literal, "schema/fits?")) {
+    return known(first) && (free(second, true) || known(second));
   }
   // Anything else is a test, which needs every variable it waits for.
   return known(literal);
@@ -277,15 +351,15 @@ export const bindVariables = (
     (term instanceof LogicVariable
       ? bound.has(term.name)
       : !(term instanceof LogicValue));
-  const bind = (term: unknown, when: boolean) => {
-    if (when && term instanceof LogicVariable) {
-      bound.add(term.name);
+  const bind = (term: unknown, when: boolean, asSchema = false) => {
+    for (const name of when ? holes(term, asSchema) : []) {
+      bound.add(name);
     }
   };
   const [first, second] = literal.parts;
   if (literal instanceof Atom) {
     for (const arg of literal.args) {
-      bind(arg, true);
+      bind(arg, true, true);
     }
   } else if (isForm(literal, "=")) {
     const [left, right] = [known(first), known(second)];
@@ -293,6 +367,8 @@ export const bindVariables = (
     bind(second, left);
   } else if (isForm(literal, "in")) {
     bind(first, known(second));
+  } else if (isForm(literal, "schema/fits?")) {
+    bind(second, known(first), true);
   }
 };
 
@@ -359,7 +435,7 @@ export const planLiterals = (
         .flatMap((part) => wants(part, scope))
         .filter((name) => !(bound.has(name) || name.startsWith("_")));
       return problem(
-        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", or "in".`
+        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?".`
       );
     }
     checkQuestions(next instanceof Atom ? next.args : [next], bound);

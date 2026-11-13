@@ -80,6 +80,14 @@ With `{ "x": 10 }` in the environment, `"x"` evaluates to `10`. Otherwise it eva
 
 An unbound string of the form `"?name"` evaluates to a logic variable instead. See [Logic](#logic).
 
+An unbound string of the form `"module/name"` that reads as a misspelled name is an error, and not a string: one whose module has other names, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`.
+
+```json
+["number/ad", 1, 2]
+```
+
+Fails with `Nothing is bound to "number/ad". Did you mean "number/add"? To mean the string itself, write ["quote", "number/ad"].` Any other string with a slash in it, such as `"n/a"` or `"text/plain"`, evaluates to itself, and `["quote", "number/ad"]` is always the string.
+
 ### Arrays
 
 Arrays are always treated as executable expressions:
@@ -108,7 +116,7 @@ Evaluates to `{ "sum": 3, "ok": true }`.
 
 ## Special Forms
 
-The logic forms (`relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`) are covered in [Logic](#logic).
+The logic forms (`relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`) are covered in [Logic](#logic), and `schema` in [Schemas](#schemas).
 
 ### `quote`
 
@@ -167,7 +175,7 @@ If no branch matches and no `else` is provided, `cond` returns `null`. `else` is
 
 ### `match`
 
-Pattern matches a value against predicate/function pairs, then applies the first matching branch. The last argument is a fallback function.
+Checks a value against schema/function pairs, then applies the function of the first schema the value fits. The last argument is a fallback function.
 
 ```json
 ["match",
@@ -177,7 +185,7 @@ Pattern matches a value against predicate/function pairs, then applies the first
   ["lambda", ["x"], "x"]]
 ```
 
-`match` also supports structural predicates:
+Anything is a [schema](#schemas): a predicate, a record or list of schemas, or a plain value. A record of schemas fits a record with the same keys:
 
 ```json
 ["match",
@@ -191,6 +199,8 @@ Pattern matches a value against predicate/function pairs, then applies the first
   ],
   ["lambda", ["x"], null]]
 ```
+
+A plain value fits a value equal to it, so `match` can pick among choices with `["schema/anyOf", "refund", "void"]`. To pick a branch by one field of a record that has others, open the record: `[["schema/open", {"type": "refund"}], handler]`.
 
 A relation is a predicate too: `["match", "name", ["member", handler], fallback]` takes the first branch when `["member", "name"]` has a match. See [Asking](#asking).
 
@@ -213,7 +223,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 ### Building blocks
 
 - `"?name"` evaluates to a logic variable when `?name` is not bound. `"?_"` is anonymous: each occurrence is a separate variable, and it never appears in an answer.
-- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A goal is a question: a rule or query asks it for its matches, and any other expression can ask it too. See [Asking](#asking). A record after the columns, such as `{"key": ["id"]}`, gives the relation a key; see [Keys](#keys).
+- `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A goal is a question: a rule or query asks it for its matches, and any other expression can ask it too. See [Asking](#asking). Each argument of a call is a [schema](#schemas) for its column: a value, a variable, a pattern such as `{"id": "?id"}`, or a predicate. See [Taking data apart](#taking-data-apart). A record after the columns holds the relation's options: `{"key": ["id"]}` gives it a key, see [Keys](#keys), and `{"schema": "Order"}` says what its rows must fit, see [Schemas](#the-schema-of-a-relations-rows).
 - Anything that needs the value of a logic variable waits until the variable is bound. `["number/greaterThan", "?amount", 100]` becomes a filter in a rule body, and `["number/add", "?n", 1]` becomes a value computed once `?n` is bound. See [Waiting for values](#waiting-for-values).
 - A lambda's body runs right away, so a lambda can build and return goals. Whatever in the body needs a value waits. Only an argument that asks a question makes the call wait, so the question is answered first, as it is in plain code.
 
@@ -230,10 +240,10 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["why", goal]` | Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
-| `["=", term, term]` | Binds a variable to a value, or compares two values. Without logic variables it is plain equality. |
+| `["=", term, term]` | Binds a variable to a value, or compares two values. Either side can be a record or list with variables in it, which takes the other side apart. Without logic variables it is plain equality. |
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
 | `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
-| `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. Without logic variables it is plain membership. See [Lists](#lists). |
+| `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. The element can be a record or list with variables in it. Without logic variables it is plain membership. See [Lists](#lists). |
 
 ### Waiting for values
 
@@ -241,7 +251,7 @@ A rule or query is written before its variables have values, so anything that ne
 
 - A function call with a logic variable among its arguments. That is every function: the standard library, functions the host adds, and functions made by `func/partial`.
 - `cond` when a condition is not known yet, `match` when its value is not, and `eval` when its code is not.
-- A record with a logic variable in it.
+- A record or list with a logic variable in it. Where a goal can bind variables it is a pattern: see [Taking data apart](#taking-data-apart).
 
 ```json
 ["begin",
@@ -363,6 +373,8 @@ Fails with `Adding this fact breaks an invariant, so nothing changed. The invari
 - A form is checked once it has made all of its changes, so one `fact` form can add several facts that only keep an invariant together. Separate forms in a `begin` are separate changes, each checked on its own.
 - If checking an invariant fails, for example because `graph/topologicalOrder` finds a cycle, the change is undone too.
 - Invariants take only the `"assert"` option, read as written. Like rules, they cannot be removed.
+- A change to facts is checked against the invariants that read what it changed. An invariant that expects no answers, and whose goal matches the rows of the relation that changed, is asked about the new rows alone, so checking a write does not cost more as the relation grows. Which invariants are asked never changes whether a change is kept. An invariant that calls a function the host added is asked in full after every change, since Lion cannot see what such a function reads; see [Host functions in rules](#host-functions-in-rules).
+- When an invariant's goal says an answer fails a [schema](#schemas), the message ends with where the answer does not fit.
 - Snapshots write invariants after the rules, so loading one checks them against the whole database.
 
 ### Lists
@@ -503,7 +515,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 ### Snapshots
 
-`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `fact` form with the facts of each, every `rule`, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
+`["snapshot"]` returns a Lion program that rebuilds the current database: a `relation` form for every relation, a `schema` form for the schemas each `schema` form declared, a `fact` form with the facts of each relation, every `rule`, and every `invariant`. Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.
 
 ```json
 ["begin",
@@ -519,7 +531,9 @@ Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path
 - Strings that would evaluate to something else when loaded, such as relation names, names bound in the environment, namespaced names like `"number/add"`, and `?variable` names, are written inside `quote`. So are lists and records.
 - Rules are written as they were evaluated. A name like `budget` in a rule appears as its value, and a function appears under the name the environment gives it: with `plus` defined as `number/add`, `["plus", "?x", 1]` is written `["number/add", "?x", 1]`.
 - A waiting `cond`, `match`, or record is written as it was, and a lambda as its `lambda` form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in `[["lambda", ["limit"], ["cond", [["number/greaterThan", "?a", "limit"], "big"], ["else", "small"]]], 100]`.
-- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda. `snapshot` then fails with an error that names the function.
+- A function that another function built is written as the call that built it: `["func/partial", "number/add", 1]`, or `["schema/arrayOf", "value/number?"]`.
+- A schema is written with the form of its shape. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in a waiting form. Schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.
+- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda or built by a function it can write. `snapshot` then fails with an error that names the function.
 
 From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
 
@@ -543,7 +557,7 @@ const program = Effect.gen(function* () {
 
 Rules are checked when they are added:
 
-- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, or `in`. So must every input of an algorithm goal.
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`. So must every input of an algorithm goal, and an input must be data.
 - A question, a goal under `not`, a goal used as a value, or a `find`, waits for the variables the rule binds. Any other variable in it is its own, and the question must bind it itself.
 - A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
@@ -553,9 +567,194 @@ A form that changes the database, `fact`, `retract`, or `rule`, either makes all
 
 Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be JSON data. Anything else is an error that shows the call or the value.
 
-Adding what the database already holds changes nothing: a fact that is already there, a relation declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
+Adding what the database already holds changes nothing: a fact that is already there, a relation or schema declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
 
-Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept until a fact or rule changes. What the database has already derived never changes an answer. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, facts, rules, and invariants across runs. The database's relations are bound by name in every run that uses it, unless the environment binds the same name.
+Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept until a fact or rule changes. What the database has already derived never changes an answer. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
+
+## Schemas
+
+A schema says what a value must be. Anything is a schema, and one rule says what fits it:
+
+- A function is a predicate: a value fits when the function returns `true`. `value/number?` is one, and so is a lambda, a relation with one column, and a schema with a name.
+- A record fits a record with the same keys, with values that fit.
+- A list fits a list of the same length, item by item.
+- Any other value fits a value equal to it.
+
+So data is a schema for itself: it fits exactly the values equal to it. A function in it makes room for every value the function accepts, `schema/optional` for a key that can be left out, and `schema/open` for keys the record does not name.
+
+`["schema/fits?", value, schema]` asks whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, and `["schema/assert", value, schema]` returns the value when it fits and fails when it does not. `["schema", name, shape]` gives a schema a name, and the name is then a predicate: `["Order", value]`.
+
+```json
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf", "Line"],
+     "note": ["schema/optional", "value/string?"]}],
+  ["define", "good", ["quote", {"id": 7, "status": "open", "lines": [{"sku": "a1", "qty": 2}]}]],
+  ["define", "bad", ["quote", {"id": 8, "status": "opne", "lines": [{"sku": "a1", "qty": 2}, {"sku": "b2", "qty": 0}], "rush": true}]],
+  {"good": ["Order", "good"],
+   "bad": ["schema/fits?", "bad", "Order"],
+   "problems": ["schema/problems", "bad", "Order"]}]
+```
+
+Evaluates to `{ "good": true, "bad": false, "problems": [{ "path": ["lines", 1, "qty"], "expected": ["lambda", ["n"], ["number/greaterThan", "n", 0]], "found": 0 }, { "path": ["rush"], "found": true }, { "path": ["status"], "expected": ["schema/anyOf", "open", "shipped"], "found": "opne" }] }`.
+
+With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open", "lines": []}], "Order"]` fails with `{"id":"7","status":"open","lines":[]} does not fit "Order": "id" must fit "value/integer?" but is "7".`
+
+### Building schemas
+
+| Function | The schema it builds fits |
+|---|---|
+| `["schema/anyOf", schema, ...]` | A value that fits at least one of the schemas. Of plain values, it is a list of choices: `["schema/anyOf", "open", "shipped"]`. |
+| `["schema/allOf", schema, ...]` | A value that fits every one of the schemas. |
+| `["schema/arrayOf", schema]` | A list whose every item fits the schema. |
+| `["schema/recordOf", schema]` | A record whose every value fits the schema. |
+| `["schema/optional", schema]` | As the schema of a record's key, lets the key be left out. A key that is there must fit. |
+| `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. |
+
+- What these functions build is a function like any other, so it can be called, as in `[["schema/arrayOf", "value/number?"], "items"]`, and given to `array/map` or `match`.
+- A predicate that fails, or returns anything but `true`, does not fit. So `["lambda", ["n"], ["number/greaterThan", "n", 0]]` needs no check that `n` is a number first: a string does not fit it.
+- A string is a name before it is a string, as everywhere in Lion. `"open"` is the string unless something is bound to `open`, and `["quote", "open"]` is always the string.
+- A misspelled name is an error, and not a schema that nothing fits: `"value/intger?"` as a schema fails with `Nothing is bound to "value/intger?". Did you mean "value/integer?"?`, and so does a misspelled name inside a predicate, where any other failure means the value does not fit. See [Primitives](#primitives).
+- Data is a schema for itself: `["schema/fits?", "x", ["quote", {"a": [1, 2]}]]` holds when `x` is the record `{"a": [1, 2]}`.
+- A relation is a schema when it has one column: a value fits `person` when `["person", value]` has a match. A relation with more columns is not the schema of one value, and using it as one is an error.
+- `value/any?` fits every value. `["schema/anyOf", "value/string?", null]` fits a string or `null`.
+- A problem has a `path`, the keys and positions that lead to the part that does not fit. A part with the wrong value has what was `expected`, a schema written as the expression that makes it, and what was `found`. A part that is missing has only `expected`, and a key the schema does not name has only `found`. Problems come in the order of their paths.
+- `schema/anyOf` reports one problem, at the value that fits none of its schemas. `schema/allOf` reports the problems of every schema the value does not fit.
+
+### Named schemas
+
+`["schema", "Order", shape]` declares a schema in the logic database and binds `Order` to it, the way `relation` declares a relation.
+
+- The shape is evaluated once, when the schema is declared, with the values its names have then. Redefining a name afterwards does not change the schema, as it does not change a rule.
+- A shape can name its own schema, so a schema can describe nested data: `["schema", "Tree", {"value": "value/number?", "children": ["schema/arrayOf", "Tree"]}]`.
+- One form can declare several schemas, `["schema", name, shape, name, shape, ...]`, and the shape of each can name any of them, so schemas can be defined in terms of each other:
+
+  ```json
+  ["begin",
+    ["schema",
+      "Expr", ["schema/anyOf", "value/number?", "Sum"],
+      "Sum", {"add": ["schema/arrayOf", "Expr"]}],
+    {"fits": ["Expr", ["quote", {"add": [1, {"add": [2, 3]}]}]],
+     "does not": ["Expr", ["quote", {"add": [1, {"add": [2, "x"]}]}]]}]
+  ```
+
+  Evaluates to `{ "fits": true, "does not": false }`.
+- A value fits only when that follows from the shapes in finitely many steps, so a schema that comes back to itself without going into the value does not fit: only `1` fits `["schema", "Loop", ["schema/anyOf", "Loop", 1]]`.
+- What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: declaring `Line` after an `Order` whose shape says `"Line"` fails, and says to declare `Line` first, to declare the two in one form, or to write `["quote", "Line"]` for the string.
+- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record.
+- A shape cannot ask the database while it is declared, since a snapshot writes the shape and it has to mean the same when it is loaded. To check a value against the facts, use a relation as a schema, or ask inside a lambda.
+- Declaring a schema again, for example in a later `run` that shares the database, must repeat the same shape, and changes nothing. A schema and a relation cannot share a name.
+- A named schema that is `schema/optional` lets a record's key be left out, and `schema/open` takes a named record schema, like the schemas they name.
+
+### Taking data apart
+
+A logic variable in a schema stands for a value. Once it is bound it is that value, and until then any value fits it, and binds it. So in a rule or query a schema is also a pattern: it tests a value and takes it apart at once. These goals bind the variables in a pattern:
+
+- `["schema/fits?", value, schema]` binds the variables in the schema.
+- A relation call binds the variables in its arguments. Each argument is a schema for its column, so `["inbox", {"type": "refund", "id": "?id"}]` asks for the rows that fit.
+- `["=", a, b]` and `["in", element, list]` bind the variables in a record or list, on either side of `=` or as the element. They compare values, so a function in the record is a value there, and not a predicate.
+
+```json
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["fact",
+    ["inbox", ["quote", {"type": "order", "id": 1, "lines": [{"sku": "a1", "qty": 2}, {"sku": "b2", "qty": 1}]}]],
+    ["inbox", ["quote", {"type": "order", "id": 2, "lines": [], "rush": true}]],
+    ["inbox", ["quote", {"type": "refund", "id": 3}]]],
+  {"refunds": ["query", ["inbox", {"type": "refund", "id": "?id"}]],
+   "orders": ["query", ["inbox", ["schema/open", {"type": "order", "id": "?id"}]], {"order": "id"}],
+   "lines": ["find", ["array/make", "?order", "?sku", "?qty"],
+     ["and",
+       ["inbox", ["schema/open", {"id": "?order", "lines": "?lines"}]],
+       ["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]]],
+   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
+```
+
+Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], "lines": [[1, "a1", 2], [1, "b2", 1]], "ends": [{ "first": "a", "last": "c" }] }`.
+
+- A record in a pattern is a record schema: it fits a record with the same keys. `schema/open` takes the keys it names from a record that has more, as `orders` does above, where the second order also has `rush`.
+- `?_` fits any value and binds nothing. A variable that occurs twice must take the same value: `{"a": "?x", "b": "?x"}` fits `{"a": 1, "b": 1}` and not `{"a": 1, "b": 2}`.
+- Every `schema` function works in a pattern. `["schema/allOf", "value/integer?", "?id"]` binds `?id` only to an integer. `["schema/anyOf", a, b]` gives the answers of every schema that fits, each once: `["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]` binds `?x` to 1 and then to 2 for `{"a": 1, "b": 2}`.
+- An argument of a relation call that is not data is a schema like any other. With readings of `30`, `10`, and `"n/a"`, `["reading", "?sensor", "value/number?"]` asks for the two that are numbers, and `["and", ["limit", "?max"], ["reading", "?sensor", ["func/partial", "number/lessThan", "?max"]]]` for those above the limit.
+- A variable can hold a schema. After `["=", "?ends", ["schema/anyOf", 2, 5]]`, the goal `["path", "?from", "?ends"]` asks for the paths that end in 2 or in 5.
+- The order of the goals does not matter. A goal that binds through a pattern gives what the same goal gives when another goal has bound its variables first.
+- `["schema/open", "?shape"]` does not bind `?shape`: it waits for another goal to bind it to a record of schemas.
+- In plain code, where no rule or query is there to bind anything, a check with a variable in it is a goal, like `=` with one: `["schema/fits?", 1, "?x"]` evaluates to the goal, and `["query", ["schema/fits?", 1, "?x"]]` to `[{ "x": 1 }]`.
+- `why` explains a rule's answer by the rows its goals matched, also when a goal says which rows with a schema.
+
+### Schemas in rules and queries
+
+A schema check is a call like any other. It waits for logic variables, so it is a filter in a rule or query, it works under `not` and in a `find`, and its value can go in a rule head. `schema/problems` gives a list, so `in` turns the problems of a value into rows.
+
+```json
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["relation", "rejected", ["doc", "where"]],
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["fact",
+    ["inbox", {"id": 1, "status": "open"}],
+    ["inbox", {"id": 2, "status": "opne"}],
+    ["inbox", {"id": "3", "status": "shipped"}]],
+  ["rule", ["order", "?id", "?status"],
+    ["inbox", ["schema/allOf", "Order", {"id": "?id", "status": "?status"}]]],
+  ["rule", ["rejected", "?doc", ["object/get", "?problem", "path"]],
+    ["inbox", "?doc"], ["in", "?problem", ["schema/problems", "?doc", "Order"]]],
+  {"orders": ["query", ["order", "?id", "?status"]],
+   "rejected": ["query", ["rejected", "?doc", "?where"], {"order": "where"}],
+   "how many": ["aggregate/count", ["find", "?doc", ["and", ["inbox", "?doc"], ["not", ["Order", "?doc"]]]]]}]
+```
+
+Evaluates to `{ "orders": [{ "id": 1, "status": "open" }], "rejected": [{ "doc": { "id": "3", "status": "shipped" }, "where": ["id"] }, { "doc": { "id": 2, "status": "opne" }, "where": ["status"] }], "how many": 2 }`.
+
+- A schema check gives in a rule what it gives in plain code with the rule's variables in place. A logic variable inside a schema is its value once it is bound, and is bound by the value it meets until then: see [Taking data apart](#taking-data-apart).
+- A check written first guards what comes after it, like any filter: a rule that starts with `["inbox", "?doc"], ["Order", "?doc"]` can go on with a filter that needs `id` to be a number.
+- A predicate can be made from a rule's variable, as `["func/partial", "number/lessThan", "?max"]` is, or as a lambda that mentions `?max`. It is the predicate made from the variable's value.
+- `["schema/assert", "?doc", "Order"]` as a value in a rule fails the query that runs the rule when a value does not fit.
+- `why` shows a check that held as `{ "check": ["Order", ["quote", { "id": 1, "status": "open" }]] }`.
+- A schema as a goal needs its value bound: `["query", ["Order", "?doc"]]` is an unsafe goal, since a schema cannot list the values that fit it.
+
+A relation with one column is a predicate, so it is a schema: a value fits `person` when `["person", value]` has a match. A schema that holds a relation asks the database when it checks a value, in plain code and in rules, and a rule cannot use a schema that asks about the relation the rule derives.
+
+### The schema of a relation's rows
+
+The relation option `{"schema": "Order"}` says that every row must fit a declared schema. A row is checked as a record of its columns, the way a query answers.
+
+```json
+["begin",
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["relation", "order", ["id", "status"], {"key": "id", "schema": "Order"}],
+  ["fact", ["order", 1, "open"]],
+  ["fact", ["order", 2, "opne"]]]
+```
+
+Fails with `Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":2,"status":"opne"}: ["and",["order","?id","?status"],["not",["Order",{"id":"?id","status":"?status"}]]]. {"id":2,"status":"opne"} does not fit "Order": "status" must fit ["schema/anyOf","open","shipped"] but is "opne".` Order 1 is still there, and order 2 was not added.
+
+- The option stands for the [invariant](#invariants) the message shows, and is nothing more: `["invariant", ["and", ["order", "?id", "?status"], ["not", ["Order", {"id": "?id", "status": "?status"}]]], {"assert": "none"}]`. So it is kept like every invariant: a `fact`, `retract`, or `rule` form that would leave a row that does not fit fails and changes nothing, rows that rules derive are checked too, and a snapshot writes it as that invariant.
+- Any invariant or query assertion whose goal says an answer fails a schema, with `["not", [schema, value]]` or `["not", ["schema/fits?", value, schema]]`, ends its message with where the first answer does not fit.
+- A relation as the schema of a column is a foreign key. With `["schema", "Kin", {"parent": "person", "child": "person"}]` and `["relation", "parent", ["parent", "child"], {"schema": "Kin"}]`, a `parent` fact needs both people to be there, and retracting a person who is still a parent fails with `"child" must fit "person" but is "ben"`. One `fact` form can add a person and their parent together.
+- The option names a schema that is already declared, and is read as written, like the key. A row is a record of every column, so the schema names every column, or is a `schema/open` record that names some. Declaring the relation again with the option adds the invariant if the database does not hold it, and it must hold for the rows that are there.
+- Checking a write costs what its new rows cost. An invariant is asked again only after a change to a relation it reads, and one that says no row of a relation fails a test, as a relation's schema does, is asked about the new rows alone.
+
+### Data from outside
+
+Schemas let a program take in data it does not trust. From TypeScript, bind the data to a name in the environment and check it there, or add it as a fact and let rules sort it:
+
+```ts
+const database = new LogicDatabase();
+await Effect.runPromise(run(setup, stdlib, { database }));
+
+const problems = await Effect.runPromise(
+  run(["schema/problems", "incoming", "Order"], { ...stdlib, incoming }, { database })
+);
+```
+
+An empty list means `incoming` fits. Schemas are data like the rest of a Lion program, so they can be written, stored, and changed while the program runs, and a snapshot saves the ones a database holds.
 
 ## Standard Library
 
@@ -681,22 +880,42 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 
 `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.
 
-`func/partial` gives a function that behaves like the one it wraps: calling it is calling that function with the first arguments filled in, so made from a relation, it builds goals.
+`func/partial` gives a function that behaves like the one it wraps: calling it is calling that function with the first arguments filled in, so made from a relation, it builds goals. Made from a predicate, it is a [schema](#schemas): `["func/partial", "number/lessThan", 0]` fits a number above 0.
 
 ### `value`
 
 ```json
 ["value/function?", "x"]
 ["value/number?", 1]
+["value/integer?", 1]
 ["value/string?", "lion"]
 ["value/boolean?", true]
 ["value/object?", {"a": 1}]
 ["value/array?", ["array/make", 1, 2]]
 ["value/null?", null]
+["value/any?", 42]
 ["value/identity", 42]
 ```
 
-`value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.
+`value/any?` is true for every value. `value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.
+
+### `schema`
+
+Checks values against [schemas](#schemas), and builds schemas out of others.
+
+```json
+["schema/fits?", 3, "value/number?"]
+["schema/problems", {"id": "x"}, {"id": "value/integer?", "name": "value/string?"}]
+["schema/assert", 3, "value/number?"]
+["schema/anyOf", "value/string?", null]
+["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]
+["schema/arrayOf", "value/number?"]
+["schema/recordOf", "value/number?"]
+["schema/optional", "value/string?"]
+["schema/open", {"id": "value/integer?"}]
+```
+
+The second evaluates to `[{ "path": ["id"], "expected": "value/integer?", "found": "x" }, { "path": ["name"], "expected": "value/string?" }]`.
 
 ### `console`
 
@@ -750,6 +969,16 @@ const env = {
     ),
 };
 // ["list/keep", ["array/make", "ana", "bo"], "member"]
+```
+
+Lion cannot see what a host function reads when it runs. An [invariant](#invariants) whose goal calls one, in the goal itself, inside a schema, or through a rule, is asked in full after every change to facts, where any other invariant is asked only about what a change can have broken. A host function that reads nothing but its arguments can say so, and is then treated like a function of the standard library:
+
+```ts
+import { readsOnlyArguments } from "@lionlang/core/logic/terms";
+
+const upper = (text: string) => text.toUpperCase();
+readsOnlyArguments({ upper });
+const env = { ...stdlib, "text/upper": upper };
 ```
 
 To write a function that takes logic variables as they are and builds a goal from them, mark it with `logicFunction`:

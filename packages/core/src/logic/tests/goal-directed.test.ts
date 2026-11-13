@@ -25,10 +25,10 @@ const CORPUS: Record<string, unknown[]> = {
   "left recursion from a start": [...graph, ["query", ["path", "a", "?to"]]],
   "left recursion to an end": [...graph, ["query", ["path", "?from", "d"]]],
   "a ground goal": [...graph, ["query", ["path", "x", "a"]]],
-  // "edge" names the relation, so the argument is a function, not JSON data.
+  // The argument is a function, not JSON data: a schema for the column.
   "an argument that is not JSON data": [
     ...graph,
-    ["query", ["path", "edge", "?to"]],
+    ["query", ["path", "value/string?", "?to"]],
   ],
   "right recursion": [
     ...graph,

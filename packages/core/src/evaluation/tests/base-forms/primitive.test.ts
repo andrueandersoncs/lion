@@ -1,16 +1,23 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
-import { isLogicVariableName, LogicVariable } from "@/logic/terms";
+import {
+  isLogicVariableName,
+  isNamespacedName,
+  LogicVariable,
+} from "@/logic/terms";
 import { ValidIdentifierSchema } from "@/schemas/evaluation";
 import { JsonPrimitiveSchema } from "@/schemas/json-primitive";
 
-// Unbound `?name` strings evaluate to logic variables; every other primitive
-// evaluates to itself.
+// Unbound `?name` strings evaluate to logic variables, and unbound
+// `module/name` strings are names that nothing is bound to; every other
+// primitive evaluates to itself.
 const NonVariablePrimitiveSchema = JsonPrimitiveSchema.pipe(
   Schema.check(
     Schema.makeFilter(
-      (value) => typeof value !== "string" || !isLogicVariableName(value)
+      (value) =>
+        typeof value !== "string" ||
+        !(isLogicVariableName(value) || isNamespacedName(value))
     )
   )
 );

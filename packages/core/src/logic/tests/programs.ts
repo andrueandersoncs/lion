@@ -62,6 +62,8 @@ export const RULES: readonly Form[] = [
     ["path", "?x", "?y"],
     ["or", ["edge", "?x", "?y"], ["edge", "?y", "?x"]],
   ],
+  // Makes a relation that held only facts depend on another relation.
+  ["rule", ["cancelled", "?id"], ["order", "?id", "?_"], ["edge", "?_", "d"]],
 ];
 
 /**
@@ -90,6 +92,28 @@ export const INVARIANTS: readonly Form[] = [
   ],
   ["invariant", ["order", "?_", "open"], { assert: "some" }],
   ["invariant", ["path", "a", "d"], { assert: "none" }],
+  // Two alternatives, each a goal over facts.
+  [
+    "invariant",
+    ["or", ["edge", "d", "?_"], ["cancelled", 3]],
+    { assert: "none" },
+  ],
+  // A question inside an argument of a goal over facts.
+  [
+    "invariant",
+    [
+      "and",
+      ["order", "?id", "?_"],
+      ["edge", ["cond", [["cancelled", "?id"], "a"], ["else", "none"]], "?_"],
+    ],
+    { assert: "none" },
+  ],
+  // A filter that fails, instead of answering, on an edge from "c".
+  [
+    "invariant",
+    ["and", ["edge", "c", "?to"], ["number/greaterThan", "?to", 0]],
+    { assert: "none" },
+  ],
   [
     "invariant",
     [
@@ -116,7 +140,9 @@ export const fact: Arbitrary.Arbitrary<Form> = oneOf(
     Arbitrary.all([orderId, element(["open", "shipped"])]),
     ([id, status]): Form => ["order", id, status]
   ),
-  Arbitrary.map(orderId, (id): Form => ["cancelled", id])
+  Arbitrary.map(orderId, (id): Form => ["cancelled", id]),
+  // A node added or retracted changes what an invariant asks under "not".
+  Arbitrary.map(node, (name): Form => ["node", name])
 );
 
 const facts = (form: "fact" | "retract", maxLength: number) =>
@@ -182,12 +208,16 @@ export type Outcome =
   | { readonly ok: true; readonly value: unknown }
   | { readonly ok: false; readonly message: string };
 
-/** Runs a program against a database and reports its value or error. */
+/**
+ * Runs a program against a database and reports its value or error. The
+ * environment is the standard library unless another is given.
+ */
 export const attempt = (
   program: unknown,
-  database: LogicDatabase
+  database: LogicDatabase,
+  environment: Record<string, unknown> = stdlib
 ): Effect.Effect<Outcome> =>
-  run(program, stdlib, { database }).pipe(
+  run(program, environment, { database }).pipe(
     Effect.map(
       (value): Outcome => ({
         ok: true,

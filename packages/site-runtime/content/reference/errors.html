@@ -5,6 +5,7 @@
   <thead><tr><th>Tag</th><th>Raised when</th></tr></thead>
   <tbody>
     <tr data-entry="SchemaError"><td><code>SchemaError</code></td><td>The program is not a valid Lion expression, such as a record key <code>__proto__</code>; a function receives an argument of the wrong type; or <code>eval</code> is given something that is not JSON.</td></tr>
+    <tr data-entry="UnboundNameError"><td><code>UnboundNameError</code></td><td>A string of the form <code>module/name</code> is evaluated, nothing is bound to it, and it reads as a misspelled name: other names of its module are bound, or a bound name is a letter or two away, which the message suggests. Inside <code>quote</code> the string is data.</td></tr>
     <tr data-entry="InvalidFunctionCallError"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a misspelled function name and a form's name used with the wrong shape.</td></tr>
     <tr data-entry="ArgumentMismatchError"><td><code>ArgumentMismatchError</code></td><td>A lambda is called with fewer arguments than it has parameters.</td></tr>
     <tr data-entry="ArithmeticError"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.</td></tr>

@@ -1,5 +1,47 @@
 # Changelog
 
+## Unreleased
+
+Schemas say what a value must be, and one rule says what fits: whatever checks a value against a schema asks whether the value fits it. A logic variable in a schema is the value it meets, so a schema is also a pattern that takes data apart.
+
+### Breaking
+
+- `match` fits a record against a record with the same keys. A record pattern used to fit any record that had its keys, so a branch that picks by one field of a larger record, such as `[{"type": "refund"}, handler]`, must open the record: `[["schema/open", {"type": "refund"}], handler]`.
+- An unbound string of the form `module/name` that reads as a misspelled name is an error, where it used to be the string: one whose module has other names bound, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`. The error is the new `UnboundNameError`, and suggests the name. Other strings with a slash, such as `"n/a"` or `"text/plain"`, are unchanged, and `["quote", "number/ad"]` is always the string.
+- A function among the arguments of a relation call is a schema for the column. `["reading", "?sensor", "value/number?"]` used to match nothing, since no row holds a function, and now asks for the readings that are numbers. A relation with more than one column is not the schema of one value, so `["path", "edge", "?to"]` is an error where it matched nothing.
+
+### Added
+
+- Schemas. Anything is a schema. A function is a predicate, so `value/number?`, a lambda, a relation with one column, and a named schema all are. A record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it. So data is a schema for itself.
+- `["schema/fits?", value, schema]` says whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, as records with a `path` and what was `expected` or `found` there. `["schema/assert", value, schema]` returns the value or fails and says where.
+- `schema/anyOf`, `schema/allOf`, `schema/arrayOf`, `schema/recordOf`, `schema/optional`, and `schema/open` build schemas out of others. What they build is a function like any other. `schema/open` fits a record whatever other keys it has.
+- `["schema", "Order", shape]` declares a named schema in the database and binds the name, as `relation` does for a relation. A shape can name its own schema, and one form can declare several, `["schema", name, shape, name, shape, ...]`, whose shapes name each other. Snapshots write the schemas of one form as one form, and a later run that shares the database finds them under their names.
+- Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order.
+- A schema check is an ordinary call, so it waits for logic variables and works as a filter in a rule or query, under `not`, in a `find`, in `cond`, and as a value in a rule head. `["in", "?p", ["schema/problems", "?doc", "Order"]]` turns the problems of a value into rows.
+- An argument of a relation call is a schema for its column: a value, a variable, a pattern, a predicate, or a variable that holds one of those. A relation as the schema of a column is a foreign key.
+- The relation option `{"schema": "Order"}` says that every row, as a record of its columns, must fit a declared schema. It stands for the invariant a program could write by hand, so a `fact`, `retract`, or `rule` form that would leave a row that does not fit fails and changes nothing.
+- When the goal of an invariant or query assertion says an answer fails a schema, the message ends with where the answer does not fit: `{"id":2,"status":"opne"} does not fit "Order": "status" must fit ["schema/anyOf","open","shipped"] but is "opne".`
+- `value/integer?` and `value/any?`.
+- For hosts: `@lionlang/core/logic/fit` exports `fits`, `problemsOf`, `misfit`, and `matching`, and `@lionlang/core/modules/schema` holds the `schema` module. From `@lionlang/core/logic/terms`, `builtBy` records the call that built a function, so the function is written as that call, and `readsOnlyArguments` marks host functions that read nothing but their arguments.
+
+### Changed
+
+- `match` checks a value against schemas. Besides a predicate or a record of predicates, a pattern can now be a plain value, a list of schemas, or a schema built by the `schema` functions. A pattern that was neither a function nor a record of them used to fail; now it is a value to equal.
+- A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the rows the change added when that is enough. Which changes are kept does not change. An invariant that calls a function the host added is asked in full every time, unless the function is marked with `readsOnlyArguments`, since such a function can read the database on its own.
+- A record or list with a logic variable in it is held as a record or list of its parts, and written that way in snapshots and messages, where it was a call to a lambda that made it.
+- A function made by `func/partial` is written as the call that made it, so a rule or schema that holds one can be saved in a snapshot.
+- A lambda inside a list, a record, or a function that another function built is closed over the values its names have when a rule is written, like a lambda that is a direct argument, so a rule that holds one can be saved in a snapshot.
+- A list that holds a function or a logic value is shown as the `array/make` call that makes it, not as a bare list that reads like a call.
+- An unsafe goal's message names `"schema/fits?"` among the goals that bind a variable.
+- An unknown relation option is reported with the relation's options, `"key"` and `"schema"`.
+- For hosts: `applyQueryOptions` from `@lionlang/core/logic/query-options` only sorts and pages; `checkAssertion` from `@lionlang/core/logic/database` checks a query's assertion.
+
+### Fixed
+
+- A function made by `func/partial` from a logic variable waits for the variable when a rule or query holds it, as a lambda that mentions the variable does. Handed to `array/map` in a query, it used to fail with `has no value yet`.
+- A goal-directed query that hands a rule-derived relation a function, for example through a variable, is answered as in full evaluation. It used to fail with `Rule undefined produced a value that is not JSON data`.
+- A graph algorithm's input that a variable binds to something that is not data fails with the message an input written in place gets.
+
 ## 2026-11-12 — @lionlang/core 0.6.0, @lionlang/cli 0.5.0
 
 Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.

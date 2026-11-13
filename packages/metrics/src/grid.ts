@@ -75,6 +75,7 @@ export const modelOf = (
     for (const x of [...world.n].sort((a, b) => a - b)) {
       const outcome = yield* run(lion, [
         ...prelude(world),
+        ...(expression.setup ?? []),
         { value: substitute(expression.form, x) },
       ]);
       if (!outcome.ok) {
@@ -120,6 +121,7 @@ export const cellOf = (
     }
     const forms = [
       ...prelude(world),
+      ...(expression.setup ?? []),
       ...(position.setup?.(expression.form, model) ?? []),
     ];
     const question = position.question(expression.form, model);

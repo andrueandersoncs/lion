@@ -39,6 +39,7 @@ export const SPECIAL_FORM_NAMES = [
   "cond",
   "match",
   "relation",
+  "schema",
   "rule",
   "fact",
   "retract",
@@ -94,12 +95,19 @@ export const MatchFormSchema = Schema.TupleWithRest(
   form("match", Expression, Pair),
   [Pair, Expression]
 );
-// ["relation", <name>, [<column>, ...]], or with {"key": [<column>, ...]}
+// ["relation", <name>, [<column>, ...]], or with options such as
+// {"key": [<column>, ...]}
 const Relation = [ValidIdentifierSchema, Schema.Array(Schema.String)] as const;
 export const RelationFormSchema = Schema.Union([
   form("relation", ...Relation),
   form("relation", ...Relation, Expression),
 ]);
+// ["schema", <name>, <shape>], or with more names and shapes after it
+export const SchemaFormSchema = formWithMore(
+  "schema",
+  ValidIdentifierSchema,
+  Expression
+);
 // ["rule", <head>, <goal>, ...]
 export const RuleFormSchema = formWithMore("rule", Expression, Expression);
 export const FactFormSchema = formWithMore("fact", Expression);
@@ -131,6 +139,7 @@ const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
   cond: Schema.is(CondFormSchema),
   match: Schema.is(MatchFormSchema),
   relation: Schema.is(RelationFormSchema),
+  schema: Schema.is(SchemaFormSchema),
   rule: Schema.is(RuleFormSchema),
   fact: Schema.is(FactFormSchema),
   retract: Schema.is(RetractFormSchema),

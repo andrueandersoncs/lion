@@ -4,6 +4,7 @@ import type {
   ArithmeticError,
   InvalidFunctionCallError,
   LogicError,
+  UnboundNameError,
   WaitingError,
 } from "@/errors/evaluation";
 import type { LionEnvironmentService } from "@/services/evaluation";
@@ -14,6 +15,7 @@ export type EvaluationError =
   | ArithmeticError
   | InvalidFunctionCallError
   | LogicError
+  | UnboundNameError
   | WaitingError;
 
 export type EvaluateResult = Effect.Effect<

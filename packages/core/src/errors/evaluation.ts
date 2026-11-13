@@ -20,6 +20,26 @@ export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunction
   }
 }
 
+/**
+ * Raised when a string of the form `module/name` is evaluated, nothing is
+ * bound to it, and it reads as a misspelled name: other names of its module
+ * are bound, or a bound name is a letter or two away. It is then not taken
+ * for data, since a misspelled function would quietly become a string.
+ */
+export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
+  "UnboundNameError",
+  { name: Schema.String, nearest: Schema.NullOr(Schema.String) }
+) {
+  override get message() {
+    const module = this.name.slice(0, this.name.indexOf("/") + 1);
+    const why =
+      this.nearest === null
+        ? `Other names begin with "${module}", so it reads as a misspelled name.`
+        : `Did you mean "${this.nearest}"?`;
+    return `Nothing is bound to "${this.name}". ${why} To mean the string itself, write ["quote", "${this.name}"].`;
+  }
+}
+
 /** Raised by relations, rules, facts, and queries. */
 export class LogicError extends Schema.TaggedError<LogicError>()("LogicError", {
   message: Schema.String,

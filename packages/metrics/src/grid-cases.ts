@@ -79,6 +79,8 @@ export interface Expression {
   readonly boolean?: true;
   readonly form: unknown;
   readonly name: string;
+  /** Forms the expression needs after the prelude, such as a declaration. */
+  readonly setup?: readonly unknown[];
 }
 
 export const EXPRESSIONS: readonly Expression[] = [
@@ -175,6 +177,104 @@ export const EXPRESSIONS: readonly Expression[] = [
   {
     name: "goal built by a function",
     form: [["lambda", ["v"], ["small", "v"]], X],
+    boolean: true,
+  },
+  // Schemas: whatever checks a value asks whether it fits, by one rule.
+  {
+    name: "schema check",
+    form: ["schema/fits?", X, ["schema/anyOf", 1, 2]],
+    boolean: true,
+  },
+  {
+    name: "named schema",
+    setup: [
+      [
+        "schema",
+        "Low",
+        [
+          "schema/allOf",
+          "value/integer?",
+          ["lambda", ["v"], ["number/lessThan", "v", 3]],
+        ],
+      ],
+    ],
+    form: ["Low", X],
+    boolean: true,
+  },
+  {
+    name: "schema that asks",
+    form: [
+      "schema/fits?",
+      { id: X, tags: ["array/make", X] },
+      { id: "small", tags: ["schema/arrayOf", "value/integer?"] },
+    ],
+    boolean: true,
+  },
+  {
+    name: "schema over the variable",
+    form: ["schema/fits?", 2, ["schema/anyOf", X, 9]],
+    boolean: true,
+  },
+  {
+    name: "schema problems",
+    form: ["schema/problems", { id: X }, { id: ["schema/anyOf", 1, 2] }],
+  },
+  { name: "schema assert", form: ["schema/assert", X, "value/integer?"] },
+  {
+    name: "match on a schema",
+    form: [
+      "match",
+      { id: X },
+      [{ id: ["schema/anyOf", 1, 2] }, ["lambda", ["v"], "low"]],
+      ["lambda", ["v"], "high"],
+    ],
+  },
+  // Patterns: a variable in a schema is its value once it is bound.
+  {
+    name: "record pattern over the variable",
+    form: [
+      "schema/fits?",
+      { id: 2, tags: ["array/make", 2] },
+      { id: X, tags: ["array/make", X] },
+    ],
+    boolean: true,
+  },
+  {
+    name: "open record",
+    form: [
+      "schema/fits?",
+      { id: X, more: true },
+      ["schema/open", { id: ["schema/anyOf", 1, 2] }],
+    ],
+    boolean: true,
+  },
+  {
+    name: "predicate made from the variable",
+    form: ["schema/fits?", 2, ["func/partial", "number/lessThan", X]],
+    boolean: true,
+  },
+  {
+    name: "schemas that name each other",
+    setup: [
+      [
+        "schema",
+        "Even",
+        ["schema/anyOf", 0, { next: "Odd" }],
+        "Odd",
+        { next: "Even" },
+      ],
+    ],
+    form: ["Even", { next: { next: ["number/subtract", X, 1] } }],
+    boolean: true,
+  },
+  {
+    name: "relation call with a schema",
+    form: ["small", ["func/partial", "number/lessThan", X]],
+    boolean: true,
+  },
+  {
+    name: "relation call with a pattern",
+    form: ["link", ["schema/anyOf", X, 9], "?_"],
     boolean: true,
   },
 ];

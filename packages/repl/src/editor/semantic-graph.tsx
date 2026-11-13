@@ -100,6 +100,7 @@ const NODE_COLOR_BY_KEY = {
   string: "var(--node-string)",
   syntax: "var(--node-syntax)",
   relation: "var(--node-logic)",
+  schema: "var(--node-logic)",
   rule: "var(--node-logic)",
   fact: "var(--node-logic)",
   retract: "var(--node-logic)",
@@ -319,13 +320,27 @@ const describeSpecialForm = (
       )?.name;
       const columns = children.find(({ role }) => role === "columns");
       const columnCount = columns?.children.length ?? 0;
-      const keyed = children.some(({ role }) => role === "options");
+      // The options are a record: its children are named by their keys.
+      const options = new Set(
+        children
+          .find(({ role }) => role === "options")
+          ?.children.map((id) => byId.get(id)?.role)
+      );
+      const kind = options.has("key") ? "keyed relation" : "relation";
       return {
         mark: form,
-        description: keyed ? "keyed relation" : "relation",
+        description: options.has("schema") ? `${kind} with a schema` : kind,
         detail: `${binding ?? "relation"} · ${pluralize(columnCount, "column")}`,
       };
     }
+    case "schema":
+      return {
+        mark: form,
+        description: "schema",
+        detail:
+          semantic.relationships.find(({ kind }) => kind === "definition")
+            ?.name ?? "what a value must be",
+      };
     case "rule":
       return {
         mark: form,

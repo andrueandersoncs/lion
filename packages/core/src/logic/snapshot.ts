@@ -1,17 +1,24 @@
 /**
  * Snapshots write a logic database out as a Lion program: its relations,
- * facts, rules, and invariants as `relation`, `fact`, `rule`, and `invariant`
- * forms. Evaluating the program into an empty database rebuilds it, so a
- * snapshot is both the save format and ordinary Lion that can be read,
- * edited, and run. Invariants come last, so loading never checks them
- * against a half-built database.
+ * schemas, facts, rules, and invariants as `relation`, `schema`, `fact`,
+ * `rule`, and `invariant` forms. Evaluating the program into an empty
+ * database rebuilds it, so a snapshot is both the save format and ordinary
+ * Lion that can be read, edited, and run. Invariants come last, so loading
+ * never checks them against a half-built database.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { keyColumns } from "@/logic/model";
-import { quoted, show, Unwritable, type Writer, write } from "@/logic/terms";
+import {
+  quoted,
+  schemaOf,
+  show,
+  Unwritable,
+  type Writer,
+  write,
+} from "@/logic/terms";
 
 export interface SnapshotOptions {
   /**
@@ -27,7 +34,12 @@ const writer = (
   database: LogicDatabase,
   { isBound = () => false }: SnapshotOptions
 ): Writer => ({
-  data: quoted((text) => database.relations.has(text) || isBound(text)),
+  data: quoted(
+    (text) =>
+      database.relations.has(text) ||
+      database.schemas.has(text) ||
+      isBound(text)
+  ),
   opaque: (item, callee) => {
     throw new Unwritable(
       typeof item === "function"
@@ -36,6 +48,32 @@ const writer = (
     );
   },
 });
+
+/**
+ * A `schema` form for the schemas of each form that declared them. A shape
+ * can name relations, the schemas declared before it, and the schemas
+ * declared with it, so those are written together.
+ */
+const schemaForms = (
+  database: LogicDatabase,
+  goal: (item: unknown) => unknown
+) => {
+  const written = new Set<string>();
+  const forms: unknown[] = [];
+  for (const schema of database.schemas.values()) {
+    const group = schemaOf(schema)?.group ?? [];
+    if (!group.some((name) => written.has(name))) {
+      forms.push([
+        "schema",
+        ...group.flatMap((name) => {
+          written.add(name);
+          return [name, goal(schemaOf(database.schemas.get(name))?.definition)];
+        }),
+      ]);
+    }
+  }
+  return forms;
+};
 
 /**
  * Writes a database as a Lion program that rebuilds it. Fails when a rule or
@@ -63,6 +101,7 @@ export const saveDatabase = (
               ]
         );
       }
+      forms.push(...schemaForms(database, goal));
       for (const [name, facts] of database.facts) {
         if (facts.size > 0) {
           forms.push([

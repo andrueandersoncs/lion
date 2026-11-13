@@ -1,0 +1,109 @@
+<article id="take-data-apart" data-title="Take data apart" data-summary="Bind logic variables to the parts of records and lists with patterns, in relation calls, queries, and rules.">
+<p>This guide shows how to get at the parts of nested data in a rule or query. A <a href="#check-data">schema</a> with a logic variable in it is a pattern: the variable takes the value it meets, so one goal checks a value and takes it apart.</p>
+
+<h2>Bind the fields of a record</h2>
+<p>Write the record you are looking for as an argument of a relation call, with a variable where a value should go. The call asks for the rows that fit, and binds the variables:</p>
+<lion-example name="A record pattern">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["fact",
+    ["inbox", {"type": "refund", "id": 3}],
+    ["inbox", {"type": "refund", "id": 4}],
+    ["inbox", {"type": "order", "id": 1}]],
+  ["query", ["inbox", {"type": "refund", "id": "?id"}], {"order": "id"}]]
+</lion-example>
+<p>A record in a pattern fits a record with the same keys. The value <code>"refund"</code> fits only itself, so it picks the rows, and <code>?id</code> takes the <code>id</code> of each.</p>
+
+<h2>Take some keys of a larger record</h2>
+<p><code>schema/open</code> fits a record whatever other keys it has, so a pattern can name only the keys it needs. <code>?_</code> fits any value and binds nothing, which asks only that a key is there:</p>
+<lion-example name="An open record">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["fact",
+    ["inbox", {"type": "order", "id": 1, "note": "gift"}],
+    ["inbox", {"type": "order", "id": 2, "rush": true}],
+    ["inbox", {"type": "refund", "id": 3}]],
+  {"orders": ["find", "?id", ["inbox", ["schema/open", {"type": "order", "id": "?id"}]]],
+   "with a note": ["find", "?id", ["inbox", ["schema/open", {"id": "?id", "note": "?_"}]]]}]
+</lion-example>
+
+<h2>Go through a list inside a record</h2>
+<p>The element of <code>in</code> can be a pattern too. Here one goal takes the lines out of each order, and <code>in</code> takes each line apart, so a rule turns nested documents into rows that other rules can count:</p>
+<lion-example name="The items of a list">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "line", ["order", "sku", "qty"]],
+  ["relation", "units", ["order", "total"]],
+  ["fact",
+    ["inbox", ["quote", {"id": 1, "lines": [{"sku": "a1", "qty": 2}, {"sku": "b2", "qty": 1}]}]],
+    ["inbox", ["quote", {"id": 2, "lines": [{"sku": "a1", "qty": 5}]}]]],
+  ["rule", ["line", "?order", "?sku", "?qty"],
+    ["inbox", {"id": "?order", "lines": "?lines"}],
+    ["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]],
+  ["rule", ["units", "?order", ["aggregate/sum", "?qty"]],
+    ["line", "?order", "?sku", "?qty"]],
+  {"lines": ["find", ["array/make", "?order", "?sku", "?qty"], ["line", "?order", "?sku", "?qty"]],
+   "units": ["query", ["units", "?order", "?total"], {"order": "order"}]}]
+</lion-example>
+
+<h2>Take a list apart by position</h2>
+<p>A list of variables fits a list of the same length. <code>=</code> matches one side against the other, so it binds the variables on either side:</p>
+<lion-example name="A list pattern">
+["begin",
+  ["relation", "route", ["stops"]],
+  ["fact",
+    ["route", ["array/make", "oslo", "bergen", "voss"]],
+    ["route", ["array/make", "rome", "pisa", "turin"]],
+    ["route", ["array/make", "kyoto", "nara"]]],
+  ["query",
+    ["and", ["route", "?stops"], ["=", ["array/make", "?from", "?_", "?to"], "?stops"]],
+    {"order": "from"}]]
+</lion-example>
+<p>The route with two stops has no answer, since the pattern has three places.</p>
+
+<h2>Check a part while you take it</h2>
+<p>Every schema works in a pattern. A predicate says what a part must be, <code>schema/allOf</code> checks a part and binds it, and <code>schema/anyOf</code> offers a choice. A predicate can be made from a variable that another goal binds:</p>
+<lion-example name="Predicates in a pattern">
+["begin",
+  ["relation", "reading", ["sensor", "celsius"]],
+  ["relation", "limit", ["celsius"]],
+  ["fact",
+    ["reading", "attic", 30], ["reading", "cellar", 10], ["reading", "roof", "n/a"],
+    ["limit", 25]],
+  {"numbers": ["find", "?sensor", ["reading", "?sensor", "value/number?"]],
+   "hot": ["find", "?sensor",
+     ["and", ["limit", "?max"],
+       ["reading", "?sensor", ["func/partial", "number/lessThan", "?max"]]]],
+   "attic or roof": ["query",
+     ["reading", ["schema/anyOf", "attic", "roof"], "?celsius"]],
+   "checked": ["query",
+     ["reading", "?sensor", ["schema/allOf", "value/number?", "?celsius"]],
+     {"order": "sensor"}]}]
+</lion-example>
+
+<h2>Take apart a value you already have</h2>
+<p><code>schema/fits?</code> is the same goal for a value that another goal bound, or one from outside. With a named schema and a pattern in one <code>schema/allOf</code>, a rule keeps the documents that fit and takes them apart at once:</p>
+<lion-example name="A check that binds">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["fact",
+    ["inbox", {"id": 1, "status": "open"}],
+    ["inbox", {"id": 2, "status": "opne"}],
+    ["inbox", {"id": "3", "status": "shipped"}]],
+  ["rule", ["order", "?id", "?status"],
+    ["inbox", ["schema/allOf", "Order", {"id": "?id", "status": "?status"}]]],
+  {"orders": ["query", ["order", "?id", "?status"]],
+   "one value": ["query",
+     ["schema/fits?", ["quote", {"id": 7, "status": "open"}], {"id": "?id", "status": "?status"}]]}]
+</lion-example>
+<p>The order of the goals in a rule does not matter: a goal that binds through a pattern gives what it gives when another goal has bound its variables first.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#logic-patterns">Patterns</a> in the reference says which goals bind, and how.</li>
+  <li><a href="#check-data">Check the shape of data</a> covers schemas without variables.</li>
+  <li><a href="#ask-questions">Ask questions from any expression</a> covers <code>find</code> and goals used as values.</li>
+</ul>
+</article>

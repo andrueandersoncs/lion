@@ -9,10 +9,12 @@ import {
   type Literal,
   questionPlans,
 } from "@/logic/compile";
+import { checkOf, misfit } from "@/logic/fit";
 import { factsName, rewriteQueries } from "@/logic/magic";
 import {
   aggregateKind,
   answer,
+  changedAnswers,
   collect,
   distinct,
   EMPTY,
@@ -26,21 +28,33 @@ import {
   NO_VARS,
   type Tuple,
   TupleSet,
+  term,
+  UNDIRECTED,
   type Vars,
 } from "@/logic/model";
 import { type Assertion, assertionProblem } from "@/logic/query-options";
-import { asked, components, mentioned, reads } from "@/logic/strata";
+import {
+  asked,
+  components,
+  dependencyEdges,
+  isOpaque,
+  mentioned,
+  reads,
+} from "@/logic/strata";
 import {
   Atom,
+  type DeferredCall,
   isForm,
   isGroundValue,
   isWaiting,
+  type LionFunction,
   LogicValue,
   LogicVariable,
   logicKey,
   makeRelationValue,
   type RelationInfo,
   render,
+  schemaOf,
   show,
   valueKey,
 } from "@/logic/terms";
@@ -72,12 +86,14 @@ export interface Invariant {
 }
 
 /**
- * Relations, base facts, rules, and invariants for one evaluation. What the
- * rules derive is worked out when something reads it, and kept until a fact
- * or rule changes.
+ * Relations, schemas, base facts, rules, and invariants for one evaluation.
+ * What the rules derive is worked out when something reads it, and kept
+ * until a fact or rule changes.
  */
 export class LogicDatabase {
   readonly relations = new Map<string, RelationInfo>();
+  /** The schemas declared with a name, each a predicate on one value. */
+  readonly schemas = new Map<string, LionFunction>();
   readonly facts = new Map<string, TupleSet>();
   rules: readonly CompiledRule[] = [];
   invariants: readonly Invariant[] = [];
@@ -122,6 +138,17 @@ export const declareRelation = (
 ): Effect.Effect<RelationInfo, LogicError> => {
   if (new Set(columns).size !== columns.length) {
     return logicError(`Relation "${name}" repeats a column name.`);
+  }
+  if (database.schemas.has(name)) {
+    return logicError(
+      `"${name}" is a schema here, so it cannot also name a relation.`
+    );
+  }
+  const used = database.relations.has(name)
+    ? undefined
+    : usedAsString(database, name, "Relation");
+  if (used !== undefined) {
+    return logicError(used);
   }
   const problem =
     key === undefined ? undefined : keyProblem(name, columns, key);
@@ -170,6 +197,94 @@ export const relationBindings = (database: LogicDatabase) =>
     ])
   );
 
+/**
+ * Why nothing can be declared under a name: a schema already uses it as a
+ * string. What a shape's strings mean never changes, so the name stays free.
+ */
+const usedAsString = (
+  database: LogicDatabase,
+  name: string,
+  kind: "Relation" | "Schema"
+) => {
+  for (const [user, schema] of database.schemas) {
+    if (schemaOf(schema)?.strings.has(name)) {
+      const together =
+        kind === "Schema"
+          ? `, or when the two name each other, declare them in one form: ["schema", "${user}", shape, "${name}", shape]`
+          : "";
+      return `${kind} "${name}" cannot be declared: schema "${user}" was declared with "${name}" as a plain string, since nothing had that name then. Declare "${name}" before "${user}"${together}. To keep the string, write ["quote", "${name}"] in the shape.`;
+    }
+  }
+  return undefined;
+};
+
+/** A schema to declare: what its shape was written as, and evaluated to. */
+export interface SchemaDeclaration {
+  readonly definition: DeferredCall;
+  readonly schema: LionFunction;
+  readonly shape: unknown;
+  /** The strings the shape uses as data. */
+  readonly strings: readonly string[];
+}
+
+/**
+ * Declares the schemas of one form, which can name each other. A schema the
+ * database already holds under a name must have been written the same way,
+ * and stays the one the name stands for, so declaring it again changes
+ * nothing. Either every schema is declared, or none is.
+ */
+export const declareSchemas = (
+  database: LogicDatabase,
+  declarations: readonly SchemaDeclaration[]
+): Effect.Effect<readonly LionFunction[], LogicError> => {
+  const names = declarations.map(({ schema }) => schemaOf(schema)?.name ?? "");
+  const fresh: SchemaDeclaration[] = [];
+  for (const [index, declaration] of declarations.entries()) {
+    const name = names[index] ?? "";
+    if (database.relations.has(name)) {
+      return logicError(
+        `"${name}" is a relation here, so it cannot also name a schema.`
+      );
+    }
+    const held = database.schemas.get(name);
+    if (held === undefined) {
+      const used = usedAsString(database, name, "Schema");
+      if (used !== undefined) {
+        return logicError(used);
+      }
+      fresh.push(declaration);
+      continue;
+    }
+    const before = schemaOf(held)?.definition;
+    const key = logicKey(before);
+    if (key === undefined || key !== logicKey(declaration.definition)) {
+      return logicError(
+        `Schema "${name}" is already declared as ${show(before)}.`
+      );
+    }
+  }
+  // The schemas a form adds are written together by a snapshot. One the
+  // database held before was written with the form that added it.
+  const group = fresh.map(({ schema }) => schemaOf(schema)?.name ?? "");
+  for (const { definition, schema, shape, strings } of fresh) {
+    const info = schemaOf(schema);
+    if (info !== undefined) {
+      info.definition = definition;
+      info.group = group;
+      info.shape = shape;
+      info.strings = new Set(strings);
+      database.schemas.set(info.name, schema);
+    }
+  }
+  return Effect.succeed(
+    names.flatMap((name) => database.schemas.get(name) ?? [])
+  );
+};
+
+/** A binding for every schema declared in the database. */
+export const schemaBindings = (database: LogicDatabase) =>
+  Object.fromEntries(database.schemas);
+
 /** How the call that builds a computed relation reads, without its columns. */
 const computedCall = ({ args, relation }: Atom) =>
   show(relation.computed?.form(args.slice(0, relation.computed.inputs)));
@@ -212,16 +327,32 @@ const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
  */
 type Undo = (() => void) | undefined;
 
+const EMPTY_ROWS: ReadonlyMap<string, TupleSet> = new Map();
+
+/** What a change to facts touched. */
+interface FactChange {
+  /**
+   * The rows the change added, by relation; a superset is fine. Worked out
+   * only when an invariant asks, so a change pays nothing for it otherwise.
+   */
+  readonly added: () => ReadonlyMap<string, TupleSet>;
+  /** The relations whose facts the change wrote to. */
+  readonly touched: ReadonlySet<string>;
+}
+
 /**
- * Makes a change, then checks every invariant. When a check fails, or an
- * invariant does not hold, the change is undone, so a form that changes the
- * database either completes or leaves the database as it was. `describe`
- * starts the message, such as "Adding this rule".
+ * Makes a change, then checks the invariants it can break: all of them, or
+ * for a change to facts, the ones that read what `facts` says it touched.
+ * When a check fails, or an invariant does not hold, the change is undone,
+ * so a form that changes the database either completes or leaves the
+ * database as it was. `describe` starts the message, such as "Adding this
+ * rule".
  */
 const commit = (
   database: LogicDatabase,
   describe: string,
-  change: () => Undo
+  change: () => Undo,
+  facts?: FactChange
 ) =>
   Effect.suspend(() => {
     const undo = change();
@@ -232,7 +363,8 @@ const commit = (
     return checkInvariants(
       database,
       database.invariants,
-      `${describe} breaks an invariant, so nothing changed.`
+      `${describe} breaks an invariant, so nothing changed.`,
+      facts
     ).pipe(
       Effect.onError(() =>
         Effect.sync(() => {
@@ -254,9 +386,11 @@ const commit = (
 const changeFacts = (
   database: LogicDatabase,
   describe: string,
-  write: (facts: (relation: string) => TupleSet | undefined) => boolean
-) =>
-  commit(database, describe, () => {
+  write: (facts: (relation: string) => TupleSet | undefined) => boolean,
+  added: FactChange["added"] = () => EMPTY_ROWS
+) => {
+  const touched = new Set<string>();
+  const change = () => {
     const replaced = new Map<string, TupleSet>();
     const undo = () => {
       for (const [relation, original] of replaced) {
@@ -264,6 +398,7 @@ const changeFacts = (
       }
     };
     const changed = write((relation) => {
+      touched.add(relation);
       const facts = database.facts.get(relation);
       if (
         facts === undefined ||
@@ -281,7 +416,9 @@ const changeFacts = (
       undo();
     }
     return changed ? undo : undefined;
-  });
+  };
+  return commit(database, describe, change, { added, touched });
+};
 
 const these = (atoms: readonly Atom[]) =>
   atoms.length === 1 ? "this fact" : "these facts";
@@ -311,7 +448,19 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       }
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
-    yield* changeFacts(database, `Adding ${these(atoms)}`, (facts) => {
+    const added = () => {
+      const rows = new Map<string, TupleSet>();
+      for (const [{ relation }, tuple] of tuples) {
+        let set = rows.get(relation.name);
+        if (set === undefined) {
+          set = new TupleSet();
+          rows.set(relation.name, set);
+        }
+        set.add(tuple);
+      }
+      return rows;
+    };
+    const write = (facts: (relation: string) => TupleSet | undefined) => {
       let changed = false;
       for (const [{ relation }, tuple] of tuples) {
         const set = facts(relation.name);
@@ -321,7 +470,8 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
           (set !== undefined && addFact(set, declared, tuple)) || changed;
       }
       return changed;
-    });
+    };
+    yield* changeFacts(database, `Adding ${these(atoms)}`, write, added);
     return atoms.map(render);
   });
 
@@ -611,18 +761,28 @@ const solve = (
   base: Model,
   alternatives: readonly (readonly Literal[])[]
 ) =>
-  Effect.gen(function* () {
-    const { bodies, model } = answering(database, base, alternatives);
-    const found: Vars[] = [];
-    for (const body of bodies) {
-      for (const relation of reads(body)) {
-        yield* ensure(model, relation);
-      }
-      for (const vars of yield* matches(model, body)) {
-        found.push(vars);
-      }
-    }
-    return found;
+  Effect.suspend(() => {
+    const run = ({ bodies, model }: ReturnType<typeof answering>) =>
+      Effect.gen(function* () {
+        const found: Vars[] = [];
+        for (const body of bodies) {
+          for (const relation of reads(body)) {
+            yield* ensure(model, relation);
+          }
+          for (const vars of yield* matches(model, body)) {
+            found.push(vars);
+          }
+        }
+        return found;
+      });
+    // A query that asks about an argument that is not data cannot be
+    // directed by it, so it is answered from every row instead.
+    return run(answering(database, base, alternatives)).pipe(
+      Effect.catchIf(
+        (error) => error === UNDIRECTED,
+        () => run({ bodies: alternatives, model: base })
+      )
+    );
   });
 
 /** Runs a query and returns one record per distinct answer. */
@@ -681,27 +841,211 @@ export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
     })
   );
 
+/** The schema checks a goal says its answers fail: those under "not". */
+const refuted = (goal: unknown): NonNullable<ReturnType<typeof checkOf>>[] => {
+  if (isForm(goal, "and")) {
+    return goal.parts.flatMap(refuted);
+  }
+  const check = isForm(goal, "not") ? checkOf(goal.parts[0]) : undefined;
+  return check === undefined ? [] : [check];
+};
+
+/**
+ * Where an answer does not fit a schema that its goal says it fails, as a
+ * sentence to end a message with; empty when the goal checks no schema.
+ */
+const misfitOf = (
+  database: LogicDatabase,
+  goal: unknown,
+  row: Record<string, unknown>
+) =>
+  reading(database, (model) =>
+    Effect.gen(function* () {
+      const vars: Vars = new Map(Object.entries(row));
+      for (const check of refuted(goal)) {
+        const schema = yield* term(model, check.schema, vars);
+        const value = yield* term(model, check.value, vars);
+        const message = yield* misfit(schema, value);
+        if (message !== undefined) {
+          return ` ${message}`;
+        }
+      }
+      return "";
+    })
+  ).pipe(Effect.orElseSucceed(() => ""));
+
+/**
+ * Fails when a goal's answers break an assertion, in the words every
+ * assertion uses. `subject` names what made the assertion, such as "query"
+ * or "invariant", and `context` starts the message. When the goal says an
+ * answer fails a schema, the message ends with where it does not fit.
+ */
+export const checkAssertion = (
+  database: LogicDatabase,
+  subject: string,
+  assert: Assertion | undefined,
+  rows: readonly Record<string, unknown>[],
+  goal: unknown,
+  context = ""
+) =>
+  Effect.gen(function* () {
+    const problem = assertionProblem(subject, assert, rows, goal);
+    if (problem === undefined) {
+      return;
+    }
+    const [row] = rows;
+    const where = row === undefined ? "" : yield* misfitOf(database, goal, row);
+    return yield* logicError(`${context}${problem}${where}`);
+  });
+
+/** What an invariant reads, which says what changes to facts can break it. */
+interface Footprint {
+  /**
+   * The relations that hold only facts, and whose rows a goal of the
+   * invariant matches.
+   */
+  readonly direct: ReadonlySet<string>;
+  /**
+   * True when what the invariant reads cannot be told: its goal, or a rule
+   * behind a relation it reads, holds a function that may read anything.
+   */
+  readonly opaque: boolean;
+  /**
+   * Every relation the invariant reads any other way: asked about, under
+   * "not" or by a schema, derived by rules or computed, or read by those.
+   */
+  readonly others: ReadonlySet<string>;
+}
+
+const FOOTPRINTS = new WeakMap<
+  Invariant,
+  { readonly footprint: Footprint; readonly rules: readonly CompiledRule[] }
+>();
+
+/** What an invariant reads, worked out once for each set of rules. */
+const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
+  const known = FOOTPRINTS.get(invariant);
+  if (known?.rules === database.rules) {
+    return known.footprint;
+  }
+  const edges = dependencyEdges(database.rules);
+  const direct = new Set<string>();
+  const pending: RelationInfo[] = [];
+  for (const literal of invariant.query.bodies.flat()) {
+    const relation = literal instanceof Atom ? literal.relation : undefined;
+    if (
+      relation === undefined ||
+      relation.computed !== undefined ||
+      edges.has(relation.name)
+    ) {
+      pending.push(...mentioned(literal));
+    } else {
+      direct.add(relation.name);
+      pending.push(...(literal as Atom).args.flatMap(mentioned));
+    }
+  }
+  const others = new Set<string>();
+  const names = pending.flatMap(({ computed, name }) => [
+    name,
+    ...(computed?.dependencies ?? []),
+  ]);
+  for (let name = names.pop(); name !== undefined; name = names.pop()) {
+    if (!others.has(name)) {
+      others.add(name);
+      names.push(...(edges.get(name) ?? []));
+    }
+  }
+  const opaque =
+    invariant.query.bodies.flat().some(isOpaque) ||
+    database.rules.some(
+      ({ body, head }) =>
+        others.has(head.relation.name) &&
+        (body.some(isOpaque) || head.args.some(isOpaque))
+    );
+  const footprint = { direct, opaque, others };
+  FOOTPRINTS.set(invariant, { footprint, rules: database.rules });
+  return footprint;
+};
+
+/**
+ * True when a change to facts cannot have broken an invariant that held
+ * before it, so the invariant need not be asked again.
+ *
+ * - A change to relations the invariant does not read changes none of its
+ *   answers. That takes knowing what it reads: an invariant that holds a
+ *   function which may read anything is always asked.
+ * - For an invariant that expects no answers: when the change touched only
+ *   relations whose rows a goal of the invariant matches, removing rows
+ *   cannot give it an answer, and an answer that is new uses a row that is
+ *   new. So it is enough to run the goal on the new rows.
+ */
+const unaffected = (
+  database: LogicDatabase,
+  invariant: Invariant,
+  { added, touched }: FactChange
+) =>
+  Effect.suspend(() => {
+    const { direct, opaque, others } = footprintOf(database, invariant);
+    const reaches = (names: ReadonlySet<string>) =>
+      [...touched].some((name) => names.has(name));
+    if (opaque || reaches(others)) {
+      return Effect.succeed(false);
+    }
+    if (!reaches(direct)) {
+      return Effect.succeed(true);
+    }
+    if (invariant.assert !== "none") {
+      return Effect.succeed(false);
+    }
+    const rows = added();
+    return reading(database, (model) =>
+      Effect.gen(function* () {
+        for (const body of invariant.query.bodies) {
+          for (const relation of reads(body)) {
+            yield* ensure(model, relation);
+          }
+          if ((yield* changedAnswers(model, body, rows)).length > 0) {
+            return false;
+          }
+        }
+        return true;
+      })
+    ).pipe(
+      // Whatever went wrong, asking the invariant in full says it best.
+      Effect.orElseSucceed(() => false)
+    );
+  });
+
 /**
  * Answers each invariant's goal as a query would, and fails with the first
  * one whose answers break its assertion. `context` starts the message.
+ * After a change to facts, an invariant the change cannot have broken is
+ * not asked.
  */
 const checkInvariants = (
   database: LogicDatabase,
   invariants: readonly Invariant[],
-  context: string
+  context: string,
+  change?: FactChange
 ) =>
   Effect.gen(function* () {
     for (const invariant of invariants) {
-      const rows = yield* queryDatabase(database, invariant.query);
-      const problem = assertionProblem(
-        "invariant",
-        invariant.assert,
-        rows,
-        invariant.goal
-      );
-      if (problem !== undefined) {
-        return yield* logicError(`${context} ${problem}`);
+      const { assert, goal, query } = invariant;
+      if (
+        change !== undefined &&
+        (yield* unaffected(database, invariant, change))
+      ) {
+        continue;
       }
+      const rows = yield* queryDatabase(database, query);
+      yield* checkAssertion(
+        database,
+        "invariant",
+        assert,
+        rows,
+        goal,
+        `${context} `
+      );
     }
   });
 

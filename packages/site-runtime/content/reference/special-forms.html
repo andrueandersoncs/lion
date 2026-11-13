@@ -81,12 +81,12 @@
 
 <h2 id="form-match"><code>match</code></h2>
 <code-block lang="json">
-["match", value, [predicate, function], ..., fallback]
+["match", value, [schema, function], ..., fallback]
 </code-block>
 <ul>
-  <li>Evaluates <code>value</code>, then tries each pair in order. The first whose predicate holds is chosen, and its function is called with the value. If none holds, <code>fallback</code> is called with the value.</li>
-  <li>A predicate is a function, or a record of predicates. A function holds when it returns <code>true</code>; a failure, or any result other than a boolean, counts as not holding. A relation is a predicate too: it holds when the goal it builds from the value <a href="#logic-asking">has a match</a>.</li>
-  <li>A record predicate holds for a record that has every one of its keys, where each value satisfies the predicate under the same key. Record predicates nest.</li>
+  <li>Evaluates <code>value</code>, then tries each pair in order. The first whose schema the value <a href="#schema-fitting">fits</a> is chosen, and its function is called with the value. If the value fits none, <code>fallback</code> is called with the value.</li>
+  <li>Anything is a schema. A function is a predicate: the value fits when it returns <code>true</code>, and a failure, or any other result, counts as not fitting. A relation with one column is a predicate too: the value fits when the goal the relation builds from it <a href="#logic-asking">has a match</a>.</li>
+  <li>A record fits a record with the same keys, where each value fits the schema under the same key; <code>["schema/open", record]</code> fits a record that has other keys too. A list fits a list of the same length, item by item. Any other value fits a value equal to it. Schemas nest.</li>
   <li>At least one pair and the fallback are required.</li>
 </ul>
 <lion-example name="match">

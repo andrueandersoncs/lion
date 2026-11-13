@@ -1,0 +1,121 @@
+<article id="check-data" data-title="Check the shape of data" data-summary="Say what a value must be with a schema, find where data does not fit, and have a relation refuse rows that do not.">
+<p>This guide shows how to check data against a schema. A schema says what a value must be, and Lion has one rule for what fits one: a function is a predicate, a record or list fits part by part, and any other value fits a value equal to it.</p>
+
+<h2>Describe a record</h2>
+<p>Write the record you expect, with a schema in place of each value. <code>schema/fits?</code> asks whether a value fits, and <code>schema/problems</code> lists every place where it does not:</p>
+<lion-example name="A record">
+["begin",
+  ["define", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "note": ["schema/optional", "value/string?"]}],
+  ["define", "incoming", ["quote", {"id": "7", "status": "opne"}]],
+  {"fits": ["schema/fits?", "incoming", "Order"],
+   "problems": ["schema/problems", "incoming", "Order"]}]
+</lion-example>
+<p>Each problem has the <code>path</code> to the part that does not fit, the schema that was <code>expected</code> there, and the value that was <code>found</code>. A record schema fits a record with the same keys, so a key it does not name is a problem too, with only what was <code>found</code>. Wrap the record in <code>schema/open</code> to allow other keys.</p>
+
+<h2>Give a schema a name</h2>
+<p><code>schema</code> declares a schema under a name, the way <code>relation</code> declares a relation. The name is then a predicate, and other schemas can use it. A shape can name its own schema, which describes nested data, and one form can declare several schemas that name each other:</p>
+<lion-example name="Named schemas">
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?",
+       ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order", {"id": "value/integer?", "lines": ["schema/arrayOf", "Line"]}],
+  ["schema", "Folder", {"name": "value/string?", "folders": ["schema/arrayOf", "Folder"]}],
+  ["schema",
+    "Expr", ["schema/anyOf", "value/number?", "Sum"],
+    "Sum", {"add": ["schema/arrayOf", "Expr"]}],
+  {"order": ["Order", ["quote", {"id": 1, "lines": [{"sku": "a1", "qty": 2}]}]],
+   "expr": ["Expr", ["quote", {"add": [1, {"add": [2, 3]}]}]],
+   "bad line": ["schema/problems",
+     ["quote", {"id": 1, "lines": [{"sku": "a1", "qty": 0}]}], "Order"],
+   "folder": ["Folder",
+     ["quote", {"name": "root", "folders": [{"name": "src", "folders": []}]}]]}]
+</lion-example>
+<p>A lambda is a schema for whatever it returns <code>true</code> for. One that fails, as <code>number/greaterThan</code> does on a string, simply does not fit. A misspelled name is different: <code>"value/intger?"</code> in a shape is an error that suggests <code>value/integer?</code>, and not a schema that nothing fits.</p>
+
+<h2>Stop on data that does not fit</h2>
+<p><code>schema/assert</code> returns the value when it fits, so it can wrap the place where data comes in. When the value does not fit, it fails and says where:</p>
+<lion-example name="Assert" expect="error">
+["begin",
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["object/get",
+    ["schema/assert", ["quote", {"id": 7, "status": "opne"}], "Order"],
+    "id"]]
+</lion-example>
+
+<h2>Sort incoming data with rules</h2>
+<p>A schema check is a call like any other, so it works as a goal in a rule, under <code>not</code>, and in a <code>find</code>. Here raw documents go in as facts. One rule keeps the ones that fit, and takes them apart with a <a href="#take-data-apart">pattern</a>, and another turns each problem of the others into a row:</p>
+<lion-example name="In rules">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["relation", "rejected", ["doc", "where"]],
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["fact",
+    ["inbox", {"id": 1, "status": "open"}],
+    ["inbox", {"id": 2, "status": "opne"}],
+    ["inbox", {"id": "3", "status": "shipped"}]],
+  ["rule", ["order", "?id", "?status"],
+    ["inbox", ["schema/allOf", "Order", {"id": "?id", "status": "?status"}]]],
+  ["rule", ["rejected", "?doc", ["object/get", "?problem", "path"]],
+    ["inbox", "?doc"], ["in", "?problem", ["schema/problems", "?doc", "Order"]]],
+  {"orders": ["query", ["order", "?id", "?status"]],
+   "rejected": ["query", ["rejected", "?doc", "?where"], {"order": "where"}],
+   "how many": ["aggregate/count",
+     ["find", "?doc", ["and", ["inbox", "?doc"], ["not", ["Order", "?doc"]]]]]}]
+</lion-example>
+
+<h2>Have a relation refuse rows that do not fit</h2>
+<p>The relation option <code>"schema"</code> names a declared schema that every row must fit. A row is checked as a record of its columns, so the schema names every column, or is a <code>schema/open</code> record that names some. A <code>fact</code> form that would add a row that does not fit fails, and changes nothing:</p>
+<lion-example name="A relation's schema" expect="error">
+["begin",
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["relation", "order", ["id", "status"], {"key": "id", "schema": "Order"}],
+  ["fact", ["order", 1, "open"]],
+  ["fact", ["order", 2, "opne"]]]
+</lion-example>
+<p>The option stands for the <a href="#form-invariant">invariant</a> that the message shows, so it is kept like every invariant, and the message ends with where the row does not fit.</p>
+
+<h2>Require that a value exists elsewhere</h2>
+<p>A relation with one column is a predicate, so it is a schema: a value fits <code>person</code> when it is one of its rows. As the schema of a column, that is a foreign key. Retracting a person who is still someone's parent is refused:</p>
+<lion-example name="A foreign key" expect="error">
+["begin",
+  ["relation", "person", ["name"]],
+  ["schema", "Kin", {"parent": "person", "child": "person"}],
+  ["relation", "parent", ["parent", "child"], {"schema": "Kin"}],
+  ["fact", ["person", "ada"], ["person", "ben"], ["parent", "ada", "ben"]],
+  ["retract", ["person", "ben"]]]
+</lion-example>
+<p>One <code>fact</code> form can add a person and their parent together, since a form is checked once it has made all of its changes.</p>
+
+<h2>Check data from TypeScript</h2>
+<p>Bind the data to a name in the environment, and check it against a schema the database holds:</p>
+<code-block lang="ts">
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { LogicDatabase } from "@lionlang/core/logic/database";
+import { stdlib } from "@lionlang/core/modules";
+import { Effect } from "effect";
+
+const database = new LogicDatabase();
+await Effect.runPromise(
+  run(["schema", "Order", { id: "value/integer?" }], stdlib, { database })
+);
+
+const problems = await Effect.runPromise(
+  run(["schema/problems", "incoming", "Order"], { ...stdlib, incoming }, { database })
+);
+</code-block>
+<p>An empty list means <code>incoming</code> fits. Schemas are data like the rest of a Lion program, so a program can add them while it runs, and a snapshot saves the ones a database holds.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-schema"><code>schema</code></a> and <a href="#module-schema">the <code>schema</code> module</a> in the reference.</li>
+  <li><a href="#take-data-apart">Take data apart</a> binds logic variables to the parts of a value that fits.</li>
+  <li><a href="#branch-on-shape">Branch on a value's shape</a> uses schemas to choose what to do with a value.</li>
+  <li><a href="#enforce-rules">Enforce rules on your data</a> covers the conditions that span more than one row.</li>
+</ul>
+</article>

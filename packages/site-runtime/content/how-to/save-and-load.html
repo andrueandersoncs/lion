@@ -1,5 +1,5 @@
 <article id="save-and-load" data-title="Save and load a logic database" data-summary="Write a database out as a Lion program, store it anywhere, and rebuild it later from the command line or TypeScript.">
-<p>This guide shows how to persist a logic database. A saved database is a snapshot: an ordinary Lion program of <code>relation</code>, <code>fact</code>, <code>rule</code>, and <code>invariant</code> forms that rebuilds it when run.</p>
+<p>This guide shows how to persist a logic database. A saved database is a snapshot: an ordinary Lion program of <code>relation</code>, <code>schema</code>, <code>fact</code>, <code>rule</code>, and <code>invariant</code> forms that rebuilds it when run.</p>
 
 <h2>Take a snapshot in Lion</h2>
 <lion-example name="Snapshot">
@@ -11,7 +11,7 @@
   ["invariant", ["edge", "?x", "?x"], {"assert": "none"}],
   ["snapshot"]]
 </lion-example>
-<p>Strings that would load as something else, such as relation names, logic variable names, and namespaced names, are written inside <code>quote</code>, and so are lists and records. Rules are written with values as they were evaluated.</p>
+<p>Strings that would load as something else, such as relation names, logic variable names, and namespaced names, are written inside <code>quote</code>, and so are lists and records. Rules are written with values as they were evaluated. A named <a href="#form-schema">schema</a> is written with its shape, schemas that one form declared in one form, and the schema of a relation's rows as the invariant it stands for.</p>
 
 <h2>Restore facts from a snapshot</h2>
 <p>A snapshot is a program, so evaluating it puts back what it holds. Here a fact is removed after the snapshot, and running the snapshot with <code>eval</code> restores it:</p>

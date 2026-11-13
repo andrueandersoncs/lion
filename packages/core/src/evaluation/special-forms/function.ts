@@ -11,6 +11,7 @@ import { mentioned } from "@/logic/strata";
 import {
   DeferredCall,
   invoke,
+  isData,
   isForm,
   isLogicFunction,
   isQuestion,
@@ -19,6 +20,7 @@ import {
   type LionFunction,
   LogicValue,
   lambdaInfo,
+  relationOf,
   show,
   termVariables,
 } from "@/logic/terms";
@@ -28,6 +30,9 @@ import type { EvaluateResult, EvaluationError } from "@/types/evaluation";
 /** An argument that may keep a function from running right away. */
 const isSpecial = (arg: unknown) =>
   typeof arg === "function" || arg instanceof LogicValue;
+
+/** True for an argument a goal can hold as it is: a logic value, or data. */
+const isHeld = (arg: unknown) => arg instanceof LogicValue || isData(arg);
 
 /** True for an argument that mentions a logic variable or a relation. */
 const isLive = (arg: unknown) =>
@@ -67,9 +72,11 @@ export const apply = (
   args: readonly unknown[],
   callee?: unknown
 ): EvaluateResult => {
-  const later = (closed: readonly unknown[]) =>
-    new DeferredCall(fn, callee, closed);
-  const wait = () => Effect.map(suspendArguments(args), later);
+  // The call that runs later holds the function as well as its arguments
+  // closed: a function that another one built can hold lambdas too.
+  const later = ([closed, ...rest]: readonly unknown[]) =>
+    new DeferredCall(closed, callee, rest);
+  const wait = () => Effect.map(suspendArguments([fn, ...args]), later);
   if (typeof fn !== "function") {
     return isWaiting(fn)
       ? wait()
@@ -78,13 +85,16 @@ export const apply = (
   const run = (values: readonly unknown[]) =>
     invoke(fn as LionFunction, values) as EvaluateResult;
   if (isLogicFunction(fn)) {
-    return args.some(asks) && lambdaInfo(fn) !== undefined
-      ? // The lambda waits with its arguments, closed over what it names now.
-        Effect.map(
-          suspendArguments([fn, ...args]),
-          ([closed, ...rest]) => new DeferredCall(closed, callee, rest)
-        )
-      : run(args);
+    // The lambda waits with its arguments, closed over what it names now.
+    if (args.some(asks) && lambdaInfo(fn) !== undefined) {
+      return wait();
+    }
+    // An argument of a relation call that is not data is a schema for its
+    // column. The goal holds it closed, like the arguments of any call that
+    // waits, so a variable it was made from is one the goal waits for.
+    return args.every(isHeld) || relationOf(fn) === undefined
+      ? run(args)
+      : Effect.flatMap(suspendArguments(args), run);
   }
   // What a rule holds runs when the rule runs. A call on known values is
   // computed ahead of time when that works, which changes only when a side
@@ -104,8 +114,8 @@ export const apply = (
       const values = yield* Effect.forEach(args, answer);
       return yield* run(values).pipe(Effect.catchTag("WaitingError", wait));
     }
-    const closed = yield* suspendArguments(args);
-    return closed.some(isLive)
+    const closed = yield* suspendArguments([fn, ...args]);
+    return closed.slice(1).some(isLive)
       ? later(closed)
       : yield* run(args).pipe(Effect.catch(wait));
   });

@@ -1,6 +1,22 @@
 import { Effect } from "effect";
 import { apply } from "@/evaluation/special-forms/function";
-import { logicFunction } from "@/logic/terms";
+import { builtBy, type LionFunction, logicFunction } from "@/logic/terms";
+
+/**
+ * A function with its first arguments filled in. Calling it is calling
+ * the function it wraps with those arguments first, so like that function
+ * it either waits for logic variables or takes them as they are. It
+ * remembers the call that built it, so it is written as that call.
+ */
+const partial: LionFunction = logicFunction((fn: unknown, ...args: unknown[]) =>
+  Effect.succeed(
+    builtBy(
+      logicFunction((...more: unknown[]) => apply(fn, [...args, ...more])),
+      partial,
+      [fn, ...args]
+    )
+  )
+);
 
 export const module = {
   symbol: Symbol("func"),
@@ -45,14 +61,5 @@ export const module = {
         : called;
     }),
 
-  /**
-   * A function with its first arguments filled in. Calling it is calling
-   * the function it wraps with those arguments first, so like that function
-   * it either waits for logic variables or takes them as they are.
-   */
-  partial: logicFunction((fn: unknown, ...args: unknown[]) =>
-    Effect.succeed(
-      logicFunction((...more: unknown[]) => apply(fn, [...args, ...more]))
-    )
-  ),
+  partial,
 };

@@ -91,12 +91,7 @@ describe("match special form", () => {
       const expression = [
         "match",
         { a: 1, b: 2 },
-        [
-          {
-            a: "value/number?",
-          },
-          "value/identity",
-        ],
+        [["schema/open", { a: "value/number?" }], "value/identity"],
         ["lambda", ["x"], 1],
       ];
       const result = yield* run(expression, stdlib);
@@ -128,14 +123,7 @@ describe("match special form", () => {
       const expression = [
         "match",
         { a: { c: 3 }, b: 2 },
-        [
-          {
-            a: {
-              c: "value/number?",
-            },
-          },
-          "value/identity",
-        ],
+        [["schema/open", { a: { c: "value/number?" } }], "value/identity"],
         ["lambda", ["x"], 1],
       ];
       const result = yield* run(expression, stdlib);

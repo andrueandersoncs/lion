@@ -72,6 +72,8 @@ const KINDS: readonly Kind[] = [
       "summarize-groups",
       "graph-questions",
       "enforce-rules",
+      "check-data",
+      "take-data-apart",
       "explain-results",
       "save-and-load",
       "extend-with-host-code",

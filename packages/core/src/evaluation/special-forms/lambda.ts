@@ -1,16 +1,28 @@
 import { Array as Arr, Effect, Option, Record } from "effect";
-import { ArgumentMismatchError } from "@/errors/evaluation";
+import {
+  ArgumentMismatchError,
+  type UnboundNameError,
+} from "@/errors/evaluation";
+import { nameOrString } from "@/evaluation/base-forms/primitive";
 import { getBinding, makeEnvironment } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
 import {
+  buildOf,
   DeferredCall,
   isLogicVariableName,
+  isNamespacedName,
+  isPlainObject,
+  LogicValue,
   LogicVariable,
   lambdaInfo,
+  listMaker,
+  nameFunctions,
+  readsOnlyArguments,
+  recordMaker,
   registerLambda,
 } from "@/logic/terms";
 import type { Environment } from "@/schemas/environment";
-import type { LambdaFormSchema } from "@/schemas/evaluation";
+import { isSpecialFormName, type LambdaFormSchema } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
 import { LionEnvironmentService } from "@/services/evaluation";
 
@@ -89,18 +101,69 @@ export const evaluateLambda = ([
     makeLambda(parameters, bodyExpression, environment)
   );
 
+/** Makes a list of its arguments, as `array/make` does. */
+const makeList = listMaker((...items: unknown[]) => items);
+
+// A list that waits is written as the call that makes it again.
+nameFunctions({ "array/make": makeList });
+readsOnlyArguments({ makeList });
+
+/**
+ * A value that holds lambdas, with those lambdas closed: the parts of a list
+ * or record, or the arguments of the call that built a function. When a part
+ * changed, the value becomes a call that makes it again from the closed
+ * parts, so what a rule holds can always be written. So does a function
+ * that was built from a logic value, as `func/partial` builds one from a
+ * variable: the call that makes it again waits for the variable, where the
+ * function would hide it. Data, and anything else that holds no lambda, is
+ * kept as it is.
+ */
+const closeHolder = (value: unknown, closed: Map<unknown, unknown>) => {
+  const built = buildOf(value);
+  const record = isPlainObject(value) ? value : undefined;
+  const parts =
+    built?.args ??
+    (Array.isArray(value) ? (value as readonly unknown[]) : undefined) ??
+    (record === undefined ? undefined : Object.values(record));
+  if (parts === undefined) {
+    return Effect.succeed(value);
+  }
+  return Effect.map(
+    Effect.forEach(parts, (part) => close(part, closed)),
+    (copies): unknown => {
+      const waits = built?.args.some((part) => part instanceof LogicValue);
+      if (!waits && copies.every((copy, at) => copy === parts[at])) {
+        return value;
+      }
+      if (built !== undefined) {
+        return new DeferredCall(built.by, undefined, copies);
+      }
+      return record === undefined
+        ? new DeferredCall(makeList, "array/make", copies)
+        : new DeferredCall(recordMaker(Object.keys(record)), undefined, copies);
+    }
+  );
+};
+
 /**
  * A lambda that closes over a scope becomes a waiting copy of itself, closed
- * over the values its names have now. `closed` holds the copies made so far;
- * a lambda that reaches itself again is kept as it is.
+ * over the values its names have now, and so does a lambda inside a value
+ * that holds it. `closed` holds the copies made so far; a lambda that
+ * reaches itself again is kept as it is.
  */
 const close = (
   value: unknown,
   closed: Map<unknown, unknown>
-): Effect.Effect<unknown> => {
+): Effect.Effect<unknown, UnboundNameError> => {
+  if (closed.has(value)) {
+    return Effect.succeed(closed.get(value));
+  }
   const info = lambdaInfo(value);
-  if (info?.environment === undefined || closed.has(value)) {
-    return Effect.succeed(closed.get(value) ?? value);
+  if (info === undefined) {
+    return closeHolder(value, closed);
+  }
+  if (info.environment === undefined) {
+    return Effect.succeed(value);
   }
   closed.set(value, value);
   return suspendIn(
@@ -126,9 +189,32 @@ const suspendIn = (
       } else if (!quoted && isLogicVariableName(name)) {
         names.push(name);
         values.push(new LogicVariable(name.slice(1)));
+      } else if (!quoted && isNamespacedName(name)) {
+        // The form would fail on the name when it runs, where less is in
+        // reach to say what it might have meant.
+        yield* nameOrString(environment, name);
       }
     }
     return new DeferredCall(makeLambda(names, form), "lambda", values);
+  });
+
+/**
+ * The strings a form uses as data: those it mentions outside `quote` that
+ * nothing is bound to, and that are not logic variables or the names of
+ * special forms.
+ */
+export const dataStrings = (form: LionExpressionType) =>
+  Effect.gen(function* () {
+    const environment = yield* LionEnvironmentService;
+    const strings: string[] = [];
+    for (const [name, quoted] of references(form)) {
+      const isName =
+        quoted || isLogicVariableName(name) || isSpecialFormName(name);
+      if (!isName && Option.isNone(yield* getBinding(environment, name))) {
+        strings.push(name);
+      }
+    }
+    return strings;
   });
 
 /**

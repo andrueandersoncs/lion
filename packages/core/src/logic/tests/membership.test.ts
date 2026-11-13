@@ -116,7 +116,7 @@ describe("in", () => {
     Effect.gen(function* () {
       const message = yield* errorMessage(["query", ["in", "?x", "?list"]]);
       expect(message).toContain(
-        'must first be bound by a relation, "=", or "in"'
+        'must first be bound by a relation, "=", "in", or "schema/fits?"'
       );
     })
   );

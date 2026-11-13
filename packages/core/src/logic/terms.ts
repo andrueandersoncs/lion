@@ -30,6 +30,16 @@ const LOGIC_VARIABLE_PATTERN = /^\?[A-Za-z_][\w-]*$/;
 export const isLogicVariableName = (name: string): boolean =>
   LOGIC_VARIABLE_PATTERN.test(name);
 
+const NAMESPACED_NAME_PATTERN = /^[a-z][a-z0-9-]*\/[A-Za-z][\w-]*[?!]?$/;
+
+/**
+ * `"number/add"` has the form of a namespaced name: a module in lowercase, a
+ * slash, and a name. Such a string is always a name, never data, unless it
+ * is inside `quote`.
+ */
+export const isNamespacedName = (name: string): boolean =>
+  NAMESPACED_NAME_PATTERN.test(name);
+
 /** Every logic value shows as the Lion expression that evaluates to it. */
 export abstract class LogicValue {
   private mentioned: readonly string[] | undefined;
@@ -72,8 +82,9 @@ export class LogicVariable extends LogicValue {
 
 /**
  * A call that waits: it runs once the engine has bound the variables it
- * needs, and asked the questions among its arguments. A `cond`, `match`,
- * `eval`, or record that waits is a call to a lambda that holds the form.
+ * needs, and asked the questions among its arguments. A `cond`, `match`, or
+ * `eval` that waits is a call to a lambda that holds the form, and a record
+ * that waits is a call to the function that makes it from its values.
  */
 export class DeferredCall extends LogicValue {
   /** The function to call, or a term that evaluates to one. */
@@ -162,7 +173,14 @@ export class Atom extends LogicValue {
 }
 
 /** The logic forms, by the name each is written with. */
-export type FormName = "not" | "and" | "or" | "=" | "in" | "find";
+export type FormName =
+  | "not"
+  | "and"
+  | "or"
+  | "="
+  | "in"
+  | "find"
+  | "schema/fits?";
 
 /**
  * A logic form, held the way it is written: its name, then its parts.
@@ -173,6 +191,7 @@ export type FormName = "not" | "and" | "or" | "=" | "in" | "find";
  * - `["in", element, list]`: the element is one of the list's items.
  * - `["find", template, goal]`: the template's value for every match of
  *   the goal, as a sorted list.
+ * - `["schema/fits?", value, schema]`: the value fits the schema.
  */
 export class LogicForm extends LogicValue {
   readonly form: FormName;
@@ -255,6 +274,112 @@ export const makeRelationValue = <F extends LionFunction>(
   return logicFunction(call);
 };
 
+const RECORD_KEYS = new WeakMap<object, readonly string[]>();
+
+const RECORD_MAKERS = new Map<string, LionFunction>();
+
+/**
+ * A function that makes a record of some keys from one value for each. A
+ * record that waits for a logic variable is a call to one, so the record is
+ * a term like any other: its values are the call's arguments.
+ */
+export const recordMaker = (keys: readonly string[]): LionFunction => {
+  // One maker for each list of keys, so two records that wait for the same
+  // values are the same term.
+  const id = JSON.stringify(keys);
+  let make = RECORD_MAKERS.get(id);
+  if (make === undefined) {
+    make = (...values: unknown[]) =>
+      Object.fromEntries(keys.map((key, at) => [key, values[at]]));
+    RECORD_MAKERS.set(id, make);
+    RECORD_KEYS.set(make, keys);
+    ARGUMENTS_ONLY.add(make);
+  }
+  return make;
+};
+
+/** The keys of the record a function makes, when it is a record maker. */
+export const recordKeys = (value: unknown): readonly string[] | undefined =>
+  typeof value === "function" ? RECORD_KEYS.get(value) : undefined;
+
+const LIST_MAKERS = new WeakSet<object>();
+
+/**
+ * Marks a function that makes a list of its arguments, as `array/make`
+ * does. A call to one that waits is a list term: its items are its
+ * arguments.
+ */
+export const listMaker = <F extends LionFunction>(fn: F): F => {
+  LIST_MAKERS.add(fn);
+  return fn;
+};
+
+const SCHEMA_BUILDERS = new WeakMap<object, boolean>();
+
+/**
+ * Marks a function that builds a schema out of the schemas it is given.
+ * `ofPattern` marks one that looks at what its schema is made of, as
+ * `schema/open` looks at the keys of a record: a call to it that waits is a
+ * pattern only when its argument is one.
+ */
+export const schemaBuilder = <F extends LionFunction>(
+  fn: F,
+  ofPattern: boolean
+): F => {
+  SCHEMA_BUILDERS.set(fn, ofPattern);
+  return fn;
+};
+
+/**
+ * What a pattern is made of, when a term is one: the values of a record or
+ * the items of a list that waits, and for a schema, the arguments of a call
+ * that builds one. A value can be matched against such a term part by part,
+ * which binds the variables that stand in it. Any other term is a value
+ * once its variables are bound.
+ */
+export const patternParts = (
+  term: unknown,
+  asSchema: boolean
+): readonly unknown[] | undefined => {
+  if (!(term instanceof DeferredCall && typeof term.fn === "function")) {
+    return undefined;
+  }
+  if (RECORD_KEYS.has(term.fn) || LIST_MAKERS.has(term.fn)) {
+    return term.args;
+  }
+  const ofPattern = asSchema ? SCHEMA_BUILDERS.get(term.fn) : undefined;
+  const isPattern =
+    ofPattern === false || patternParts(term.args[0], true) !== undefined;
+  return ofPattern !== undefined && isPattern ? term.args : undefined;
+};
+
+/** True for a call that waits to make a list of its arguments. */
+export const isListTerm = (term: unknown): boolean =>
+  term instanceof DeferredCall &&
+  typeof term.fn === "function" &&
+  LIST_MAKERS.has(term.fn);
+
+const ARGUMENTS_ONLY = new WeakSet<object>();
+
+/**
+ * Marks functions that read nothing but their arguments, as every function
+ * of the standard library does. Lion can then tell what a goal that calls
+ * one depends on: the relations among its arguments. Any other function a
+ * host adds may read anything, a database included.
+ */
+export const readsOnlyArguments = (
+  bindings: Readonly<Record<string, unknown>>
+) => {
+  for (const value of Object.values(bindings)) {
+    if (typeof value === "function") {
+      ARGUMENTS_ONLY.add(value);
+    }
+  }
+};
+
+export const isArgumentsOnly = (value: unknown): boolean =>
+  typeof value === "function" && ARGUMENTS_ONLY.has(value);
+
 const FUNCTION_NAMES = new WeakMap<object, string>();
 
 /**
@@ -290,9 +415,72 @@ export const registerLambda = <F extends LionFunction>(
 export const lambdaInfo = (value: unknown): LambdaInfo | undefined =>
   typeof value === "function" ? LAMBDAS.get(value) : undefined;
 
+/** What a named schema was declared with. */
+export interface SchemaInfo {
+  /**
+   * The shape's form, closed over the values its names had when the schema
+   * was declared: what a snapshot writes, and what tells declarations apart.
+   * Undefined while the schema is being declared.
+   */
+  definition: DeferredCall | undefined;
+  /**
+   * The names of the schemas declared in one form with this one, in the
+   * order written. They can name each other, so a snapshot writes them
+   * together.
+   */
+  group: readonly string[];
+  readonly name: string;
+  /** The evaluated shape: what a value must fit. */
+  shape: unknown;
+  /**
+   * The strings the shape uses as data: those it mentions outside `quote`
+   * that named nothing when the schema was declared. What they mean must
+   * not change, so nothing can be declared under one of them afterwards.
+   */
+  strings: ReadonlySet<string>;
+}
+
+const SCHEMAS = new WeakMap<object, SchemaInfo>();
+
+export const registerSchema = <F extends LionFunction>(
+  fn: F,
+  info: SchemaInfo
+): F => {
+  SCHEMAS.set(fn, info);
+  return fn;
+};
+
+/** The named schema a function checks values against, when it is one. */
+export const schemaOf = (value: unknown): SchemaInfo | undefined =>
+  typeof value === "function" ? SCHEMAS.get(value) : undefined;
+
+/** The call that built a function, such as `["schema/arrayOf", item]`. */
+export interface Built {
+  readonly args: readonly unknown[];
+  readonly by: LionFunction;
+}
+
+const BUILT = new WeakMap<object, Built>();
+
+/**
+ * Remembers the call that built a function, so the function is written as
+ * that call, and whoever is handed it can see what it was built from.
+ */
+export const builtBy = <F extends LionFunction>(
+  fn: F,
+  by: LionFunction,
+  args: readonly unknown[]
+): F => {
+  BUILT.set(fn, { args, by });
+  return fn;
+};
+
+export const buildOf = (value: unknown): Built | undefined =>
+  typeof value === "function" ? BUILT.get(value) : undefined;
+
 /**
  * True for a call to a lambda that closes over nothing: a `cond`, `match`,
- * record, or lambda that waits. Its body runs as plain Lion once the call
+ * `eval`, or lambda that waits. Its body runs as plain Lion once the call
  * does, so it can ask questions of its own.
  */
 export const isWaitingForm = (call: DeferredCall): boolean => {
@@ -319,19 +507,36 @@ const lambdaForm = ({ body, parameters }: LambdaInfo) => [
   body,
 ];
 
-const writeFunction = (fn: LionFunction, writer: Writer, callee?: unknown) => {
+const writeFunction = (
+  fn: LionFunction,
+  writer: Writer,
+  callee?: unknown
+): unknown => {
+  const name =
+    RELATIONS.get(fn)?.name ?? SCHEMAS.get(fn)?.name ?? FUNCTION_NAMES.get(fn);
+  if (name !== undefined) {
+    return name;
+  }
+  const built = BUILT.get(fn);
+  if (built !== undefined) {
+    return [
+      writeFunction(built.by, writer),
+      ...built.args.map((arg) => write(arg, writer)),
+    ];
+  }
   const info = LAMBDAS.get(fn);
-  return (
-    RELATIONS.get(fn)?.name ??
-    FUNCTION_NAMES.get(fn) ??
-    (info !== undefined && info.environment === undefined
-      ? lambdaForm(info)
-      : writer.opaque(fn, callee))
-  );
+  return info !== undefined && info.environment === undefined
+    ? lambdaForm(info)
+    : writer.opaque(fn, callee);
 };
 
 const writeCall = (call: DeferredCall, writer: Writer) => {
   const args = call.args.map((arg) => write(arg, writer));
+  const keys = recordKeys(call.fn);
+  if (keys !== undefined) {
+    // A record that waits is written as the record it will be.
+    return Object.fromEntries(keys.map((key, at) => [key, args[at]]));
+  }
   const info = lambdaInfo(call.fn);
   if (info === undefined || info.environment !== undefined) {
     const head =
@@ -353,7 +558,9 @@ const writeCall = (call: DeferredCall, writer: Writer) => {
       ];
 };
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+export const isPlainObject = (
+  value: unknown
+): value is Record<string, unknown> => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -391,7 +598,9 @@ export const write = (item: unknown, writer: Writer): unknown => {
     return writer.data(item);
   }
   if (Array.isArray(item)) {
-    return item.map(inner);
+    // A bare list would read as a call, so it is written as the call that
+    // makes it.
+    return ["array/make", ...item.map(inner)];
   }
   return isPlainObject(item)
     ? Object.fromEntries(
@@ -441,6 +650,22 @@ export const show = (value: unknown): string =>
   JSON.stringify(render(value)) ?? String(value);
 
 /**
+ * The Lion expression that evaluates to a value. Unlike `render`, data is
+ * written so that it stays data: a string that would evaluate to something
+ * else, a list, or a record goes inside `quote`. So the string
+ * `"value/number?"` reads differently from the function of that name.
+ * `isBound` says which other strings are names where the expression is read.
+ */
+export const expression = (
+  value: unknown,
+  isBound?: (text: string) => boolean
+): unknown =>
+  write(
+    value,
+    isBound === undefined ? DISPLAY : { ...DISPLAY, data: quoted(isBound) }
+  );
+
+/**
  * Writes a goal with the values an answer gave its variables. A variable the
  * answer does not bind, such as one a question inside the goal binds for
  * itself, stays a variable.
@@ -478,6 +703,24 @@ export const isGroundValue = (value: unknown): boolean => {
     return value.every(isGroundValue);
   }
   return isPlainObject(value) && Object.values(value).every(isGroundValue);
+};
+
+/** Lists and records known to be JSON data, so each is looked at once. */
+const DATA = new WeakSet<object>();
+
+/**
+ * True for JSON data: what a row holds, and so what a row's value can
+ * equal. Anything else among the arguments of a relation call, such as a
+ * function, is a schema for the column.
+ */
+export const isData = (value: unknown): boolean => {
+  if (typeof value !== "object" || value === null) {
+    return isGroundValue(value);
+  }
+  if (!DATA.has(value) && isGroundValue(value)) {
+    DATA.add(value);
+  }
+  return DATA.has(value);
 };
 
 const canonical = (value: unknown): unknown => {

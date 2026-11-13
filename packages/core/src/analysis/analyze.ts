@@ -65,6 +65,12 @@ const ROLES: Record<SpecialFormName, Role> = {
     ["operator", "binding", "columns", "options"],
     "options"
   ),
+  schema: (index) => {
+    if (index === 0) {
+      return "operator";
+    }
+    return index % 2 === 1 ? "binding" : "shape";
+  },
   rule: roleByIndex(["operator", "head"], "goal"),
   fact: roleByIndex(["operator"], "fact"),
   retract: roleByIndex(["operator"], "fact"),
@@ -141,7 +147,11 @@ const analyzeNode = (
 
   const [head, name] = expression;
   const form = specialFormOf(expression);
-  const defines = (form === "define" || form === "relation") && !quoted;
+  // A schema form names a schema at every second place.
+  const named =
+    form === "schema" ? expression.filter((_, at) => at % 2) : [name];
+  const defines =
+    (form === "define" || form === "relation" || form === "schema") && !quoted;
   let role = form === undefined ? CALL_ROLE : ROLES[form];
   if (quoted) {
     role = () => "item";
@@ -157,10 +167,13 @@ const analyzeNode = (
         quoted || (form === "quote" && order > 0)
       ),
     })),
-    relationships:
-      defines && typeof name === "string"
-        ? [{ kind: "definition" as const, name }]
-        : [],
+    relationships: defines
+      ? named.flatMap((item) =>
+          typeof item === "string"
+            ? [{ kind: "definition" as const, name: item }]
+            : []
+        )
+      : [],
   };
   if (quoted) {
     return { ...array, kind: "array", label: `array · ${expression.length}` };

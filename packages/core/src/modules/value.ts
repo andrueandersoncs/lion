@@ -7,6 +7,9 @@ export const module = {
 
   "number?": (a: unknown) => Effect.succeed(typeof a === "number"),
 
+  /** A whole number. */
+  "integer?": (a: unknown) => Effect.succeed(Number.isInteger(a)),
+
   "string?": (a: unknown) => Effect.succeed(typeof a === "string"),
 
   "boolean?": (a: unknown) => Effect.succeed(typeof a === "boolean"),
@@ -22,6 +25,9 @@ export const module = {
   "undefined?": (a: unknown) => Effect.succeed(a === undefined),
 
   "symbol?": (a: unknown) => Effect.succeed(typeof a === "symbol"),
+
+  /** True for every value: the schema that anything fits. */
+  "any?": (_: unknown) => Effect.succeed(true),
 
   identity: (x: unknown) => Effect.succeed(x),
 };

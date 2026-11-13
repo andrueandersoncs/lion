@@ -1,6 +1,7 @@
 import { Array as Arr, Effect, flow, Option, Schema } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
+import { listMaker } from "@/logic/terms";
 import { decode } from "@/modules/lib/shared";
 
 const MAX_RANGE = 1_000_000;
@@ -15,7 +16,7 @@ const mapItems = flow(
 export const module = {
   symbol: Symbol("array"),
 
-  make: (...args: unknown[]) => Effect.succeed(args),
+  make: listMaker((...args: unknown[]) => Effect.succeed(args)),
 
   /** The first item, or null for an empty list. */
   head: flow(

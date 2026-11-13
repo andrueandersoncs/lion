@@ -1,4 +1,4 @@
-import { nameFunctions } from "@/logic/terms";
+import { nameFunctions, readsOnlyArguments } from "@/logic/terms";
 import { module as aggregate } from "./aggregate.ts";
 import { module as array } from "./array.ts";
 import { module as boolean } from "./boolean.ts";
@@ -7,6 +7,7 @@ import { module as func } from "./func.ts";
 import { module as graph } from "./graph.ts";
 import { module as number } from "./number.ts";
 import { module as object } from "./object.ts";
+import { module as schema } from "./schema.ts";
 import { module as string } from "./string.ts";
 import { module as value } from "./value.ts";
 
@@ -36,8 +37,10 @@ export const stdlib = {
   ...namespaceEntries("graph", graph),
   ...namespaceEntries("number", number),
   ...namespaceEntries("object", object),
+  ...namespaceEntries("schema", schema),
   ...namespaceEntries("string", string),
   ...namespaceEntries("value", value),
 };
 
 nameFunctions(stdlib);
+readsOnlyArguments(stdlib);

@@ -34,15 +34,24 @@ Every change aims for these:
 
 Lion's value comes from features that compose, so one surprising interaction costs more than a missing feature.
 
-- **Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example, invariants take the query option `"assert"` instead of a new keyword, and report failures in the same words as a failed query assertion.
+- **Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example:
+  - Invariants take the query option `"assert"` instead of a new keyword, and report failures in the same words as a failed query assertion.
+  - The schema of a relation's rows is the invariant a program could write by hand, so it is kept, reported, and saved like any other.
+  - A schema check is an ordinary function call, so the waiting and asking rules carry it into rules, `not`, `find`, and rule heads with no rule of its own.
+  - A pattern is a schema with logic variables in it, so what takes data apart is what checks it: a record, a list, and every `schema` function.
 - **Apply one rule everywhere.** When a feature needs a rule, look for a similar feature that already has one and follow it. If the existing rule falls short, change it for every feature at once rather than letting the new one differ. For example:
   - Every form that changes the logic database either makes all of its changes or none.
   - Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant.
   - Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.
+  - Whatever checks a value against a schema asks whether the value fits, by one rule: `match`, the `schema` functions, a schema's own parts, the arguments of a relation call, and the schema of a relation's rows.
+  - A logic variable in a schema is its value once it is bound, and takes the value it meets until then, in every goal that can bind: `schema/fits?`, a relation call, `=`, and `in`.
 - **Walk through the combinations.** Surprises hide where two features meet. Before settling a behavior, trace how it interacts with each existing one. For the logic layer, that includes:
   - logic variables and `quote`
   - everything that waits for a logic variable: function calls, `cond`, `match`, `eval`, records, and lambdas passed to a waiting call
   - everything that asks a question: `not`, `find`, and a goal used as a value, in plain code and inside a rule, with variables of its own
+  - schemas: predicates, relations as schemas, named schemas and the shapes that name themselves or each other, and the schema of a relation's rows
+  - patterns: variables in a record, a list, or a `schema` function, bound by `schema/fits?`, a relation call, `=`, and `in`, and a variable that holds a schema
+  - names: a string that is bound, one that is data, and one that reads as a misspelled name
   - `define`, and the fresh environment each `run` gets
   - recursion and negation
   - aggregates and keyed relations
@@ -57,6 +66,11 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - an expression over a logic variable and the same expression with the variable's value in its place
   - a question asked in a rule and the same question asked in plain code with the rule's variables bound
   - a database that has derived rows for earlier queries and one that has derived nothing yet
+  - a schema and the name it is declared under
+  - a goal that binds through a pattern and the same goal with its variables bound first
+  - a relation call with a schema among its arguments and the same call followed by `schema/fits?`
+  - the schema of a relation's rows and the invariant it stands for
+  - an invariant asked about the rows a change added and the same invariant asked in full
 
   Where results may differ, such as answer order without the `"order"` query option, say so in the docs.
 - **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.
@@ -172,7 +186,7 @@ A property-based test states something that holds for every input a generator pr
 - Turn every bug into a property. When you find a bug, in your own change or in old code, first write the property it breaks. State it for every input, not for the one input that failed, and watch it fail. Then fix the bug, and keep the property.
 - Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it. `bun run mutate` does this for the breaks listed in `packages/metrics/src/mutations.ts`. Add a mutation for each behavior you add, and add a property for any mutation it reports as `MISSED`.
 - Before you finish a change to the evaluator or the logic engine, run its properties once with a few thousand runs each, by raising `runs`, and then put the number back.
-- Keep a domain's generators in a module next to its tests and reuse them across files, as `packages/core/src/logic/tests/programs.ts` does for logic programs.
+- Keep a domain's generators in a module next to its tests and reuse them across files, as `packages/core/src/logic/tests/programs.ts` does for logic programs. A generator can carry its own model: `packages/core/src/logic/tests/shapes.ts` generates a schema as a description that is written out as Lion and read by a plain TypeScript model of what fits it.
 - When a property rarely reaches its interesting cases, raise its runs with the fourth argument, `{ arbitrary: { runs: 300 } }`. A failure prints a `Replay` token; pass it back as `{ arbitrary: { replay } }` to reproduce that exact run.
 
 ```typescript

@@ -3,20 +3,140 @@
  * and the groups of relations that depend on each other.
  */
 import type { CompiledRule, Literal } from "@/logic/compile";
-import { Atom, LogicValue, type RelationInfo, relationOf } from "@/logic/terms";
+import {
+  Atom,
+  buildOf,
+  isArgumentsOnly,
+  isPlainObject,
+  LogicValue,
+  lambdaInfo,
+  type RelationInfo,
+  relationOf,
+  schemaOf,
+} from "@/logic/terms";
 
-/** Collects the relations a term mentions, however deep. */
-const mention = (term: unknown, into: RelationInfo[]) => {
+const NONE: readonly RelationInfo[] = [];
+
+/**
+ * What a schema is made of: for a named schema, the form of its shape with
+ * the values its names had, which also shows what the lambdas in it name;
+ * the arguments of the call that built a function; and the parts of a list
+ * or record. A relation among them is a predicate the schema asks.
+ */
+const schemaParts = (term: unknown): readonly unknown[] => {
+  if (typeof term === "function") {
+    const named = schemaOf(term);
+    if (named === undefined) {
+      return buildOf(term)?.args ?? NONE;
+    }
+    // A schema that is still being declared has no shape yet.
+    return named.definition === undefined ? NONE : [named.definition];
+  }
+  if (Array.isArray(term)) {
+    return term;
+  }
+  return isPlainObject(term) ? Object.values(term) : NONE;
+};
+
+// Schemas, and the lists and records they hold, never change, so what one
+// mentions is worked out once.
+const HELD = new WeakMap<object, readonly RelationInfo[]>();
+
+/**
+ * Collects the relations a term mentions, however deep. `open` holds the
+ * schemas being looked through, since a named schema can hold itself.
+ */
+const mention = (term: unknown, into: RelationInfo[], open?: Set<unknown>) => {
   const relation = term instanceof Atom ? term.relation : relationOf(term);
   if (relation !== undefined) {
     into.push(relation);
   }
   if (term instanceof LogicValue) {
     for (const part of term.parts) {
-      mention(part, into);
+      mention(part, into, open);
+    }
+    return;
+  }
+  if (!(typeof term === "function" || (typeof term === "object" && term))) {
+    return;
+  }
+  let held = HELD.get(term);
+  if (held === undefined) {
+    const parts = open?.has(term) ? NONE : schemaParts(term);
+    if (parts.length === 0) {
+      return;
+    }
+    const found: RelationInfo[] = [];
+    const inside = open ?? new Set<unknown>();
+    inside.add(term);
+    for (const part of parts) {
+      mention(part, found, inside);
+    }
+    held = found;
+    // Only the schema the search started from has seen all of itself.
+    if (open === undefined) {
+      HELD.set(term, held);
     }
   }
+  for (const found of held) {
+    into.push(found);
+  }
 };
+
+/**
+ * True for a function whose reads Lion can see: a relation, a schema, a
+ * function another function built, a lambda that closes over nothing, or a
+ * function that reads only its arguments. What such a function is made of
+ * is looked into in turn.
+ */
+const isSeen = (fn: object) => {
+  const lambda = lambdaInfo(fn);
+  return (
+    relationOf(fn) !== undefined ||
+    schemaOf(fn) !== undefined ||
+    buildOf(fn) !== undefined ||
+    (lambda === undefined ? isArgumentsOnly(fn) : !lambda.environment)
+  );
+};
+
+const OPAQUE = new WeakMap<object, boolean>();
+
+const holdsOpaque = (term: unknown, open: Set<unknown>): boolean => {
+  if (!(typeof term === "function" || (typeof term === "object" && term))) {
+    return false;
+  }
+  const known = OPAQUE.get(term);
+  if (known !== undefined || open.has(term)) {
+    return known === true;
+  }
+  if (typeof term === "function" && !isSeen(term)) {
+    return true;
+  }
+  // A host object that is not plain data can do anything when it is called.
+  const isData =
+    term instanceof LogicValue ||
+    typeof term === "function" ||
+    Array.isArray(term) ||
+    isPlainObject(term);
+  open.add(term);
+  const parts = term instanceof LogicValue ? term.parts : schemaParts(term);
+  const opaque = !isData || parts.some((part) => holdsOpaque(part, open));
+  open.delete(term);
+  // What was found while a schema was open may be missing what it holds.
+  if (opaque || open.size === 0) {
+    OPAQUE.set(term, opaque);
+  }
+  return opaque;
+};
+
+/**
+ * True when a term holds something whose reads Lion cannot see: a function
+ * a host added, a host object, or a lambda that still closes over a scope.
+ * What such a term depends on is not known, so nothing that relies on
+ * knowing it can be skipped.
+ */
+export const isOpaque = (term: unknown): boolean =>
+  holdsOpaque(term, new Set());
 
 /** The relations a term mentions, however deep. */
 export const mentioned = (term: unknown): readonly RelationInfo[] => {

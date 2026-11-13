@@ -18,6 +18,7 @@ const SPECIAL_FORMS = new Set([
   "match",
   "quote",
   "relation",
+  "schema",
   "rule",
   "fact",
   "retract",

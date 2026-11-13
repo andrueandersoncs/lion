@@ -3,7 +3,11 @@ import { evaluateArray } from "@/evaluation/base-forms/array";
 import { evaluatePrimitive } from "@/evaluation/base-forms/primitive";
 import { evaluateRecord } from "@/evaluation/base-forms/record";
 import { makeEnvironment } from "@/evaluation/environment";
-import { LogicDatabase, relationBindings } from "@/logic/database";
+import {
+  LogicDatabase,
+  relationBindings,
+  schemaBindings,
+} from "@/logic/database";
 import { nameFunctions } from "@/logic/terms";
 import type { JsonPrimitiveType } from "@/schemas/json-primitive";
 import {
@@ -27,9 +31,9 @@ export const evaluate = (expression: LionExpressionType): EvaluateResult => {
 
 export interface RunOptions {
   /**
-   * Relations, facts, and rules to start from. Defaults to an empty database.
-   * The database's relations are bound by name, unless the environment
-   * binds the same name.
+   * Relations, schemas, facts, and rules to start from. Defaults to an empty
+   * database. The database's relations and schemas are bound by name, unless
+   * the environment binds the same name.
    */
   readonly database?: LogicDatabase;
 }
@@ -47,7 +51,11 @@ export const run = (
       Effect.flatMap(evaluate),
       Effect.provideServiceEffect(
         LionEnvironmentService,
-        makeEnvironment({ ...relationBindings(database), ...environment })
+        makeEnvironment({
+          ...relationBindings(database),
+          ...schemaBindings(database),
+          ...environment,
+        })
       ),
       Effect.provideService(LionDatabaseService, database)
     );

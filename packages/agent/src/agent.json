@@ -341,9 +341,16 @@
                           "match",
                           "content",
                           [
-                            {
-                              "type": ["func/partial", "string/equals?", "text"]
-                            },
+                            [
+                              "schema/open",
+                              {
+                                "type": [
+                                  "func/partial",
+                                  "string/equals?",
+                                  "text"
+                                ]
+                              }
+                            ],
                             [
                               "lambda",
                               ["c"],
@@ -355,13 +362,16 @@
                             ]
                           ],
                           [
-                            {
-                              "type": [
-                                "func/partial",
-                                "string/equals?",
-                                "reasoning"
-                              ]
-                            },
+                            [
+                              "schema/open",
+                              {
+                                "type": [
+                                  "func/partial",
+                                  "string/equals?",
+                                  "reasoning"
+                                ]
+                              }
+                            ],
                             [
                               "lambda",
                               ["c"],
@@ -373,13 +383,16 @@
                             ]
                           ],
                           [
-                            {
-                              "type": [
-                                "func/partial",
-                                "string/equals?",
-                                "tool-call"
-                              ]
-                            },
+                            [
+                              "schema/open",
+                              {
+                                "type": [
+                                  "func/partial",
+                                  "string/equals?",
+                                  "tool-call"
+                                ]
+                              }
+                            ],
                             [
                               "lambda",
                               ["c"],
@@ -399,13 +412,16 @@
                             ]
                           ],
                           [
-                            {
-                              "type": [
-                                "func/partial",
-                                "string/equals?",
-                                "tool-result"
-                              ]
-                            },
+                            [
+                              "schema/open",
+                              {
+                                "type": [
+                                  "func/partial",
+                                  "string/equals?",
+                                  "tool-result"
+                                ]
+                              }
+                            ],
                             [
                               "lambda",
                               ["c"],

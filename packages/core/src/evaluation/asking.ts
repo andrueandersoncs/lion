@@ -9,7 +9,7 @@
 import { Effect, Option } from "effect";
 import { logicError, WaitingError } from "@/errors/evaluation";
 import { askDatabase } from "@/logic/database";
-import { isQuestion, type LogicValue } from "@/logic/terms";
+import { isQuestion, isWaiting, LogicValue } from "@/logic/terms";
 import { LionAskerService } from "@/services/asker";
 import { LionDatabaseService } from "@/services/database";
 import type { EvaluateResult } from "@/types/evaluation";
@@ -60,3 +60,19 @@ export const answer = (value: unknown): EvaluateResult => {
       : yield* ask(value);
   });
 };
+
+/**
+ * The values of the operands of a form that binds or tests, such as "=", or
+ * undefined when the form is a goal: an operand waits for a logic variable,
+ * or a rule is being written and an operand is a question. Otherwise a
+ * question among them is asked.
+ */
+export const known = (operands: readonly unknown[]) =>
+  Effect.gen(function* () {
+    if (!operands.some((operand) => operand instanceof LogicValue)) {
+      return operands;
+    }
+    return operands.some(isWaiting) || (yield* isWriting)
+      ? undefined
+      : yield* Effect.forEach(operands, answer);
+  });

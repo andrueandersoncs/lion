@@ -84,19 +84,96 @@
 <h2 id="form-relation"><code>relation</code></h2>
 <code-block lang="json">
 ["relation", name, [column, ...]]
-["relation", name, [column, ...], {"key": column-or-columns}]
+["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]
 </code-block>
 <ul>
-  <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal.</li>
-  <li>Column names must be distinct. Options are read as written, not evaluated; the only option is <code>"key"</code>.</li>
+  <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal. Each term is a schema for its column: a value, a variable, a <a href="#logic-patterns">pattern</a>, or a predicate.</li>
+  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code> and <code>"schema"</code>.</li>
   <li>With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.</li>
-  <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails.</li>
+  <li>With a schema, the name of a declared <a href="#form-schema">schema</a>, every row must fit it, taken as a record of every column, so the schema names every column or is <code>schema/open</code>. The option adds the invariant <code>["invariant", ["and", [name, "?column", ...], ["not", [schema, {"column": "?column", ...}]]], {"assert": "none"}]</code>, and is nothing more: it must hold for the rows that are there, it is kept and reported like every <a href="#form-invariant">invariant</a>, and a snapshot writes it as one.</li>
+  <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails. A relation cannot take the name of a schema.</li>
 </ul>
 <lion-example name="relation">
 ["begin",
   ["relation", "order", ["id", "status"], {"key": "id"}],
   ["fact", ["order", 1, "open"], ["order", 1, "paid"]],
   ["query", ["order", "?id", "?status"]]]
+</lion-example>
+
+<h2 id="form-schema"><code>schema</code></h2>
+<code-block lang="json">
+["schema", name, shape]
+["schema", name, shape, name, shape, ...]
+</code-block>
+<ul>
+  <li>Declares a schema in the current database and binds <code>name</code> to it in the global environment. Returns the schema, a function: calling it with a value says whether the value <a href="#schema-fitting">fits</a> the shape.</li>
+  <li><code>shape</code> is evaluated once, with the values its names have then, as a rule holds the values of its names. It can name the schema being declared, so a schema can describe nested data.</li>
+  <li>One form can declare several schemas, and each shape can name any of them, so schemas can be defined in terms of each other. A value fits only when that follows from the shapes in finitely many steps. A shape can name the schemas of its form but cannot call them, since they have no shape yet.</li>
+  <li>What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: the later form fails, and says to declare that name first, to declare the two in one form, or to write the string inside <code>quote</code>.</li>
+  <li>A schema that comes back to itself without going into the value does not fit: only <code>1</code> fits <code>["schema", "Loop", ["schema/anyOf", "Loop", 1]]</code>.</li>
+  <li>A shape cannot ask the database while it is declared, since a snapshot writes the shape and it must mean the same when loaded. A relation in a shape, or a lambda that asks, asks when a value is checked.</li>
+  <li>Declaring a schema that already exists with the same shape does nothing; declaring it with a different one fails. A schema cannot take the name of a relation.</li>
+</ul>
+<lion-example name="schema">
+["begin",
+  ["schema", "Tree", {"value": "value/number?", "children": ["schema/arrayOf", "Tree"]}],
+  {"fits": ["Tree", ["quote", {"value": 1, "children": [{"value": 2, "children": []}]}]],
+   "problems": ["schema/problems",
+     ["quote", {"value": 1, "children": [{"value": "two", "children": []}]}], "Tree"]}]
+</lion-example>
+
+<h2 id="schema-fitting">What fits a schema</h2>
+<p>Anything is a schema, and one rule says what fits it. <code>match</code>, the functions of the <a href="#module-schema"><code>schema</code> module</a>, a schema's own parts, and the schema of a relation's rows all ask through it.</p>
+<ul>
+  <li>A function is a predicate: a value fits when the function returns <code>true</code>. A failure, or any other result, counts as not fitting, except a misspelled name, which is an <a href="#errors">error</a>. A relation with one column, a named schema, and a schema that a <code>schema</code> function built are functions. A relation with more columns is not the schema of one value, and using it as one is an error.</li>
+  <li>A record fits a record with the same keys, with values that fit. A key whose schema is <code>schema/optional</code> can be left out, and <code>schema/open</code> allows keys the record does not name.</li>
+  <li>A list fits a list of the same length, item by item.</li>
+  <li>Any other value fits a value equal to it.</li>
+</ul>
+<p>So data is a schema for itself: it fits exactly the values equal to it.</p>
+<p>A schema check is a call, so it <a href="#logic-waiting">waits</a> for logic variables like any other: as a goal it is a filter, and it gives in a rule what it gives in plain code. A logic variable inside a schema is its value once it is bound, and until then it takes the value it meets; see <a href="#logic-patterns">Patterns</a>. A schema that holds a relation <a href="#logic-asking">asks</a> the database when it checks a value, so a rule cannot use one that asks about the relation the rule derives.</p>
+<lion-example name="A schema as a goal">
+["begin",
+  ["relation", "reading", ["sensor", "value"]],
+  ["schema", "Celsius", ["schema/allOf", "value/number?",
+    ["lambda", ["c"], ["number/greaterThan", "c", -273.15]]]],
+  ["fact", ["reading", "attic", 30], ["reading", "cellar", "cold"], ["reading", "void", -300]],
+  {"good": ["find", "?s", ["and", ["reading", "?s", "?v"], ["Celsius", "?v"]]],
+   "bad": ["find", "?s", ["and", ["reading", "?s", "?v"], ["not", ["Celsius", "?v"]]]]}]
+</lion-example>
+
+<h2 id="logic-patterns">Patterns</h2>
+<p>A schema with a logic variable in it is a pattern. Once the variable is bound it is its value, and until then any value fits it, and binds it. A pattern tests a value and takes it apart at once. These goals bind the variables of a pattern:</p>
+<ul>
+  <li><a href="#module-schema"><code>["schema/fits?", value, schema]</code></a> binds the variables in the schema.</li>
+  <li>A relation call binds the variables in its arguments, each a schema for its column. An argument that is not data, such as a predicate or a variable that holds one, is a schema like any other.</li>
+  <li><a href="#form-unify"><code>=</code></a> and <a href="#form-in"><code>in</code></a> bind the variables of a record or list, on either side of <code>=</code> or as the element of <code>in</code>. They compare values, so a function in the record is a value there, and not a predicate.</li>
+</ul>
+<ul>
+  <li>A record in a pattern fits a record with the same keys, and <code>schema/open</code> takes the keys it names from a record that has more. A list fits a list of the same length.</li>
+  <li><code>?_</code> fits any value and binds nothing. A variable that occurs twice must take the same value.</li>
+  <li>Every <code>schema</code> function works in a pattern. <code>schema/anyOf</code> gives the answers of every schema that fits, each once; in plain code, where nothing is left to bind, the first that fits decides.</li>
+  <li>A predicate made from a variable, as <code>["func/partial", "number/lessThan", "?max"]</code> is, is the predicate made from the variable's value.</li>
+  <li><code>["schema/open", "?shape"]</code> does not bind <code>?shape</code>: it waits for another goal to bind it to a record of schemas.</li>
+  <li>A goal gives the same answers whether it binds a variable through a pattern or finds it bound by another goal, so the order of a body's goals does not matter.</li>
+  <li>In plain code, a check with an unbound variable in it is a goal, like <code>=</code> with one. Give it to <code>query</code>.</li>
+</ul>
+<lion-example name="Patterns">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["fact",
+    ["inbox", ["quote", {"type": "order", "id": 1, "lines": [{"sku": "a1", "qty": 2}]}]],
+    ["inbox", ["quote", {"type": "order", "id": 2, "lines": [], "rush": true}]],
+    ["inbox", ["quote", {"type": "refund", "id": 3}]]],
+  {"refunds": ["query", ["inbox", {"type": "refund", "id": "?id"}]],
+   "orders": ["find", "?id", ["inbox", ["schema/open", {"type": "order", "id": "?id"}]]],
+   "lines": ["find", ["array/make", "?order", "?sku"],
+     ["and",
+       ["inbox", ["schema/open", {"id": "?order", "lines": "?lines"}]],
+       ["in", {"sku": "?sku", "qty": "?_"}, "?lines"]]],
+   "one value": ["query", ["schema/fits?", ["quote", {"a": 1, "b": 2}],
+     ["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]]],
+   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
 </lion-example>
 
 <h2 id="form-fact"><code>fact</code></h2>
@@ -243,7 +320,7 @@
 <code-block lang="json">
 ["=", term, term]
 </code-block>
-<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. Without logic variables, it is structural equality of JSON values, and identity for other values. The numbers <code>0</code> and <code>-0</code> are equal, as JSON writes both as <code>0</code>.</p>
+<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. A side can be a record or list with variables in it, a <a href="#logic-patterns">pattern</a> that takes the other side apart. Without logic variables, it is structural equality of JSON values, and identity for other values. The numbers <code>0</code> and <code>-0</code> are equal, as JSON writes both as <code>0</code>.</p>
 <lion-example name="Equality">
 ["=", ["quote", {"a": [1, 2]}], {"a": ["array/make", 1, 2]}]
 </lion-example>
@@ -252,7 +329,7 @@
 <code-block lang="json">
 ["in", element, list]
 </code-block>
-<p>With an unbound element, binds it to each distinct item of the list; with a bound one, tests membership. The list must be bound first. Without logic variables, it is plain membership and returns a boolean.</p>
+<p>With an unbound element, binds it to each distinct item of the list; with a bound one, tests membership. The element can be a record or list with variables in it, a <a href="#logic-patterns">pattern</a> for the items. The list must be bound first. Without logic variables, it is plain membership and returns a boolean.</p>
 <lion-example name="Membership">
 ["in", "b", ["array/make", "a", "b"]]
 </lion-example>

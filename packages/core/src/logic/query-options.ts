@@ -4,7 +4,7 @@
  *
  * An invariant, `["invariant", goal, {"assert": "none"}]`, is the same
  * assertion kept by the database, so it reads its option here too, and so
- * does a relation, whose one option is its key.
+ * does a relation, whose options are its key and the schema of its rows.
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
@@ -32,7 +32,7 @@ const FORMS = {
     example: '{"order": "-points", "limit": 10}',
   },
   invariant: { names: ["assert"], example: '{"assert": "none"}' },
-  relation: { names: ["key"], example: '{"key": ["id"]}' },
+  relation: { names: ["key", "schema"], example: '{"key": ["id"]}' },
 };
 
 const fail = (message: string) => Effect.fail(new LogicError({ message }));
@@ -49,12 +49,12 @@ const isCount = (value: unknown) =>
  */
 export const readOptions = (form: keyof typeof FORMS, options: unknown) => {
   const { example, names } = FORMS[form];
+  const subject = `${form[0]?.toUpperCase()}${form.slice(1)}`;
   if (
     typeof options !== "object" ||
     options === null ||
     Array.isArray(options)
   ) {
-    const subject = `${form[0]?.toUpperCase()}${form.slice(1)}`;
     return fail(
       `${subject} options must be a record such as ${example}, but found ${show(options)}.`
     );
@@ -65,7 +65,7 @@ export const readOptions = (form: keyof typeof FORMS, options: unknown) => {
     const known =
       names.length === 1
         ? `The only ${form} option is "${names[0]}".`
-        : `Query options are ${names.map((name) => `"${name}"`).join(", ")}.`;
+        : `${subject} options are ${names.map((name) => `"${name}"`).join(", ")}.`;
     return fail(`Unknown ${form} option "${unknown}". ${known}`);
   }
   const count = ["limit", "offset"].find(
@@ -170,25 +170,18 @@ const compareRows =
     return 0;
   };
 
-/** Checks the assertion on every answer, then sorts and pages them. */
+/** Sorts and pages a query's answers. Its assertion is checked before. */
 export const applyQueryOptions = (
   rows: readonly Record<string, unknown>[],
-  options: QueryOptions,
-  goal: unknown
+  options: QueryOptions
 ) => {
-  const problem = assertionProblem("query", options.assert, rows, goal);
-  if (problem !== undefined) {
-    return fail(problem);
-  }
   const sorted =
     options.order.length === 0
       ? rows
       : [...rows].sort(compareRows(options.order));
   const start = options.offset ?? 0;
-  return Effect.succeed(
-    sorted.slice(
-      start,
-      options.limit === undefined ? undefined : start + options.limit
-    )
+  return sorted.slice(
+    start,
+    options.limit === undefined ? undefined : start + options.limit
   );
 };

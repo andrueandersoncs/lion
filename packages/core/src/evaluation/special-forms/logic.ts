@@ -1,19 +1,34 @@
-import { Effect } from "effect";
+import { Effect, Schema } from "effect";
 import { logicError } from "@/errors/evaluation";
-import { answer, database, isWriting, writing } from "@/evaluation/asking";
-import { boundNames, setGlobalBinding } from "@/evaluation/environment";
+import {
+  answer,
+  database,
+  isWriting,
+  known,
+  writing,
+} from "@/evaluation/asking";
+import {
+  boundNames,
+  makeEnvironment,
+  setGlobalBinding,
+} from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
+import { dataStrings, suspend } from "@/evaluation/special-forms/lambda";
 import { compileQuery, compileRule } from "@/logic/compile";
 import {
   addInvariant,
   addRules,
   assertFacts,
+  checkAssertion,
   declareRelation,
+  declareSchemas,
   explainFact,
   queryDatabase,
   relationValue,
   retractFacts,
+  type SchemaDeclaration,
 } from "@/logic/database";
+import { makeSchema } from "@/logic/fit";
 import {
   applyQueryOptions,
   parseInvariantOptions,
@@ -23,33 +38,41 @@ import {
 import { saveDatabase } from "@/logic/snapshot";
 import {
   Atom,
+  DeferredCall,
   type Goal,
+  invoke,
   isGoal,
   isQuestion,
-  isWaiting,
+  isWaitingForm,
+  type LionFunction,
   LogicForm,
   LogicValue,
+  type RelationInfo,
   render,
   sameValue,
   show,
 } from "@/logic/terms";
-import type {
-  AndFormSchema,
-  FactFormSchema,
-  FindFormSchema,
-  InFormSchema,
-  InvariantFormSchema,
-  NotFormSchema,
-  OrFormSchema,
-  QueryFormSchema,
-  RelationFormSchema,
-  RetractFormSchema,
-  RuleFormSchema,
-  UnifyFormSchema,
-  WhyFormSchema,
+import {
+  type AndFormSchema,
+  type FactFormSchema,
+  type FindFormSchema,
+  type InFormSchema,
+  type InvariantFormSchema,
+  type NotFormSchema,
+  type OrFormSchema,
+  type QueryFormSchema,
+  type RelationFormSchema,
+  type RetractFormSchema,
+  type RuleFormSchema,
+  type SchemaFormSchema,
+  type UnifyFormSchema,
+  ValidIdentifierSchema,
+  type WhyFormSchema,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
+import { LionAskerService } from "@/services/asker";
 import { LionEnvironmentService } from "@/services/evaluation";
+import type { EvaluateResult } from "@/types/evaluation";
 
 const evaluateAll = (expressions: readonly LionExpressionType[]) =>
   Effect.all(expressions.map(evaluate));
@@ -76,23 +99,77 @@ const atoms = (form: string, facts: readonly LionExpressionType[]) =>
     return result;
   });
 
-/** Reads `{"key": [...]}`; relation options are read as written. */
-const relationKey = (name: string, options: unknown) =>
-  options === undefined
-    ? Effect.succeed(undefined)
-    : Effect.flatMap(readOptions("relation", options), (record) => {
-        const key = typeof record.key === "string" ? [record.key] : record.key;
-        return Array.isArray(key) &&
-          key.every((column) => typeof column === "string")
-          ? Effect.succeed(key as readonly string[])
-          : logicError(
-              `The key of "${name}" must be a column name or a list of them, but found ${show(record.key)}.`
-            );
-      });
+/**
+ * Reads `{"key": [...], "schema": name}`. Relation options are read as
+ * written: the key names columns, and the schema names a declared schema.
+ */
+const relationOptions = (name: string, options: unknown) =>
+  Effect.gen(function* () {
+    const { key: given, schema } =
+      options === undefined ? {} : yield* readOptions("relation", options);
+    const key = typeof given === "string" ? [given] : given;
+    const isKey =
+      Array.isArray(key) && key.every((column) => typeof column === "string");
+    if (!(key === undefined || isKey)) {
+      return yield* logicError(
+        `The key of "${name}" must be a column name or a list of them, but found ${show(given)}.`
+      );
+    }
+    if (!(schema === undefined || typeof schema === "string")) {
+      return yield* logicError(
+        `The schema of "${name}" must be the name of a declared schema, but found ${show(schema)}.`
+      );
+    }
+    return { key: key as readonly string[] | undefined, schema };
+  });
+
+const VARIABLE_NAME = /^[A-Za-z][\w-]*$/;
+
+/**
+ * A variable for each column: its name when that can be a variable's name,
+ * and otherwise, for every column, its position.
+ */
+const columnVariables = (columns: readonly string[]) =>
+  columns.every((column) => VARIABLE_NAME.test(column))
+    ? columns.map((column) => `?${column}`)
+    : columns.map((_, at) => `?column-${at + 1}`);
+
+/**
+ * Says that every row of a relation must fit a schema, as the invariant a
+ * program would write: no row, taken as a record of its columns, fails the
+ * schema. So a relation's schema is kept, reported, and saved like any
+ * other invariant.
+ */
+const rowsMustFit = (
+  relation: RelationInfo,
+  value: LionFunction,
+  schemaName: string,
+  schema: LionFunction
+) => {
+  const variables = columnVariables(relation.columns);
+  const row = Object.fromEntries(
+    relation.columns.map((column, at) => [column, variables[at]])
+  );
+  const form = [
+    "invariant",
+    ["and", [relation.name, ...variables], ["not", [schemaName, row]]],
+    { assert: "none" },
+  ];
+  // The two names mean the relation and the schema, whatever else the
+  // program has bound them to.
+  return Effect.flatMap(
+    makeEnvironment({ [relation.name]: value, [schemaName]: schema }),
+    (scope) =>
+      evaluateInvariant(form as never).pipe(
+        Effect.provideService(LionEnvironmentService, scope)
+      )
+  );
+};
 
 /**
  * ["relation", "dep", ["from", "to"]] declares a relation and binds it.
- * ["relation", "order", ["id", "status"], {"key": ["id"]}] gives it a key.
+ * ["relation", "order", ["id", "status"], {"key": ["id"]}] gives it a key,
+ * and {"schema": "Order"} says that its rows must fit a declared schema.
  */
 export const evaluateRelation = ([
   _,
@@ -101,15 +178,101 @@ export const evaluateRelation = ([
   options,
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
-    const relation = yield* declareRelation(
-      yield* database,
-      name,
-      columns,
-      yield* relationKey(name, options)
-    );
+    const store = yield* database;
+    const { key, schema } = yield* relationOptions(name, options);
+    const rowSchema =
+      schema === undefined ? undefined : store.schemas.get(schema);
+    if (schema !== undefined && rowSchema === undefined) {
+      return yield* logicError(
+        `Relation "${name}" names the schema "${schema}" for its rows, but no schema is declared under that name. Declare it first, as in ["schema", "${schema}", {...}].`
+      );
+    }
+    const relation = yield* declareRelation(store, name, columns, key);
     const value = relationValue(relation);
     yield* setGlobalBinding(yield* LionEnvironmentService, name, value);
+    if (schema !== undefined && rowSchema !== undefined) {
+      yield* rowsMustFit(relation, value, schema, rowSchema);
+    }
     return value;
+  });
+
+/**
+ * What a form that was closed over its names evaluates to, with the values
+ * those names had.
+ */
+const resolve = (value: unknown): EvaluateResult =>
+  value instanceof DeferredCall && isWaitingForm(value)
+    ? Effect.flatMap(
+        Effect.forEach(value.args, resolve),
+        (args) => invoke(value.fn as LionFunction, args) as EvaluateResult
+      )
+    : Effect.succeed(value);
+
+/**
+ * A shape is what a snapshot writes, so it has to evaluate to the same
+ * schema whenever it is loaded. A shape that asks the database while it is
+ * declared would not.
+ */
+const declaring = (name: string) =>
+  Effect.provideService(LionAskerService, {
+    answer: (question) =>
+      logicError(
+        `The shape of schema "${name}" asks ${show(question)} while it is declared, so it would depend on the facts of the moment. Ask inside a lambda, or use the relation itself as a schema.`
+      ),
+  });
+
+const isIdentifier = Schema.is(ValidIdentifierSchema);
+
+/**
+ * ["schema", "Order", shape] declares a schema and binds it: a predicate on
+ * one value, which fits when it fits the shape. The shape is evaluated once,
+ * with the values its names have now, and can name the schema itself. More
+ * names and shapes in the same form declare schemas that can name each
+ * other: ["schema", "Order", shape, "Line", shape].
+ */
+export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
+  Effect.gen(function* () {
+    const store = yield* database;
+    const environment = yield* LionEnvironmentService;
+    const names = parts.filter((__, at) => at % 2 === 0);
+    const shapes = parts.filter((__, at) => at % 2 === 1);
+    const misnamed = names.find((name) => !isIdentifier(name));
+    if (misnamed !== undefined || shapes.length !== names.length) {
+      return yield* logicError(
+        misnamed === undefined
+          ? `The schema form takes a name and a shape for each schema, but ${show(names.at(-1))} has no shape.`
+          : `A schema's name must be a string that is not the name of a special form, but found ${show(misnamed)}.`
+      );
+    }
+    // A schema the database holds keeps standing for its name.
+    const schemas = (names as string[]).map(
+      (name) => store.schemas.get(name) ?? makeSchema(name)
+    );
+    const scope = yield* makeEnvironment(
+      Object.fromEntries(schemas.map((schema, at) => [names[at], schema])),
+      environment
+    );
+    const declarations: SchemaDeclaration[] = [];
+    for (const [at, schema] of schemas.entries()) {
+      const name = names[at] as string;
+      const form = shapes[at] as LionExpressionType;
+      const [definition, strings] = yield* Effect.all([
+        suspend(form),
+        dataStrings(form),
+      ]).pipe(Effect.provideService(LionEnvironmentService, scope));
+      const shape = yield* resolve(definition).pipe(declaring(name));
+      if (shape instanceof LogicValue) {
+        return yield* logicError(
+          `The shape of schema "${name}" must be known when it is declared, but ${show(shape)} waits for a logic variable.`
+        );
+      }
+      declarations.push({ definition, schema, shape, strings });
+    }
+    const declared = yield* declareSchemas(store, declarations);
+    for (const [at, schema] of declared.entries()) {
+      yield* setGlobalBinding(environment, names[at] as string, schema);
+    }
+    return declared[0];
   });
 
 export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
@@ -144,8 +307,10 @@ export const evaluateQuery = ([
     const goalValue = yield* writing(evaluate(goal));
     const query = yield* compileQuery(goalValue);
     const parsed = yield* parseQueryOptions(options, query.outputs);
-    const rows = yield* queryDatabase(yield* database, query);
-    return yield* applyQueryOptions(rows, parsed, goalValue);
+    const store = yield* database;
+    const rows = yield* queryDatabase(store, query);
+    yield* checkAssertion(store, "query", parsed.assert, rows, goalValue);
+    return applyQueryOptions(rows, parsed);
   });
 
 /**
@@ -228,21 +393,6 @@ const connective =
 export const evaluateAnd = connective("and");
 
 export const evaluateOr = connective("or");
-
-/**
- * The values of the operands of "=" or "in", or undefined when the form is
- * a goal: an operand waits for a logic variable, or a rule is being written
- * and an operand is a question. Otherwise a question among them is asked.
- */
-const known = (operands: readonly unknown[]) =>
-  Effect.gen(function* () {
-    if (!operands.some((operand) => operand instanceof LogicValue)) {
-      return operands;
-    }
-    return operands.some(isWaiting) || (yield* isWriting)
-      ? undefined
-      : yield* Effect.forEach(operands, answer);
-  });
 
 /** Unifies two terms; without logic variables it is plain equality. */
 export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>

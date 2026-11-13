@@ -134,6 +134,7 @@ class Rewrite {
         this.rules.push({
           aggregates: [],
           body: [...out],
+          demand: true,
           head: new Atom(
             this.magic(relation, adornment),
             pick(args, adornment)
