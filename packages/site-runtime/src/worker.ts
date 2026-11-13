@@ -17,7 +17,6 @@ self.addEventListener("message", (event: MessageEvent<EvaluateRequest>) => {
         ok: false,
         error: describeError(error),
         logs: [],
-        ms: 0,
       } satisfies EvaluateResponse)
   );
 });

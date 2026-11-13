@@ -2,7 +2,8 @@
 // and how their URLs are versioned. GitHub Pages lets browsers cache every
 // file for ten minutes, so without a version a new page can run its examples
 // on a cached evaluator from the previous release. playground.js and
-// script.js pass the same version on to lion-worker.js and highlight.js.
+// script.js pass the same version on to lion-worker.js and highlight.js, and
+// playground.js and docs.js pass it on to pure.js.
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -16,6 +17,7 @@ const HASHED = [
   "script.js",
   "constellation.js",
   "highlight.js",
+  "pure.js",
   "docs.js",
   "styles.css",
 ];

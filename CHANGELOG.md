@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-13 — lionlang.dev
+
+No package changed. These are fixes to the documentation page.
+
+### Fixed
+
+- "On this page" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.
+- An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none.
+- Both rules are in `docs/pure.js`, and `@lionlang/site-runtime` now tests them with properties.
+
 ## 2026-11-12 — @lionlang/core 0.7.0, @lionlang/cli 0.6.0
 
 Schemas say what a value must be, and one rule says what fits: whatever checks a value against a schema asks whether the value fits it. A logic variable in a schema is the value it meets, so a schema is also a pattern that takes data apart.

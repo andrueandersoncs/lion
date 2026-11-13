@@ -3,6 +3,10 @@
 // it, the page shows one document at a time, chosen by the URL's #fragment: a
 // document's id, or the id of anything inside one. The sidebar search reads
 // the index the build embeds in #docs-index.
+// docs.html loads this module as docs.js?v=<hash of the site's assets>, and
+// passing the same version on keeps pure.js from another release away.
+const VERSION = new URL(import.meta.url).search;
+const { sectionBeingRead } = await import(`./pure.js${VERSION}`);
 
 const docs = [...document.querySelectorAll("[data-doc]")];
 const shell = document.querySelector(".docs-shell");
@@ -11,6 +15,8 @@ const docLinks = [...document.querySelectorAll("[data-doc-link]")];
 const baseTitle = document.title;
 
 let active = null;
+/** How far the page was scrolled when the URL's #fragment was last followed. */
+let leftAt = 0;
 
 const setMenuOpen = (open) => {
   shell?.classList.toggle("is-menu-open", open);
@@ -85,10 +91,14 @@ const route = () => {
     window.scrollTo({ top: 0, behavior: "instant" });
     doc.querySelector("h1")?.focus({ preventScroll: true });
   }
+  leftAt = window.scrollY;
   updateToc();
 };
 
-// Contents: mark the section being read.
+// Contents: mark the section being read. The page measures, and pure.js
+// decides.
+const pixels = (length) => Number.parseFloat(length) || 0;
+
 let tocFrame = 0;
 const updateToc = () => {
   cancelAnimationFrame(tocFrame);
@@ -96,16 +106,24 @@ const updateToc = () => {
     if (!active) {
       return;
     }
+    const page = document.documentElement;
     const links = [...active.querySelectorAll(".doc-toc a")];
-    let current = null;
-    for (const link of links) {
-      const heading = document.getElementById(link.hash.slice(1));
-      if (heading && heading.getBoundingClientRect().top < 140) {
-        current = link;
-      }
-    }
-    for (const link of links) {
-      link.classList.toggle("is-current", link === current);
+    const headings = links.map((link) =>
+      document.getElementById(link.hash.slice(1))
+    );
+    const current = sectionBeingRead({
+      tops: headings.map((heading) => heading.getBoundingClientRect().top),
+      margins: headings.map((heading) =>
+        pixels(getComputedStyle(heading).scrollMarginTop)
+      ),
+      padding: pixels(getComputedStyle(page).scrollPaddingTop),
+      scrolled: window.scrollY,
+      end: page.scrollHeight - window.innerHeight,
+      named: links.findIndex((link) => link.hash === window.location.hash),
+      leftAt,
+    });
+    for (const [at, link] of links.entries()) {
+      link.classList.toggle("is-current", at === current);
     }
   });
 };

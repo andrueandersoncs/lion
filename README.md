@@ -1163,3 +1163,9 @@ bun run --cwd packages/site-runtime stamp
 ```
 
 CI fails when either page's hash is out of date, and the site-runtime tests fail when `docs/docs.html` is not what its fragments build.
+
+What the pages decide without touching a page is in `docs/pure.js`: which section "On this page" marks as the one being read, and how an example shows how long its program ran. The site-runtime tests check it with properties, against a model of a page that a browser scrolls:
+
+```bash
+turbo test --filter=@lionlang/site-runtime
+```

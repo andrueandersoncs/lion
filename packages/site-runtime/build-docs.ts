@@ -235,9 +235,10 @@ const runExample = async (doc: Doc, attrs: string, code: string) => {
   if (expect !== "error" && !response.ok) {
     return fail(`${where} failed: ${response.error}`);
   }
-  if (response.ms > SLOW_EXAMPLE_MS) {
+  const ms = response.ms ?? 0;
+  if (ms > SLOW_EXAMPLE_MS) {
     return fail(
-      `${where} took ${Math.round(response.ms)} ms, too slow for the browser.`
+      `${where} took ${Math.round(ms)} ms, too slow for the browser.`
     );
   }
   return { name, response, source };

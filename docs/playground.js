@@ -6,6 +6,7 @@
 // from another release from pairing with this page.
 const VERSION = new URL(import.meta.url).search;
 const { escapeHtml, highlight } = await import(`./highlight.js${VERSION}`);
+const { timeLabel } = await import(`./pure.js${VERSION}`);
 
 const WORKER_URL = new URL(`./lion-worker.js${VERSION}`, import.meta.url);
 const TIMEOUT_MS = 1500;
@@ -35,7 +36,7 @@ const createEvaluator = () => {
 
   const failAll = (error) => {
     for (const id of [...pending.keys()]) {
-      settle(id, { id, ok: false, error, logs: [], ms: 0 });
+      settle(id, { id, ok: false, error, logs: [] });
     }
   };
 
@@ -86,13 +87,6 @@ const createEvaluator = () => {
       pending.set(nextId, { source, resolve, timer: 0 });
       post(nextId);
     });
-};
-
-const formatDuration = (ms) => {
-  if (ms < 1) {
-    return "<1 ms";
-  }
-  return `${ms < 10 ? ms.toFixed(1) : Math.round(ms)} ms`;
 };
 
 const buildEditor = (codeBlock, label, source) => {
@@ -181,7 +175,7 @@ const setupPlayground = (root, evaluate) => {
 
   const show = (response) => {
     setStatus(response.ok ? "ok" : "error", response.ok ? "result" : "error");
-    ui.time.textContent = response.ms > 0 ? formatDuration(response.ms) : "";
+    ui.time.textContent = timeLabel(response.ms);
     ui.logs.hidden = response.logs.length === 0;
     ui.logs.innerHTML = response.logs
       .map((line) => `<div class="playground-log">${escapeHtml(line)}</div>`)

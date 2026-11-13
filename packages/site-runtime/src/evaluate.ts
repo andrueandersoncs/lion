@@ -24,7 +24,8 @@ export type EvaluateResponse =
       readonly ok: false;
       readonly error: string;
       readonly logs: readonly string[];
-      readonly ms: number;
+      /** How long the program ran. A program that did not run has no time. */
+      readonly ms?: number;
     };
 
 const MAX_OUTPUT_LENGTH = 4000;
@@ -185,7 +186,6 @@ export const evaluateSource = async ({
       ok: false,
       error: `Invalid JSON: ${error instanceof Error ? error.message : String(error)}`,
       logs,
-      ms: 0,
     };
   }
   const exit = await Effect.runPromiseExit(
