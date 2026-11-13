@@ -1,0 +1,14 @@
+schema_version: "1.1"
+name: researches-recent-outage
+expected_outcome: |
+  The run identifies the most recent major Microsoft 365 outage and reports
+  when it started and ended, what was affected, what caused it, and what
+  Microsoft said. Beside the report it leaves a research folder with numbered
+  step programs, the saved text of the sources that were read, a Lion model
+  that rebuilds from those steps, and a page for the reader that answers their
+  questions in plain words, each with its evidence, and shows how solid each
+  finding is. Every quote in the model is in its source's saved text. The report's
+  figures come from the model, and it says what is disputed, what independent
+  publishers confirm, what rests on one publisher's word or is known only
+  second-hand, which assumptions the evidence contradicted, and what is still
+  missing.

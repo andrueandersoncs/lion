@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-11-13 — lion-research skill
+
+No package changed. `skills/lion-research` is a new agent skill that uses Lion as the working memory of a deep research run, and the README has a section on it.
+
+### Added
+
+- The skill. An agent records what each source says as facts, each with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research. Its assumptions are rules that the evidence can contradict. A run ends with the saved model and one page for the person who asked for the research.
+- `assets/core.json`, the program every research model starts from. It says who stands behind each answer: the publishers who give it first-hand, in a claim credited to nobody else. Sources with one publisher are one voice, and a source that relays another adds nothing, so an answer that three articles took from one press release rests on one publisher. It derives which answers independent publishers confirm, which rest on one publisher's word and how many on each, which are known only second-hand, which sources are credited with something they do not say, which questions sources dispute, which credited sources are unread, and which assumptions hold. Its invariants reject a claim without a known source.
+- `assets/utc-minutes.json` and `assets/utc-text.json`, Lion functions that turn a time in any zone into minutes since 1970 UTC and such a count into text, so a rule can order a timeline, measure the time between events, and show both.
+- `scripts/build-explorer.mjs`, which packs a model and the plan of its page into one HTML file with the evaluator inside it. The page is for a reader who does not know Lion, and it has no fixed form: the agent writes a plan, `page.json`, for what this reader wants to know. A plan names the views and fills each with blocks: an answer in plain words with its evidence under it, key figures, a table, a timeline, a comparison grid, a lookup whose answer changes as the reader chooses from lists, how solid the findings are, the sources, and text. A choice in a lookup enters its query as data. The trust block is built from the core: what independent publishers confirm, where sources disagree, what rests on one publisher's word, what is second-hand, what was misquoted, and which assumptions held. The query editor and the model's tables are always the last view, for readers who know Lion, where a query can also add facts to ask what would follow. The script also writes every query the plan asks as one Lion record, so they can all be run before the page is opened.
+- `scripts/record.mjs`, which writes a step from plain notes on what sources said, with everything in it as data, and refuses a quote that is not in the saved text of its source. `scripts/replay.mjs`, which rebuilds the model from its steps and gives a frame the time functions it names.
+- `scripts/page-text.mjs`, which saves the text of a page a source was read from, and `scripts/check-quotes.mjs`, which checks that every claim's quote is in the saved text of its source, word for word.
+- Two references for the agent, each example of which was run: the part of Lion a research model uses, and rules for facts that hold or do not, disputes, timelines, statements that change, totals, networks, gaps, assumptions, and competing explanations.
+- Properties in `packages/metrics` check the core program against a plain model of provenance for any sources, publishers, claims, and attributions, the time functions against JavaScript's clock, and each script against what it is given: the page against its model and plan, and a reader's choice in a lookup against the data it stands for.
+
+### Changed during the first trial
+
+A trial run researched the Microsoft 365 outage of 12 November 2026 with the first version of the skill: 19 sources and 175 claims. That version's core followed each claim to the source it was credited to and counted distinct sources. On the trial's model it called 15 answers corroborated. Eight of them were not: two channels of one company counted as two origins in three, two articles from one newspaper in one, and in four an origin was a source that was only credited, either unread or saying something else. The core above replaced it. On the same evidence it calls 7 answers corroborated, the 7 the trial's agent reached with stricter rules of its own, and it reports 4 misquotes and 26 answers known only second-hand.
 ## 2026-11-13 — @lionlang/core 0.8.0, @lionlang/cli 0.7.0
 
 Three surprises found while writing Lion programs for a research skill, each removed by one rule. A call gives a function as many arguments as it takes. A number has text. A fact that holds a name says which name, and how to write the string.

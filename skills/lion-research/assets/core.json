@@ -1,0 +1,171 @@
+[
+  "begin",
+  [
+    "schema",
+    "Source",
+    {
+      "id": "value/string?",
+      "url": "value/string?",
+      "title": "value/string?",
+      "publisher": "value/string?",
+      "kind": ["schema/anyOf", "primary", "secondary", "tertiary"],
+      "published": ["schema/anyOf", "value/integer?", null]
+    }
+  ],
+  [
+    "relation",
+    "source",
+    ["id", "url", "title", "publisher", "kind", "published"],
+    { "key": "id", "schema": "Source" }
+  ],
+  ["relation", "claim", ["id", "source", "quote", "says"], { "key": "id" }],
+  ["relation", "attributed", ["claim", "to"]],
+  ["relation", "assumption", ["id", "statement"], { "key": "id" }],
+
+  ["relation", "answer", ["question", "value", "claim"]],
+  ["relation", "violated", ["assumption", "witness"]],
+
+  ["relation", "firsthand", ["question", "value", "publisher"]],
+  ["relation", "backing", ["question", "value", "publishers"]],
+  ["relation", "corroborated", ["question", "value"]],
+  ["relation", "single_origin", ["question", "value", "publisher"]],
+  ["relation", "reliance", ["publisher", "answers"]],
+  ["relation", "secondhand", ["question", "value", "credited"]],
+  ["relation", "misquoted", ["claim", "to", "question", "relayed", "said"]],
+  ["relation", "unread", ["source"]],
+  ["relation", "answers", ["question", "values"]],
+  ["relation", "disputed", ["question", "values"]],
+  ["relation", "holds", ["assumption"]],
+
+  [
+    "invariant",
+    [
+      "and",
+      ["claim", "?id", "?source", "?_", "?_"],
+      ["not", ["source", "?source", "?_", "?_", "?_", "?_", "?_"]]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["claim", "?id", "?_", "?quote", "?says"],
+      ["not", ["and", ["value/string?", "?quote"], ["value/object?", "?says"]]]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["attributed", "?claim", "?to"],
+      [
+        "not",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["source", "?to", "?_", "?_", "?_", "?_", "?_"]
+        ]
+      ]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["attributed", "?claim", "?to"],
+      ["claim", "?claim", "?to", "?_", "?_"]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["violated", "?assumption", "?_"],
+      ["not", ["assumption", "?assumption", "?_"]]
+    ],
+    { "assert": "none" }
+  ],
+
+  [
+    "rule",
+    ["firsthand", "?q", "?v", "?publisher"],
+    ["answer", "?q", "?v", "?c"],
+    ["claim", "?c", "?s", "?_", "?_"],
+    ["not", ["attributed", "?c", "?_"]],
+    ["source", "?s", "?_", "?_", "?publisher", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["backing", "?q", "?v", ["aggregate/unique", "?publisher"]],
+    ["firsthand", "?q", "?v", "?publisher"]
+  ],
+  [
+    "rule",
+    ["corroborated", "?q", "?v"],
+    ["backing", "?q", "?v", "?publishers"],
+    ["number/greaterThan", ["array/length", "?publishers"], 1]
+  ],
+  [
+    "rule",
+    ["single_origin", "?q", "?v", "?publisher"],
+    ["backing", "?q", "?v", ["array/make", "?publisher"]]
+  ],
+  [
+    "rule",
+    ["reliance", "?publisher", ["aggregate/count", "?q"]],
+    ["single_origin", "?q", "?v", "?publisher"]
+  ],
+  [
+    "rule",
+    ["secondhand", "?q", "?v", ["aggregate/unique", "?to"]],
+    ["answer", "?q", "?v", "?c"],
+    ["attributed", "?c", "?to"],
+    ["not", ["firsthand", "?q", "?v", "?_"]]
+  ],
+  [
+    "rule",
+    ["misquoted", "?c", "?to", "?q", "?v", "?said"],
+    ["attributed", "?c", "?to"],
+    ["answer", "?q", "?v", "?c"],
+    ["answer", "?q", "?said", "?theirs"],
+    ["claim", "?theirs", "?to", "?_", "?_"],
+    [
+      "not",
+      [
+        "and",
+        ["answer", "?q", "?v", "?same"],
+        ["claim", "?same", "?to", "?_", "?_"]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["unread", "?to"],
+    ["attributed", "?_", "?to"],
+    ["not", ["claim", "?_", "?to", "?_", "?_"]]
+  ],
+
+  [
+    "rule",
+    ["answers", "?q", ["aggregate/unique", "?v"]],
+    ["answer", "?q", "?v", "?_"]
+  ],
+  [
+    "rule",
+    ["disputed", "?q", "?vs"],
+    ["answers", "?q", "?vs"],
+    ["number/greaterThan", ["array/length", "?vs"], 1]
+  ],
+
+  [
+    "rule",
+    ["holds", "?a"],
+    ["assumption", "?a", "?_"],
+    ["not", ["violated", "?a", "?_"]]
+  ],
+  "ready"
+]

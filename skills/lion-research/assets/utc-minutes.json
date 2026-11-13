@@ -1,0 +1,61 @@
+[
+  "lambda",
+  ["year", "month", "day", "hour", "minute", "offset"],
+  [
+    [
+      "lambda",
+      ["y", "m"],
+      [
+        [
+          "lambda",
+          ["era"],
+          [
+            [
+              "lambda",
+              ["yoe"],
+              [
+                "number/add",
+                [
+                  "number/multiply",
+                  1440,
+                  [
+                    "number/add",
+                    ["number/multiply", "era", 146097],
+                    ["number/multiply", "yoe", 365],
+                    ["number/floor", ["number/divide", "yoe", 4]],
+                    [
+                      "number/multiply",
+                      -1,
+                      ["number/floor", ["number/divide", "yoe", 100]]
+                    ],
+                    [
+                      "number/floor",
+                      [
+                        "number/divide",
+                        ["number/add", ["number/multiply", 153, "m"], 2],
+                        5
+                      ]
+                    ],
+                    "day",
+                    -719469
+                  ]
+                ],
+                ["number/multiply", "hour", 60],
+                "minute",
+                ["number/multiply", -1, "offset"]
+              ]
+            ],
+            ["number/subtract", "y", ["number/multiply", "era", 400]]
+          ]
+        ],
+        ["number/floor", ["number/divide", "y", 400]]
+      ]
+    ],
+    [
+      "number/subtract",
+      "year",
+      ["cond", [["number/lessThan", "month", 3], 1], ["else", 0]]
+    ],
+    ["number/remainder", ["number/add", "month", 9], 12]
+  ]
+]

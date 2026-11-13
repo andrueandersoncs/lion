@@ -1,0 +1,184 @@
+[
+  "lambda",
+  ["minutes"],
+  [
+    [
+      "lambda",
+      ["days"],
+      [
+        [
+          "lambda",
+          ["rem", "z"],
+          [
+            [
+              "lambda",
+              ["hour", "era"],
+              [
+                [
+                  "lambda",
+                  ["doe"],
+                  [
+                    [
+                      "lambda",
+                      ["yoe"],
+                      [
+                        [
+                          "lambda",
+                          ["doy"],
+                          [
+                            [
+                              "lambda",
+                              ["mp"],
+                              [
+                                [
+                                  "lambda",
+                                  ["month"],
+                                  [
+                                    [
+                                      "lambda",
+                                      ["year", "day", "minute", "two"],
+                                      [
+                                        "string/concat",
+                                        ["number/toString", "year"],
+                                        "-",
+                                        ["two", "month"],
+                                        "-",
+                                        ["two", "day"],
+                                        " ",
+                                        ["two", "hour"],
+                                        ":",
+                                        ["two", "minute"],
+                                        " UTC"
+                                      ]
+                                    ],
+                                    [
+                                      "number/add",
+                                      "yoe",
+                                      ["number/multiply", "era", 400],
+                                      [
+                                        "cond",
+                                        [["number/lessThan", "month", 3], 1],
+                                        ["else", 0]
+                                      ]
+                                    ],
+                                    [
+                                      "number/add",
+                                      [
+                                        "number/subtract",
+                                        "doy",
+                                        [
+                                          "number/floor",
+                                          [
+                                            "number/divide",
+                                            [
+                                              "number/add",
+                                              ["number/multiply", 153, "mp"],
+                                              2
+                                            ],
+                                            5
+                                          ]
+                                        ]
+                                      ],
+                                      1
+                                    ],
+                                    [
+                                      "number/subtract",
+                                      "rem",
+                                      ["number/multiply", "hour", 60]
+                                    ],
+                                    [
+                                      "lambda",
+                                      ["n"],
+                                      [
+                                        "cond",
+                                        [
+                                          ["number/lessThan", "n", 10],
+                                          [
+                                            "string/concat",
+                                            "0",
+                                            ["number/toString", "n"]
+                                          ]
+                                        ],
+                                        ["else", ["number/toString", "n"]]
+                                      ]
+                                    ]
+                                  ]
+                                ],
+                                [
+                                  "cond",
+                                  [
+                                    ["number/lessThan", "mp", 10],
+                                    ["number/add", "mp", 3]
+                                  ],
+                                  ["else", ["number/subtract", "mp", 9]]
+                                ]
+                              ]
+                            ],
+                            [
+                              "number/floor",
+                              [
+                                "number/divide",
+                                [
+                                  "number/add",
+                                  ["number/multiply", 5, "doy"],
+                                  2
+                                ],
+                                153
+                              ]
+                            ]
+                          ]
+                        ],
+                        [
+                          "number/subtract",
+                          "doe",
+                          [
+                            "number/add",
+                            ["number/multiply", 365, "yoe"],
+                            ["number/floor", ["number/divide", "yoe", 4]],
+                            [
+                              "number/multiply",
+                              -1,
+                              ["number/floor", ["number/divide", "yoe", 100]]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      "number/floor",
+                      [
+                        "number/divide",
+                        [
+                          "number/add",
+                          "doe",
+                          [
+                            "number/multiply",
+                            -1,
+                            ["number/floor", ["number/divide", "doe", 1460]]
+                          ],
+                          ["number/floor", ["number/divide", "doe", 36524]],
+                          [
+                            "number/multiply",
+                            -1,
+                            ["number/floor", ["number/divide", "doe", 146096]]
+                          ]
+                        ],
+                        365
+                      ]
+                    ]
+                  ]
+                ],
+                ["number/subtract", "z", ["number/multiply", "era", 146097]]
+              ]
+            ],
+            ["number/floor", ["number/divide", "rem", 60]],
+            ["number/floor", ["number/divide", "z", 146097]]
+          ]
+        ],
+        ["number/subtract", "minutes", ["number/multiply", "days", 1440]],
+        ["number/add", "days", 719468]
+      ]
+    ],
+    ["number/floor", ["number/divide", "minutes", 1440]]
+  ]
+]

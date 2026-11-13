@@ -1160,6 +1160,28 @@ run(program, { ...stdlib, "my/outDegree": outDegree });
 
 In the program, `["my/outDegree", "edge", "?node", "?degree"]` is then a goal.
 
+## Research Skill
+
+[`skills/lion-research`](skills/lion-research/SKILL.md) is an agent skill that uses Lion as the working memory of a deep research run. The agent records what each source says as facts, with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research: [`why`](#forms) traces any conclusion to quoted sources, [invariants](#invariants) reject malformed evidence, and the agent's assumptions are rules that the evidence can contradict.
+
+The skill ships a core program, [`assets/core.json`](skills/lion-research/assets/core.json), that says who stands behind each answer. Only a publisher who gives an answer first-hand counts, so three articles that repeat one press release are one voice, an answer that every source credits to someone else is second-hand, and a source credited with something it does not say is a misquote. A run ends with `explorer.html`, one page that holds the model and the evaluator, made for the person who asked for the research and knows nothing of Lion. The agent designs the page for that person's goal, as a plan of views and blocks: answers in plain words with the evidence under each, key figures, timelines, comparison grids, and lookups, where the reader picks from a list and gets the answer. It says how solid each finding is, lists every source with its quotes, and keeps a query editor for readers who do know Lion.
+
+To use it with Claude Code, link or copy the folder into your skills:
+
+```bash
+ln -s "$(pwd)/skills/lion-research" ~/.claude/skills/lion-research
+```
+
+Its scripts do the mechanical parts: `record.mjs` turns notes on what sources said into a step and refuses a quote that is not in the saved text of its source, `replay.mjs` rebuilds the model from its steps, `check-quotes.mjs` checks every quote in a finished model, and `build-explorer.mjs` builds the page.
+
+The explorer page runs a bundle of `@lionlang/core`. After changing the core evaluator, rebuild it:
+
+```bash
+bun build skills/lion-research/scripts/engine.ts --target browser --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
+```
+
+The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model and plan it was given, a reader's choice in a lookup against the data it stands for, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, and each script started through a link, as an installed skill starts it.
+
 ## Development
 
 From the repo root:
