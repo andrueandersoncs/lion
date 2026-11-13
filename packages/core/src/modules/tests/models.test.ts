@@ -331,6 +331,17 @@ const notANumber = Arbitrary.schema(
   ])
 );
 
+/** Values that are not strings. */
+const notAString = Arbitrary.schema(
+  Schema.Union([
+    Schema.Int,
+    Schema.Boolean,
+    Schema.Null,
+    Schema.Array(Schema.Int),
+    Schema.Record(Name, Schema.Int),
+  ])
+);
+
 describe("number/toString", () => {
   it.effect.prop(
     "is the number as JSON writes it, and reads back as the number",
@@ -422,6 +433,175 @@ describe("object/json-stringify", () => {
         expect(
           yield* evaluate(["object/json-stringify", quote(value), null, space])
         ).toBe(JSON.stringify(value, null, space));
+      })
+  );
+});
+
+/** A list of strings: none, one, two, or more. */
+const texts = Arbitrary.array(text, { maxLength: 5 });
+
+/**
+ * What `string/join` gives, written out one item at a time: the separator
+ * before every item but the first, and `last` in its place before the last.
+ */
+const joined = (items: readonly string[], separator: string, last: string) => {
+  let out = "";
+  for (const [at, item] of items.entries()) {
+    if (at > 0) {
+      out += at === items.length - 1 ? last : separator;
+    }
+    out += item;
+  }
+  return out;
+};
+
+/** The same call where it waits for the logic variable that is its subject. */
+const waiting = (fn: string, subject: unknown, ...rest: unknown[]) => [
+  "find",
+  "?r",
+  ["and", ["=", "?x", subject], ["=", "?r", [fn, "?x", ...rest]]],
+];
+
+describe("string/join and string/split", () => {
+  it.effect.prop(
+    "join a list with a separator, and with another before the last item",
+    { items: texts, separator: text, last: text },
+    ({ items, separator, last }) =>
+      Effect.gen(function* () {
+        const list = quote(items);
+        const two = ["string/join", list, quote(separator)];
+        const three = ["string/join", list, quote(separator), quote(last)];
+        expect(yield* evaluate(two)).toBe(items.join(separator));
+        expect(yield* evaluate(three)).toBe(joined(items, separator, last));
+        // Without a third string, the separator stands before the last too.
+        expect(yield* evaluate([...two, quote(separator)])).toBe(
+          items.join(separator)
+        );
+        expect(
+          yield* evaluate(
+            waiting("string/join", list, quote(separator), quote(last))
+          )
+        ).toEqual([joined(items, separator, last)]);
+      })
+  );
+
+  it.effect.prop(
+    "split text as JavaScript does, and join puts it back together",
+    { pair: textAndPart },
+    ({ pair: [whole, part] }) =>
+      Effect.gen(function* () {
+        const split = ["string/split", quote(whole), quote(part)];
+        expect(yield* evaluate(split)).toEqual(whole.split(part));
+        expect(yield* evaluate(["string/join", split, quote(part)])).toBe(
+          whole
+        );
+        expect(
+          yield* evaluate(waiting("string/split", quote(whole), quote(part)))
+        ).toEqual([whole.split(part)]);
+      })
+  );
+
+  it.effect.prop(
+    "join takes only strings",
+    { items: texts, value: notAString, at: small },
+    ({ items, value, at }) =>
+      Effect.gen(function* () {
+        const mixed = items.toSpliced(Math.abs(at) % (items.length + 1), 0, "");
+        for (const program of [
+          ["string/join", quote(mixed.map((item) => item || value)), ","],
+          ["string/join", quote(items), quote(value)],
+          ["string/join", quote(items), ",", quote(value)],
+          // A list of whole numbers may be empty, and that is a list of strings.
+          ["string/join", quote(Array.isArray(value) ? 0 : value), ","],
+        ]) {
+          const result = yield* Effect.exit(evaluate(program));
+          expect(result._tag, JSON.stringify(program)).toBe("Failure");
+        }
+      })
+  );
+});
+
+describe("string/padStart and string/padEnd", () => {
+  it.effect.prop(
+    "make text as long as asked, as JavaScript does",
+    {
+      value: text,
+      fill: text,
+      length: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: -2, maximum: 12 }))
+      ),
+    },
+    ({ value, fill, length }) =>
+      Effect.gen(function* () {
+        const rest = [length, quote(fill)];
+        expect(
+          yield* evaluate({
+            start: ["string/padStart", quote(value), ...rest],
+            end: ["string/padEnd", quote(value), ...rest],
+            waits: waiting("string/padStart", quote(value), ...rest),
+          })
+        ).toEqual({
+          start: value.padStart(length, fill),
+          end: value.padEnd(length, fill),
+          waits: [value.padStart(length, fill)],
+        });
+      })
+  );
+});
+
+/** Separators with nothing in them that the text of a number has. */
+const SEPARATORS = [",", " ", "_", "'", "$", "$&", ", "];
+
+const separator = Arbitrary.map(
+  Arbitrary.schema(
+    Schema.Int.check(
+      Schema.isBetween({ minimum: 0, maximum: SEPARATORS.length - 1 })
+    )
+  ),
+  (at) => SEPARATORS[at] as string
+);
+
+/** Text with the characters a pattern reads as its own taken as they are. */
+const literal = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+
+describe("number/toString with a separator", () => {
+  it.effect.prop(
+    "groups the whole part in threes, and is the number without them",
+    { n: anyNumber, between: separator },
+    ({ n, between }) =>
+      Effect.gen(function* () {
+        const grouped = (yield* evaluate([
+          "number/toString",
+          n,
+          quote(between),
+        ])) as string;
+        // Taking the separators out leaves the number as JSON writes it.
+        expect(grouped.split(between).join("")).toBe(String(n));
+        // One to three digits, then groups of three; the rest is untouched.
+        expect(grouped).toMatch(
+          new RegExp(
+            `^-?\\d{1,3}(${literal(between)}\\d{3})*(\\.\\d+)?(e[+-]\\d+)?$`
+          )
+        );
+        expect(yield* evaluate(["number/toString", n, quote("")])).toBe(
+          String(n)
+        );
+        expect(
+          yield* evaluate(waiting("number/toString", n, quote(between)))
+        ).toEqual([grouped]);
+      })
+  );
+
+  it.effect.prop(
+    "takes only a string as the separator",
+    { n: anyNumber, value: notAString },
+    ({ n, value }) =>
+      Effect.gen(function* () {
+        const result = yield* Effect.exit(
+          evaluate(["number/toString", n, quote(value)])
+        );
+        expect(result._tag).toBe("Failure");
       })
   );
 });

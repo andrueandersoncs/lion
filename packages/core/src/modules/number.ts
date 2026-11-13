@@ -1,6 +1,11 @@
 import { Effect, Schema } from "effect";
-import { ArithmeticError, atLeast, type Count } from "@/errors/evaluation";
-import { combining, over } from "@/modules/lib/shared";
+import {
+  ArithmeticError,
+  atLeast,
+  type Count,
+  takes,
+} from "@/errors/evaluation";
+import { combining, decode, over } from "@/modules/lib/shared";
 
 const compare = (test: (a: number, b: number) => boolean) =>
   over([Schema.Number, Schema.Number], test);
@@ -38,6 +43,15 @@ const SOME = atLeast(1);
 const rounding = (operate: (a: number) => number) =>
   over([Schema.Number], operate);
 
+/** What `toString` takes: the number, and what goes between its groups. */
+const Written = decode(Schema.Tuple([Schema.Number, Schema.String]));
+
+/** The digits of a number's whole part: the first run of digits in its text. */
+const WHOLE = /\d+/;
+
+/** Each digit with a multiple of three digits after it, up to the end. */
+const GROUPS = /\d(?=(\d{3})+$)/g;
+
 export const module = {
   symbol: Symbol("number"),
 
@@ -63,6 +77,16 @@ export const module = {
   /** The nearest whole number; a half rounds up. */
   round: rounding(Math.round),
 
-  /** The number as text, the way JSON writes it. */
-  toString: over([Schema.Number], String),
+  /**
+   * The number as text, the way JSON writes it. With a separator, the whole
+   * part is written in groups of three digits with it between them, as
+   * `#:group-sep` does in Racket: "1,234,567.5".
+   */
+  toString: takes([1, 2], (value: unknown, separator: unknown = "") =>
+    Effect.map(Written([value, separator]), ([n, between]) =>
+      String(n).replace(WHOLE, (digits) =>
+        digits.replace(GROUPS, (digit) => digit + between)
+      )
+    )
+  ),
 };

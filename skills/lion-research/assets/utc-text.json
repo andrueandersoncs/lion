@@ -90,16 +90,10 @@
                                       "lambda",
                                       ["n"],
                                       [
-                                        "cond",
-                                        [
-                                          ["number/lessThan", "n", 10],
-                                          [
-                                            "string/concat",
-                                            "0",
-                                            ["number/toString", "n"]
-                                          ]
-                                        ],
-                                        ["else", ["number/toString", "n"]]
+                                        "string/padStart",
+                                        ["number/toString", "n"],
+                                        2,
+                                        "0"
                                       ]
                                     ]
                                   ]

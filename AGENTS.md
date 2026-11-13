@@ -34,6 +34,9 @@ Every change aims for these:
 
 Lion's value comes from features that compose, so one surprising interaction costs more than a missing feature.
 
+- **Let Lion compute it.** Lion is a full programming language. When something built on Lion needs a value, a condition, or text, write it as a Lion expression and evaluate it. Do not put a second, smaller language beside Lion, such as a template syntax with slots or a placeholder that gets substituted, and do not have a person or an agent type in what a program could derive.
+- **Do not count the length of Lion JSON as a cost.** Nobody reads the JSON: programs are written by tools and agents and shown through the editor or a page. A longer, more explicit program is fine. Never trade away correctness or a single rule to make the JSON shorter or easier on the eye.
+- **When the standard library lacks something, add it.** If a program needs a helper that any Lion programmer would want, such as joining a list into text or writing a number with separators, add it to the standard library with its properties, instead of working around the gap in each program.
 - **Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example:
   - Invariants take the query option `"assert"` instead of a new keyword, and report failures in the same words as a failed query assertion.
   - The schema of a relation's rows is the invariant a program could write by hand, so it is kept, reported, and saved like any other.

@@ -909,8 +909,52 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "number/toString writes a number as JSON does not",
     file: core("modules/number.ts"),
-    find: "  toString: over([Schema.Number], String),",
-    replace: "  toString: over([Schema.Number], (n) => n.toFixed(1)),",
+    find: "      String(n).replace(WHOLE, (digits) =>",
+    replace: "      n.toFixed(1).replace(WHOLE, (digits) =>",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "number/toString groups digits in twos",
+    file: core("modules/number.ts"),
+    find: "const GROUPS = /\\d(?=(\\d{3})+$)/g;",
+    replace: "const GROUPS = /\\d(?=(\\d{2})+$)/g;",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "number/toString groups the digits after the point too",
+    file: core("modules/number.ts"),
+    find: "const WHOLE = /\\d+/;",
+    replace: "const WHOLE = /\\d+/g;",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "string/join puts the separator before the last item too",
+    file: core("modules/string.ts"),
+    find: "{before}$",
+    replace: "{between}$",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "string/join puts a separator before a single item",
+    file: core("modules/string.ts"),
+    find: "          texts.length < 2",
+    replace: "          texts.length < 1",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "string/split leaves out the empty parts",
+    file: core("modules/string.ts"),
+    find: "(text, separator): string[] => text.split(separator)",
+    replace:
+      "(text, separator): string[] => text.split(separator).filter(Boolean)",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "string/padStart pads the end",
+    file: core("modules/string.ts"),
+    find: "padStart: padding((text, length, fill) => text.padStart(length, fill))",
+    replace:
+      "padStart: padding((text, length, fill) => text.padEnd(length, fill))",
     tests: ["src/modules/tests/models.test.ts"],
   },
   {

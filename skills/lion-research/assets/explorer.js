@@ -811,7 +811,7 @@ const evidenceOf = (entry) =>
   disclosure(
     entry.answer ? "Show the evidence" : "Show what the research found",
     async () => {
-      const response = await evaluate(entry.evidence);
+      const response = await evaluate(within(entry.evidence));
       const asQuery = el(
         "button",
         {
@@ -1621,32 +1621,41 @@ const shaped = (block, value, query) => {
     : present(value, query);
 };
 
-/** A query with each "$name" in it replaced by what the reader chose. */
-const filled = (query, chosen) => {
-  if (typeof query === "string" && query.startsWith("$")) {
-    return query.slice(1) in chosen ? ["quote", chosen[query.slice(1)]] : query;
+/**
+ * What a plan binds before any of its expressions run: the wording helpers
+ * this page carries, then the plan's own definitions.
+ */
+const DEFINITIONS = Object.entries({
+  ...(isRecord(data.words) ? data.words : {}),
+  ...(isRecord(plan.define) ? plan.define : {}),
+}).map(([name, value]) => ["define", name, value]);
+const within = (expression) => ["begin", ...DEFINITIONS, expression];
+
+/**
+ * Text of the page. A string in the plan is the text itself. Anything else
+ * is a Lion expression, and the text is what the model gives for it now.
+ */
+const worded = async (text) => {
+  if (text === undefined || text === null || typeof text === "string") {
+    return text ?? undefined;
   }
-  if (Array.isArray(query)) {
-    return query.map((part) => filled(part, chosen));
-  }
-  return isRecord(query)
-    ? Object.fromEntries(
-        Object.entries(query).map(([key, part]) => [key, filled(part, chosen)])
-      )
-    : query;
+  const response = await evaluate(within(text));
+  return response.ok
+    ? plain(response.value)
+    : `This could not be worked out from the model: ${response.error}`;
 };
 
 const queried = async (block, render) => {
-  const response = await evaluate(block.query);
+  const response = await evaluate(within(block.query));
   return [
     heading(block),
-    noted(block),
+    noted({ note: await worded(block.note) }),
     response.ok ? render(response.value) : failed(response),
   ];
 };
 
 const BLOCKS = {
-  answer: (block) => qa(block),
+  answer: async (block) => qa({ ...block, answer: await worded(block.answer) }),
   comparison: (block) => queried(block, (rows) => comparison(rows, block)),
   custom: async (block) => {
     const root = el("div", {});
@@ -1676,17 +1685,22 @@ const BLOCKS = {
   },
   figures: async (block) => {
     const items = Array.isArray(block.items) ? block.items : [];
+    // A figure's value is an expression the model works out. Text typed in
+    // its place is shown as text, and the build has already refused it.
     const response = await evaluate(
-      Object.fromEntries(
-        items.map((item, at) => [
-          String(at),
-          item.query ?? ["quote", item.value ?? null],
-        ])
+      within(
+        Object.fromEntries(
+          items.map((item, at) => [
+            String(at),
+            typeof item.value === "string" ? ["quote", item.value] : item.value,
+          ])
+        )
       )
     );
+    const notes = await Promise.all(items.map((item) => worded(item.note)));
     return [
       heading(block),
-      noted(block),
+      noted({ note: await worded(block.note) }),
       response.ok
         ? el(
             "dl",
@@ -1697,8 +1711,7 @@ const BLOCKS = {
                 {},
                 el("dt", {}, item.label),
                 el("dd", {}, shown(single(response.value[at]))),
-                typeof item.note === "string" &&
-                  el("dd", { class: "aside-note" }, item.note)
+                notes[at] && el("dd", { class: "aside-note" }, notes[at])
               )
             )
           )
@@ -1708,8 +1721,10 @@ const BLOCKS = {
   lookup: async (block) => {
     const choices = Object.entries(block.choose ?? {});
     const options = await evaluate(
-      Object.fromEntries(
-        choices.map(([name, choice]) => [name, choice.options])
+      within(
+        Object.fromEntries(
+          choices.map(([name, choice]) => [name, choice.options])
+        )
       )
     );
     if (!options.ok) {
@@ -1740,13 +1755,13 @@ const BLOCKS = {
         result.replaceChildren(nothing());
         return;
       }
-      const query = filled(
+      // The block's query is a function of what the reader chose, and each
+      // choice is passed to it as data.
+      const query = [
         block.query,
-        Object.fromEntries(
-          pickers.map(({ name, select }) => [name, JSON.parse(select.value)])
-        )
-      );
-      const response = await evaluate(query);
+        ...pickers.map(({ select }) => ["quote", JSON.parse(select.value)]),
+      ];
+      const response = await evaluate(within(query));
       result.replaceChildren(
         ...[
           response.ok ? shaped(block, response.value, query) : failed(response),
@@ -1758,7 +1773,7 @@ const BLOCKS = {
     await answer();
     return [
       heading(block),
-      noted(block),
+      noted({ note: await worded(block.note) }),
       el(
         "div",
         { class: "choose" },
@@ -1776,9 +1791,9 @@ const BLOCKS = {
   },
   sources: (block) => [heading(block), noted(block), sourcesView()],
   table: (block) => queried(block, (value) => present(value, block.query)),
-  text: (block) => [
+  text: async (block) => [
     heading(block),
-    String(block.text ?? "")
+    String((await worded(block.text)) ?? "")
       .split("\n\n")
       .map((paragraph) => el("p", { class: "prose" }, paragraph)),
   ],
@@ -1885,6 +1900,9 @@ async function refresh() {
   ]
     .filter(Boolean)
     .join(" · ");
+  const summary = await worded(plan.summary);
+  $("summary").textContent = summary ?? "";
+  $("summary").hidden = !summary;
   const built = await Promise.all(views.map(viewOf));
   for (const [at, content] of built.entries()) {
     fill(pageId(at), content);
@@ -1905,10 +1923,6 @@ const tab = (id, name, quiet = false) =>
   );
 
 $("title").textContent = plan.title || data.title || "Research model";
-if (typeof plan.summary === "string" && plan.summary.trim() !== "") {
-  $("summary").textContent = plan.summary;
-  $("summary").hidden = false;
-}
 $("views").replaceChildren(
   ...views.map((view, at) => tab(pageId(at), view.name ?? `Part ${at + 1}`)),
   tab("query", "Query the model", true)

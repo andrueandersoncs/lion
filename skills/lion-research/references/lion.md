@@ -249,6 +249,7 @@ A failed program changes nothing in the model file, so fix the step and run it a
 
 - **No ordering of strings.** There is no "less than" for text. Keep dates and times as integers (`20250201`, or minutes; see the timeline pattern), and compare those. `"order"` in a query, `aggregate/min`, and `aggregate/max` do sort strings.
 - **A function takes the number of arguments it takes.** Six combine any number, from left to right: `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat`, so `["number/add", 1, 2, 3]` is 6. Every other function fails on a call with too many or too few. A lambda still ignores arguments past its parameters.
+- **Text is built with the library.** `["string/join", list, ", ", " and "]` writes a list of strings as a sentence does, `["number/toString", n, ","]` writes a number with separators, `["string/padStart", text, 2, "0"]` pads it, and `["string/split", text, ","]` takes text apart. Each waits for a logic variable, so a rule can build the text of a row.
 - **Functions run forward.** `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
 - **Rules, schemas, and invariants cannot be removed or redefined.** Edit the step that wrote them and replay the steps.
 - **A recursive rule cannot compute new values** for its head, so recursion always ends. Follow edges with recursion, and compute in a rule that is not recursive. `aggregate/min`, `max`, `shortest`, and `union` are the exception: a recursive rule can aggregate with them.

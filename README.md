@@ -911,11 +911,12 @@ Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-
 ["number/ceiling", 2.1]
 ["number/round", 2.5]
 ["number/toString", 42]
+["number/toString", 1234567.5, ","]
 ```
 
 Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`.
 
-`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With `string/concat` it builds text from a number, also from one a rule has bound:
+`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With a second argument, a string, the whole part is written in groups of three digits with that string between them, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`, and `["number/toString", -1234, " "]` is `"-1 234"`. The digits after the point and a number written with an exponent stay as they are. With `string/concat` it builds text from a number, also from one a rule has bound:
 
 ```json
 ["rule", ["label", "?id", ["string/concat", "order ", ["number/toString", "?id"]]],
@@ -978,7 +979,16 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/endsWith", "lion", "on"]
 ["string/includes", "lion", "io"]
 ["string/indexOf", "lion", "o"]
+["string/join", ["array/make", "a", "b", "c"], ", "]
+["string/join", ["array/make", "a", "b", "c"], ", ", " and "]
+["string/split", "a,b,c", ","]
+["string/padStart", "7", 2, "0"]
+["string/padEnd", "7", 3, "."]
 ```
+
+`string/join` is a list of strings with the separator between them: `"a, b, c"`. With a third string, that one stands before the last item in place of the separator, as `#:before-last` does in Racket: `"a, b and c"`, and `"a and b"` for two items. One item is itself, and an empty list is `""`. Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`.
+
+`string/split` is the parts of the text between each separator, as JavaScript splits: `["a", "b", "c"]`. Joining the parts with the same separator gives the text back. `string/padStart` and `string/padEnd` make the text as long as the number says by putting copies of the last argument before it or after it, as JavaScript does: `"07"` and `"7.."`. Text that is already that long is unchanged.
 
 ### `object`
 
@@ -1164,7 +1174,7 @@ In the program, `["my/outDegree", "edge", "?node", "?degree"]` is then a goal.
 
 [`skills/lion-research`](skills/lion-research/SKILL.md) is an agent skill that uses Lion as the working memory of a deep research run. The agent records what each source says as facts, with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research: [`why`](#forms) traces any conclusion to quoted sources, [invariants](#invariants) reject malformed evidence, and the agent's assumptions are rules that the evidence can contradict.
 
-The skill ships a core program, [`assets/core.json`](skills/lion-research/assets/core.json), that says who stands behind each answer. Only a publisher who gives an answer first-hand counts, so three articles that repeat one press release are one voice, an answer that every source credits to someone else is second-hand, and a source credited with something it does not say is a misquote. A run ends with `explorer.html`, one page that holds the model and the evaluator, made for the person who asked for the research and knows nothing of Lion. The agent designs the page for that person's goal, as a plan of views and blocks: answers in plain words with the evidence under each, key figures, timelines, comparison grids, and lookups, where the reader picks from a list and gets the answer. It says how solid each finding is, lists every source with its quotes, and keeps a query editor for readers who do know Lion.
+The skill ships a core program, [`assets/core.json`](skills/lion-research/assets/core.json), that says who stands behind each answer. Only a publisher who gives an answer first-hand counts, so three articles that repeat one press release are one voice, an answer that every source credits to someone else is second-hand, and a source credited with something it does not say is a misquote. A run ends with `explorer.html`, one page that holds the model and the evaluator, made for the person who asked for the research and knows nothing of Lion. The agent designs the page for that person's goal, as a plan of views and blocks: answers in plain words with the evidence under each, key figures, timelines, comparison grids, and lookups, where the reader picks from a list and gets the answer. The plan states no facts. Its summary, answers, and figures are Lion expressions that the page works out from the model each time it opens, and a lookup is a Lion function of what the reader chose. It says how solid each finding is, lists every source with its quotes, and keeps a query editor for readers who do know Lion.
 
 To use it with Claude Code, link or copy the folder into your skills:
 
@@ -1180,7 +1190,7 @@ The explorer page runs a bundle of `@lionlang/core`. After changing the core eva
 bun build skills/lion-research/scripts/engine.ts --target browser --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
 ```
 
-The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model and plan it was given, a reader's choice in a lookup against the data it stands for, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, and each script started through a link, as an installed skill starts it.
+The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model and plan it was given, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, and each script started through a link, as an installed skill starts it.
 
 ## Development
 

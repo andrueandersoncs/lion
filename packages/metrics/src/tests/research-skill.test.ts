@@ -351,12 +351,10 @@ type Build = (page: {
   readonly generated: string;
   readonly page: unknown;
 }) => string;
-type Fill = (query: unknown, chosen: Record<string, unknown>) => unknown;
 type Queries = (page: unknown) => Record<string, unknown>;
 
 const builder = import(join(SKILL, "scripts/build-explorer.mjs")) as Promise<{
   readonly buildExplorer: Build;
-  readonly filled: Fill;
   readonly queriesOf: Queries;
 }>;
 
@@ -425,7 +423,11 @@ describe("the research skill's explorer page", () => {
         };
         const html = buildExplorer(page);
         // A browser ends each element at its first closing tag, as these do.
-        expect(JSON.parse(DATA.exec(html)?.[1] ?? "null")).toEqual(page);
+        // The page also carries the wording helpers, the same for every plan.
+        expect(JSON.parse(DATA.exec(html)?.[1] ?? "null")).toEqual({
+          ...page,
+          words: asset("words.json"),
+        });
         expect(unescaped(TITLE.exec(html)?.[1] ?? "")).toBe(title);
       }),
     OPTIONS
@@ -630,29 +632,73 @@ const picked = oneOf<unknown>(
 
 describe("the research skill's lookups", () => {
   it.effect.prop(
-    "put what the reader chose into a query as data, whatever it is",
+    "pass what the reader chose to the query as data, whatever it is",
     { chosen: picked },
     ({ chosen }) =>
       Effect.gen(function* () {
-        const { filled, queriesOf } = yield* Effect.promise(() => builder);
+        const { queriesOf } = yield* Effect.promise(() => builder);
         const block = {
           choose: { it: { options: ["quote", [chosen]] } },
           example: { it: chosen },
-          query: ["query", ["=", "?x", "$it"]],
+          query: ["lambda", ["it"], ["query", ["=", "?x", "it"]]],
           type: "lookup",
         };
-        const queries = queriesOf({ views: [{ blocks: [block], name: "v" }] });
-        expect(filled(block.query, { it: chosen })).toEqual(
-          Object.values(queries)[1]
-        );
         const outcome = yield* answerOf([
           "begin",
           ["relation", "claim", ["id"]],
-          queries,
+          queriesOf({ views: [{ blocks: [block], name: "v" }] }),
         ]);
         expect(
           outcome.ok ? Object.values(outcome.value as never) : outcome
         ).toEqual([[chosen], [{ x: chosen }]]);
+      }),
+    OPTIONS
+  );
+});
+
+const words = asset("words.json") as Record<string, unknown>;
+const withWords = (expression: unknown) => [
+  "begin",
+  ...Object.entries(words).map(([name, value]) => ["define", name, value]),
+  expression,
+];
+
+/** Names as a sentence lists them, the plain way. */
+const listedPlainly = (names: readonly string[]) =>
+  names.length < 2
+    ? names.join("")
+    : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+
+describe("the research skill's wording", () => {
+  it.effect.prop(
+    "lists names as a sentence does, and writes whole numbers with separators",
+    {
+      count: between(-2_000_000_000, 2_000_000_000),
+      names: Arbitrary.array(word, { maxLength: 5 }),
+    },
+    ({ count, names }) =>
+      Effect.gen(function* () {
+        expect(
+          yield* answerOf(
+            withWords({
+              counted: ["words/count", count, "source", "sources"],
+              listed: ["words/listed", ["quote", names]],
+              missing: ["words/number", ["array/head", ["quote", []]]],
+              nobody: ["words/listed", ["array/head", ["quote", []]]],
+              number: ["words/number", count],
+            })
+          )
+        ).toEqual({
+          ok: true,
+          value: {
+            counted: `${count.toLocaleString("en-US")} ${count === 1 ? "source" : "sources"}`,
+            listed: listedPlainly(names),
+            // A figure the model does not have is words, never a failure.
+            missing: "nothing",
+            nobody: "nothing",
+            number: count.toLocaleString("en-US"),
+          },
+        });
       }),
     OPTIONS
   );

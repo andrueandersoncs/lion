@@ -92,6 +92,14 @@ export const EXPRESSIONS: readonly Expression[] = [
     name: "text built from a number",
     form: ["string/concat", "n=", ["number/toString", X], "!"],
   },
+  {
+    name: "text joined from a list",
+    form: [
+      "string/join",
+      ["array/make", ["number/toString", X, ","], ["quote", "items"]],
+      " ",
+    ],
+  },
   { name: "comparison", form: ["number/greaterThan", X, 1], boolean: true },
   {
     name: "cond",

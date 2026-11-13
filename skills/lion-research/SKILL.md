@@ -27,7 +27,7 @@ bunx @lionlang/cli program.json --database model.json
 
 Without bun, use `npx -y @lionlang/cli` the same way. The command loads `model.json`, runs the program, prints its value as JSON, and saves the model. A program that fails prints `ERROR` and a message, exits with 1, and leaves the model as it was.
 
-The skill needs version 0.7.0 or later. `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
+The skill needs version 0.8.0 or later: its wording and clock functions use `string/join`, `string/padStart`, and `number/toString` with a separator. `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
 
 ```bash
 bunx @lionlang/cli@latest --version
@@ -352,7 +352,7 @@ When the research is done:
    bunx @lionlang/cli page-check.json --database model.json
    ```
 
-   The first command writes `explorer.html` beside the model: one file with the model, the plan, and the Lion engine inside it, which opens from disk with no server. It also writes `page-check.json`, every query the plan asks as one Lion record. The second command runs them all, so a query that fails or comes back empty shows up before the reader finds it. `bun` runs the scripts too.
+   The first command writes `explorer.html` beside the model: one file with the model, the plan, and the Lion engine inside it, which opens from disk with no server. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record. The second command runs them all and prints the page's wording, so a sentence that reads wrong, or a query that fails or comes back empty, shows up before the reader finds it. `bun` runs the scripts too.
 
 ## The page for the reader
 
@@ -380,37 +380,77 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
 
 ### The plan
 
-`page.json` is one record:
+`page.json` is one record. The model is the source of everything the reader is told, so the plan does not state facts: it holds Lion expressions, and the page works them out from the model each time it opens. Nobody reads this file, so write each expression in full and do not shorten it.
 
 ```json
 {
   "title": "Acme in 2024",
-  "summary": "Acme reports 2024 revenue of 118.6M or 120M, depending on which of its own documents you read, and 1,150 staff, which the state registry confirms.",
+  "summary": ["string/concat",
+    "Acme reports 2024 revenue of ",
+    ["words/listed", ["find", "?usd_m", ["answers", {"revenue": "acme", "year": 2024}, ["array/make", "?usd_m", "?_"]]]],
+    " to ",
+    ["words/listed", ["find", "?usd_m", ["answers", {"revenue": "acme", "year": 2024}, ["array/make", "?_", "?usd_m"]]]],
+    " million dollars, depending on which of its own documents you read, and ",
+    ["words/number", ["array/head", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
+    " staff, which an independent source confirms."],
   "names": {"acme": "Acme Corp"},
   "views": [
     {"name": "The numbers", "blocks": [
       {"type": "figures", "items": [
-        {"label": "Staff, 2024", "query": ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]], "note": "confirmed by the state registry"},
-        {"label": "Revenue, 2024", "value": "118.6M or 120M", "note": "Acme's own documents disagree"}]},
+        {"label": "Staff, 2024",
+         "value": ["words/number", ["array/head", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
+         "note": ["string/concat", "confirmed by ",
+           ["words/listed", ["array/head", ["find", "?publishers", ["backing", {"headcount": "acme", "year": 2024}, "?_", "?publishers"]]]]]},
+        {"label": "Revenue, 2024, in millions",
+         "value": ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+         "note": ["cond",
+           [["disputed", {"revenue": "acme", "year": 2024}, "?_"], "sources disagree"],
+           ["else", "sources agree"]]}]},
       {"type": "answer",
        "question": "How much revenue did Acme report for 2024?",
-       "answer": "Acme's own documents disagree. Its press release says $120M and its 10-K says $118.6M. No independent source gives a figure.",
+       "answer": ["cond",
+         [["disputed", {"revenue": "acme", "year": 2024}, "?_"],
+          ["string/concat", "Its sources give different figures: ",
+            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            " million dollars. ",
+            ["cond",
+              [["corroborated", {"revenue": "acme", "year": 2024}, "?_"], "One of them is confirmed independently."],
+              ["else", "No independent publisher gives a figure."]]]],
+         ["else",
+          ["string/concat",
+            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            " million dollars."]]],
        "evidence": ["query", ["and",
          ["answer", {"revenue": "acme", "year": 2024}, "?usd_m", "?statement"],
          ["claim", "?statement", "?source", "?_", "?_"]], {"order": "usd_m"}]},
       {"type": "lookup", "title": "What does each source say?",
        "choose": {"source": {"label": "Source", "options": ["aggregate/unique", ["find", "?s", ["claim", "?_", "?s", "?_", "?_"]]]}},
        "example": {"source": "10k"},
-       "query": ["query", ["claim", "?_", "$source", "?quote", "?says"]]}]},
+       "query": ["lambda", ["source"], ["query", ["claim", "?_", "source", "?quote", "?says"]]]}]},
     {"name": "How solid is it", "blocks": [{"type": "trust"}]},
     {"name": "Sources", "blocks": [{"type": "sources"}]}
   ]
 }
 ```
 
-- `title` and `summary` open the page. The summary is the answer to what was asked, in two or three sentences, with its biggest caveat. Write it last.
-- `names` gives the model's ids the names a reader should see. An id in it is shown by its name everywhere on the page.
+- **Text on the page is a string or a Lion expression.** `summary`, an answer's `answer`, a block's `note` or `text`, and a figure's `value` and `note` each take either. A string is shown as written. Anything else is evaluated against the model, and what it gives is the text. Use a string only for words that state no fact of the research: a label, a caveat about method. Whatever states a finding is an expression, so it cannot disagree with the model and changes when the model does.
+- **The wording changes with the model.** A goal is true or false as a condition, so `cond` picks the sentence: one when `disputed` holds, another when it does not. Write the sentence for each case the evidence could end in, not only the case it is in today.
+- **A figure's `value` is always an expression.** The build lists any figure that was typed in, and any text typed into the plan that holds a digit, for you to turn into expressions. A digit in a name, such as a product's, is fine.
+- `title` and view and block titles are plain strings. `names` gives the model's ids the names a reader should see; an id in it is shown by its name everywhere on the page.
+- `define` binds names for the plan's expressions to use: a record of name to Lion value, usually a `lambda`. Put a phrase or a query you use more than once there.
 - `views` are the page's tabs, in order; the first is what the reader sees on opening. Each has a `name` and a list of `blocks`. "Query the model", the Lion editor for readers who know Lion, is always added last.
+
+The page binds these before any expression runs, for turning values into words:
+
+| Function | Gives |
+|---|---|
+| `["words/listed", list]` | the items as a sentence lists them: `a`, `a and b`, `a, b and c`. These functions never fail: given what is not a list or a number, they write it as `words/text` does |
+| `["words/number", n]` | a number with separators: `130,000`, `1,234.5`. Anything else, as `words/text` writes it, so a figure the model lacks reads `nothing` and does not fail |
+| `["words/count", n, "source", "sources"]` | `1 source`, `2,400 sources` |
+| `["array/head", list]` | from the standard library: the first item of a list, or `null` when it is empty; a `find` gives a list even when one thing matches |
+| `["words/text", value]` | any value as text: a number as its digits, `true` as `yes` |
+
+`string/concat` joins any number of strings, and `number/toString` writes a number that needs no separators, such as a year.
 
 ### The blocks
 
@@ -419,30 +459,30 @@ Every block can have a `title` and a `note` of plain words under it.
 | Block | Shows | Needs |
 |---|---|---|
 | `answer` | a question, your answer in words, and "Show the evidence" under it | `question`, `answer`, `evidence`: a query |
-| `figures` | a row of the few numbers or facts that matter most, each with a label | `items`: each a `label`, a `query` or a literal `value`, and an optional `note` |
+| `figures` | a row of the few numbers or facts that matter most, each with a label | `items`: each a `label`, a `value`, and an optional `note` |
 | `table` | a query's rows as a table the reader can sort and filter | `query` |
 | `timeline` | rows in time order, a day at a time | `query` giving `?when` as text from `utc-text`, and `?what`; other columns show under each moment |
 | `comparison` | a grid: one row for each value of one column, one column for each value of another | `query`, and `rows`, `columns`, `cell`: the names of three of its variables |
-| `lookup` | a question the reader completes by choosing from lists; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query` with `"$name"` where each choice goes; `example`, one choice for each name |
+| `lookup` | a question the reader completes by choosing from lists; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query`: a `lambda` with one parameter for each name in `choose`, in order, whose body is the query; `example`, one choice for each name |
 | `trust` | how solid the findings are, built from the core: confirmed, disputed, one publisher's word, second-hand, misquoted, assumptions, unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
 | `sources` | every source by kind, with its publisher, date, and statements | nothing |
 | `text` | a few paragraphs of your own, for what no query says: context, method, a caveat | `text` |
 | `custom` | anything the others cannot | `script`: the body of a function of `root` and `kit` |
 
 - **`lookup` is the block for "the kinds of question they will keep asking".** One lookup answers a whole family of questions: any service, any person, any year. Its `as` shows the answer as a `"timeline"` or a `"comparison"` instead of a table. Its `example` is what is chosen when the page opens, and what `page-check.json` runs. A choice's `labels` gives its options other names.
-- **A choice goes into the query as data**, so text the reader picks is never read as Lion.
+- **A lookup's query is a Lion function.** The page calls it with what the reader chose, each choice passed as data, so text they pick is never read as Lion.
 - **`custom` is the last resort.** Its script gets `root`, an element to fill, and `kit`: `query` to ask the model, and `el`, `shown`, `table`, `timeline`, `comparison`, and `statement` to build what it shows. Build with those, so text from sources is never placed as markup.
 
 ### Writing what goes in them
 
 - **Ask what the reader would ask, in their words.** A question about the model's machinery ("which answers have one origin?") belongs in `checks.json`; the `trust` block already shows it.
-- **Answer in plain words, in a few sentences.** Say the answer first, then how sure it is and what it rests on. No ids, no relation names, no JSON. Where sources disagree or the evidence is thin, the answer says so.
-- **Every figure in an answer is in its evidence.** Write the answer from the query's result, with the result in front of you. A literal `value` in `figures` is for words such as "Not stated"; a number there comes from a `query`.
+- **Answer in plain words, in a few sentences.** Say the answer first, then how sure it is and what it rests on. No ids, no relation names, no JSON. Where sources disagree or the evidence is thin, the answer says so, by a `cond` on the relation that shows it.
+- **Read what each expression gives.** `page-check.json` runs every text and every query of the plan, so its output is the page's wording as the reader will see it. Read it as prose: an empty list reads as nothing, and a `null` as "nothing".
 - **Shape each query for a reader.** Its variable names become the column headings, so name them in plain words: `?publishers`, `?minutes_apart`, `?when`. Leave out with `"?_"` whatever is only for the engine, such as a count of minutes beside a time as text. A variable named `?statement` or `?claim` that holds a claim's id is shown as that claim's quote, and `?source` as the source's title. A record of queries is shown as parts, each under its key.
 - **Give times as text.** A time the reader sees is a column a rule computed with `utc-text`. Text of that form sorts in time order, so `{"order": "when"}` works.
 - **The same answer can stand in two views** when the reader would look for it in both.
 
-After the model changes, run `page-check.json` again, revise any answer whose evidence changed, and rebuild.
+After the model changes, rebuild and run `page-check.json` again. The texts follow the model on their own; read them once more to see that each still reads as a sentence.
 
 ## What to hand over
 
@@ -467,4 +507,5 @@ When the user asks something about research that has a model, answer from the mo
 - **A `says` record that no rule reads.** It was recorded and then ignored. Either a rule should use it or it was not worth recording.
 - **Arithmetic in the report that the model never did.** Every figure comes from a query.
 - **A page written for yourself.** Questions in the model's vocabulary, answers that are a table and no sentence, column headings like `usd_m`. The reader did not ask for a database.
+- **A finding typed into the plan.** A sentence with a number in it that no expression produced is a claim the model cannot check, and it stays on the page when the model changes. Compute it.
 - **The same page for every reader.** A list of answers followed by trust and sources fits no goal in particular. Decide what this reader is trying to do, and build the views around that.

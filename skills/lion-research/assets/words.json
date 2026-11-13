@@ -1,0 +1,45 @@
+{
+  "words/text": [
+    "lambda",
+    ["value"],
+    [
+      "cond",
+      [["value/string?", "value"], "value"],
+      [["value/number?", "value"], ["number/toString", "value"]],
+      [["value/boolean?", "value"], ["cond", ["value", "yes"], ["else", "no"]]],
+      [["value/null?", "value"], "nothing"],
+      ["else", ["object/json-stringify", "value"]]
+    ]
+  ],
+  "words/listed": [
+    "lambda",
+    ["items"],
+    [
+      "cond",
+      [
+        ["value/array?", "items"],
+        ["string/join", ["array/map", "items", "words/text"], ", ", " and "]
+      ],
+      ["else", ["words/text", "items"]]
+    ]
+  ],
+  "words/number": [
+    "lambda",
+    ["n"],
+    [
+      "cond",
+      [["value/number?", "n"], ["number/toString", "n", ","]],
+      ["else", ["words/text", "n"]]
+    ]
+  ],
+  "words/count": [
+    "lambda",
+    ["n", "one", "many"],
+    [
+      "string/concat",
+      ["words/number", "n"],
+      " ",
+      ["cond", [["number/equals?", "n", 1], "one"], ["else", "many"]]
+    ]
+  ]
+}
