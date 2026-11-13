@@ -1192,6 +1192,26 @@ bun build skills/lion-research/scripts/engine.ts --target browser --format iife 
 
 The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model and plan it was given, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, and each script started through a link, as an installed skill starts it.
 
+## Reasoning Skill
+
+[`skills/lion-reasoning`](skills/lion-reasoning/SKILL.md) is an agent skill that uses Lion as the working memory of an agent's reasoning while it does a task such as debugging, verifying a change, or auditing docs and notes against code. The agent records what it observed, each observation with the words that showed it, and what it believes, each belief with the answers it predicts. Rules derive the rest, so the model tells the agent which beliefs the evidence contradicts, which evidence went out of date, and what would tell two explanations apart, as the work goes and not only at the end.
+
+Everything is one shape: an observation answers a question with a value, a belief predicts answers to questions, and a problem is a question with the value that shows it. The skill's core program, [`assets/core.json`](skills/lion-reasoning/assets/core.json), derives from that:
+
+- **Versions.** Each source records the files its output depends on, by content hash, and the scripts keep the project's files by hash, numbered, each time the agent observes. An observation speaks for every version of the project in which those files hold what they held when it was seen, and for no other. Evidence about a file that changed is stale, so "the tests pass" from before the last edit does not count as the present, and `changed` lists what the agent's work changed. A path git ignores, such as build output, and a path outside the project are hashed from disk as they are now.
+- **Kinds of evidence.** A source is something the agent `ran`, `read`, was `told`, or `recalled`. What it ran or read overrules what it was told or recalled, and the model lists each time it did, so a wrong doc or a stale memory surfaces instead of being ignored.
+- **Beliefs.** A belief is contradicted when an answer differs from its prediction, and holds otherwise. It is judged by the evidence of every version from the one it was formed in on, so a belief once contradicted stays contradicted, and a later edit that breaks an assumption is caught. A belief that explains a problem is judged instead in the versions where the problem shows, so fixing a bug does not count against the explanation of it. For rival explanations of a problem, `decisive` lists the questions they answer differently, which are the experiments to run next, and `settled` names the one explanation left when every one of its predictions is borne out.
+
+To use it with Claude Code, link or copy the folder into your skills:
+
+```bash
+ln -s "$(pwd)/skills/lion-reasoning" ~/.claude/skills/lion-reasoning
+```
+
+Its scripts do the mechanical parts, and run the published `@lionlang/cli`, so a project's own copy of Lion, even a broken one, never changes the checker: `start.mjs` makes a task folder under `.lion/` and keeps it out of git, `see.mjs` runs a command and keeps its output and exit status as evidence with the hashes of what it depended on, `record.mjs` turns notes into a step and refuses a quote that is not in its source's text, `replay.mjs` rebuilds the model from its steps, and `ask.mjs` asks the model a question against the project as it is now, on a copy, so a question never changes the model.
+
+The properties in `packages/metrics/src/tests/reasoning-skill.test.ts` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder against the notes it was given, a version's hashes against the files they were taken from, a path git ignores against the disk, the chain from files to the present answer on files that change, and each script started through a link. `bun run mutate` breaks each of these behaviors in turn; a mutation can now run the tests of another package than core, with `package`.
+
 ## Development
 
 From the repo root:

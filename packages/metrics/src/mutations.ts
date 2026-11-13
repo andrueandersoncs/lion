@@ -9,6 +9,11 @@
 import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
+const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
+const REASONING_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/reasoning-skill.test.ts"],
+};
 
 export const MUTATIONS: readonly Mutation[] = [
   {
@@ -998,5 +1003,113 @@ export const MUTATIONS: readonly Mutation[] = [
       "src/evaluation/tests/base-forms/record.test.ts",
       "src/logic/tests/schemas.test.ts",
     ],
+  },
+  {
+    name: "evidence about a file that changed still speaks for the present",
+    file: reasoning("assets/core.json"),
+    find: '["at", "?v", "?path", "?there"],\n        ["not", ["=", "?then", "?there"]]',
+    replace:
+      '["at", "?v", "?path", "?there"],\n        ["=", "?then", "?nothing"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "what was told is never overruled by what was seen",
+    file: reasoning("assets/core.json"),
+    find: '["in", "?kind", ["quote", ["ran", "read"]]],\n    ["not", ["=", "?said", "?seen"]]',
+    replace:
+      '["in", "?kind", ["quote", []]],\n    ["not", ["=", "?said", "?seen"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "an explanation is judged in the present after its problem is fixed",
+    file: reasoning("assets/core.json"),
+    find: '["judged_in", "?b", "?v"],\n    ["explains", "?b", "?p"],\n    ["occurs", "?p", "?v"]',
+    replace:
+      '["judged_in", "?b", "?v"],\n    ["explains", "?b", "?p"],\n    ["occurs", "?p", "?_"],\n    ["=", "?v", "now"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a contradicted belief's other predictions are listed as untested",
+    file: reasoning("assets/core.json"),
+    find: '["untested", "?b", "?q", "?value"],\n    ["holds", "?b"],',
+    replace: '["untested", "?b", "?q", "?value"],',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a folder's hash ignores what its files hold",
+    file: reasoning("scripts/lib.mjs"),
+    find: "manifest[file]}\\n`)",
+    replace: "file}\\n`)",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a path with nothing in it has a hash",
+    file: reasoning("scripts/lib.mjs"),
+    find: 'return listing === "" && path !== "." ? null : sha1(listing);',
+    replace: "return sha1(listing);",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the present is left out when an earlier version holds the same",
+    file: reasoning("scripts/lib.mjs"),
+    find: "if (named.has(key) && !last) {",
+    replace: "if (named.has(key)) {",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the recorder accepts a quote its source does not hold",
+    file: reasoning("scripts/record.mjs"),
+    find: ".filter((quote) => !hasQuote(text, String(quote)))",
+    replace: ".filter(() => false)",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the recorder writes what was observed as code",
+    file: reasoning("scripts/record.mjs"),
+    find: "quoted(seen.value ?? null),",
+    replace: "seen.value ?? null,",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a run's transcript does not say which number is its exit status",
+    file: reasoning("scripts/see.mjs"),
+    find: '"\\n"}[exit status ',
+    replace: '"\\n"}',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a belief is judged only in the present",
+    file: reasoning("assets/core.json"),
+    find: '["number/greaterThanOrEqualTo", "?n", "?first"]',
+    replace: '["=", "?v", "now"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a belief is judged by evidence from before it was formed",
+    file: reasoning("assets/core.json"),
+    find: '["number/greaterThanOrEqualTo", "?n", "?first"]',
+    replace: '["value/number?", "?n"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a path git ignores is hashed from versions, which never hold it",
+    file: reasoning("scripts/lib.mjs"),
+    find: "if (!(isAbsolute(path) || ignored.has(path))) {",
+    replace: "if (!isAbsolute(path)) {",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a folder git ignores is not known as ignored once it is deleted",
+    file: reasoning("scripts/lib.mjs"),
+    find: '.map((line) => (line.endsWith("/") ? line.slice(0, -1) : line))',
+    replace: ".map((line) => line)",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "only the first part of a quote is looked for",
+    file: reasoning("scripts/record.mjs"),
+    find: "return [seen.quote]\n      .flat()",
+    replace: "return [[seen.quote].flat()[0]]",
+    ...REASONING_TESTS,
   },
 ];

@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-11-13 — lion-reasoning skill
+
+No package changed. `skills/lion-reasoning` is a new agent skill that uses Lion as the working memory of an agent's reasoning while it works, and the README has a section on it.
+
+### Added
+
+- The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.
+- `assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.
+- `scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.
+- References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if.
+- Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.
+
+### Changed during the first trial
+
+Two agents fixed one real bug in history-free copies of Lion from before commit `28ae742`: loading `special-forms/lambda` first crashed with "Cannot access 'evaluateLambda' before initialization". One used the skill and one did not. Both found the same cause and the same 11 of 49 modules, and both fixes were verified independently: no module fails when loaded first, the core tests and typecheck pass, and each new test fails on the old code. The cost was the same within noise: 238,607 tokens, 81 tool calls, and 17.5 minutes with the skill; 235,018 tokens, 88 tool calls, and 18.3 minutes without. The skill's agent put 30 to 35% of its effort into the model. The model caught one thing that changed what it did: its "fails on the old code" evidence was stale after a later edit to the test, so it ran the check again. It reported five problems with the skill, each fixed above:
+
+- A belief it had disproved on the old code showed as holding again after the fix, because beliefs that explain no problem were judged only against the present. Beliefs are now judged from the version they were formed in on. Rebuilt with the new core, the trial's own model marks that belief as violated.
+- Its check that the test fails on the old code went stale for good, because it undid the fix in place to run it. The patterns now run such a check against a copy of the old code, depending only on the test.
+- A prediction about the fixed code inside the explanation of the bug could never be checked there, so the problem was never settled. The skill now says to make what a fix will do a belief of its own, recorded after the change.
+- Build output that git ignores was never hashed, so evidence about it could not go stale. Such paths are now hashed from disk.
+- A list in the output could not be quoted as one observation. A quote can now be a list of quotes.
+
 ## 2026-11-13 — @lionlang/core 0.9.0, @lionlang/cli 0.8.0
 
 Text from lists and numbers, and a record that keeps its empty key. The research skill writes its page's words with the new functions, so it needs this release.

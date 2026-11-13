@@ -15,9 +15,11 @@ export interface Mutation {
   readonly find: string;
   /** What the break does, as a sentence about Lion's behavior. */
   readonly name: string;
+  /** The package whose tests to run, such as `metrics`; `core` when left out. */
+  readonly package?: string;
   /** The text to put in its place. */
   readonly replace: string;
-  /** Test files to run instead of the default ones, from `packages/core`. */
+  /** Test files to run instead of the default ones, from that package. */
   readonly tests?: readonly string[];
 }
 
@@ -53,12 +55,10 @@ export const DEFAULT_TESTS = [
   "src/logic/tests/connectives.test.ts",
 ];
 
-const CORE = join(REPOSITORY, "packages/core");
-
-/** Runs test files of @lionlang/core and says whether they all passed. */
-export const testsPass = (tests: readonly string[]): boolean =>
+/** Runs test files of a package, core by default, and says whether they all passed. */
+export const testsPass = (tests: readonly string[], where = "core"): boolean =>
   spawnSync("bunx", ["vitest", "run", ...tests], {
-    cwd: CORE,
+    cwd: join(REPOSITORY, "packages", where),
     stdio: "ignore",
   }).status === 0;
 
@@ -78,7 +78,7 @@ export const restore = (): void => {
  */
 export const check = (
   mutation: Mutation,
-  passes: (tests: readonly string[]) => boolean = testsPass
+  passes: (tests: readonly string[], where?: string) => boolean = testsPass
 ): Verdict => {
   const path = join(REPOSITORY, mutation.file);
   const original = readFileSync(path, "utf8");
@@ -97,7 +97,9 @@ export const check = (
   };
   writeFileSync(path, broken);
   try {
-    return passes(mutation.tests ?? DEFAULT_TESTS) ? "missed" : "caught";
+    return passes(mutation.tests ?? DEFAULT_TESTS, mutation.package)
+      ? "missed"
+      : "caught";
   } finally {
     restore();
   }

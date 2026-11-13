@@ -1,0 +1,54 @@
+{
+  "Which evidence is out of date, because a file it depends on changed?": [
+    "query",
+    ["and", ["stale", "?source", "?path"], ["source", "?source", "?_", "?what"]]
+  ],
+  "What did the work change?": [
+    "query",
+    ["changed", "?question", "?before", "?after"]
+  ],
+  "Which beliefs does the evidence contradict?": [
+    "query",
+    ["violated", "?belief", "?witness"]
+  ],
+  "Which beliefs hold?": ["find", "?belief", ["holds", "?belief"]],
+  "What would tell the remaining explanations apart?": [
+    "query",
+    ["decisive", "?problem", "?question", "?predictions"]
+  ],
+  "Which explanations are left for each problem?": [
+    "query",
+    ["remaining", "?problem", "?explanations"]
+  ],
+  "Which problems are settled, and by which explanation?": [
+    "query",
+    ["settled", "?problem", "?explanation"]
+  ],
+  "Which problems have no explanation left?": [
+    "find",
+    "?problem",
+    ["unexplained", "?problem"]
+  ],
+  "Which predictions of standing beliefs has nothing checked?": [
+    "query",
+    ["untested", "?belief", "?question", "?predicts"]
+  ],
+  "Where does current evidence disagree?": [
+    "query",
+    ["disputed", "?question", "?values"]
+  ],
+  "What I was told or recalled that what I saw overrules": [
+    "query",
+    [
+      "and",
+      ["overruled", "?observation", "?by"],
+      ["observed", "?observation", "?_", "?_", "?question", "?said"],
+      ["observed", "?by", "?_", "?_", "?_", "?seen"]
+    ]
+  ],
+  "What rests only on what I was told or recalled?": [
+    "query",
+    ["hearsay", "?question", "?value"]
+  ],
+  "What does the task still need?": ["find", "?question", ["open", "?question"]]
+}
