@@ -36,17 +36,66 @@ export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
       this.nearest === null
         ? `Other names begin with "${module}", so it reads as a misspelled name.`
         : `Did you mean "${this.nearest}"?`;
-    return `Nothing is bound to "${this.unbound}". ${why} To mean the string itself, write ["quote", "${this.unbound}"].`;
+    return `Nothing is bound to "${this.unbound}". ${why} ${asString(this.unbound)}`;
   }
 }
 
-/** Raised by relations, rules, facts, and queries. */
+/**
+ * How to write a string that is a name, so that it stays a string: said
+ * wherever a name was met and the string may have been meant.
+ */
+export const asString = (name: string) =>
+  `To mean the string itself, write ["quote", "${name}"].`;
+
+/**
+ * Raised when a program breaks a rule of Lion: by relations, rules, facts,
+ * and queries, and by a call that gives a function the wrong number of
+ * arguments.
+ */
 export class LogicError extends Schema.TaggedError<LogicError>()("LogicError", {
   message: Schema.String,
 }) {}
 
 export const logicError = (message: string) =>
   Effect.fail(new LogicError({ message }));
+
+/** How many arguments a function takes: a number, or the fewest and most. */
+export type Count = number | readonly [least: number, most: number];
+
+/** That many arguments or more. */
+export const atLeast = (least: number): Count => [
+  least,
+  Number.POSITIVE_INFINITY,
+];
+
+const plural = (count: number) => `${count} argument${count === 1 ? "" : "s"}`;
+
+/**
+ * A function that takes a set number of arguments. A call with any other
+ * number fails and says how many the function takes, so no argument is
+ * dropped and none is missing. `what` says what the arguments are, as a
+ * relation's columns do.
+ */
+export const takes = <A extends unknown[], B, E, R>(
+  count: Count,
+  fn: (...args: A) => Effect.Effect<B, E, R>,
+  what?: string
+) => {
+  const [least, most] = typeof count === "number" ? [count, count] : count;
+  let many = `${least} to ${plural(most)}`;
+  if (most === least) {
+    many = plural(least);
+  } else if (most === Number.POSITIVE_INFINITY) {
+    many = `${least} or more arguments`;
+  }
+  const self = (...args: A): Effect.Effect<B, E | LogicError, R> =>
+    args.length < least || args.length > most
+      ? logicError(
+          `${show(self)} takes ${many}${what ? ` (${what})` : ""} but got ${args.length}.`
+        )
+      : fn(...args);
+  return self;
+};
 
 /**
  * Raised when arithmetic has no finite result, such as division by zero.

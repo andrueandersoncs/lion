@@ -1,14 +1,6 @@
 import { Effect } from "effect";
 import { logicError } from "@/errors/evaluation";
-import { builders, fitsValue, misfit, problemsOf } from "@/logic/fit";
-
-/** The value and the schema of a call, which takes exactly those two. */
-const pair = (name: string, args: readonly unknown[]) =>
-  args.length === 2
-    ? Effect.succeed(args as readonly [unknown, unknown])
-    : logicError(
-        `schema/${name} takes 2 arguments, a value and a schema, but got ${args.length}.`
-      );
+import { builders, checking, fitsValue, misfit, problemsOf } from "@/logic/fit";
 
 /**
  * Schemas: what a value must be. Anything is a schema. A function is a
@@ -27,18 +19,14 @@ export const module = {
    * with a `path` and what was `expected` or `found` there; an empty list
    * when the value fits.
    */
-  problems: (...args: unknown[]) =>
-    Effect.flatMap(pair("problems", args), ([value, schema]) =>
-      problemsOf(schema, value)
-    ),
+  problems: checking((value, schema) => problemsOf(schema, value)),
 
   /** The value when it fits the schema; fails, and says where, when not. */
-  assert: (...args: unknown[]) =>
-    Effect.gen(function* () {
-      const [value, schema] = yield* pair("assert", args);
-      const message = yield* misfit(schema, value);
-      return message === undefined ? value : yield* logicError(message);
-    }),
+  assert: checking((value, schema) =>
+    Effect.flatMap(misfit(schema, value), (message) =>
+      message === undefined ? Effect.succeed(value) : logicError(message)
+    )
+  ),
 
   ...builders,
 };

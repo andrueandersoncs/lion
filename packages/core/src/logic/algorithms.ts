@@ -12,7 +12,7 @@
  * the algorithm runs once for each value a rule or query gives it.
  */
 import { Effect } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { logicError, takes } from "@/errors/evaluation";
 import {
   Atom,
   isGroundValue,
@@ -68,53 +68,55 @@ const arrange = (
  * `algorithm.name` to use it in rules and queries.
  */
 export const defineAlgorithm = (algorithm: Algorithm) =>
-  logicFunction((...args: unknown[]) =>
-    Effect.gen(function* () {
-      const arity = algorithm.inputs.length + algorithm.columns.length;
-      if (args.length !== arity) {
-        return yield* logicError(
-          `${algorithm.name} takes ${arity} arguments (${signature(algorithm)}) but got ${args.length}.`
-        );
-      }
-      const relations: string[] = [];
-      const values: unknown[] = [];
-      for (const [index, { kind, name }] of algorithm.inputs.entries()) {
-        const arg = args[index];
-        const relation = relationOf(arg)?.name;
-        if (kind === "relation" && relation !== undefined) {
-          relations.push(relation);
-        } else if (kind === "value" && (isWaiting(arg) || isGroundValue(arg))) {
-          values.push(arg);
-        } else {
-          return yield* logicError(
-            `${algorithm.name} expects a ${kind} for "${name}", but found ${show(arg)}.`
-          );
-        }
-      }
-      const relation: RelationInfo = {
-        name: `${algorithm.name}(${relations.join(", ")})`,
-        columns: [
-          ...algorithm.inputs.flatMap(({ kind, name }) =>
-            kind === "value" ? [name] : []
-          ),
-          ...algorithm.columns,
-        ],
-        computed: {
-          callee: algorithm.name,
-          dependencies: relations,
-          inputs: values.length,
-          form: (written) => [
-            algorithm.name,
-            ...arrange(algorithm, relations, written),
-            ...written.slice(values.length),
-          ],
-          compute: (tuples, given) =>
-            algorithm.run(arrange(algorithm, relations.map(tuples), given)),
-        },
-      };
-      return new Atom(relation, [
-        ...values,
-        ...args.slice(algorithm.inputs.length),
-      ]);
-    })
+  logicFunction(
+    takes(
+      algorithm.inputs.length + algorithm.columns.length,
+      (...args: unknown[]) =>
+        Effect.gen(function* () {
+          const relations: string[] = [];
+          const values: unknown[] = [];
+          for (const [index, { kind, name }] of algorithm.inputs.entries()) {
+            const arg = args[index];
+            const relation = relationOf(arg)?.name;
+            if (kind === "relation" && relation !== undefined) {
+              relations.push(relation);
+            } else if (
+              kind === "value" &&
+              (isWaiting(arg) || isGroundValue(arg))
+            ) {
+              values.push(arg);
+            } else {
+              return yield* logicError(
+                `${algorithm.name} expects a ${kind} for "${name}", but found ${show(arg)}.`
+              );
+            }
+          }
+          const relation: RelationInfo = {
+            name: `${algorithm.name}(${relations.join(", ")})`,
+            columns: [
+              ...algorithm.inputs.flatMap(({ kind, name }) =>
+                kind === "value" ? [name] : []
+              ),
+              ...algorithm.columns,
+            ],
+            computed: {
+              callee: algorithm.name,
+              dependencies: relations,
+              inputs: values.length,
+              form: (written) => [
+                algorithm.name,
+                ...arrange(algorithm, relations, written),
+                ...written.slice(values.length),
+              ],
+              compute: (tuples, given) =>
+                algorithm.run(arrange(algorithm, relations.map(tuples), given)),
+            },
+          };
+          return new Atom(relation, [
+            ...values,
+            ...args.slice(algorithm.inputs.length),
+          ]);
+        }),
+      signature(algorithm)
+    )
   );

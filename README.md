@@ -266,6 +266,8 @@ Creates a Lion function with lexical scope.
 
 Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.
 
+A call must give a lambda at least as many arguments as it has parameters. Arguments beyond those are ignored, as in JavaScript, so host code can call a lambda as a callback. The functions of the [standard library](#standard-library) are stricter: each takes a set number of arguments.
+
 ### `cond`
 
 Evaluates condition/result pairs in order and returns the first matching result. An `else` branch is optional.
@@ -350,6 +352,17 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
 | `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
 | `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. The element can be a record or list with variables in it. Without logic variables it is plain membership. See [Lists](#lists). |
+
+A fact holds JSON data. A string that is a name evaluates to what it names, so a fact written with one is refused, and the message says which column it is for, what the string names, and how to write the string itself. `fact`, `retract`, and `why` refuse in the same words.
+
+```json
+["begin",
+  ["relation", "note", ["text"]],
+  ["relation", "source", ["id"]],
+  ["fact", ["note", "source"]]]
+```
+
+Fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same goes for the name of a schema or a function, and for a string such as `"?why"`, which is a logic variable: `... is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` An argument that is not data for another reason is shown with the reason: `... is ["number/add","?x",1], which waits for a logic variable.`
 
 ### Waiting for values
 
@@ -866,10 +879,21 @@ An empty list means `incoming` fits. Schemas are data like the rest of a Lion pr
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.
 
+Every function takes a set number of arguments. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
+
+```json
+["number/subtract", 10, 3, 1]
+```
+
+Fails with `"number/subtract" takes 2 arguments but got 3.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. A relation, a schema, and a graph algorithm say the same of their own arguments, as in `"edge" takes 2 arguments (from, to) but got 3.`
+
+Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme: `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat`. They work from left to right, so `["number/add", 1, 2, 3]` is `["number/add", ["number/add", 1, 2], 3]`. The functions that pass arguments on take any number after the ones they need: `array/make`, `func/partial`, `func/bind`, `func/apply`, `object/new`, `object/call-method`, `object/call-method-path`, `schema/allOf`, and `schema/anyOf`.
+
 ### `number`
 
 ```json
 ["number/add", 1, 2]
+["number/add", 1, 2, 3]
 ["number/subtract", 10, 3]
 ["number/multiply", 5, 4]
 ["number/divide", 20, 4]
@@ -881,14 +905,22 @@ The default environment exported as `stdlib` namespaces entries as `<module>/<na
 ["number/remainder", 7, 3]
 ["number/power", 2, 10]
 ["number/min", 3, 5]
-["number/max", 3, 5]
+["number/max", 3, 5, 4]
 ["number/absolute", -4]
 ["number/floor", 2.7]
 ["number/ceiling", 2.1]
 ["number/round", 2.5]
+["number/toString", 42]
 ```
 
 Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`.
+
+`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With `string/concat` it builds text from a number, also from one a rule has bound:
+
+```json
+["rule", ["label", "?id", ["string/concat", "order ", ["number/toString", "?id"]]],
+  ["order", "?id", "?_"]]
+```
 
 ### `boolean`
 
@@ -927,6 +959,7 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/tail", ["array/make", 1, 2, 3]]
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
+["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
 ["array/includes?", ["array/make", 1, 2, 3], 2]
 ["array/range", 0, 5]
 ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]]
@@ -940,6 +973,7 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/equals?", "a", "a"]
 ["string/length", "lion"]
 ["string/concat", "lion", "ized"]
+["string/concat", "lion", "-", "ized", "!"]
 ["string/startsWith", "lion", "li"]
 ["string/endsWith", "lion", "on"]
 ["string/includes", "lion", "io"]
@@ -962,6 +996,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ```
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
+
+`object/json-stringify` writes any JSON value: a record, a list, a string, a number, a boolean, or `null`. The text of a string has its quotes, so `["object/json-stringify", "lion"]` is `"\"lion\""`, and the text of a number is the number, as `number/toString` gives it. The replacer and the indent are optional. A value JSON cannot write, such as a function, fails with `"number/add" has no JSON text.`
 
 ### `graph`
 

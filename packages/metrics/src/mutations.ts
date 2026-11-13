@@ -262,9 +262,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/assert returns a value that does not fit",
     file: core("modules/schema.ts"),
-    find: "      return message === undefined ? value : yield* logicError(message);",
+    find: "      message === undefined ? Effect.succeed(value) : logicError(message)",
     replace:
-      "      return message === undefined || true ? value : yield* logicError(message);",
+      "      message === undefined || true ? Effect.succeed(value) : logicError(message)",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
@@ -796,29 +796,22 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a schema called with two arguments checks the first",
     file: core("logic/fit.ts"),
-    find: "    args.length === 1\n      ? fits(schema, args[0])",
-    replace: "    args.length >= 1\n      ? fits(schema, args[0])",
+    find: "  const schema: LionFunction = takes(\n    1,",
+    replace: "  const schema: LionFunction = takes(\n    atLeast(1),",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
     name: "a schema function that takes one schema takes any number",
     file: core("logic/fit.ts"),
-    find: "      takes === 1 && parts.length !== 1",
-    replace: "      false && parts.length !== 1",
+    find: "    takes(\n      count,",
+    replace: "    takes(\n      atLeast(0),",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
-    name: "schema/fits? ignores an argument too many",
+    name: "schema/fits?, schema/problems, and schema/assert ignore an argument too many",
     file: core("logic/fit.ts"),
-    find: "    if (args.length !== 2) {",
-    replace: "    if (args.length < 2) {",
-    tests: ["src/logic/tests/schemas.test.ts"],
-  },
-  {
-    name: "schema/problems and schema/assert ignore an argument too many",
-    file: core("modules/schema.ts"),
-    find: "  args.length === 2\n    ? Effect.succeed(",
-    replace: "  args.length >= 2\n    ? Effect.succeed(",
+    find: ') => takes(2, check, "a value and a schema");',
+    replace: ') => takes(atLeast(2), check, "a value and a schema");',
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
@@ -859,15 +852,15 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "value/integer? is true for every number",
     file: core("modules/value.ts"),
-    find: "Effect.succeed(Number.isInteger(a))",
-    replace: 'Effect.succeed(typeof a === "number")',
+    find: '  "integer?": is(Number.isInteger),',
+    replace: '  "integer?": is((a) => typeof a === "number"),',
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
     name: "value/any? is false for null",
     file: core("modules/value.ts"),
-    find: '  "any?": (_: unknown) => Effect.succeed(true),',
-    replace: '  "any?": (value: unknown) => Effect.succeed(value !== null),',
+    find: '  "any?": is(() => true),',
+    replace: '  "any?": is((a) => a !== null),',
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
@@ -876,5 +869,78 @@ export const MUTATIONS: readonly Mutation[] = [
     find: '    form === "schema" ? expression.filter((_, at) => at % 2) : [name];',
     replace: "    [name];",
     tests: ["src/analysis/analyze.test.ts"],
+  },
+  {
+    name: "a call drops the arguments a function does not take",
+    file: core("errors/evaluation.ts"),
+    find: "    args.length < least || args.length > most",
+    replace: "    args.length < least",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "a call runs without the arguments a function takes",
+    file: core("errors/evaluation.ts"),
+    find: "    args.length < least || args.length > most",
+    replace: "    args.length > most",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "number/add takes two numbers and no more",
+    file: core("modules/number.ts"),
+    find: '  add: arithmetic("add", "+", (a, b) => a + b, SOME),',
+    replace: '  add: arithmetic("add", "+", (a, b) => a + b),',
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "arithmetic on several numbers leaves out the last",
+    file: core("modules/number.ts"),
+    find: "      const result = values.reduce((a, b) => operate(a, b));",
+    replace:
+      "      const result = values.slice(0, 2).reduce((a, b) => operate(a, b));",
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "string/concat joins its strings in another order",
+    file: core("modules/string.ts"),
+    find: 'Effect.succeed(texts.join(""))',
+    replace: 'Effect.succeed([...texts].reverse().join(""))',
+    tests: ["src/modules/tests/arity.test.ts"],
+  },
+  {
+    name: "number/toString writes a number as JSON does not",
+    file: core("modules/number.ts"),
+    find: "  toString: over([Schema.Number], String),",
+    replace: "  toString: over([Schema.Number], (n) => n.toFixed(1)),",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "object/json-stringify writes only records and lists",
+    file: core("modules/object.ts"),
+    find: '      return typeof text === "string"',
+    replace:
+      '      return typeof text === "string" && typeof value === "object"',
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a fact holds a function that a string names",
+    file: core("logic/database.ts"),
+    find: "  const at = atom.args.findIndex((arg) => !isGroundValue(arg));",
+    replace:
+      "  const at = atom.args.findIndex((arg) => arg instanceof LogicValue);",
+    tests: ["src/logic/tests/fact-data.test.ts"],
+  },
+  {
+    name: "a fact that holds a name does not say how to write the string",
+    file: core("logic/database.ts"),
+    find: "asString(name)}`;",
+    replace: '""}`;',
+    tests: ["src/logic/tests/fact-data.test.ts"],
+  },
+  {
+    name: "a fact that holds a lambda is said to wait for a logic variable",
+    file: core("logic/database.ts"),
+    find: "termVariables(arg).length > 0",
+    replace: "arg instanceof LogicValue",
+    tests: ["src/logic/tests/fact-data.test.ts"],
   },
 ];

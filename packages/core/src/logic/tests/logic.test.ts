@@ -337,7 +337,9 @@ describe("facts", () => {
         ["relation", "node", ["id"]],
         ["fact", ["node", "?x"]],
       ]);
-      expect(error.message).toContain("cannot contain logic variables");
+      expect(error.message).toContain(
+        'the "id" of ["node","?x"] is the logic variable "?x"'
+      );
     })
   );
 

@@ -221,7 +221,7 @@ describe("graph algorithm checks", () => {
     Effect.gen(function* () {
       expect(
         yield* errorMessage(graph(["graph/pageRank", "road", "?n"]))
-      ).toContain("graph/pageRank takes 3 arguments (edges, node, rank)");
+      ).toContain('"graph/pageRank" takes 3 arguments (edges, node, rank)');
       expect(
         yield* errorMessage(graph(["graph/pageRank", "nowhere", "?n", "?r"]))
       ).toContain('expects a relation for "edges"');

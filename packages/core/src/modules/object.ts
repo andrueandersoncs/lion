@@ -1,4 +1,7 @@
 import { Effect, flow, Record, Schema } from "effect";
+import { atLeast, logicError, takes } from "@/errors/evaluation";
+import { show as written } from "@/logic/terms";
+import { over } from "@/modules/lib/shared";
 
 const show = (value: unknown) => {
   try {
@@ -110,6 +113,8 @@ class InvalidPathError extends Schema.TaggedError<InvalidPathError>()(
     return `A path must be a string such as "a.b.0", but found ${show(this.path)}.`;
   }
 }
+
+const Entries = Schema.Record(Schema.String, Schema.Unknown);
 
 const NUMERIC_KEY_REGEX = /^\d+$/;
 
@@ -227,15 +232,16 @@ export const module = {
   symbol: Symbol("object"),
 
   /** The value under a key, or null when there is none. */
-  get: (obj: unknown, key: string) =>
+  get: takes(2, (obj: unknown, key: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
       }
       return (obj as Record<string, unknown>)[key] ?? null;
-    }),
+    })
+  ),
 
-  "get-path": (obj: unknown, path: string) =>
+  "get-path": takes(2, (obj: unknown, path: string) =>
     Effect.gen(function* () {
       if (typeof obj !== "object" || obj === null) {
         return yield* new NotAnObjectError({ actual: obj });
@@ -257,33 +263,33 @@ export const module = {
         current = getValueAtKey(current, key);
       }
       return current;
-    }),
-
-  "json-stringify": (
-    obj: unknown,
-    replacer: Parameters<typeof JSON.stringify>[1],
-    space: number
-  ) =>
-    Effect.gen(function* () {
-      if (typeof obj !== "object" || obj === null) {
-        return yield* new NotAnObjectError({ actual: obj });
-      }
-      return JSON.stringify(obj, replacer, space);
-    }),
-
-  keys: flow(
-    (obj: unknown) => obj,
-    Schema.decodeUnknownEffect(Schema.Record(Schema.String, Schema.Unknown)),
-    Effect.map(Record.keys)
+    })
   ),
 
-  values: flow(
-    (obj: unknown) => obj,
-    Schema.decodeUnknownEffect(Schema.Record(Schema.String, Schema.Unknown)),
-    Effect.map(Record.values)
+  /**
+   * A value as JSON text: a record, a list, a string, a number, a boolean,
+   * or null. The text of a number is the number, and the text of a string
+   * has quotes around it.
+   */
+  "json-stringify": takes(
+    [1, 3],
+    (
+      value: unknown,
+      replacer?: Parameters<typeof JSON.stringify>[1],
+      space?: number
+    ) => {
+      const text: unknown = JSON.stringify(value, replacer, space);
+      return typeof text === "string"
+        ? Effect.succeed(text)
+        : logicError(`${written(value)} has no JSON text.`);
+    }
   ),
 
-  "new": (classRef: unknown, ...args: unknown[]) =>
+  keys: over([Entries], Record.keys),
+
+  values: over([Entries], Record.values),
+
+  "new": takes(atLeast(1), (classRef: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {
       if (typeof classRef !== "function") {
         return yield* new NotAConstructorError({ actual: classRef });
@@ -291,16 +297,23 @@ export const module = {
       return new (classRef as new (...args: unknown[]) => unknown)(
         ...(args as unknown[])
       );
-    }),
+    })
+  ),
 
   // The method functions work on any value but null, such as a string.
-  "get-method": flow(methodOf, Effect.map(bound)),
+  "get-method": takes(2, flow(methodOf, Effect.map(bound))),
 
-  "call-method": (obj: unknown, key: unknown, ...args: unknown[]) =>
-    Effect.map(methodOf(obj, key), applied(args)),
+  "call-method": takes(
+    atLeast(2),
+    (obj: unknown, key: unknown, ...args: unknown[]) =>
+      Effect.map(methodOf(obj, key), applied(args))
+  ),
 
-  "get-method-path": flow(methodAt, Effect.map(bound)),
+  "get-method-path": takes(2, flow(methodAt, Effect.map(bound))),
 
-  "call-method-path": (obj: unknown, path: unknown, ...args: unknown[]) =>
-    Effect.map(methodAt(obj, path), applied(args)),
+  "call-method-path": takes(
+    atLeast(2),
+    (obj: unknown, path: unknown, ...args: unknown[]) =>
+      Effect.map(methodAt(obj, path), applied(args))
+  ),
 };

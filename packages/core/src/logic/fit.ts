@@ -26,7 +26,10 @@
  */
 import { Effect } from "effect";
 import {
+  atLeast,
+  type Count,
   logicError,
+  takes,
   UnboundNameError,
   WaitingError,
 } from "@/errors/evaluation";
@@ -547,13 +550,12 @@ export const misfit = (schema: unknown, value: unknown) =>
   });
 
 /** A schema as a function: called with the one value to check. */
-const checker = (name: (schema: LionFunction) => string) => {
-  const schema: LionFunction = (...args: unknown[]) =>
-    args.length === 1
-      ? fits(schema, args[0])
-      : logicError(
-          `${name(schema)} takes 1 argument, the value to check, but got ${args.length}.`
-        );
+const checker = () => {
+  const schema: LionFunction = takes(
+    1,
+    (value: unknown) => fits(schema, value),
+    "the value to check"
+  );
   return schema;
 };
 
@@ -562,16 +564,13 @@ const checker = (name: (schema: LionFunction) => string) => {
  * shape can hold it.
  */
 export const makeSchema = (name: string) =>
-  registerSchema(
-    checker(() => `Schema "${name}"`),
-    {
-      definition: undefined,
-      group: [name],
-      name,
-      shape: undefined,
-      strings: new Set(),
-    }
-  );
+  registerSchema(checker(), {
+    definition: undefined,
+    group: [name],
+    name,
+    shape: undefined,
+    strings: new Set(),
+  });
 
 /**
  * A function of the `schema` module that builds a schema from others, with
@@ -581,25 +580,23 @@ export const makeSchema = (name: string) =>
  */
 const builder = (
   name: string,
-  takes: 1 | "any",
+  count: Count,
   checkBuilt: CheckBuilt,
   refuses?: (part: unknown) => string | undefined
 ) => {
-  const build: LionFunction = schemaBuilder((...parts: unknown[]) => {
-    const wrong =
-      takes === 1 && parts.length !== 1
-        ? `takes 1 argument, a schema, but got ${parts.length}`
-        : refuses?.(parts[0]);
-    return wrong === undefined
-      ? Effect.succeed(
-          builtBy(
-            checker((schema) => text(expression(schema))),
-            build,
-            parts
-          )
-        )
-      : logicError(`${name} ${wrong}.`);
-  }, refuses !== undefined);
+  const build: LionFunction = schemaBuilder(
+    takes(
+      count,
+      (...parts: unknown[]) => {
+        const wrong = refuses?.(parts[0]);
+        return wrong === undefined
+          ? Effect.succeed(builtBy(checker(), build, parts))
+          : logicError(`${name} ${wrong}.`);
+      },
+      "a schema"
+    ),
+    refuses !== undefined
+  );
   BUILT.set(build, checkBuilt);
   nameFunctions({ [name]: build });
   readsOnlyArguments({ build });
@@ -609,9 +606,11 @@ const builder = (
 const notRecord = (found: unknown) =>
   `expects a record of schemas, or a schema that names one, but found ${show(found)}`;
 
+const ANY = atLeast(0);
+
 export const builders = {
   /** Fits a value that fits every one of the schemas. */
-  allOf: builder("schema/allOf", "any", (parts, value, at, _, vars) =>
+  allOf: builder("schema/allOf", ANY, (parts, value, at, _, vars) =>
     every(parts, at, vars, (part, answered) => check(part, value, at, answered))
   ),
   /**
@@ -619,7 +618,7 @@ export const builders = {
    * first that fits decides. Where variables can be bound, every schema
    * that fits gives its answers, each once.
    */
-  anyOf: builder("schema/anyOf", "any", (parts, value, at, schema, vars) =>
+  anyOf: builder("schema/anyOf", ANY, (parts, value, at, schema, vars) =>
     Effect.gen(function* () {
       const quiet = { ...at, out: [], write: undefined };
       const found = new Map<string, Vars>();
@@ -679,31 +678,33 @@ export const builders = {
   ),
 };
 
+/** A function of the `schema` module that checks a value against a schema. */
+export const checking = <B, E, R>(
+  check: (value: unknown, schema: unknown) => Effect.Effect<B, E, R>
+) => takes(2, check, "a value and a schema");
+
 /**
  * `["schema/fits?", value, schema]`: whether the value fits the schema.
  * Like "=" and "in", it is a goal when a logic variable is in it: in a rule
  * or query it tests the value, and binds the variables that stand in the
  * schema.
  */
-export const fitsValue: LionFunction = logicFunction((...args: unknown[]) =>
-  Effect.gen(function* () {
-    if (args.length !== 2) {
-      return yield* logicError(
-        `schema/fits? takes 2 arguments, a value and a schema, but got ${args.length}.`
-      );
-    }
-    const goal = () =>
-      Effect.map(
-        suspendArguments(args),
-        (parts) => new LogicForm("schema/fits?", parts)
-      );
-    const values = yield* known(args);
-    return values === undefined
-      ? yield* goal()
-      : yield* fits(values[1], values[0]).pipe(
-          Effect.catchTag("WaitingError", goal)
+export const fitsValue: LionFunction = logicFunction(
+  checking((...args) =>
+    Effect.gen(function* () {
+      const goal = () =>
+        Effect.map(
+          suspendArguments(args),
+          (parts) => new LogicForm("schema/fits?", parts)
         );
-  })
+      const values = yield* known(args);
+      return values === undefined
+        ? yield* goal()
+        : yield* fits(values[1], values[0]).pipe(
+            Effect.catchTag("WaitingError", goal)
+          );
+    })
+  )
 );
 
 nameFunctions({ "schema/fits?": fitsValue });

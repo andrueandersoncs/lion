@@ -3,6 +3,7 @@ import {
   ArithmeticError,
   type LogicError,
   logicError,
+  takes,
 } from "@/errors/evaluation";
 import { AGGREGATORS, aggregator } from "@/logic/aggregates";
 import {
@@ -52,21 +53,17 @@ const aggregate = (kind: string) => {
   // A waiting call is written under the name that builds it again.
   nameFunctions({ [name]: onList });
   readsOnlyArguments({ onList });
-  return logicFunction((values: unknown, ...extra: unknown[]) => {
-    if (extra.length > 0) {
-      return logicError(
-        `${name} takes one argument but got ${extra.length + 1}.`
-      );
-    }
-    if (Array.isArray(values)) {
-      return onList(values);
-    }
-    return Effect.succeed(
-      isForm(values, "find")
-        ? new DeferredCall(onList, name, [values])
-        : new DeferredCall(onList, name, [values], kind)
-    );
-  });
+  return logicFunction(
+    takes(1, (values: unknown) =>
+      Array.isArray(values)
+        ? onList(values)
+        : Effect.succeed(
+            isForm(values, "find")
+              ? new DeferredCall(onList, name, [values])
+              : new DeferredCall(onList, name, [values], kind)
+          )
+    )
+  );
 };
 
 export const module = {

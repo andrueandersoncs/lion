@@ -303,3 +303,125 @@ describe("method functions", () => {
       })
   );
 });
+
+/** Whole numbers, fractions, and numbers JSON writes with an exponent. */
+const anyNumber = Arbitrary.flatMap(
+  Arbitrary.schema(
+    Schema.Int.check(
+      Schema.isBetween({ minimum: -1_000_000, maximum: 1_000_000 })
+    )
+  ),
+  (n) =>
+    Arbitrary.map(
+      Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 5 }))
+      ),
+      (pick) => [n, n / 8, n / 3, n * 1e18, n / 1e12, -0][pick] as number
+    )
+);
+
+/** Values that are not numbers. */
+const notANumber = Arbitrary.schema(
+  Schema.Union([
+    Schema.String,
+    Schema.Boolean,
+    Schema.Null,
+    Schema.Array(Schema.Int),
+    Schema.Record(Name, Schema.Int),
+  ])
+);
+
+describe("number/toString", () => {
+  it.effect.prop(
+    "is the number as JSON writes it, and reads back as the number",
+    { n: anyNumber },
+    ({ n }) =>
+      Effect.gen(function* () {
+        const written = yield* evaluate(["number/toString", n]);
+        expect(written).toBe(JSON.stringify(n));
+        expect(JSON.parse(written as string) === n).toBe(true);
+        expect(yield* evaluate(["object/json-stringify", n])).toBe(written);
+      })
+  );
+
+  it.effect.prop(
+    "builds text from a number a rule has bound",
+    { n: anyNumber, label: text },
+    ({ n, label }) =>
+      Effect.gen(function* () {
+        const built = [
+          "string/concat",
+          quote(label),
+          ["number/toString", "?n"],
+        ];
+        expect(
+          yield* evaluate([
+            "begin",
+            ["relation", "reading", ["n"]],
+            ["relation", "line", ["n", "text"]],
+            ["fact", ["reading", n]],
+            ["rule", ["line", "?n", built], ["reading", "?n"]],
+            {
+              rule: ["find", "?text", ["line", "?_", "?text"]],
+              query: [
+                "find",
+                "?text",
+                ["and", ["=", "?n", n], ["=", "?text", built]],
+              ],
+            },
+          ])
+        ).toEqual({ rule: [label + String(n)], query: [label + String(n)] });
+      })
+  );
+
+  it.effect.prop("takes only a number", { value: notANumber }, ({ value }) =>
+    Effect.gen(function* () {
+      const result = yield* Effect.exit(
+        evaluate(["number/toString", quote(value)])
+      );
+      expect(result._tag).toBe("Failure");
+    })
+  );
+});
+
+/** JSON data, nested a level or two. */
+const nestedJson = Arbitrary.schema(
+  Schema.Union([
+    Schema.Null,
+    Schema.Boolean,
+    Schema.Int,
+    Schema.String,
+    Schema.Array(Schema.Union([Schema.Int, Schema.String, Schema.Null])),
+    Schema.Record(
+      Name,
+      Schema.Union([Schema.Int, Schema.String, Schema.Array(Schema.Int)])
+    ),
+  ])
+);
+
+describe("object/json-stringify", () => {
+  it.effect.prop(
+    "writes any JSON value as JSON.stringify does, so it reads back",
+    {
+      value: nestedJson,
+      space: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 4 }))
+      ),
+    },
+    ({ value, space }) =>
+      Effect.gen(function* () {
+        const written = yield* evaluate([
+          "object/json-stringify",
+          quote(value),
+        ]);
+        expect(written).toBe(JSON.stringify(value));
+        // JSON writes -0 as 0, so that is what reads back.
+        expect(JSON.parse(written as string)).toEqual(
+          JSON.parse(JSON.stringify(value))
+        );
+        expect(
+          yield* evaluate(["object/json-stringify", quote(value), null, space])
+        ).toBe(JSON.stringify(value, null, space));
+      })
+  );
+});

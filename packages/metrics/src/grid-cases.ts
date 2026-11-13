@@ -87,6 +87,11 @@ export const EXPRESSIONS: readonly Expression[] = [
   // Plain Lion over a logic variable: the waiting rule.
   { name: "function call", form: ["number/add", X, 1] },
   { name: "nested calls", form: ["number/multiply", ["number/add", X, 1], 2] },
+  { name: "call that combines its arguments", form: ["number/add", X, 1, X] },
+  {
+    name: "text built from a number",
+    form: ["string/concat", "n=", ["number/toString", X], "!"],
+  },
   { name: "comparison", form: ["number/greaterThan", X, 1], boolean: true },
   {
     name: "cond",

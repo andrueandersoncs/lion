@@ -45,6 +45,7 @@ Lion's value comes from features that compose, so one surprising interaction cos
   - Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.
   - Whatever checks a value against a schema asks whether the value fits, by one rule: `match`, the `schema` functions, a schema's own parts, the arguments of a relation call, and the schema of a relation's rows.
   - A logic variable in a schema is its value once it is bound, and takes the value it meets until then, in every goal that can bind: `schema/fits?`, a relation call, `=`, and `in`.
+  - A call gives a function as many arguments as it takes, and one with any other number fails in one form of message: a library function, a relation, a schema, and a graph algorithm. Declare what a new function takes with `takes`, or build it with `over`, and add it to the table in `packages/core/src/modules/tests/arity.test.ts`.
 - **Walk through the combinations.** Surprises hide where two features meet. Before settling a behavior, trace how it interacts with each existing one. For the logic layer, that includes:
   - logic variables and `quote`
   - everything that waits for a logic variable: function calls, `cond`, `match`, `eval`, records, and lambdas passed to a waiting call

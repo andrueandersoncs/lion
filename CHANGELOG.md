@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased — @lionlang/core
+
+Three surprises found while writing Lion programs for a research skill, each removed by one rule. A call gives a function as many arguments as it takes. A number has text. A fact that holds a name says which name, and how to write the string.
+
+### Breaking
+
+- Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `["number/subtract", 10, 3, 1]` used to be `7`, with the `1` dropped, and `["object/get", {"a": 1}]` used to be `null`, with no key given. They now fail with `"number/subtract" takes 2 arguments but got 3.` and `"object/get" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.
+- Host code that calls a library function gives it the arguments it takes too. `["func/callback", "value/number?"]` handed to JavaScript's `Array.prototype.map` is called with three arguments, and fails. A lambda still ignores arguments past its parameters, so a lambda remains the way to write a callback.
+- `func/bind` and `func/apply` take the function and its `this`, then any arguments. `["func/bind", fn]` used to bind `undefined`.
+
+### Added
+
+- `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `["number/add", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `["string/concat", "lion", "-", "ized", "!"]` is `"lion-ized!"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back.
+- `["number/toString", 42]` is `"42"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `["string/concat", "order ", ["number/toString", "?id"]]`. The only way used to be `["object/call-method", 42, "toString"]`.
+- `object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `["object/json-stringify", 42]` is `"42"`, and `["object/json-stringify", "lion"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `"number/add" has no JSON text.`
+- For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with.
+
+### Changed
+
+- A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.
+- Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `"graph/pageRank"`, `Schema "Tree" takes 1 argument, the value to check, but got 2.` is `"Tree" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `"aggregate/sum" takes 1 argument but got 2.` A relation's message is unchanged.
+- An `ArithmeticError` shows every number of the call: `number/add: 1e+308 + 1e+308 + 1 has no finite result.`
+
+### Fixed
+
+- A fact that holds a lambda fails with `... which is not JSON data.` It used to fail with `Facts cannot contain logic variables`, though it holds none.
+
 ## 2026-11-13 — lionlang.dev
 
 No package changed. These are fixes to the documentation page.

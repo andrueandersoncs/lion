@@ -1,5 +1,10 @@
 import { Effect } from "effect";
-import { type LogicError, logicError } from "@/errors/evaluation";
+import {
+  asString,
+  type LogicError,
+  logicError,
+  takes,
+} from "@/errors/evaluation";
 import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
 import {
   bindVariables,
@@ -46,16 +51,18 @@ import {
   type DeferredCall,
   isForm,
   isGroundValue,
-  isWaiting,
   type LionFunction,
   LogicValue,
   LogicVariable,
   logicKey,
   makeRelationValue,
+  nameOf,
   type RelationInfo,
+  relationOf,
   render,
   schemaOf,
   show,
+  termVariables,
   valueKey,
 } from "@/logic/terms";
 import { LionAskerService } from "@/services/asker";
@@ -180,12 +187,13 @@ export const declareRelation = (
  * column builds a goal.
  */
 export const relationValue = (relation: RelationInfo) =>
-  makeRelationValue(relation, (...args: unknown[]) =>
-    args.length === relation.columns.length
-      ? Effect.succeed(new Atom(relation, args))
-      : logicError(
-          `"${relation.name}" takes ${relation.columns.length} arguments (${relation.columns.join(", ")}) but got ${args.length}.`
-        )
+  makeRelationValue(
+    relation,
+    takes(
+      relation.columns.length,
+      (...args: unknown[]) => Effect.succeed(new Atom(relation, args)),
+      relation.columns.join(", ")
+    )
   );
 
 /** A binding for every relation declared in the database. */
@@ -301,13 +309,35 @@ const groundTuple = (
   if (!database.relations.has(atom.relation.name)) {
     return logicError(`Relation "${atom.relation.name}" is not declared here.`);
   }
-  if (atom.args.some(isWaiting)) {
-    return logicError(`Facts cannot contain logic variables: ${show(atom)}.`);
+  const at = atom.args.findIndex((arg) => !isGroundValue(arg));
+  return at < 0
+    ? Effect.succeed(atom.args)
+    : logicError(
+        `Facts may only contain JSON data, but the "${atom.relation.columns[at]}" of ${show(atom)} is ${notData(atom.args[at])}`
+      );
+};
+
+/** The kind of function a name stands for. */
+const kindOf = (fn: unknown) => {
+  if (relationOf(fn) !== undefined) {
+    return "relation";
   }
-  if (!atom.args.every(isGroundValue)) {
-    return logicError(`Facts may only contain JSON data: ${show(atom)}.`);
-  }
-  return Effect.succeed(atom.args);
+  return schemaOf(fn) === undefined ? "function" : "schema";
+};
+
+/**
+ * What an argument is, when it is not data. A string that is a name is the
+ * usual cause: it evaluated to what it names, so the message says how to
+ * write the string itself.
+ */
+const notData = (arg: unknown) => {
+  const [kind, name] =
+    arg instanceof LogicVariable
+      ? ["logic variable", `?${arg.name}`]
+      : [kindOf(arg), nameOf(arg)];
+  return name === undefined
+    ? `${show(arg)}, which ${termVariables(arg).length > 0 ? "waits for a logic variable" : "is not JSON data"}.`
+    : `the ${kind} "${name}". ${asString(name)}`;
 };
 
 /** Forgets what was derived, after the facts or rules changed. */

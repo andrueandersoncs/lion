@@ -304,7 +304,8 @@ describe("changes to the database", () => {
         items.splice(Math.min(at, items.length), 0, bad);
         expect(yield* attempt([form, ...items], database)).toEqual({
           ok: false,
-          message: 'Facts cannot contain logic variables: ["edge","?x","b"].',
+          message:
+            'Facts may only contain JSON data, but the "from" of ["edge","?x","b"] is the logic variable "?x". To mean the string itself, write ["quote", "?x"].',
         });
         expect(yield* saveDatabase(database)).toEqual(before);
       })

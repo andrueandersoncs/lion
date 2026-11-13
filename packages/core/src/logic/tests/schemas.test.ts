@@ -1089,12 +1089,12 @@ describe("a schema used or declared wrongly", () => {
   > = {
     "a named schema": {
       call: (args) => ["Tree", ...args],
-      says: 'Schema "Tree" takes 1 argument, the value to check',
+      says: '"Tree" takes 1 argument (the value to check)',
       takes: 1,
     },
     "a built schema": {
       call: (args) => [["schema/arrayOf", "value/number?"], ...args],
-      says: "takes 1 argument, the value to check",
+      says: '["schema/arrayOf","value/number?"] takes 1 argument (the value to check)',
       takes: 1,
     },
     ...Object.fromEntries(
@@ -1102,7 +1102,7 @@ describe("a schema used or declared wrongly", () => {
         `schema/${name}`,
         {
           call: (args: readonly Form[]) => [`schema/${name}`, ...args],
-          says: `schema/${name} takes 1 argument, a schema`,
+          says: `"schema/${name}" takes 1 argument (a schema)`,
           takes: 1,
         },
       ])
@@ -1112,7 +1112,7 @@ describe("a schema used or declared wrongly", () => {
         `schema/${name}`,
         {
           call: (args: readonly Form[]) => [`schema/${name}`, ...args],
-          says: `schema/${name} takes 2 arguments, a value and a schema`,
+          says: `"schema/${name}" takes 2 arguments (a value and a schema)`,
           takes: 2,
         },
       ])

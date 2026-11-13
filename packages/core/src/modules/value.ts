@@ -1,33 +1,39 @@
 import { Effect } from "effect";
+import { takes } from "@/errors/evaluation";
+
+/** A predicate on one value. */
+const is = (test: (a: unknown) => boolean) =>
+  takes(1, (a: unknown) => Effect.succeed(test(a)));
 
 export const module = {
   symbol: Symbol("value"),
 
-  "function?": (a: unknown) => Effect.succeed(typeof a === "function"),
+  "function?": is((a) => typeof a === "function"),
 
-  "number?": (a: unknown) => Effect.succeed(typeof a === "number"),
+  "number?": is((a) => typeof a === "number"),
 
   /** A whole number. */
-  "integer?": (a: unknown) => Effect.succeed(Number.isInteger(a)),
+  "integer?": is(Number.isInteger),
 
-  "string?": (a: unknown) => Effect.succeed(typeof a === "string"),
+  "string?": is((a) => typeof a === "string"),
 
-  "boolean?": (a: unknown) => Effect.succeed(typeof a === "boolean"),
+  "boolean?": is((a) => typeof a === "boolean"),
 
   /** A record or other object, but not a list, as JSON tells them apart. */
-  "object?": (a: unknown) =>
-    Effect.succeed(typeof a === "object" && a !== null && !Array.isArray(a)),
+  "object?": is(
+    (a) => typeof a === "object" && a !== null && !Array.isArray(a)
+  ),
 
-  "array?": (a: unknown) => Effect.succeed(Array.isArray(a)),
+  "array?": is(Array.isArray),
 
-  "null?": (a: unknown) => Effect.succeed(a === null),
+  "null?": is((a) => a === null),
 
-  "undefined?": (a: unknown) => Effect.succeed(a === undefined),
+  "undefined?": is((a) => a === undefined),
 
-  "symbol?": (a: unknown) => Effect.succeed(typeof a === "symbol"),
+  "symbol?": is((a) => typeof a === "symbol"),
 
   /** True for every value: the schema that anything fits. */
-  "any?": (_: unknown) => Effect.succeed(true),
+  "any?": is(() => true),
 
-  identity: (x: unknown) => Effect.succeed(x),
+  identity: takes(1, (x: unknown) => Effect.succeed(x)),
 };

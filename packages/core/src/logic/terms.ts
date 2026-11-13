@@ -507,13 +507,23 @@ const lambdaForm = ({ body, parameters }: LambdaInfo) => [
   body,
 ];
 
+/**
+ * The name a function is written with: a relation's, a schema's, or the
+ * first name the function was bound to.
+ */
+export const nameOf = (fn: unknown): string | undefined =>
+  typeof fn === "function"
+    ? (RELATIONS.get(fn)?.name ??
+      SCHEMAS.get(fn)?.name ??
+      FUNCTION_NAMES.get(fn))
+    : undefined;
+
 const writeFunction = (
   fn: LionFunction,
   writer: Writer,
   callee?: unknown
 ): unknown => {
-  const name =
-    RELATIONS.get(fn)?.name ?? SCHEMAS.get(fn)?.name ?? FUNCTION_NAMES.get(fn);
+  const name = nameOf(fn);
   if (name !== undefined) {
     return name;
   }
