@@ -27,7 +27,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     >
-    <link rel="stylesheet" href="styles.css?v=0c2dda5d05">
+    <link rel="stylesheet" href="styles.css?v=a787fdc03a">
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>"
@@ -36,9 +36,9 @@
     "use strict";
     document.documentElement.classList.add("js");
     </script>
-    <script type="module" src="constellation.js?v=0c2dda5d05"></script>
-    <script type="module" src="script.js?v=0c2dda5d05"></script>
-    <script type="module" src="playground.js?v=0c2dda5d05"></script>
+    <script type="module" src="constellation.js?v=a787fdc03a"></script>
+    <script type="module" src="script.js?v=a787fdc03a"></script>
+    <script type="module" src="playground.js?v=a787fdc03a"></script>
   </head>
   <body>
     <canvas class="constellation" aria-hidden="true"></canvas>
@@ -177,7 +177,8 @@
             <span>"lambda"</span><span>"define"</span><span>"cond"</span
             ><span>"match"</span><span>"quote"</span><span>"eval"</span
             ><span>"begin"</span><span>"relation"</span><span>"rule"</span
-            ><span>"query"</span><span>"why"</span><span>"number/add"</span
+            ><span>"query"</span><span>"why"</span><span>"schema"</span
+            ><span>"schema/fits?"</span><span>"number/add"</span
             ><span>"number/multiply"</span><span>"array/map"</span
             ><span>"array/reduce"</span><span>"array/flat-map"</span
             ><span>"string/concat"</span><span>"object/get-path"</span
@@ -187,7 +188,8 @@
             <span>"lambda"</span><span>"define"</span><span>"cond"</span
             ><span>"match"</span><span>"quote"</span><span>"eval"</span
             ><span>"begin"</span><span>"relation"</span><span>"rule"</span
-            ><span>"query"</span><span>"why"</span><span>"number/add"</span
+            ><span>"query"</span><span>"why"</span><span>"schema"</span
+            ><span>"schema/fits?"</span><span>"number/add"</span
             ><span>"number/multiply"</span><span>"array/map"</span
             ><span>"array/reduce"</span><span>"array/flat-map"</span
             ><span>"string/concat"</span><span>"object/get-path"</span
@@ -853,6 +855,65 @@
   {"id":1,"status":"shipped","total":30},
   {"id":2,"status":"open","total":12}
 ]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Schemas</h3>
+            <p>
+              A schema says what a value must be: a predicate, a record or list
+              of schemas, or a plain value.
+              <code>schema/problems</code>
+              says where a value does not fit. Fix the id.
+            </p>
+            <div class="playground" data-playground="Schemas">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "note": ["schema/optional", "value/string?"]}],
+  ["schema/problems",
+    ["quote", {"id": "7", "status": "opne"}],
+    "Order"]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre class="playground-result"><code>[
+  {"path":["id"],"expected":"value/integer?","found":"7"},
+  {
+    "path": ["status"],
+    "expected": ["schema/anyOf","open","shipped"],
+    "found": "opne"
+  }
+]</code></pre>
+              </div>
+            </div>
+          </article>
+          <article class="example-card spotlight reveal">
+            <h3>Patterns</h3>
+            <p>
+              A logic variable in a schema takes the value it meets, so a
+              relation call can say which rows it wants and take them apart at
+              once. Ask for the refunds.
+            </p>
+            <div class="playground" data-playground="Patterns">
+              <div class="code-block playground-code">
+                <pre><code data-highlight>["begin",
+  ["relation", "inbox", ["doc"]],
+  ["fact",
+    ["inbox", {"type": "order", "id": 1, "rush": true}],
+    ["inbox", {"type": "refund", "id": 2}],
+    ["inbox", {"type": "order", "id": 3}]],
+  ["query",
+    ["inbox", ["schema/open", {"type": "order", "id": "?id"}]],
+    {"order": "id"}]]</code></pre>
+              </div>
+              <div class="playground-output">
+                <span class="playground-status is-ok">result</span>
+                <pre
+                  class="playground-result"
+                ><code>[{"id":1},{"id":3}]</code></pre>
               </div>
             </div>
           </article>

@@ -24,8 +24,13 @@
 <lion-example name="Strings">
 ["begin",
   ["define", "name", "lion"],
-  {"bound": "name", "unbound": "unbound text", "quoted": ["quote", "name"]}]
+  {"bound": "name", "unbound": "unbound text", "quoted": ["quote", "name"],
+   "with a slash": "n/a"}]
 </lion-example>
+<lion-example name="A misspelled name" expect="error">
+["number/ad", 1, 2]
+</lion-example>
+<p>The misspelled name fails wherever it stands: as a function, as a value, as a <a href="#schema-fitting">schema</a>, and inside a rule when the rule is written. <code>["quote", "number/ad"]</code> is the string.</p>
 <p>To use a string that might be bound as plain text, wrap it in <a href="#form-quote"><code>quote</code></a>.</p>
 
 <h2 id="rule-arrays">Arrays</h2>

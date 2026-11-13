@@ -50,7 +50,7 @@ const KINDS: readonly Kind[] = [
     label: "Tutorial",
     purpose: "Learning-oriented",
     serves: "Lessons that build something real, one working step at a time.",
-    docs: ["first-program", "family-tree", "order-desk"],
+    docs: ["first-program", "family-tree", "order-desk", "sort-an-inbox"],
   },
   {
     id: "how-to",

@@ -15,6 +15,35 @@
 </lion-example>
 <p>Each problem has the <code>path</code> to the part that does not fit, the schema that was <code>expected</code> there, and the value that was <code>found</code>. A record schema fits a record with the same keys, so a key it does not name is a problem too, with only what was <code>found</code>. Wrap the record in <code>schema/open</code> to allow other keys.</p>
 
+<h2>Allow keys you do not name</h2>
+<p>A record schema says every key the record has. To check some keys and let the rest be, wrap the record in <code>schema/open</code>. To let one key be left out, give it <code>schema/optional</code>:</p>
+<lion-example name="Other keys">
+["begin",
+  ["define", "incoming", ["quote", {"id": 7, "status": "open", "rush": true}]],
+  {"exact": ["schema/problems", "incoming",
+     {"id": "value/integer?", "status": "value/string?"}],
+   "open": ["schema/fits?", "incoming",
+     ["schema/open", {"id": "value/integer?", "status": "value/string?"}]],
+   "optional": ["schema/fits?", "incoming",
+     {"id": "value/integer?", "status": "value/string?",
+      "rush": ["schema/optional", "value/boolean?"],
+      "note": ["schema/optional", "value/string?"]}]}]
+</lion-example>
+
+<h2>Check lists and plain values</h2>
+<p>A list of schemas fits a list of the same length, item by item, which suits a pair or a triple. <code>schema/arrayOf</code> fits a list of any length whose items all fit, and <code>schema/recordOf</code> a record whose values all fit. Any value that is not a function, a record, or a list fits a value equal to it, so data is a schema for itself:</p>
+<lion-example name="Lists and values">
+{"a pair": ["schema/fits?",
+   ["array/make", 2, "kg"],
+   ["array/make", "value/number?", ["schema/anyOf", "kg", "lb"]]],
+ "a longer list": ["schema/fits?",
+   ["array/make", 2, "kg", "net"],
+   ["array/make", "value/number?", "value/string?"]],
+ "every item": ["schema/fits?", ["array/make", 1, 2, 3], ["schema/arrayOf", "value/integer?"]],
+ "every value": ["schema/problems", {"tea": 2, "cup": "one"}, ["schema/recordOf", "value/integer?"]],
+ "the same data": ["schema/fits?", ["quote", {"a": [1, 2]}], ["quote", {"a": [1, 2]}]]}
+</lion-example>
+
 <h2>Give a schema a name</h2>
 <p><code>schema</code> declares a schema under a name, the way <code>relation</code> declares a relation. The name is then a predicate, and other schemas can use it. A shape can name its own schema, which describes nested data, and one form can declare several schemas that name each other:</p>
 <lion-example name="Named schemas">

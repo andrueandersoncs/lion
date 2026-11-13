@@ -13,6 +13,21 @@
 </lion-example>
 <p>Strings that would load as something else, such as relation names, logic variable names, and namespaced names, are written inside <code>quote</code>, and so are lists and records. Rules are written with values as they were evaluated. A named <a href="#form-schema">schema</a> is written with its shape, schemas that one form declared in one form, and the schema of a relation's rows as the invariant it stands for.</p>
 
+<h2>Save schemas with the data</h2>
+<p>A database holds its <a href="#check-data">schemas</a> too, so a snapshot writes them. Schemas that one form declared are written in one form, a rule keeps the <a href="#take-data-apart">pattern</a> it was written with, and the schema of a relation's rows is written as the invariant it stands for, so a loaded database refuses the same rows:</p>
+<lion-example name="A snapshot with schemas">
+["begin",
+  ["schema",
+    "Expr", ["schema/anyOf", "value/number?", "Sum"],
+    "Sum", {"add": ["schema/arrayOf", "Expr"]}],
+  ["schema", "Order", ["schema/open", {"id": "value/integer?", "total": "Expr"}]],
+  ["relation", "order", ["id", "total", "note"], {"key": "id", "schema": "Order"}],
+  ["relation", "summed", ["id"]],
+  ["fact", ["order", 1, ["quote", {"add": [2, 3]}], "gift"]],
+  ["rule", ["summed", "?id"], ["order", "?id", {"add": "?parts"}, "?_"]],
+  ["snapshot"]]
+</lion-example>
+
 <h2>Restore facts from a snapshot</h2>
 <p>A snapshot is a program, so evaluating it puts back what it holds. Here a fact is removed after the snapshot, and running the snapshot with <code>eval</code> restores it:</p>
 <lion-example name="Restore">

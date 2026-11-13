@@ -29,6 +29,23 @@
   ["why", ["eligible", "ana"]]]
 </lion-example>
 
+<h2>See what a pattern matched</h2>
+<p>A goal can say which rows it wants with a <a href="#take-data-apart">pattern</a> or a schema, and then the goal itself does not say which row it found. <code>why</code> does: the premise is the row the goal matched. A schema check that held is a <code>check</code>:</p>
+<lion-example name="Why with a pattern">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "big", ["id"]],
+  ["schema", "Order", ["schema/open", {"id": "value/integer?"}]],
+  ["fact",
+    ["inbox", {"id": 1, "total": 80, "note": "gift"}],
+    ["inbox", {"id": 2, "total": 20}]],
+  ["rule", ["big", "?id"],
+    ["inbox", ["schema/open", {"id": "?id", "total": "?total"}]],
+    ["schema/fits?", {"id": "?id"}, "Order"],
+    ["number/greaterThan", "?total", 50]],
+  ["why", ["big", 1]]]
+</lion-example>
+
 <h2>See what an aggregate combined</h2>
 <p>For an aggregated fact, <code>why</code> lists every match it combined under <code>matches</code>. For <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the one match that produced the value.</p>
 <lion-example name="Why an aggregate">

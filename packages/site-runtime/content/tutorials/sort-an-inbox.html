@@ -1,0 +1,156 @@
+<article id="sort-an-inbox" data-title="Sort an inbox" data-summary="Describe the orders you expect with a schema, find what is wrong with the ones that do not fit, and let rules take the good ones apart.">
+<p>In this tutorial we will sort an inbox of orders that arrive as JSON. Some are well formed and some are not. We will say what an order must be, see exactly where a bad one goes wrong, and write rules that keep the good ones and take them apart. We will build on the logic forms from <a href="#family-tree">Build a family tree</a>.</p>
+
+<h2>Step 1: Say what an order is</h2>
+<p>A schema says what a value must be, and anything can be one. Write the record we expect, with a schema in place of each value: a function such as <code>value/integer?</code> for a value it accepts, and <code>schema/anyOf</code> for a choice. <code>schema/fits?</code> asks whether a value fits:</p>
+<lion-example name="A schema">
+["begin",
+  ["define", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf",
+       {"sku": "value/string?", "qty": "value/integer?"}]}],
+  ["define", "mail",
+    ["quote", {"id": 1, "status": "open", "lines": [{"sku": "tea", "qty": 2}]}]],
+  ["schema/fits?", "mail", "Order"]]
+</lion-example>
+<p>The order fits: it has the three keys, and each value fits the schema under its key.</p>
+
+<h2>Step 2: Find what is wrong</h2>
+<p>The next order in the mail is a mess. <code>schema/problems</code> lists every place where a value does not fit:</p>
+<lion-example name="Problems">
+["begin",
+  ["define", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf",
+       {"sku": "value/string?", "qty": "value/integer?"}]}],
+  ["define", "mail",
+    ["quote", {"id": "2", "status": "opne", "lines": [{"sku": "tea"}], "gift": true}]],
+  ["schema/problems", "mail", "Order"]]
+</lion-example>
+<p>There are four. Each has the <code>path</code> to the part that is wrong. The <code>id</code> and the <code>status</code> have the wrong value, so they show what was <code>expected</code> and what was <code>found</code>. The first line has no <code>qty</code>, so it shows only what was expected. And <code>gift</code> is a key the schema does not name, so it shows only what was found: a record fits a record with the same keys.</p>
+
+<h2>Step 3: Give the schemas names</h2>
+<p><code>schema</code> declares a schema under a name, the way <code>relation</code> declares a relation. The name is then a predicate, and other schemas can use it. Let us also ask for more: a quantity must be above zero, which a lambda can say, and an order may have a note, which <code>schema/optional</code> allows:</p>
+<lion-example name="Named schemas">
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?",
+       ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf", "Line"],
+     "note": ["schema/optional", "value/string?"]}],
+  {"with a note": ["Order",
+     ["quote", {"id": 1, "status": "open", "lines": [], "note": "gift"}]],
+   "no tea": ["Order",
+     ["quote", {"id": 1, "status": "open", "lines": [{"sku": "tea", "qty": 0}]}]]}]
+</lion-example>
+<p>Change the <code>0</code> to a <code>3</code>, and the second order fits too.</p>
+
+<h2>Step 4: Keep the orders that fit</h2>
+<p>Now put the mail in a relation, one document per row. A relation call takes a schema for each column, so <code>["inbox", "Order"]</code> would ask for the rows that are orders. We want more than that: the id and the status of each. A logic variable in a schema takes the value it meets, so a record with variables in it is a pattern. <code>schema/allOf</code> asks for both at once, and <code>schema/open</code> lets the pattern name only the keys it wants:</p>
+<lion-example name="A rule that sorts">
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?",
+       ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf", "Line"]}],
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id", "status"], {"key": "id"}],
+  ["fact",
+    ["inbox", ["quote", {"id": 1, "status": "open",
+      "lines": [{"sku": "tea", "qty": 2}, {"sku": "cup", "qty": 1}]}]],
+    ["inbox", ["quote", {"id": 2, "status": "opne", "lines": []}]],
+    ["inbox", ["quote", {"id": 3, "status": "shipped",
+      "lines": [{"sku": "tea", "qty": 5}]}]]],
+  ["rule", ["order", "?id", "?status"],
+    ["inbox", ["schema/allOf", "Order",
+      ["schema/open", {"id": "?id", "status": "?status"}]]]],
+  ["query", ["order", "?id", "?status"], {"order": "id"}]]
+</lion-example>
+<p>Orders 1 and 3 are kept. Order 2 says <code>"opne"</code>, so it is not an order, and the rule passes over it.</p>
+
+<h2>Step 5: Say why the rest was rejected</h2>
+<p>A document that was passed over should not vanish. <code>schema/problems</code> gives a list, and <code>in</code> turns a list into rows, so a second rule records each problem of each document:</p>
+<lion-example name="A rule that explains">
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?",
+       ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf", "Line"]}],
+  ["relation", "inbox", ["doc"]],
+  ["relation", "rejected", ["id", "where"]],
+  ["fact",
+    ["inbox", ["quote", {"id": 1, "status": "open",
+      "lines": [{"sku": "tea", "qty": 2}, {"sku": "cup", "qty": 1}]}]],
+    ["inbox", ["quote", {"id": 2, "status": "opne", "lines": []}]],
+    ["inbox", ["quote", {"id": 4, "status": "open",
+      "lines": [{"sku": "tea", "qty": 0}]}]]],
+  ["rule", ["rejected", "?id", ["object/get", "?problem", "path"]],
+    ["inbox", "?doc"],
+    ["schema/fits?", "?doc", ["schema/open", {"id": "?id"}]],
+    ["in", "?problem", ["schema/problems", "?doc", "Order"]]],
+  ["query", ["rejected", "?id", "?where"], {"order": "id"}]]
+</lion-example>
+<p>Order 1 has no problems, so it has no rows. Here <code>schema/fits?</code> is a goal of its own: it checks a value that another goal bound, and binds <code>?id</code> from it.</p>
+
+<h2>Step 6: Take the lines apart</h2>
+<p>Each order holds a list of lines. The element of <code>in</code> can be a pattern too, so one goal takes the list out of the order and the next takes each line apart. With the lines as rows, an aggregate can total the units of each product:</p>
+<lion-example name="Lines as rows">
+["begin",
+  ["schema", "Line",
+    {"sku": "value/string?",
+     "qty": ["schema/allOf", "value/integer?",
+       ["lambda", ["n"], ["number/greaterThan", "n", 0]]]}],
+  ["schema", "Order",
+    {"id": "value/integer?",
+     "status": ["schema/anyOf", "open", "shipped"],
+     "lines": ["schema/arrayOf", "Line"]}],
+  ["relation", "inbox", ["doc"]],
+  ["relation", "line", ["order", "sku", "qty"]],
+  ["relation", "units", ["sku", "total"]],
+  ["fact",
+    ["inbox", ["quote", {"id": 1, "status": "open",
+      "lines": [{"sku": "tea", "qty": 2}, {"sku": "cup", "qty": 1}]}]],
+    ["inbox", ["quote", {"id": 2, "status": "opne", "lines": []}]],
+    ["inbox", ["quote", {"id": 3, "status": "shipped",
+      "lines": [{"sku": "tea", "qty": 5}]}]]],
+  ["rule", ["line", "?order", "?sku", "?qty"],
+    ["inbox", ["schema/allOf", "Order",
+      ["schema/open", {"id": "?order", "lines": "?lines"}]]],
+    ["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]],
+  ["rule", ["units", "?sku", ["aggregate/sum", "?qty"]],
+    ["line", "?order", "?sku", "?qty"]],
+  {"lines": ["find", ["array/make", "?order", "?sku", "?qty"],
+     ["line", "?order", "?sku", "?qty"]],
+   "units": ["query", ["units", "?sku", "?total"], {"order": "sku"}]}]
+</lion-example>
+
+<h2>Step 7: Guard the shelf</h2>
+<p>The sorted orders live in a relation of their own. To make sure nothing else ever puts a bad row there, give the relation a schema. Every row, taken as a record of its columns, must then fit it, and a change that would add a row that does not is refused:</p>
+<lion-example name="A guarded relation" expect="error">
+["begin",
+  ["schema", "Shelved",
+    {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["relation", "order", ["id", "status"], {"key": "id", "schema": "Shelved"}],
+  ["fact", ["order", 1, "open"], ["order", 3, "shipped"]],
+  ["fact", ["order", 2, "opne"]]]
+</lion-example>
+<p>The message says which row does not fit, and where. Nothing changed: orders 1 and 3 are still on the shelf, and order 2 was not added.</p>
+
+<h2>What we built</h2>
+<p>We described an order with a schema, listed the problems of one that did not fit, named our schemas, kept the documents that fit with a rule, recorded why the others were rejected, took a list inside each order apart into rows, and guarded a relation with a schema.</p>
+<p>To use these features in your own project, see <a href="#check-data">Check the shape of data</a> and <a href="#take-data-apart">Take data apart</a>. For every rule in one place, read <a href="#schema-fitting">What fits a schema</a> and <a href="#logic-patterns">Patterns</a> in the reference. To understand why checking and taking apart are one thing, read <a href="#consistent-semantics">One set of rules for every feature</a>.</p>
+</article>

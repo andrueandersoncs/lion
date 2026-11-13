@@ -99,6 +99,15 @@
   ["fact", ["order", 1, "open"], ["order", 1, "paid"]],
   ["query", ["order", "?id", "?status"]]]
 </lion-example>
+<p>With a schema, a change that would leave a row that does not fit is refused. Here the schema is open, so it need not name the <code>note</code> column:</p>
+<lion-example name="A relation with a schema" expect="error">
+["begin",
+  ["schema", "Order",
+    ["schema/open", {"id": "value/integer?", "status": ["schema/anyOf", "open", "paid"]}]],
+  ["relation", "order", ["id", "status", "note"], {"key": "id", "schema": "Order"}],
+  ["fact", ["order", 1, "open", "gift"]],
+  ["fact", ["order", 2, "lost", "none"]]]
+</lion-example>
 
 <h2 id="form-schema"><code>schema</code></h2>
 <code-block lang="json">
@@ -122,6 +131,24 @@
      ["quote", {"value": 1, "children": [{"value": "two", "children": []}]}], "Tree"]}]
 </lion-example>
 
+<p>Schemas that one form declares can name each other. Here an expression is a number or a sum, and a sum holds expressions. <code>Loop</code> comes back to itself without going into the value, so only <code>1</code> fits it:</p>
+<lion-example name="Schemas that name each other">
+["begin",
+  ["schema",
+    "Expr", ["schema/anyOf", "value/number?", "Sum"],
+    "Sum", {"add": ["schema/arrayOf", "Expr"]},
+    "Loop", ["schema/anyOf", "Loop", 1]],
+  {"a sum of sums": ["Expr", ["quote", {"add": [1, {"add": [2, 3]}]}]],
+   "a word in it": ["Expr", ["quote", {"add": [1, {"add": [2, "x"]}]}]],
+   "loop": ["array/map", ["array/make", 1, 2], "Loop"]}]
+</lion-example>
+<p>Declared in two forms, the first shape would take <code>"Line"</code> for a plain string, so the second form is refused:</p>
+<lion-example name="A name used before it is declared" expect="error">
+["begin",
+  ["schema", "Order", {"lines": ["schema/arrayOf", "Line"]}],
+  ["schema", "Line", {"sku": "value/string?"}]]
+</lion-example>
+
 <h2 id="schema-fitting">What fits a schema</h2>
 <p>Anything is a schema, and one rule says what fits it. <code>match</code>, the functions of the <a href="#module-schema"><code>schema</code> module</a>, a schema's own parts, and the schema of a relation's rows all ask through it.</p>
 <ul>
@@ -131,6 +158,35 @@
   <li>Any other value fits a value equal to it.</li>
 </ul>
 <p>So data is a schema for itself: it fits exactly the values equal to it.</p>
+<lion-example name="The four rules">
+{"a function": ["schema/fits?", 3, "value/number?"],
+ "a record": ["schema/fits?",
+   {"id": 1, "tag": "new"},
+   {"id": "value/integer?", "tag": "value/string?"}],
+ "a key too many": ["schema/fits?", {"id": 1, "tag": "new"}, {"id": "value/integer?"}],
+ "a list": ["schema/fits?",
+   ["array/make", 2, "kg"],
+   ["array/make", "value/number?", ["schema/anyOf", "kg", "lb"]]],
+ "a list too long": ["schema/fits?",
+   ["array/make", 2, "kg", "net"],
+   ["array/make", "value/number?", "value/string?"]],
+ "a value": ["schema/fits?", "open", "open"],
+ "data for itself": ["schema/fits?", ["quote", {"a": [1, 2]}], ["quote", {"a": [1, 2]}]]}
+</lion-example>
+<p>A relation with one column is a predicate, so it is a schema: a value fits when it is one of the relation's rows.</p>
+<lion-example name="A relation as a schema">
+["begin",
+  ["relation", "person", ["name"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  {"a person": ["schema/fits?", "ada", "person"],
+   "a stranger": ["schema/problems", {"owner": "cy"}, {"owner": "person"}]}]
+</lion-example>
+<lion-example name="A relation with two columns" expect="error">
+["begin",
+  ["relation", "parent", ["parent", "child"]],
+  ["fact", ["parent", "ada", "ben"]],
+  ["schema/fits?", "ada", "parent"]]
+</lion-example>
 <p>A schema check is a call, so it <a href="#logic-waiting">waits</a> for logic variables like any other: as a goal it is a filter, and it gives in a rule what it gives in plain code. A logic variable inside a schema is its value once it is bound, and until then it takes the value it meets; see <a href="#logic-patterns">Patterns</a>. A schema that holds a relation <a href="#logic-asking">asks</a> the database when it checks a value, so a rule cannot use one that asks about the relation the rule derives.</p>
 <lion-example name="A schema as a goal">
 ["begin",
@@ -174,6 +230,23 @@
    "one value": ["query", ["schema/fits?", ["quote", {"a": 1, "b": 2}],
      ["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]]],
    "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
+</lion-example>
+
+<p>A variable that occurs twice takes one value, a variable can hold a schema for a later goal, and in plain code a check with an unbound variable is a goal to give to <code>query</code>:</p>
+<lion-example name="More patterns">
+["begin",
+  ["relation", "reading", ["sensor", "celsius"]],
+  ["fact", ["reading", "attic", 30], ["reading", "cellar", 10], ["reading", "roof", "n/a"]],
+  {"the same twice": ["query",
+     ["schema/fits?", ["quote", {"low": 3, "high": 3}], {"low": "?n", "high": "?n"}]],
+   "not the same": ["query",
+     ["schema/fits?", ["quote", {"low": 3, "high": 4}], {"low": "?n", "high": "?n"}]],
+   "a schema in a variable": ["find", "?sensor",
+     ["and", ["=", "?wanted", ["schema/anyOf", 10, 30]], ["reading", "?sensor", "?wanted"]]],
+   "a predicate from a variable": ["find", "?sensor",
+     ["and", ["reading", "?sensor", ["func/partial", "number/lessThan", "?least"]],
+             ["=", "?least", 20]]],
+   "a goal for query": ["query", ["schema/fits?", 1, "?x"]]}]
 </lion-example>
 
 <h2 id="form-fact"><code>fact</code></h2>
@@ -271,8 +344,20 @@
   <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
   <li>Premises are facts, <code>{"check": goal}</code> for a filter that held, and <code>{"absent": goal}</code> for a goal under <code>not</code>, each written with the answer's values in place of its variables. A variable that a question binds for itself keeps its name.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
+  <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. A schema check that held is a <code>check</code>.</li>
   <li>Explanations use every relation computed in full.</li>
 </ul>
+<lion-example name="why">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id"]],
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["fact", ["inbox", {"id": 1, "status": "open"}], ["inbox", {"id": 2, "status": "opne"}]],
+  ["rule", ["order", "?id"],
+    ["inbox", "?doc"], ["Order", "?doc"],
+    ["inbox", ["schema/open", {"id": "?id"}]]],
+  ["why", ["order", 1]]]
+</lion-example>
 
 <h2 id="form-not"><code>not</code></h2>
 <code-block lang="json">
@@ -339,16 +424,30 @@
 ["snapshot"]
 </code-block>
 <ul>
-  <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>fact</code> form per relation with facts, every <code>rule</code>, and every <code>invariant</code>, in that order.</li>
+  <li>Returns a <code>begin</code> program that rebuilds the current database: a <code>relation</code> form per relation, a <code>schema</code> form for the schemas each <code>schema</code> form declared, a <code>fact</code> form per relation with facts, every <code>rule</code>, and every <code>invariant</code>, in that order.</li>
+  <li>A schema is written with the form of its shape, and schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.</li>
   <li>Strings that would evaluate to something else are written inside <code>quote</code>: logic variable names, relation names, names bound in the environment, and namespaced names such as <code>"number/add"</code>. Lists and records are quoted too.</li>
   <li>A function is written by the name the environment binds it to, so a rule that calls <code>number/add</code> under another name is written with <code>number/add</code>.</li>
   <li>A <code>cond</code>, <code>match</code>, or record that waits is written as it was, and a lambda as its <code>lambda</code> form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it.</li>
-  <li>Fails if a rule or invariant holds a lambda that calls itself, or a function that the environment does not name and that is not a lambda.</li>
+  <li>A function that another function built is written as the call that built it, such as <code>["func/partial", "number/lessThan", 3]</code> or <code>["schema/arrayOf", "value/number?"]</code>.</li>
+  <li>Fails if a rule or invariant holds a lambda that calls itself, or a function that the environment does not name and that is neither a lambda nor built by a function it can write.</li>
 </ul>
 <lion-example name="snapshot">
 ["begin",
   ["relation", "note", ["text"]],
   ["fact", ["note", "plain"], ["note", ["quote", "?x"]], ["note", ["array/make", 1, 2]]],
+  ["snapshot"]]
+</lion-example>
+<lion-example name="A snapshot with schemas">
+["begin",
+  ["schema",
+    "Expr", ["schema/anyOf", "value/number?", "Sum"],
+    "Sum", {"add": ["schema/arrayOf", "Expr"]}],
+  ["schema", "Order", ["schema/open", {"id": "value/integer?", "total": "Expr"}]],
+  ["relation", "order", ["id", "total", "note"], {"key": "id", "schema": "Order"}],
+  ["relation", "summed", ["id"]],
+  ["fact", ["order", 1, ["quote", {"add": [2, 3]}], "gift"]],
+  ["rule", ["summed", "?id"], ["order", "?id", {"add": "?parts"}, "?_"]],
   ["snapshot"]]
 </lion-example>
 

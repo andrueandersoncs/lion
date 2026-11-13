@@ -169,7 +169,7 @@
   <tbody>
     <tr data-entry="schema/fits?"><td><code>["schema/fits?", value, schema]</code></td><td>Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema; see <a href="#logic-patterns">Patterns</a>.</td></tr>
     <tr data-entry="schema/problems"><td><code>["schema/problems", value, schema]</code></td><td>Every place where the value does not fit, in the order of their paths; an empty list when it fits. A problem is a record with a <code>path</code>, the keys and positions that lead to the part. A part with the wrong value has what was <code>expected</code>, a schema written as the expression that makes it, and what was <code>found</code>. A part that is missing has only <code>expected</code>, and a key the schema does not name has only <code>found</code>.</td></tr>
-    <tr data-entry="schema/assert"><td><code>["schema/assert", value, schema]</code></td><td>The value, when it fits. When it does not, fails with a message that says where.</td></tr>
+    <tr data-entry="schema/assert"><td><code>["schema/assert", value, schema]</code></td><td>The value, when it fits. When it does not, fails with a message that says where. As a value in a rule or <code>find</code>, it fails the query that runs it.</td></tr>
     <tr data-entry="schema/anyOf"><td><code>["schema/anyOf", schema, ...]</code></td><td>A schema that fits a value which fits at least one of the schemas. Of plain values it is a list of choices. It reports one problem, at the value that fits none.</td></tr>
     <tr data-entry="schema/allOf"><td><code>["schema/allOf", schema, ...]</code></td><td>A schema that fits a value which fits every one of the schemas. It reports the problems of each schema the value does not fit.</td></tr>
     <tr data-entry="schema/arrayOf"><td><code>["schema/arrayOf", schema]</code></td><td>A schema that fits a list whose every item fits the schema</td></tr>
@@ -237,7 +237,7 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does.</td></tr>
+    <tr data-entry="func/partial"><td><code>["func/partial", function, argument, ...]</code></td><td>A function that calls <code>function</code> with these arguments followed by its own, exactly as a call written out in full would. Made from a relation, it builds goals, as the relation does. Made from a logic variable in a rule or query, it waits for the variable, so <code>["func/partial", "number/lessThan", "?max"]</code> is a <a href="#logic-patterns">predicate</a> for values above <code>?max</code>.</td></tr>
     <tr data-entry="func/apply"><td><code>["func/apply", function, this, argument, ...]</code></td><td>What calling <code>function</code> with <code>this</code> and the arguments returns</td></tr>
     <tr data-entry="func/bind"><td><code>["func/bind", function, this, argument, ...]</code></td><td><code>function</code> with <code>this</code> and leading arguments fixed</td></tr>
     <tr data-entry="func/callback"><td><code>["func/callback", function]</code></td><td>A JavaScript function that calls <code>function</code> and returns its result, or a Promise of it when the work is asynchronous. The callback keeps the environment and database it was created in.</td></tr>

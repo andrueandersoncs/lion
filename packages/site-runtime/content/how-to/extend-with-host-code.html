@@ -46,6 +46,43 @@ const env = { ...stdlib, ...namespaceEntries("text", text) };
 <p>Use functions that return the same result for the same arguments and have no side effects; the engine may call them any number of times, in any order. A function used as a filter must return <code>true</code> or <code>false</code>.</p>
 <p>A goal given to your function is <a href="#logic-asking">asked</a> first, so the function receives <code>true</code> or <code>false</code>.</p>
 
+<p>A string of the form <code>module/name</code> that nothing is bound to is an error when its module has other names, so a program that misspells one of your functions is told which name it probably meant.</p>
+
+<h2>Use a function as a schema</h2>
+<p>A function is a predicate, so a function you add is a <a href="#check-data">schema</a> for the values it returns <code>true</code> for. It works wherever a schema does: in <code>schema/fits?</code>, in <code>match</code>, as a part of a record, and as an argument of a relation call. To check a value against a schema from your own code, use <code>fits</code>:</p>
+<code-block lang="ts">
+import { Effect } from "effect";
+import { fits } from "@lionlang/core/logic/fit";
+
+const env = {
+  ...stdlib,
+  "text/email?": (value: unknown) => typeof value === "string" && value.includes("@"),
+  "list/count": (items: unknown[], schema: unknown) =>
+    Effect.map(
+      Effect.filter(items, (item) =>
+        Effect.map(fits(schema, item), (fit) => fit === true)
+      ),
+      (kept) => kept.length
+    ),
+};
+// ["schema/fits?", {"to": "ada@example.com"}, {"to": "text/email?"}]
+// ["query", ["contact", "?name", "text/email?"]]
+// ["list/count", "rows", {"to": "text/email?"}]
+</code-block>
+
+<h2>Tell Lion what a function reads</h2>
+<p>An <a href="#enforce-rules">invariant</a> is asked again only when a change can have broken it, which takes knowing what its goal reads. Lion cannot see inside your function: it might read the database on its own. So an invariant whose goal calls a host function, in the goal itself, inside a schema, or through a rule, is asked in full after every change to facts. That is always correct, and costs more on a large database. A function that reads nothing but its arguments can say so:</p>
+<code-block lang="ts">
+import { readsOnlyArguments } from "@lionlang/core/logic/terms";
+
+const isEmail = (value: unknown) => typeof value === "string" && value.includes("@");
+readsOnlyArguments({ isEmail });
+
+const env = { ...stdlib, "text/email?": isEmail };
+// ["invariant", ["and", ["contact", "?name", "?to"], ["not", ["text/email?", "?to"]]], {"assert": "none"}]
+</code-block>
+<p>The invariant is then treated like one over the standard library: a change to <code>contact</code> checks the new rows, and a change to any other relation does not ask it at all.</p>
+
 <h2>Call back into Lion</h2>
 <p>A function that takes a Lion function, such as a lambda or a relation, calls it with <code>call</code>. It gives the callback's value, with a goal asked, and lets the whole call wait when that value is not known yet:</p>
 <code-block lang="ts">
@@ -77,7 +114,7 @@ const env = { ...stdlib, "my/same": same };
 </code-block>
 
 <h2>Add an algorithm</h2>
-<p>For work that rules do badly, <code>defineAlgorithm</code> turns a function over whole relations into a goal, like those in the <code>graph</code> module. It receives each relation input as its tuples and each value input as itself, and returns rows, or a string that explains why it cannot. A value input can be a variable that another goal binds; the function then runs once for each value:</p>
+<p>For work that rules do badly, <code>defineAlgorithm</code> turns a function over whole relations into a goal, like those in the <code>graph</code> module. It receives each relation input as its tuples and each value input as itself, and returns rows, or a string that explains why it cannot. A value input can be a variable that another goal binds; the function then runs once for each value. An input must be JSON data. The columns the function returns are matched like a relation's, so a goal can give a <a href="#logic-patterns">schema</a> for one:</p>
 <code-block lang="ts">
 import { defineAlgorithm } from "@lionlang/core/logic/algorithms";
 

@@ -5,8 +5,8 @@
   <thead><tr><th>Tag</th><th>Raised when</th></tr></thead>
   <tbody>
     <tr data-entry="SchemaError"><td><code>SchemaError</code></td><td>The program is not a valid Lion expression, such as a record key <code>__proto__</code>; a function receives an argument of the wrong type; or <code>eval</code> is given something that is not JSON.</td></tr>
-    <tr data-entry="UnboundNameError"><td><code>UnboundNameError</code></td><td>A string of the form <code>module/name</code> is evaluated, nothing is bound to it, and it reads as a misspelled name: other names of its module are bound, or a bound name is a letter or two away, which the message suggests. Inside <code>quote</code> the string is data.</td></tr>
-    <tr data-entry="InvalidFunctionCallError"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a misspelled function name and a form's name used with the wrong shape.</td></tr>
+    <tr data-entry="UnboundNameError"><td><code>UnboundNameError</code></td><td>A string of the form <code>module/name</code> is evaluated, nothing is bound to it, and it reads as a misspelled name: other names of its module are bound, or a bound name is a letter or two away, which the message suggests. The error holds the string as <code>unbound</code> and the suggestion, or <code>null</code>, as <code>nearest</code>. Inside <code>quote</code> the string is data.</td></tr>
+    <tr data-entry="InvalidFunctionCallError"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a name that nothing is bound to and a form's name used with the wrong shape. A misspelled <code>module/name</code> is an <code>UnboundNameError</code> instead.</td></tr>
     <tr data-entry="ArgumentMismatchError"><td><code>ArgumentMismatchError</code></td><td>A lambda is called with fewer arguments than it has parameters.</td></tr>
     <tr data-entry="ArithmeticError"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.</td></tr>
     <tr data-entry="LogicError"><td><code>LogicError</code></td><td>A logic form fails: an unsafe goal or rule, a recursion or question that breaks the rules, a broken invariant or query assertion, a key conflict, a bad option, and more. The message says what and where.</td></tr>
@@ -28,8 +28,11 @@
 <lion-example name="SchemaError" expect="error">
 ["number/add", "one", 2]
 </lion-example>
-<lion-example name="InvalidFunctionCallError" expect="error">
+<lion-example name="UnboundNameError" expect="error">
 ["number/plus", 1, 2]
+</lion-example>
+<lion-example name="InvalidFunctionCallError" expect="error">
+["plus", 1, 2]
 </lion-example>
 <lion-example name="ArithmeticError" expect="error">
 ["number/multiply", 1e308, 10]

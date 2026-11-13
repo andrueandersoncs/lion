@@ -82,7 +82,7 @@
   <dt data-entry="logicFunction"><code>logicFunction(fn)</code></dt>
   <dd><p>Marks a function that takes logic variables as they are, and returns it. Every other function <a href="#logic-waiting">waits</a> when it is called with a logic variable, so mark a function only when it builds a goal from the variables it is given, as a relation does.</p></dd>
   <dt data-entry="LogicForm"><code>new LogicForm(name, parts)</code></dt>
-  <dd><p>A logic form, held the way it is written: <code>new LogicForm("=", [left, right])</code> is the goal <code>["=", left, right]</code> makes, for a logic function to return. The names are <code>"not"</code>, <code>"and"</code>, <code>"or"</code>, <code>"="</code>, <code>"in"</code>, and <code>"find"</code>. A relation call is an <code>Atom</code>, of the same module.</p></dd>
+  <dd><p>A logic form, held the way it is written: <code>new LogicForm("=", [left, right])</code> is the goal <code>["=", left, right]</code> makes, for a logic function to return. The names are <code>"not"</code>, <code>"and"</code>, <code>"or"</code>, <code>"="</code>, <code>"in"</code>, <code>"find"</code>, and <code>"schema/fits?"</code>. A relation call is an <code>Atom</code>, of the same module.</p></dd>
   <dt data-entry="builtBy"><code>builtBy(fn, by, args)</code></dt>
   <dd><p>Records that calling <code>by</code> with <code>args</code> built <code>fn</code>, and returns <code>fn</code>. The function is then written as that call, in messages and snapshots, as the functions that <code>func/partial</code> and the <code>schema</code> module make are.</p></dd>
   <dt data-entry="readsOnlyArguments"><code>readsOnlyArguments(bindings)</code></dt>

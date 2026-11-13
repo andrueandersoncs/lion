@@ -28,9 +28,17 @@
 <h2>Parameters shadow globals</h2>
 <p>A parameter with the same name as a global hides the global inside the lambda's body. Because standard library names contain a <code>/</code>, choosing parameter names without one keeps them from shadowing a library function by accident.</p>
 
+<h2>Strings that name nothing</h2>
+<p>A string that nothing is bound to is itself, which is what lets a program write <code>"open"</code> for a status without any quoting. The cost is that a misspelled name would quietly become a string: <code>["number/ad", 1, 2]</code> would be a call to a string, and <code>"value/intger?"</code> as a schema would be a string that only the same string fits.</p>
+<p>So Lion looks at one more thing. A string of the form <code>module/name</code> that reads as a misspelled name is an error. It reads that way when other names of its module are bound, or when a bound name is a letter or two away, which the error then suggests. Any other string with a slash in it, such as <code>"n/a"</code> or <code>"text/plain"</code>, is data as before.</p>
+<lion-example name="A misspelled function" expect="error">
+["array/map", ["array/make", 1, "two"], "value/numbr?"]
+</lion-example>
+<p>A host that adds functions under its own module gets the same check for them: once <code>"shop/stock"</code> is bound, <code>"shop/stok"</code> is an error. Inside <code>quote</code>, a string is always data.</p>
+
 <h2>What lasts between runs</h2>
 <p>Names last for one run. Each run, whether a call to <code>run</code>, one file on the command line, or one example on this page, starts with a fresh environment, so nothing a program defines leaks into the next.</p>
-<p>The logic database is different. It is not part of the environment; it is a separate store that a host can pass to several runs, and that the command line keeps in a file. Relations declared in a shared database are bound by name in every run that uses it, unless the host binds the same name. This split is deliberate: definitions are code, and code is re-run, while facts are state, and state persists.</p>
+<p>The logic database is different. It is not part of the environment; it is a separate store that a host can pass to several runs, and that the command line keeps in a file. Relations and <a href="#form-schema">schemas</a> declared in a shared database are bound by name in every run that uses it, unless the host binds the same name. This split is deliberate: definitions are code, and code is re-run, while facts are state, and state persists.</p>
 
 <h2>Functions are Effects</h2>
 <p>A Lion function returns an <a href="https://effect.website" target="_blank" rel="noopener">Effect</a>, a description of work, rather than a plain value. Evaluation is itself an Effect, so a function can do anything an Effect can, such as wait for a network call or fail with a typed error, and the evaluator composes it with everything else. Host functions may return plain values or Effects; Lion handles both. This is why <a href="#module-func"><code>func/callback</code></a> exists: it turns a Lion function into an ordinary JavaScript function for APIs that expect one.</p>

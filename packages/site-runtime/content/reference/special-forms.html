@@ -95,4 +95,14 @@
    ["lambda", ["u"], ["string/concat", "user ", ["object/get", "u", "name"]]]],
   ["lambda", ["other"], "unknown"]]
 </lion-example>
+<p>A plain value, a list, and a schema built by the <a href="#module-schema"><code>schema</code> module</a> are schemas too. The first pair here asks for a record with one key, so it does not fit; the third opens the record and takes it:</p>
+<lion-example name="match on schemas">
+["match", ["quote", {"type": "refund", "amount": 5, "lines": [1, 2]}],
+  [{"type": "refund"}, ["lambda", ["m"], "a refund and nothing else"]],
+  [["schema/open", {"type": "sale"}], ["lambda", ["m"], "a sale"]],
+  [["schema/open", {"type": ["schema/anyOf", "refund", "void"],
+                    "lines": ["array/make", "value/number?", "value/number?"]}],
+   ["lambda", ["m"], ["object/get", "m", "amount"]]],
+  ["lambda", ["m"], "something else"]]
+</lion-example>
 </article>

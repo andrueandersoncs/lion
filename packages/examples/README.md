@@ -13,6 +13,7 @@ The example script demonstrates:
 - nested lookup with `object/get-path`
 - TypeSafe AI Jev evaluation from a standalone Lion JSON program
 - relations, recursive rules, negation, queries, and `why` explanations in `logic.json`
+- schemas, patterns that take data apart, and a relation that refuses rows that do not fit in `schemas.json`
 
 ## Run
 
@@ -26,6 +27,12 @@ Run the logic example:
 
 ```bash
 bun run --cwd packages/examples logic
+```
+
+Run the schemas example:
+
+```bash
+bun run --cwd packages/examples schemas
 ```
 
 Run the Jev example with the API key stored in `packages/typesafe-ai/.env`:

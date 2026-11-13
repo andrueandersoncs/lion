@@ -1,0 +1,127 @@
+[
+  "begin",
+
+  [
+    "schema",
+    "Line",
+    {
+      "sku": "value/string?",
+      "qty": [
+        "schema/allOf",
+        "value/integer?",
+        ["lambda", ["n"], ["number/greaterThan", "n", 0]]
+      ]
+    }
+  ],
+  [
+    "schema",
+    "Order",
+    {
+      "id": "value/integer?",
+      "status": ["schema/anyOf", "open", "shipped"],
+      "lines": ["schema/arrayOf", "Line"],
+      "note": ["schema/optional", "value/string?"]
+    }
+  ],
+  [
+    "schema",
+    "Shelved",
+    { "id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"] }
+  ],
+
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id", "status"], { "key": "id", "schema": "Shelved" }],
+  ["relation", "rejected", ["id", "where"]],
+  ["relation", "line", ["order", "sku", "qty"]],
+  ["relation", "units", ["sku", "total"]],
+
+  [
+    "fact",
+    [
+      "inbox",
+      [
+        "quote",
+        {
+          "id": 1,
+          "status": "open",
+          "note": "gift",
+          "lines": [{ "sku": "tea", "qty": 2 }, { "sku": "cup", "qty": 1 }]
+        }
+      ]
+    ],
+    ["inbox", ["quote", { "id": 2, "status": "opne", "lines": [] }]],
+    [
+      "inbox",
+      [
+        "quote",
+        { "id": 3, "status": "shipped", "lines": [{ "sku": "tea", "qty": 5 }] }
+      ]
+    ],
+    [
+      "inbox",
+      [
+        "quote",
+        {
+          "id": 4,
+          "status": "open",
+          "lines": [{ "sku": "tea", "qty": 0 }],
+          "rush": true
+        }
+      ]
+    ]
+  ],
+
+  [
+    "rule",
+    ["order", "?id", "?status"],
+    [
+      "inbox",
+      [
+        "schema/allOf",
+        "Order",
+        ["schema/open", { "id": "?id", "status": "?status" }]
+      ]
+    ]
+  ],
+
+  [
+    "rule",
+    ["rejected", "?id", ["object/get", "?problem", "path"]],
+    ["inbox", "?doc"],
+    ["schema/fits?", "?doc", ["schema/open", { "id": "?id" }]],
+    ["in", "?problem", ["schema/problems", "?doc", "Order"]]
+  ],
+
+  [
+    "rule",
+    ["line", "?order", "?sku", "?qty"],
+    [
+      "inbox",
+      [
+        "schema/allOf",
+        "Order",
+        ["schema/open", { "id": "?order", "lines": "?lines" }]
+      ]
+    ],
+    ["in", { "sku": "?sku", "qty": "?qty" }, "?lines"]
+  ],
+
+  [
+    "rule",
+    ["units", "?sku", ["aggregate/sum", "?qty"]],
+    ["line", "?order", "?sku", "?qty"]
+  ],
+
+  {
+    "orders": ["query", ["order", "?id", "?status"], { "order": "id" }],
+    "rejected": ["query", ["rejected", "?id", "?where"], { "order": "id" }],
+    "units": ["query", ["units", "?sku", "?total"], { "order": "sku" }],
+    "shipped": ["find", "?id", ["order", "?id", "shipped"]],
+    "rush": [
+      "find",
+      "?id",
+      ["inbox", ["schema/open", { "id": "?id", "rush": true }]]
+    ],
+    "why order 1": ["why", ["order", 1, "open"]]
+  }
+]
