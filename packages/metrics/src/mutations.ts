@@ -1128,6 +1128,27 @@ export const MUTATIONS: readonly Mutation[] = [
     ...REASONING_TESTS,
   },
   {
+    name: "a question the user must decide is settled by any source",
+    file: reasoning("assets/core.json"),
+    find: '["not", ["observed", "?_", "?of", "?_", "?q", "?_"]]',
+    replace: '["not", ["observed", "?_", "?_", "?_", "?q", "?_"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the user's own answer counts as one the agent presumed",
+    file: reasoning("assets/core.json"),
+    find: '["not", ["=", "?source", "?of"]]',
+    replace: '["value/any?", "?source"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the recorder leaves out the questions to ask",
+    file: reasoning("scripts/record.mjs"),
+    find: "...(notes.ask ?? []).map((asked) => [",
+    replace: "...[].map((asked) => [",
+    ...REASONING_TESTS,
+  },
+  {
     name: "why leaves out the arithmetic a rule did",
     file: core("logic/model.ts"),
     find: "        out.push({ check: instantiate(literal, vars) });",

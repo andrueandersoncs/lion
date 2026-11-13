@@ -97,6 +97,8 @@ interface Belief {
 }
 
 interface World {
+  /** Questions only one source may settle, and that source's id. */
+  readonly asked: readonly (readonly [string, string])[];
   readonly beliefs: readonly Belief[];
   readonly needed: readonly string[];
   readonly observations: readonly Observation[];
@@ -142,6 +144,9 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
       { maxLength: 3 }
     ),
     needed: Arbitrary.array(question, { maxLength: 2 }),
+    asked: Arbitrary.array(Arbitrary.all([question, between(0, 4)]), {
+      maxLength: 2,
+    }),
     observations: Arbitrary.array(
       Arbitrary.all({
         question,
@@ -165,7 +170,7 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
       maxLength: 4,
     }),
   }),
-  ({ beliefs, needed, observations, problem, sources, versions }) => {
+  ({ asked, beliefs, needed, observations, problem, sources, versions }) => {
     const named = sources.map((source, at) => ({
       about: Object.fromEntries(
         source.about.map(([path, held]) => [PATHS[path] as string, `h${held}`])
@@ -174,6 +179,12 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
       kind: source.kind,
     }));
     return {
+      // Of the user, who has said nothing, or of one of the sources.
+      asked: unique(
+        asked.map(
+          ([q, of]) => [q, of === 4 ? "user" : `s${of % named.length}`] as const
+        )
+      ),
       beliefs: beliefs.map((belief, at) => ({
         explains: belief.explains > 0 && problem[0] > 0,
         id: `b${at}`,
@@ -273,6 +284,7 @@ const programOf = (given: World) => [
       ...(belief.explains ? [["explains", quoted(belief.id), "p"]] : []),
     ]),
     ...given.needed.map((q) => ["needed", quoted(record(q))]),
+    ...given.asked.map(([q, of]) => ["ask", quoted(record(q)), quoted(of)]),
     ...given.versions.map((version) => [
       "version",
       quoted(version.name),
@@ -301,6 +313,8 @@ const programOf = (given: World) => [
     hearsay: ask(["?q", "?v"], ["hearsay", "?q", "?v"]),
     holds: ["find", "?b", ["holds", "?b"]],
     open: ["find", "?q", ["open", "?q"]],
+    presumed: ask(["?q", "?v", "?o"], ["presumed", "?q", "?v", "?o"]),
+    undecided: ask(["?q", "?of"], ["undecided", "?q", "?of"]),
     overruled: ask(["?o", "?by"], ["overruled", "?o", "?by"]),
     remaining: ask(["?p", "?bs"], ["remaining", "?p", "?bs"]),
     settled: ask(["?p", "?b"], ["settled", "?p", "?b"]),
@@ -468,6 +482,20 @@ const expected = (given: World) => {
     open: given.needed
       .filter((q) => !answers.some((o) => o.question === q))
       .map(record),
+    // A decision is the asked source's word in any version: files do not age it.
+    presumed: unique(
+      given.asked.flatMap(([q, of]) =>
+        given.observations
+          .filter((o) => o.question === q && o.source !== of)
+          .map((o) => [record(q), o.value, o.id])
+      )
+    ),
+    undecided: given.asked
+      .filter(
+        ([q, of]) =>
+          !given.observations.some((o) => o.question === q && o.source === of)
+      )
+      .map(([q, of]) => [record(q), of]),
     overruled: present?.overruled ?? [],
     remaining:
       given.problem !== undefined && remaining.length > 0
@@ -596,6 +624,10 @@ describe("the reasoning skill's rival explanations", () => {
 // --------------------------------------------------------------- the recorder
 
 interface Notes {
+  readonly ask?: readonly {
+    readonly of: string;
+    readonly question: unknown;
+  }[];
   readonly beliefs: readonly {
     readonly explains: readonly string[];
     readonly id: string;
@@ -692,6 +724,7 @@ describe("the reasoning skill's recorder", () => {
             predicts: [{ question: { [say]: id }, value: [say, null] }],
             statement: say,
           })),
+          ask: ids.map((id) => ({ of: say, question: { [say]: id } })),
           needed: [{ [say]: say }],
           observations: ids.map((id, at) => ({
             id: `o-${id}`,
@@ -729,6 +762,7 @@ describe("the reasoning skill's recorder", () => {
             beliefs: ask(["?b", "?s"], ["belief", "?b", "?s"]),
             explains: ask(["?b", "?p"], ["explains", "?b", "?p"]),
             needed: ["find", "?q", ["needed", "?q"]],
+            asked: ask(["?q", "?of"], ["ask", "?q", "?of"]),
             observed: ask(
               ["?o", "?s", "?quote", "?q", "?v"],
               ["observed", "?o", "?s", "?quote", "?q", "?v"]
@@ -769,6 +803,7 @@ describe("the reasoning skill's recorder", () => {
               belief.explains.map((problem) => [belief.id, problem])
             ),
             needed: notes.needed,
+            asked: (notes.ask ?? []).map((item) => [item.question, item.of]),
             observed: notes.observations.map((seen) => [
               seen.id,
               seen.source,

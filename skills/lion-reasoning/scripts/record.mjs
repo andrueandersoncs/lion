@@ -17,7 +17,11 @@
 //    "beliefs": [{"id": "b1", "statement": "…",
 //                 "predicts": [{"question": {…}, "value": …}],
 //                 "explains": ["p1"]}],
-//    "needed": [{"cause of": "p1"}]}
+//    "needed": [{"cause of": "p1"}],
+//    "ask": [{"question": {"keep": "old date format"}, "of": "user"}]}
+//
+// `ask` lists questions only one source may settle, the user unless `of`
+// names another: what they want, or which of two meanings they meant.
 //
 // A source run with see.mjs needs no entry in "sources": it is taken from
 // seen/<id>.json, with the hashes of what it depended on when it ran. A
@@ -149,6 +153,11 @@ export const stepOf = (notes, sources, version) => [
         .map((problem) => ["explains", quoted(belief.id), quoted(problem)]),
     ]),
     ...(notes.needed ?? []).map((question) => ["needed", quoted(question)]),
+    ...(notes.ask ?? []).map((asked) => [
+      "ask",
+      quoted(asked.question),
+      quoted(asked.of ?? "user"),
+    ]),
   ],
   "recorded",
 ];
@@ -253,7 +262,7 @@ const main = (path) => {
   }
   const count = (name) => (notes[name] ?? []).length;
   console.log(
-    `${step}: ${sources.length} sources, ${count("observations")} observations, ${count("problems")} problems, ${count("beliefs")} beliefs, ${count("needed")} needed; every quote found. The model has ${result.steps} steps.`
+    `${step}: ${sources.length} sources, ${count("observations")} observations, ${count("problems")} problems, ${count("beliefs")} beliefs, ${count("needed")} needed, ${count("ask")} to ask; every quote found. The model has ${result.steps} steps.`
   );
 };
 

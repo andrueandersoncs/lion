@@ -32,6 +32,7 @@
   ],
   ["relation", "explains", ["belief", "problem"]],
   ["relation", "needed", ["question"]],
+  ["relation", "ask", ["question", "of"]],
   ["relation", "violated", ["belief", "witness"]],
   ["relation", "version", ["name", "number"]],
   ["relation", "since", ["belief", "number"], { "key": "belief" }],
@@ -74,6 +75,8 @@
   ["relation", "unexplained", ["problem"]],
   ["relation", "settled", ["problem", "belief"]],
   ["relation", "open", ["question"]],
+  ["relation", "undecided", ["question", "of"]],
+  ["relation", "presumed", ["question", "value", "observation"]],
 
   [
     "invariant",
@@ -163,6 +166,15 @@
   [
     "invariant",
     ["and", ["needed", "?question"], ["not", ["value/object?", "?question"]]],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["ask", "?question", "?_"],
+      ["not", ["value/object?", "?question"]]
+    ],
     { "assert": "none" }
   ],
 
@@ -362,6 +374,19 @@
     ["open", "?q"],
     ["needed", "?q"],
     ["not", ["answer", "?q", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["undecided", "?q", "?of"],
+    ["ask", "?q", "?of"],
+    ["not", ["observed", "?_", "?of", "?_", "?q", "?_"]]
+  ],
+  [
+    "rule",
+    ["presumed", "?q", "?value", "?o"],
+    ["ask", "?q", "?of"],
+    ["observed", "?o", "?source", "?_", "?q", "?value"],
+    ["not", ["=", "?source", "?of"]]
   ],
   "ready"
 ]

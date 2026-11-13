@@ -23,6 +23,10 @@ Figures that can be checked: numbers read from the text they came from, records 
 - A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays.
 - `replay.mjs` runs the Lion command `LION_CLI` names, as the reasoning skill's scripts do.
 
+### Reasoning skill
+
+- Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.
+
 ## 2026-11-13 — lion-reasoning skill
 
 No package changed. `skills/lion-reasoning` is a new agent skill that uses Lion as the working memory of an agent's reasoning while it works, and the README has a section on it.

@@ -50,5 +50,17 @@
     "query",
     ["hearsay", "?question", "?value"]
   ],
-  "What does the task still need?": ["find", "?question", ["open", "?question"]]
+  "What does the task still need?": [
+    "find",
+    "?question",
+    ["open", "?question"]
+  ],
+  "What must the user decide, that they have not?": [
+    "query",
+    ["undecided", "?question", "?of"]
+  ],
+  "What did I settle that was the user's to decide?": [
+    "query",
+    ["presumed", "?question", "?value", "?observation"]
+  ]
 }

@@ -122,6 +122,18 @@ When a belief needs more than predictions to be tested, such as "no test covers 
 
 `needed` lists questions that observations should answer before you are done, such as `{"passes": "full test suite"}` or `{"builds": "docs site"}`. The model lists the ones no current observation answers.
 
+### What only the user decides
+
+Some questions are not yours to settle: what the user wants when the request allows two readings ("make the build faster": the development build or the release build?), a trade-off that is theirs to make, a word in the task that means two things. Answering one yourself and carrying on is the mistake that breaks everything built on it, and it never shows as a contradiction, because nothing you observe can disagree with a choice.
+
+List each such question in the notes under `ask`, with whose word settles it, the user unless you say otherwise:
+
+```json
+{"ask": [{"question": {"build to speed up": "which"}, "of": "user"}]}
+```
+
+Then ask. When the user answers, save their words as `seen/user.txt` and record them as an observation of the source `user`, kind `told`. Until then the question is `undecided`. If anything else answers it, a file you read, a command you ran, a doc, or your own guess, it shows as `presumed`, so a choice you made for the user is listed instead of hidden. Their answer is about what they want, not about the files, so it does not go out of date when files change.
+
 ### Recording
 
 ```bash
@@ -152,6 +164,8 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
 | `settled(problem, belief)` | A problem with one explanation left, every prediction of which the evidence bore out. |
 | `unexplained(problem)` | A problem whose every explanation failed. You need a new one. |
 | `open(question)` | What the task needs and no current observation answers. |
+| `undecided(question, of)` | A question only `of` may settle, usually the user, that they have not answered. Ask them. |
+| `presumed(question, value, observation)` | An answer to such a question from anyone else: a choice made for the user. |
 
 ## The loop
 
@@ -177,6 +191,8 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
    - An **overruled** note, doc, or memory: the thing it described changed, or it was wrong. Say so, and fix it if it is yours to fix.
    - **Unexplained**: every explanation failed. Form a new one from what the evidence does show.
    - **Disputed**: find out why before you pick one.
+   - **Undecided**: stop and ask the user before any work depends on it. If you cannot ask, say in your answer which way you went and that it was their call.
+   - **Presumed**: you, a file, or a doc settled what was the user's to decide. Ask them, and say so.
 5. **Grow the model.** When you form a belief, record it then. When you check the same thing by hand a second time, write a rule that derives it (a step of your own, then `replay.mjs`). When you meet a kind of fact the checks do not cover, add a question to `checks.json`.
 6. **Change things.** Edit, fix, refactor. The model notices by itself: what depended on the files you changed goes out of date, and the next `ask` shows it.
 7. **Verify** by observing again after the change. `changed` shows what your work changed, and `open` shows what is still unverified.
@@ -193,7 +209,7 @@ Before you tell the user what you found or did:
      | jq -c '.. | objects | select(.given) | .fact'
    ```
 
-3. **State the limits the model shows**: stale evidence you did not observe again, predictions still untested, problems not settled, what rests on hearsay, what was overruled, and what `open` still lists. "Not verified since the last edit" is a fact worth stating.
+3. **State the limits the model shows**: stale evidence you did not observe again, predictions still untested, problems not settled, what rests on hearsay, what was overruled, what `open` still lists, and what the user has not decided or what was decided for them (`undecided`, `presumed`). "Not verified since the last edit" is a fact worth stating.
 
 Keep the task folder. A follow-up question, a later session, or another agent can ask the model instead of starting over.
 
