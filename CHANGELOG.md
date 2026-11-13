@@ -41,6 +41,7 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - A function made by `func/partial` from a logic variable waits for the variable when a rule or query holds it, as a lambda that mentions the variable does. Handed to `array/map` in a query, it used to fail with `has no value yet`.
 - A goal-directed query that hands a rule-derived relation a function, for example through a variable, is answered as in full evaluation. It used to fail with `Rule undefined produced a value that is not JSON data`.
 - A graph algorithm's input that a variable binds to something that is not data fails with the message an input written in place gets.
+- Any module of `@lionlang/core` can be the first one loaded. Importing the module of a special form before the evaluator failed with `Cannot access 'evaluateLambda' before initialization`, and whether the built package loaded at all depended on the order the bundler happened to choose.
 
 ## 2026-11-12 — @lionlang/core 0.6.0, @lionlang/cli 0.5.0
 

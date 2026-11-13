@@ -32,33 +32,37 @@ import {
 import type { LionArrayExpressionType } from "@/schemas/lion-expression.ts";
 import type { EvaluateResult } from "@/types/evaluation";
 
-const SPECIAL_FORMS: Record<
-  SpecialFormName,
-  (expression: never) => EvaluateResult
-> = {
-  begin: evaluateBegin,
-  define: evaluateDefine,
-  eval: evaluateEval,
-  quote: evaluateQuote,
-  lambda: evaluateLambda,
-  cond: evaluateCond,
-  match: evaluateMatch,
-  relation: evaluateRelation,
-  schema: evaluateSchema,
-  rule: evaluateRule,
-  fact: evaluateFact,
-  retract: evaluateRetract,
-  query: evaluateQuery,
-  find: evaluateFind,
-  why: evaluateWhy,
-  not: evaluateNot,
-  and: evaluateAnd,
-  or: evaluateOr,
-  "=": evaluateUnify,
-  in: evaluateIn,
-  snapshot: evaluateSnapshot,
-  invariant: evaluateInvariant,
-};
+/**
+ * How each special form is evaluated. Each entry calls its form's evaluator
+ * when a form is evaluated, and does not hold it: the forms import the
+ * evaluator, so this module can load before the forms are defined,
+ * whichever module a program or a bundler happens to load first.
+ */
+const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
+  {
+    begin: (form) => evaluateBegin(form),
+    define: (form) => evaluateDefine(form),
+    eval: (form) => evaluateEval(form),
+    quote: (form) => evaluateQuote(form),
+    lambda: (form) => evaluateLambda(form),
+    cond: (form) => evaluateCond(form),
+    match: (form) => evaluateMatch(form),
+    relation: (form) => evaluateRelation(form),
+    schema: (form) => evaluateSchema(form),
+    rule: (form) => evaluateRule(form),
+    fact: (form) => evaluateFact(form),
+    retract: (form) => evaluateRetract(form),
+    query: (form) => evaluateQuery(form),
+    find: (form) => evaluateFind(form),
+    why: (form) => evaluateWhy(form),
+    not: (form) => evaluateNot(form),
+    and: (form) => evaluateAnd(form),
+    or: (form) => evaluateOr(form),
+    "=": (form) => evaluateUnify(form),
+    in: (form) => evaluateIn(form),
+    snapshot: () => evaluateSnapshot(),
+    invariant: (form) => evaluateInvariant(form),
+  };
 
 /**
  * An empty array is itself. An array that starts with a special form's name
