@@ -42,7 +42,16 @@ const CORE = [
   "assumption",
   "violated",
   "unread",
+  "located",
+  "unquoted",
+  "restated",
+  "base",
+  "ambiguous",
+  "decided",
+  "set_aside",
 ];
+/** How much of a source's text shows on each side of a quote. */
+const PASSAGE = 600;
 const KINDS = [
   ["primary", "First-hand sources"],
   ["secondary", "Reporting and analysis"],
@@ -323,6 +332,9 @@ const pushTo = (map, key, item) =>
 const index = () => {
   model.sources = new Map(rowsOf("source").map((row) => [row.id, row]));
   model.claims = new Map(rowsOf("claim").map((row) => [row.id, row]));
+  model.located = new Map(
+    rowsOf("located").map((row) => [row.claim, row.where])
+  );
   model.credits = new Map();
   model.claimsOf = new Map();
   for (const row of rowsOf("attributed")) {
@@ -444,12 +456,66 @@ const sourceLine = (source, extra = []) =>
 const dotted = (parts) =>
   parts.flatMap((part, at) => (at === 0 ? [part] : [" · ", part]));
 
+/** The saved text of a source, whole, scrolled to the quote marked in it. */
+const wholeText = (text, start, end) => {
+  const mark = el("mark", {}, text.slice(start, end));
+  const box = el(
+    "div",
+    { class: "passage whole" },
+    text.slice(0, start),
+    mark,
+    text.slice(end)
+  );
+  requestAnimationFrame(() => {
+    box.scrollTop = Math.max(0, mark.offsetTop - box.clientHeight / 3);
+  });
+  return box;
+};
+
 /**
- * One statement: the source's words, whose they are, and whom the source
- * credits for them. `inSource` leaves the source out, where it is already
- * the heading, and says how the statement was recorded instead.
+ * Where a quote stands in the text saved when its source was read: the
+ * paragraph around it, with the quote marked, and the whole text on request.
+ */
+const passage = (claim) => {
+  const text = data.texts?.[claim.source];
+  const at = data.marks?.[claim.id];
+  if (typeof text !== "string" || !Array.isArray(at)) {
+    return;
+  }
+  const [start, end] = at;
+  const before = text.lastIndexOf("\n\n", start);
+  const after = text.indexOf("\n\n", end);
+  const from = Math.max(before === -1 ? 0 : before + 2, start - PASSAGE);
+  const to = Math.min(after === -1 ? text.length : after, end + PASSAGE);
+  const whole = disclosure("Show the whole saved text", () =>
+    wholeText(text, start, end)
+  );
+  return [
+    el(
+      "div",
+      { class: "passage" },
+      from > 0 ? "…" : "",
+      text.slice(from, start),
+      el("mark", {}, text.slice(start, end)),
+      text.slice(end, to),
+      to < text.length ? "…" : ""
+    ),
+    whole.button,
+    whole.body,
+  ];
+};
+
+/**
+ * One statement: the source's words, whose they are, where in the source
+ * they stand, and whom the source credits for them. `inSource` leaves the
+ * source out, where it is already the heading, and says how the statement
+ * was recorded instead.
  */
 const statement = (claim, inSource = false) => {
+  const where = model.located.get(claim.id);
+  const shownInSource =
+    data.marks?.[claim.id] &&
+    disclosure("Show it in the source", () => passage(claim));
   const credits = (model.credits.get(claim.id) ?? []).map((to) =>
     sourceName(sourceOf(to))
   );
@@ -470,10 +536,16 @@ const statement = (claim, inSource = false) => {
       "figcaption",
       {},
       inSource
-        ? el("span", { class: "coded" }, "Recorded as: ", plain(claim.says))
-        : dotted(sourceLine(sourceOf(claim.source))),
+        ? [
+            where && el("span", { class: "coded" }, where),
+            el("span", { class: "coded" }, "Recorded as: ", plain(claim.says)),
+          ]
+        : dotted(
+            [...sourceLine(sourceOf(claim.source)), where].filter(Boolean)
+          ),
       credit
-    )
+    ),
+    shownInSource && [shownInSource.button, shownInSource.body]
   );
 };
 
@@ -685,13 +757,66 @@ const kindOf = (node) => {
 const claimOfFact = (fact) =>
   model.claims.get(unquote(fact[1 + columnOf("claim", "id")]));
 
+const OPERATORS = {
+  "number/add": "+",
+  "number/subtract": "−",
+  "number/multiply": "×",
+  "number/divide": "÷",
+  "number/power": "^",
+};
+
+/** A step a rule computed, with the values it was given: `["=", 9, [...]]`. */
+const isWorked = (check) =>
+  Array.isArray(check) &&
+  check[0] === "=" &&
+  typeof unquote(check[1]) === "number" &&
+  Array.isArray(check[2]);
+
+/** Arithmetic as it is written by hand: 9 = round(365 × (4,946 ÷ 210,352)). */
+const formula = (expression, nested = false) => {
+  const value = unquote(expression);
+  if (typeof value === "number") {
+    return value.toLocaleString("en-US", { maximumFractionDigits: 20 });
+  }
+  if (!(Array.isArray(value) && typeof value[0] === "string")) {
+    return compact(value);
+  }
+  const [head, ...args] = value;
+  if (head === "=") {
+    return `${formula(args[0])} = ${formula(args[1])}`;
+  }
+  const operator = OPERATORS[head];
+  if (operator) {
+    const text = args.map((arg) => formula(arg, true)).join(` ${operator} `);
+    return nested ? `(${text})` : text;
+  }
+  const name = head.slice(head.lastIndexOf("/") + 1);
+  return `${name}(${args.map((arg) => formula(arg)).join(", ")})`;
+};
+
+/** The arithmetic a finding's own rule did, as the reader would check it. */
+const workedOut = (explanation) =>
+  (explanation.because ?? [])
+    .filter((reason) => isRecord(reason) && isWorked(reason.check))
+    .map((reason) =>
+      el(
+        "p",
+        { class: "line" },
+        "Worked out as ",
+        el("span", { class: "worked" }, formula(reason.check)),
+        "."
+      )
+    );
+
 /** The full tree: every rule and row between a finding and what was recorded. */
 const whyNode = (node) => {
   if (!isRecord(node)) {
     return el("li", {}, el("span", { class: "json" }, JSON.stringify(node)));
   }
   if ("check" in node) {
-    return tagged("checked", JSON.stringify(node.check));
+    return isWorked(node.check)
+      ? tagged("worked out", formula(node.check))
+      : tagged("checked", JSON.stringify(node.check));
   }
   if ("absent" in node) {
     return tagged("nothing matches", factText(node.absent));
@@ -730,6 +855,12 @@ const claimsUnder = (node, found = new Map()) => {
       found.set(claim.id, claim);
     }
   }
+  // A question's base only names the question: any one answer to it shows
+  // that the question was asked, so what it cites is not what a finding
+  // rests on. The full tree still shows it.
+  if (Array.isArray(node.fact) && node.fact[0] === "base") {
+    return found;
+  }
   for (const reason of reasonsOf(node)) {
     claimsUnder(reason, found);
   }
@@ -751,6 +882,7 @@ const reasons = (explanation) => {
         ? "This follows from the model's rules without resting on a recorded statement."
         : `This rests on ${counted(claims.length, "statement")} from ${counted(sources.size, "source")}.`
     ),
+    workedOut(explanation),
     claims.map((claim) => statement(claim)),
     tree.button,
     tree.body,
@@ -1074,6 +1206,151 @@ const misquotes = (keep) => {
         );
       }),
       "misquote"
+    )
+  );
+};
+
+/** A reading as words: a value, or "not stated" for a source that does not say. */
+const readingText = (value) => (value === null ? "not stated" : plain(value));
+
+/** The statements that answer any reading of a question. */
+const claimsForBase = (base) => {
+  const questions = new Set(
+    rowsOf("base")
+      .filter((row) => canonical(row.base) === canonical(base))
+      .map((row) => canonical(row.question))
+  );
+  const ids = rowsOf("answer")
+    .filter((row) => questions.has(canonical(row.question)))
+    .map((row) => row.claim);
+  return [...new Set(ids)].map((id) => model.claims.get(id)).filter(Boolean);
+};
+
+const undecided = (keep) => {
+  const rows = rowsOf("ambiguous").filter((row) =>
+    keep({ question: row.base })
+  );
+  return group(
+    "Needs your decision",
+    rows.length,
+    "Sources answer these questions in more than one sense, such as two ways of counting the same thing. The research did not pick one for you: say which you mean, and every answer will use it.",
+    capped(
+      rows.map((row) =>
+        finding(
+          row.base,
+          [
+            [
+              verdict(`${counted(row.values.length, "reading")}`, "warn"),
+              ` of ${row.key}: `,
+              listed(row.values.map(readingText)),
+              ".",
+            ],
+          ],
+          claimsForBase(row.base)
+        )
+      ),
+      "question"
+    )
+  );
+};
+
+const choices = (keep) => {
+  const rows = rowsOf("decided");
+  const aside = rowsOf("set_aside").filter(keep);
+  return group(
+    "What you chose",
+    rows.length,
+    "Where sources answer in more than one sense, your choice says which answers count. Answers in another sense are set aside, not deleted.",
+    el(
+      "ul",
+      { class: "findings" },
+      rows.map((row) => {
+        const off = aside.filter((other) => other.key === row.key);
+        return el(
+          "li",
+          { class: "finding" },
+          el(
+            "div",
+            { class: "what" },
+            `${sentence(row.key)}: ${plain(row.value)}`
+          ),
+          el("p", { class: "line" }, "In your words: “", row.words, "”"),
+          off.length > 0 &&
+            el(
+              "p",
+              { class: "line" },
+              verdict(`${counted(off.length, "answer")} set aside`, "warn"),
+              ": ",
+              listed(
+                off.map(
+                  (other) =>
+                    `${phrase(other.question).main} (${row.key} ${readingText(other.stated)})`
+                )
+              ),
+              "."
+            )
+        );
+      })
+    )
+  );
+};
+
+const restatements = (keep) => {
+  const rows = rowsOf("restated").filter(keep);
+  return group(
+    "Figures their publisher changed",
+    rows.length,
+    "A publisher gave one answer and later another. Its later word counts; the earlier one, and any source that only repeats it, is set aside.",
+    capped(
+      rows.map((row) =>
+        finding(
+          row.question,
+          [
+            [
+              row.publisher,
+              " first said ",
+              verdict(plain(row.before), "bad"),
+              " and later ",
+              verdict(plain(row.after), "good"),
+              ".",
+            ],
+          ],
+          [
+            ...claimsFor(row.question, row.before),
+            ...claimsFor(row.question, row.after),
+          ].filter(
+            (claim) => sourceOf(claim.source).publisher === row.publisher
+          )
+        )
+      ),
+      "finding"
+    )
+  );
+};
+
+const unquotedFigures = (keep) => {
+  const rows = rowsOf("unquoted").filter((row) =>
+    keep({ question: model.claims.get(row.claim)?.says })
+  );
+  return group(
+    "Figures not written in the words quoted",
+    rows.length,
+    "Each figure was recorded from a source, but the words quoted do not write it. Whoever recorded it may have converted or worked it out instead of copying it, so check it against the quote.",
+    capped(
+      rows.map((row) => {
+        const claim = model.claims.get(row.claim);
+        return el(
+          "li",
+          { class: "finding" },
+          el(
+            "div",
+            { class: "what" },
+            `${sentence(label(row.field))}: ${plain(row.value)}`
+          ),
+          claim && statement(claim)
+        );
+      }),
+      "figure"
     )
   );
 };
@@ -1464,18 +1741,26 @@ const tablesView = async () => {
 const TRUST = {
   alone,
   assumptions,
+  choices,
   confirmed,
   disputed: disagreed,
   misquoted: misquotes,
+  restated: restatements,
   secondhand: relayedOnly,
+  undecided,
+  unquoted: unquotedFigures,
   unread: notRead,
 };
 const TRUST_ORDER = [
+  "undecided",
   "confirmed",
   "disputed",
+  "restated",
   "alone",
   "secondhand",
   "misquoted",
+  "unquoted",
+  "choices",
   "assumptions",
   "unread",
 ];

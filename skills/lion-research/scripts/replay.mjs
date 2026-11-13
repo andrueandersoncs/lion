@@ -23,6 +23,9 @@ import {
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/** What separates the words of a command. */
+const SPACES = /\s+/;
+
 const SOURCE = /\.src\.json$/;
 const assets = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 const helper = (name) =>
@@ -48,7 +51,16 @@ export const expanded = (program, helpers) => {
     : program;
 };
 
+/**
+ * Runs the Lion command: the one `LION_CLI` names, such as
+ * "bun ~/lion/packages/cli/dist/bin.mjs", or else the published one.
+ */
 const lion = (args) => {
+  const named = process.env.LION_CLI?.trim().split(SPACES) ?? [];
+  if (named.length > 0 && named[0] !== "") {
+    const [command = "", ...rest] = named;
+    return spawnSync(command, [...rest, ...args], { encoding: "utf8" });
+  }
   const first = spawnSync("bunx", ["@lionlang/cli", ...args], {
     encoding: "utf8",
   });

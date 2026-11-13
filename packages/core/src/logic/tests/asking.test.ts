@@ -325,7 +325,8 @@ describe("a goal with a relation in it", () => {
             );
           }
           if (v === "held") {
-            expect(tests.map(([kind]) => kind)).toEqual(["check"]);
+            // The `in` that chose x held too, so it is a check like the goal.
+            expect(tests.map(([kind]) => kind)).toEqual(["check", "check"]);
           }
         }
       }),

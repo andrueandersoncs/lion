@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased — @lionlang/core
+
+Figures that can be checked: numbers read from the text they came from, records changed by making new ones, and explanations that show their arithmetic.
+
+### Added
+
+- `["number/fromString", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `["number/fromString", "1,234,567.5", ","]` is `1234567.5`.
+- `["string/numbers", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `"fiscal 2023-24"` holds 2023 and 24.
+- `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.
+- Like every library function, each waits for a logic variable and refuses a call with another number of arguments.
+
+### Changed
+
+- `why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `["=", "?ratio", ["number/divide", "?a", "?b"]]`, shows as `{"check": ["=", 0.25, ["number/divide", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.
+
+### Research skill
+
+- The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).
+- The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows "Worked out as" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.
+- `page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both.
+- A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays.
+- `replay.mjs` runs the Lion command `LION_CLI` names, as the reasoning skill's scripts do.
+
 ## 2026-11-13 — lion-reasoning skill
 
 No package changed. `skills/lion-reasoning` is a new agent skill that uses Lion as the working memory of an agent's reasoning while it works, and the README has a section on it.

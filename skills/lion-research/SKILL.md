@@ -27,7 +27,7 @@ bunx @lionlang/cli program.json --database model.json
 
 Without bun, use `npx -y @lionlang/cli` the same way. The command loads `model.json`, runs the program, prints its value as JSON, and saves the model. A program that fails prints `ERROR` and a message, exits with 1, and leaves the model as it was.
 
-The skill needs version 0.8.0 or later: its wording and clock functions use `string/join`, `string/padStart`, and `number/toString` with a separator. `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
+The skill needs version 0.9.0 or later: its core reads the numbers written in a quote with `string/numbers` and takes a question's readings off it with `object/remove`, and its wording and clock functions use `string/join`, `string/padStart`, and `number/toString` with a separator. `bunx` keeps running whatever version it fetched first, so ask for the newest once, before anything else:
 
 ```bash
 bunx @lionlang/cli@latest --version
@@ -79,7 +79,11 @@ You record these:
 | `source(id, url, title, publisher, kind, published)` | A source. `publisher` is who stands behind it; `kind` and `published` are described under [Record each source](#3-record-each-source-as-you-read-it). |
 | `claim(id, source, quote, says)` | One statement by one source: the words that carry it, and a record of what it says. |
 | `attributed(claim, to)` | The source does not say this on its own authority: it credits another source. |
+| `located(claim, where)` | Where in the source the quote stands, as a reader would look for it: `"Page 47, Consolidated Statements of Operations"`. |
 | `assumption(id, statement)` | Something you believe going in. |
+| `reading(key)` | A key of your questions that picks one sense of a word, such as `"basis"` (as reported, or excluding fuel surcharges) or `"period"` (fiscal or calendar). You declare these in the frame. |
+| `context(field)` | A field of `says` whose number comes from where the quote stands, not from its words, such as a date given in the heading. You declare these in the frame. |
+| `decided(key, value, words)` | The reader's choice of a reading, in their own words. |
 
 Your rules add to these two:
 
@@ -92,19 +96,25 @@ And the core derives the rest:
 
 | Relation | Tells you |
 |---|---|
-| `backing(question, value, publishers)` | The publishers who give this answer first-hand, in a claim credited to nobody else. |
+| `unquoted(claim, field, value)` | A number in a claim's `says` that its quote does not write. The figure was converted or worked out by whoever recorded it, not copied. |
+| `restated(question, publisher, before, after)` | A publisher answered a question, and in a later source answered it otherwise. Its latest dated word counts. |
+| `withdrawn(question, value)` | An answer its publisher restated that nobody else still gives first-hand. Relays of it do not keep it alive. |
+| `backing(question, value, publishers)` | The publishers who give this answer first-hand, in a claim credited to nobody else, and have not restated it since. |
 | `corroborated(question, value)` | Answers that two or more publishers give first-hand. |
 | `single_origin(question, value, publisher)` | Answers that rest on one publisher's word, however many sources repeat it. |
 | `reliance(publisher, answers)` | How many answers rest on each publisher alone. |
 | `secondhand(question, value, credited)` | Answers nobody gives first-hand: every source that states them credits someone else. |
 | `misquoted(claim, to, question, relayed, said)` | A claim credits a source that you have read, and that source answers the question differently. |
 | `unread(source)` | Sources that others credit and you hold no claim from. |
-| `disputed(question, values)` | Questions that sources answer differently. |
+| `disputed(question, values)` | Questions that sources answer differently, leaving out answers that were withdrawn. |
+| `ambiguous(base, key, values)` | Sources answer one question in more than one sense of `key`, and the reader has not chosen: `{"revenue": "acme"}` as reported and excluding fuel surcharges. `base` is the question without its readings; a source that does not say which sense shows as `null`. |
+| `meant(base, question)` | The questions the reader means by `base`: every reading the sources answer, less those the reader's choices set aside. |
+| `set_aside(question, key, stated, chosen)` | A question answered in another sense than the one the reader chose. |
 | `holds(assumption)` | Assumptions with no evidence against them. |
 
-Only first-hand claims count as confirmation. Two sources with one publisher are one voice, and a source that relays another adds nothing to it. That is strict on purpose: a statement repeated by ten outlets is still one statement.
+Only first-hand claims count as confirmation. Two sources with one publisher are one voice, and a source that relays another adds nothing to it. That is strict on purpose: a statement repeated by ten outlets is still one statement. A publisher's later word replaces its earlier one, so a figure a company corrected in its annual report is not a dispute with its own press release: it is a restatement, and the earlier figure is set aside along with everyone who repeats it.
 
-The core also keeps invariants: a claim's source must exist, an attribution must name a known claim and a known source, and a source must fit its schema. A write that breaks one fails and changes nothing, and the message says which row and why.
+The core also keeps invariants: a claim's source must exist, an attribution must name a known claim and a known source, a location must belong to a claim, a decision must be about a reading, and a source must fit its schema. A write that breaks one fails and changes nothing, and the message says which row and why.
 
 ## The loop
 
@@ -129,11 +139,13 @@ bunx @lionlang/cli steps/00-core.json --database model.json
 
 Do this before the deep reading, after a first skim tells you what the topic is made of. The frame is a first draft. It grows for as long as the research runs (step 5), so write what you can see now and do not wait for it to be complete.
 
-Write `steps/01-frame.json` with four things.
+Write `steps/01-frame.json` with five things.
 
 **The kinds of statement you expect.** Each kind is a record whose first key names it. Declare them in one schema, `Says`, and add the invariant that every claim fits it. A misspelled key then fails loudly when you record the claim, instead of silently matching no rule.
 
 **An `answer` rule for each kind.** It splits the record into a question that has one right answer, and that answer. This is what lets the core find disputes and count who stands behind each answer. A fact that either holds or does not, such as "this service was affected", is a question whose answer is `true` or `false`; see [references/patterns.md](references/patterns.md).
+
+**The words that have more than one sense.** "Revenue" can be as reported or adjusted, a year can be fiscal or calendar, a count can be at year end or today. Give each sense a key in the claim's `says` and in the question its `answer` rule makes, and declare the key a reading: `["fact", ["reading", "basis"], ["reading", "period"]]`. The model then tells a question asked in two senses from a real disagreement, lists the senses for the reader in `ambiguous`, and keeps to the one they choose. Declare as `context` the fields whose numbers come from where a quote stands rather than from its words, such as a year given only in the headline, so the check that every figure is in its quote leaves them alone.
 
 **What you believe going in**, each as an assumption with a `violated` rule that finds evidence against it. Writing these before the evidence arrives matters: a belief written down first can be tested by what you find, and one written afterwards only describes what you already found. Beliefs you form later get the same treatment the moment you form them.
 
@@ -146,6 +158,7 @@ Write `steps/01-frame.json` with four things.
     {"headcount": "value/string?", "year": "value/integer?", "people": "value/integer?"},
     {"acquired": "value/string?", "by": "value/string?", "year": "value/integer?"}]],
   ["invariant", ["and", ["claim", "?id", "?_", "?_", "?says"], ["not", ["Says", "?says"]]], {"assert": "none"}],
+  ["fact", ["context", "year"]],
 
   ["rule", ["answer", {"revenue": "?company", "year": "?year"}, "?usd_m", "?claim"],
     ["claim", "?claim", "?_", "?_", {"revenue": "?company", "year": "?year", "usd_m": "?usd_m"}]],
@@ -178,6 +191,9 @@ Start `checks.json` now too, with the standing questions every run asks. These a
   "What rests on one publisher's word?": ["query", ["single_origin", "?question", "?value", "?publisher"]],
   "What is known only second-hand?": ["query", ["secondhand", "?question", "?value", "?credited"]],
   "Which sources are credited with something they do not say?": ["query", ["misquoted", "?claim", "?to", "?question", "?relayed", "?said"]],
+  "Which figures did their publisher change?": ["query", ["restated", "?question", "?publisher", "?before", "?after"]],
+  "Which figures are not written in the words quoted?": ["query", ["unquoted", "?claim", "?field", "?value"]],
+  "Which questions do sources answer in more than one sense?": ["query", ["ambiguous", "?question", "?key", "?readings"]],
   "Which credited sources are still unread?": ["find", "?source", ["unread", "?source"]],
   "Which assumptions failed, and on what evidence?": ["query", ["violated", "?assumption", "?witness"]],
   "Which statements does no answer rule read?": ["find", "?claim", ["and",
@@ -204,7 +220,7 @@ Quotes are taken from that file. This matters for two reasons. A fetch tool that
    {"id": "blog", "url": "https://blog.example.net/acme", "title": "Acme by the numbers", "publisher": "Ledger Blog", "kind": "tertiary", "published": 20250205}],
  "claims": [
    {"id": "c1", "source": "pr", "quote": "revenue of $120M for fiscal 2024",
-    "says": {"revenue": "acme", "year": 2024, "usd_m": 120}},
+    "says": {"revenue": "acme", "year": 2024, "usd_m": 120}, "where": "Highlights"},
    {"id": "c2", "source": "wire", "quote": "posted $120M in revenue, the company said",
     "says": {"revenue": "acme", "year": 2024, "usd_m": 120}, "credits": ["pr"]},
    {"id": "c3", "source": "blog", "quote": "$120M in sales, per the wire report",
@@ -238,6 +254,8 @@ How to record a claim:
 - **Give a statement the time it was made, not the time of the article that carries it.** A live blog updated at 17:19 that repeats a 16:40 statement did not say anything at 17:19. When a source gives no clock time for a statement, do not invent one: give the latest time it could have been made and mark it, as in `"exact": false`, so rules that order statements can leave it out or treat it as a bound.
 - **A source you read only part of** is recorded for what you read. Say in the report what you could not reach, since `unread` no longer lists it.
 - **Keep values computable.** Numbers as numbers with the unit in the key (`usd_m`, `minutes`), dates as integers (`20250201`), names as short lowercase ids used the same way every time. Lion cannot compare strings by order, so a date kept as text can be matched but not sorted or compared. Clock times and time zones have a pattern of their own.
+- **Copy a figure as the source writes it, and let a rule convert it.** "$1.2 billion" is `{"usd_bn": 1.2}`, not `{"usd_m": 1200}`; "2.5 hours" is `{"hours": 2.5}`. The core reads the numbers written in each quote, and `unquoted` lists every number in a claim that its quote does not write, so a slip in copying or converting shows up at once. Converting is a job for the model: give the kind a shape with the unit as written, and an `answer` rule that converts, as in [references/patterns.md](references/patterns.md#figures-as-written). A number taken from where the quote stands, such as the year in a headline, goes in a field the frame declares as `context`.
+- **Say where the quote stands** when a source is long, with `"where"` in the note: `"Page 47, Consolidated Statements of Operations"`. The reader sees it beside the quote, and the page shows the quote in its place in the saved text either way.
 - **Record the claims your answer depends on, and the ones that could overturn it.** A claim no rule or query will ever read is not worth its line.
 
 If research is fanned out to subagents, have them save each source's text and return claims as data (source, quote, what it says, who it credits), and record them yourself. One writer keeps ids and kinds consistent.
@@ -268,8 +286,10 @@ A later step adds Acme's 10-K, a state registry, and two more relayed claims, an
 ```json
 {
   "What do sources disagree on?": [
-    {"question": {"revenue": "acme", "year": 2024}, "values": [118.6, 120]},
     {"question": {"headcount": "acme", "year": 2024}, "values": [1150, 1200]}
+  ],
+  "Which figures did their publisher change?": [
+    {"question": {"revenue": "acme", "year": 2024}, "publisher": "Acme", "before": 120, "after": 118.6}
   ],
   "What do independent publishers confirm first-hand?": [
     {"question": {"headcount": "acme", "year": 2024}, "value": 1150, "publishers": ["Acme", "State Registry"]}
@@ -284,10 +304,15 @@ A later step adds Acme's 10-K, a state registry, and two more relayed claims, an
 }
 ```
 
+Acme's 10-K, filed after its press release, gives a different revenue figure, so the 10-K's figure is Acme's word now. That is not a dispute. The wire and the blog, which repeat the release, still give the old figure, and the report should say so.
+
 Let the answers decide what you read next. This is where the model earns its keep:
 
+- **A question in more than one sense**: stop and ask the person you are researching for which sense they mean, before any answer depends on it. Do not pick one yourself, however natural it seems; one wrong reading early in research breaks everything built on it. Record their answer, in their words, as a decision in your notes (`"decisions": [{"key": "basis", "value": "reported", "words": "…"}]`), and every rule and page that reads through `meant` follows it. If you cannot ask, say in the report and on the page that the answer depends on the choice, and give each sense.
+- **A figure not written in its quote**: either you copied it wrong or you converted it. Fix the copy, or record the figure as written and let a rule convert it.
 - **One publisher's word** on something the answer depends on: look for a source that could know independently. When one party is the authority on most of the topic, `reliance` says so in one row, and that is a limit to state.
-- **A dispute**: find out why. Different dates, definitions, or units are common, and each is a finding. Then write the rule that says which value the model accepts and on what basis.
+- **A restatement**: the publisher changed its figure. Report the later one, say that it changed, and say who still repeats the earlier one. If the sources say why it changed, record that too.
+- **A dispute**: find out why. Different dates, definitions, or units are common, and each is a finding: a difference in definition is a reading, and goes in the frame as one. Otherwise write the rule that says which value the model accepts and on what basis.
 - **Second-hand only**: the claim is hearsay until you read the credited source. Read it if you can. If you cannot, the report says the claim is unconfirmed.
 - **A misquote**: a source credited another with something it does not say. Report what the credited source does say, and treat the rest of the misquoting source with more care.
 - **A failed assumption**: either the evidence is wrong or you were. Check the witness. Never delete an assumption to make the failure go away; a belief the evidence overturned is one of the most useful things the research found, and the report should say so.
@@ -306,6 +331,8 @@ The frame you wrote at the start knew little. Each thing you learn about the top
 | form a belief: about a cause, an order, a size, who knew what, whether two sources are independent | an assumption and its `violated` rule, then and there. An unwritten belief is the one the evidence overturns without your noticing. |
 | compare, add up, convert, or count something by hand a second time | a rule that derives it: an aggregate for a total or a count, a computed column for a ratio or a difference, `utc-minutes` for a time. You will not do it by hand a third time, and the rule covers sources you have not read yet. |
 | meet a kind of statement the frame has no shape for | a new shape in `Says` and its `answer` rule. The check "Which statements does no answer rule read?" lists what was recorded and is being ignored. |
+| see sources use one word in different senses: two definitions, two periods, two units of count | a key for the sense in that kind's `says` and question, declared as a `reading`, then ask the reader which sense they mean. |
+| meet a figure in another unit than the frame's | a shape with the unit as written, and an `answer` rule that converts it. |
 | see sources answer one question differently | a rule that states which answer the model accepts and on what basis, so the choice is on record and `why` can show it. |
 | find a value that could have been recorded wrongly | a tighter schema: a list of allowed words, a number's range, a list's exact length. The mistake then fails when it is recorded. |
 | see sources leaning on one another | a relation of who relies on whom. `graph/pageRank` over it shows which source the rest stand on, and `graph/components` which sources form one cluster. |
@@ -342,8 +369,8 @@ When the research is done:
    ["why", ["corroborated", ["quote", {"headcount": "acme", "year": 2024}], 1150]]
    ```
 
-   In the report, cite sources. The quotes themselves live in the model, where the page shows them beside each finding.
-5. **Say what the model says about its own limits**: what is disputed and how you resolved it, what rests on one publisher's word, what is known only second-hand, what was misquoted, which assumptions failed, and what is still missing.
+   In the report, cite sources. The quotes themselves live in the model, where the page shows them beside each finding. `why` on a figure a rule computed shows the arithmetic with the values it was given, `{"check": ["=", 26.4, ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", 409.8, 301.5], 409.8]]], 10]]}`, so a ratio or a total traces to the line items it came from.
+5. **Say what the model says about its own limits**: what is disputed and how you resolved it, which figures their publisher changed, which questions depend on a sense of a word the reader has not chosen, what rests on one publisher's word, what is known only second-hand, what was misquoted, which figures are not written in their quote, which assumptions failed, and what is still missing.
 6. **Design the page for this reader** and write its plan, `page.json`. See [The page for the reader](#the-page-for-the-reader).
 7. **Build the page, and run every query in it**:
 
@@ -352,7 +379,7 @@ When the research is done:
    bunx @lionlang/cli page-check.json --database model.json
    ```
 
-   The first command writes `explorer.html` beside the model: one file with the model, the plan, and the Lion engine inside it, which opens from disk with no server. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record. The second command runs them all and prints the page's wording, so a sentence that reads wrong, or a query that fails or comes back empty, shows up before the reader finds it. `bun` runs the scripts too.
+   The first command writes `explorer.html` beside the model: one file with the model, the plan, the Lion engine, and the saved text of every source a claim quotes, which opens from disk with no server. Each statement on the page has "Show it in the source", which shows the quote marked in its paragraph of the saved text, and the whole text on request. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record, with one more check: the questions the plan names that the reader's choices set aside, or that sources answer in senses nobody chose between. The second command runs them all and prints the page's wording, so a sentence that reads wrong, a query that fails or comes back empty, or a question the plan should reach through `meant`, shows up before the reader finds it. `bun` runs the scripts too.
 
 ## The page for the reader
 
@@ -386,11 +413,16 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
 {
   "title": "Acme in 2024",
   "summary": ["string/concat",
-    "Acme reports 2024 revenue of ",
-    ["words/listed", ["find", "?usd_m", ["answers", {"revenue": "acme", "year": 2024}, ["array/make", "?usd_m", "?_"]]]],
-    " to ",
-    ["words/listed", ["find", "?usd_m", ["answers", {"revenue": "acme", "year": 2024}, ["array/make", "?_", "?usd_m"]]]],
-    " million dollars, depending on which of its own documents you read, and ",
+    "Acme's 2024 revenue was ",
+    ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+    " million dollars",
+    ["cond",
+      [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
+       ["string/concat", ", after Acme corrected the ",
+         ["words/listed", ["find", "?before", ["restated", {"revenue": "acme", "year": 2024}, "?_", "?before", "?_"]]],
+         " million it first reported"]],
+      ["else", ""]],
+    ". It has ",
     ["words/number", ["array/head", ["find", "?people", ["corroborated", {"headcount": "acme", "year": 2024}, "?people"]]]],
     " staff, which an independent source confirms."],
   "names": {"acme": "Acme Corp"},
@@ -405,6 +437,9 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
          "value": ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
          "note": ["cond",
            [["disputed", {"revenue": "acme", "year": 2024}, "?_"], "sources disagree"],
+           [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
+            ["string/concat", "corrected from ",
+              ["words/listed", ["find", "?before", ["restated", {"revenue": "acme", "year": 2024}, "?_", "?before", "?_"]]]]],
            ["else", "sources agree"]]}]},
       {"type": "answer",
        "question": "How much revenue did Acme report for 2024?",
@@ -416,6 +451,12 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
             ["cond",
               [["corroborated", {"revenue": "acme", "year": 2024}, "?_"], "One of them is confirmed independently."],
               ["else", "No independent publisher gives a figure."]]]],
+         [["restated", {"revenue": "acme", "year": 2024}, "?_", "?_", "?_"],
+          ["string/concat",
+            ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
+            " million dollars. Acme first reported ",
+            ["words/listed", ["find", "?before", ["restated", {"revenue": "acme", "year": 2024}, "?_", "?before", "?_"]]],
+            " million and later corrected it, so sources that repeat the first figure are out of date."]],
          ["else",
           ["string/concat",
             ["words/listed", ["array/head", ["find", "?values", ["answers", {"revenue": "acme", "year": 2024}, "?values"]]]],
@@ -464,7 +505,7 @@ Every block can have a `title` and a `note` of plain words under it.
 | `timeline` | rows in time order, a day at a time | `query` giving `?when` as text from `utc-text`, and `?what`; other columns show under each moment |
 | `comparison` | a grid: one row for each value of one column, one column for each value of another | `query`, and `rows`, `columns`, `cell`: the names of three of its variables |
 | `lookup` | a question the reader completes by choosing from lists; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query`: a `lambda` with one parameter for each name in `choose`, in order, whose body is the query; `example`, one choice for each name |
-| `trust` | how solid the findings are, built from the core: confirmed, disputed, one publisher's word, second-hand, misquoted, assumptions, unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
+| `trust` | how solid the findings are, built from the core: what needs the reader's decision (`undecided`), confirmed, disputed, figures their publisher changed (`restated`), one publisher's word (`alone`), second-hand, misquoted, figures not written in their quote (`unquoted`), what the reader chose (`choices`), assumptions, unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
 | `sources` | every source by kind, with its publisher, date, and statements | nothing |
 | `text` | a few paragraphs of your own, for what no query says: context, method, a caveat | `text` |
 | `custom` | anything the others cannot | `script`: the body of a function of `root` and `kit` |
@@ -478,6 +519,8 @@ Every block can have a `title` and a `note` of plain words under it.
 - **Ask what the reader would ask, in their words.** A question about the model's machinery ("which answers have one origin?") belongs in `checks.json`; the `trust` block already shows it.
 - **Answer in plain words, in a few sentences.** Say the answer first, then how sure it is and what it rests on. No ids, no relation names, no JSON. Where sources disagree or the evidence is thin, the answer says so, by a `cond` on the relation that shows it.
 - **Read what each expression gives.** `page-check.json` runs every text and every query of the plan, so its output is the page's wording as the reader will see it. Read it as prose: an empty list reads as nothing, and a `null` as "nothing".
+- **Reach a question that has senses through `meant`.** `["meant", {"revenue": "acme"}, "?q"]` gives the questions the reader means by revenue: every sense the sources answer until the reader chooses, and then only the one they chose. A plan that names `{"revenue": "acme", "basis": "reported"}` itself has made the choice for the reader, and the page check lists it. When the reader has not chosen, the wording says the answer depends on it, with a `cond` on `ambiguous`.
+- **Show a computed figure's arithmetic.** Give an answer about a ratio, a margin, or a total the evidence `["why", [relation, …, figure]]`, with the figure itself an expression such as `["array/head", ["find", "?p", [relation, …, "?p"]]]`, and the page shows "Worked out as …" with the values the rule used, above the statements they came from.
 - **Shape each query for a reader.** Its variable names become the column headings, so name them in plain words: `?publishers`, `?minutes_apart`, `?when`. Leave out with `"?_"` whatever is only for the engine, such as a count of minutes beside a time as text. A variable named `?statement` or `?claim` that holds a claim's id is shown as that claim's quote, and `?source` as the source's title. A record of queries is shown as parts, each under its key.
 - **Give times as text.** A time the reader sees is a column a rule computed with `utc-text`. Text of that form sorts in time order, so `{"order": "when"}` works.
 - **The same answer can stand in two views** when the reader would look for it in both.
@@ -506,6 +549,8 @@ When the user asks something about research that has a model, answer from the mo
 - **Editing `model.json`.** The next replay undoes the edit. Change the step.
 - **A `says` record that no rule reads.** It was recorded and then ignored. Either a rule should use it or it was not worth recording.
 - **Arithmetic in the report that the model never did.** Every figure comes from a query.
+- **A figure converted on the way in.** "$1.2 billion" recorded as 1,200 millions is arithmetic nobody can check, and `unquoted` lists it. Record what the source writes and let a rule convert it.
+- **A sense chosen for the reader.** Picking "as reported" or "fiscal year" because it seems natural is the mistake that breaks everything downstream without anyone noticing. When `ambiguous` lists a question, ask.
 - **A page written for yourself.** Questions in the model's vocabulary, answers that are a table and no sentence, column headings like `usd_m`. The reader did not ask for a database.
 - **A finding typed into the plan.** A sentence with a number in it that no expression produced is a claim the model cannot check, and it stays on the page when the model changes. Compute it.
 - **The same page for every reader.** A list of answers followed by trust and sources fits no goal in particular. Decide what this reader is trying to do, and build the views around that.

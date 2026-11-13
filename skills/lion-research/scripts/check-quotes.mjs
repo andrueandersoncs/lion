@@ -18,23 +18,64 @@ const ELLIPSIS = /…/g;
 const WHITESPACE = /\s+/g;
 const SHOWN = 90;
 
+/** A character with the marks that combine with it, such as an accent. */
+const CLUSTER = /\P{M}\p{M}*|\p{M}+/gsu;
+const SPACE = /^\s+$/;
+
 /**
  * Text as it is compared: differences of spacing, line breaks, and
- * typographic quotes and dashes do not count, and every word does.
+ * typographic quotes and dashes do not count, and every word does. Beside
+ * the text, `from` and `to` say where in the original each of its
+ * characters came from, so a match can be shown where it stands.
  */
-export const normalize = (text) =>
-  text
-    .normalize("NFKC")
-    .replace(SINGLE_QUOTES, "'")
-    .replace(DOUBLE_QUOTES, '"')
-    .replace(DASHES, "-")
-    .replace(ELLIPSIS, "...")
-    .replace(WHITESPACE, " ")
-    .trim();
+const indexed = (text) => {
+  let out = "";
+  const from = [];
+  const to = [];
+  for (const { 0: cluster, index } of text.matchAll(CLUSTER)) {
+    const piece = SPACE.test(cluster)
+      ? " "
+      : cluster
+          .normalize("NFKC")
+          .replace(SINGLE_QUOTES, "'")
+          .replace(DOUBLE_QUOTES, '"')
+          .replace(DASHES, "-")
+          .replace(ELLIPSIS, "...")
+          .replace(WHITESPACE, " ");
+    for (const char of piece) {
+      // Spacing counts once, and not at all at the start.
+      if (char === " " && (out === "" || out.endsWith(" "))) {
+        continue;
+      }
+      out += char;
+      from.push(index);
+      to.push(index + cluster.length);
+    }
+  }
+  const kept = out.endsWith(" ") ? out.length - 1 : out.length;
+  return {
+    from: from.slice(0, kept),
+    text: out.slice(0, kept),
+    to: to.slice(0, kept),
+  };
+};
+
+export const normalize = (text) => indexed(text).text;
 
 /** Whether the quote is in the text, word for word. */
 export const hasQuote = (text, quote) =>
   normalize(quote) !== "" && normalize(text).includes(normalize(quote));
+
+/**
+ * Where the quote first stands in the text, as the start and end of that
+ * stretch of the original, or undefined when it is not there.
+ */
+export const whereIn = (text, quote) => {
+  const wanted = normalize(quote);
+  const { from, text: compared, to } = indexed(text);
+  const at = wanted === "" ? -1 : compared.indexOf(wanted);
+  return at === -1 ? undefined : [from[at], to[at + wanted.length - 1]];
+};
 
 const unquoted = (value) =>
   Array.isArray(value) && value[0] === "quote" && value.length === 2

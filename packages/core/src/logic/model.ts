@@ -1268,7 +1268,10 @@ const matchedRow = (model: Model, atom: Atom, vars: Vars) =>
 
 /**
  * What a rule's body rested on for one answer: the rows its relation goals
- * matched, each explained in turn, and the tests that held.
+ * matched, each explained in turn, and every other goal as it held, with the
+ * answer's values in place of its variables. A goal that computed a value,
+ * such as `["=", "?ratio", ["number/divide", "?a", "?b"]]`, shows the
+ * arithmetic on the values it was given.
  */
 const premises = (
   model: Model,
@@ -1282,7 +1285,7 @@ const premises = (
         out.push(yield* explain(model, literal.relation, tuple));
       } else if (isForm(literal, "not")) {
         out.push({ absent: instantiate(literal.parts[0], vars) });
-      } else if (!isForm(literal, "=", "in")) {
+      } else {
         out.push({ check: instantiate(literal, vars) });
       }
     }

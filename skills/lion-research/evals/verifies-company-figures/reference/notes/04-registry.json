@@ -1,0 +1,20 @@
+{
+  "sources": [
+    {
+      "id": "licensing-registry",
+      "url": "https://glwlr.example/licensees/tarnwell-cold-chain",
+      "title": "Licensee lookup: Tarnwell Cold Chain LLC",
+      "publisher": "Great Lakes Warehouse Licensing Registry",
+      "kind": "primary",
+      "published": 20250701
+    }
+  ],
+  "claims": [
+    {
+      "id": "registry-warehouses",
+      "source": "licensing-registry",
+      "quote": "Licensed refrigerated warehouses operated as of June 30, 2025: 37",
+      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 37 }
+    }
+  ]
+}

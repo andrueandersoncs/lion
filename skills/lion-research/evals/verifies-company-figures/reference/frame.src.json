@@ -1,0 +1,177 @@
+[
+  "begin",
+  [
+    "schema",
+    "Says",
+    [
+      "schema/anyOf",
+      {
+        "revenue": "value/string?",
+        "period": "value/string?",
+        "basis": "value/string?",
+        "usd_m": "value/number?"
+      },
+      {
+        "revenue": "value/string?",
+        "period": "value/string?",
+        "basis": "value/string?",
+        "usd_bn": "value/number?",
+        "rounded": true
+      },
+      {
+        "cost": "value/string?",
+        "period": "value/string?",
+        "usd_m": "value/number?"
+      },
+      {
+        "warehouses": "value/string?",
+        "on": "value/integer?",
+        "count": "value/integer?"
+      },
+      {
+        "staff": "value/string?",
+        "on": "value/integer?",
+        "people": "value/integer?"
+      }
+    ]
+  ],
+  [
+    "invariant",
+    ["and", ["claim", "?id", "?_", "?_", "?says"], ["not", ["Says", "?says"]]],
+    { "assert": "none" }
+  ],
+
+  ["fact", ["reading", "basis"], ["reading", "period"], ["context", "on"]],
+
+  [
+    "rule",
+    [
+      "answer",
+      { "revenue": "?co", "period": "?p", "basis": "?b" },
+      "?usd_m",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      { "revenue": "?co", "period": "?p", "basis": "?b", "usd_m": "?usd_m" }
+    ]
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "revenue": "?co",
+        "period": "?p",
+        "basis": "?b",
+        "rounded to": "0.01 billion"
+      },
+      ["number/multiply", "?usd_bn", 1000],
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      {
+        "revenue": "?co",
+        "period": "?p",
+        "basis": "?b",
+        "usd_bn": "?usd_bn",
+        "rounded": true
+      }
+    ]
+  ],
+  [
+    "rule",
+    ["answer", { "cost of services": "?co", "period": "?p" }, "?usd_m", "?c"],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      { "cost": "?co", "period": "?p", "usd_m": "?usd_m" }
+    ]
+  ],
+  [
+    "rule",
+    ["answer", { "warehouses": "?co", "on": "?on" }, "?count", "?c"],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      { "warehouses": "?co", "on": "?on", "count": "?count" }
+    ]
+  ],
+  [
+    "rule",
+    ["answer", { "staff": "?co", "on": "?on" }, "?people", "?c"],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      { "staff": "?co", "on": "?on", "people": "?people" }
+    ]
+  ],
+
+  ["relation", "gross_margin", ["company", "period", "basis", "percent"]],
+  [
+    "rule",
+    ["gross_margin", "?co", "?p", "?b", "?percent"],
+    ["meant", { "revenue": "?co" }, "?q"],
+    ["=", "?p", ["object/get", "?q", "period"]],
+    ["=", "?b", ["object/get", "?q", "basis"]],
+    ["backing", "?q", "?revenue", "?_"],
+    ["backing", { "cost of services": "?co", "period": "?p" }, "?cost", "?_"],
+    [
+      "=",
+      "?percent",
+      [
+        "number/divide",
+        [
+          "number/round",
+          [
+            "number/multiply",
+            1000,
+            [
+              "number/divide",
+              ["number/subtract", "?revenue", "?cost"],
+              "?revenue"
+            ]
+          ]
+        ],
+        10
+      ]
+    ]
+  ],
+
+  [
+    "fact",
+    [
+      "assumption",
+      "one-voice",
+      [
+        "quote",
+        "Tarnwell's own figures are confirmed by someone outside the company"
+      ]
+    ],
+    [
+      "assumption",
+      "stable",
+      ["quote", "Tarnwell's published figures did not change after release"]
+    ]
+  ],
+  [
+    "rule",
+    ["violated", "one-voice", "?q"],
+    ["single_origin", "?q", "?_", "Tarnwell Cold Chain"]
+  ],
+  ["rule", ["violated", "stable", "?q"], ["restated", "?q", "?_", "?_", "?_"]],
+  "framed"
+]

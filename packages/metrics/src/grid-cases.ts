@@ -100,6 +100,22 @@ export const EXPRESSIONS: readonly Expression[] = [
       " ",
     ],
   },
+  {
+    name: "numbers read from text",
+    form: [
+      "string/numbers",
+      ["string/concat", "n=", ["number/toString", X, ","], "; -2!"],
+      ",",
+    ],
+  },
+  {
+    name: "number read from its text",
+    form: ["number/fromString", ["number/toString", X, ","], ","],
+  },
+  {
+    name: "record with a key set and one removed",
+    form: ["object/remove", ["object/set", { a: 1, b: 2 }, "x", X], "a"],
+  },
   { name: "comparison", form: ["number/greaterThan", X, 1], boolean: true },
   {
     name: "cond",

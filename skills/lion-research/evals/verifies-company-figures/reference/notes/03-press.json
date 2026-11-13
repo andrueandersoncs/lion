@@ -1,0 +1,121 @@
+{
+  "sources": [
+    {
+      "id": "cargo-ledger",
+      "url": "https://cargoledger.example/tarnwell-pharma",
+      "title": "Tarnwell Cold Chain grows on pharma demand",
+      "publisher": "Cargo Ledger",
+      "kind": "secondary",
+      "published": 20250807
+    },
+    {
+      "id": "ashgrove-note",
+      "url": "https://ashgrove.example/notes/midwest-cold-storage",
+      "title": "Sector note: Midwest cold storage",
+      "publisher": "Ashgrove Equity Research",
+      "kind": "secondary",
+      "published": 20250815
+    },
+    {
+      "id": "supply-notes",
+      "url": "https://supplynotes.example/midwest-cold-storage",
+      "title": "Who's who in Midwest cold storage",
+      "publisher": "Supply Notes",
+      "kind": "tertiary",
+      "published": 20250820
+    },
+    {
+      "id": "reefer-quarterly",
+      "url": "https://reeferquarterly.example/fall-2025/okafor",
+      "title": "Interview: Dana Okafor, Tarnwell Cold Chain",
+      "publisher": "Reefer Quarterly",
+      "kind": "secondary",
+      "published": 20250901
+    },
+    {
+      "id": "okafor",
+      "url": "https://reeferquarterly.example/fall-2025/okafor",
+      "title": "Dana Okafor, Chief Executive Officer, as quoted by Reefer Quarterly",
+      "publisher": "Tarnwell Cold Chain",
+      "kind": "primary",
+      "published": 20250901
+    }
+  ],
+  "claims": [
+    {
+      "id": "ledger-revenue",
+      "source": "cargo-ledger",
+      "quote": "Tarnwell Cold Chain posted revenue of $412.6 million for its latest fiscal year, the company said",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "reported",
+        "usd_m": 412.6
+      },
+      "credits": ["fy25-release"]
+    },
+    {
+      "id": "ledger-warehouses",
+      "source": "cargo-ledger",
+      "quote": "ran 39 warehouses across the Great Lakes states when its fiscal year ended on June 30, according to a review of its website by Cargo Ledger",
+      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 39 }
+    },
+    {
+      "id": "ashgrove-calendar",
+      "source": "ashgrove-note",
+      "quote": "We estimate Tarnwell's calendar 2024 revenue at $395 million",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "calendar 2024",
+        "basis": "reported",
+        "usd_m": 395
+      }
+    },
+    {
+      "id": "ashgrove-fiscal",
+      "source": "ashgrove-note",
+      "quote": "Tarnwell reported revenue near $0.41 billion for fiscal 2025.",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "reported",
+        "usd_bn": 0.41,
+        "rounded": true
+      },
+      "credits": ["fy25-release"]
+    },
+    {
+      "id": "notes-revenue",
+      "source": "supply-notes",
+      "quote": "Tarnwell Cold Chain: revenue of $412.6 million, per Cargo Ledger.",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "reported",
+        "usd_m": 412.6
+      },
+      "credits": ["cargo-ledger"]
+    },
+    {
+      "id": "notes-staff",
+      "source": "supply-notes",
+      "quote": "The company has 2,400 employees, according to its earnings release.",
+      "says": { "staff": "tarnwell", "on": 20250630, "people": 2400 },
+      "credits": ["fy25-release"]
+    },
+    {
+      "id": "okafor-staff",
+      "source": "reefer-quarterly",
+      "quote": "told Reefer Quarterly that the company now has 2,140 employees",
+      "says": { "staff": "tarnwell", "on": 20250901, "people": 2140 },
+      "credits": ["okafor"]
+    },
+    {
+      "id": "okafor-sites",
+      "source": "reefer-quarterly",
+      "quote": "every one of our 37 sites is running above 90 percent occupancy",
+      "says": { "warehouses": "tarnwell", "on": 20250901, "count": 37 },
+      "credits": ["okafor"]
+    }
+  ]
+}

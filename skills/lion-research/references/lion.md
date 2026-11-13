@@ -148,7 +148,7 @@ A `find` gives one value for each match, so a value that several rows lead to is
 ["why", ["corroborated", ["quote", {"headcount": "acme", "year": 2024}], 1150]]
 ```
 
-explains one row: the rule that derived it, and under `because` the rows that rule matched, each explained in turn, down to recorded facts marked `"given": true`. It gives `null` when the row does not hold. Give `why` a complete row with every column a value, and quote records and text in it.
+explains one row: the rule that derived it, and under `because` the rows that rule matched, each explained in turn, down to recorded facts marked `"given": true`. Every other goal of the rule shows as it held, with the row's values in place of its variables: a `not` as `{"absent": …}`, and a test, an `in`, or an `=` as `{"check": …}`. So a figure a rule computed shows its arithmetic on the values it was given, as `{"check": ["=", 26.4, ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", 409.8, 301.5], 409.8]]], 10]]}`, and evaluating that check gives `true`. It gives `null` when the row does not hold. Give `why` a complete row with every column a value, and quote records and text in it.
 
 At the command line a `why` tree is long, since each node repeats its rule. To see only the recorded facts it rests on:
 
@@ -250,6 +250,8 @@ A failed program changes nothing in the model file, so fix the step and run it a
 - **No ordering of strings.** There is no "less than" for text. Keep dates and times as integers (`20250201`, or minutes; see the timeline pattern), and compare those. `"order"` in a query, `aggregate/min`, and `aggregate/max` do sort strings.
 - **A function takes the number of arguments it takes.** Six combine any number, from left to right: `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat`, so `["number/add", 1, 2, 3]` is 6. Every other function fails on a call with too many or too few. A lambda still ignores arguments past its parameters.
 - **Text is built with the library.** `["string/join", list, ", ", " and "]` writes a list of strings as a sentence does, `["number/toString", n, ","]` writes a number with separators, `["string/padStart", text, 2, "0"]` pads it, and `["string/split", text, ","]` takes text apart. Each waits for a logic variable, so a rule can build the text of a row.
+- **Numbers are read from text with the library too.** `["string/numbers", "$1,250.5M, down -3%", ","]` is `[1250.5, -3]`, every number written in the text, and `["number/fromString", "1,234", ","]` is `1234`, or `null` for text that is not one number. Words for amounts are not read: `"$1.2 billion"` holds `1.2`.
+- **Records are changed by making new ones.** `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record, and leave the one they were given as it was.
 - **Functions run forward.** `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
 - **Rules, schemas, and invariants cannot be removed or redefined.** Edit the step that wrote them and replay the steps.
 - **A recursive rule cannot compute new values** for its head, so recursion always ends. Follow edges with recursion, and compute in a rule that is not recursive. `aggregate/min`, `max`, `shortest`, and `union` are the exception: a recursive rule can aggregate with them.

@@ -1,0 +1,292 @@
+{
+  "title": "Tarnwell Cold Chain: how big, and how sure",
+  "names": {
+    "tarnwell": "Tarnwell Cold Chain",
+    "fy25-release": "Tarnwell's earnings release",
+    "okafor": "Dana Okafor, Tarnwell's CEO"
+  },
+  "define": {
+    "revenue-in": [
+      "lambda",
+      ["wanted"],
+      [
+        "find",
+        "?line",
+        [
+          "and",
+          ["meant", ["quote", { "revenue": "tarnwell" }], "?q"],
+          ["=", "wanted", ["object/get", "?q", "period"]],
+          ["backing", "?q", "?usd_m", "?_"],
+          [
+            "=",
+            "?line",
+            [
+              "string/concat",
+              "$",
+              ["number/toString", "?usd_m", ","],
+              " million ",
+              ["object/get", "?q", "basis"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "margins": [
+      "find",
+      "?line",
+      [
+        "and",
+        ["gross_margin", "tarnwell", "fiscal 2025", "?basis", "?percent"],
+        [
+          "=",
+          "?line",
+          [
+            "string/concat",
+            ["number/toString", "?percent"],
+            "% on revenue ",
+            "?basis"
+          ]
+        ]
+      ]
+    ],
+    "warehouses": [
+      "array/head",
+      [
+        "find",
+        "?n",
+        [
+          "corroborated",
+          ["quote", { "warehouses": "tarnwell", "on": 20250630 }],
+          "?n"
+        ]
+      ]
+    ],
+    "staff": [
+      "array/head",
+      [
+        "find",
+        "?n",
+        [
+          "single_origin",
+          ["quote", { "staff": "tarnwell", "on": 20250630 }],
+          "?n",
+          "?_"
+        ]
+      ]
+    ],
+    "unchosen": [
+      "find",
+      "?key",
+      ["ambiguous", ["quote", { "revenue": "tarnwell" }], "?key", "?_"]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    "Tarnwell Cold Chain ran ",
+    ["words/number", "warehouses"],
+    " warehouses when its fiscal year ended on June 30, 2025, which an independent registry confirms, and employed ",
+    ["words/number", "staff"],
+    " people by its own count. Its fiscal 2025 revenue was ",
+    ["words/listed", ["revenue-in", "fiscal 2025"]],
+    [
+      "cond",
+      [
+        ["ambiguous", ["quote", { "revenue": "tarnwell" }], "basis", "?_"],
+        ", depending on which revenue you mean, so the research needs you to choose before it gives one figure."
+      ],
+      ["else", "."]
+    ]
+  ],
+  "views": [
+    {
+      "name": "The short answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Warehouses, June 30, 2025",
+              "value": ["words/number", "warehouses"],
+              "note": [
+                "string/concat",
+                "confirmed by ",
+                [
+                  "words/listed",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?p",
+                      [
+                        "backing",
+                        ["quote", { "warehouses": "tarnwell", "on": 20250630 }],
+                        "warehouses",
+                        "?p"
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            },
+            {
+              "label": "Employees, June 30, 2025",
+              "value": ["words/number", "staff"],
+              "note": [
+                "cond",
+                [
+                  [
+                    "single_origin",
+                    ["quote", { "staff": "tarnwell", "on": 20250630 }],
+                    "?_",
+                    "?_"
+                  ],
+                  "Tarnwell's own count; nobody else gives one"
+                ],
+                ["else", "confirmed independently"]
+              ]
+            },
+            {
+              "label": "Revenue, fiscal 2025",
+              "value": ["words/listed", ["revenue-in", "fiscal 2025"]],
+              "note": [
+                "cond",
+                [
+                  [
+                    "restated",
+                    [
+                      "quote",
+                      {
+                        "revenue": "tarnwell",
+                        "period": "fiscal 2025",
+                        "basis": "reported"
+                      }
+                    ],
+                    "?_",
+                    "?_",
+                    "?_"
+                  ],
+                  [
+                    "string/concat",
+                    "Tarnwell first announced $",
+                    [
+                      "number/toString",
+                      [
+                        "array/head",
+                        [
+                          "find",
+                          "?b",
+                          [
+                            "restated",
+                            [
+                              "quote",
+                              {
+                                "revenue": "tarnwell",
+                                "period": "fiscal 2025",
+                                "basis": "reported"
+                              }
+                            ],
+                            "?_",
+                            "?b",
+                            "?_"
+                          ]
+                        ]
+                      ]
+                    ],
+                    " million and later corrected it"
+                  ]
+                ],
+                ["else", "as Tarnwell reports it"]
+              ]
+            },
+            {
+              "label": "Gross margin, fiscal 2025",
+              "value": ["words/listed", "margins"],
+              "note": "worked out from revenue and cost of services"
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What was Tarnwell's gross margin in fiscal 2025?",
+          "answer": [
+            "string/concat",
+            ["words/listed", "margins"],
+            ". ",
+            [
+              "cond",
+              [
+                [
+                  "ambiguous",
+                  ["quote", { "revenue": "tarnwell" }],
+                  "basis",
+                  "?_"
+                ],
+                "Which one applies depends on whether you count revenue as reported or without fuel surcharges: tell the research which you mean."
+              ],
+              ["else", "It uses the revenue you chose."]
+            ]
+          ],
+          "evidence": [
+            "why",
+            [
+              "gross_margin",
+              "tarnwell",
+              "fiscal 2025",
+              "reported",
+              [
+                "array/head",
+                [
+                  "find",
+                  "?p",
+                  ["gross_margin", "tarnwell", "fiscal 2025", "reported", "?p"]
+                ]
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Revenue",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "How much revenue did Tarnwell make?",
+          "answer": [
+            "string/concat",
+            "For fiscal 2025, ",
+            ["words/listed", ["revenue-in", "fiscal 2025"]],
+            ". ",
+            "For calendar 2024, an analyst estimates ",
+            ["words/listed", ["revenue-in", "calendar 2024"]],
+            ". ",
+            [
+              "cond",
+              [
+                ["array/length", "unchosen"],
+                [
+                  "string/concat",
+                  "Sources use revenue in more than one sense (",
+                  ["words/listed", "unchosen"],
+                  "), so the research has not picked one for you."
+                ]
+              ],
+              ["else", "The figures follow the sense you chose."]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["meant", ["quote", { "revenue": "tarnwell" }], "?question"],
+              ["answer", "?question", "?usd_m", "?statement"]
+            ],
+            { "order": "usd_m" }
+          ]
+        }
+      ]
+    },
+    { "name": "How solid is it", "blocks": [{ "type": "trust" }] },
+    { "name": "Sources", "blocks": [{ "type": "sources" }] }
+  ]
+}

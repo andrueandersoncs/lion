@@ -1,0 +1,203 @@
+{
+  "about": "Known-correct answers for the Tarnwell Cold Chain corpus, as checks on a finished research folder. Each check names the stage of the run it grades and the corpus sources it rests on: leave out what one of those sources says, and the check fails. A query is Lion, run against the run's model; the questions' shapes are the run's own, so the checks look at values, not at how questions are written.",
+  "checks": [
+    {
+      "stage": "reading",
+      "check": "Every quote is in its source's saved text",
+      "quotes": true,
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every figure recorded is written in the words quoted",
+      "query": ["find", "?claim", ["unquoted", "?claim", "?_", "?_"]],
+      "expect": "none",
+      "rests_on": []
+    },
+    {
+      "stage": "reading",
+      "check": "Every source in the corpus was read and recorded",
+      "query": [
+        "array/length",
+        [
+          "aggregate/unique",
+          ["find", "?source", ["claim", "?_", "?source", "?_", "?_"]]
+        ]
+      ],
+      "expect": 7,
+      "rests_on": [
+        "fy25-release",
+        "fy25-annual-report",
+        "cargo-ledger",
+        "ashgrove-note",
+        "licensing-registry",
+        "supply-notes",
+        "reefer-quarterly"
+      ]
+    },
+
+    {
+      "stage": "framing",
+      "check": "The frame names the fields that pick a reading of a question",
+      "query": ["find", "?key", ["reading", "?key"]],
+      "expect": "some",
+      "rests_on": []
+    },
+    {
+      "stage": "framing",
+      "check": "Every statement recorded is read by an answer rule",
+      "query": [
+        "find",
+        "?claim",
+        [
+          "and",
+          ["claim", "?claim", "?_", "?_", "?_"],
+          ["not", ["answer", "?_", "?_", "?claim"]]
+        ]
+      ],
+      "expect": "none",
+      "rests_on": []
+    },
+
+    {
+      "stage": "conclusions",
+      "check": "Tarnwell restated fiscal 2025 revenue from $412.6M to $409.8M",
+      "query": [
+        "find",
+        "?publisher",
+        ["restated", "?_", "?publisher", 412.6, 409.8]
+      ],
+      "expect": "some",
+      "rests_on": ["fy25-release", "fy25-annual-report"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Nobody stands behind the withdrawn $412.6M any more",
+      "query": ["find", "?question", ["backing", "?question", 412.6, "?_"]],
+      "expect": "none",
+      "rests_on": ["fy25-annual-report"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Supply Notes credits the release with 2,400 employees, and the release says 2,140",
+      "query": [
+        "find",
+        "?claim",
+        ["misquoted", "?claim", "?_", "?_", 2400, 2140]
+      ],
+      "expect": "some",
+      "rests_on": ["supply-notes", "fy25-release"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "Sources dispute the warehouse count: 37 or 39",
+      "query": [
+        "find",
+        "?question",
+        [
+          "and",
+          ["disputed", "?question", "?values"],
+          ["in", 37, "?values"],
+          ["in", 39, "?values"]
+        ]
+      ],
+      "expect": "some",
+      "rests_on": ["cargo-ledger"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "37 warehouses is confirmed by a publisher outside the company",
+      "query": ["find", "?question", ["corroborated", "?question", 37]],
+      "expect": "some",
+      "rests_on": ["licensing-registry"]
+    },
+    {
+      "stage": "conclusions",
+      "check": "2,140 employees rests on Tarnwell's word alone",
+      "query": [
+        "find",
+        "?publisher",
+        ["single_origin", "?_", 2140, "?publisher"]
+      ],
+      "expect": "some",
+      "rests_on": []
+    },
+    {
+      "stage": "conclusions",
+      "check": "Revenue's two senses are flagged for the reader, or the reader's choice is recorded",
+      "query": [
+        "find",
+        "?key",
+        [
+          "or",
+          ["ambiguous", "?_", "?key", "?_"],
+          ["decided", "?key", "?_", "?_"]
+        ]
+      ],
+      "expect": "some",
+      "rests_on": []
+    },
+
+    {
+      "stage": "page",
+      "check": "The page was built",
+      "file": "explorer.html",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "Every text and query of the page runs",
+      "page": "runs",
+      "rests_on": []
+    },
+    {
+      "stage": "page",
+      "check": "The page works out the gross margin on reported revenue, 26.4%",
+      "page": "26.4",
+      "rests_on": ["fy25-annual-report"]
+    },
+    {
+      "stage": "page",
+      "check": "The page gives the restated revenue, $409.8M",
+      "page": "409.8",
+      "rests_on": ["fy25-annual-report"]
+    },
+    {
+      "stage": "page",
+      "check": "The page names no question a choice set aside or that has two senses",
+      "page": "plain",
+      "rests_on": []
+    },
+
+    {
+      "stage": "report",
+      "check": "The report gives revenue as restated, $409.8M",
+      "report": "409\\.8",
+      "rests_on": []
+    },
+    {
+      "stage": "report",
+      "check": "The report says the earlier figure was $412.6M",
+      "report": "412\\.6",
+      "rests_on": []
+    },
+    {
+      "stage": "report",
+      "check": "The report gives the gross margin, 26.4%",
+      "report": "26\\.4",
+      "rests_on": []
+    },
+    {
+      "stage": "report",
+      "check": "The report says a source counts 39 warehouses",
+      "report": "\\b39\\b",
+      "rests_on": []
+    },
+    {
+      "stage": "report",
+      "check": "The report says the blog misquotes the headcount as 2,400",
+      "report": "2,?400",
+      "rests_on": []
+    }
+  ]
+}

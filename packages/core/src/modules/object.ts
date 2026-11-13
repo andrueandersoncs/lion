@@ -2,6 +2,7 @@ import { Effect, flow, Record, Schema } from "effect";
 import { atLeast, logicError, takes } from "@/errors/evaluation";
 import { show as written } from "@/logic/terms";
 import { over } from "@/modules/lib/shared";
+import { RecordKeySchema } from "@/schemas/lion-expression";
 
 const show = (value: unknown) => {
   try {
@@ -288,6 +289,19 @@ export const module = {
   keys: over([Entries], Record.keys),
 
   values: over([Entries], Record.values),
+
+  /**
+   * A new record with the key holding the value, as `hash-set` gives in
+   * Racket. The record it was given is unchanged.
+   */
+  set: over([Entries, RecordKeySchema, Schema.Unknown], (record, key, value) =>
+    Record.set(record, key, value)
+  ),
+
+  /** A new record without the key, as `hash-remove` gives in Racket. */
+  remove: over([Entries, RecordKeySchema], (record, key) =>
+    Record.remove(record, key)
+  ),
 
   "new": takes(atLeast(1), (classRef: unknown, ...args: unknown[]) =>
     Effect.gen(function* () {

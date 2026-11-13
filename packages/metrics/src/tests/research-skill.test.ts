@@ -7,11 +7,11 @@
  * against JavaScript's, and the page against what it was given.
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, symlinkSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
-import { Arbitrary, Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { canonical, evaluate, load } from "../lion.ts";
 import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, oneOf, text } from "./generators.ts";
@@ -45,15 +45,18 @@ interface World {
   /** A claim's id, and a source its own source says it took the claim from. */
   readonly attributed: readonly (readonly [string, string])[];
   readonly claims: readonly Claim[];
+  /** When each source was published, if it says. */
+  readonly published: Readonly<Record<string, number | null>>;
   /** Who stands behind each source. Sources that share one are one voice. */
   readonly publishers: Readonly<Record<string, string>>;
   readonly sources: readonly string[];
 }
 
 /**
- * A few sources and claims, with few enough publishers, topics, and values
- * that sources often share a publisher, claims often say the same thing, and
- * a claim is often credited to a source that says something else.
+ * A few sources and claims, with few enough publishers, topics, values, and
+ * dates that sources often share a publisher, claims often say the same
+ * thing, a publisher often says something else later, and a claim is often
+ * credited to a source that says something else.
  */
 const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
   Arbitrary.all({
@@ -67,7 +70,7 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
         topic: between(0, 1),
         value: between(0, 1),
       }),
-      { maxLength: 6 }
+      { maxLength: 8 }
     ),
     publishers: Arbitrary.all([
       between(0, 2),
@@ -75,9 +78,10 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
       between(0, 2),
       between(0, 2),
     ]),
+    published: Arbitrary.array(between(0, 3), { minLength: 4, maxLength: 4 }),
     sourceCount: between(1, 4),
   }),
-  ({ attributed, claims, publishers, sourceCount }) => {
+  ({ attributed, claims, published, publishers, sourceCount }) => {
     const named = claims.map((claim, at) => ({
       id: `c${at}`,
       note: claim.note,
@@ -98,6 +102,10 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.map(
         ...new Map(pairs.map((pair) => [pair.join(), pair])).values(),
       ],
       claims: named,
+      // Day 0 stands for a source that gives no date.
+      published: Object.fromEntries(
+        published.map((day, at) => [`s${at}`, day === 0 ? null : day])
+      ),
       publishers: Object.fromEntries(
         publishers.map((publisher, at) => [`s${at}`, `p${publisher}`])
       ),
@@ -114,7 +122,13 @@ const rows = (columns: readonly string[], goal: readonly unknown[]) => [
   goal,
 ];
 
-const program = ({ attributed, claims, publishers, sources }: World) => [
+const program = ({
+  attributed,
+  claims,
+  published,
+  publishers,
+  sources,
+}: World) => [
   "begin",
   core,
   [
@@ -126,7 +140,7 @@ const program = ({ attributed, claims, publishers, sources }: World) => [
       ["quote", `Source ${source}`],
       publishers[source],
       "primary",
-      null,
+      published[source] ?? null,
     ]),
     ...claims.map((claim) => [
       "claim",
@@ -176,6 +190,10 @@ const program = ({ attributed, claims, publishers, sources }: World) => [
       ["?publisher", "?answers"],
       ["reliance", "?publisher", "?answers"]
     ),
+    restated: rows(
+      ["?question", "?publisher", "?before", "?after"],
+      ["restated", "?question", "?publisher", "?before", "?after"]
+    ),
     secondhand: rows(
       ["?question", "?value", "?credited"],
       ["secondhand", "?question", "?value", "?credited"]
@@ -194,24 +212,84 @@ const unique = <A>(items: readonly A[]) => [
 
 /**
  * What the skill says its core derives, computed the plain way. A claim is
- * first-hand when its source credits nobody for it. An answer is backed by
- * the publishers who give it first-hand, is second-hand when nobody does, and
- * is misquoted when the source it is credited to answers the question, and
- * never with that value.
+ * first-hand when its source credits nobody for it. A publisher restates an
+ * answer when its latest dated word on the question gives other values and
+ * not that one. An answer is backed by the publishers who give it first-hand
+ * and have not restated it, is withdrawn when it was restated and nobody
+ * backs it, is second-hand when nobody gives it first-hand, and is misquoted
+ * when the source it is credited to answers the question, and never with
+ * that value.
  */
-const expected = ({ attributed, claims, publishers }: World) => {
+const expected = ({ attributed, claims, published, publishers }: World) => {
   const creditsOf = (claim: Claim) =>
     attributed.filter(([id]) => id === claim.id).map(([, to]) => to);
+  const said = claims
+    .filter((claim) => creditsOf(claim).length === 0)
+    .map((claim) => ({
+      day: published[claim.source] ?? null,
+      publisher: publishers[claim.source] as string,
+      topic: claim.topic,
+      value: claim.value,
+    }));
+  const restated = unique(
+    said.flatMap((earlier) => {
+      const days = said
+        .filter(
+          (other) =>
+            other.topic === earlier.topic &&
+            other.publisher === earlier.publisher &&
+            other.day !== null
+        )
+        .map((other) => other.day as number);
+      const last = Math.max(...days);
+      const latest = said.filter(
+        (other) =>
+          other.topic === earlier.topic &&
+          other.publisher === earlier.publisher &&
+          other.day === last
+      );
+      return earlier.day !== null &&
+        earlier.day < last &&
+        !latest.some((other) => other.value === earlier.value)
+        ? latest.map((other) => [
+            { topic: earlier.topic },
+            earlier.publisher,
+            earlier.value,
+            other.value,
+          ])
+        : [];
+    })
+  );
+  const isRestated = (topic: string, publisher: string, value: number) =>
+    restated.some(
+      ([question, by, before]) =>
+        canonical(question) === canonical({ topic }) &&
+        by === publisher &&
+        before === value
+    );
   const answers = unique(claims.map(({ topic, value }) => ({ topic, value })));
+  const backersOf = ({ topic, value }: { topic: string; value: number }) =>
+    unique(
+      said
+        .filter(
+          (s) =>
+            s.topic === topic &&
+            s.value === value &&
+            !isRestated(topic, s.publisher, value)
+        )
+        .map((s) => s.publisher)
+    ).sort();
+  const withdrawn = (answer: { topic: string; value: number }) =>
+    backersOf(answer).length === 0 &&
+    restated.some(
+      ([question, , before]) =>
+        canonical(question) === canonical({ topic: answer.topic }) &&
+        before === answer.value
+    );
   const giving = ({ topic, value }: { topic: string; value: number }) =>
     claims.filter((claim) => claim.topic === topic && claim.value === value);
   const backing = answers.flatMap((answer) => {
-    const firsthand = giving(answer).filter(
-      (claim) => creditsOf(claim).length === 0
-    );
-    const backers = unique(
-      firsthand.map((claim) => publishers[claim.source])
-    ).sort();
+    const backers = backersOf(answer);
     return backers.length === 0 ? [] : [{ ...answer, backers }];
   });
   const single = backing.filter(({ backers }) => backers.length === 1);
@@ -226,7 +304,10 @@ const expected = ({ attributed, claims, publishers }: World) => {
       .map(({ topic, value }) => [{ topic }, value]),
     disputed: unique(claims.map((claim) => claim.topic)).flatMap((topic) => {
       const values = unique(
-        claims.filter((claim) => claim.topic === topic).map((c) => c.value)
+        claims
+          .filter((claim) => claim.topic === topic)
+          .map((c) => c.value)
+          .filter((value) => !withdrawn({ topic, value }))
       ).sort();
       return values.length > 1 ? [[{ topic }, values]] : [];
     }),
@@ -253,10 +334,12 @@ const expected = ({ attributed, claims, publishers }: World) => {
         single.filter(({ backers }) => backers[0] === publisher).length,
       ]
     ),
+    restated,
     secondhand: answers.flatMap((answer) => {
       const given = giving(answer);
       const credited = unique(given.flatMap(creditsOf)).sort();
-      return given.some((claim) => creditsOf(claim).length === 0) ||
+      return backersOf(answer).length > 0 ||
+        withdrawn(answer) ||
         credited.length === 0
         ? []
         : [[{ topic: answer.topic }, answer.value, credited]];
@@ -281,6 +364,17 @@ const asSets = (answers: Record<string, readonly unknown[]>) =>
     ])
   );
 
+/** Text in order, with null, a sense nobody stated, first, as Lion sorts it. */
+const nullFirst = (a: string | null, b: string | null) => {
+  if (a === b) {
+    return 0;
+  }
+  if (a === null) {
+    return -1;
+  }
+  return b === null ? 1 : a.localeCompare(b);
+};
+
 describe("the research skill's core rules", () => {
   it.effect.prop(
     "derive what a plain model of provenance derives",
@@ -290,6 +384,286 @@ describe("the research skill's core rules", () => {
         const outcome = yield* answerOf(program(given));
         expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
           asSets(expected(given))
+        );
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "take a publisher's later word over its earlier one, also where others relay the earlier",
+    {
+      before: between(0, 50),
+      change: between(1, 50),
+      day: between(1, 9),
+      gap: between(1, 9),
+      others: between(0, 2),
+      relays: between(0, 3),
+    },
+    ({ before, change, day, gap, others, relays }) =>
+      Effect.gen(function* () {
+        const after = before + change;
+        const source = (id: string, publisher: string, on: number) => [
+          "source",
+          id,
+          `https://example.com/${id}`,
+          ["quote", id],
+          ["quote", publisher],
+          "primary",
+          on,
+        ];
+        const claim = (id: string, from: string, value: number) => [
+          "claim",
+          id,
+          from,
+          ["quote", "said so"],
+          ["quote", { topic: "t", value }],
+        ];
+        const relayed = Array.from({ length: relays }, (_, at) => `r${at}`);
+        const other = Array.from({ length: others }, (_, at) => `o${at}`);
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          [
+            "fact",
+            source("early", "Acme", day),
+            source("late", "Acme", day + gap),
+            claim("c-early", "early", before),
+            claim("c-late", "late", after),
+            ...relayed.flatMap((id) => [
+              source(id, `Relay ${id}`, day),
+              claim(`c-${id}`, id, before),
+              ["attributed", `c-${id}`, "early"],
+            ]),
+            ...other.flatMap((id) => [
+              source(id, `Other ${id}`, day),
+              claim(`c-${id}`, id, before),
+            ]),
+          ],
+          [
+            "rule",
+            ["answer", { topic: "?topic" }, "?value", "?claim"],
+            [
+              "claim",
+              "?claim",
+              "?_",
+              "?_",
+              ["schema/open", { topic: "?topic", value: "?value" }],
+            ],
+          ],
+          {
+            backing: rows(
+              ["?value", "?publishers"],
+              ["backing", { topic: "t" }, "?value", "?publishers"]
+            ),
+            disputed: ["find", "?values", ["disputed", "?_", "?values"]],
+            misquoted: [
+              "find",
+              "?c",
+              ["misquoted", "?c", "?_", "?_", "?_", "?_"],
+            ],
+            restated: rows(
+              ["?publisher", "?before", "?after"],
+              ["restated", "?_", "?publisher", "?before", "?after"]
+            ),
+            secondhand: ["find", "?v", ["secondhand", "?_", "?v", "?_"]],
+          },
+        ]);
+        const others_ = other.map((id) => `Other ${id}`).sort();
+        expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
+          asSets({
+            backing: [
+              [after, ["Acme"]],
+              ...(others > 0 ? [[before, others_]] : []),
+            ],
+            // Without another voice, the earlier figure is withdrawn.
+            disputed: others > 0 ? [[before, after]] : [],
+            misquoted: [],
+            restated: [["Acme", before, after]],
+            secondhand: [],
+          })
+        );
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "find each number a claim states that its quote does not write",
+    {
+      claims: Arbitrary.array(
+        Arbitrary.all({
+          fields: Arbitrary.array(
+            Arbitrary.all({ from: between(0, 3), stray: between(-9999, 9999) }),
+            { maxLength: 3 }
+          ),
+          written: Arbitrary.array(between(-2_000_000, 2_000_000), {
+            maxLength: 3,
+          }),
+        }),
+        { maxLength: 4 }
+      ),
+      context: Arbitrary.schema(Schema.Boolean),
+    },
+    ({ claims, context }) =>
+      Effect.gen(function* () {
+        // A field holds one of the numbers written in the quote, or another.
+        const stated = claims.map(({ fields, written }) =>
+          Object.fromEntries(
+            fields.map(({ from, stray }, at) => [
+              at === 0 ? "year" : `n${at}`,
+              written[from] ?? stray,
+            ])
+          )
+        );
+        const quotes = claims.map(({ written }) =>
+          written
+            .map((n) => `about ${n.toLocaleString("en-US")} units`)
+            .join(" and ")
+        );
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          [
+            "fact",
+            ["source", "s", "https://example.com", "s", "S", "primary", null],
+            ...stated.map((says, at) => [
+              "claim",
+              `c${at}`,
+              "s",
+              ["quote", quotes[at]],
+              ["quote", { ...says, kind: "figure" }],
+            ]),
+            ...(context ? [["context", "year"]] : []),
+          ],
+          rows(
+            ["?claim", "?field", "?value"],
+            ["unquoted", "?claim", "?field", "?value"]
+          ),
+        ]);
+        expect(
+          outcome.ok
+            ? (outcome.value as unknown[]).map(canonical).sort()
+            : outcome
+        ).toEqual(
+          stated
+            .flatMap((says, at) =>
+              Object.entries(says)
+                .filter(
+                  ([field, value]) =>
+                    !(
+                      (context && field === "year") ||
+                      (claims[at]?.written ?? []).includes(value)
+                    )
+                )
+                .map(([field, value]) => canonical([`c${at}`, field, value]))
+            )
+            .sort()
+        );
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "say which readings of a question sources answer, and which the reader's choices keep",
+    {
+      answered: Arbitrary.array(
+        Arbitrary.all({
+          basis: between(0, 2),
+          period: between(0, 2),
+          topic: between(0, 1),
+        }),
+        { maxLength: 6 }
+      ),
+      chosen: Arbitrary.all({ basis: between(0, 2), period: between(0, 2) }),
+      readings: Arbitrary.all({
+        basis: Arbitrary.schema(Schema.Boolean),
+        period: Arbitrary.schema(Schema.Boolean),
+      }),
+    },
+    ({ answered, chosen, readings }) =>
+      Effect.gen(function* () {
+        const word = (at: number) => [null, "a", "b"][at] ?? null;
+        const KEYS = ["basis", "period"] as const;
+        // Each question states a reading of a key, or leaves the key out.
+        const questions = unique(
+          answered.map((q) => ({
+            topic: `t${q.topic}`,
+            ...(word(q.basis) === null ? {} : { basis: word(q.basis) }),
+            ...(word(q.period) === null ? {} : { period: word(q.period) }),
+          }))
+        ) as Record<string, string>[];
+        const isReading = (key: string) =>
+          readings[key as (typeof KEYS)[number]] ?? false;
+        const decision = (key: (typeof KEYS)[number]) =>
+          isReading(key) ? word(chosen[key]) : null;
+        const baseOf = (q: Record<string, string>) =>
+          Object.fromEntries(
+            Object.entries(q).filter(([key]) => !isReading(key))
+          );
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          [
+            "fact",
+            ["source", "s", "https://example.com", "s", "S", "primary", null],
+            ...questions.map((q, at) => [
+              "claim",
+              `c${at}`,
+              "s",
+              "said so",
+              ["quote", { ...q, value: at }],
+            ]),
+            ...KEYS.filter(isReading).map((key) => ["reading", key]),
+            ...KEYS.flatMap((key) => {
+              const value = decision(key);
+              return value === null ? [] : [["decided", key, value, "chosen"]];
+            }),
+          ],
+          [
+            "rule",
+            ["answer", ["object/remove", "?says", "value"], "?v", "?c"],
+            ["claim", "?c", "?_", "?_", "?says"],
+            ["=", "?v", ["object/get", "?says", "value"]],
+          ],
+          {
+            ambiguous: rows(
+              ["?base", "?key", "?values"],
+              ["ambiguous", "?base", "?key", "?values"]
+            ),
+            meant: rows(["?base", "?q"], ["meant", "?base", "?q"]),
+            set_aside: rows(
+              ["?q", "?key", "?stated", "?chosen"],
+              ["set_aside", "?q", "?key", "?stated", "?chosen"]
+            ),
+          },
+        ]);
+        const bases = unique(questions.map(baseOf));
+        const setAside = questions.flatMap((q) =>
+          KEYS.flatMap((key) => {
+            const value = decision(key);
+            return value !== null && key in q && q[key] !== value
+              ? [[q, key, q[key], value]]
+              : [];
+          })
+        );
+        expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
+          asSets({
+            ambiguous: bases.flatMap((base) =>
+              KEYS.filter((key) => isReading(key) && decision(key) === null)
+                .map((key) => {
+                  const values = unique(
+                    questions
+                      .filter((q) => canonical(baseOf(q)) === canonical(base))
+                      .map((q) => q[key] ?? null)
+                  ).sort(nullFirst);
+                  return [base, key, values];
+                })
+                .filter(([, , values]) => (values as unknown[]).length > 1)
+            ),
+            meant: questions
+              .filter((q) => !setAside.some(([aside]) => aside === q))
+              .map((q) => [baseOf(q), q]),
+            set_aside: setAside,
+          })
         );
       }),
     OPTIONS
@@ -346,15 +720,25 @@ describe("the research skill's clock, as text", () => {
   );
 });
 
+interface Passages {
+  readonly marks: Record<string, readonly [number, number]>;
+  readonly texts: Record<string, string>;
+}
 type Build = (page: {
   readonly database: unknown;
   readonly generated: string;
   readonly page: unknown;
+  readonly passages?: Passages;
 }) => string;
 type Queries = (page: unknown) => Record<string, unknown>;
 
 const builder = import(join(SKILL, "scripts/build-explorer.mjs")) as Promise<{
   readonly buildExplorer: Build;
+  readonly namedReadingsOf: Queries;
+  readonly passagesOf: (
+    database: unknown,
+    textOf: (source: string) => string | undefined
+  ) => Passages;
   readonly queriesOf: Queries;
 }>;
 
@@ -421,11 +805,17 @@ describe("the research skill's explorer page", () => {
             ],
           },
         };
-        const html = buildExplorer(page);
+        // The saved text of a source, and where a quote stands in it.
+        const passages = {
+          marks: { [answer]: [0, summary.length] as const },
+          texts: { [question]: summary },
+        };
+        const html = buildExplorer({ ...page, passages });
         // A browser ends each element at its first closing tag, as these do.
         // The page also carries the wording helpers, the same for every plan.
         expect(JSON.parse(DATA.exec(html)?.[1] ?? "null")).toEqual({
           ...page,
+          ...passages,
           words: asset("words.json"),
         });
         expect(unescaped(TITLE.exec(html)?.[1] ?? "")).toBe(title);
@@ -566,7 +956,73 @@ describe("the research skill's quote check", () => {
       }),
     OPTIONS
   );
+
+  it.effect.prop(
+    "points at the first stretch of the text that reads as the quote, which the page then carries",
+    {
+      before: element(["", "  ", "\n\n", "é ", "é ", "… "]),
+      from: between(0, 5),
+      gaps: Arbitrary.array(gap, { minLength: 1, maxLength: 4 }),
+      length: between(1, 4),
+      marks: Arbitrary.array(mark, { minLength: 1, maxLength: 4 }),
+      twice: Arbitrary.schema(Schema.Boolean),
+      words: Arbitrary.array(word, { minLength: 6, maxLength: 12 }),
+    },
+    ({ before, from, gaps, length, marks, twice, words }) =>
+      Effect.gen(function* () {
+        const { normalize, whereIn } = yield* Effect.promise(() => locator);
+        const { passagesOf } = yield* Effect.promise(() => builder);
+        const page = words.map(
+          (part, at) => part + (marks[at % marks.length] ?? "")
+        );
+        const quote = words
+          .slice(from, from + length)
+          .map(
+            (part, at) => part + plain(marks[(from + at) % marks.length] ?? "")
+          )
+          .join(" ");
+        const saved = respaced(page, gaps);
+        const held = before + saved + (twice ? ` ${saved}` : "");
+        const at = whereIn(held, quote);
+        expect(at).toBeDefined();
+        const [start, end] = at ?? [0, 0];
+        expect(normalize(held.slice(start, end))).toBe(normalize(quote));
+        // No stretch that ends earlier reads as the quote.
+        expect(
+          normalize(held.slice(0, end - 1)).includes(normalize(quote))
+        ).toBe(false);
+        expect(whereIn(held, `${quote} ZZZ`)).toBeUndefined();
+        // Spacing around a quote is not part of it.
+        expect(whereIn(held, ` \n${quote}\t`)).toEqual(at);
+        const model = [
+          "begin",
+          [
+            "fact",
+            ["claim", "in", "read", ["quote", quote], {}],
+            ["claim", "out", "read", `${quote} ZZZ`, {}],
+            ["claim", "none", "unread", quote, {}],
+            ["claim", "lost", "other", quote, {}],
+          ],
+        ];
+        // A source whose quotes are not in its text is not carried.
+        const textOf = (source: string) =>
+          ({ other: "0 1 2", read: held })[source];
+        expect(passagesOf(model, textOf)).toEqual({
+          marks: { in: [start, end] },
+          texts: { read: held },
+        });
+      }),
+    OPTIONS
+  );
 });
+
+const locator = scripts<{
+  readonly normalize: (text: string) => string;
+  readonly whereIn: (
+    text: string,
+    quote: string
+  ) => readonly [number, number] | undefined;
+}>("check-quotes.mjs");
 
 /** The skill is installed as a link, so its scripts are started through one. */
 const linked = mkdtempSync(join(tmpdir(), "lion-research-"));
@@ -656,6 +1112,142 @@ describe("the research skill's lookups", () => {
   );
 });
 
+describe("the research skill's page check", () => {
+  it.effect.prop(
+    "holds every text and query the plan computes, also when blocks share a title",
+    {
+      views: Arbitrary.array(
+        Arbitrary.all({
+          name: element(["A", "B"]),
+          titles: Arbitrary.array(element(["Q", "R", undefined]), {
+            maxLength: 4,
+          }),
+        }),
+        { maxLength: 3 }
+      ),
+    },
+    ({ views }) =>
+      Effect.gen(function* () {
+        const { queriesOf } = yield* Effect.promise(() => builder);
+        let next = 0;
+        const plan = {
+          summary: ["quote", next++],
+          views: views.map(({ name, titles }) => ({
+            blocks: titles.map((title) => ({
+              answer: ["quote", next++],
+              evidence: ["query", ["=", "?x", next++]],
+              ...(title === undefined ? {} : { question: title }),
+              type: "answer",
+            })),
+            name,
+          })),
+        };
+        const asked = Object.values(queriesOf(plan)).map((each) =>
+          canonical((each as unknown[]).at(-1))
+        );
+        const given = [
+          plan.summary,
+          ...plan.views.flatMap((view) =>
+            view.blocks.flatMap((block) => [block.answer, block.evidence])
+          ),
+        ];
+        expect(asked.sort()).toEqual(given.map(canonical).sort());
+      })
+  );
+});
+
+/** Questions a plan may name: a base, two readings of it, another, and a pattern. */
+const NAMED = [
+  { t: "x" },
+  { basis: "a", t: "x" },
+  { basis: "b", t: "x" },
+  { t: "y" },
+  { t: "?any" },
+];
+
+describe("the research skill's page check", () => {
+  it.effect.prop(
+    "names each question the plan names that a choice set aside, or that has readings nobody chose between",
+    {
+      chosen: element([null, "a", "b"]),
+      named: Arbitrary.array(between(0, NAMED.length - 1), { maxLength: 6 }),
+      viaMeant: Arbitrary.array(between(0, NAMED.length - 1), { maxLength: 3 }),
+    },
+    ({ chosen, named, viaMeant }) =>
+      Effect.gen(function* () {
+        const { namedReadingsOf } = yield* Effect.promise(() => builder);
+        const asked = named.map((at) => NAMED[at]);
+        const plan = {
+          views: [
+            {
+              blocks: [
+                ...asked.map((question) => ({
+                  answer: [
+                    "words/listed",
+                    ["find", "?v", ["answer", question, "?v", "?_"]],
+                  ],
+                  evidence: ["query", ["answer", question, "?v", "?_"]],
+                  question: "?",
+                  type: "answer",
+                })),
+                // A base handed to `meant` is how a plan should ask about it.
+                ...viaMeant.map((at) => ({
+                  evidence: ["query", ["meant", NAMED[at], "?q"]],
+                  question: "?",
+                  type: "answer",
+                })),
+              ],
+              name: "v",
+            },
+          ],
+        };
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          [
+            "fact",
+            ["reading", "basis"],
+            ["source", "s", "https://example.com", "s", "S", "primary", null],
+            ...NAMED.slice(1, 4).map((says, at) => [
+              "claim",
+              `c${at}`,
+              "s",
+              "said so",
+              ["quote", { ...says, value: at }],
+            ]),
+            ...(chosen === null ? [] : [["decided", "basis", chosen, "mine"]]),
+          ],
+          [
+            "rule",
+            ["answer", ["object/remove", "?says", "value"], "?v", "?c"],
+            ["claim", "?c", "?_", "?_", "?says"],
+            ["=", "?v", ["object/get", "?says", "value"]],
+          ],
+          namedReadingsOf(plan),
+        ]);
+        // Undecided, the base has two readings; decided, the other one is set aside.
+        const flagged =
+          chosen === null
+            ? [{ t: "x" }]
+            : [{ basis: chosen === "a" ? "b" : "a", t: "x" }];
+        const expected = unique(
+          asked.filter((question) =>
+            flagged.some((other) => canonical(other) === canonical(question))
+          )
+        );
+        expect(
+          outcome.ok
+            ? Object.values(outcome.value as never)
+                .flat()
+                .map(canonical)
+                .sort()
+            : outcome
+        ).toEqual(expected.map(canonical).sort());
+      }),
+    OPTIONS
+  );
+});
+
 const words = asset("words.json") as Record<string, unknown>;
 const withWords = (expression: unknown) => [
   "begin",
@@ -711,6 +1303,12 @@ interface Notes {
     readonly quote: string;
     readonly says: unknown;
     readonly source: string;
+    readonly where?: string;
+  }[];
+  readonly decisions?: readonly {
+    readonly key: string;
+    readonly value: unknown;
+    readonly words: string;
   }[];
   readonly sources: readonly Record<string, unknown>[];
 }
@@ -750,7 +1348,10 @@ describe("the research skill's recorder", () => {
             // A record key is never empty here: Lion drops an empty key.
             says: { [`k${says}`]: [says, at] },
             source: `s-${id}`,
+            // Where the quote stands is given for every other claim.
+            ...(at % 2 === 0 ? { where: `${says} ${at}` } : {}),
           })),
+          decisions: [{ key: `k${says}`, value: says, words: quote }],
           sources: names.map((id) => ({
             id: `s-${id}`,
             kind: "primary",
@@ -763,11 +1364,21 @@ describe("the research skill's recorder", () => {
         const outcome = yield* answerOf([
           "begin",
           core,
+          // A decision is about a key the frame says picks a reading.
+          ["fact", ["reading", ["quote", `k${says}`]]],
           stepOf(notes),
           {
             attributed: rows(
               ["?claim", "?to"],
               ["attributed", "?claim", "?to"]
+            ),
+            decided: rows(
+              ["?key", "?value", "?words"],
+              ["decided", "?key", "?value", "?words"]
+            ),
+            located: rows(
+              ["?claim", "?where"],
+              ["located", "?claim", "?where"]
             ),
             claims: ["query", ["claim", "?id", "?source", "?quote", "?says"]],
             publishers: [
@@ -785,7 +1396,9 @@ describe("the research skill's recorder", () => {
         expect({
           attributed: sorted(got.attributed ?? []),
           claims: sorted(got.claims ?? []),
+          decided: sorted(got.decided ?? []),
           failed: outcome.ok ? undefined : outcome,
+          located: sorted(got.located ?? []),
           publishers: sorted(got.publishers ?? []),
         }).toEqual({
           attributed: sorted(
@@ -801,7 +1414,13 @@ describe("the research skill's recorder", () => {
               source: claim.source,
             }))
           ),
+          decided: sorted([[`k${says}`, says, quote]]),
           failed: undefined,
+          located: sorted(
+            notes.claims.flatMap((claim) =>
+              claim.where === undefined ? [] : [[claim.id, claim.where]]
+            )
+          ),
           publishers: sorted(names),
         });
         const saved = (held: string) => (source: string) =>
@@ -846,5 +1465,112 @@ describe("the research skill's replay", () => {
         });
       }),
     OPTIONS
+  );
+});
+
+const CASE = join(SKILL, "evals/verifies-company-figures");
+
+interface Check {
+  readonly check: string;
+  readonly rests_on: readonly string[];
+}
+
+const grader = import(join(CASE, "grade.mjs")) as Promise<{
+  readonly answers: () => readonly Check[];
+  readonly queriesOf: (checks: readonly Check[]) => Record<string, unknown>;
+  readonly verdicts: (
+    checks: readonly Check[],
+    found: Record<string, unknown>
+  ) => readonly (Check & { readonly pass: boolean })[];
+}>;
+
+const caseFile = (...path: string[]) =>
+  readFileSync(join(CASE, ...path), "utf8");
+
+/** The corpus's sources, by the id each is recorded under. */
+const TEXT_FILE = /\.txt$/;
+const CORPUS = readdirSync(join(CASE, "corpus")).map((name) =>
+  name.replace(TEXT_FILE, "")
+);
+
+describe("the research skill's frozen eval", () => {
+  it.effect.prop(
+    "passes the reference run, and fails just the checks that rest on a source it did not read, in whatever order each note lists them",
+    { first: between(0, 7), reversed: Arbitrary.schema(Schema.Boolean) },
+    ({ first, reversed }) =>
+      Effect.gen(function* () {
+        const { answers, queriesOf, verdicts } = yield* Effect.promise(
+          () => grader
+        );
+        const { stepOf } = yield* Effect.promise(() => recorder);
+        const { namedReadingsOf, queriesOf: pageQueries } =
+          yield* Effect.promise(() => builder);
+        const { checkQuotes } = yield* Effect.promise(() => checker);
+        const page = JSON.parse(caseFile("reference/page.json"));
+        const checks = answers();
+        // A note is one change, so the order of its sources and claims is free.
+        const reordered = <A>(items: readonly A[]) => {
+          const at = first % Math.max(1, items.length);
+          const turned = [...items.slice(at), ...items.slice(0, at)];
+          return reversed ? turned.reverse() : turned;
+        };
+        const names = readdirSync(join(CASE, "reference/notes")).sort();
+        // Every source is left out in turn, and none.
+        for (const dropped of [undefined, ...CORPUS]) {
+          // A source left unread keeps its place, so what credits it still can.
+          const notes = names
+            .map((name) => JSON.parse(caseFile("reference/notes", name)))
+            .map((note) => ({
+              ...note,
+              claims: reordered(
+                note.claims.filter(
+                  (claim: { source: string }) => claim.source !== dropped
+                )
+              ),
+              sources: reordered(note.sources),
+            }));
+          const model = [
+            core,
+            JSON.parse(caseFile("reference/frame.src.json")),
+            ...notes.map(stepOf),
+          ];
+          const queried = yield* answerOf([
+            "begin",
+            ...model,
+            queriesOf(checks),
+          ]);
+          const worded = yield* answerOf([
+            "begin",
+            ...model,
+            { ...pageQueries(page), ...namedReadingsOf(page) },
+          ]);
+          const quotes = checkQuotes(
+            notes.flatMap((note) => note.claims),
+            (source) =>
+              CORPUS.includes(source)
+                ? caseFile("corpus", `${source}.txt`)
+                : undefined
+          );
+          const failed = verdicts(checks, {
+            files: ["explorer.html", "report.md", "page-check.json"],
+            page: worded.ok ? worded.value : undefined,
+            queried: queried.ok ? queried.value : undefined,
+            quotes: { missing: quotes.missing.length },
+            report: caseFile("reference/report.md"),
+          })
+            .filter((verdict) => !verdict.pass)
+            .map((verdict) => verdict.check);
+          expect(failed.sort(), `without ${dropped}`).toEqual(
+            checks
+              .filter(
+                (check) =>
+                  dropped !== undefined && check.rests_on.includes(dropped)
+              )
+              .map((check) => check.check)
+              .sort()
+          );
+        }
+      }),
+    { arbitrary: { runs: 12 } }
   );
 });

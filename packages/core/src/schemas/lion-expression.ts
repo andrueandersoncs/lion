@@ -20,13 +20,13 @@ export type LionArrayExpressionType = typeof LionArrayExpressionSchema.Type;
 
 const DISALLOWED_KEYS = ["__proto__"] as const;
 
-// record: any key JSON allows, the empty key among them, but __proto__
+/** A key a record can hold: any JSON allows, the empty key among them, but __proto__. */
+export const RecordKeySchema = Schema.String.pipe(
+  Schema.check(Schema.makeFilter((key) => !Arr.contains(DISALLOWED_KEYS, key)))
+);
+
 export const LionRecordExpressionSchema = Schema.Record(
-  Schema.String.pipe(
-    Schema.check(
-      Schema.makeFilter((key) => !Arr.contains(DISALLOWED_KEYS, key))
-    )
-  ),
+  RecordKeySchema,
   Schema.suspend(
     (): Schema.Codec<AssumedExpressionType> => LionExpressionSchema
   )

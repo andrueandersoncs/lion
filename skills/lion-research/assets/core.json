@@ -21,10 +21,28 @@
   ["relation", "claim", ["id", "source", "quote", "says"], { "key": "id" }],
   ["relation", "attributed", ["claim", "to"]],
   ["relation", "assumption", ["id", "statement"], { "key": "id" }],
+  ["relation", "located", ["claim", "where"], { "key": "claim" }],
+  ["relation", "context", ["field"]],
+  ["relation", "reading", ["key"]],
+  ["relation", "decided", ["key", "value", "words"], { "key": "key" }],
 
   ["relation", "answer", ["question", "value", "claim"]],
   ["relation", "violated", ["assumption", "witness"]],
 
+  ["relation", "unquoted", ["claim", "field", "value"]],
+  [
+    "relation",
+    "said_at",
+    ["question", "value", "publisher", "published", "claim"]
+  ],
+  ["relation", "last_said", ["question", "publisher", "published"]],
+  ["relation", "restated", ["question", "publisher", "before", "after"]],
+  ["relation", "withdrawn", ["question", "value"]],
+  ["relation", "base", ["question", "base"]],
+  ["relation", "readings", ["base", "key", "values"]],
+  ["relation", "ambiguous", ["base", "key", "values"]],
+  ["relation", "set_aside", ["question", "key", "stated", "chosen"]],
+  ["relation", "meant", ["base", "question"]],
   ["relation", "firsthand", ["question", "value", "publisher"]],
   ["relation", "backing", ["question", "value", "publishers"]],
   ["relation", "corroborated", ["question", "value"]],
@@ -89,14 +107,111 @@
     ],
     { "assert": "none" }
   ],
+  [
+    "invariant",
+    [
+      "and",
+      ["located", "?claim", "?_"],
+      ["not", ["claim", "?claim", "?_", "?_", "?_"]]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "invariant",
+    ["and", ["decided", "?key", "?_", "?_"], ["not", ["reading", "?key"]]],
+    { "assert": "none" }
+  ],
 
   [
     "rule",
-    ["firsthand", "?q", "?v", "?publisher"],
+    ["unquoted", "?c", "?field", "?value"],
+    ["claim", "?c", "?_", "?words", "?says"],
+    ["in", "?field", ["object/keys", "?says"]],
+    ["not", ["context", "?field"]],
+    ["=", "?value", ["object/get", "?says", "?field"]],
+    ["value/number?", "?value"],
+    ["not", ["in", "?value", ["string/numbers", "?words", ","]]]
+  ],
+
+  [
+    "rule",
+    ["said_at", "?q", "?v", "?publisher", "?published", "?c"],
     ["answer", "?q", "?v", "?c"],
     ["claim", "?c", "?s", "?_", "?_"],
     ["not", ["attributed", "?c", "?_"]],
-    ["source", "?s", "?_", "?_", "?publisher", "?_", "?_"]
+    ["source", "?s", "?_", "?_", "?publisher", "?_", "?published"]
+  ],
+  [
+    "rule",
+    ["last_said", "?q", "?publisher", ["aggregate/max", "?published"]],
+    ["said_at", "?q", "?_", "?publisher", "?published", "?_"],
+    ["value/integer?", "?published"]
+  ],
+  [
+    "rule",
+    ["restated", "?q", "?publisher", "?before", "?after"],
+    ["said_at", "?q", "?before", "?publisher", "?earlier", "?_"],
+    ["value/integer?", "?earlier"],
+    ["last_said", "?q", "?publisher", "?last"],
+    ["number/lessThan", "?earlier", "?last"],
+    ["said_at", "?q", "?after", "?publisher", "?last", "?_"],
+    ["not", ["said_at", "?q", "?before", "?publisher", "?last", "?_"]]
+  ],
+  [
+    "rule",
+    ["firsthand", "?q", "?v", "?publisher"],
+    ["said_at", "?q", "?v", "?publisher", "?_", "?_"],
+    ["not", ["restated", "?q", "?publisher", "?v", "?_"]]
+  ],
+  [
+    "rule",
+    ["withdrawn", "?q", "?v"],
+    ["restated", "?q", "?_", "?v", "?_"],
+    ["not", ["firsthand", "?q", "?v", "?_"]]
+  ],
+
+  [
+    "rule",
+    [
+      "base",
+      "?q",
+      [
+        "array/reduce",
+        ["find", "?key", ["reading", "?key"]],
+        "?q",
+        ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]
+      ]
+    ],
+    ["answer", "?q", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["readings", "?base", "?key", ["aggregate/unique", "?stated"]],
+    ["base", "?q", "?base"],
+    ["reading", "?key"],
+    ["=", "?stated", ["object/get", "?q", "?key"]]
+  ],
+  [
+    "rule",
+    ["ambiguous", "?base", "?key", "?values"],
+    ["readings", "?base", "?key", "?values"],
+    ["number/greaterThan", ["array/length", "?values"], 1],
+    ["not", ["decided", "?key", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["set_aside", "?q", "?key", "?stated", "?chosen"],
+    ["base", "?q", "?_"],
+    ["decided", "?key", "?chosen", "?_"],
+    ["=", "?stated", ["object/get", "?q", "?key"]],
+    ["not", ["=", "?stated", null]],
+    ["not", ["=", "?stated", "?chosen"]]
+  ],
+  [
+    "rule",
+    ["meant", "?base", "?q"],
+    ["base", "?q", "?base"],
+    ["not", ["set_aside", "?q", "?_", "?_", "?_"]]
   ],
   [
     "rule",
@@ -124,7 +239,8 @@
     ["secondhand", "?q", "?v", ["aggregate/unique", "?to"]],
     ["answer", "?q", "?v", "?c"],
     ["attributed", "?c", "?to"],
-    ["not", ["firsthand", "?q", "?v", "?_"]]
+    ["not", ["firsthand", "?q", "?v", "?_"]],
+    ["not", ["withdrawn", "?q", "?v"]]
   ],
   [
     "rule",
@@ -152,7 +268,8 @@
   [
     "rule",
     ["answers", "?q", ["aggregate/unique", "?v"]],
-    ["answer", "?q", "?v", "?_"]
+    ["answer", "?q", "?v", "?_"],
+    ["not", ["withdrawn", "?q", "?v"]]
   ],
   [
     "rule",

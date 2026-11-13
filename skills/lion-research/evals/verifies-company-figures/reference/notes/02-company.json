@@ -1,0 +1,89 @@
+{
+  "sources": [
+    {
+      "id": "fy25-release",
+      "url": "https://tarnwell.example/news/fy25",
+      "title": "Tarnwell Cold Chain Reports Fiscal 2025 Results",
+      "publisher": "Tarnwell Cold Chain",
+      "kind": "primary",
+      "published": 20250806
+    },
+    {
+      "id": "fy25-annual-report",
+      "url": "https://tarnwell.example/ir/annual-report-2025",
+      "title": "Annual Report for the Fiscal Year Ended June 30, 2025",
+      "publisher": "Tarnwell Cold Chain",
+      "kind": "primary",
+      "published": 20250912
+    }
+  ],
+  "claims": [
+    {
+      "id": "release-revenue",
+      "source": "fy25-release",
+      "quote": "Revenue of $412.6 million for the fiscal year, up 9% from fiscal 2024.",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "reported",
+        "usd_m": 412.6
+      }
+    },
+    {
+      "id": "release-ex-fuel",
+      "source": "fy25-release",
+      "quote": "Revenue excluding fuel surcharges was $389.1 million.",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "excluding fuel surcharges",
+        "usd_m": 389.1
+      }
+    },
+    {
+      "id": "release-warehouses",
+      "source": "fy25-release",
+      "quote": "The company operated 37 warehouses at June 30, 2025",
+      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 37 }
+    },
+    {
+      "id": "release-staff",
+      "source": "fy25-release",
+      "quote": "employed 2,140 people at year end",
+      "says": { "staff": "tarnwell", "on": 20250630, "people": 2140 }
+    },
+    {
+      "id": "report-revenue",
+      "source": "fy25-annual-report",
+      "quote": "Net revenue for fiscal 2025 was $409.8 million.",
+      "says": {
+        "revenue": "tarnwell",
+        "period": "fiscal 2025",
+        "basis": "reported",
+        "usd_m": 409.8
+      },
+      "where": "Page 31, Item 7"
+    },
+    {
+      "id": "report-cost",
+      "source": "fy25-annual-report",
+      "quote": "Cost of services                       301.5",
+      "says": { "cost": "tarnwell", "period": "fiscal 2025", "usd_m": 301.5 },
+      "where": "Page 47, Consolidated Statements of Operations"
+    },
+    {
+      "id": "report-warehouses",
+      "source": "fy25-annual-report",
+      "quote": "Warehouses in operation at June 30, 2025: 37.",
+      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 37 },
+      "where": "Page 3, Item 1"
+    },
+    {
+      "id": "report-staff",
+      "source": "fy25-annual-report",
+      "quote": "Employees at June 30, 2025: 2,140.",
+      "says": { "staff": "tarnwell", "on": 20250630, "people": 2140 },
+      "where": "Page 3, Item 1"
+    }
+  ]
+}

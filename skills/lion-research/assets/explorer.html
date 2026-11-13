@@ -370,6 +370,32 @@
       display: block;
       margin-top: 2px;
     }
+    /* A quote where it stands in the saved text of its source. */
+    .passage {
+      position: relative;
+      max-width: 68ch;
+      padding: 10px 12px;
+      margin: 8px 0;
+      font-size: 0.9375rem;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      background: var(--soft);
+      border-radius: 4px;
+    }
+    .passage.whole {
+      max-height: 22rem;
+      overflow-y: auto;
+    }
+    .passage mark {
+      color: var(--ink);
+      background: color-mix(in srgb, var(--accent) 22%, transparent);
+      border-radius: 2px;
+    }
+    .worked {
+      font-family: var(--mono);
+      font-size: 0.875rem;
+    }
 
     /* The blocks a page is made of. */
     .block {

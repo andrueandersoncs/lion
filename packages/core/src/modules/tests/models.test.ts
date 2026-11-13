@@ -437,6 +437,90 @@ describe("object/json-stringify", () => {
   );
 });
 
+/** A few keys, the empty one among them, so records often share them. */
+const KEYS = ["a", "b", "", "a b"] as const;
+
+const someKey = Arbitrary.map(
+  Arbitrary.schema(
+    Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: KEYS.length - 1 }))
+  ),
+  (at) => KEYS[at] as string
+);
+
+const someRecord = Arbitrary.map(
+  Arbitrary.array(Arbitrary.all([someKey, nestedJson]), { maxLength: 4 }),
+  (entries) => Object.fromEntries(entries)
+);
+
+describe("object/set and object/remove", () => {
+  it.effect.prop(
+    "give a new record with the key set or gone, and leave the one given alone",
+    { record: someRecord, key: someKey, value: nestedJson },
+    ({ record, key, value }) =>
+      Effect.gen(function* () {
+        const { [key]: _, ...without } = record;
+        const results = yield* evaluate([
+          "begin",
+          ["define", "r", quote(record)],
+          {
+            set: ["object/set", "r", quote(key), quote(value)],
+            removed: ["object/remove", "r", quote(key)],
+            // Removing what was set gives what removing alone gives.
+            undone: [
+              "object/remove",
+              ["object/set", "r", quote(key), quote(value)],
+              quote(key),
+            ],
+            // Setting a key back to its value gives the record again.
+            restored:
+              key in record
+                ? [
+                    "object/set",
+                    ["object/remove", "r", quote(key)],
+                    quote(key),
+                    quote(record[key]),
+                  ]
+                : "r",
+            waits: waiting("object/set", "r", quote(key), quote(value)),
+            r: "r",
+          },
+        ]);
+        expect(results).toEqual({
+          set: { ...record, [key]: value },
+          removed: without,
+          undone: without,
+          restored: record,
+          waits: [{ ...record, [key]: value }],
+          r: record,
+        });
+      })
+  );
+
+  it.effect.prop(
+    "take only a record, and a key a record can hold",
+    { record: someRecord, value: notAString },
+    ({ record, value }) =>
+      Effect.gen(function* () {
+        // A list is not a record; a record of whole numbers is one.
+        const notRecord =
+          typeof value === "object" && value !== null && !Array.isArray(value)
+            ? 0
+            : value;
+        for (const program of [
+          ["object/set", quote(record), quote("__proto__"), 1],
+          ["object/remove", quote(record), quote("__proto__")],
+          ["object/set", quote(record), quote(value), 1],
+          ["object/remove", quote(record), quote(value)],
+          ["object/set", quote(notRecord), "a", 1],
+          ["object/remove", quote(notRecord), "a"],
+        ]) {
+          const result = yield* Effect.exit(evaluate(program));
+          expect(result._tag, JSON.stringify(program)).toBe("Failure");
+        }
+      })
+  );
+});
+
 /** A list of strings: none, one, two, or more. */
 const texts = Arbitrary.array(text, { maxLength: 5 });
 
@@ -602,6 +686,220 @@ describe("number/toString with a separator", () => {
           evaluate(["number/toString", n, quote(value)])
         );
         expect(result._tag).toBe("Failure");
+      })
+  );
+});
+
+/** One of the given items. */
+const oneOf = <A>(items: readonly A[]) =>
+  Arbitrary.map(
+    Arbitrary.schema(
+      Schema.Int.check(
+        Schema.isBetween({ minimum: 0, maximum: items.length - 1 })
+      )
+    ),
+    (at) => items[at] as A
+  );
+
+/**
+ * The number JSON reads in the text, or null. The reader also takes zeros
+ * before the digits, and "−" as the minus sign, which JSON does not.
+ */
+const UNICODE_MINUS = /^−/;
+const LEADING_ZEROS = /^(-?)0+(?=\d)/;
+const LETTERS = /^[A-Za-z]{1,6}$/;
+
+const asJson = (written: string): number | null => {
+  if (written !== written.trim()) {
+    return null;
+  }
+  try {
+    const value: unknown = JSON.parse(
+      written.replace(UNICODE_MINUS, "-").replace(LEADING_ZEROS, "$1")
+    );
+    return typeof value === "number" && Number.isFinite(value)
+      ? value + 0
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+const digits = Arbitrary.map(
+  Arbitrary.array(oneOf(["0", "1", "7", "9"]), { minLength: 1, maxLength: 3 }),
+  (picked) => picked.join("")
+);
+
+/**
+ * Text of a number, built from its parts, often with an exponent too large
+ * for JSON, and sometimes with a character put in that may break it.
+ */
+const numberish = Arbitrary.map(
+  Arbitrary.all({
+    sign: oneOf(["", "", "-", "−", "+"]),
+    whole: oneOf(["", "0", "00"]),
+    digits,
+    fraction: oneOf(["", ".", ".5", ".05"]),
+    e: oneOf(["", "e", "E"]),
+    eSign: oneOf(["", "+", "-"]),
+    exponent: oneOf(["", "1", "21", "400", "999"]),
+    stray: oneOf(["", "", "", " ", "a", ",", ".", "-", "e"]),
+    at: Arbitrary.schema(
+      Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 12 }))
+    ),
+  }),
+  ({ sign, whole, digits: run, fraction, e, eSign, exponent, stray, at }) => {
+    const written = `${sign}${whole}${run}${fraction}${e === "" ? "" : `${e}${eSign}${exponent}`}`;
+    const cut = at % (written.length + 1);
+    return written.slice(0, cut) + stray + written.slice(cut);
+  }
+);
+
+describe("number/fromString", () => {
+  it.effect.prop(
+    "reads back what number/toString writes, with or without a separator",
+    { n: anyNumber, between: separator },
+    ({ n, between }) =>
+      Effect.gen(function* () {
+        const written = (yield* evaluate([
+          "number/toString",
+          n,
+          quote(between),
+        ])) as string;
+        expect(
+          yield* evaluate({
+            grouped: ["number/fromString", quote(written), quote(between)],
+            plain: ["number/fromString", ["number/toString", n]],
+            waits: waiting("number/fromString", quote(written), quote(between)),
+          })
+        ).toEqual({ grouped: n + 0, plain: n + 0, waits: [n + 0] });
+      })
+  );
+
+  it.effect.prop(
+    "reads a number as JSON does, and any other text as null",
+    { written: numberish },
+    ({ written }) =>
+      Effect.gen(function* () {
+        expect(yield* evaluate(["number/fromString", quote(written)])).toBe(
+          asJson(written)
+        );
+      }),
+    { arbitrary: { runs: 400 } }
+  );
+
+  it.effect.prop(
+    "reads a separator only between groups of three digits",
+    {
+      n: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 1e9 }))
+      ),
+      between: separator,
+      how: oneOf(["none", "threes", "anywhere"] as const),
+      marks: Arbitrary.array(Arbitrary.schema(Schema.Boolean), {
+        minLength: 9,
+        maxLength: 9,
+      }),
+    },
+    ({ n, between, how, marks }) =>
+      Effect.gen(function* () {
+        const digits = String(n).split("");
+        // A group ends after the digit with a multiple of three after it.
+        const ends = (at: number) =>
+          at < digits.length - 1 && (digits.length - 1 - at) % 3 === 0;
+        const after = digits.map((_, at) =>
+          how === "threes"
+            ? ends(at)
+            : how === "anywhere" &&
+              at < digits.length - 1 &&
+              (marks[at] ?? false)
+        );
+        const written = digits
+          .map((digit, at) => digit + (after[at] ? between : ""))
+          .join("");
+        const grouped =
+          after.every((mark) => !mark) ||
+          after.every((mark, at) => mark === ends(at));
+        expect(
+          yield* evaluate(["number/fromString", quote(written), quote(between)])
+        ).toBe(grouped ? n : null);
+      })
+  );
+
+  it.effect.prop(
+    "takes only strings, as string/numbers does",
+    { value: notAString },
+    ({ value }) =>
+      Effect.gen(function* () {
+        for (const program of [
+          ["number/fromString", quote(value)],
+          ["number/fromString", "1", quote(value)],
+          ["string/numbers", quote(value)],
+          ["string/numbers", "1", quote(value)],
+        ]) {
+          const result = yield* Effect.exit(evaluate(program));
+          expect(result._tag, JSON.stringify(program)).toBe("Failure");
+        }
+      })
+  );
+});
+
+/** What stands between numbers in prose, none of which joins two into one. */
+const GAPS = ["; ", " and ", " / ", " (", " = "] as const;
+
+describe("string/numbers", () => {
+  it.effect.prop(
+    "finds each number written in text, in order, as it was written",
+    {
+      numbers: Arbitrary.array(anyNumber, { maxLength: 5 }),
+      gaps: Arbitrary.array(oneOf(GAPS), { minLength: 6, maxLength: 6 }),
+      between: separator,
+    },
+    ({ numbers, gaps, between }) =>
+      Effect.gen(function* () {
+        const written = (yield* evaluate([
+          "array/map",
+          quote(numbers),
+          ["lambda", ["n"], ["number/toString", "n", quote(between)]],
+        ])) as string[];
+        const prose = written
+          .map((part, at) => `${gaps[at] ?? ""}${part}`)
+          .join("")
+          .concat(gaps.at(-1) ?? "");
+        const found = numbers.map((n) => n + 0);
+        expect(
+          yield* evaluate({
+            found: ["string/numbers", quote(prose), quote(between)],
+            waits: waiting("string/numbers", quote(prose), quote(between)),
+          })
+        ).toEqual({ found, waits: [found] });
+      })
+  );
+
+  it.effect.prop(
+    "takes a minus sign as one only where no letter, digit, or point is before it",
+    {
+      a: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 9999 }))
+      ),
+      b: Arbitrary.schema(
+        Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 9999 }))
+      ),
+      word: Arbitrary.schema(Schema.String.check(Schema.isPattern(LETTERS))),
+      sign: oneOf(["-", "−"]),
+    },
+    ({ a, b, word, sign }) =>
+      Effect.gen(function* () {
+        const prose = `${a}${sign}${b} ${word}${sign}${b} ${a}.${sign}${b} (${sign}${b}) ${sign}${a}`;
+        expect(yield* evaluate(["string/numbers", quote(prose)])).toEqual([
+          a,
+          b,
+          b,
+          a,
+          b,
+          -b + 0,
+          -a + 0,
+        ]);
       })
   );
 });

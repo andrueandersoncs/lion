@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: verifies-company-figures
+expected_outcome: |
+  Working only from the saved corpus, the run sizes up Tarnwell Cold Chain and
+  says how far each figure can be trusted. Its model finds what the known
+  answers in answers.json say it should: Tarnwell restated fiscal 2025 revenue
+  from $412.6M to $409.8M, so nobody stands behind $412.6M any more; Supply
+  Notes credits the release with 2,400 employees while the release says 2,140;
+  sources dispute the warehouse count, 37 or 39, and an outside registry
+  confirms 37; "revenue" is used in more than one sense (as reported or
+  excluding fuel surcharges, fiscal 2025 or calendar 2024), which the run puts
+  to the reader instead of choosing; and the gross margin on reported revenue
+  is 26.4%, worked out by the model from the annual report's line items. Every
+  figure recorded is written in the words quoted. After the eval, run
+  `node grade.mjs research/tarnwell` in the run's folder to grade the run
+  stage by stage against answers.json.

@@ -8,6 +8,8 @@ Rules for the shapes research usually takes. Each was run against one small mode
 - [Facts that hold or do not](#facts-that-hold-or-do-not)
 - [Which value the model accepts](#which-value-the-model-accepts)
 - [Disputes that are only rounding](#disputes-that-are-only-rounding)
+- [Figures as written](#figures-as-written)
+- [Senses of a word, and the reader's choice](#senses-of-a-word-and-the-readers-choice)
 - [Timelines and time zones](#timelines-and-time-zones)
 - [Statements that change](#statements-that-change)
 - [Totals and their parts](#totals-and-their-parts)
@@ -125,6 +127,63 @@ The guard `["value/integer?", "?p"]` leaves out sources with no date. For statem
 
 The second goal is a guard: it keeps the rule to questions whose values are all numbers, so a dispute over `true` and `false` does not reach the subtraction. Here the values differ by more than 2%, so the result is `[{"question": {"users affected": "all"}, "low": 95000, "high": 100000}]`.
 
+## Figures as written
+
+The two sections that follow were run against the model of the skill's frozen eval, `evals/verifies-company-figures/reference/`: a made-up cold-storage company, Tarnwell, whose sources disagree on purpose.
+
+A source writes "near $0.41 billion", and the frame counts revenue in millions. Record the figure as the source writes it, in a shape whose key names that unit, and let the `answer` rule convert it:
+
+```json
+["schema", "Says", ["schema/anyOf",
+  {"revenue": "value/string?", "period": "value/string?", "basis": "value/string?", "usd_m": "value/number?"},
+  {"revenue": "value/string?", "period": "value/string?", "basis": "value/string?", "usd_bn": "value/number?", "rounded": true}]],
+
+["rule", ["answer", {"revenue": "?co", "period": "?p", "basis": "?b"}, "?usd_m", "?c"],
+  ["claim", "?c", "?_", "?_", {"revenue": "?co", "period": "?p", "basis": "?b", "usd_m": "?usd_m"}]],
+["rule", ["answer", {"revenue": "?co", "period": "?p", "basis": "?b", "rounded to": "0.01 billion"}, ["number/multiply", "?usd_bn", 1000], "?c"],
+  ["claim", "?c", "?_", "?_", {"revenue": "?co", "period": "?p", "basis": "?b", "usd_bn": "?usd_bn", "rounded": true}]]
+```
+
+The claim is then `{"revenue": "tarnwell", "period": "fiscal 2025", "basis": "reported", "usd_bn": 0.41, "rounded": true}`, and the core's `unquoted` finds 0.41 in "Tarnwell reported revenue near $0.41 billion for fiscal 2025." Had it been recorded as `"usd_m": 410`, `["query", ["unquoted", "?claim", "?field", "?value"]]` would give `[{"claim": "converted", "field": "usd_m", "value": 410}]`.
+
+- **A rounded figure is its own question.** "Near $0.41 billion" is not a third answer to the exact figure, so its question says how it was rounded, and it never disputes $409.8M or $412.6M.
+- **The check reads digits grouped with commas,** as English writes them. A figure in a field declared `context` is left out of it.
+- **Every number at the top of `says` is checked,** including years and dates. A date written as words ("June 30, 2025") recorded as `20250630` is a conversion, so declare the field `context`: `["fact", ["context", "on"]]`.
+
+## Senses of a word, and the reader's choice
+
+"Revenue" means different things in different sources: as reported, or excluding fuel surcharges; for a fiscal year, or a calendar year. Put the sense in each claim and in its question, and declare the keys that carry a sense:
+
+```json
+["fact", ["reading", "basis"], ["reading", "period"]]
+```
+
+With no choice made, `["query", ["ambiguous", "?base", "?key", "?readings"]]` gives
+
+```json
+[{"base": {"revenue": "tarnwell"}, "key": "basis", "readings": ["excluding fuel surcharges", "reported"]},
+ {"base": {"revenue": "tarnwell"}, "key": "period", "readings": ["calendar 2024", "fiscal 2025"]}]
+```
+
+A rule that reaches revenue through `meant` uses every sense until the reader chooses:
+
+```json
+["relation", "gross_margin", ["company", "period", "basis", "percent"]],
+["rule", ["gross_margin", "?co", "?p", "?b", "?percent"],
+  ["meant", {"revenue": "?co"}, "?q"],
+  ["=", "?p", ["object/get", "?q", "period"]],
+  ["=", "?b", ["object/get", "?q", "basis"]],
+  ["backing", "?q", "?revenue", "?_"],
+  ["backing", {"cost of services": "?co", "period": "?p"}, "?cost", "?_"],
+  ["=", "?percent", ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", "?revenue", "?cost"], "?revenue"]]], 10]]]
+```
+
+so the fiscal 2025 margin is 26.4% on revenue as reported and 22.5% excluding fuel surcharges. Ask the reader. Their answer, recorded from notes as `["decided", "basis", "reported", "Use revenue as reported."]`, leaves only the period ambiguous, puts the other sense in `set_aside` (`{"question": {"revenue": "tarnwell", "period": "fiscal 2025", "basis": "excluding fuel surcharges"}, "key": "basis", "stated": "excluding fuel surcharges", "chosen": "reported"}`), and the same rule now gives one margin, 26.4%. Nothing else changed: every rule and page text that reads through `meant` follows the choice.
+
+- **The restated revenue is the one used.** `backing` counts only a publisher's latest word, so the margin is worked out from $409.8M, not the $412.6M of the earlier release.
+- **`why` shows the arithmetic.** `["why", ["gross_margin", "tarnwell", "fiscal 2025", "reported", 26.4]]` ends in `{"check": ["=", 26.4, ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", 409.8, 301.5], 409.8]]], 10]]}`, beside the two `backing` rows it used.
+- **A source that does not say which sense** shows as `null` among the readings, so the reader sees that one source left it open.
+
 ## Timelines and time zones
 
 Sources give times in their own zones and formats, and converting them by hand is where timelines go wrong. Record the time as the source gave it, as year, month, day, hour, and minute, with the zone's offset from UTC in minutes, and let a rule convert.
@@ -172,6 +231,8 @@ Things to know:
 - A vague time, such as "just before noon" or "Thursday evening", is not a `when`. Give it a kind of its own, such as `{"event": …, "around": "Thursday evening"}`, so it is on record and no rule mistakes it for a clock time.
 
 ## Statements that change
+
+The core already takes a publisher's later word over its earlier one, by the `published` date of its sources: `restated` lists each change, and `backing` and `disputed` use only the latest. This section is for what that does not cover: statements made at clock times within a day, a history the reader should see, and a standing that changes, such as suspected to confirmed.
 
 During a live event, and in any source that is updated, what is said changes: a cause goes from suspected to confirmed, a count rises, a status moves from investigating to resolved. Give the claim the time of the statement, and keep every statement, so the model holds the history and a rule picks the latest word.
 

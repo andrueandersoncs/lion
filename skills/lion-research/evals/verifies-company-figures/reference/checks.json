@@ -1,0 +1,65 @@
+{
+  "What do sources disagree on?": [
+    "query",
+    ["disputed", "?question", "?values"]
+  ],
+  "What do independent publishers confirm first-hand?": [
+    "query",
+    [
+      "and",
+      ["corroborated", "?question", "?value"],
+      ["backing", "?question", "?value", "?publishers"]
+    ]
+  ],
+  "How much rests on each publisher alone?": [
+    "query",
+    ["reliance", "?publisher", "?answers"],
+    { "order": "-answers" }
+  ],
+  "What rests on one publisher's word?": [
+    "query",
+    ["single_origin", "?question", "?value", "?publisher"]
+  ],
+  "What is known only second-hand?": [
+    "query",
+    ["secondhand", "?question", "?value", "?credited"]
+  ],
+  "Which sources are credited with something they do not say?": [
+    "query",
+    ["misquoted", "?claim", "?to", "?question", "?relayed", "?said"]
+  ],
+  "Which figures did their publisher change?": [
+    "query",
+    ["restated", "?question", "?publisher", "?before", "?after"]
+  ],
+  "Which figures are not written in the words quoted?": [
+    "query",
+    ["unquoted", "?claim", "?field", "?value"]
+  ],
+  "Which questions do sources answer in more than one sense?": [
+    "query",
+    ["ambiguous", "?question", "?key", "?readings"]
+  ],
+  "Which credited sources are still unread?": [
+    "find",
+    "?source",
+    ["unread", "?source"]
+  ],
+  "Which assumptions failed, and on what evidence?": [
+    "query",
+    ["violated", "?assumption", "?witness"]
+  ],
+  "Which statements does no answer rule read?": [
+    "find",
+    "?claim",
+    [
+      "and",
+      ["claim", "?claim", "?_", "?_", "?_"],
+      ["not", ["answer", "?_", "?_", "?claim"]]
+    ]
+  ],
+  "Gross margin": [
+    "query",
+    ["gross_margin", "?company", "?period", "?basis", "?percent"]
+  ]
+}

@@ -1,5 +1,6 @@
 import { Effect, Schema, String as Str } from "effect";
 import { takes } from "@/errors/evaluation";
+import { numbersIn } from "@/modules/lib/numerals";
 import { combining, decode, over } from "@/modules/lib/shared";
 
 // Like the rest of the library, each function takes its subject first:
@@ -12,6 +13,9 @@ const onTwo = <A>(operate: (text: string, other: string) => A) =>
 const Joined = decode(
   Schema.Tuple([Schema.Array(Schema.String), Schema.String, Schema.String])
 );
+
+/** What `numbers` takes: the text, and what goes between digit groups. */
+const Counted = decode(Schema.Tuple([Schema.String, Schema.String]));
 
 /** Text made as long as `length` with copies of `fill`, as JavaScript pads. */
 const padding = (pad: (text: string, length: number, fill: string) => string) =>
@@ -48,4 +52,14 @@ export const module = {
   split: onTwo((text, separator): string[] => text.split(separator)),
   padStart: padding((text, length, fill) => text.padStart(length, fill)),
   padEnd: padding((text, length, fill) => text.padEnd(length, fill)),
+  /**
+   * Every number written in the text, in order, each read as
+   * `number/fromString` reads it: "$1,250.5M, down -3%" holds 1250.5 and -3
+   * with the separator ",".
+   */
+  numbers: takes([1, 2], (text: unknown, separator: unknown = "") =>
+    Effect.map(Counted([text, separator]), ([written, between]) =>
+      numbersIn(written, between)
+    )
+  ),
 };

@@ -7,14 +7,17 @@
 // The plan says what the page is called, the short answer on top, and the
 // views it has, each a list of blocks chosen for what this reader wants to
 // know. The file carries the model, the plan, and the Lion engine, so it
-// opens from disk with no server and no network.
+// opens from disk with no server and no network. It also carries the saved
+// text of each source a claim quotes, from sources/ beside the model, so a
+// reader can see each quote where it stands.
 //
 // It also writes page-check.json beside the page: every query the plan asks,
 // as one Lion record, so they can all be run at once with the lion command.
 // Runs under node or bun.
-import { readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { claimsOf, whereIn } from "./check-quotes.mjs";
 
 const USAGE =
   "Usage: node build-explorer.mjs <model.json> --page page.json [--out explorer.html]";
@@ -120,22 +123,94 @@ const computed = (value) => value !== undefined && typeof value !== "string";
  */
 export const queriesOf = (page) =>
   Object.fromEntries(
-    [
-      ["summary", page.summary],
-      ...(page.views ?? []).flatMap((view, viewAt) =>
-        (view.blocks ?? []).flatMap((block, blockAt) => {
-          const title =
-            block.question ?? block.title ?? `${block.type} ${blockAt + 1}`;
-          const place = `${view.name ?? `view ${viewAt + 1}`} › ${title}`;
-          return [...textsOfBlock(block), ...queriesOfBlock(block)].map(
-            ([name, expression]) => [`${place} › ${name}`, expression]
-          );
-        })
-      ),
-    ]
-      .filter(([, expression]) => computed(expression))
-      .map(([name, expression]) => [name, within(page, expression)])
+    numbered(
+      [
+        ["summary", page.summary],
+        ...(page.views ?? []).flatMap((view, viewAt) =>
+          (view.blocks ?? []).flatMap((block, blockAt) => {
+            const title =
+              block.question ?? block.title ?? `${block.type} ${blockAt + 1}`;
+            const place = `${view.name ?? `view ${viewAt + 1}`} › ${title}`;
+            return [...textsOfBlock(block), ...queriesOfBlock(block)].map(
+              ([name, expression]) => [`${place} › ${name}`, expression]
+            );
+          })
+        ),
+      ]
+        .filter(([, expression]) => computed(expression))
+        .map(([name, expression]) => [name, within(page, expression)])
+    )
   );
+
+/**
+ * The entries with each name told apart: a name that comes again, as it
+ * does for two blocks with one title, is numbered, so no entry replaces
+ * another.
+ */
+const numbered = (entries) => {
+  const seen = new Map();
+  return entries.map(([name, value]) => {
+    const count = (seen.get(name) ?? 0) + 1;
+    seen.set(name, count);
+    return [count === 1 ? name : `${name} (${count})`, value];
+  });
+};
+
+/**
+ * The goals whose first argument is a question with its readings left out,
+ * which they look up the readings of, so naming one there is how a plan
+ * should ask about it.
+ */
+const BASES = new Set(["meant", "ambiguous", "readings", "base"]);
+
+/**
+ * Every record the plan's expressions hold, except a base given to one of
+ * the goals above. A pattern among them, such as `{"revenue": "?company"}`,
+ * is compared as data, so it matches no question.
+ */
+const recordsIn = (value, found = []) => {
+  if (Array.isArray(value)) {
+    const skip = BASES.has(value[0]) ? 1 : -1;
+    for (const [at, item] of value.entries()) {
+      if (at !== skip) {
+        recordsIn(item, found);
+      }
+    }
+  } else if (isRecord(value)) {
+    found.push(value);
+    for (const item of Object.values(value)) {
+      recordsIn(item, found);
+    }
+  }
+  return found;
+};
+
+/**
+ * A check for page-check.json: the questions the plan names as they stand
+ * that the reader's choices set aside, or that sources answer in more than
+ * one sense nobody chose between. A plan reaches those through `meant`.
+ */
+export const namedReadingsOf = (page) => {
+  const named = recordsIn(Object.values(queriesOf(page)).map((e) => e.at(-1)));
+  return named.length === 0
+    ? {}
+    : {
+        "Questions the plan names that a choice set aside, or that have readings nobody chose between":
+          [
+            "find",
+            "?question",
+            [
+              "and",
+              ["in", "?question", ["quote", named]],
+              [
+                "or",
+                ["set_aside", "?question", "?_", "?_", "?_"],
+                ["ambiguous", "?question", "?_", "?_"],
+              ],
+            ],
+          ],
+      };
+};
 
 /**
  * What a reviewer should look at: text typed into the plan that holds a
@@ -159,9 +234,38 @@ export const typedFigures = (page) =>
       : typeof text === "string" && DIGIT.test(text)
   );
 
-/** The page for a model: the shell, with the data, engine, and script added. */
-export const buildExplorer = ({ database, page, generated }) => {
-  const data = embedJson({ generated, database, page, words: words() });
+/**
+ * The saved text of each source a claim quotes, and where each claim's
+ * quote stands in it, so the page can show a quote in its place. `textOf`
+ * gives a source's saved text, or undefined when none was saved.
+ */
+export const passagesOf = (database, textOf) => {
+  const texts = {};
+  const marks = {};
+  for (const claim of claimsOf(database)) {
+    const text = textOf(String(claim.source));
+    const at =
+      text === undefined ? undefined : whereIn(text, String(claim.quote));
+    if (at !== undefined) {
+      texts[claim.source] = text;
+      marks[claim.id] = at;
+    }
+  }
+  return { marks, texts };
+};
+
+/**
+ * The page for a model: the shell, with the data, engine, and script added.
+ * `passages`, from `passagesOf`, lets the page show each quote in its source.
+ */
+export const buildExplorer = ({ database, page, generated, passages }) => {
+  const data = embedJson({
+    generated,
+    database,
+    page,
+    words: words(),
+    ...passages,
+  });
   const engine = asset("lion-engine.js").toString("base64");
   const script = asset("explorer.js")
     .toString("utf8")
@@ -218,17 +322,25 @@ const main = (args) => {
     );
   }
   const out = resolve(options.out ?? join(dirname(path), "explorer.html"));
+  const passages = passagesOf(database, (source) => {
+    const saved = join(dirname(path), "sources", `${source}.txt`);
+    return existsSync(saved) ? readFileSync(saved, "utf8") : undefined;
+  });
   const html = buildExplorer({
     database,
     page,
     generated: new Date().toISOString().slice(0, 10),
+    passages,
   });
   writeFileSync(out, html);
   const check = join(dirname(out), "page-check.json");
-  writeFileSync(check, `${JSON.stringify(queriesOf(page), null, 1)}\n`);
-  console.log(`${out} (${Math.round(html.length / 1024)} KB)`);
+  const checks = { ...queriesOf(page), ...namedReadingsOf(page) };
+  writeFileSync(check, `${JSON.stringify(checks, null, 1)}\n`);
   console.log(
-    `${check} (${Object.keys(queriesOf(page)).length} texts and queries)`
+    `${out} (${Math.round(html.length / 1024)} KB, with the saved text of ${Object.keys(passages.texts).length} sources, so ${Object.keys(passages.marks).length} quotes show where they stand)`
+  );
+  console.log(
+    `${check} (${Object.keys(checks).length} texts, queries, and checks)`
   );
   const typed = typedFigures(page);
   for (const [name, text] of typed) {

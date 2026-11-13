@@ -11,7 +11,13 @@
 //                 "publisher": "Acme", "kind": "primary", "published": 20250201}],
 //    "claims":  [{"id": "c1", "source": "pr", "quote": "the source's words",
 //                 "says": {"revenue": "acme", "year": 2024, "usd_m": 120},
-//                 "credits": ["another source's id"]}]}
+//                 "credits": ["another source's id"],
+//                 "where": "p. 4, Highlights"}],
+//    "decisions": [{"key": "basis", "value": "gaap",
+//                   "words": "the reader's own words"}]}
+//
+// `credits`, `where` (where in the source the quote stands), and
+// `decisions` (the reader's choice of a reading) may be left out.
 //
 // It writes steps/<the notes file's name>, which the lion command then runs.
 // Each quote is looked for in sources/<source id>.txt, word for word. A
@@ -62,6 +68,15 @@ export const stepOf = (notes) => [
         quoted(claim.id),
         quoted(to),
       ]),
+      ...(claim.where === undefined
+        ? []
+        : [["located", quoted(claim.id), quoted(claim.where)]]),
+    ]),
+    ...(notes.decisions ?? []).map((decision) => [
+      "decided",
+      quoted(decision.key),
+      quoted(decision.value),
+      quoted(decision.words),
     ]),
   ],
   "recorded",

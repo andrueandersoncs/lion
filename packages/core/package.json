@@ -50,6 +50,7 @@
     "./modules/console": "./dist/modules/console.mjs",
     "./modules/func": "./dist/modules/func.mjs",
     "./modules/graph": "./dist/modules/graph.mjs",
+    "./modules/lib/numerals": "./dist/modules/lib/numerals.mjs",
     "./modules/lib/shared": "./dist/modules/lib/shared.mjs",
     "./modules/number": "./dist/modules/number.mjs",
     "./modules/object": "./dist/modules/object.mjs",

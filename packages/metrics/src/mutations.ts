@@ -15,6 +15,21 @@ const REASONING_TESTS = {
   tests: ["src/tests/reasoning-skill.test.ts"],
 };
 
+/** A break in the research skill's core program, caught by the skill's properties. */
+const research = (
+  name: string,
+  find: string,
+  replace: string,
+  file = "assets/core.json"
+): Mutation => ({
+  file: `skills/lion-research/${file}`,
+  find,
+  name,
+  package: "metrics",
+  replace,
+  tests: ["src/tests/research-skill.test.ts"],
+});
+
 export const MUTATIONS: readonly Mutation[] = [
   {
     name: "find does not sort what it found",
@@ -1111,5 +1126,195 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "return [seen.quote]\n      .flat()",
     replace: "return [[seen.quote].flat()[0]]",
     ...REASONING_TESTS,
+  },
+  {
+    name: "why leaves out the arithmetic a rule did",
+    file: core("logic/model.ts"),
+    find: "        out.push({ check: instantiate(literal, vars) });",
+    replace:
+      '        if (!isForm(literal, "=", "in")) out.push({ check: instantiate(literal, vars) });',
+    tests: ["src/logic/tests/explain.test.ts"],
+  },
+  {
+    name: "why shows a check without the answer's values in it",
+    file: core("logic/model.ts"),
+    find: "        out.push({ check: instantiate(literal, vars) });",
+    replace: "        out.push({ check: instantiate(literal, NO_VARS) });",
+    tests: ["src/logic/tests/explain.test.ts"],
+  },
+  {
+    name: "a number read with a separator keeps the separator",
+    file: core("modules/lib/numerals.ts"),
+    find: 'const digits = separator === "" ? whole : whole.split(separator).join("");',
+    replace: "const digits = whole;",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a separator is read between any digits",
+    file: core("modules/lib/numerals.ts"),
+    find: "{3})+(?!",
+    replace: "{1,3})+(?!",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a minus sign after a lowercase letter is a sign",
+    file: core("modules/lib/numerals.ts"),
+    find: "p{L}",
+    replace: "p{Lu}",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "the minus sign − is not a sign",
+    file: core("modules/lib/numerals.ts"),
+    find: "[-−])?(?<whole>",
+    replace: "[-])?(?<whole>",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a number read as text keeps -0",
+    file: core("modules/lib/numerals.ts"),
+    find: "Number.isFinite(n) ? n + 0 : undefined",
+    replace: "Number.isFinite(n) ? n : undefined",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a number read as text keeps a number JSON cannot hold",
+    file: core("modules/lib/numerals.ts"),
+    find: "Number.isFinite(n) ? n + 0 : undefined",
+    replace: "n + 0",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "number/fromString reads text with space around the number",
+    file: core("modules/lib/numerals.ts"),
+    find: '"u").exec(text);',
+    replace: '"u").exec(text.trim());',
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "number/fromString reads the number at the start of longer text",
+    file: core("modules/lib/numerals.ts"),
+    find: ")})$`",
+    replace: ")})`",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "object/set keeps a key the record already holds",
+    file: core("modules/object.ts"),
+    find: "    Record.set(record, key, value)",
+    replace: "    key in record ? record : Record.set(record, key, value)",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "object/remove removes every key",
+    file: core("modules/object.ts"),
+    find: "    Record.remove(record, key)",
+    replace: "    ({})",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a record may hold the key __proto__",
+    file: core("schemas/lion-expression.ts"),
+    find: 'const DISALLOWED_KEYS = ["__proto__"] as const;',
+    replace: "const DISALLOWED_KEYS = [] as string[];",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  research(
+    "a value a publisher repeats in its latest word counts as restated",
+    '["not", ["said_at", "?q", "?before", "?publisher", "?last", "?_"]]',
+    '["value/integer?", "?last"]'
+  ),
+  research(
+    "an answer its publisher restated still has its backing",
+    '["not", ["restated", "?q", "?publisher", "?v", "?_"]]',
+    '["value/integer?", 1]'
+  ),
+  research(
+    "a restatement counts the publisher's earliest word as its last",
+    '["aggregate/max", "?published"]',
+    '["aggregate/min", "?published"]'
+  ),
+  research(
+    "an answer its publisher withdrew is still disputed",
+    '["answer", "?q", "?v", "?_"],\n    ["not", ["withdrawn", "?q", "?v"]]',
+    '["answer", "?q", "?v", "?_"]'
+  ),
+  research(
+    "an answer its publisher withdrew is second-hand",
+    '["not", ["firsthand", "?q", "?v", "?_"]],\n    ["not", ["withdrawn", "?q", "?v"]]',
+    '["not", ["firsthand", "?q", "?v", "?_"]]'
+  ),
+  research(
+    "a figure is checked against its quote without the separator",
+    '["string/numbers", "?words", ","]',
+    '["string/numbers", "?words"]'
+  ),
+  research(
+    "a context field's figure is checked against the quote too",
+    '["not", ["context", "?field"]],\n    ["=", "?value"',
+    '["=", "?value"'
+  ),
+  research(
+    "a question's base keeps its readings",
+    '["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]',
+    '["lambda", ["rest", "key"], "rest"]'
+  ),
+  research(
+    "a reading the reader decided is still ambiguous",
+    '["number/greaterThan", ["array/length", "?values"], 1],\n    ["not", ["decided", "?key", "?_", "?_"]]',
+    '["number/greaterThan", ["array/length", "?values"], 1]'
+  ),
+  research(
+    "a question that does not state a reading is set aside",
+    '["not", ["=", "?stated", null]],\n    ["not", ["=", "?stated", "?chosen"]]',
+    '["not", ["=", "?stated", "?chosen"]]'
+  ),
+  research(
+    "a quote is shown one character short of where it ends",
+    "[from[at], to[at + wanted.length - 1]]",
+    "[from[at], to[at + wanted.length - 2]]",
+    "scripts/check-quotes.mjs"
+  ),
+  research(
+    "spacing at the start of a saved text counts when a quote is looked for",
+    '(out === "" || out.endsWith(" "))',
+    'out.endsWith(" ")',
+    "scripts/check-quotes.mjs"
+  ),
+  research(
+    "the page carries the text of a source whose quote was not found",
+    "    if (at !== undefined) {\n      texts[claim.source] = text;",
+    "    texts[claim.source] = text;\n    if (at !== undefined) {",
+    "scripts/build-explorer.mjs"
+  ),
+  research(
+    "two blocks with one title share one entry of the page check",
+    "count === 1 ? name",
+    "count >= 1 ? name",
+    "scripts/build-explorer.mjs"
+  ),
+  research(
+    "the eval's grader passes a check that expects nothing whatever it finds",
+    "    return Array.isArray(value) && value.length === 0;",
+    "    return Array.isArray(value);",
+    "evals/verifies-company-figures/grade.mjs"
+  ),
+  research(
+    "the eval's grader finds a page's figure without looking at its wording",
+    "wordingOf(page).includes(wanted)",
+    "true",
+    "evals/verifies-company-figures/grade.mjs"
+  ),
+  research(
+    "a question the reader's choice set aside is still meant",
+    '["base", "?q", "?base"],\n    ["not", ["set_aside", "?q", "?_", "?_", "?_"]]',
+    '["base", "?q", "?base"]'
+  ),
+  {
+    name: "a number's exponent is read only after a lowercase e",
+    file: core("modules/lib/numerals.ts"),
+    find: "[eE][+-]",
+    replace: "[e][+-]",
+    tests: ["src/modules/tests/models.test.ts"],
   },
 ];

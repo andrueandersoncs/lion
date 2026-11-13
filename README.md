@@ -364,6 +364,22 @@ A fact holds JSON data. A string that is a name evaluates to what it names, so a
 
 Fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same goes for the name of a schema or a function, and for a string such as `"?why"`, which is a logic variable: `... is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` An argument that is not data for another reason is shown with the reason: `... is ["number/add","?x",1], which waits for a logic variable.`
 
+`why` explains a derived fact by the rule that derived it and what its body rested on, under `because`: each row a relation goal matched, explained in turn down to the facts that were given, and every other goal as it held, with the answer's values in place of its variables. A `not` shows as `absent`, and every other goal, `=` and `in` among them, as `check`. A figure a rule computes therefore shows its arithmetic on the values it was given:
+
+```json
+["begin",
+  ["relation", "line", ["item", "usd_m"]],
+  ["relation", "days_held", ["days"]],
+  ["fact", ["line", "inventory", 4946], ["line", "cost of sales", 210352]],
+  ["rule", ["days_held", "?days"],
+    ["line", "inventory", "?stock"],
+    ["line", "cost of sales", "?cost"],
+    ["=", "?days", ["number/round", ["number/multiply", 365, ["number/divide", "?stock", "?cost"]]]]],
+  ["why", ["days_held", 9]]]
+```
+
+Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again.
+
 ### Waiting for values
 
 A rule or query is written before its variables have values, so anything that needs a variable's value waits, and runs once for each answer that binds the variable:
@@ -912,6 +928,7 @@ Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-
 ["number/round", 2.5]
 ["number/toString", 42]
 ["number/toString", 1234567.5, ","]
+["number/fromString", "1,234,567.5", ","]
 ```
 
 Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`.
@@ -922,6 +939,8 @@ Arithmetic whose result is not a finite number, such as division by zero, fails 
 ["rule", ["label", "?id", ["string/concat", "order ", ["number/toString", "?id"]]],
   ["order", "?id", "?_"]]
 ```
+
+`number/fromString` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number: `["number/fromString", "-0.5"]` is `-0.5`, and `["number/fromString", "12 apples"]` is `null`. It reads what JSON writes, and also zeros before the digits and `"−"` as the minus sign. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same string: `["number/fromString", "1,234,567.5", ","]` is `1234567.5`, `"1234"` is still `1234`, and `"12,34"` is `null`. A number too large for JSON, such as `"1e999"`, is `null`.
 
 ### `boolean`
 
@@ -984,11 +1003,14 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/split", "a,b,c", ","]
 ["string/padStart", "7", 2, "0"]
 ["string/padEnd", "7", 3, "."]
+["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
 ```
 
 `string/join` is a list of strings with the separator between them: `"a, b, c"`. With a third string, that one stands before the last item in place of the separator, as `#:before-last` does in Racket: `"a, b and c"`, and `"a and b"` for two items. One item is itself, and an empty list is `""`. Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`.
 
 `string/split` is the parts of the text between each separator, as JavaScript splits: `["a", "b", "c"]`. Joining the parts with the same separator gives the text back. `string/padStart` and `string/padEnd` make the text as long as the number says by putting copies of the last argument before it or after it, as JavaScript does: `"07"` and `"7.."`. Text that is already that long is unchanged.
+
+`string/numbers` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator: the example is `[1250.5, 2023, 24, -3]`. A minus sign counts only where no letter, digit, or point stands right before it, so the range `2023-24` holds 2023 and 24, and `COVID-19` holds 19. Words for amounts, such as "million", are not read: `"$1.2 billion"` holds `1.2`. It is how a program can check that a figure was copied from the words it is said to come from, rather than worked out by whoever copied it.
 
 ### `object`
 
@@ -997,6 +1019,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["object/get-path", {"a": {"b": {"c": 42}}}, "a.b.c"]
 ["object/keys", {"a": 1, "b": 2}]
 ["object/values", {"a": 1, "b": 2}]
+["object/set", {"a": 1}, "b", 2]
+["object/remove", {"a": 1, "b": 2}, "b"]
 ["object/json-stringify", {"a": 1}, null, 2]
 ["object/get-method", "obj", "methodName"]
 ["object/call-method", "obj", "methodName", 1, 2]
@@ -1006,6 +1030,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ```
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
+
+`object/set` and `object/remove` give a new record, as `hash-set` and `hash-remove` do in Racket: `{"a": 1, "b": 2}` with the key set to the value, and `{"a": 1}` without the key. The record they are given is unchanged, removing a key it does not hold gives the same record, and a key is any string a record can hold, so `"__proto__"` is refused.
 
 `object/json-stringify` writes any JSON value: a record, a list, a string, a number, a boolean, or `null`. The text of a string has its quotes, so `["object/json-stringify", "lion"]` is `"\"lion\""`, and the text of a number is the number, as `number/toString` gives it. The replacer and the indent are optional. A value JSON cannot write, such as a function, fails with `"number/add" has no JSON text.`
 
@@ -1174,7 +1200,11 @@ In the program, `["my/outDegree", "edge", "?node", "?degree"]` is then a goal.
 
 [`skills/lion-research`](skills/lion-research/SKILL.md) is an agent skill that uses Lion as the working memory of a deep research run. The agent records what each source says as facts, with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research: [`why`](#forms) traces any conclusion to quoted sources, [invariants](#invariants) reject malformed evidence, and the agent's assumptions are rules that the evidence can contradict.
 
-The skill ships a core program, [`assets/core.json`](skills/lion-research/assets/core.json), that says who stands behind each answer. Only a publisher who gives an answer first-hand counts, so three articles that repeat one press release are one voice, an answer that every source credits to someone else is second-hand, and a source credited with something it does not say is a misquote. A run ends with `explorer.html`, one page that holds the model and the evaluator, made for the person who asked for the research and knows nothing of Lion. The agent designs the page for that person's goal, as a plan of views and blocks: answers in plain words with the evidence under each, key figures, timelines, comparison grids, and lookups, where the reader picks from a list and gets the answer. The plan states no facts. Its summary, answers, and figures are Lion expressions that the page works out from the model each time it opens, and a lookup is a Lion function of what the reader chose. It says how solid each finding is, lists every source with its quotes, and keeps a query editor for readers who do know Lion.
+The skill ships a core program, [`assets/core.json`](skills/lion-research/assets/core.json), that says who stands behind each answer. Only a publisher who gives an answer first-hand counts, so three articles that repeat one press release are one voice, an answer that every source credits to someone else is second-hand, and a source credited with something it does not say is a misquote. A publisher's later word replaces its earlier one, so a figure a company corrected in its annual report is a restatement, not a dispute with its own press release, and whoever still repeats the earlier figure is set aside with it.
+
+The core also checks that figures are verifiable, in the way a finance desk would want. Every number in a claim must be written in the words quoted for it, read with [`string/numbers`](#string), so a figure that was mistyped or converted on the way in is listed; the agent copies "$1.2 billion" as written and a rule converts it. A word used in more than one sense, such as revenue as reported and revenue excluding fuel surcharges, is a reading the frame declares: the core lists the questions that sources answer in more than one sense, the agent asks the reader which they mean instead of choosing, and every rule that reaches the question through `meant` follows the choice. `why` on a computed figure shows its arithmetic on the line items it used, and each quote on the page opens in its place in the saved text of its source.
+
+A run ends with `explorer.html`, one page that holds the model and the evaluator, made for the person who asked for the research and knows nothing of Lion. The agent designs the page for that person's goal, as a plan of views and blocks: answers in plain words with the evidence under each, key figures, timelines, comparison grids, and lookups, where the reader picks from a list and gets the answer. The plan states no facts. Its summary, answers, and figures are Lion expressions that the page works out from the model each time it opens, and a lookup is a Lion function of what the reader chose. It says how solid each finding is, lists every source with its quotes, and keeps a query editor for readers who do know Lion.
 
 To use it with Claude Code, link or copy the folder into your skills:
 
@@ -1190,7 +1220,13 @@ The explorer page runs a bundle of `@lionlang/core`. After changing the core eva
 bun build skills/lion-research/scripts/engine.ts --target browser --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
 ```
 
-The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model and plan it was given, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, and each script started through a link, as an installed skill starts it.
+The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance and restatement, its figure check against the numbers written into a quote, its readings against a plain model of senses and choices, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model, plan, and saved texts it was given, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, where a quote stands against the text it was found in, the page check against every text and query of a plan, and each script started through a link, as an installed skill starts it.
+
+The skill has two evals. `researches-recent-outage` researches a live event on the web. `verifies-company-figures` works from a frozen corpus of seven made-up sources about one company, written with the traps a financial analyst meets: a figure restated in a later filing, revenue in two senses and two periods, a figure in billions, a misquote, a chain of relays, a disputed count, and a margin to work out. Its known answers, in `answers.json`, are checks on a finished run, each for one stage: reading the sources, framing the model, its conclusions, the page, and the report. `grade.mjs` grades a run by stage, so a failure says which stage went wrong, and a property replays the case's reference run and checks that leaving out any one source fails exactly the checks that rest on it.
+
+```bash
+node skills/lion-research/evals/verifies-company-figures/grade.mjs research/tarnwell
+```
 
 ## Reasoning Skill
 
