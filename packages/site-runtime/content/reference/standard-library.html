@@ -1,5 +1,5 @@
 <article id="standard-library" data-title="Standard library" data-summary="Every function in Lion's default environment, by module: number, boolean, string, array, value, schema, object, func, console, aggregate, and graph.">
-<p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each module's example below calls every function in the module.</p>
+<p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each takes a set number of arguments, and a call with any other number fails and says how many the function takes, as in <code>"number/subtract" takes 2 arguments but got 3.</code> Each module's example below calls every function in the module.</p>
 <p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
@@ -7,18 +7,19 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="number/add"><td><code>["number/add", a, b]</code></td><td><code>a + b</code></td></tr>
+    <tr data-entry="number/add"><td><code>["number/add", a, b, ...]</code></td><td><code>a + b</code>, and so on for one or more numbers</td></tr>
     <tr data-entry="number/subtract"><td><code>["number/subtract", a, b]</code></td><td><code>a - b</code></td></tr>
-    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b]</code></td><td><code>a × b</code></td></tr>
+    <tr data-entry="number/multiply"><td><code>["number/multiply", a, b, ...]</code></td><td><code>a × b</code>, and so on for one or more numbers</td></tr>
     <tr data-entry="number/divide"><td><code>["number/divide", a, b]</code></td><td><code>a ÷ b</code>. Dividing by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/remainder"><td><code>["number/remainder", a, b]</code></td><td>What is left of <code>a</code> after dividing by <code>b</code>, with the sign of <code>a</code>. A remainder by 0 fails with <code>ArithmeticError</code>.</td></tr>
     <tr data-entry="number/power"><td><code>["number/power", a, b]</code></td><td><code>a</code> to the power of <code>b</code></td></tr>
-    <tr data-entry="number/min"><td><code>["number/min", a, b]</code></td><td>The smaller of the two</td></tr>
-    <tr data-entry="number/max"><td><code>["number/max", a, b]</code></td><td>The larger of the two</td></tr>
+    <tr data-entry="number/min"><td><code>["number/min", a, b, ...]</code></td><td>The smallest of one or more numbers</td></tr>
+    <tr data-entry="number/max"><td><code>["number/max", a, b, ...]</code></td><td>The largest of one or more numbers</td></tr>
     <tr data-entry="number/absolute"><td><code>["number/absolute", a]</code></td><td><code>a</code> without its sign</td></tr>
     <tr data-entry="number/floor"><td><code>["number/floor", a]</code></td><td>The largest whole number that is at most <code>a</code></td></tr>
     <tr data-entry="number/ceiling"><td><code>["number/ceiling", a]</code></td><td>The smallest whole number that is at least <code>a</code></td></tr>
     <tr data-entry="number/round"><td><code>["number/round", a]</code></td><td>The nearest whole number; a half rounds up</td></tr>
+    <tr data-entry="number/toString"><td><code>["number/toString", a]</code></td><td><code>a</code> as text, the way JSON writes it</td></tr>
     <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
     <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
@@ -28,6 +29,7 @@
 </table>
 <lion-example name="number">
 {"add": ["number/add", 7, 3],
+ "add-three": ["number/add", 7, 3, 1],
  "subtract": ["number/subtract", 7, 3],
  "multiply": ["number/multiply", 7, 3],
  "divide": ["number/divide", 7, 2],
@@ -39,6 +41,7 @@
  "floor": ["number/floor", 2.7],
  "ceiling": ["number/ceiling", 2.1],
  "round": ["number/round", 2.5],
+ "toString": ["string/concat", "order ", ["number/toString", 42]],
  "equals?": ["number/equals?", 7, 7],
  "lessThan": ["number/lessThan", 7, 3],
  "greaterThan": ["number/greaterThan", 7, 3],
@@ -79,7 +82,7 @@
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
     <tr data-entry="string/length"><td><code>["string/length", text]</code></td><td>The length of <code>text</code></td></tr>
-    <tr data-entry="string/concat"><td><code>["string/concat", a, b]</code></td><td><code>a</code> followed by <code>b</code></td></tr>
+    <tr data-entry="string/concat"><td><code>["string/concat", a, b, ...]</code></td><td><code>a</code> followed by <code>b</code>, and so on for one or more strings</td></tr>
     <tr data-entry="string/startsWith"><td><code>["string/startsWith", text, prefix]</code></td><td>Whether <code>text</code> starts with <code>prefix</code></td></tr>
     <tr data-entry="string/endsWith"><td><code>["string/endsWith", text, suffix]</code></td><td>Whether <code>text</code> ends with <code>suffix</code></td></tr>
     <tr data-entry="string/includes"><td><code>["string/includes", text, search]</code></td><td>Whether <code>text</code> contains <code>search</code></td></tr>
@@ -108,7 +111,7 @@
     <tr data-entry="array/length"><td><code>["array/length", list]</code></td><td>The number of items</td></tr>
     <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item, or <code>null</code> for an empty list</td></tr>
     <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first; <code>[]</code> for an empty list</td></tr>
-    <tr data-entry="array/concat"><td><code>["array/concat", a, b]</code></td><td>The items of <code>a</code> followed by those of <code>b</code></td></tr>
+    <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for one or more lists</td></tr>
     <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
     <tr data-entry="array/flat-map"><td><code>["array/flat-map", list, function]</code></td><td>The concatenation of the lists <code>function</code> returns for each item</td></tr>
@@ -210,7 +213,7 @@
     <tr data-entry="object/get-path"><td><code>["object/get-path", object, path]</code></td><td>The value at <code>path</code>, such as <code>"users.1.name"</code>. Fails with <code>KeyNotFoundError</code>, <code>IndexOutOfBoundsError</code>, <code>NotAnArrayError</code>, or <code>PathTraversalError</code> when the path does not lead to a value.</td></tr>
     <tr data-entry="object/keys"><td><code>["object/keys", record]</code></td><td>The record's keys</td></tr>
     <tr data-entry="object/values"><td><code>["object/values", record]</code></td><td>The record's values</td></tr>
-    <tr data-entry="object/json-stringify"><td><code>["object/json-stringify", object, replacer, space]</code></td><td>The object as JSON text, like <code>JSON.stringify</code></td></tr>
+    <tr data-entry="object/json-stringify"><td><code>["object/json-stringify", value, replacer, space]</code></td><td>Any JSON value as JSON text, like <code>JSON.stringify</code>. The replacer and the indent are optional.</td></tr>
     <tr data-entry="object/call-method"><td><code>["object/call-method", value, name, argument, ...]</code></td><td>The result of calling <code>value</code>'s method <code>name</code>. Fails with <code>NotAFunctionError</code> when there is no such method, and <code>NotAnObjectError</code> when <code>value</code> is <code>null</code>.</td></tr>
     <tr data-entry="object/get-method"><td><code>["object/get-method", value, name]</code></td><td>The method <code>name</code> of <code>value</code>, bound to it. Fails like <code>object/call-method</code>.</td></tr>
     <tr data-entry="object/call-method-path"><td><code>["object/call-method-path", object, path, argument, ...]</code></td><td>The result of calling the method at the end of <code>path</code>, with <code>this</code> set to the value before it. Every value the path passes through must be an object; the last can be any value except <code>null</code>.</td></tr>

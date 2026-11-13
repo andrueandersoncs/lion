@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — @lionlang/core
+## 2026-11-13 — @lionlang/core 0.8.0, @lionlang/cli 0.7.0
 
 Three surprises found while writing Lion programs for a research skill, each removed by one rule. A call gives a function as many arguments as it takes. A number has text. A fact that holds a name says which name, and how to write the string.
 
@@ -21,6 +21,7 @@ Three surprises found while writing Lion programs for a research skill, each rem
 
 - A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.
 - Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `"graph/pageRank"`, `Schema "Tree" takes 1 argument, the value to check, but got 2.` is `"Tree" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `"aggregate/sum" takes 1 argument but got 2.` A relation's message is unchanged.
+- `@lionlang/cli` 0.7.0 bundles `@lionlang/core` 0.8.0.
 - An `ArithmeticError` shows every number of the call: `number/add: 1e+308 + 1e+308 + 1 has no finite result.`
 
 ### Fixed
