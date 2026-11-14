@@ -21,6 +21,7 @@ import {
   joinForm,
   knownRows,
   RELATIONS,
+  RULE_POOL,
   type RuleSpec,
   ruleForm,
   rules,
@@ -803,6 +804,138 @@ describe("a key or an equality rule on a relation that a rule invents rows of", 
         }
       }),
     RUNS
+  );
+});
+
+/**
+ * The parents of each child copied through `depth` relations, `via1` to
+ * `via<depth>`, with the equality rule reading the last copy.
+ */
+const throughCopies = (depth: number) => {
+  const names = Array.from({ length: depth }, (_, at) => `via${at + 1}`);
+  const last = names.at(-1) ?? "parent";
+  return [
+    ...names.map((name) => ["relation", name, ["child", "parent"]]),
+    ...names.map((name, at) => [
+      "rule",
+      [name, "?x", "?p"],
+      [names[at - 1] ?? "parent", "?x", "?p"],
+    ]),
+    ["rule", ["=", "?p", "?q"], [last, "?x", "?p"], [last, "?x", "?q"]],
+  ];
+};
+
+describe("an equality rule that reads relations derived from the rows a rule invents", () => {
+  it.effect.prop(
+    "makes the same unknowns one as when it reads those rows directly",
+    {
+      given: facts,
+      picked: rules,
+      depth: element([1, 2, 3]),
+      passOn: Schema.Boolean,
+    },
+    ({ depth, given, passOn, picked }) =>
+      Effect.gen(function* () {
+        // An invented parent passed along a link to a child with a given
+        // one is a pair to make one, which few picks of rules and facts
+        // reach by chance.
+        const merging = new Set([
+          "everyone has a parent",
+          "a link passes a parent on",
+        ]);
+        const chosen = RULE_POOL.filter(
+          (rule) => picked.includes(rule) || (passOn && merging.has(rule.name))
+        );
+        const pair = passOn
+          ? {
+              people: [...given.people, "a"],
+              links: [...given.links, ["a", "b"] as const],
+              parents: [...given.parents, ["b", "eve"] as const],
+            }
+          : given;
+        const base = [
+          ...declarationsOf(),
+          ...factForms(pair),
+          ...chosen.map(ruleForm),
+        ];
+        const direct = yield* everyRow([...base, ...throughCopies(0)]);
+        const copied = yield* everyRow([...base, ...throughCopies(depth)]);
+        expect(copied.ok).toBe(direct.ok);
+        if (direct.ok && copied.ok) {
+          expect(copied.value).toEqual(direct.value);
+        }
+      }),
+    RUNS
+  );
+
+  it.effect.prop(
+    "refuses, whatever the facts, a question between the rule that invents and the columns it makes equal, and allows one beside them",
+    {
+      people: Arbitrary.array(element(["ben", "cy", "di"]), { maxLength: 3 }),
+      births: Arbitrary.array(
+        Arbitrary.all([element(["ben", "cy", "di"]), element(["eve", "fay"])]),
+        { maxLength: 3 }
+      ),
+      equated: element(["mother", "name"] as const),
+    },
+    ({ births, equated, people }) =>
+      Effect.gen(function* () {
+        // Whether ben's unknown mother is fay would decide whether ben is
+        // private, which decides whether anything says she is fay.
+        const outcome = yield* attempt(
+          [
+            "begin",
+            ["relation", "person", ["name"]],
+            ["relation", "birth", ["child", "mother"]],
+            ["relation", "mother", ["child", "mother"]],
+            ["relation", "private", ["child"]],
+            ["relation", "listed", ["child", "mother", "name"]],
+            ...people.map((name) => ["fact", ["person", name]]),
+            ...births.map((row) => ["fact", ["birth", ...row]]),
+            [
+              "rule",
+              ["exists", ["?m"], ["mother", "?c", "?m"]],
+              ["person", "?c"],
+            ],
+            [
+              "rule",
+              ["private", "?c"],
+              ["mother", "?c", "?m"],
+              ["birth", "?c", "?m"],
+            ],
+            [
+              "rule",
+              ["listed", "?c", "?m", ["string/concat", "?c", "!"]],
+              ["mother", "?c", "?m"],
+              ["not", ["private", "?c"]],
+            ],
+            equated === "mother"
+              ? [
+                  "rule",
+                  ["=", "?m", "?n"],
+                  ["listed", "?c", "?m", "?_"],
+                  ["birth", "?c", "?n"],
+                ]
+              : [
+                  "rule",
+                  ["=", "?a", "?b"],
+                  ["listed", "?c", "?_", "?a"],
+                  ["listed", "?c", "?_", "?b"],
+                ],
+            ["find", "?c", ["listed", "?c", "?_", "?_"]],
+          ],
+          new LogicDatabase()
+        );
+        if (equated === "mother") {
+          expect(outcome.ok ? "" : outcome.message).toContain(
+            'asks about "private"'
+          );
+        } else {
+          expect(succeeded(outcome)).toEqual(
+            expect.arrayContaining([...new Set(people)])
+          );
+        }
+      })
   );
 });
 

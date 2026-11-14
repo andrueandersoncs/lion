@@ -9,13 +9,10 @@ import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
 import {
   type CompiledQuery,
   type CompiledRule,
-  columnOf,
   compiling,
   headsOf,
   type Literal,
-  originOf,
   questionPlans,
-  valueOrigins,
 } from "@/logic/compile";
 import { checkOf, misfit } from "@/logic/fit";
 import { factsName, rewriteQueries } from "@/logic/magic";
@@ -46,6 +43,8 @@ import {
   components,
   dependencyEdges,
   equalityHome,
+  type Flow,
+  flowsOf,
   isOpaque,
   mentioned,
   reads,
@@ -610,47 +609,6 @@ const computedCycleProblem = (
   return undefined;
 };
 
-/** A value a rule puts in a column of its head, and where it comes from. */
-interface Flow {
-  readonly arg: unknown;
-  readonly from: string;
-  readonly made: boolean;
-  readonly rule: CompiledRule;
-  /** The relation of the column the value comes from. */
-  readonly source: string;
-  readonly to: string;
-}
-
-const FLOWS = new WeakMap<CompiledRule, readonly Flow[]>();
-
-/** The values a rule puts in the columns of its head, and where each comes from. */
-const flowsOf = (rule: CompiledRule): readonly Flow[] => {
-  const known = FLOWS.get(rule);
-  if (known !== undefined) {
-    return known;
-  }
-  const origins = valueOrigins(rule.body);
-  const flows = headsOf(rule).flatMap((head) =>
-    head.args.flatMap((arg, position) => {
-      if (rule.aggregates.includes(position)) {
-        return [];
-      }
-      const { columns, made } = originOf(arg, origins);
-      const to = columnOf(head.relation.name, position);
-      return [...columns].map(([from, source]) => ({
-        arg,
-        from,
-        made,
-        rule,
-        source,
-        to,
-      }));
-    })
-  );
-  FLOWS.set(rule, flows);
-  return flows;
-};
-
 /** The strongly connected group of columns each column is in, by number. */
 const componentsOf = (flows: readonly Flow[]) => {
   const targets = new Map<string, string[]>();
@@ -748,17 +706,16 @@ const recursionProblem = (
 };
 
 /**
- * An equality rule runs with the group of one relation its body reads (see
- * `equalityHome`), so a question it asks about that group could not be
- * answered in full yet.
+ * An equality rule runs with the group that invents the unknowns it can
+ * meet (see `equalityHome`), so a question it asks about that group could
+ * not be answered in full yet.
  */
 const equalityProblem = (
   rule: CompiledRule,
   rules: readonly CompiledRule[],
-  ordered: Components,
-  edges: ReadonlyMap<string, ReadonlySet<string>>
+  ordered: Components
 ) => {
-  const home = equalityHome(rule, rules, edges);
+  const home = equalityHome(rule, rules);
   const group = home === undefined ? undefined : componentOf(ordered, home);
   const question = asked(rule.body, rule.head.args).find(({ name }) =>
     group?.has(name)
@@ -776,12 +733,9 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
     return problem;
   }
   const recursive: [CompiledRule, ReadonlySet<string>][] = [];
-  const edges = rules.some((rule) => rule.equates)
-    ? dependencyEdges(rules)
-    : new Map<string, ReadonlySet<string>>();
   for (const rule of rules) {
     const recursion = rule.equates
-      ? equalityProblem(rule, rules, ordered, edges)
+      ? equalityProblem(rule, rules, ordered)
       : recursionProblem(rules, rule, ordered, recursive);
     if (recursion !== undefined) {
       return recursion;

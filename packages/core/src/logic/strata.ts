@@ -2,11 +2,19 @@
  * The dependency graph of a logic program: which relations each rule reads,
  * and the groups of relations that depend on each other.
  */
-import type { CompiledRule, Literal } from "@/logic/compile";
+import {
+  type CompiledRule,
+  columnOf,
+  headsOf,
+  type Literal,
+  originOf,
+  valueOrigins,
+} from "@/logic/compile";
 import {
   Atom,
   buildOf,
   isArgumentsOnly,
+  isForm,
   isPlainObject,
   LogicValue,
   lambdaInfo,
@@ -171,10 +179,120 @@ export const asked = (
     ...values,
   ].flatMap(mentioned);
 
+/** A value a rule puts in a column of its head, and where it comes from. */
+export interface Flow {
+  readonly arg: unknown;
+  readonly from: string;
+  readonly made: boolean;
+  readonly rule: CompiledRule;
+  /** The relation of the column the value comes from. */
+  readonly source: string;
+  readonly to: string;
+}
+
+const FLOWS = new WeakMap<CompiledRule, readonly Flow[]>();
+
+/** The values a rule puts in the columns of its head, and where each comes from. */
+export const flowsOf = (rule: CompiledRule): readonly Flow[] => {
+  const known = FLOWS.get(rule);
+  if (known !== undefined) {
+    return known;
+  }
+  const origins = valueOrigins(rule.body);
+  const flows = headsOf(rule).flatMap((head) =>
+    head.args.flatMap((arg, position) => {
+      if (rule.aggregates.includes(position)) {
+        return [];
+      }
+      const { columns, made } = originOf(arg, origins);
+      const to = columnOf(head.relation.name, position);
+      return [...columns].map(([from, source]) => ({
+        arg,
+        from,
+        made,
+        rule,
+        source,
+        to,
+      }));
+    })
+  );
+  FLOWS.set(rule, flows);
+  return flows;
+};
+
+/**
+ * The relations of the rules that invent a value which can flow, through
+ * the heads of rules, into a column an equality rule makes equal.
+ */
+const inventorsReaching = (
+  rules: readonly CompiledRule[],
+  equality: CompiledRule
+) => {
+  const origins = valueOrigins(equality.body);
+  const equated = new Set(
+    equality.head.args.flatMap((arg) => [
+      ...originOf(arg, origins).columns.keys(),
+    ])
+  );
+  const next = new Map<string, string[]>();
+  for (const rule of rules) {
+    for (const { from, to } of rule.equates ? [] : flowsOf(rule)) {
+      next.set(from, [...(next.get(from) ?? []), to]);
+    }
+  }
+  const reaches = (start: string) => {
+    const seen = new Set([start]);
+    for (const column of seen) {
+      if (equated.has(column)) {
+        return true;
+      }
+      for (const to of next.get(column) ?? []) {
+        seen.add(to);
+      }
+    }
+    return false;
+  };
+  return rules.flatMap((rule) =>
+    rule.invents?.heads.some((head) =>
+      head.args.some(
+        (arg, position) =>
+          isForm(arg, "some") && reaches(columnOf(head.relation.name, position))
+      )
+    )
+      ? headsOf(rule).map((head) => head.relation.name)
+      : []
+  );
+};
+
+/**
+ * The relations of a rule that invents an unknown an equality rule can
+ * meet read every relation the equality rule reads.
+ */
+const addEqualityEdges = (
+  rules: readonly CompiledRule[],
+  edges: ReadonlyMap<string, Set<string>>
+) => {
+  for (const rule of rules.filter(({ equates }) => equates)) {
+    const read = reads(rule.body).map(({ name }) => name);
+    for (const inventor of new Set(inventorsReaching(rules, rule))) {
+      for (const name of read) {
+        if (name !== inventor) {
+          edges.get(inventor)?.add(name);
+        }
+      }
+    }
+  }
+};
+
 /**
  * Which relations each relation reads, through rules and computations. A
  * rule that invents reads every relation of its head, to see whether the
- * head holds already, so those relations are derived together.
+ * head holds already, so those relations are derived together. An equality
+ * rule can make an unknown one with a value, which changes every row that
+ * holds the unknown, so the relations of a rule that invents an unknown the
+ * equality rule can meet read every relation the equality rule reads: they
+ * are derived together with the relations between them, and the equality
+ * rule runs with them.
  */
 export const dependencyEdges = (rules: readonly CompiledRule[]) => {
   const edges = new Map<string, Set<string>>();
@@ -199,7 +317,6 @@ export const dependencyEdges = (rules: readonly CompiledRule[]) => {
   };
   for (const rule of rules) {
     if (rule.equates) {
-      // An equality rule adds no row: it runs with the relations it reads.
       continue;
     }
     if (rule.invents === undefined) {
@@ -210,6 +327,7 @@ export const dependencyEdges = (rules: readonly CompiledRule[]) => {
       }
     }
   }
+  addEqualityEdges(rules, edges);
   return edges;
 };
 
@@ -282,60 +400,17 @@ export const stronglyConnected = (
 };
 
 /**
- * Where an equality rule runs: with a relation that rules derive and that
- * its body reads, from a group no other such relation of the body depends
- * on, so every other relation it reads is complete first. A group whose
- * rules invent comes before one whose rules do not, since only an unknown
- * its own group invented can be made one. Undefined when the body reads
- * only facts: then nothing it reads holds an invented unknown, and the
- * invariant the rule stands for keeps it.
+ * Where an equality rule runs: with the relations of a rule that invents an
+ * unknown it can meet. Those relations read every relation the equality
+ * rule reads (see `dependencyEdges`), so each is complete first or derived
+ * with them. Undefined when no invented unknown can reach the columns it
+ * makes equal: then it has nothing to make one, and the invariant it stands
+ * for keeps it.
  */
 export const equalityHome = (
   rule: CompiledRule,
-  rules: readonly CompiledRule[],
-  edges: ReadonlyMap<string, ReadonlySet<string>>
-) => {
-  const read = [
-    ...new Set(
-      rule.body.flatMap((literal) =>
-        literal instanceof Atom && edges.has(literal.relation.name)
-          ? [literal.relation.name]
-          : []
-      )
-    ),
-  ];
-  const reaches = (from: string, to: string) => {
-    const seen = new Set<string>();
-    const pending = [from];
-    for (let at = pending.pop(); at !== undefined; at = pending.pop()) {
-      for (const next of edges.get(at) ?? []) {
-        if (next === to) {
-          return true;
-        }
-        if (!seen.has(next)) {
-          seen.add(next);
-          pending.push(next);
-        }
-      }
-    }
-    return false;
-  };
-  const together = (a: string, b: string) =>
-    a === b || (reaches(a, b) && reaches(b, a));
-  const highest = read.filter(
-    (name) =>
-      !read.some((other) => reaches(other, name) && !reaches(name, other))
-  );
-  const inventing = rules.flatMap((each) =>
-    each.invents === undefined
-      ? []
-      : each.invents.heads.map((head) => head.relation.name)
-  );
-  return (
-    highest.find((name) => inventing.some((head) => together(head, name))) ??
-    highest.at(-1)
-  );
-};
+  rules: readonly CompiledRule[]
+): string | undefined => inventorsReaching(rules, rule)[0];
 
 /** Relations that depend on each other, and the rules that derive them. */
 export interface Stratum {
@@ -378,15 +453,10 @@ export const strataOf = (
     }
   }
   // Rules keep the order they were added in.
-  // Only an equality rule needs the graph again, to find where it runs.
-  const edges = rules.some((rule) => rule.equates)
-    ? dependencyEdges(rules)
-    : undefined;
   for (const rule of rules) {
-    const home =
-      rule.equates && edges !== undefined
-        ? equalityHome(rule, rules, edges)
-        : rule.head.relation.name;
+    const home = rule.equates
+      ? equalityHome(rule, rules)
+      : rule.head.relation.name;
     if (home !== undefined) {
       strata.get(home)?.rules.push(rule);
     }

@@ -150,7 +150,34 @@
   ["fact", ["email", "ann", "a@x"]],
   ["fact", ["email", "ann", "ann@y"]]]
 </lion-example>
-<p>An equality rule runs with a relation its body reads that rules derive, one no other of them depends on, and one whose rules invent when there is one, so every other relation it reads is complete first. It cannot change an unknown invented for a relation below that one; the invariant reports such a pair.</p>
+<p>Making an unknown one with a value changes every row that holds it, including rows of relations derived from those rows. So the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, and the rule runs with them. An unknown can reach the rule through any number of relations between them. Here it reaches the rule through <code>listed</code>, which copies <code>mother</code>:</p>
+<lion-example name="An equality rule over derived relations">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "birth", ["child", "mother"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "listed", ["child", "mother"]],
+  ["fact", ["person", "ben"], ["person", "cy"], ["birth", "ben", "fay"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]],
+  ["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]],
+  {"mothers": ["query", ["mother", "?child", "?mother"], {"order": "child"}],
+   "listed": ["query", ["listed", "?child", "?mother"], {"order": "child"}]}]
+</lion-example>
+<p>A question about those relations, such as a goal under <code>not</code>, would then go through recursion, so Lion refuses it when the rule is added, whatever the facts. Here whether ben's unknown mother is fay would decide whether ben is private, and that decides whether anything says she is fay:</p>
+<lion-example name="A question between an unknown and an equality rule" expect="error">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "birth", ["child", "mother"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "private", ["child"]],
+  ["relation", "listed", ["child", "mother"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["private", "?c"], ["mother", "?c", "?m"], ["birth", "?c", "?m"]],
+  ["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"], ["not", ["private", "?c"]]],
+  ["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]]
+</lion-example>
+<p>Lion follows each value through the columns of the rules, so a question beside the unknowns, about columns no invented value reaches, is allowed. An unknown that a fact holds is a stated value, and no equality rule changes it; the invariant reports such a pair.</p>
 
 <h2>State that something exists in a fact</h2>
 <p>A <code>fact</code> can hold <code>exists</code> too. It adds the row with an unknown in it, the very row a rule with that head would invent. A fact states rows, so it adds the row whether or not the head holds already. <code>why</code> and <code>retract</code> take <code>exists</code> the same way:</p>

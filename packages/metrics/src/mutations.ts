@@ -48,11 +48,24 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: EXISTENTIAL_TESTS,
   },
   {
-    name: "an equality rule runs with a group that does not invent",
+    name: "an equality rule merges apart from the group that invents what it meets",
     file: core("logic/strata.ts"),
-    find: "    highest.find((name) => inventing.some((head) => together(head, name))) ??",
-    replace:
-      "    highest.find((name) => !inventing.some((head) => together(head, name))) ??",
+    find: "          edges.get(inventor)?.add(name);",
+    replace: "          edges.get(inventor)?.has(name);",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "every invented value counts as meeting an equality rule",
+    file: core("logic/strata.ts"),
+    find: "      if (equated.has(column)) {",
+    replace: "      if (column.length > 0) {",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "an equality rule never runs, and only holds as its invariant",
+    file: core("logic/strata.ts"),
+    find: "): string | undefined => inventorsReaching(rules, rule)[0];",
+    replace: "): string | undefined => undefined;",
     tests: EXISTENTIAL_TESTS,
   },
   {
