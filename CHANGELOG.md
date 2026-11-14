@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased — @lionlang/core
+## 2026-11-13 — @lionlang/core 0.10.0, @lionlang/cli 0.9.0
 
-Figures that can be checked: numbers read from the text they came from, records changed by making new ones, and explanations that show their arithmetic.
+Figures that can be checked: numbers read from the text they came from, records changed by making new ones, and explanations that show their arithmetic. The research skill builds on them to check every figure against its source, so it needs this release.
 
 ### Added
 
@@ -14,6 +14,11 @@ Figures that can be checked: numbers read from the text they came from, records 
 ### Changed
 
 - `why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `["=", "?ratio", ["number/divide", "?a", "?b"]]`, shows as `{"check": ["=", 0.25, ["number/divide", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.
+
+### Documentation
+
+- Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and "Explain a result" shows how a computed figure was worked out.
+- AGENTS.md and CLAUDE.md ask that every new feature be used in an example in the docs, with output that was run.
 
 ### Research skill
 

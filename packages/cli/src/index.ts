@@ -7,7 +7,7 @@ import { LionExpressionSchema } from "@lionlang/core/schemas/lion-expression";
 import { Console, Effect, Option } from "effect";
 import { Argument, CliError, Command, Flag } from "effect/cli";
 
-export const VERSION = "0.8.0";
+export const VERSION = "0.9.0";
 
 const file = Argument.FileSchema("file", LionExpressionSchema, {
   format: "json",
