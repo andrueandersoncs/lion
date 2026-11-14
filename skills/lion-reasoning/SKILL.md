@@ -134,6 +134,15 @@ List each such question in the notes under `ask`, with whose word settles it, th
 
 Then ask. When the user answers, save their words as `seen/user.txt` and record them as an observation of the source `user`, kind `told`. Until then the question is `undecided`. If anything else answers it, a file you read, a command you ran, a doc, or your own guess, it shows as `presumed`, so a choice you made for the user is listed instead of hidden. Their answer is about what they want, not about the files, so it does not go out of date when files change.
 
+Say you read `package.json` and recorded that the build to speed up is the release build. Before the user answers, the standing checks give:
+
+```json
+{"What must the user decide, that they have not?": [{"question": {"build to speed up": "which"}, "of": "user"}],
+ "What did I settle that was the user's to decide?": [{"question": {"build to speed up": "which"}, "value": "release", "observation": "o1"}]}
+```
+
+Once they say "the dev server, it takes 40 s to start", recorded as the value `development`, the first list is empty, and the second still names `o1`: the release build was your guess, and it was wrong.
+
 ### Recording
 
 ```bash

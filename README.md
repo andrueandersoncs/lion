@@ -1275,7 +1275,7 @@ turbo dev --filter=@lionlang/repl
 turbo build --filter=@lionlang/site-runtime
 ```
 
-The documentation page, [`docs/docs.html`](https://lionlang.dev/docs.html), is generated from the fragments in `packages/site-runtime/content/`, one per document, organized by the [Diátaxis](https://diataxis.fr/) framework into tutorials, how-to guides, reference, and explanation. A fragment's `<lion-example>` becomes a live editor, and the build runs every example with the same evaluator the page uses and writes its real result, so a published result can never drift from what Lion does. The build fails on an example that errors unexpectedly, on one too slow for the browser, and on a link to an id the page lacks. After editing a fragment, or the core evaluator, rebuild the page:
+The documentation page, [`docs/docs.html`](https://lionlang.dev/docs.html), is generated from the fragments in `packages/site-runtime/content/`, one per document, organized by the [Diátaxis](https://diataxis.fr/) framework into tutorials, how-to guides, reference, and explanation. A fragment's `<lion-example>` becomes a live editor, and the build runs every example with the same evaluator the page uses and writes its real result, so a published result can never drift from what Lion does. The build fails on an example that errors unexpectedly, on one too slow for the browser, on a link to an id the page lacks, and on a special form or library function that no example uses, so every part of Lion is shown working. After editing a fragment, or the core evaluator, rebuild the page:
 
 ```bash
 bun run --cwd packages/site-runtime docs

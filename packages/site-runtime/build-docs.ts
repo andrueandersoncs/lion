@@ -17,13 +17,16 @@
 //   data-entry="name" on any element
 //     A reference entry: it gets an id and appears in search.
 //
-// Headings get ids, every link must point at an id on the page, and the
+// Headings get ids, every link must point at an id on the page, every
+// special form and library function must appear in some example, and the
 // sidebar, contents, pager, and search index are generated.
 //
 //   bun run docs            write docs/docs.html
 //   bun run docs --check    fail when docs/docs.html is out of date
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { stdlib } from "@lionlang/core/modules";
+import { SPECIAL_FORM_NAMES } from "@lionlang/core/schemas/evaluation";
 import { assetVersion, DOCS, stampPage } from "./site.ts";
 import { evaluateSource } from "./src/evaluate.ts";
 
@@ -263,17 +266,44 @@ const renderExample = ({
 </div>`;
 };
 
-/** Runs every example and writes it out as a live playground. */
+/**
+ * Runs every example and writes it out as a live playground. Gives back the
+ * source of each, for the check that every part of Lion is shown working.
+ */
 const expandExamples = async (doc: Doc) => {
   const parts: string[] = [];
+  const sources: string[] = [];
   let last = 0;
   for (const match of doc.body.matchAll(EXAMPLE)) {
     const example = await runExample(doc, match[1] ?? "", match[2] ?? "");
+    sources.push(example.source);
     parts.push(doc.body.slice(last, match.index), renderExample(example));
     last = (match.index ?? 0) + match[0].length;
   }
   parts.push(doc.body.slice(last));
   doc.body = parts.join("");
+  return sources;
+};
+
+/**
+ * Fails when a special form or library function appears in no example, so
+ * every part of Lion is shown working on the page, with its real result. A
+ * module's own symbol, such as `number/symbol`, is not a function to show.
+ */
+const checkCoverage = (sources: readonly string[]) => {
+  const shown = sources.join("\n");
+  const names = [
+    ...SPECIAL_FORM_NAMES,
+    ...Object.keys(stdlib).filter(
+      (name) => name.includes("/") && !name.endsWith("/symbol")
+    ),
+  ];
+  const missing = names.filter((name) => !shown.includes(JSON.stringify(name)));
+  if (missing.length > 0) {
+    fail(
+      `No example uses ${missing.join(", ")}. Add a <lion-example> that does, where a reader would look for it.`
+    );
+  }
 };
 
 const CODE_BLOCK = /<code-block([^>]*)>([\s\S]*?)<\/code-block>/g;
@@ -596,6 +626,7 @@ const build = async () => {
   }
   const used = new Set(docs.flatMap((doc) => [doc.id, `${doc.id}-title`]));
   const search: SearchEntry[] = [];
+  const sources: string[] = [];
   for (const doc of docs) {
     search.push({
       t: doc.title,
@@ -604,11 +635,12 @@ const build = async () => {
       h: doc.id,
     });
     expandCodeBlocks(doc);
-    await expandExamples(doc);
+    sources.push(...(await expandExamples(doc)));
     wrapTables(doc);
     doc.body = doc.body.replace("<docs-map></docs-map>", renderMap(docs));
     identify(doc, used, search);
   }
+  checkCoverage(sources);
   const html = stampPage("docs.html", renderPage(docs, search), assetVersion());
   checkLinks(html);
   return html;

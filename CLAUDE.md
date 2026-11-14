@@ -16,6 +16,10 @@ Measure before you call a change to `@lionlang/core` done: `bun run measure --ag
 
 Keep the principle of least astonishment in mind whenever you consider a new feature or semantic. A feature should do what someone who knows Lion expects, both on its own and combined with every existing feature. Reuse the vocabulary and rules Lion already has. Walk through how the new behavior interacts with each existing feature. Point out existing surprises instead of building on them. See "Designing Features and Semantics" in AGENTS.md.
 
+## Documentation
+
+Use every new feature in at least one example in the docs, with output that was run, not typed. A core feature gets a live `<lion-example>` in `packages/site-runtime/content/`, where a reader would look for it, and the docs build fails when a special form or library function appears in no example; rebuild `docs/docs.html` with `bun run --cwd packages/site-runtime docs`. A skill's new relation, note field, or script gets an example in its `SKILL.md` or `references/`. Correct every documented result a change makes untrue. See "Documenting Every Feature" in AGENTS.md.
+
 ## Testing
 
 Write property-based tests, not example-based unit tests. Use `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`, and check behavior against a simpler model, a round trip, or an equivalence. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior. When you find a bug, write the property it breaks, for every input and not only the one that failed, before you fix it. Run `bun run mutate` to confirm the properties fail on broken code. See "Write Property-Based Tests" in AGENTS.md for the details and an example.

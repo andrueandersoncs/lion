@@ -20,6 +20,7 @@
     <tr data-entry="number/ceiling"><td><code>["number/ceiling", a]</code></td><td>The smallest whole number that is at least <code>a</code></td></tr>
     <tr data-entry="number/round"><td><code>["number/round", a]</code></td><td>The nearest whole number; a half rounds up</td></tr>
     <tr data-entry="number/toString"><td><code>["number/toString", a]</code><br><code>["number/toString", a, separator]</code></td><td><code>a</code> as text, the way JSON writes it. With a separator, a string, the whole part is written in groups of three digits with it between them: <code>"1,234,567.5"</code></td></tr>
+    <tr data-entry="number/fromString"><td><code>["number/fromString", text]</code><br><code>["number/fromString", text, separator]</code></td><td>The number <code>text</code> writes, as <code>string->number</code> reads it in Scheme, or <code>null</code> when <code>text</code> is not one number. With a separator, the whole part may be in groups of three digits with it between them, so it reads back what <code>number/toString</code> writes with the same separator</td></tr>
     <tr data-entry="number/equals?"><td><code>["number/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
     <tr data-entry="number/lessThan"><td><code>["number/lessThan", a, b]</code></td><td>Whether <code>a &lt; b</code></td></tr>
     <tr data-entry="number/greaterThan"><td><code>["number/greaterThan", a, b]</code></td><td>Whether <code>a &gt; b</code></td></tr>
@@ -43,6 +44,8 @@
  "round": ["number/round", 2.5],
  "toString": ["string/concat", "order ", ["number/toString", 42]],
  "grouped": ["number/toString", 1234567.5, ","],
+ "fromString": ["number/fromString", "1,234,567.5", ","],
+ "not a number": ["number/fromString", "12 apples"],
  "equals?": ["number/equals?", 7, 7],
  "lessThan": ["number/lessThan", 7, 3],
  "greaterThan": ["number/greaterThan", 7, 3],
@@ -92,6 +95,7 @@
     <tr data-entry="string/split"><td><code>["string/split", text, separator]</code></td><td>The parts of <code>text</code> between each <code>separator</code>; joining them with the same separator gives <code>text</code> back</td></tr>
     <tr data-entry="string/padStart"><td><code>["string/padStart", text, length, fill]</code></td><td><code>text</code> made <code>length</code> long with copies of <code>fill</code> before it; unchanged when it is already that long</td></tr>
     <tr data-entry="string/padEnd"><td><code>["string/padEnd", text, length, fill]</code></td><td>The same, with the copies after it</td></tr>
+    <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
     <tr data-entry="string/equals?"><td><code>["string/equals?", a, b]</code></td><td>Whether <code>a</code> equals <code>b</code></td></tr>
   </tbody>
 </table>
@@ -108,6 +112,7 @@
  "split": ["string/split", "2026-11-13", "-"],
  "padStart": ["string/padStart", "7", 2, "0"],
  "padEnd": ["string/padEnd", "7", 3, "."],
+ "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
  "equals?": ["string/equals?", "lion", "lion"]}
 </lion-example>
 
@@ -171,6 +176,8 @@
  "object? of a list": ["value/object?", ["array/make"]],
  "function?": ["value/function?", "number/add"],
  "undefined?": ["value/undefined?", null],
+ "symbol? of a module's own symbol": ["value/symbol?", "number/symbol"],
+ "symbol? of text": ["value/symbol?", ["quote", "number/symbol"]],
  "any?": ["value/any?", null],
  "identity": ["value/identity", 42]}
 </lion-example>
@@ -223,6 +230,8 @@
     <tr data-entry="object/get-path"><td><code>["object/get-path", object, path]</code></td><td>The value at <code>path</code>, such as <code>"users.1.name"</code>. Fails with <code>KeyNotFoundError</code>, <code>IndexOutOfBoundsError</code>, <code>NotAnArrayError</code>, or <code>PathTraversalError</code> when the path does not lead to a value.</td></tr>
     <tr data-entry="object/keys"><td><code>["object/keys", record]</code></td><td>The record's keys</td></tr>
     <tr data-entry="object/values"><td><code>["object/values", record]</code></td><td>The record's values</td></tr>
+    <tr data-entry="object/set"><td><code>["object/set", record, key, value]</code></td><td>A new record with <code>key</code> holding <code>value</code>, as <code>hash-set</code> gives in Racket. The record it was given is unchanged.</td></tr>
+    <tr data-entry="object/remove"><td><code>["object/remove", record, key]</code></td><td>A new record without <code>key</code>, as <code>hash-remove</code> gives in Racket. Removing a key the record does not hold gives the same record.</td></tr>
     <tr data-entry="object/json-stringify"><td><code>["object/json-stringify", value, replacer, space]</code></td><td>Any JSON value as JSON text, like <code>JSON.stringify</code>. The replacer and the indent are optional.</td></tr>
     <tr data-entry="object/call-method"><td><code>["object/call-method", value, name, argument, ...]</code></td><td>The result of calling <code>value</code>'s method <code>name</code>. Fails with <code>NotAFunctionError</code> when there is no such method, and <code>NotAnObjectError</code> when <code>value</code> is <code>null</code>.</td></tr>
     <tr data-entry="object/get-method"><td><code>["object/get-method", value, name]</code></td><td>The method <code>name</code> of <code>value</code>, bound to it. Fails like <code>object/call-method</code>.</td></tr>
@@ -238,11 +247,19 @@
    "get-path": ["object/get-path", "data", "users.1.name"],
    "keys": ["object/keys", "data"],
    "values": ["object/values", ["quote", {"a": 1, "b": 2}]],
+   "set": ["object/set", ["quote", {"a": 1}], "b", 2],
+   "remove": ["object/remove", ["quote", {"a": 1, "b": 2}], "a"],
+   "keys without port": ["object/keys", ["object/remove", "data", "port"]],
    "json-stringify": ["object/json-stringify", ["quote", {"a": [1, 2]}], null, 0],
    "missing": ["object/get", "data", "host"],
    "call-method": ["object/call-method", "lion", "toUpperCase"],
    "call-method-path": ["object/call-method-path", "data", "users.0.name.toUpperCase"],
-   "get-method": [["object/get-method", ["array/make", 1, 2], "join"], "+"]}]
+   "get-method": [["object/get-method", ["array/make", 1, 2], "join"], "+"],
+   "get-method-path": [["object/get-method-path", "data", "users.1.name.padStart"], 4, "."]}]
+</lion-example>
+<p><code>object/new</code> constructs a class that host code binds, as in <a href="#call-host-objects">Call host objects</a>. A value that is not a class fails:</p>
+<lion-example name="object/new without a class" expect="error">
+["object/new", 42]
 </lion-example>
 
 <h2 id="module-func">func</h2>
@@ -259,7 +276,8 @@
 <lion-example name="func">
 {"partial": [["func/partial", "number/add", 10], 5],
  "apply": ["func/apply", "number/subtract", null, 10, 4],
- "bind": [["func/bind", "number/multiply", null, 3], 7]}
+ "bind": [["func/bind", "number/multiply", null, 3], 7],
+ "callback": ["value/function?", ["func/callback", "number/add"]]}
 </lion-example>
 
 <h2 id="module-console">console</h2>

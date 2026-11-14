@@ -79,7 +79,16 @@ Lion's value comes from features that compose, so one surprising interaction cos
   Where results may differ, such as answer order without the `"order"` query option, say so in the docs.
 - **Don't build on surprising behavior.** When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.
 - **Pin the expectation down.** State the behavior users expect as a property and test it (see [Write Property-Based Tests](#write-property-based-tests)), so a later change can't quietly break it.
-- **Document how features combine.** Describe each feature's semantics in the README, including what it does alongside the features it touches.
+- **Document how features combine.** Describe each feature's semantics in the README, including what it does alongside the features it touches, and use it in an example in the docs (see [Documenting Every Feature](#documenting-every-feature)).
+
+## Documenting Every Feature
+
+> **IMPORTANT**: Every feature a change adds is used in at least one example in the docs, with output that was run, not typed. A feature with no example is not finished.
+
+- **Core.** A new library function, special form, logic form, query option, or kind of `why` premise gets a live `<lion-example>` in a fragment of `packages/site-runtime/content/`, where a reader would look for it: its module's example in `reference/standard-library.html` for a library function, and the how-to guide for the task it serves. The docs build runs every example and writes its real result. It fails when a special form or library function appears in no example, so `bun run --cwd packages/site-runtime docs` tells you what is missing. Rebuild `docs/docs.html` with it and commit the result.
+- **Skills.** A new relation of a skill's core program, a new field of its notes, and a new script or option is shown in the skill's `SKILL.md` or its `references/`, as the program or notes with the result Lion gave. Run the example before you write its output down, as `references/patterns.md` says of its own.
+- **Everywhere it changes.** Update the README section of the feature, the CHANGELOG, and every example the change makes untrue. When a change alters what an existing example gives, run the example again and correct its stated output; never leave a documented result that Lion would no longer produce.
+- **Examples use the feature for real.** Show a function doing what it is for, combined with what a reader would combine it with, rather than called alone on a constant. Where the playground cannot show it working, such as `object/new`, which needs a class from host code, show what it does without one, and the host case as a `<code-block>`.
 
 ## Measuring Complexity
 
@@ -443,6 +452,8 @@ packages/repl/
    - Run `bun test`
    - Run `bun run build`
    - For a change to `@lionlang/core`, run `bun run measure --against main` and `bun run bench --against main`, and `bun run mutate` when you added behavior
+   - Run `bun run --cwd packages/site-runtime docs`, and give each new feature an example in the docs (see [Documenting Every Feature](#documenting-every-feature))
+   - Do not write any file while `bun run mutate` runs, not even one outside the code: the repository's write hook formats files, and a mutation it reformats is left in place
 4. **After changes**: Update this AGENTS.md if development practices change
 
 ### Completion Proof

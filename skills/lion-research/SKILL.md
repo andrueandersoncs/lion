@@ -304,7 +304,7 @@ A later step adds Acme's 10-K, a state registry, and two more relayed claims, an
 }
 ```
 
-Acme's 10-K, filed after its press release, gives a different revenue figure, so the 10-K's figure is Acme's word now. That is not a dispute. The wire and the blog, which repeat the release, still give the old figure, and the report should say so.
+Acme's 10-K, filed after its press release, gives a different revenue figure, so the 10-K's figure is Acme's word now. That is not a dispute. The wire and the blog, which repeat the release, still give the old figure, and the report should say so. `["query", ["withdrawn", "?question", "?value"]]` names the figure nobody stands behind any more: `[{"question": {"revenue": "acme", "year": 2024}, "value": 120}]`.
 
 Let the answers decide what you read next. This is where the model earns its keep:
 

@@ -342,7 +342,7 @@
 <ul>
   <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables, holds, or <code>null</code> when it does not.</li>
   <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
-  <li>Premises are facts, <code>{"check": goal}</code> for a filter that held, and <code>{"absent": goal}</code> for a goal under <code>not</code>, each written with the answer's values in place of its variables. A variable that a question binds for itself keeps its name.</li>
+  <li>Premises are facts, <code>{"absent": goal}</code> for a goal under <code>not</code>, and <code>{"check": goal}</code> for every other goal that held: a filter, a schema, an <code>in</code>, and an <code>=</code>, which shows a computed value with the arithmetic that made it, as <code>["=", 26.4, ["number/divide", …]]</code>. Each is written with the answer's values in place of its variables, so a <code>check</code>, evaluated as it stands, is <code>true</code>. A variable that a question binds for itself keeps its name. See <a href="#explain-results">Explain a result</a>.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
   <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. A schema check that held is a <code>check</code>.</li>
   <li>Explanations use every relation computed in full.</li>

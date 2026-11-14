@@ -29,6 +29,24 @@
   ["why", ["eligible", "ana"]]]
 </lion-example>
 
+<h2>See how a figure was worked out</h2>
+<p>A rule that computes a value with <code>=</code> shows the computation as a <code>check</code> too, with the values it was given in place of its variables, so a ratio or a total traces to the rows it came from. Every <code>check</code>, evaluated as it stands, is <code>true</code>, so anyone can work the arithmetic again:</p>
+<lion-example name="Why a computed figure">
+["begin",
+  ["relation", "line", ["item", "usd_m"]],
+  ["relation", "gross_margin", ["percent"]],
+  ["fact", ["line", "revenue", 409.8], ["line", "cost of services", 301.5]],
+  ["rule", ["gross_margin", "?percent"],
+    ["line", "revenue", "?revenue"],
+    ["line", "cost of services", "?cost"],
+    ["=", "?percent",
+      ["number/divide",
+        ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", "?revenue", "?cost"], "?revenue"]]],
+        10]]],
+  ["why", ["gross_margin", ["array/head", ["find", "?p", ["gross_margin", "?p"]]]]]]
+</lion-example>
+<p>The figure in the last line is itself worked out, with <code>find</code>, so the program never states the 26.4 it explains.</p>
+
 <h2>See what a pattern matched</h2>
 <p>A goal can say which rows it wants with a <a href="#take-data-apart">pattern</a> or a schema, and then the goal itself does not say which row it found. <code>why</code> does: the premise is the row the goal matched. A schema check that held is a <code>check</code>:</p>
 <lion-example name="Why with a pattern">
