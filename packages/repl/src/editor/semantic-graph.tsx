@@ -106,6 +106,8 @@ const NODE_COLOR_BY_KEY = {
   retract: "var(--node-logic)",
   query: "var(--node-logic)",
   find: "var(--node-logic)",
+  exists: "var(--node-logic)",
+  some: "var(--node-logic)",
   why: "var(--node-logic)",
   not: "var(--node-logic)",
   and: "var(--node-logic)",
@@ -370,6 +372,18 @@ const describeSpecialForm = (
         mark: form,
         description: "collect matches",
         detail: "goal → list",
+      };
+    case "exists":
+      return {
+        mark: form,
+        description: "holds for some values",
+        detail: "variables + goal",
+      };
+    case "some":
+      return {
+        mark: form,
+        description: "an unknown value",
+        detail: "variable + goal",
       };
     case "why":
       return {

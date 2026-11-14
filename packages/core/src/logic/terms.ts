@@ -47,6 +47,14 @@ export abstract class LogicValue {
   /** The terms the value is made of, in the order they are written. */
   abstract readonly parts: readonly unknown[];
 
+  /**
+   * The parts that can read relations, when the value is answered: all of
+   * them, except for what `some` describes.
+   */
+  get read(): readonly unknown[] {
+    return this.parts;
+  }
+
   /** The logic variables the value mentions, in reading order. */
   get variables(): readonly string[] {
     this.mentioned ??= this.parts.flatMap(termVariables);
@@ -180,6 +188,8 @@ export type FormName =
   | "="
   | "in"
   | "find"
+  | "exists"
+  | "some"
   | "schema/fits?";
 
 /**
@@ -191,6 +201,12 @@ export type FormName =
  * - `["in", element, list]`: the element is one of the list's items.
  * - `["find", template, goal]`: the template's value for every match of
  *   the goal, as a sorted list.
+ * - `["exists", names, goal]`: the goal holds for some values of the
+ *   variables `names` lists, which are its own. Its parts are the names,
+ *   without the `?`, and the goal.
+ * - `["some", variable, goal]`: the unknown value that `variable` stands for
+ *   in a match of the goal, once the variables the answer binds have their
+ *   values. See `Unknown`.
  * - `["schema/fits?", value, schema]`: the value fits the schema.
  */
 export class LogicForm extends LogicValue {
@@ -203,17 +219,139 @@ export class LogicForm extends LogicValue {
     this.parts = parts;
   }
 
+  /**
+   * The variables the form mentions. Those that `exists` lists, and the one
+   * `some` stands for, are the form's own, so they are not among them.
+   */
+  override get variables(): readonly string[] {
+    const own = ownVariables(this);
+    return own.length === 0
+      ? super.variables
+      : super.variables.filter((name) => !own.includes(name));
+  }
+
+  /**
+   * What `some` describes names an unknown and reads nothing, but the
+   * arguments of its relation calls are values, which can ask.
+   */
+  override get read(): readonly unknown[] {
+    return this.form === "some"
+      ? (callsOf(this.parts[1]) ?? []).flatMap((call) => call.args)
+      : this.parts;
+  }
+
   map(change: (part: unknown) => unknown): LogicForm {
     return new LogicForm(this.form, this.parts.map(change));
   }
 }
 
+/** The variables that `exists` lists, or that `some` stands for. */
+export const ownVariables = (form: LogicForm): readonly string[] => {
+  const [first] = form.parts;
+  if (form.form === "exists") {
+    return first as readonly string[];
+  }
+  return form.form === "some" && first instanceof LogicVariable
+    ? [first.name]
+    : [];
+};
+
+/**
+ * A value that exists, but that nothing has said what it is: written
+ * `["some", "?m", ["mother", "ben", "?m"]]`, the value `?m` stands for in a
+ * row `["mother", "ben", ?m]`. A rule whose head says `exists` invents one
+ * for each variable it lists, and a program can write one.
+ *
+ * An unknown is data, as a string is: rows, facts, and answers can hold it,
+ * and it is equal to itself and to nothing else, as a constant is. Two
+ * unknowns are the same when they are written the same way. The variables
+ * of its goal other than `variable` are its own too: `["some", "?f",
+ * ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of
+ * some pair of `?f` and `?m` that the goal describes.
+ */
+export class Unknown {
+  readonly variable: string;
+  /** What the value is known to be part of: a relation call or an `and` of them. */
+  readonly goal: unknown;
+  /** Equal for unknowns written the same way. */
+  readonly key: string;
+  /** How the unknown reads, which is also how it sorts. */
+  readonly form: unknown;
+
+  constructor(variable: string, goal: unknown) {
+    this.variable = variable;
+    this.goal = goal;
+    this.form = write(this, DISPLAY);
+    this.key = logicKey(this) ?? JSON.stringify(this.form);
+  }
+
+  toJSON(): unknown {
+    return this.form;
+  }
+}
+
+/**
+ * The relation calls a goal is made of when it is one, or an `and` of them,
+ * as a rule's head and what `some` describes are; undefined otherwise.
+ */
+export const callsOf = (goal: unknown): readonly Atom[] | undefined => {
+  if (goal instanceof Atom) {
+    return [goal];
+  }
+  if (!isForm(goal, "and")) {
+    return undefined;
+  }
+  const calls: Atom[] = [];
+  for (const part of goal.parts) {
+    const inner = callsOf(part);
+    if (inner === undefined) {
+      return undefined;
+    }
+    calls.push(...inner);
+  }
+  return calls;
+};
+
+/**
+ * A term with some of its variables replaced: `replace` gives the term to
+ * put in place of a variable, or undefined to keep it.
+ */
+export const replaceVariables = (
+  term: unknown,
+  replace: (variable: LogicVariable) => unknown
+): unknown => {
+  const inner = (part: unknown) => replaceVariables(part, replace);
+  if (term instanceof LogicVariable) {
+    return replace(term) ?? term;
+  }
+  if (term instanceof Atom || term instanceof LogicForm) {
+    return term.map(inner);
+  }
+  return term instanceof DeferredCall
+    ? new DeferredCall(
+        inner(term.fn),
+        term.callee,
+        term.args.map(inner),
+        term.aggregate
+      )
+    : term;
+};
+
 /** True for a logic form written with one of the given names. */
 export const isForm = (
   value: unknown,
-  ...names: readonly FormName[]
-): value is LogicForm =>
-  value instanceof LogicForm && names.includes(value.form);
+  name: FormName,
+  other?: FormName,
+  third?: FormName,
+  fourth?: FormName
+): value is LogicForm => {
+  // Named parameters, not a list, since this runs for nearly every term.
+  if (!(value instanceof LogicForm)) {
+    return false;
+  }
+  const { form } = value;
+  return form === name || form === other || form === third || form === fourth;
+};
 
 /**
  * What a rule or query can ask. A variable, a waiting call, or a find is a
@@ -227,15 +365,19 @@ export const isGoal = (value: unknown): value is Goal =>
 /** True for a goal that matches the rows of a relation somewhere in it. */
 export const isRelational = (value: unknown): boolean =>
   value instanceof Atom ||
-  (isForm(value, "not", "and", "or") && value.parts.some(isRelational));
+  (isForm(value, "not", "and", "or", "exists") &&
+    value.parts.some(isRelational));
 
 /**
- * True for a question: a value that the database answers. A goal with a
- * relation in it is true when it has a match and false when it has none, and
- * a find is the list of what it found.
+ * True for a question: a value that the engine answers. A goal with a
+ * relation in it, or with variables of its own, as `exists` has, is true
+ * when it has a match and false when it has none, and a find is the list of
+ * what it found.
  */
 export const isQuestion = (value: unknown): boolean =>
-  isForm(value, "find") || isRelational(value);
+  isForm(value, "find", "exists") ||
+  value instanceof Atom ||
+  (isForm(value, "not", "and", "or") && value.parts.some(isQuestion));
 
 /**
  * True for a value that is not known until logic variables are bound: a
@@ -581,6 +723,15 @@ export const isPlainObject = (
 const variableName = (variable: LogicVariable) =>
   `?${variable.anonymous ? "_" : variable.name}`;
 
+const RENAMED = /#\d+$/;
+
+/**
+ * A variable as people read it: the variables of an `exists` are renamed
+ * apart while it is answered, and show with the names the program wrote.
+ */
+const shownName = (variable: LogicVariable) =>
+  variableName(variable).replace(RENAMED, "");
+
 /**
  * Writes a logic value as the Lion expression that evaluates to it. Every
  * reader shares this one shape: messages and `why`, the keys that tell rules
@@ -598,13 +749,26 @@ export const write = (item: unknown, writer: Writer): unknown => {
     const args = item.args.map(inner);
     return item.relation.computed?.form(args) ?? [item.relation.name, ...args];
   }
+  if (isForm(item, "exists")) {
+    const [names, goal] = item.parts;
+    return [
+      "exists",
+      (names as readonly string[]).map((name) => `?${name}`),
+      inner(goal),
+    ];
+  }
   if (item instanceof LogicForm) {
     return [item.form, ...item.parts.map(inner)];
+  }
+  if (item instanceof Unknown) {
+    // Its variables are its own, whatever values an answer gives others.
+    const own = { data: writer.data, opaque: writer.opaque };
+    return ["some", `?${item.variable}`, write(item.goal, own)];
   }
   if (typeof item === "function") {
     return writeFunction(item as LionFunction, writer);
   }
-  if (isGroundValue(item)) {
+  if (isJson(item)) {
     return writer.data(item);
   }
   if (Array.isArray(item)) {
@@ -639,6 +803,7 @@ export const quoted =
   };
 
 const DISPLAY: Writer = {
+  variable: shownName,
   data: quoted(),
   opaque: (value, callee) => {
     const info = lambdaInfo(value);
@@ -689,14 +854,14 @@ export const instantiate = (
     variable: (variable) =>
       vars.has(variable.name)
         ? DISPLAY.data(vars.get(variable.name))
-        : variableName(variable),
+        : shownName(variable),
   });
 
 /** Raised by a writer for a value with no Lion form. */
 export class Unwritable extends Error {}
 
-/** Facts may only contain JSON data. */
-export const isGroundValue = (value: unknown): boolean => {
+/** True for JSON data, or with `unknowns`, data that may hold unknowns. */
+const isDataOf = (value: unknown, unknowns: boolean): boolean => {
   if (value === null) {
     return true;
   }
@@ -709,11 +874,28 @@ export const isGroundValue = (value: unknown): boolean => {
     default:
       break;
   }
-  if (Array.isArray(value)) {
-    return value.every(isGroundValue);
+  if (value instanceof Unknown) {
+    return unknowns;
   }
-  return isPlainObject(value) && Object.values(value).every(isGroundValue);
+  if (!(Array.isArray(value) || isPlainObject(value))) {
+    return false;
+  }
+  for (const item of Array.isArray(value) ? value : Object.values(value)) {
+    if (!isDataOf(item, unknowns)) {
+      return false;
+    }
+  }
+  return true;
 };
+
+/**
+ * Facts may only contain data: JSON values, and unknowns anywhere a JSON
+ * value can stand.
+ */
+export const isGroundValue = (value: unknown): boolean => isDataOf(value, true);
+
+/** True for JSON data with no unknown in it. */
+export const isJson = (value: unknown): boolean => isDataOf(value, false);
 
 /** Lists and records known to be JSON data, so each is looked at once. */
 const DATA = new WeakSet<object>();
@@ -733,9 +915,20 @@ export const isData = (value: unknown): boolean => {
   return DATA.has(value);
 };
 
+/**
+ * The value with its records' keys sorted. No JSON text holds a raw control
+ * character, so an unknown is a string that starts with one, and a string
+ * of the data that starts with one gets another in front.
+ */
 const canonical = (value: unknown): unknown => {
+  if (typeof value === "string") {
+    return value.charCodeAt(0) === 0 ? `\u0000${value}` : value;
+  }
   if (Array.isArray(value)) {
     return value.map(canonical);
+  }
+  if (value instanceof Unknown) {
+    return `\u0000?${value.key}`;
   }
   if (isPlainObject(value)) {
     return Object.fromEntries(
@@ -747,7 +940,7 @@ const canonical = (value: unknown): unknown => {
   return value;
 };
 
-/** A key that is equal for structurally equal JSON values. */
+/** A key that is equal for structurally equal data. */
 export const valueKey = (value: unknown): string =>
   JSON.stringify(canonical(value)) ?? "undefined";
 
@@ -811,7 +1004,10 @@ const typeRank = (value: unknown): number => {
   if (Array.isArray(value)) {
     return 4;
   }
-  return isPlainObject(value) ? 5 : 6;
+  if (isPlainObject(value)) {
+    return 5;
+  }
+  return value instanceof Unknown ? 6 : 7;
 };
 
 const compareLists = (a: readonly unknown[], b: readonly unknown[]): number => {
@@ -825,9 +1021,10 @@ const compareLists = (a: readonly unknown[], b: readonly unknown[]): number => {
 };
 
 /**
- * A total order on JSON data: null, then booleans, numbers, strings, arrays,
- * and records. Arrays compare element by element and records by their sorted
- * entries, so sorting never depends on how an answer was found.
+ * A total order on data: null, then booleans, numbers, strings, arrays,
+ * records, and unknowns. Arrays compare element by element, records by
+ * their sorted entries, and unknowns by how they are written, so sorting
+ * never depends on how an answer was found.
  */
 export const compareValues = (a: unknown, b: unknown): number => {
   const rank = typeRank(a) - typeRank(b);
@@ -853,7 +1050,9 @@ export const compareValues = (a: unknown, b: unknown): number => {
         .map((key) => [key, record[key]]);
     return compareLists(entries(a), entries(b));
   }
-  return 0;
+  return a instanceof Unknown && b instanceof Unknown
+    ? compareValues(a.form, b.form)
+    : 0;
 };
 
 /** Variable names a term or goal mentions, in reading order. */

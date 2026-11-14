@@ -3,7 +3,7 @@
 
 <h2 id="guarantee-safety">Safety</h2>
 <ul>
-  <li>Every variable in a rule's head must be bound by a goal in its body.</li>
+  <li>Every variable in a rule's head must be bound by a goal in its body, unless the head lists it in <a href="#form-exists"><code>exists</code></a>. A variable that <code>exists</code> lists cannot also be bound by the body.</li>
   <li>Every variable in a filter, in a computed value, or in an input of a graph algorithm must first be bound by a relation goal, <code>=</code>, <code>in</code>, or <code>schema/fits?</code>. An input of a graph algorithm must be data.</li>
   <li>A <a href="#logic-asking">question</a>, a goal under <code>not</code>, a goal used as a value, or a <code>find</code>, waits for the variables that the rule or query around it binds. Every other variable in it is its own, and the question must bind it itself. A <code>find</code> must bind every variable of its template.</li>
   <li>The list in <code>in</code> must be bound before it runs.</li>
@@ -14,7 +14,7 @@
 <h2 id="guarantee-values">Values</h2>
 <ul>
   <li>A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for <code>cond</code>, <code>match</code>, <code>eval</code>, and records, for lambdas, and for the questions an expression asks: a goal used as a value and a <code>find</code> give in a rule what they give in plain code.</li>
-  <li>A filter must be <code>true</code> or <code>false</code>. The rows a rule derives and the answers a query gives must be JSON data. Anything else fails with an error that shows the call or the value.</li>
+  <li>A filter must be <code>true</code> or <code>false</code>. The rows a rule derives and the answers a query gives must be data: JSON values and <a href="#form-some">unknowns</a>. Anything else fails with an error that shows the call or the value.</li>
   <li>A function that fails while a rule or query runs it fails the rule or query, with an error that names the call and the values it ran on.</li>
   <li>Whether a value <a href="#schema-fitting">fits</a> a schema is the same wherever it is asked: in plain code, under the schema's name, in a rule or query, in <code>match</code>, as an argument of a relation call, and as the schema of a relation's rows.</li>
   <li>A goal that binds variables through a <a href="#logic-patterns">pattern</a> gives what the same goal gives when another goal has bound those variables first, so the answers of a body do not depend on the order of its goals.</li>
@@ -25,20 +25,41 @@
   <li>A rule cannot ask a <a href="#logic-asking">question</a> about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under <code>not</code>, a goal used as a value, a <code>find</code>, and a relation handed to a function. A question that a rule only builds when it runs, as with <code>eval</code>, fails then instead.</li>
   <li>An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, and <code>aggregate/union</code>, and only when every relation in the recursive cycle aggregates.</li>
   <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts.</li>
+  <li>A rule that <a href="#form-exists">invents</a> cannot aggregate. Rules that invent wait until every rule that invents nothing has finished, then every one whose head does not hold invents, all at once, and the other rules run on what was invented, until nothing more is.</li>
 </ul>
-<p>Together these make every program stratified: it has a single answer, whatever order rules were added in.</p>
+<p>Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.</p>
 
 <h2 id="guarantee-termination">Termination</h2>
 <ul>
-  <li>A recursive rule cannot compute a new value for its head, in the head itself or through <code>=</code> or <code>in</code>. Values that come from facts are fine. So recursion only combines values that already exist, and stops.</li>
+  <li>Values flow from the columns a rule's body reads to the columns of its head. A rule may make a new value for a column, by computing it, in the head itself or through <code>=</code> or <code>in</code>, or by <a href="#form-exists">inventing</a> it, as long as that value never flows back, through the rules, into making another new value. Values that come from facts are not new. So every new value comes from a finite chain of others, and evaluation stops.</li>
+  <li>A rule that breaks this fails when it is added. A computed value that flows back fails with <code>... computes a new value in its head while recursing, which may never finish.</code>, which suggests computing it in a non-recursive rule or with a lattice aggregate, and an invented one with <code>... invents a value for "?m" in its head while recursing, which may never finish.</code></li>
   <li>Recursion through a lattice aggregate stops when no value improves. If values still improve after 10,000 rounds, as with a negative-weight cycle under <code>aggregate/min</code>, the query fails instead of running forever.</li>
   <li>A graph algorithm cannot be part of a recursive cycle.</li>
 </ul>
+<p>Here a recursive rule computes a label for each path. No rule reads the label to make another value, so the rule is accepted:</p>
+<lion-example name="A computed value that never flows back">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to", "label"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y", ["string/concat", "?x", "→", "?y"]], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z", ["string/concat", "?x", "→", "?z"]], ["path", "?x", "?y", "?_"], ["edge", "?y", "?z"]],
+  ["query", ["path", "?from", "?to", "?label"], {"order": ["from", "to"]}]]
+</lion-example>
+<p>Every person has a mother, and every mother is a person. Each mother a rule invents would be a person who needs a mother of her own, so the second rule is refused, and the message names the rule that would invent:</p>
+<lion-example name="An invented value that flows back" expect="error">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["rule", ["exists", ["?m"], ["mother", "?p", "?m"]], ["person", "?p"]],
+  ["rule", ["person", "?m"], ["mother", "?p", "?m"]]]
+</lion-example>
 
 <h2 id="guarantee-keys">Keys</h2>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
   <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows.</li>
+  <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that sorts first, and every row that holds it is replaced. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 
 <h2 id="guarantee-changes">Changes are all or nothing</h2>
@@ -50,7 +71,7 @@
 
 <h2 id="guarantee-equivalence">Equivalent ways to answer</h2>
 <ul>
-  <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives.</li>
+  <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives. A relation that rules invent rows of is derived in full, since what such a rule adds depends on every row.</li>
   <li>What the database has derived for earlier queries never changes an answer: a query gives what it would give on a database that has derived nothing yet.</li>
   <li>A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.</li>
   <li>The relation option <code>"schema"</code> and the invariant it stands for keep the same changes, with the same messages, and are saved as the same snapshot.</li>

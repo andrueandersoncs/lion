@@ -17,7 +17,9 @@ import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, oneOf, text } from "./generators.ts";
 
 const SKILL = join(REPOSITORY, "skills/lion-research");
-const OPTIONS = { arbitrary: { runs: 200 } };
+// Each property runs a whole skill model 200 times, which takes seconds
+// alone, and longer beside the grid when every package's tests run at once.
+const OPTIONS = { timeout: 60_000, arbitrary: { runs: 200 } };
 
 const asset = (name: string): unknown =>
   JSON.parse(readFileSync(join(SKILL, "assets", name), "utf8"));
@@ -1571,6 +1573,6 @@ describe("the research skill's frozen eval", () => {
           );
         }
       }),
-    { arbitrary: { runs: 12 } }
+    { timeout: 60_000, arbitrary: { runs: 12 } }
   );
 });

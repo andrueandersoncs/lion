@@ -13,12 +13,14 @@
  * Only relation goals of a body are swapped for copies. A question, under
  * `not`, in a find, or as a value, needs every row of the relations it asks
  * about, and reads them under their own names, so those are derived in
- * full. So are aggregated and computed relations, which have no copies.
+ * full. So are aggregated and computed relations, and relations that rules
+ * invent rows of, which have no copies.
  */
 import {
   bindVariables,
   type CompiledRule,
   compilable,
+  headsOf,
   type Literal,
   planLiterals,
 } from "@/logic/compile";
@@ -223,13 +225,14 @@ export const rewriteQueries = (
   hasFacts: (relation: string) => boolean
 ): MagicProgram | undefined => {
   // A relation with a copy is one that rules derive without aggregating.
+  // A relation that rules aggregate into, or invent rows of, is derived in
+  // full, since what such a rule adds depends on every row.
   const derived = new Map<string, boolean>();
-  for (const { aggregates, head } of rules) {
-    const plain = aggregates.length === 0;
-    derived.set(
-      head.relation.name,
-      plain && derived.get(head.relation.name) !== false
-    );
+  for (const rule of rules) {
+    const plain = rule.aggregates.length === 0 && rule.invents === undefined;
+    for (const { relation } of headsOf(rule)) {
+      derived.set(relation.name, plain && derived.get(relation.name) !== false);
+    }
   }
   const rewrite = new Rewrite(
     rules,

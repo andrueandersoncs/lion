@@ -65,6 +65,7 @@ import {
   schemaBuilder,
   schemaOf,
   show,
+  Unknown,
   valueKey,
 } from "@/logic/terms";
 import { LionEnvironmentService } from "@/services/evaluation";
@@ -90,7 +91,10 @@ type Step = number | string;
 type Fitting = Effect.Effect<readonly Vars[], WaitingError | Error, never>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
+  typeof value === "object" &&
+  value !== null &&
+  !Array.isArray(value) &&
+  !(value instanceof Unknown);
 
 const NOT_OPEN: ReadonlySet<SchemaInfo> = new Set();
 

@@ -51,7 +51,7 @@
 </lion-example>
 
 <h2 id="error-rules">Errors inside rules and queries</h2>
-<p>A function that fails while a rule or query runs it fails the rule or query. The failure is a <code>LogicError</code> that names the call and the values it ran on. An <code>ArithmeticError</code> stays as it is, since it already names both. A filter that is not <code>true</code> or <code>false</code>, and an answer that is not JSON data, fail with a <code>LogicError</code> too.</p>
+<p>A function that fails while a rule or query runs it fails the rule or query. The failure is a <code>LogicError</code> that names the call and the values it ran on. An <code>ArithmeticError</code> stays as it is, since it already names both. A filter that is not <code>true</code> or <code>false</code>, and an answer that is not data, fail with a <code>LogicError</code> too.</p>
 <lion-example name="A failing filter" expect="error">
 ["begin",
   ["relation", "reading", ["value"]],

@@ -67,7 +67,7 @@
 
 <h2 id="rule-reserved">Reserved names</h2>
 <p>These names belong to forms and cannot be bound with <code>define</code>, used as <code>lambda</code> parameters, or declared as relations:</p>
-<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
+<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
 
 <h2 id="rule-runs">Each run</h2>
 <p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>

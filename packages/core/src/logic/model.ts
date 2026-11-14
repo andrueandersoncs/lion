@@ -19,6 +19,7 @@ import {
   type CompiledRule,
   compilable,
   compiling,
+  headsOf,
   type Literal,
   planLiterals,
   questionPlans,
@@ -28,6 +29,7 @@ import { originalName } from "@/logic/magic";
 import { mentioned, reads, type Stratum, strataOf } from "@/logic/strata";
 import {
   Atom,
+  callsOf,
   compareValues,
   DeferredCall,
   type Goal,
@@ -36,6 +38,7 @@ import {
   isData,
   isForm,
   isGroundValue,
+  isPlainObject,
   isQuestion,
   isRelational,
   type LionFunction,
@@ -46,6 +49,7 @@ import {
   type RelationInfo,
   sameValue,
   show,
+  Unknown,
   valueKey,
 } from "@/logic/terms";
 import type { LionEnvironmentService } from "@/services/evaluation";
@@ -179,6 +183,11 @@ type Derivation =
 /** An answer of a rule's body. */
 interface Match {
   readonly rule: CompiledRule;
+  /**
+   * For a row a rule that invents gives only once a key made its unknowns
+   * equal to other values: each such unknown, and the value it equals.
+   */
+  readonly same?: readonly (readonly [Unknown, unknown])[];
   readonly vars: Vars;
 }
 
@@ -282,10 +291,100 @@ export const term = (
   if (value instanceof DeferredCall) {
     return run(model, value, vars);
   }
+  if (isForm(value, "some")) {
+    return unknownOf(model, value, vars);
+  }
   return isForm(value, "find")
     ? findAll(model, value, vars)
     : holds(model, value as Goal, vars);
 };
+
+/**
+ * The variables that stand in what `some` describes: as an argument of a
+ * relation call, or inside a record or list there.
+ */
+const standing = (goal: unknown): readonly string[] =>
+  (callsOf(goal) ?? []).flatMap((call) => call.args.flatMap(held));
+
+const held = (term: unknown): readonly string[] =>
+  term instanceof LogicVariable
+    ? [term.name]
+    : (patternParts(term, false)?.flatMap(held) ?? []);
+
+/**
+ * What `some` describes, with the values an answer gives the variables it
+ * does not own. A record or list that holds one of its own variables stays
+ * a pattern, and any other argument is a value: it is computed, and a
+ * question in it is asked.
+ */
+const described = (
+  model: Model,
+  goal: unknown,
+  vars: Vars,
+  variable: string
+): LogicEffect<unknown> => {
+  const own = new Set([
+    variable,
+    ...standing(goal).filter((name) => !vars.has(name)),
+  ]);
+  const value = (arg: unknown): LogicEffect<unknown> => {
+    if (arg instanceof LogicVariable || !(arg instanceof LogicValue)) {
+      return term(model, arg, vars);
+    }
+    if (held(arg).some((name) => own.has(name))) {
+      const parts = patternParts(arg, false) ?? [];
+      return Effect.map(
+        Effect.forEach(parts, value),
+        (args) =>
+          new DeferredCall(
+            (arg as DeferredCall).fn,
+            (arg as DeferredCall).callee,
+            args
+          )
+      );
+    }
+    return arg.variables.some((name) => own.has(name))
+      ? logicError(
+          `${show(arg)} computes with a variable that "some" owns. An unknown is described by relation calls whose arguments are values, its variables, or records and lists of those.`
+        )
+      : term(model, arg, vars);
+  };
+  const calls = callsOf(goal) ?? [];
+  return Effect.map(
+    Effect.forEach(calls, (call) =>
+      Effect.map(
+        Effect.forEach(call.args, value),
+        (args) => new Atom(call.relation, args)
+      )
+    ),
+    (done) => (done.length === 1 ? done[0] : new LogicForm("and", done))
+  );
+};
+
+/** A model with no rows, for terms that ask no question. */
+const NOTHING_DERIVED = new Model(new Map(), []);
+
+/**
+ * The value of a term in plain code, once every question in it is asked:
+ * what `some` names, and the rows `exists` says hold, which read nothing.
+ */
+export const plainValue = (item: unknown) =>
+  term(NOTHING_DERIVED, item, NO_VARS);
+
+/**
+ * The unknown a `some` form names, for an answer. Its variable is always its
+ * own, and so is every other variable the answer does not bind.
+ */
+const unknownOf = (model: Model, form: LogicForm, vars: Vars) =>
+  Effect.gen(function* () {
+    const [variable, goal] = form.parts as [LogicVariable, unknown];
+    const answered = new Map(vars);
+    answered.delete(variable.name);
+    return new Unknown(
+      variable.name,
+      yield* described(model, goal, answered, variable.name)
+    );
+  });
 
 /**
  * True when a term still has a variable to bind for an answer: a variable
@@ -478,7 +577,7 @@ export const collect = (
       const value = yield* term(model, template, match);
       if (!isGroundValue(value)) {
         return yield* logicError(
-          `${show(instantiate(find, vars))} found a value that is not JSON data: ${show(value)}.`
+          `${show(instantiate(find, vars))} found a value that is not data: ${show(value)}.`
         );
       }
       values.push(value);
@@ -554,6 +653,11 @@ export const holds = (
       return isRelational(goal)
         ? Effect.map(solve(model, goal, vars), (found) => found.length > 0)
         : decide(model, goal as LogicForm, vars);
+    case "exists":
+      return Effect.map(
+        solve(model, goal as LogicForm, vars),
+        (found) => found.length > 0
+      );
     case "=":
     case "in":
     case "schema/fits?":
@@ -747,7 +851,7 @@ export const matches = (
  * and only data can be looked up. The query is then answered in full.
  */
 export const UNDIRECTED = new LogicError({
-  message: "A goal-directed query asked about a value that is not JSON data.",
+  message: "A goal-directed query asked about a value that is not data.",
 });
 
 /** A row a rule derived, which must be JSON data. */
@@ -758,7 +862,7 @@ const derivedRow = (rule: CompiledRule, tuple: readonly unknown[]) => {
   return rule.demand
     ? Effect.fail(UNDIRECTED)
     : logicError(
-        `Rule ${show(rule.source)} produced a value that is not JSON data: ${show([rule.head.relation.name, ...tuple])}.`
+        `Rule ${show(rule.source)} produced a value that is not data: ${show([rule.head.relation.name, ...tuple])}.`
       );
 };
 
@@ -766,11 +870,10 @@ const derivedRow = (rule: CompiledRule, tuple: readonly unknown[]) => {
 const recordDerived = (
   model: Model,
   delta: Map<string, TupleSet>,
-  rule: CompiledRule,
+  relation: string,
   tuple: Tuple,
-  vars: Vars
+  derivation: Derivation
 ) => {
-  const relation = rule.head.relation.name;
   if (
     !getOrCreate(model.relations, relation, () => new TupleSet()).add(tuple)
   ) {
@@ -779,7 +882,7 @@ const recordDerived = (
   getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
   getOrCreate(model.derivations, relation, () => new Map()).set(
     valueKey(tuple),
-    { rule, vars }
+    derivation
   );
 };
 
@@ -787,30 +890,498 @@ const recordDerived = (
 export const keyColumns = (relation: RelationInfo) =>
   (relation.key ?? []).map((position) => relation.columns[position]);
 
-/** Fails when a derived row has the key of a different row already there. */
-const checkKey = (model: Model, rule: CompiledRule, tuple: Tuple) => {
-  const { key, name } = rule.head.relation;
+/**
+ * The unknowns that the rules of a group of relations invent, and what the
+ * keys of those relations made some of them equal to. A key says a row is
+ * the only one with its key, so when two rows have the same key, an unknown
+ * the group invented in one takes the value in the other.
+ */
+interface Inventions {
+  /** For an unknown a key made equal to another value: that value. */
+  readonly equal: Map<string, unknown>;
+  /** The unknowns that facts hold, by key: they are given, not invented. */
+  given: ReadonlySet<string> | undefined;
+  /** The unknowns the group's rules invented, by key. */
+  readonly invented: Set<string>;
+  /** True once a key has made unknowns equal that rows still hold. */
+  pending: boolean;
+}
+
+/** The unknowns a value holds, however deep, by key. */
+const unknownsIn = (value: unknown, into: Map<string, Unknown>) => {
+  if (value instanceof Unknown) {
+    into.set(value.key, value);
+  } else if (Array.isArray(value)) {
+    for (const item of value) {
+      unknownsIn(item, into);
+    }
+  } else if (isPlainObject(value)) {
+    for (const item of Object.values(value)) {
+      unknownsIn(item, into);
+    }
+  }
+  return into;
+};
+
+/** The unknowns any fact of a model holds, by key. */
+const givenUnknowns = (model: Model) => {
+  const found = new Map<string, Unknown>();
+  for (const facts of (model.base ?? model).facts.values()) {
+    for (const tuple of facts.values()) {
+      unknownsIn(tuple, found);
+    }
+  }
+  return new Set(found.keys());
+};
+
+/** A term with each value in it, outside its variables, replaced. */
+const replaceData = (
+  item: unknown,
+  replace: (value: unknown) => unknown
+): unknown => {
+  const inner = (part: unknown) => replaceData(part, replace);
+  if (item instanceof Atom) {
+    return new Atom(item.relation, item.args.map(inner));
+  }
+  if (item instanceof LogicForm) {
+    return item.map(inner);
+  }
+  if (item instanceof DeferredCall) {
+    return new DeferredCall(item.fn, item.callee, item.args.map(inner));
+  }
+  return item instanceof LogicVariable ? item : replace(item);
+};
+
+/**
+ * A value with every unknown a key made equal to another value replaced by
+ * that value, also inside what other unknowns describe.
+ */
+const settled = (value: unknown, inventions: Inventions): unknown => {
+  if (value instanceof Unknown) {
+    const equal = inventions.equal.get(value.key);
+    if (equal !== undefined) {
+      return settled(equal, inventions);
+    }
+    // Only an unknown the group invented can describe one it invented.
+    if (!inventions.invented.has(value.key)) {
+      return value;
+    }
+    const goal = replaceData(value.goal, (item) => settled(item, inventions));
+    const same = new Unknown(value.variable, goal);
+    if (same.key === value.key) {
+      return value;
+    }
+    inventions.invented.add(same.key);
+    return same;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => settled(item, inventions));
+  }
+  return isPlainObject(value)
+    ? Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          settled(item, inventions),
+        ])
+      )
+    : value;
+};
+
+/** True when a value holds an unknown, also inside what others describe. */
+const occurs = (unknown: Unknown, value: unknown): boolean => {
+  const inside = (part: unknown) => occurs(unknown, part);
+  if (value instanceof Unknown) {
+    return value.key === unknown.key || inside(value.goal);
+  }
+  if (value instanceof LogicValue) {
+    return value.parts.some(inside);
+  }
+  if (Array.isArray(value)) {
+    return value.some(inside);
+  }
+  return isPlainObject(value) && Object.values(value).some(inside);
+};
+
+/**
+ * Makes two values one, as a key says two rows with the same key are: each
+ * unknown the group invented takes the value at its place in the other, or
+ * when both are such unknowns, the one that sorts first. False when they
+ * differ anywhere else, and so cannot be one.
+ */
+const unify = (
+  model: Model,
+  left: unknown,
+  right: unknown,
+  inventions: Inventions
+): boolean => {
+  const [a, b] = [settled(left, inventions), settled(right, inventions)];
+  if (sameValue(a, b)) {
+    return true;
+  }
+  inventions.given ??= givenUnknowns(model);
+  const { given, invented } = inventions;
+  const free = (value: unknown): value is Unknown =>
+    value instanceof Unknown &&
+    invented.has(value.key) &&
+    !given.has(value.key);
+  if (free(a) || free(b)) {
+    // An unknown takes a value that does not hold it, so no unknown ever
+    // describes itself: of two the group invented, the one that describes
+    // the other takes it, and otherwise the one that sorts after.
+    const keeps = (value: unknown, other: unknown) =>
+      !free(value) ||
+      occurs(value, other) ||
+      (free(other) && !occurs(other, value) && compareValues(value, other) < 0);
+    const [from, to] = keeps(b, a) ? [a, b] : [b, a];
+    if (occurs(from as Unknown, to)) {
+      return false;
+    }
+    inventions.equal.set((from as Unknown).key, to);
+    inventions.pending = true;
+    return true;
+  }
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return (
+      a.length === b.length &&
+      a.every((item, at) => unify(model, item, b[at], inventions))
+    );
+  }
+  if (isPlainObject(a) && isPlainObject(b)) {
+    const keys = Object.keys(a);
+    return (
+      keys.length === Object.keys(b).length &&
+      keys.every(
+        (key) =>
+          Object.hasOwn(b, key) && unify(model, a[key], b[key], inventions)
+      )
+    );
+  }
+  return false;
+};
+
+/**
+ * Whether a derived row can join its relation. A row whose key a different
+ * row already has cannot, and is an error, unless the two can be made one:
+ * then the key makes them one, and the row is not added on its own.
+ */
+const keyed = (
+  model: Model,
+  derivation: Match,
+  relation: RelationInfo,
+  tuple: Tuple,
+  inventions: Inventions | undefined
+): boolean | string => {
+  const { key, name } = relation;
   if (key === undefined) {
-    return Effect.void;
+    return true;
   }
   const keyValues = key.map((position) => tuple[position]);
   const tupleKey = valueKey(tuple);
   for (const other of model.relations.get(name)?.lookup(key, keyValues) ?? []) {
-    if (valueKey(other) !== tupleKey) {
-      const relation = originalName(name);
-      return logicError(
-        `"${relation}" is keyed by ${JSON.stringify(keyColumns(rule.head.relation))}, but ${show(rule.source)} derived ${show([relation, ...tuple])} while ${show([relation, ...other])} holds.`
+    if (valueKey(other) === tupleKey) {
+      continue;
+    }
+    if (inventions !== undefined && unify(model, other, tuple, inventions)) {
+      return false;
+    }
+    const shown = originalName(name);
+    return `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but ${show(derivation.rule.source)} derived ${show([shown, ...tuple])} while ${show([shown, ...other])} holds.`;
+  }
+  return true;
+};
+
+/**
+ * Adds a row a rule derived to a relation, once its key allows it, or says
+ * why the key does not.
+ */
+const addDerived = (
+  model: Model,
+  delta: Map<string, TupleSet>,
+  relation: RelationInfo,
+  tuple: Tuple,
+  derivation: Match,
+  inventions: Inventions | undefined
+): string | undefined => {
+  const row =
+    inventions === undefined ? tuple : (settled(tuple, inventions) as Tuple);
+  const allowed = keyed(model, derivation, relation, row, inventions);
+  if (allowed === true) {
+    recordDerived(model, delta, relation.name, row, derivation);
+  }
+  return typeof allowed === "string" ? allowed : undefined;
+};
+
+/**
+ * Puts in place what keys made equal: every row of the group that holds an
+ * unknown made equal to another value is replaced by the row with that
+ * value, which is new. That can make more unknowns equal, so it goes on
+ * until nothing more is.
+ */
+const settleKeys = (
+  model: Model,
+  relations: ReadonlyMap<string, RelationInfo>,
+  delta: Map<string, TupleSet>,
+  inventions: Inventions | undefined
+) =>
+  Effect.gen(function* () {
+    while (inventions?.pending) {
+      inventions.pending = false;
+      for (const [name, rows] of delta) {
+        delta.set(name, settledRows(rows, inventions));
+      }
+      for (const relation of relations.values()) {
+        yield* resettle(model, relation, delta, inventions);
+      }
+    }
+  });
+
+const settledRows = (rows: TupleSet, inventions: Inventions) => {
+  const current = new TupleSet();
+  for (const tuple of rows.values()) {
+    current.add(settled(tuple, inventions) as Tuple);
+  }
+  return current;
+};
+
+/**
+ * Replaces each row of a relation that holds an unknown a key made equal to
+ * another value. Only a derived row can hold one the group invented.
+ */
+const resettle = (
+  model: Model,
+  relation: RelationInfo,
+  delta: Map<string, TupleSet>,
+  inventions: Inventions
+) =>
+  Effect.gen(function* () {
+    const rows = model.relations.get(relation.name);
+    const derivations = model.derivations.get(relation.name);
+    for (const tuple of [...(rows?.values() ?? [])]) {
+      const row = settled(tuple, inventions) as Tuple;
+      const derivation = derivations?.get(valueKey(tuple));
+      if (
+        valueKey(row) !== valueKey(tuple) &&
+        derivation !== undefined &&
+        "vars" in derivation
+      ) {
+        rows?.delete(tuple);
+        const problem = addDerived(
+          model,
+          delta,
+          relation,
+          row,
+          derivation,
+          inventions
+        );
+        if (problem !== undefined) {
+          return yield* logicError(problem);
+        }
+      }
+    }
+  });
+
+/**
+ * Explains each row of a group again, once keys have made unknowns equal.
+ * A row a key replaced came about as another row, so the answer that gave
+ * it may not give it, and two rows that became one may each have rested on
+ * the other. So the rules run again on the rows there are, from the facts
+ * up, round by round: each row is explained by the first answer that gives
+ * it, which rests only on rows explained before it. A rule that invents
+ * gives the rows of its head with what keys made its unknowns equal to.
+ */
+const justify = (
+  model: Model,
+  rules: readonly CompiledRule[],
+  relations: ReadonlyMap<string, RelationInfo>,
+  inventions: Inventions
+) =>
+  Effect.gen(function* () {
+    const final = new Map<string, TupleSet>();
+    const fresh = new Map<string, Map<string, Derivation>>();
+    let delta = givenRows(model, relations, final, fresh);
+    // Answers that give a row as it is come first. Only a row they leave
+    // unexplained is explained through what a key made equal.
+    for (const throughKeys of [false, true]) {
+      const step = explaining(model, inventions, final, fresh, throughKeys);
+      yield* firstRound(model, rules, step, delta);
+      yield* rounds(model, rules, step, delta);
+      delta = new Map();
+    }
+    for (const [name, rows] of final) {
+      model.relations.set(name, rows);
+      model.derivations.set(
+        name,
+        keptFor(rows, fresh.get(name), model.derivations.get(name))
       );
     }
+  });
+
+/**
+ * Puts each relation of a group back to its facts, for its rows to be
+ * explained again, and keeps the rows it has in `final`.
+ */
+const givenRows = (
+  model: Model,
+  relations: ReadonlyMap<string, RelationInfo>,
+  final: Map<string, TupleSet>,
+  fresh: Map<string, Map<string, Derivation>>
+) => {
+  const delta = new Map<string, TupleSet>();
+  for (const name of relations.keys()) {
+    const rows = model.relations.get(name) ?? new TupleSet();
+    final.set(name, rows);
+    fresh.set(name, new Map());
+    const given = new TupleSet();
+    const facts = model.base === undefined ? model.facts.get(name) : EMPTY;
+    for (const tuple of facts?.values() ?? []) {
+      if (rows.has(tuple)) {
+        given.add(tuple);
+      }
+    }
+    model.relations.set(name, given.clone());
+    delta.set(name, given);
   }
-  return Effect.void;
+  return delta;
 };
+
+/** New explanations, and an old one for a row no answer gives. */
+const keptFor = (
+  rows: TupleSet,
+  fresh: Map<string, Derivation> = new Map(),
+  old: ReadonlyMap<string, Derivation> | undefined = undefined
+) => {
+  for (const tuple of rows.values()) {
+    const kept = old?.get(valueKey(tuple));
+    if (!fresh.has(valueKey(tuple)) && kept !== undefined) {
+      fresh.set(valueKey(tuple), kept);
+    }
+  }
+  return fresh;
+};
+
+/** What a rule does with some answers of its body, in a round. */
+type Step = (
+  rule: CompiledRule,
+  answers: readonly Vars[],
+  into: Map<string, TupleSet>
+) => LogicEffect<void>;
+
+/**
+ * Explains each row of `final` that an answer gives and nothing explains
+ * yet. Without `throughKeys`, a rule that invents gives rows only for an
+ * answer whose unknowns no key made equal to another value.
+ */
+const explaining =
+  (
+    model: Model,
+    inventions: Inventions,
+    final: ReadonlyMap<string, TupleSet>,
+    fresh: Map<string, Map<string, Derivation>>,
+    throughKeys: boolean
+  ): Step =>
+  (rule, answers, into) =>
+    Effect.forEach(
+      answers,
+      (vars) =>
+        Effect.gen(function* () {
+          const same = yield* madeEqual(model, rule, vars, inventions);
+          if (same.length > 0 && !throughKeys) {
+            return;
+          }
+          const derivation =
+            same.length === 0 ? { rule, vars } : { rule, same, vars };
+          for (const { args, relation } of headsOf(rule)) {
+            const tuple = settled(
+              yield* tupleOf(model, args, vars),
+              inventions
+            ) as Tuple;
+            if (final.get(relation.name)?.has(tuple)) {
+              explainRow(model, into, fresh, relation.name, tuple, derivation);
+            }
+          }
+        }),
+      { discard: true }
+    );
+
+/** Explains a row of a group's final rows, unless something already does. */
+const explainRow = (
+  model: Model,
+  into: Map<string, TupleSet>,
+  fresh: Map<string, Map<string, Derivation>>,
+  relation: string,
+  tuple: Tuple,
+  derivation: Match
+) => {
+  if (model.relations.get(relation)?.add(tuple)) {
+    getOrCreate(into, relation, () => new TupleSet()).add(tuple);
+    fresh.get(relation)?.set(valueKey(tuple), derivation);
+  }
+};
+
+/**
+ * The unknowns a rule names for an answer that a key made equal to other
+ * values, each with the value it equals.
+ */
+const madeEqual = (
+  model: Model,
+  rule: CompiledRule,
+  vars: Vars,
+  inventions: Inventions
+) =>
+  Effect.map(inventedBy(model, rule, vars), (named) =>
+    named.flatMap((unknown) => {
+      const value = settled(unknown, inventions);
+      return sameValue(value, unknown) ? [] : [[unknown, value] as const];
+    })
+  );
+
+/** Gives a step every answer of each rule's body. */
+const firstRound = (
+  model: Model,
+  rules: readonly CompiledRule[],
+  step: Step,
+  into: Map<string, TupleSet>
+) =>
+  Effect.gen(function* () {
+    for (const rule of rules) {
+      yield* step(rule, yield* matches(model, rule.body), into);
+    }
+  });
+
+/**
+ * Gives a step, round after round, the answers that use rows the round
+ * before added, until a round adds none. `after` runs on what each round
+ * added.
+ */
+const rounds = (
+  model: Model,
+  rules: readonly CompiledRule[],
+  step: Step,
+  delta: Map<string, TupleSet>,
+  after: (added: Map<string, TupleSet>) => LogicEffect<void> = () => Effect.void
+) =>
+  Effect.gen(function* () {
+    let current = delta;
+    while (hasChanges(current)) {
+      const next = new Map<string, TupleSet>();
+      for (const rule of rules) {
+        yield* step(
+          rule,
+          yield* changedAnswers(model, rule.body, current),
+          next
+        );
+      }
+      yield* after(next);
+      current = next;
+    }
+  });
 
 const deriveHeads = (
   model: Model,
   rule: CompiledRule,
   answers: readonly Vars[],
-  delta: Map<string, TupleSet>
+  delta: Map<string, TupleSet>,
+  inventions?: Inventions
 ) =>
   Effect.gen(function* () {
     const derived: [Tuple, Vars][] = [];
@@ -819,8 +1390,17 @@ const deriveHeads = (
       derived.push([yield* derivedRow(rule, tuple), vars]);
     }
     for (const [tuple, vars] of derived) {
-      yield* checkKey(model, rule, tuple);
-      recordDerived(model, delta, rule, tuple, vars);
+      const problem = addDerived(
+        model,
+        delta,
+        rule.head.relation,
+        tuple,
+        { rule, vars },
+        inventions
+      );
+      if (problem !== undefined) {
+        return yield* logicError(problem);
+      }
     }
   });
 
@@ -984,9 +1564,9 @@ interface Groups {
   /** Groups that got matches since they were last combined. */
   changed: Set<Group>;
   /**
-   * The matches each rule form has given. A rule's body is a set of matches,
-   * so a match that several alternatives of one rule find counts once.
-   * Separate rules add up.
+   * The matches each rule head has given. A rule's body is a set of
+   * matches, so a match that several alternatives of one rule find counts
+   * once. Separate rules add up, and so do the relation calls of one head.
    */
   readonly seen: Map<unknown, Set<string>>;
 }
@@ -999,7 +1579,7 @@ const addMatches = (
   answers: readonly Vars[]
 ) =>
   Effect.gen(function* () {
-    const seen = getOrCreate(groups.seen, rule.source, () => new Set<string>());
+    const seen = getOrCreate(groups.seen, rule.head, () => new Set<string>());
     for (const vars of answers) {
       const id = answerKey(vars);
       if (seen.has(id)) {
@@ -1097,26 +1677,154 @@ const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
     }
   });
 
-/** Runs the rules of relations that depend on each other until none adds a row. */
-const evaluate = (model: Model, rules: readonly CompiledRule[]) =>
+/** An answer of the body of a rule that invents, waiting to be looked at. */
+type Trigger = readonly [rule: CompiledRule, vars: Vars];
+
+/**
+ * Invents what one answer of a rule says exists: every relation call of its
+ * head, at once, with the unknowns that `some` names in place of the
+ * variables `exists` lists.
+ */
+const invent = (
+  model: Model,
+  [rule, vars]: Trigger,
+  delta: Map<string, TupleSet>,
+  inventions: Inventions
+) =>
+  Effect.gen(function* () {
+    for (const unknown of yield* inventedBy(model, rule, vars)) {
+      inventions.invented.add(unknown.key);
+    }
+    const rows: [Atom, Tuple][] = [];
+    for (const head of headsOf(rule)) {
+      const tuple = yield* tupleOf(model, head.args, vars);
+      rows.push([head, yield* derivedRow(rule, tuple)]);
+    }
+    for (const [head, tuple] of rows) {
+      const problem = addDerived(
+        model,
+        delta,
+        head.relation,
+        tuple,
+        { rule, vars },
+        inventions
+      );
+      if (problem !== undefined) {
+        return yield* logicError(problem);
+      }
+    }
+  });
+
+/** The unknowns a rule's head names for an answer of its body. */
+const inventedBy = (model: Model, rule: CompiledRule, vars: Vars) =>
+  Effect.forEach(rule.invents?.names ?? [], (name) =>
+    unknownOf(
+      model,
+      new LogicForm("some", [new LogicVariable(name), rule.invents?.goal]),
+      vars
+    )
+  );
+
+/**
+ * The answers of rules that invent whose heads do not hold yet. What an
+ * answer invents is what its head names, so answers that name the same
+ * unknowns invent them once.
+ */
+const active = (
+  model: Model,
+  triggers: readonly Trigger[],
+  fired: Set<string>
+) =>
+  Effect.gen(function* () {
+    const ready: Trigger[] = [];
+    for (const trigger of triggers) {
+      const [rule, vars] = trigger;
+      const named = yield* inventedBy(model, rule, vars);
+      const id = named.map((unknown) => unknown.key).join("\u0000");
+      if (fired.has(id)) {
+        continue;
+      }
+      fired.add(id);
+      const check = rule.invents?.check ?? [];
+      if ((yield* matches(model, check, vars)).length === 0) {
+        ready.push(trigger);
+      }
+    }
+    return ready;
+  });
+
+/**
+ * Runs the rules of relations that depend on each other until none adds a
+ * row. Rules that invent wait until the others are done, and then every one
+ * whose head does not hold invents, all at once; the others then run on
+ * what they invented, and so on until nothing is invented.
+ */
+const evaluate = (model: Model, { members, rules }: Stratum) =>
   Effect.gen(function* () {
     if (rules.some((rule) => rule.aggregates.length > 0)) {
       return yield* evaluateAggregates(model, rules);
     }
-    let delta = new Map<string, TupleSet>();
-    for (const rule of rules) {
-      const answers = yield* matches(model, rule.body);
-      yield* deriveHeads(model, rule, answers, delta);
-    }
-    while (hasChanges(delta)) {
-      const next = new Map<string, TupleSet>();
-      for (const rule of rules) {
-        const answers = yield* changedAnswers(model, rule.body, delta);
-        yield* deriveHeads(model, rule, answers, next);
+    const relations = headRelations(rules, members);
+    const inventions = inventionsOf(rules);
+    const fired = new Set<string>();
+    let triggers: Trigger[] = [];
+    const run: Step = (rule, answers, into) => {
+      if (rule.invents === undefined) {
+        return deriveHeads(model, rule, answers, into, inventions);
       }
-      delta = next;
+      for (const vars of answers) {
+        triggers.push([rule, vars]);
+      }
+      return Effect.void;
+    };
+    const settle = (added: Map<string, TupleSet>) =>
+      settleKeys(model, relations, added, inventions);
+    const delta = new Map<string, TupleSet>();
+    yield* firstRound(model, rules, run, delta);
+    for (;;) {
+      yield* settle(delta);
+      yield* rounds(model, rules, run, delta, settle);
+      const ready = yield* active(model, triggers, fired);
+      triggers = [];
+      if (ready.length === 0 || inventions === undefined) {
+        if (inventions !== undefined && inventions.equal.size > 0) {
+          yield* justify(model, rules, relations, inventions);
+        }
+        return;
+      }
+      delta.clear();
+      for (const trigger of ready) {
+        yield* invent(model, trigger, delta, inventions);
+      }
     }
   });
+
+/** The relations a group's rules add rows to, by name. */
+const headRelations = (
+  rules: readonly CompiledRule[],
+  members: ReadonlySet<string>
+) => {
+  const relations = new Map<string, RelationInfo>();
+  for (const { relation } of rules.flatMap(headsOf)) {
+    if (members.has(relation.name)) {
+      relations.set(relation.name, relation);
+    }
+  }
+  return relations;
+};
+
+/** What a group invents, when one of its rules does. */
+const inventionsOf = (
+  rules: readonly CompiledRule[]
+): Inventions | undefined =>
+  rules.some((rule) => rule.invents !== undefined)
+    ? {
+        equal: new Map(),
+        given: undefined,
+        invented: new Set(),
+        pending: false,
+      }
+    : undefined;
 
 /**
  * Makes a computed relation's rows available. Its algorithm runs over its
@@ -1178,16 +1886,18 @@ const forget = (model: Model, members: ReadonlySet<string>) => {
  * Derives the rows of relations that depend on each other: first every
  * relation their rules read, then their own rules, on top of their facts.
  */
-const derive = (model: Model, { members, rules }: Stratum) =>
+const derive = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
+    const { members, rules } = stratum;
     for (const name of members) {
       model.state.set(name, "running");
     }
-    for (const { body, head } of rules) {
-      for (const relation of reads(body, head.args)) {
-        if (!members.has(relation.name)) {
-          yield* ensure(model, relation);
-        }
+    const read = rules.flatMap((rule) =>
+      headsOf(rule).flatMap((head) => reads(rule.body, head.args))
+    );
+    for (const relation of read) {
+      if (!members.has(relation.name)) {
+        yield* ensure(model, relation);
       }
     }
     for (const name of members) {
@@ -1195,11 +1905,13 @@ const derive = (model: Model, { members, rules }: Stratum) =>
         model.base === undefined ? model.facts.get(name) : undefined;
       model.relations.set(name, facts?.clone() ?? new TupleSet());
     }
-    yield* evaluate(model, rules);
+    yield* evaluate(model, stratum);
     for (const name of members) {
       model.state.set(name, "done");
     }
-  }).pipe(Effect.onError(() => Effect.sync(() => forget(model, members))));
+  }).pipe(
+    Effect.onError(() => Effect.sync(() => forget(model, stratum.members)))
+  );
 
 /** Makes the rows of a declared relation complete. */
 const complete = (model: Model, name: string): LogicEffect<void> =>
@@ -1275,7 +1987,7 @@ const matchedRow = (model: Model, atom: Atom, vars: Vars) =>
  */
 const premises = (
   model: Model,
-  { rule, vars }: Match
+  { rule, same, vars }: Match
 ): LogicEffect<unknown[]> =>
   Effect.gen(function* () {
     const out: unknown[] = [];
@@ -1288,6 +2000,9 @@ const premises = (
       } else {
         out.push({ check: instantiate(literal, vars) });
       }
+    }
+    for (const [unknown, value] of same ?? []) {
+      out.push({ same: [unknown, value] });
     }
     return out;
   });

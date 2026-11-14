@@ -29,6 +29,7 @@ import {
   type SchemaDeclaration,
 } from "@/logic/database";
 import { makeSchema } from "@/logic/fit";
+import { plainValue } from "@/logic/model";
 import {
   applyQueryOptions,
   parseInvariantOptions,
@@ -38,22 +39,29 @@ import {
 import { saveDatabase } from "@/logic/snapshot";
 import {
   Atom,
+  callsOf,
   DeferredCall,
   type Goal,
   invoke,
+  isForm,
   isGoal,
+  isLogicVariableName,
   isQuestion,
   isWaitingForm,
   type LionFunction,
   LogicForm,
   LogicValue,
+  LogicVariable,
   type RelationInfo,
   render,
+  replaceVariables,
   sameValue,
   show,
+  termVariables,
 } from "@/logic/terms";
 import {
   type AndFormSchema,
+  type ExistsFormSchema,
   type FactFormSchema,
   type FindFormSchema,
   type InFormSchema,
@@ -65,6 +73,7 @@ import {
   type RetractFormSchema,
   type RuleFormSchema,
   type SchemaFormSchema,
+  type SomeFormSchema,
   type UnifyFormSchema,
   ValidIdentifierSchema,
   type WhyFormSchema,
@@ -77,24 +86,73 @@ import type { EvaluateResult } from "@/types/evaluation";
 const evaluateAll = (expressions: readonly LionExpressionType[]) =>
   Effect.all(expressions.map(evaluate));
 
+/** A relation call with each question among its arguments asked. */
+const asked = (call: Atom) =>
+  call.args.some(isQuestion)
+    ? Effect.map(
+        Effect.forEach(call.args, answer),
+        (args) => new Atom(call.relation, args)
+      )
+    : Effect.succeed(call);
+
+/**
+ * What `some` describes, or what `exists` says holds, written in plain
+ * code, with the questions among its arguments asked.
+ */
+const described = (form: string, goal: unknown) =>
+  Effect.gen(function* () {
+    const calls = callsOf(goal);
+    if (calls === undefined) {
+      return yield* logicError(
+        `${form} expects a relation call, or an "and" of them, but found ${show(goal)}.`
+      );
+    }
+    const answered = yield* Effect.forEach(calls, asked);
+    return answered.length === 1
+      ? (answered[0] as Atom)
+      : new LogicForm("and", answered);
+  });
+
+/**
+ * The rows that `exists` says hold, in plain code: each relation call of
+ * its goal, with the unknown that `some` names in place of each variable
+ * it lists.
+ */
+const rowsOf = (exists: LogicForm) =>
+  Effect.gen(function* () {
+    const [names, goal] = exists.parts as [readonly string[], unknown];
+    const description = yield* described("exists", goal);
+    const unknown = (variable: LogicVariable) =>
+      names.includes(variable.name)
+        ? new LogicForm("some", [variable, description])
+        : undefined;
+    return yield* Effect.forEach(callsOf(description) ?? [], (call) =>
+      Effect.map(
+        Effect.forEach(call.args, (arg) =>
+          plainValue(replaceVariables(arg, unknown))
+        ),
+        (args) => new Atom(call.relation, args)
+      )
+    );
+  });
+
 /**
  * The facts a form names. A fact holds values, so a question among its
- * arguments is asked.
+ * arguments is asked, and `exists` names the rows it says hold.
  */
 const atoms = (form: string, facts: readonly LionExpressionType[]) =>
   Effect.gen(function* () {
     const result: Atom[] = [];
     for (const value of yield* evaluateAll(facts)) {
-      if (!(value instanceof Atom)) {
+      if (isForm(value, "exists")) {
+        result.push(...(yield* rowsOf(value)));
+      } else if (value instanceof Atom) {
+        result.push(yield* asked(value));
+      } else {
         return yield* logicError(
           `${form} expects relation calls, but found ${show(value)}.`
         );
       }
-      result.push(
-        value.args.some(isQuestion)
-          ? new Atom(value.relation, yield* Effect.forEach(value.args, answer))
-          : value
-      );
     }
     return result;
   });
@@ -326,6 +384,76 @@ export const evaluateFind = ([_, template, goal]: typeof FindFormSchema.Type) =>
     );
     const find = new LogicForm("find", [templateValue, goalValue]);
     return (yield* isWriting) ? find : yield* answer(find);
+  });
+
+/**
+ * ["exists", ["?m"], goal] holds when the goal holds for some value of
+ * each variable it lists, which are its own. In a rule's head it says the
+ * head holds for values nobody has given, which the rule invents. In a
+ * fact it states the rows of the goal with those values unknown.
+ */
+export const evaluateExists = ([
+  _,
+  names,
+  goal,
+]: typeof ExistsFormSchema.Type) =>
+  Effect.gen(function* () {
+    const wrong = names.find(
+      (name) => !isLogicVariableName(name) || name.startsWith("?_")
+    );
+    if (wrong !== undefined || new Set(names).size !== names.length) {
+      return yield* logicError(
+        `exists lists named logic variables, each once, such as ["?m"], but found ${JSON.stringify(names)}.`
+      );
+    }
+    const value = yield* goalOrBoolean("exists", goal);
+    if (typeof value === "boolean") {
+      return value;
+    }
+    const own = names.map((name) => name.slice(1));
+    const missing = own.find((name) => !value.variables.includes(name));
+    if (missing !== undefined) {
+      return yield* logicError(
+        `exists lists "?${missing}", but its goal does not mention it: ${show(value)}.`
+      );
+    }
+    return new LogicForm("exists", [own, value]);
+  });
+
+/**
+ * ["some", "?m", goal] is the unknown value that ?m stands for in what the
+ * goal describes: the value a rule invents for ?m when its head says
+ * ["exists", ["?m"], goal]. Every other variable of the goal that a rule or
+ * query around it does not bind is its own too.
+ */
+export const evaluateSome = ([_, name, goal]: typeof SomeFormSchema.Type) =>
+  Effect.gen(function* () {
+    if (!isLogicVariableName(name) || name.startsWith("?_")) {
+      return yield* logicError(
+        `some stands for a named logic variable, such as "?m", but found ${JSON.stringify(name)}.`
+      );
+    }
+    const value = yield* evaluate(goal);
+    const variable = name.slice(1);
+    if (!termVariables(value).includes(variable)) {
+      return yield* logicError(
+        `some stands for "${name}", but its goal does not mention it: ${show(value)}.`
+      );
+    }
+    if (yield* isWriting) {
+      if (callsOf(value) === undefined) {
+        return yield* logicError(
+          `some expects a relation call, or an "and" of them, but found ${show(value)}.`
+        );
+      }
+      return new LogicForm("some", [new LogicVariable(variable), value]);
+    }
+    return yield* plainValue(
+      new LogicForm("some", [
+        new LogicVariable(variable),
+        yield* described("some", value),
+      ])
+    );
   });
 
 /**

@@ -25,7 +25,9 @@ import { CORE, REPOSITORY } from "../sources.ts";
 import { between, element, oneOf, text, word } from "./generators.ts";
 
 const SKILL = join(REPOSITORY, "skills/lion-reasoning");
-const OPTIONS = { arbitrary: { runs: 200 } };
+// Each property runs a whole skill model 200 times, which takes seconds
+// alone, and longer beside the grid when every package's tests run at once.
+const OPTIONS = { timeout: 60_000, arbitrary: { runs: 200 } };
 
 const core = JSON.parse(
   readFileSync(join(SKILL, "assets/core.json"), "utf8")

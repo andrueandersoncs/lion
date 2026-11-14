@@ -334,6 +334,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 - `["relation", "edge", ["from", "to"]]` declares a relation and binds `edge` to it. Calling a relation, such as `["edge", "a", "?b"]`, returns a goal; it does not search anything by itself. A goal is a question: a rule or query asks it for its matches, and any other expression can ask it too. See [Asking](#asking). Each argument of a call is a [schema](#schemas) for its column: a value, a variable, a pattern such as `{"id": "?id"}`, or a predicate. See [Taking data apart](#taking-data-apart). A record after the columns holds the relation's options: `{"key": ["id"]}` gives it a key, see [Keys](#keys), and `{"schema": "Order"}` says what its rows must fit, see [Schemas](#the-schema-of-a-relations-rows).
 - Anything that needs the value of a logic variable waits until the variable is bound. `["number/greaterThan", "?amount", 100]` becomes a filter in a rule body, and `["number/add", "?n", 1]` becomes a value computed once `?n` is bound. See [Waiting for values](#waiting-for-values).
 - A lambda's body runs right away, so a lambda can build and return goals. Whatever in the body needs a value waits. Only an argument that asks a question makes the call wait, so the question is answered first, as it is in plain code.
+- A rule's head is a relation call, an `and` of relation calls, which adds a row to each, or `exists` over either, which says the head holds for values nobody has given. See [Existential rules](#existential-rules).
 
 ### Forms
 
@@ -352,8 +353,10 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["invariant", goal, {"assert": "none"}]` | Keeps a query assertion: the goal must have no answers, or with `"some"` at least one, now and after every later change. See [Invariants](#invariants). |
 | `["snapshot"]` | Returns a Lion program that rebuilds the current database. See [Snapshots](#snapshots). |
 | `["in", element, list]` | Binds a variable to each item of a list, or tests that a value is one. The element can be a record or list with variables in it. Without logic variables it is plain membership. See [Lists](#lists). |
+| `["exists", ["?m", ...], goal]` | Holds when the goal holds for some value of each listed variable. The listed variables are its own. As a rule head, it says the head holds for values nobody has given, and the rule invents them. See [Existential rules](#existential-rules). |
+| `["some", "?m", goal]` | The unknown that `?m` stands for in a match of the goal, such as a value a rule invented: `["some", "?m", ["mother", "ben", "?m"]]`. See [Existential rules](#existential-rules). |
 
-A fact holds JSON data. A string that is a name evaluates to what it names, so a fact written with one is refused, and the message says which column it is for, what the string names, and how to write the string itself. `fact`, `retract`, and `why` refuse in the same words.
+A fact holds data: JSON values, and the [unknowns](#existential-rules) that rules invent. A string that is a name evaluates to what it names, so a fact written with one is refused, and the message says which column it is for, what the string names, and how to write the string itself. `fact`, `retract`, and `why` refuse in the same words.
 
 ```json
 ["begin",
@@ -362,7 +365,7 @@ A fact holds JSON data. A string that is a name evaluates to what it names, so a
   ["fact", ["note", "source"]]]
 ```
 
-Fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same goes for the name of a schema or a function, and for a string such as `"?why"`, which is a logic variable: `... is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` An argument that is not data for another reason is shown with the reason: `... is ["number/add","?x",1], which waits for a logic variable.`
+Fails with `Facts may only contain data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same goes for the name of a schema or a function, and for a string such as `"?why"`, which is a logic variable: `... is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` An argument that is not data for another reason is shown with the reason: `... is ["number/add","?x",1], which waits for a logic variable.`
 
 `why` explains a derived fact by the rule that derived it and what its body rested on, under `because`: each row a relation goal matched, explained in turn down to the facts that were given, and every other goal as it held, with the answer's values in place of its variables. A `not` shows as `absent`, and every other goal, `=` and `in` among them, as `check`. A figure a rule computes therefore shows its arithmetic on the values it was given:
 
@@ -378,7 +381,7 @@ Fails with `Facts may only contain JSON data, but the "text" of ["note","source"
   ["why", ["days_held", 9]]]
 ```
 
-Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again.
+Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. A row that a rule which invents gives only because a key made its unknown equal to another value ends with `{ "same": [unknown, value] }`: the unknown the rule named, and the value the key made it. See [Existential rules](#existential-rules).
 
 ### Waiting for values
 
@@ -446,6 +449,7 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 - `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
 - A question sees every row of the relations it asks about, so those are derived in full first. A rule cannot ask about a relation that depends on the rule's own head.
 - Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
+- `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`. See [Existential rules](#existential-rules).
 
 ### Keys
 
@@ -464,7 +468,7 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 - A key can span several columns, as in `{"key": ["warehouse", "sku"]}`, and a single column can be written without the list, as in `{"key": "id"}`.
 - When one `fact` form repeats a key, the last row wins.
 - `retract` removes a row only when every column matches.
-- Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error.
+- Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error, unless they differ only in values that rules invented: then the key makes them one. See [Existential rules](#existential-rules).
 - Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.
 
 ### Query options
@@ -486,7 +490,7 @@ Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 
 | `"offset"`, `"limit"` | Skip `offset` answers, then return at most `limit`. |
 | `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
 
-Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, then records.
+Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules).
 
 ### Invariants
 
@@ -569,7 +573,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 
 #### Recursion through aggregates
 
-`aggregate/min`, `aggregate/max`, `aggregate/shortest`, and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive. A recursive rule can aggregate with them, and the aggregate can compute its value, which an ordinary recursive rule cannot do. Each group keeps its best value so far, and evaluation stops once no value improves.
+`aggregate/min`, `aggregate/max`, `aggregate/shortest`, and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive. A recursive rule can aggregate with them, and the aggregate can compute its value from values the rule made before, which an ordinary recursive rule cannot do. Each group keeps its best value so far, and evaluation stops once no value improves.
 
 ```json
 ["begin",
@@ -594,6 +598,62 @@ Evaluates to `[{ "to": "c", "km": 1 }, { "to": "b", "km": 3 }, { "to": "d", "km"
 
 - Every relation in a recursive cycle through an aggregate must aggregate too, so replacing a value never leaves rows derived from the old one behind.
 - If values are still improving after 10,000 rounds, as with a negative-weight cycle under `aggregate/min`, the query fails with an error instead of running forever.
+
+### Existential rules
+
+A rule head can say that something exists without saying what it is. `["exists", ["?m"], head]` says the head holds for some value of `?m` that nobody has given, and the rule invents one: an unknown.
+
+```json
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "tall", ["name"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]],
+  {"mothers": ["query", ["mother", "?child", "?mother"], {"order": "child"}],
+   "tall mothers": ["find", "?c", ["and", ["mother", "?c", "?m"], ["tall", "?m"]]],
+   "known mothers": ["find", "?c", ["and", ["mother", "?c", "?m"], ["not", ["value/unknown?", "?m"]]]]}]
+```
+
+Evaluates to `{ "mothers": [{ "child": "ada", "mother": "eve" }, { "child": "ben", "mother": ["some", "?m", ["mother", "ben", "?m"]] }], "tall mothers": ["ben"], "known mothers": ["ada"] }`.
+
+- A rule invents only for an answer whose head does not hold already. Ada has a mother, so the rule invents nothing for her.
+- An unknown is written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. That form is ordinary Lion. Evaluating it gives the same unknown, so a program can write one, put it in a fact, as the fact about `tall` above does, compare it, or look it up.
+- An unknown is data, as a string is: rows, facts, answers, `find`, and aggregates hold it. It equals itself and nothing else, as a constant does, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. `value/unknown?` is true for an unknown, and `value/object?` is false for one. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.
+- `["not", ["value/unknown?", "?m"]]` keeps only known answers. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother, as `not` holds for anything that is not known.
+- A head can be a relation call, an `and` of relation calls, or `exists` over either. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
+- With several variables, `exists` invents an unknown for each, and the goal of each `some` mentions the others, which are its own too: `["some", "?f", ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of some pair the goal describes.
+- Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in.
+- `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so in plain code `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
+- The variables of `exists` must be named logic variables, each listed once, and its goal must mention each. In a rule head, it cannot list a variable the body binds.
+- A `fact` or `retract` can hold `exists`. `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. A fact states rows, so it adds the row whether or not the head holds already. `why` takes `exists` too.
+- Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. Its goal is a relation call or an `and` of them, and an argument can be a value, one of its variables, or a record or list of those. A question among the arguments is asked. Nothing may compute with one of its own variables; that is an error.
+- A rule that invents cannot aggregate.
+- Rules that invent can recurse, as long as what they invent never flows back into inventing more. See [Guarantees](#guarantees).
+- A relation that rules invent rows of is derived in full, as an aggregated relation is. See [Goal-directed queries](#goal-directed-queries).
+
+A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first, unless it describes the other, since an unknown never takes a value that holds it. Then every row that holds it is replaced. Here twins share a mother:
+
+```json
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "mother", ["child", "mother"], {"key": "child"}],
+  ["fact", ["person", "ben"], ["person", "cy"], ["person", "dee"]],
+  ["fact", ["twin", "ben", "cy"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["mother", "?b", "?m"], ["twin", "?a", "?b"], ["mother", "?a", "?m"]],
+  ["rule", ["mother", "?a", "?m"], ["twin", "?a", "?b"], ["mother", "?b", "?m"]],
+  ["query", ["mother", "?child", "?mother"], {"order": "child"}]]
+```
+
+Evaluates to `[{ "child": "ben", "mother": ["some", "?m", ["mother", "ben", "?m"]] }, { "child": "cy", "mother": ["some", "?m", ["mother", "ben", "?m"]] }, { "child": "dee", "mother": ["some", "?m", ["mother", "dee", "?m"]] }]`. Ben and cy have one unknown mother, ben's, since it sorts first, and `why` on cy's row explains it by the twin rule. With `["fact", ["mother", "cy", "eve"]]`, both would have eve.
+
+- Two different values that are not such unknowns, such as two given mothers, are still an error, with the key's message.
+- An unknown that a fact holds is given, not invented, so a key never changes it. Nor does a key change an unknown invented for a relation that the keyed relation only reads.
+- `why` explains a row by an answer that gives it as it is, when one does. A row that a rule which invents gives only because a key made its unknown equal to another value ends with `{ "same": [unknown, value] }`.
 
 ### Graph algorithms
 
@@ -642,7 +702,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 
 - Known arguments are values, variables the query has already bound with a relation, `=`, or `in`, and values computed from them, as in `["and", ["start", "?s"], ["path", ["number/add", "?s", 1], "?to"]]`. Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end.
 - How a recursive rule is written matters. With a known start, recursion on the left, as in `["path", "?x", "?y"], ["edge", "?y", "?z"]`, asks only about that start. Recursion on the right, as in `["edge", "?x", "?y"], ["path", "?y", "?z"]`, asks about every node the paths pass through, which can cost as much as full evaluation.
-- Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on.
+- Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on. So is a relation that rules [invent](#existential-rules) rows of, since what such a rule adds depends on every row.
 - A relation is derived the first time something reads it, and kept until a fact or rule changes, so a query never pays for relations it does not read.
 - The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters. A goal-directed query also never fails on a row it does not derive, where full evaluation would.
 - `why` explains facts with every relation computed in full.
@@ -668,6 +728,7 @@ Evaluates to `["begin", ["relation", "edge", ["from", "to"]], ["relation", "path
 - A waiting `cond`, `match`, or record is written as it was, and a lambda as its `lambda` form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in `[["lambda", ["limit"], ["cond", [["number/greaterThan", "?a", "limit"], "big"], ["else", "small"]]], 100]`.
 - A function that another function built is written as the call that built it: `["func/partial", "number/add", 1]`, or `["schema/arrayOf", "value/number?"]`.
 - A schema is written with the form of its shape. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it, as in a waiting form. Schemas that one form declared are written in one form, so they can name each other when it is loaded. The schema of a relation's rows is written as the invariant it stands for.
+- A rule whose head says `exists` is written as it was, and an [unknown](#existential-rules) a fact holds as its `some` form, such as `["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`. The CLI's `--database` file therefore keeps both.
 - A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda or built by a function it can write. `snapshot` then fails with an error that names the function.
 
 From TypeScript, `saveDatabase(database)` and `loadDatabase(program, environment)` from `@lionlang/core/logic/snapshot` do the same:
@@ -692,15 +753,17 @@ const program = Effect.gen(function* () {
 
 Rules are checked when they are added:
 
-- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`. So must every input of an algorithm goal, and an input must be data.
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). So must every input of an algorithm goal, and an input must be data.
 - A question, a goal under `not`, a goal used as a value, or a `find`, waits for the variables the rule binds. Any other variable in it is its own, and the question must bind it itself.
 - A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
-- A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are fine. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
+- Evaluation always finishes. Values flow from the columns a rule's body reads to the columns of its head. A rule may make a new value for a column, by computing it in its head or through `=` or `in`, or by [inventing](#existential-rules) it, as long as that value never flows back, through the rules, into making another new value. Values that come from facts, such as `["=", "?m", "?to"]` with `?to` from a relation, are not new.
+- So `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` is accepted: no rule reads the second column of `b` to make anything. "Every person has a mother", `["rule", ["exists", ["?m"], ["mother", "?p", "?m"]], ["person", "?p"]]`, with "every mother is a person", `["rule", ["person", "?m"], ["mother", "?p", "?m"]]`, is refused: `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.` A computed value that flows back is refused with `... computes a new value in its head while recursing, which may never finish.`, and the message suggests a non-recursive rule or a lattice aggregate.
+- Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.
 
 A form that changes the database, `fact`, `retract`, or `rule`, either makes all of its changes or fails and makes none of them. When the database has [invariants](#invariants), a change that breaks one is undone the same way.
 
-Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be JSON data. Anything else is an error that shows the call or the value.
+Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be data, JSON values and [unknowns](#existential-rules). Anything else is an error that shows the call or the value.
 
 Adding what the database already holds changes nothing: a fact that is already there, a relation or schema declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
 
@@ -1071,11 +1134,12 @@ Algorithm goals over an edge relation; see [Graph algorithms](#graph-algorithms)
 ["value/object?", {"a": 1}]
 ["value/array?", ["array/make", 1, 2]]
 ["value/null?", null]
+["value/unknown?", "lion"]
 ["value/any?", 42]
 ["value/identity", 42]
 ```
 
-`value/any?` is true for every value. `value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.
+`value/any?` is true for every value. `value/unknown?` is true for an [unknown](#existential-rules), such as a value a rule invented, and `value/object?` is false for one. `value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.
 
 ### `schema`
 

@@ -7,6 +7,7 @@ import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import {
   Atom,
+  callsOf,
   containsNestedLogic,
   DeferredCall,
   type Goal,
@@ -19,8 +20,10 @@ import {
   LogicValue,
   LogicVariable,
   logicKey,
+  ownVariables,
   patternParts,
   render,
+  replaceVariables,
   show,
   termVariables,
 } from "@/logic/terms";
@@ -49,6 +52,12 @@ export interface CompiledRule {
   readonly demand?: true;
   readonly head: Atom;
   /**
+   * Set for a rule whose head says `exists`. Such a rule adds every
+   * relation call of its head at once, for each answer of its body, and
+   * only when the head does not hold already.
+   */
+  readonly invents?: Invention;
+  /**
    * Equal for rule forms a snapshot would write the same way, so adding a
    * rule the database already holds changes nothing. Alternatives of one `or`
    * share it. Undefined for rules that hold a value with no written form,
@@ -59,6 +68,40 @@ export interface CompiledRule {
   /** The rendered `rule` form. Alternatives of one `or` share it. */
   readonly source: unknown;
 }
+
+/** How a rule whose head says `exists` invents values. */
+export interface Invention {
+  /**
+   * The head's relation calls as a body, with the variables `exists` lists
+   * free: an answer of the rule's body that has a match of it already holds
+   * the head, and invents nothing.
+   */
+  readonly check: readonly Literal[];
+  /** What `exists` says holds: a relation call, or an `and` of them. */
+  readonly goal: unknown;
+  /**
+   * Every relation call of the head, the first being the rule's `head`,
+   * with the unknown that `some` names in place of each listed variable.
+   */
+  readonly heads: readonly Atom[];
+  /** The variables `exists` lists, without the `?`. */
+  readonly names: readonly string[];
+}
+
+const HEADS = new WeakMap<CompiledRule, readonly Atom[]>();
+
+/** Every relation call a rule adds rows to. */
+export const headsOf = (rule: CompiledRule): readonly Atom[] => {
+  if (rule.invents !== undefined) {
+    return rule.invents.heads;
+  }
+  let heads = HEADS.get(rule);
+  if (heads === undefined) {
+    heads = [rule.head];
+    HEADS.set(rule, heads);
+  }
+  return heads;
+};
 
 export interface CompiledQuery {
   /** The goal's alternatives, each in the order the engine runs it. */
@@ -144,14 +187,33 @@ const holes = (
     : parts.flatMap((part) => holes(part, asSchema, true));
 };
 
+let local = 0;
+
 /**
- * Readies a goal to be expanded: names its anonymous variables, and takes a
- * goal out from under two `not`s, where it is a goal of the body again
- * instead of a question.
+ * The goal of an `exists`, with the variables it lists renamed apart from
+ * every other, so they are its own wherever it stands. A name that no
+ * program can write keeps them from meeting a variable of the program.
+ */
+const opened = (exists: LogicForm) => {
+  const [names, goal] = exists.parts as [readonly string[], unknown];
+  local += 1;
+  const renamed = new Map(
+    names.map((name) => [name, new LogicVariable(`${name}#${local}`)])
+  );
+  return replaceVariables(goal, ({ name }) => renamed.get(name));
+};
+
+/**
+ * Readies a goal to be expanded: names its anonymous variables, opens an
+ * `exists`, and takes a goal out from under two `not`s, where it is a goal
+ * of the body again instead of a question.
  */
 const prepare = (goal: unknown): unknown => {
   if (isForm(goal, "and", "or")) {
     return goal.map(prepare);
+  }
+  if (isForm(goal, "exists")) {
+    return prepare(opened(goal));
   }
   const [inner] = isForm(goal, "not") ? goal.parts : [];
   if (isForm(inner, "not")) {
@@ -227,7 +289,8 @@ const wants = (
   if (!(term instanceof LogicValue)) {
     return [];
   }
-  if (isQuestion(term)) {
+  // Like a question, `exists` and `some` have variables of their own.
+  if (isQuestion(term) || isForm(term, "exists", "some")) {
     return term.variables.filter((name) => scope.has(name));
   }
   if (isForm(term, "=", "in", "schema/fits?")) {
@@ -273,7 +336,8 @@ function needs(
 
 /** The questions a term asks: goals with a relation in them, and finds. */
 const questionsIn = (term: unknown): readonly LogicValue[] => {
-  if (!(term instanceof LogicValue)) {
+  // What `some` describes is not asked.
+  if (!(term instanceof LogicValue) || isForm(term, "some")) {
     return [];
   }
   // A goal under `not` is asked the same question, and then turned around.
@@ -289,6 +353,10 @@ const questionsIn = (term: unknown): readonly LogicValue[] => {
 const binders = (goal: unknown): readonly string[] => {
   if (isForm(goal, "and", "or")) {
     return goal.parts.flatMap(binders);
+  }
+  if (isForm(goal, "exists")) {
+    const own = ownVariables(goal);
+    return binders(goal.parts[1]).filter((name) => !own.includes(name));
   }
   if (!isBinder(goal)) {
     return [];
@@ -372,13 +440,107 @@ export const bindVariables = (
   }
 };
 
+/**
+ * Where a value comes from: the columns of relations it is read from, and
+ * whether it is made, by a function, a record or list, or `some`, rather
+ * than read as it is or taken apart.
+ */
+export interface Origin {
+  /** Each column, named by `columnOf`, with the relation it belongs to. */
+  readonly columns: ReadonlyMap<string, string>;
+  readonly made: boolean;
+}
+
+const NOWHERE: Origin = { columns: new Map(), made: false };
+
+/** Names a column of a relation, for the graph that follows values. */
+export const columnOf = (relation: string, position: number) =>
+  `${relation}\u0000${position}`;
+
+/**
+ * Where the value of each variable a body binds comes from. A variable that
+ * a relation goal of the body binds is read from the columns it stands in,
+ * whatever binds it first, since its value is one those columns hold. Any
+ * other variable comes from the term "=", "in", or "schema/fits?" takes it
+ * from: taking a part of a value makes nothing new, and computing does.
+ */
+export const valueOrigins = (body: readonly Literal[]) => {
+  const origins = new Map<string, Origin>();
+  for (const literal of body) {
+    if (!(literal instanceof Atom)) {
+      continue;
+    }
+    for (const [position, arg] of literal.args.entries()) {
+      for (const name of holes(arg, true)) {
+        const columns = new Map(origins.get(name)?.columns);
+        const { name: relation } = literal.relation;
+        origins.set(name, {
+          columns: columns.set(columnOf(relation, position), relation),
+          made: false,
+        });
+      }
+    }
+  }
+  const of = (term: unknown) => originOf(term, origins);
+  const take = (pattern: unknown, from: Origin, asSchema = false) => {
+    for (const name of holes(pattern, asSchema)) {
+      if (!origins.has(name)) {
+        origins.set(name, from);
+      }
+    }
+  };
+  for (const literal of body) {
+    const [first, second] = literal.parts;
+    if (isForm(literal, "=")) {
+      take(first, of(second));
+      take(second, of(first));
+    } else if (isForm(literal, "in")) {
+      const items = patternParts(second, false);
+      take(first, items === undefined ? of(second) : joined(items.map(of)));
+    } else if (isForm(literal, "schema/fits?")) {
+      take(second, of(first), true);
+    }
+  }
+  return origins;
+};
+
+const joined = (origins: readonly Origin[]): Origin => ({
+  columns: new Map(origins.flatMap(({ columns }) => [...columns])),
+  made: origins.some(({ made }) => made),
+});
+
+/**
+ * Where a term's value comes from, once the variables it needs have theirs:
+ * a variable's value comes from where the variable's does, a value written
+ * in the program from nowhere, and anything else is made from its
+ * variables.
+ */
+export const originOf = (
+  term: unknown,
+  origins: ReadonlyMap<string, Origin>
+): Origin => {
+  if (term instanceof LogicVariable) {
+    return origins.get(term.name) ?? NOWHERE;
+  }
+  if (!(term instanceof LogicValue)) {
+    return NOWHERE;
+  }
+  return {
+    ...joined(term.variables.map((name) => origins.get(name) ?? NOWHERE)),
+    made: true,
+  };
+};
+
 const boundArguments = (atom: Atom, bound: ReadonlySet<string>) =>
   atom.args.filter(
     (arg) => !(arg instanceof LogicVariable) || bound.has(arg.name)
   ).length;
 
+const RENAMED = /#\d+$/;
+
+/** Variables as the program wrote them, without what `exists` adds. */
 const variableNames = (names: readonly string[]) =>
-  [...new Set(names)].map((name) => `?${name}`).join(", ");
+  [...new Set(names.map((name) => `?${name.replace(RENAMED, "")}`))].join(", ");
 
 /**
  * The next literal that can run: the first filter that is ready, in the
@@ -525,44 +687,128 @@ export const questionPlans = (
 
 const NOTHING: ReadonlySet<string> = new Set();
 
+const aggregatesOf = (head: Atom) =>
+  head.args.flatMap((arg, position) =>
+    arg instanceof DeferredCall && arg.aggregate !== undefined ? [position] : []
+  );
+
+/**
+ * What a rule's head says: its relation calls, and the variables `exists`
+ * lists, for which the rule invents values.
+ */
+const headOf = (head: unknown) => {
+  const [invented, goal] = isForm(head, "exists")
+    ? (head.parts as [readonly string[], unknown])
+    : [[], head];
+  const calls = callsOf(goal);
+  if (calls === undefined) {
+    return problem(
+      `A rule head must be a relation call, an "and" of them, or "exists" over those, but found ${show(head)}.`
+    );
+  }
+  return { calls, goal, invented };
+};
+
+/**
+ * Where an unknown can stand: as a whole argument, or inside a record or
+ * list, but not where something computes with it. Fails when the head
+ * computes with a variable that `exists` lists.
+ */
+const planHeld = (
+  head: unknown,
+  calls: readonly Atom[],
+  bound: ReadonlySet<string>
+) => {
+  const check = compilable(() => planLiterals(calls, bound));
+  if (check === undefined) {
+    return problem(
+      `Rule head ${show(head)} computes with a variable that "exists" lists. An unknown can stand as an argument, or inside a record or list, but nothing can compute with it.`
+    );
+  }
+  return check;
+};
+
 export const compileRule = (head: unknown, body: readonly unknown[]) =>
   compiling(() => {
-    if (!(head instanceof Atom)) {
-      return problem(
-        `A rule head must be a relation call, but found ${show(head)}.`
-      );
-    }
-    const direct = head.args.flatMap((arg) => wants(arg, NOTHING));
+    const { calls, goal, invented } = headOf(head);
+    const direct = calls.flatMap((call) =>
+      call.args.flatMap((arg) => wants(arg, NOTHING))
+    );
     if (direct.some((name) => name.startsWith("_"))) {
       problem(
         `A rule head cannot use the anonymous variable "?_": ${show(head)}.`
       );
     }
+    // Each variable `exists` lists stands for the unknown that `some` names.
+    const heads = calls.map((call) =>
+      invented.length === 0
+        ? call
+        : (replaceVariables(call, (variable) =>
+            invented.includes(variable.name)
+              ? new LogicForm("some", [variable, goal])
+              : undefined
+          ) as Atom)
+    );
     const planned = plan(new LogicForm("and", body));
     for (const { bound } of planned) {
+      const taken = invented.find((name) => bound.has(name));
+      if (taken !== undefined) {
+        problem(
+          `Rule head ${show(head)} lists "?${taken}" in "exists", but the body binds it too. Give one of them another name.`
+        );
+      }
       checkValues(
         head,
-        head.args,
+        heads.flatMap((call) => call.args),
         bound,
         (names) =>
-          `Unsafe rule head ${show(head)}: ${names} never appears in a relation in the body.`
+          `Unsafe rule head ${show(head)}: ${names} never appears in a relation in the body. To say the head holds for some value nobody has given, list it in "exists": ["exists", [${names
+            .split(", ")
+            .map((name) => JSON.stringify(name))
+            .join(", ")}], head].`
+      );
+    }
+    if (
+      invented.length > 0 &&
+      heads.some((call) => aggregatesOf(call).length)
+    ) {
+      problem(
+        `Rule head ${show(head)} both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.`
       );
     }
     const definition = [head, ...body];
     const key = logicKey(definition);
     const rule = {
-      aggregates: head.args.flatMap((arg, position) =>
-        arg instanceof DeferredCall && arg.aggregate !== undefined
-          ? [position]
-          : []
-      ),
-      head,
       definition,
       source: ["rule", render(head), ...body.map(render)],
       ...(key === undefined ? {} : { key }),
     };
+    if (invented.length === 0) {
+      // Each relation call of the head is a rule of its own.
+      return planned.flatMap(({ body: literals }) =>
+        heads.map(
+          (call): CompiledRule => ({
+            ...rule,
+            aggregates: aggregatesOf(call),
+            body: literals,
+            head: call,
+          })
+        )
+      );
+    }
     return planned.map(
-      (alternative): CompiledRule => ({ ...rule, body: alternative.body })
+      ({ body: literals, bound }): CompiledRule => ({
+        ...rule,
+        aggregates: [],
+        body: literals,
+        head: heads[0] as Atom,
+        invents: {
+          check: planHeld(head, calls, bound),
+          goal,
+          heads,
+          names: invented,
+        },
+      })
     );
   });
 

@@ -132,7 +132,7 @@ describe("a function called with a logic variable", () => {
         const call = ["host/bad", "?x"];
         expect(
           yield* fail(["query", ["and", each(values), ["=", "?y", call]]])
-        ).toContain("The query produced an answer that is not JSON data");
+        ).toContain("The query produced an answer that is not data");
         expect(
           yield* fail([
             "begin",
@@ -140,7 +140,7 @@ describe("a function called with a logic variable", () => {
             ["rule", ["out", "?x", call], each(values)],
             ["query", ["out", "?x", "?y"]],
           ])
-        ).toContain("produced a value that is not JSON data");
+        ).toContain("produced a value that is not data");
       }),
     OPTIONS
   );

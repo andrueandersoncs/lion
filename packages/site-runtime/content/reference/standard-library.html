@@ -147,7 +147,7 @@
 </lion-example>
 
 <h2 id="module-value">value</h2>
-<p>Predicates tell JSON's kinds of value apart: <code>value/object?</code> is true for records, and <code>value/array?</code> for lists.</p>
+<p>Predicates tell JSON's kinds of value apart: <code>value/object?</code> is true for records, and <code>value/array?</code> for lists. <code>value/unknown?</code> tells an <a href="#form-some">unknown</a>, a value a rule invented, from a value that was given.</p>
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
@@ -157,7 +157,8 @@
     <tr data-entry="value/boolean?"><td><code>["value/boolean?", x]</code></td><td>Whether <code>x</code> is a boolean</td></tr>
     <tr data-entry="value/null?"><td><code>["value/null?", x]</code></td><td>Whether <code>x</code> is <code>null</code></td></tr>
     <tr data-entry="value/array?"><td><code>["value/array?", x]</code></td><td>Whether <code>x</code> is a list</td></tr>
-    <tr data-entry="value/object?"><td><code>["value/object?", x]</code></td><td>Whether <code>x</code> is a record, or another object that is not a list, such as a host object</td></tr>
+    <tr data-entry="value/object?"><td><code>["value/object?", x]</code></td><td>Whether <code>x</code> is a record, or another object that is not a list or an unknown, such as a host object</td></tr>
+    <tr data-entry="value/unknown?"><td><code>["value/unknown?", x]</code></td><td>Whether <code>x</code> is an <a href="#form-some">unknown</a>, such as a value a rule whose head says <code>exists</code> invented</td></tr>
     <tr data-entry="value/function?"><td><code>["value/function?", x]</code></td><td>Whether <code>x</code> is a function</td></tr>
     <tr data-entry="value/undefined?"><td><code>["value/undefined?", x]</code></td><td>Whether <code>x</code> is JavaScript's <code>undefined</code>, which only host values produce</td></tr>
     <tr data-entry="value/symbol?"><td><code>["value/symbol?", x]</code></td><td>Whether <code>x</code> is a JavaScript symbol</td></tr>
@@ -180,6 +181,17 @@
  "symbol? of text": ["value/symbol?", ["quote", "number/symbol"]],
  "any?": ["value/any?", null],
  "identity": ["value/identity", 42]}
+</lion-example>
+<p>A rule that invents gives unknowns, and <code>value/unknown?</code> keeps them apart from the values that were given:</p>
+<lion-example name="value/unknown?">
+["begin",
+  ["relation", "team", ["name"]],
+  ["relation", "lead", ["team", "person"]],
+  ["fact", ["team", "web"], ["team", "data"], ["lead", "web", "ana"]],
+  ["rule", ["exists", ["?p"], ["lead", "?t", "?p"]], ["team", "?t"]],
+  {"leads": ["find", ["array/make", "?t", "?p", ["value/unknown?", "?p"]], ["lead", "?t", "?p"]],
+   "known leads": ["find", "?p", ["and", ["lead", "?_", "?p"], ["not", ["value/unknown?", "?p"]]]],
+   "object? of an unknown": ["value/object?", ["some", "?p", ["lead", "data", "?p"]]]}]
 </lion-example>
 
 <h2 id="module-schema">schema</h2>

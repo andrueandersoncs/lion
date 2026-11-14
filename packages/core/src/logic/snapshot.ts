@@ -44,7 +44,7 @@ const writer = (
     throw new Unwritable(
       typeof item === "function"
         ? `${show(callee ?? item)} is a function a snapshot cannot write. It can write the functions the environment names, and lambdas that do not call themselves`
-        : `${show(item)} is not JSON data`
+        : `${show(item)} is not data`
     );
   },
 });

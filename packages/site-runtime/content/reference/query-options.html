@@ -15,12 +15,13 @@
 </table>
 
 <h2 id="value-order">Value order</h2>
-<p>Sorting compares values of different types in a fixed order: <code>null</code>, then booleans (<code>false</code> before <code>true</code>), numbers, strings, lists, and records. Lists compare item by item, and records by their entries sorted by key. Strings compare by UTF-16 code units, so uppercase letters sort before lowercase ones.</p>
+<p>Sorting compares values of different types in a fixed order: <code>null</code>, then booleans (<code>false</code> before <code>true</code>), numbers, strings, lists, records, and <a href="#form-some">unknowns</a>. Lists compare item by item, records by their entries sorted by key, and unknowns by how they are written. Strings compare by UTF-16 code units, so uppercase letters sort before lowercase ones.</p>
 <lion-example name="Value order">
 ["begin",
   ["relation", "item", ["value"]],
   ["fact", ["item", "b"], ["item", 2], ["item", null], ["item", true],
-    ["item", "B"], ["item", ["array/make", 1]], ["item", {"k": 1}]],
+    ["item", "B"], ["item", ["array/make", 1]], ["item", {"k": 1}],
+    ["item", ["some", "?v", ["item", "?v"]]]],
   ["query", ["item", "?value"], {"order": "value"}]]
 </lion-example>
 

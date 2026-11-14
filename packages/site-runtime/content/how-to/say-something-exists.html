@@ -1,0 +1,157 @@
+<article id="say-something-exists" data-title="Say that something exists" data-summary="Write rules that say a value exists without saying what it is, read the unknowns they invent, keep only known answers, and make unknowns one with a key.">
+<p>This guide shows how to say that something exists when nobody has said what it is, such as a mother for every person or a lead for every team, and how to work with the values Lion invents for it.</p>
+
+<h2>Write a rule that invents</h2>
+<p>List a variable of the head in <code>exists</code>. The head then holds for some value of it that nobody has given, and the rule invents that value, an unknown:</p>
+<lion-example name="A rule that invents">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+  ["fact", ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["query", ["mother", "?child", "?mother"], {"order": "child"}]]
+</lion-example>
+<p>The rule invents only for an answer whose head does not hold already. Ada has a mother, so it invents nothing for her. Without <code>exists</code>, a head variable that the body never binds is an error, and the message suggests <code>exists</code>.</p>
+<p>Rules that invent wait until every rule that invents nothing has finished. Here the rule that reads birth records is written after the rule that invents, and still gives ben his mother first, so nothing is invented for him:</p>
+<lion-example name="Rules that know go first">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "birth", ["child", "mother", "year"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["birth", "ben", "fay", 1990]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["mother", "?c", "?m"], ["birth", "?c", "?m", "?_"]],
+  ["query", ["mother", "?child", "?mother"], {"order": "child"}]]
+</lion-example>
+<p>So the result never depends on the order rules or facts were added in.</p>
+
+<h2>Read an unknown</h2>
+<p>An unknown is written <code>["some", "?m", ["mother", "ben", "?m"]]</code>: the value <code>?m</code> stands for in a row <code>["mother", "ben", ?m]</code>. That form is ordinary Lion. Evaluating it gives the same unknown, so a program can write one to put it in a fact, look it up, or compare it:</p>
+<lion-example name="Unknowns are data">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "tall", ["name"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]],
+  {"ben's mother is it": ["mother", "ben", ["some", "?m", ["mother", "ben", "?m"]]],
+   "children of tall mothers": ["find", "?c", ["and", ["mother", "?c", "?m"], ["tall", "?m"]]],
+   "is it eve": ["=", ["some", "?m", ["mother", "ben", "?m"]], "eve"],
+   "unknown?": ["find", ["array/make", "?c", ["value/unknown?", "?m"]], ["mother", "?c", "?m"]]}]
+</lion-example>
+<p>An unknown equals itself and nothing else, as a string does, and two unknowns are the same when they are written the same way. It sorts after every record. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.</p>
+
+<h2>Keep only known answers</h2>
+<p><code>value/unknown?</code> is true for an unknown, so <code>["not", ["value/unknown?", "?m"]]</code> keeps only the answers whose values were given. Lion stays closed-world: <code>not</code> holds for anything that is not known, so ben's unknown mother is not eve:</p>
+<lion-example name="Known answers">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  {"known": ["query", ["and", ["mother", "?child", "?m"], ["not", ["value/unknown?", "?m"]]]],
+   "not eve": ["find", "?child", ["and", ["mother", "?child", "?m"], ["not", ["=", "?m", "eve"]]]]}]
+</lion-example>
+
+<h2>Ask whether something exists</h2>
+<p><code>exists</code> is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, so they never appear in an answer. It is a <a href="#logic-asking">question</a>, so it works in plain code, in a query or rule, under <code>not</code>, and in a <code>find</code>:</p>
+<lion-example name="exists as a goal">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "tall", ["name"]],
+  ["fact", ["person", "ada"], ["person", "ben"], ["person", "cy"]],
+  ["fact", ["mother", "ada", "eve"], ["mother", "ben", "fay"], ["tall", "eve"]],
+  {"has a tall mother": ["query",
+     ["and", ["person", "?p"], ["exists", ["?m"], ["and", ["mother", "?p", "?m"], ["tall", "?m"]]]]],
+   "has no mother": ["find", "?p",
+     ["and", ["person", "?p"], ["not", ["exists", ["?m"], ["mother", "?p", "?m"]]]]],
+   "anyone with a mother": ["exists", ["?c", "?m"], ["mother", "?c", "?m"]]}]
+</lion-example>
+
+<h2>Invent one value for several rows</h2>
+<p>A head can be an <code>and</code> of relation calls, which adds a row to each. Under <code>exists</code>, one unknown is in every row, and the goal of its <code>some</code> is the whole <code>and</code>. Here every team has a lead who is on the staff. The web team's lead already is, so nothing is invented for it:</p>
+<lion-example name="One unknown in two rows">
+["begin",
+  ["relation", "team", ["name"]],
+  ["relation", "lead", ["team", "person"]],
+  ["relation", "staff", ["person"]],
+  ["fact", ["team", "web"], ["team", "data"]],
+  ["fact", ["lead", "web", "ana"], ["staff", "ana"]],
+  ["rule", ["exists", ["?p"], ["and", ["lead", "?t", "?p"], ["staff", "?p"]]], ["team", "?t"]],
+  {"leads": ["query", ["lead", "?team", "?person"], {"order": "team"}],
+   "staff": ["find", "?p", ["staff", "?p"]]}]
+</lion-example>
+<p>With several variables, <code>exists</code> invents an unknown for each. The goal of each <code>some</code> mentions the others, which are its own too:</p>
+<lion-example name="Two unknowns">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "parents", ["child", "father", "mother"]],
+  ["fact", ["person", "ann"]],
+  ["rule", ["exists", ["?f", "?m"], ["parents", "?c", "?f", "?m"]], ["person", "?c"]],
+  ["query", ["parents", "?child", "?father", "?mother"]]]
+</lion-example>
+
+<h2>Make unknowns one with a key</h2>
+<p>A key says a relation has one row per key. When two rows have the same key and differ only where one holds an unknown that the relation's rules invented, the unknown takes the other row's value: a given value, or, when both are invented unknowns, the one that sorts first. Here every person has a mother and twins share one, so ben and cy get one unknown mother:</p>
+<lion-example name="Twins share a mother">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "mother", ["child", "mother"], {"key": "child"}],
+  ["fact", ["person", "ben"], ["person", "cy"], ["person", "dee"]],
+  ["fact", ["twin", "ben", "cy"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["mother", "?b", "?m"], ["twin", "?a", "?b"], ["mother", "?a", "?m"]],
+  ["rule", ["mother", "?a", "?m"], ["twin", "?a", "?b"], ["mother", "?b", "?m"]],
+  {"mothers": ["query", ["mother", "?child", "?mother"], {"order": "child"}],
+   "why cy": ["why", ["mother", "cy", ["some", "?m", ["mother", "ben", "?m"]]]]}]
+</lion-example>
+<p>Two different values that nobody invented, such as two given mothers, are still an error. An unknown that a fact holds is given, not invented, so a key never changes it.</p>
+<p>A key can also make an invented unknown equal to a value that was given. Here every person's mother is a woman, and the key says ada's one mother is fay, so the unknown woman the rule invents for ada is fay, and fay is a woman. <code>why</code> explains such a row by the rule that invented it, with a <code>same</code> premise that says what the key made its unknown equal to:</p>
+<lion-example name="A key gives an unknown its value">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "woman", ["name"]],
+  ["relation", "mother", ["child", "mother"], {"key": "child"}],
+  ["fact", ["person", "ada"], ["mother", "ada", "fay"]],
+  ["rule", ["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["woman", "?m"]]], ["person", "?c"]],
+  {"mothers": ["find", ["array/make", "?c", "?m"], ["mother", "?c", "?m"]],
+   "women": ["find", "?w", ["woman", "?w"]],
+   "why fay": ["why", ["woman", "fay"]]}]
+</lion-example>
+
+<h2>State that something exists in a fact</h2>
+<p>A <code>fact</code> can hold <code>exists</code> too. It adds the row with an unknown in it, the very row a rule with that head would invent. A fact states rows, so it adds the row whether or not the head holds already. <code>why</code> and <code>retract</code> take <code>exists</code> the same way:</p>
+<lion-example name="A fact with exists">
+["begin",
+  ["relation", "mother", ["child", "mother"]],
+  ["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]],
+  {"rows": ["query", ["mother", "?child", "?mother"]],
+   "why": ["why", ["exists", ["?m"], ["mother", "ben", "?m"]]]}]
+</lion-example>
+<p>A snapshot writes an unknown as its <code>some</code> form, and a rule that invents with its <code>exists</code> head, so a saved database keeps both. See <a href="#save-and-load">Save and load a logic database</a>.</p>
+
+<h2>Keep inventions finite</h2>
+<p>Rules that invent can recurse, as long as what they invent never flows back into inventing more. "Every person has a mother" with "every mother is a person" would invent mothers without end, so Lion refuses the rule that closes the loop. The message names the rule that would invent:</p>
+<lion-example name="Inventing without end" expect="error">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["rule", ["exists", ["?m"], ["mother", "?p", "?m"]], ["person", "?p"]],
+  ["rule", ["person", "?m"], ["mother", "?p", "?m"]]]
+</lion-example>
+<p>Invent the value in a rule that does not recurse. A rule that invents also cannot aggregate. See <a href="#guarantee-termination">Termination</a> for the rule.</p>
+
+<h2>Related</h2>
+<ul>
+  <li><a href="#form-exists"><code>exists</code></a> and <a href="#form-some"><code>some</code></a> in the reference.</li>
+  <li><a href="#find-missing">Find what is missing</a> asks for what has no match, where this guide says it exists.</li>
+  <li><a href="#logic-programming">How Lion answers logic questions</a> explains how rules that invent fit Datalog.</li>
+</ul>
+</article>

@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased — @lionlang/core
+
+Rules that say something exists without saying what it is. A rule can give every person a mother nobody has named, and the value it invents is ordinary Lion data that a program can write, store, compare, and look up.
+
+### Added
+
+- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.`
+- A rule head can be an `and` of relation calls, which adds a row to each: `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]`. Under `exists`, one unknown is in every row: `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]`.
+- An invented value is an unknown, written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. The form is ordinary Lion, and evaluating it gives the same unknown, so a program can write one, put it in a fact (`["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`), compare it, or look it up. Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. With several variables in `exists`, each gets its own unknown, and its `some` mentions the others.
+- An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. A function that needs a number or a string fails on one, as it does on any value of the wrong kind. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother.
+- `["value/unknown?", x]` is true for an unknown, so `["not", ["value/unknown?", "?m"]]` keeps only known answers. `value/object?` is false for one.
+- `["exists", ["?m", ...], goal]` is also a goal: it holds when the goal holds for some value of each listed variable. The listed variables are its own wherever it stands, as a question's own variables are, and never appear in an answer. It is a question, so in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
+- A `fact` or `retract` can hold `exists`: `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. `why` takes one too.
+- A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. With `{"key": "child"}` on `mother`, "everyone has a mother" and "twins share a mother" give twins ben and cy the one unknown mother `["some", "?m", ["mother", "ben", "?m"]]`. Two different given values are still an error, with the key's message, and an unknown that a fact holds is given, so a key never changes it. An unknown never takes a value that describes it, so of two invented unknowns where one describes the other, the one that describes takes the other.
+- `why` explains a row by an answer that gives it as it is, when one does, so after a key makes unknowns equal every row still rests only on rows explained before it. A row that a rule which invents gives only because a key made its unknown equal to another value ends with a new kind of premise, `{"same": [unknown, value]}`.
+- Snapshots write rules with `exists` heads as written, and unknowns in facts as their `some` forms, so the CLI's `--database` file keeps them.
+- A relation that rules invent rows of is derived in full, as an aggregated relation is. A goal-directed query gives the same answers.
+
+### Changed
+
+- The check that evaluation finishes is weak acyclicity, one rule for computed and invented values. Values flow from the columns a rule's body reads to the columns of its head, and a rule may make a new value for a column, by computing it or inventing it, as long as that value never flows back, through the rules, into making another. `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` used to be refused, since any computed value in a recursive rule's head was, and is now accepted. Every program accepted before is still accepted. A computed value that flows back is refused with the same message as before. An invented one is refused with `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.`
+- `Facts may only contain JSON data, but ...` is now `Facts may only contain data, but ...`, since a fact can hold an unknown. The rest of the message is unchanged. The other messages about a value that cannot be a row or an answer, such as `The query produced an answer that is not data`, say "data" too.
+- `Unsafe rule head [...]: ?m never appears in a relation in the body.` goes on to say `To say the head holds for some value nobody has given, list it in "exists": ["exists", ["?m"], head].`
+- `exists` and `some` are names of special forms, so a relation, a `define`, or a lambda parameter can no longer be named `"exists"` or `"some"`.
+
+### Documentation
+
+- A how-to guide, "Say that something exists", and reference entries for `exists`, `some`, and `value/unknown?` on [lionlang.dev](https://lionlang.dev/docs.html). The guarantees state the new check that evaluation finishes, and "How Lion answers logic questions" explains how rules that invent fit Datalog.
+- The research and reasoning skills quote the new fact message, and the research skill's engine is rebuilt with this core.
+
 ## 2026-11-13 — @lionlang/core 0.10.0, @lionlang/cli 0.9.0
 
 Figures that can be checked: numbers read from the text they came from, records changed by making new ones, and explanations that show their arithmetic. The research skill builds on them to check every figure against its source, so it needs this release.

@@ -1,4 +1,4 @@
-<article id="logic-forms" data-title="Logic forms" data-summary="The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, questions, snapshots, and invariants.">
+<article id="logic-forms" data-title="Logic forms" data-summary="The forms of Lion's Datalog-style logic layer: relations, facts, rules, queries, goals, questions, unknowns, snapshots, and invariants.">
 <p>The logic layer stores facts in relations, derives more with rules, and answers queries. Relations, goals, and logic variables are ordinary Lion values, and answers are plain Lion data. For the rules every program must follow, see <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 
 <h2 id="logic-variables">Logic variables</h2>
@@ -7,11 +7,11 @@
   <li>The same name refers to the same variable throughout one goal or rule.</li>
   <li><code>"?_"</code>, and any name starting with <code>?_</code>, is anonymous: each occurrence is a separate variable, and it never appears in answers.</li>
   <li>A call or record that mentions a logic variable <a href="#logic-waiting">waits</a> for it.</li>
-  <li>A variable that only a <a href="#logic-asking">question</a> mentions belongs to the question.</li>
+  <li>A variable that only a <a href="#logic-asking">question</a> mentions belongs to the question. A variable that <a href="#form-exists"><code>exists</code></a> lists, or that <a href="#form-some"><code>some</code></a> stands for, belongs to that form.</li>
 </ul>
 
 <h2 id="logic-goals">Goals</h2>
-<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, and <code>in</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling any other function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold. Any expression can also <a href="#logic-asking">ask</a> a goal.</p>
+<p>A goal is a value that a query, rule, or invariant can solve. Goals are built by calling a relation, by <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, and <code>exists</code>, by calling a <a href="#module-graph">graph algorithm</a>, and by calling any other function on logic variables, which makes a filter. The booleans <code>true</code> and <code>false</code> are goals that always and never hold. Any expression can also <a href="#logic-asking">ask</a> a goal.</p>
 
 <h2 id="logic-waiting">Waiting for values</h2>
 <p>A rule or query is written before its variables have values. Anything that needs the value of a logic variable waits, and runs once for each answer that binds the variable.</p>
@@ -42,7 +42,7 @@
 </lion-example>
 
 <h2 id="logic-asking">Asking questions</h2>
-<p>A goal with a relation in it is a question, and any expression can ask it. As a goal of a rule or query it matches rows and binds variables. Anywhere else it is asked:</p>
+<p>A goal with a relation in it is a question, and so is <a href="#form-exists"><code>exists</code></a>, which has variables of its own. Any expression can ask a question. As a goal of a rule or query it matches rows and binds variables. Anywhere else it is asked:</p>
 <ul>
   <li>Under <code>not</code>, it holds when it has no match.</li>
   <li>As a value, it is <code>true</code> when it has a match and <code>false</code> when it has none. A goal is a value in a <code>cond</code> condition, as an argument of a function, as an operand of <code>=</code> or <code>in</code>, as a value of a record or an argument of a <code>fact</code>, and as the value <code>match</code> looks at. A relation is a predicate for <code>match</code> and for functions that are given it, such as <code>array/map</code>.</li>
@@ -254,7 +254,8 @@
 ["fact", goal, ...]
 </code-block>
 <ul>
-  <li>Adds each fact, a relation call with JSON data and no logic variables, and returns the facts given. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
+  <li>Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and <a href="#form-some">unknowns</a>. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
+  <li>A fact can be <a href="#form-exists"><code>exists</code></a> over a relation call or an <code>and</code> of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
   <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins.</li>
   <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
@@ -266,7 +267,7 @@
 ["retract", goal, ...]
 </code-block>
 <ul>
-  <li>Removes each fact, and returns the facts that were present and removed.</li>
+  <li>Removes each fact, and returns the facts that were present and removed. A fact can be <code>exists</code>, as in <code>fact</code>.</li>
   <li>A row of a keyed relation is removed only when every column matches.</li>
   <li>Facts derived by rules cannot be retracted; derived answers update on the next query.</li>
   <li>Like <code>fact</code>, the form is one all-or-nothing change.</li>
@@ -283,9 +284,10 @@
 ["rule", head, goal, ...]
 </code-block>
 <ul>
-  <li>Adds a rule: <code>head</code>, a relation call, holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.</li>
+  <li>Adds a rule: <code>head</code> holds for every way of satisfying all the goals. Returns the rule as written, with values as evaluated.</li>
+  <li>The head is a relation call, an <code>and</code> of relation calls, which adds a row to each, or <a href="#form-exists"><code>exists</code></a> over either, which invents a value for each variable it lists.</li>
   <li>Head arguments can be values, variables bound by the body, <a href="#logic-waiting">computed values</a>, <a href="#logic-asking">questions</a>, and <a href="#module-aggregate">aggregates</a>.</li>
-  <li>The rule is checked when added: every head variable must be bound by the body, every goal must be <a href="#logic-guarantees">safe</a>, and the whole program must stay stratified and terminating. A rule that fails a check is not added.</li>
+  <li>The rule is checked when added: every head variable must be bound by the body, unless the head lists it in <code>exists</code>, every goal must be <a href="#logic-guarantees">safe</a>, and the whole program must stay stratified and terminating. A rule that fails a check is not added.</li>
   <li>An <code>or</code> in the body makes one rule with several alternatives.</li>
   <li>Adding a rule the database already holds, one a snapshot would write the same way, changes nothing.</li>
   <li>Adding a rule is one all-or-nothing change, checked against every invariant.</li>
@@ -340,8 +342,9 @@
 ["why", fact]
 </code-block>
 <ul>
-  <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables, holds, or <code>null</code> when it does not.</li>
+  <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables or <code>exists</code> over one, holds, or <code>null</code> when it does not.</li>
   <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
+  <li>A row that a rule which invents gives only because a key made its unknown equal to another value ends with <code>{"same": [unknown, value]}</code>: the unknown the rule named, and the value the key made it. See <a href="#say-something-exists">Say that something exists</a>.</li>
   <li>Premises are facts, <code>{"absent": goal}</code> for a goal under <code>not</code>, and <code>{"check": goal}</code> for every other goal that held: a filter, a schema, an <code>in</code>, and an <code>=</code>, which shows a computed value with the arithmetic that made it, as <code>["=", 26.4, ["number/divide", …]]</code>. Each is written with the answer's values in place of its variables, so a <code>check</code>, evaluated as it stands, is <code>true</code>. A variable that a question binds for itself keeps its name. See <a href="#explain-results">Explain a result</a>.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
   <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. A schema check that held is a <code>check</code>.</li>
@@ -405,7 +408,7 @@
 <code-block lang="json">
 ["=", term, term]
 </code-block>
-<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. A side can be a record or list with variables in it, a <a href="#logic-patterns">pattern</a> that takes the other side apart. Without logic variables, it is structural equality of JSON values, and identity for other values. The numbers <code>0</code> and <code>-0</code> are equal, as JSON writes both as <code>0</code>.</p>
+<p>Binds an unbound variable on either side to the other side's value, or tests that both sides are equal. A side can be a record or list with variables in it, a <a href="#logic-patterns">pattern</a> that takes the other side apart. Without logic variables, it is structural equality of JSON values, and identity for other values. An <a href="#form-some">unknown</a> equals only an unknown written the same way. The numbers <code>0</code> and <code>-0</code> are equal, as JSON writes both as <code>0</code>.</p>
 <lion-example name="Equality">
 ["=", ["quote", {"a": [1, 2]}], {"a": ["array/make", 1, 2]}]
 </lion-example>
@@ -419,6 +422,63 @@
 ["in", "b", ["array/make", "a", "b"]]
 </lion-example>
 
+<h2 id="form-exists"><code>exists</code></h2>
+<code-block lang="json">
+["exists", [variable, ...], goal]
+</code-block>
+<ul>
+  <li>Holds when <code>goal</code> holds for some value of each listed variable. The variables must be named logic variables, each listed once, and the goal must mention each.</li>
+  <li>The listed variables are its own wherever it stands, as a <a href="#logic-asking">question's</a> own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer.</li>
+  <li>It is a question, also when its goal has no relation in it. In plain code it is <code>true</code> or <code>false</code>, and it works in a query, a rule body, under <code>not</code>, in a <code>find</code>, as a value, and in an invariant.</li>
+  <li>As a <a href="#form-rule">rule</a> head, over a relation call or an <code>and</code> of them, it says the head holds for values nobody has given. For each answer of the body whose head does not hold already, the rule invents an <a href="#form-some">unknown</a> for each listed variable. It cannot list a variable the body binds, and a rule that invents cannot aggregate. A listed variable can stand as an argument of the head, or inside a record or list there, but nothing can compute with it.</li>
+  <li>Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. The result does not depend on the order rules or facts were added in.</li>
+  <li>Rules that invent may recurse only as long as what they invent never flows back into inventing more; see <a href="#guarantee-termination">Termination</a>. A relation that rules invent rows of is derived in full, as an aggregated relation is.</li>
+  <li>In a <code>fact</code> or <code>retract</code>, it states the rows that the same head would invent, whether or not the head holds already. <code>why</code> takes one too.</li>
+  <li>A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. Every row that holds it is then replaced. Two different values that are not such unknowns are still an error, and an unknown that a fact holds is given, so a key never changes it.</li>
+</ul>
+<lion-example name="exists">
+["begin",
+  ["relation", "link", ["from", "to"]],
+  ["relation", "node", ["id"]],
+  ["fact", ["link", 3, 4], ["node", 3], ["node", 5]],
+  ["rule", ["exists", ["?next"], ["link", "?n", "?next"]], ["node", "?n"]],
+  {"3 links": ["exists", ["?y"], ["link", 3, "?y"]],
+   "a value": ["exists", ["?y"], ["=", "?y", 1]],
+   "links": ["query", ["link", "?from", "?to"], {"order": "from"}]}]
+</lion-example>
+<lion-example name="Computing with an invented value" expect="error">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", ["string/concat", "?m", "!"]]], ["person", "?c"]]]
+</lion-example>
+
+<h2 id="form-some"><code>some</code></h2>
+<code-block lang="json">
+["some", variable, goal]
+</code-block>
+<ul>
+  <li>The unknown that <code>variable</code> stands for in a match of <code>goal</code>: a value that exists, though nobody has said what it is. A rule that invents gives its unknowns this form, as in <code>["some", "?m", ["mother", "ben", "?m"]]</code>, the value <code>?m</code> stands for in a row <code>["mother", "ben", ?m]</code>. Evaluating the form gives the same unknown, so a program can write one.</li>
+  <li>The goal is a relation call or an <code>and</code> of them, and mentions the variable. With an <code>and</code>, the unknown is in every row of it; with several variables in <code>exists</code>, each has its own unknown, and its goal mentions the others.</li>
+  <li>An argument of the goal can be a value, one of its variables, or a record or list of those. A question among the arguments is asked. Nothing may compute with one of its own variables; that is an error.</li>
+  <li>In plain code every variable of the goal is its own. Inside a rule, query, or <code>find</code>, <code>some</code> <a href="#logic-waiting">waits</a> for the variables the rule binds, and every other variable of its goal is its own, so <code>["some", "?m", ["mother", "?c", "?m"]]</code> is the unknown mother of each <code>?c</code>.</li>
+  <li>An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, as a constant does, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written.</li>
+  <li><a href="#module-value"><code>value/unknown?</code></a> is true for an unknown, and <code>value/object?</code> is false for one. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.</li>
+  <li>Lion stays closed-world: <code>not</code> holds for anything that is not known, so <code>["not", ["=", "?m", "eve"]]</code> holds for an unknown <code>?m</code>.</li>
+</ul>
+<lion-example name="some">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "tall", ["name"]],
+  ["fact", ["person", "ben"], ["person", "cy"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]],
+  {"written": ["some", "?m", ["mother", "ben", "?m"]],
+   "in a query": ["query", ["and", ["person", "?p"], ["tall", ["some", "?m", ["mother", "?p", "?m"]]]]],
+   "not eve": ["find", "?c", ["and", ["mother", "?c", "?m"], ["not", ["=", "?m", "eve"]]]]}]
+</lion-example>
+
 <h2 id="form-snapshot"><code>snapshot</code></h2>
 <code-block lang="json">
 ["snapshot"]
@@ -430,6 +490,7 @@
   <li>A function is written by the name the environment binds it to, so a rule that calls <code>number/add</code> under another name is written with <code>number/add</code>.</li>
   <li>A <code>cond</code>, <code>match</code>, or record that waits is written as it was, and a lambda as its <code>lambda</code> form. A name in it that would not evaluate to the same value when loaded is bound by a lambda around it.</li>
   <li>A function that another function built is written as the call that built it, such as <code>["func/partial", "number/lessThan", 3]</code> or <code>["schema/arrayOf", "value/number?"]</code>.</li>
+  <li>A rule whose head says <code>exists</code> is written as it was, and an <a href="#form-some">unknown</a> in a fact as its <code>some</code> form.</li>
   <li>Fails if a rule or invariant holds a lambda that calls itself, or a function that the environment does not name and that is neither a lambda nor built by a function it can write.</li>
 </ul>
 <lion-example name="snapshot">

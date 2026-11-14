@@ -33,6 +33,30 @@ export const WORLD: World = {
   small: [1, 2],
 };
 
+/**
+ * A value written as an expression that evaluates to it: a string inside
+ * `quote`, a list as the call that makes it, a record of such expressions,
+ * and an unknown as the `some` form it reads as.
+ */
+export const literal = (value: unknown): unknown => {
+  if (typeof value === "string") {
+    return ["quote", value];
+  }
+  if (Array.isArray(value)) {
+    return ["array/make", ...value.map(literal)];
+  }
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  if (Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, literal(item)])
+    );
+  }
+  // An unknown, which reads as the `some` form that makes it.
+  return JSON.parse(JSON.stringify(value));
+};
+
 const facts = (relation: string, rows: readonly (readonly unknown[])[]) =>
   rows.length === 0 ? [] : [["fact", ...rows.map((row) => [relation, ...row])]];
 
@@ -310,6 +334,37 @@ export const EXPRESSIONS: readonly Expression[] = [
     form: ["link", ["schema/anyOf", X, 9], "?_"],
     boolean: true,
   },
+  // Existential rules: an unknown is a value, and exists is a goal.
+  {
+    name: "unknown",
+    form: ["some", "?m", ["link", X, "?m"]],
+  },
+  {
+    name: "unknown in a record",
+    form: {
+      of: X,
+      who: ["some", "?m", ["and", ["link", X, "?m"], ["small", "?m"]]],
+    },
+  },
+  {
+    name: "unknown tested",
+    form: ["value/unknown?", ["some", "?m", ["link", X, "?m"]]],
+    boolean: true,
+  },
+  {
+    name: "exists",
+    form: ["exists", ["?y"], ["link", X, "?y"]],
+    boolean: true,
+  },
+  {
+    name: "exists over a filter",
+    form: [
+      "exists",
+      ["?y"],
+      ["and", ["in", "?y", ["array/range", 0, 3]], ["=", "?y", X]],
+    ],
+    boolean: true,
+  },
 ];
 
 /** What plain code gives an expression for each value of `?x`, in order. */
@@ -332,6 +387,47 @@ export interface Position {
 }
 
 const ORDERED = { order: "x" };
+
+/**
+ * How a value reads inside a goal that is shown: data as it is, except a
+ * list, a record, and a string that reads as a name or a variable, which go
+ * inside `quote`, and an unknown as the `some` form it reads as.
+ */
+const displayed = (value: unknown): unknown => {
+  if (typeof value === "string") {
+    return value.startsWith("?") || value.includes("/")
+      ? ["quote", value]
+      : value;
+  }
+  if (typeof value !== "object" || value === null) {
+    return value;
+  }
+  if (isJson(value)) {
+    return ["quote", value];
+  }
+  if (Array.isArray(value)) {
+    return ["array/make", ...value.map(displayed)];
+  }
+  return Object.getPrototypeOf(value) === Object.prototype
+    ? Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key, displayed(item)])
+      )
+    : JSON.parse(JSON.stringify(value));
+};
+
+/** True for JSON data with nothing else in it, such as an unknown. */
+const isJson = (value: unknown): boolean => {
+  if (Array.isArray(value)) {
+    return value.every(isJson);
+  }
+  if (typeof value === "object" && value !== null) {
+    return (
+      Object.getPrototypeOf(value) === Object.prototype &&
+      Object.values(value).every(isJson)
+    );
+  }
+  return true;
+};
 
 const rows = (model: Model) => model.map(([x, v]) => ({ v, x }));
 
@@ -368,7 +464,7 @@ const expectedFacts = (model: Model) => [
   ["relation", "expected", ["x", "v"]],
   ...facts(
     "expected",
-    model.map(([x, v]) => [x, ["quote", v]])
+    model.map(([x, v]) => [x, literal(v)])
   ),
 ];
 
@@ -480,11 +576,50 @@ export const POSITIONS: readonly Position[] = [
     expected: (model) => model.map(([, v]) => [{ v }]),
   },
   {
+    name: "rule that invents",
+    setup: (expression) => [
+      ["relation", "made", ["x", "v", "id"]],
+      ["rule", ["exists", ["?id"], ["made", X, expression, "?id"]], ["n", X]],
+    ],
+    question: () => ["query", ["made", X, "?v", "?_"], ORDERED],
+    expected: rows,
+  },
+  {
+    name: "inside exists",
+    setup: (_, model) => expectedFacts(model),
+    question: (expression) => [
+      "query",
+      [
+        "and",
+        ["n", X],
+        ["expected", X, "?v"],
+        ["exists", ["?w"], ["and", ["=", "?w", expression], ["=", "?w", "?v"]]],
+      ],
+      ORDERED,
+    ],
+    read: distinctX,
+    expected: everyX,
+  },
+  {
+    name: "what some describes",
+    setup: () => [["relation", "about", ["v", "id"]]],
+    question: (expression) => [
+      "find",
+      ["array/make", X, ["some", "?id", ["about", expression, "?id"]]],
+      ["n", X],
+    ],
+    expected: (model) =>
+      model.map(([x, v]) => [
+        x,
+        ["some", "?id", ["about", displayed(v), "?id"]],
+      ]),
+  },
+  {
     name: "why",
     setup: inBody,
     question: (_, model) => [
       "array/make",
-      ...model.map(([x, v]) => ["why", ["out", x, ["quote", v]]]),
+      ...model.map(([x, v]) => ["why", ["out", x, literal(v)]]),
     ],
     read: (value) => (value as readonly unknown[]).map((item) => item !== null),
     expected: (model) => model.map(() => true),
@@ -507,6 +642,11 @@ export const KNOWN: readonly Known[] = [
     expression: "aggregate of a list",
     position: "rule head",
     why: "As a whole argument of a rule head, an aggregate combines one value from each of the rule's matches, not a list.",
+  },
+  {
+    expression: "aggregate of a list",
+    position: "rule that invents",
+    why: "As a whole argument of a rule head, an aggregate combines one value from each of the rule's matches, not a list, and a rule that invents values cannot aggregate.",
   },
   {
     expression: "recursive function",

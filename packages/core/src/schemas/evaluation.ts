@@ -45,6 +45,8 @@ export const SPECIAL_FORM_NAMES = [
   "retract",
   "query",
   "find",
+  "exists",
+  "some",
   "why",
   "not",
   "and",
@@ -119,6 +121,14 @@ export const QueryFormSchema = Schema.Union([
 ]);
 // ["find", <template>, <goal>]
 export const FindFormSchema = form("find", Expression, Expression);
+// ["exists", [<variable>, ...], <goal>]
+export const ExistsFormSchema = form(
+  "exists",
+  Schema.Array(Schema.String),
+  Expression
+);
+// ["some", <variable>, <goal>]
+export const SomeFormSchema = form("some", Schema.String, Expression);
 export const WhyFormSchema = form("why", Expression);
 export const NotFormSchema = form("not", Expression);
 export const AndFormSchema = formWithMore("and", Expression);
@@ -145,6 +155,8 @@ const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
   retract: Schema.is(RetractFormSchema),
   query: Schema.is(QueryFormSchema),
   find: Schema.is(FindFormSchema),
+  exists: Schema.is(ExistsFormSchema),
+  some: Schema.is(SomeFormSchema),
   why: Schema.is(WhyFormSchema),
   not: Schema.is(NotFormSchema),
   and: Schema.is(AndFormSchema),

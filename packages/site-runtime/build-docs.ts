@@ -72,6 +72,7 @@ const KINDS: readonly Kind[] = [
       "sort-and-page",
       "recursive-relations",
       "find-missing",
+      "say-something-exists",
       "summarize-groups",
       "graph-questions",
       "enforce-rules",

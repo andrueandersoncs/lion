@@ -68,6 +68,23 @@ const VIPS = [
   ["fact", ["vip", "c1"], ["vip", "c2"]],
 ];
 
+const PERSONS = 5000;
+
+/** People, a mother given for every fifth, and mothers keyed by child. */
+const PEOPLE = [
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"], { key: "child" }],
+  ["fact", ...range(PERSONS).map((index) => ["person", `p${index}`])],
+  [
+    "fact",
+    ...range(PERSONS / 5).map((index) => [
+      "mother",
+      `p${5 * index}`,
+      `m${index}`,
+    ]),
+  ],
+];
+
 const FIB = [
   "lambda",
   ["n"],
@@ -280,6 +297,60 @@ export const BENCHMARKS: readonly Benchmark[] = [
         "array/length",
         ["array/map", ["find", "?c", ["order", "?_", "?c", "?_"]], "vip"],
       ],
+    ],
+  },
+  {
+    name: "rules: 300 rules added one form at a time, then a query",
+    program: [
+      "begin",
+      ...range(301).map((index) => ["relation", `r${index}`, ["x"]]),
+      ["fact", ...range(50).map((index) => ["r0", index])],
+      ...range(300).map((index) => [
+        "rule",
+        [`r${index + 1}`, "?x"],
+        [`r${index}`, "?x"],
+        ["number/greaterThan", "?x", -1],
+      ]),
+      ["aggregate/count", ["find", "?x", ["r300", "?x"]]],
+    ],
+  },
+  {
+    name: "inventing: a mother for each of 5,000 people, 1,000 given",
+    program: [
+      "begin",
+      ...PEOPLE,
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      ["aggregate/count", ["find", "?m", ["mother", "?_", "?m"]]],
+    ],
+  },
+  {
+    name: "inventing: 2,500 pairs of twins whose unknown mothers a key makes one",
+    program: [
+      "begin",
+      ...PEOPLE,
+      ["relation", "twin", ["a", "b"]],
+      [
+        "fact",
+        ...range(PERSONS / 2).map((index) => [
+          "twin",
+          `p${2 * index}`,
+          `p${2 * index + 1}`,
+        ]),
+      ],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["mother", "?b", "?m"],
+        ["twin", "?a", "?b"],
+        ["mother", "?a", "?m"],
+      ],
+      [
+        "rule",
+        ["mother", "?a", "?m"],
+        ["twin", "?a", "?b"],
+        ["mother", "?b", "?m"],
+      ],
+      ["aggregate/countUnique", ["find", "?m", ["mother", "?_", "?m"]]],
     ],
   },
 ];

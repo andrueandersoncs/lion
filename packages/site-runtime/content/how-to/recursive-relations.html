@@ -28,7 +28,7 @@
 <p>Written the other way, <code>["edge", "?x", "?y"], ["path", "?y", "?z"]</code>, the rule asks about every node along the way, which can cost as much as deriving every path. <a href="#goal-directed-evaluation">Goal-directed evaluation</a> explains why.</p>
 
 <h2>Carry a value along the path</h2>
-<p>A recursive rule cannot compute a new value in its head, because that could go on forever. To carry a distance or a route, aggregate it with <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, or <code>aggregate/union</code>, whose values only move one way:</p>
+<p>A recursive rule cannot compute a value in its head that its own body then reads to compute the next, because that could go on forever. To carry a distance or a route, aggregate it with <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, or <code>aggregate/union</code>, whose values only move one way:</p>
 <lion-example name="Shortest distance">
 ["begin",
   ["relation", "road", ["from", "to", "km"]],

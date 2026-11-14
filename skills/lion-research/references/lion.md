@@ -40,8 +40,8 @@ A string is a name before it is text. Three things turn text into something else
 
 | The string | Becomes | You see |
 |---|---|---|
-| equals the name of a relation or schema, such as `"source"` | that relation | `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` |
-| starts with `?` and reads as a name, such as `"?why"` | a logic variable | `Facts may only contain JSON data, but the "text" of ["note","?why"] is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` |
+| equals the name of a relation or schema, such as `"source"` | that relation | `Facts may only contain data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` |
+| starts with `?` and reads as a name, such as `"?why"` | a logic variable | `Facts may only contain data, but the "text" of ["note","?why"] is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` |
 | looks like a misspelled function, such as `"number/ad"` | an error | `Nothing is bound to "number/ad". Did you mean "number/add"? …` |
 
 So wrap in `["quote", …]` everything that came from a source: quoted words, titles, URLs, and whole records of what a claim says. Inside a quote nothing is evaluated, so one quote around a record covers every string in it.
@@ -232,7 +232,7 @@ Every later `fact`, `retract`, and `rule` is checked against it, and one that wo
 | Message begins | Cause | Fix |
 |---|---|---|
 | `Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {…}: […].` | A row breaks a rule of the model. The record after "such as" is the row, the list after it is the invariant, and a schema failure ends with where the value does not fit. | Usually a misspelled key or a missing source. Fix the step. If the evidence is right and the frame is wrong, change the frame. |
-| `Facts may only contain JSON data, but the "text" of […] is the relation "source".` | A bare string in the fact is the name of a relation or schema, or starts with `?`. The message names the column and what the string became. | Quote it, as the message shows. |
+| `Facts may only contain data, but the "text" of […] is the relation "source".` | A bare string in the fact is the name of a relation or schema, or starts with `?`. The message names the column and what the string became. | Quote it, as the message shows. |
 | `"number/subtract" takes 2 arguments but got 3.` | A function called with the wrong number of arguments. Nothing is dropped or filled in. | Give it what it takes. |
 | `Nothing is bound to "…"` | A misspelled function, or text that looks like one. | Correct the name, or quote the text. |
 | `"a" takes 2 arguments (x, y) but got 1.` | A relation call with the wrong number of columns. | Give every column; use `"?_"` for the ones you do not need. |

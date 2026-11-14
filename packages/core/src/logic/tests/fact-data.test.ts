@@ -95,7 +95,7 @@ describe("a fact holds only JSON data", () => {
         expect(
           yield* failure(["begin", ...declare(cols, what), [form, written]])
         ).toBe(
-          `Facts may only contain JSON data, but the "${cols[at]}" of ${JSON.stringify(written)} is the ${kind} "${name}". To mean the string itself, write ["quote", "${name}"].`
+          `Facts may only contain data, but the "${cols[at]}" of ${JSON.stringify(written)} is the ${kind} "${name}". To mean the string itself, write ["quote", "${name}"].`
         );
         // The fact as the message says to write it holds the string.
         const variables = cols.map((_, index) => `?v${index}`);
@@ -126,9 +126,9 @@ describe("a fact holds only JSON data", () => {
       Effect.gen(function* () {
         const [stray, why] = (
           [
-            [["lambda", ["x"], "x"], "is not JSON data"],
+            [["lambda", ["x"], "x"], "is not data"],
             [["number/add", "?x", 1], "waits for a logic variable"],
-            [["array/make", "number/add", 1], "is not JSON data"],
+            [["array/make", "number/add", 1], "is not data"],
           ] as const
         )[pick] as readonly [unknown, string];
         const written = [
@@ -138,7 +138,7 @@ describe("a fact holds only JSON data", () => {
         expect(
           yield* failure(["begin", ["relation", "note", cols], [form, written]])
         ).toBe(
-          `Facts may only contain JSON data, but the "${cols[at]}" of ${JSON.stringify(written)} is ${JSON.stringify(stray)}, which ${why}.`
+          `Facts may only contain data, but the "${cols[at]}" of ${JSON.stringify(written)} is ${JSON.stringify(stray)}, which ${why}.`
         );
       }),
     OPTIONS

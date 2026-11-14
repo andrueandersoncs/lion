@@ -52,7 +52,7 @@ const mention = (term: unknown, into: RelationInfo[], open?: Set<unknown>) => {
     into.push(relation);
   }
   if (term instanceof LogicValue) {
-    for (const part of term.parts) {
+    for (const part of term.read) {
       mention(part, into, open);
     }
     return;
@@ -171,10 +171,18 @@ export const asked = (
     ...values,
   ].flatMap(mentioned);
 
-/** Which relations each relation reads, through rules and computations. */
+/**
+ * Which relations each relation reads, through rules and computations. A
+ * rule that invents reads every relation of its head, to see whether the
+ * head holds already, so those relations are derived together.
+ */
 export const dependencyEdges = (rules: readonly CompiledRule[]) => {
   const edges = new Map<string, Set<string>>();
-  for (const { body, head } of rules) {
+  const add = (
+    head: Atom,
+    body: readonly Literal[],
+    heads?: readonly Atom[]
+  ) => {
     const targets = edges.get(head.relation.name) ?? new Set();
     for (const { computed, name } of reads(body, head.args)) {
       targets.add(name);
@@ -182,7 +190,21 @@ export const dependencyEdges = (rules: readonly CompiledRule[]) => {
         edges.set(name, new Set(computed.dependencies));
       }
     }
+    for (const other of heads ?? []) {
+      if (other.relation.name !== head.relation.name) {
+        targets.add(other.relation.name);
+      }
+    }
     edges.set(head.relation.name, targets);
+  };
+  for (const rule of rules) {
+    if (rule.invents === undefined) {
+      add(rule.head, rule.body);
+    } else {
+      for (const head of rule.invents.heads) {
+        add(head, rule.body, rule.invents.heads);
+      }
+    }
   }
   return edges;
 };

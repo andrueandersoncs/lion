@@ -7,12 +7,15 @@ import {
 } from "@/errors/evaluation";
 import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
 import {
-  bindVariables,
   type CompiledQuery,
   type CompiledRule,
+  columnOf,
   compiling,
+  headsOf,
   type Literal,
+  originOf,
   questionPlans,
+  valueOrigins,
 } from "@/logic/compile";
 import { checkOf, misfit } from "@/logic/fit";
 import { factsName, rewriteQueries } from "@/logic/magic";
@@ -45,6 +48,7 @@ import {
   isOpaque,
   mentioned,
   reads,
+  stronglyConnected,
 } from "@/logic/strata";
 import {
   Atom,
@@ -52,7 +56,7 @@ import {
   isForm,
   isGroundValue,
   type LionFunction,
-  LogicValue,
+  type LogicValue,
   LogicVariable,
   logicKey,
   makeRelationValue,
@@ -313,7 +317,7 @@ const groundTuple = (
   return at < 0
     ? Effect.succeed(atom.args)
     : logicError(
-        `Facts may only contain JSON data, but the "${atom.relation.columns[at]}" of ${show(atom)} is ${notData(atom.args[at])}`
+        `Facts may only contain data, but the "${atom.relation.columns[at]}" of ${show(atom)} is ${notData(atom.args[at])}`
       );
 };
 
@@ -336,7 +340,7 @@ const notData = (arg: unknown) => {
       ? ["logic variable", `?${arg.name}`]
       : [kindOf(arg), nameOf(arg)];
   return name === undefined
-    ? `${show(arg)}, which ${termVariables(arg).length > 0 ? "waits for a logic variable" : "is not JSON data"}.`
+    ? `${show(arg)}, which ${termVariables(arg).length > 0 ? "waits for a logic variable" : "is not data"}.`
     : `the ${kind} "${name}". ${asString(name)}`;
 };
 
@@ -539,13 +543,14 @@ const aggregateShape = (rule: CompiledRule) =>
 const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
   const shapes = new Map<string, string>();
   for (const rule of rules) {
-    const relation = rule.head.relation.name;
     const shape = aggregateShape(rule);
-    const earlier = shapes.get(relation);
-    if (earlier !== undefined && earlier !== shape) {
-      return `Every rule for "${relation}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`;
+    for (const { relation } of headsOf(rule)) {
+      const earlier = shapes.get(relation.name);
+      if (earlier !== undefined && earlier !== shape) {
+        return `Every rule for "${relation.name}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`;
+      }
+      shapes.set(relation.name, shape);
     }
-    shapes.set(relation, shape);
   }
   return undefined;
 };
@@ -604,61 +609,141 @@ const computedCycleProblem = (
   return undefined;
 };
 
-/**
- * Variables whose values come from facts rather than from computation. Only
- * these can feed a recursive rule's head, so recursion never invents values
- * without end.
- */
-const dataBound = (body: readonly Literal[]) => {
-  const bound = new Set<string>();
-  for (const literal of body) {
-    bindVariables(literal, bound, true);
+/** A value a rule puts in a column of its head, and where it comes from. */
+interface Flow {
+  readonly arg: unknown;
+  readonly from: string;
+  readonly made: boolean;
+  readonly rule: CompiledRule;
+  /** The relation of the column the value comes from. */
+  readonly source: string;
+  readonly to: string;
+}
+
+const FLOWS = new WeakMap<CompiledRule, readonly Flow[]>();
+
+/** The values a rule puts in the columns of its head, and where each comes from. */
+const flowsOf = (rule: CompiledRule): readonly Flow[] => {
+  const known = FLOWS.get(rule);
+  if (known !== undefined) {
+    return known;
   }
-  return bound;
+  const origins = valueOrigins(rule.body);
+  const flows = headsOf(rule).flatMap((head) =>
+    head.args.flatMap((arg, position) => {
+      if (rule.aggregates.includes(position)) {
+        return [];
+      }
+      const { columns, made } = originOf(arg, origins);
+      const to = columnOf(head.relation.name, position);
+      return [...columns].map(([from, source]) => ({
+        arg,
+        from,
+        made,
+        rule,
+        source,
+        to,
+      }));
+    })
+  );
+  FLOWS.set(rule, flows);
+  return flows;
 };
 
-/** Why a rule that reads its own relation's rows may never finish, if it may. */
-const newValueProblem = (rule: CompiledRule) => {
-  const fromData = dataBound(rule.body);
-  const computed = rule.head.args.find((arg, position) =>
-    arg instanceof LogicVariable
-      ? !fromData.has(arg.name)
-      : arg instanceof LogicValue && !rule.aggregates.includes(position)
+/** The strongly connected group of columns each column is in, by number. */
+const componentsOf = (flows: readonly Flow[]) => {
+  const targets = new Map<string, string[]>();
+  for (const { from, to } of flows) {
+    const list = targets.get(from);
+    if (list === undefined) {
+      targets.set(from, [to]);
+    } else {
+      list.push(to);
+    }
+  }
+  const component = new Map<string, number>();
+  for (const [at, members] of stronglyConnected(
+    targets.keys(),
+    (column) => targets.get(column) ?? []
+  ).entries()) {
+    for (const member of members) {
+      component.set(member, at);
+    }
+  }
+  return component;
+};
+
+/** How a rule's head makes a new value, for a message. */
+const making = (arg: unknown) => {
+  if (arg instanceof LogicVariable) {
+    return `computes a new value for ${show(arg)}`;
+  }
+  return isForm(arg, "some")
+    ? `invents a value for ${show(arg.parts[0])}`
+    : "computes a new value";
+};
+
+/**
+ * Why a program may never finish, if it may. Values flow from the columns a
+ * rule's body reads to the columns of its head. A rule that makes a value
+ * for a column, by computing it or inventing it, can go on without end only
+ * when the value flows back, through the rules, into making another one: a
+ * cycle of columns that a made value passes through. Without such a cycle
+ * every value is made from finitely many others, so evaluation finishes.
+ * (This is weak acyclicity, from data exchange and Datalog±.)
+ */
+const newValueProblem = (
+  recursive: readonly (readonly [CompiledRule, ReadonlySet<string>])[]
+) => {
+  // Only a rule whose body reads a relation that depends on its head can
+  // carry a value back, and only into the relations that do.
+  const flows = recursive.flatMap(([rule, group]) =>
+    flowsOf(rule).filter(({ source }) => group.has(source))
   );
-  if (computed === undefined) {
+  const component = componentsOf(flows);
+  const cycle = flows.find(
+    ({ from, made, to }) =>
+      made &&
+      component.get(from) !== undefined &&
+      component.get(from) === component.get(to)
+  );
+  if (cycle === undefined) {
     return undefined;
   }
-  const what =
-    computed instanceof LogicVariable
-      ? `a new value for ${show(computed)}`
-      : "a new value";
-  return `Rule ${show(rule.source)} computes ${what} in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with ${latticeNames("or")}.`;
+  const advice = isForm(cycle.arg, "some")
+    ? "Invent the value in a rule that does not recurse."
+    : `Compute the value in a non-recursive rule, or aggregate it with ${latticeNames("or")}.`;
+  return `Rule ${show(cycle.rule.source)} ${making(cycle.arg)} in its head while recursing, which may never finish. ${advice}`;
 };
 
 /** Checks one rule's recursion against the rest of the program. */
 const recursionProblem = (
   rules: readonly CompiledRule[],
   rule: CompiledRule,
-  ordered: Components
+  ordered: Components,
+  recursive: [CompiledRule, ReadonlySet<string>][]
 ) => {
   const head = rule.head.relation.name;
   const component = componentOf(ordered, head) ?? new Set();
   const inCycle = ({ name }: RelationInfo) => component.has(name);
-  const recursive = rule.body
+  const reads = rule.body
     .flatMap((goal) => (goal instanceof Atom ? [goal.relation] : []))
     .find(inCycle);
-  const question = asked(rule.body, rule.head.args).find(inCycle);
+  if (reads !== undefined) {
+    recursive.push([rule, component]);
+  }
+  const question = asked(
+    rule.body,
+    rule.invents === undefined
+      ? rule.head.args
+      : headsOf(rule).flatMap((head) => head.args)
+  ).find(inCycle);
   if (question !== undefined) {
     return `Rule ${show(rule.source)} asks about "${question.name}", which depends on "${head}". A question, such as a goal under "not", cannot go through recursion.`;
   }
-  if (recursive === undefined) {
-    return undefined;
-  }
-  return (
-    (rule.aggregates.length > 0
-      ? recursiveAggregateProblem(rules, rule, component, recursive.name)
-      : undefined) ?? newValueProblem(rule)
-  );
+  return reads === undefined || rule.aggregates.length === 0
+    ? undefined
+    : recursiveAggregateProblem(rules, rule, component, reads.name);
 };
 
 const checkProgram = (rules: readonly CompiledRule[]) => {
@@ -668,13 +753,14 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
   if (problem !== undefined) {
     return problem;
   }
+  const recursive: [CompiledRule, ReadonlySet<string>][] = [];
   for (const rule of rules) {
-    const recursion = recursionProblem(rules, rule, ordered);
+    const recursion = recursionProblem(rules, rule, ordered, recursive);
     if (recursion !== undefined) {
       return recursion;
     }
   }
-  return undefined;
+  return newValueProblem(recursive);
 };
 
 /**
@@ -692,11 +778,11 @@ export const addRules = (
   if (rules.length === 0) {
     return Effect.void;
   }
-  for (const rule of rules) {
-    const { computed, name } = rule.head.relation;
+  for (const head of rules.flatMap(headsOf)) {
+    const { computed, name } = head.relation;
     if (computed !== undefined) {
       return logicError(
-        `Rules cannot add to ${computedCall(rule.head)}: it is computed from its inputs.`
+        `Rules cannot add to ${computedCall(head)}: it is computed from its inputs.`
       );
     }
     if (!database.relations.has(name)) {
@@ -832,7 +918,7 @@ export const queryDatabase = (
         );
         if (!isGroundValue(row)) {
           return yield* logicError(
-            `The query produced an answer that is not JSON data: ${show(row)}.`
+            `The query produced an answer that is not data: ${show(row)}.`
           );
         }
         rows.set(valueKey(row), row);
@@ -987,10 +1073,12 @@ const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
   }
   const opaque =
     invariant.query.bodies.flat().some(isOpaque) ||
-    database.rules.some(
-      ({ body, head }) =>
-        others.has(head.relation.name) &&
-        (body.some(isOpaque) || head.args.some(isOpaque))
+    database.rules.some((rule) =>
+      headsOf(rule).some(
+        (head) =>
+          others.has(head.relation.name) &&
+          (rule.body.some(isOpaque) || head.args.some(isOpaque))
+      )
     );
   const footprint = { direct, opaque, others };
   FOOTPRINTS.set(invariant, { footprint, rules: database.rules });

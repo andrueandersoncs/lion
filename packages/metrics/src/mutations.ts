@@ -9,6 +9,7 @@
 import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
+const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
 const REASONING_TESTS = {
   package: "metrics",
@@ -31,6 +32,91 @@ const research = (
 });
 
 export const MUTATIONS: readonly Mutation[] = [
+  {
+    name: "a rule that invents does so even when its head holds already",
+    file: core("logic/model.ts"),
+    find: "      if ((yield* matches(model, check, vars)).length === 0) {",
+    replace: "      if (check.length >= 0) {",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "a key does not make an invented unknown equal to another value",
+    file: core("logic/model.ts"),
+    find: "    if (inventions !== undefined && unify(model, other, tuple, inventions)) {",
+    replace: "    if (inventions !== undefined && false) {",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "a key keeps the unknown that sorts last",
+    file: core("logic/model.ts"),
+    find: "      (free(other) && !occurs(other, value) && compareValues(value, other) < 0);",
+    replace:
+      "      (free(other) && !occurs(other, value) && compareValues(value, other) > 0);",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "a string that starts with a control character reads as an unknown",
+    file: core("logic/terms.ts"),
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: the text is source code that holds a template.
+    find: "    return value.charCodeAt(0) === 0 ? `\\u0000${value}` : value;",
+    replace: "    return value;",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "exists shares its variables with the goal around it",
+    file: core("logic/compile.ts"),
+    find: "  return replaceVariables(goal, ({ name }) => renamed.get(name));",
+    replace: "  return goal;",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "a value made in a cycle of columns is allowed",
+    file: core("logic/database.ts"),
+    find: "      made &&\n      component.get(from) !== undefined &&",
+    replace: "      false &&\n      component.get(from) !== undefined &&",
+    tests: [
+      ...EXISTENTIAL_TESTS,
+      "src/logic/tests/logic.test.ts",
+      "src/logic/tests/lattice.test.ts",
+    ],
+  },
+  {
+    name: "a goal-directed query rewrites relations that rules invent rows of",
+    file: core("logic/magic.ts"),
+    find: "    const plain = rule.aggregates.length === 0 && rule.invents === undefined;",
+    replace: "    const plain = rule.aggregates.length === 0;",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "rules that invent run before the others have finished",
+    file: core("logic/model.ts"),
+    find: "      yield* rounds(model, rules, run, delta, settle);",
+    replace:
+      "      yield* (triggers.length > 0 ? Effect.void : rounds(model, rules, run, delta, settle));",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "why keeps the explanations rows had before a key made unknowns one",
+    file: core("logic/model.ts"),
+    find: "        if (inventions !== undefined && inventions.equal.size > 0) {",
+    replace:
+      "        if (inventions !== undefined && inventions.equal.size < 0) {",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "a key makes an unknown equal to a value that holds it",
+    file: core("logic/model.ts"),
+    find: "      !free(value) ||\n      occurs(value, other) ||",
+    replace: "      !free(value) ||",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "what some describes keeps the values the answer gives its variables out",
+    file: core("logic/model.ts"),
+    find: "    ...standing(goal).filter((name) => !vars.has(name)),",
+    replace: "    ...standing(goal),",
+    tests: EXISTENTIAL_TESTS,
+  },
   {
     name: "find does not sort what it found",
     file: core("logic/model.ts"),
@@ -76,7 +162,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a rule may ask about a relation that depends on its own head",
     file: core("logic/database.ts"),
-    find: "  const question = asked(rule.body, rule.head.args).find(inCycle);",
+    find: "  const question = asked(\n    rule.body,\n    rule.invents === undefined\n      ? rule.head.args\n      : headsOf(rule).flatMap((head) => head.args)\n  ).find(inCycle);",
     replace: "  const question = asked([], []).find(inCycle);",
   },
   {
@@ -124,13 +210,13 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a fact does not ask a goal among its arguments",
     file: core("evaluation/special-forms/logic.ts"),
-    find: "        value.args.some(isQuestion)",
-    replace: "        value.args.some(() => false)",
+    find: "  call.args.some(isQuestion)",
+    replace: "  call.args.some(() => false)",
   },
   {
     name: "why writes a question's own variables as ?_",
     file: core("logic/terms.ts"),
-    find: "        : variableName(variable),",
+    find: "        : shownName(variable),",
     replace: '        : "?_",',
   },
   {
@@ -684,8 +770,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a function from the host in a rule behind an invariant is not seen",
     file: core("logic/database.ts"),
-    find: "        (body.some(isOpaque) || head.args.some(isOpaque))",
-    replace: "        false",
+    find: "          (rule.body.some(isOpaque) || head.args.some(isOpaque))",
+    replace: "          false",
     tests: [
       "src/logic/tests/incremental.test.ts",
       "src/logic/tests/invariants.test.ts",

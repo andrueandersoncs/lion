@@ -159,7 +159,7 @@ Use invariants for the model's integrity: the shape of a kind of observation, so
 | Message begins | Cause | Fix |
 |---|---|---|
 | `Adding this fact breaks an invariant, so nothing changed. …such as {…}` | A row breaks a rule of the model. The record after "such as" is the row. | Usually a typo in an id, or a belief explaining a problem that was never recorded. Fix the notes. |
-| `Facts may only contain JSON data, but the "text" of […] is the relation "…"` | A bare string in a fact you wrote by hand is the name of a relation, or starts with `?`. | Quote it, as the message shows. |
+| `Facts may only contain data, but the "text" of […] is the relation "…"` | A bare string in a fact you wrote by hand is the name of a relation, or starts with `?`. | Quote it, as the message shows. |
 | `"number/subtract" takes 2 arguments but got 3.` | A function called with the wrong number of arguments. | Give it what it takes. |
 | `Nothing is bound to "…"` | A misspelled function, or text that looks like one. | Correct the name, or quote the text. |
 | `"a" takes 2 arguments (x, y) but got 1.` | A relation called with the wrong number of columns. | Give every column; use `"?_"` for the ones you do not need. |

@@ -120,6 +120,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "value/number?": [1, 1],
   "value/object?": [1, 1],
   "value/string?": [1, 1],
+  "value/unknown?": [1, 1],
   "value/symbol?": [1, 1],
   "value/undefined?": [1, 1],
 };

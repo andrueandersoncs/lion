@@ -305,7 +305,7 @@ describe("changes to the database", () => {
         expect(yield* attempt([form, ...items], database)).toEqual({
           ok: false,
           message:
-            'Facts may only contain JSON data, but the "from" of ["edge","?x","b"] is the logic variable "?x". To mean the string itself, write ["quote", "?x"].',
+            'Facts may only contain data, but the "from" of ["edge","?x","b"] is the logic variable "?x". To mean the string itself, write ["quote", "?x"].',
         });
         expect(yield* saveDatabase(database)).toEqual(before);
       })
