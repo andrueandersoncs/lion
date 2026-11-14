@@ -29,10 +29,30 @@ import { attempt, element, type Outcome, oneOf } from "./programs";
 
 const NEVER_FINISHES = "in its head while recursing, which may never finish";
 
-const program = (given: Facts, picked: readonly RuleSpec[], keyed = false) => [
-  ...declarationsOf(keyed),
+/**
+ * How a child's parents are made one: not at all, by a key on `parent`, or
+ * by the equality rule that says two parents of a child are the same.
+ */
+type Keying = boolean | "rule";
+
+const KEYING = element<Keying>([false, true, "rule"]);
+
+const SAME_PARENT = [
+  "rule",
+  ["=", "?p", "?q"],
+  ["parent", "?x", "?p"],
+  ["parent", "?x", "?q"],
+];
+
+const program = (
+  given: Facts,
+  picked: readonly RuleSpec[],
+  keyed: Keying = false
+) => [
+  ...declarationsOf(keyed === true),
   ...factForms(given),
   ...picked.map(ruleForm),
+  ...(keyed === "rule" ? [SAME_PARENT] : []),
 ];
 
 /** The rows of every relation, each as a list of its values, sorted. */
@@ -124,7 +144,7 @@ describe("existential rules", () => {
 
   it.effect.prop(
     "leave no answer of a rule's body without its head",
-    { given: facts, picked: rules, keyed: Schema.Boolean },
+    { given: facts, picked: rules, keyed: KEYING },
     ({ given, keyed, picked }) =>
       Effect.gen(function* () {
         const outcome = yield* attempt(
@@ -152,18 +172,20 @@ describe("existential rules", () => {
 
   it.effect.prop(
     "give the same rows whatever order the rules and facts come in",
-    { given: facts, picked: rules, keyed: Schema.Boolean },
+    { given: facts, picked: rules, keyed: KEYING },
     ({ given, keyed, picked }) =>
       Effect.gen(function* () {
         const forward = yield* everyRow(program(given, picked, keyed));
         const backward = yield* everyRow([
-          ...declarationsOf(keyed),
+          ...declarationsOf(keyed === true),
           ...factForms({
             links: [...given.links].reverse(),
             // With a key, the last parent given for a child is its parent.
             parents: keyed ? given.parents : [...given.parents].reverse(),
             people: [...given.people].reverse(),
           }),
+          // The equality rule comes first here, and last the other way.
+          ...(keyed === "rule" ? [SAME_PARENT] : []),
           ...[...picked].reverse().map(ruleForm),
         ]);
         // A program that fails fails either way, though which rule its
@@ -182,7 +204,7 @@ describe("existential rules", () => {
       given: facts,
       picked: rules,
       child: element(["a", "b", "c", "d"]),
-      keyed: Schema.Boolean,
+      keyed: KEYING,
     },
     ({ child, given, keyed, picked }) =>
       Effect.gen(function* () {
@@ -212,7 +234,7 @@ describe("existential rules", () => {
 
   it.effect.prop(
     "explain every row they derive, unknowns included",
-    { given: facts, picked: rules, keyed: Schema.Boolean },
+    { given: facts, picked: rules, keyed: KEYING },
     ({ given, keyed, picked }) =>
       Effect.gen(function* () {
         const database = new LogicDatabase();
@@ -245,7 +267,7 @@ describe("existential rules", () => {
       given: facts,
       picked: rules,
       stated: element(["a", "b", "c", "d"]),
-      keyed: Schema.Boolean,
+      keyed: KEYING,
     },
     ({ given, keyed, picked, stated }) =>
       Effect.gen(function* () {
@@ -661,16 +683,16 @@ const groupsOf = (
   return [...groups.values()].map((group) => group.sort());
 };
 
-describe("a key on a relation that a rule invents rows of", () => {
+describe("a key or an equality rule on a relation that a rule invents rows of", () => {
   it.effect.prop(
     "makes twins share one mother: a given one, or the unknown of the first",
     {
       names: people,
       twins: pairsOf(4),
       given: known,
-      shared: Schema.Boolean,
+      how: element(["propagate", "shared head", "equality rule"] as const),
     },
-    ({ given, names, shared, twins }) =>
+    ({ given, how, names, twins }) =>
       Effect.gen(function* () {
         const pairs = twins.filter(
           ([a, b]) => names.includes(a) && names.includes(b)
@@ -678,38 +700,62 @@ describe("a key on a relation that a rule invents rows of", () => {
         const mothers = new Map(
           given.filter(([child]) => names.includes(child))
         );
-        const share = shared
-          ? [
+        const shared = how === "shared head";
+        // The equality rule says what the key and the twin rules say
+        // together, so it stands in for both.
+        const equated = how === "equality rule";
+        const ways = {
+          "shared head": [
+            [
+              "rule",
               [
-                "rule",
-                [
-                  "exists",
-                  ["?m"],
-                  ["and", ["mother", "?a", "?m"], ["mother", "?b", "?m"]],
-                ],
-                ["twin", "?a", "?b"],
+                "exists",
+                ["?m"],
+                ["and", ["mother", "?a", "?m"], ["mother", "?b", "?m"]],
               ],
-            ]
-          : [
-              [
-                "rule",
-                ["mother", "?b", "?m"],
-                ["twin", "?a", "?b"],
-                ["mother", "?a", "?m"],
-              ],
-              [
-                "rule",
-                ["mother", "?a", "?m"],
-                ["twin", "?a", "?b"],
-                ["mother", "?b", "?m"],
-              ],
-            ];
+              ["twin", "?a", "?b"],
+            ],
+          ],
+          // It reads a relation that rules derive apart from the mothers, so
+          // it has to run with the group that invents.
+          "equality rule": [
+            ["relation", "paired", ["a", "b"]],
+            ["rule", ["paired", "?a", "?b"], ["twin", "?a", "?b"]],
+            [
+              "rule",
+              ["=", "?m1", "?m2"],
+              ["paired", "?a", "?b"],
+              ["mother", "?a", "?m1"],
+              ["mother", "?b", "?m2"],
+            ],
+          ],
+          propagate: [
+            [
+              "rule",
+              ["mother", "?b", "?m"],
+              ["twin", "?a", "?b"],
+              ["mother", "?a", "?m"],
+            ],
+            [
+              "rule",
+              ["mother", "?a", "?m"],
+              ["twin", "?a", "?b"],
+              ["mother", "?b", "?m"],
+            ],
+          ],
+        };
+        const share = ways[how];
         const outcome = yield* attempt(
           [
             "begin",
             ["relation", "person", ["name"]],
             ["relation", "twin", ["a", "b"]],
-            ["relation", "mother", ["child", "mother"], { key: "child" }],
+            [
+              "relation",
+              "mother",
+              ["child", "mother"],
+              ...(equated ? [] : [{ key: "child" }]),
+            ],
             ...names.map((name) => ["fact", ["person", name]]),
             ...pairs.map(([a, b]) => ["fact", ["twin", a, b]]),
             ...[...mothers].map(([child, mother]) => [
@@ -730,7 +776,7 @@ describe("a key on a relation that a rule invents rows of", () => {
         const givenIn = (group: readonly string[]) => [
           ...new Set(group.flatMap((name) => mothers.get(name) ?? [])),
         ];
-        // A key allows one mother, so two given ones cannot both be it.
+        // One mother for the group, so two given ones cannot both be it.
         if (groups.some((group) => givenIn(group).length > 1)) {
           expect(outcome.ok).toBe(false);
           return;
@@ -757,6 +803,107 @@ describe("a key on a relation that a rule invents rows of", () => {
         }
       }),
     RUNS
+  );
+});
+
+const emails = Arbitrary.array(
+  Arbitrary.all([element(["ann", "bo"]), element(["a@x", "b@x", "c@x"])]),
+  { maxLength: 4 }
+);
+
+describe("an equality rule over facts", () => {
+  it.effect.prop(
+    "holds as the invariant it stands for: it refuses the same changes, in the same words",
+    {
+      first: emails,
+      later: Arbitrary.array(
+        Arbitrary.filter(emails, (rows) => rows.length > 0),
+        { maxLength: 4 }
+      ),
+    },
+    ({ first, later }) =>
+      Effect.gen(function* () {
+        const goal = [
+          "and",
+          ["email", "?p", "?a"],
+          ["email", "?p", "?b"],
+          ["not", ["=", "?a", "?b"]],
+        ];
+        const outcomes = (keep: unknown) =>
+          Effect.gen(function* () {
+            const database = new LogicDatabase();
+            const seen: unknown[] = [];
+            const step = (form: unknown) =>
+              Effect.map(attempt(form, database), (outcome) => {
+                seen.push(outcome.ok ? "kept" : outcome.message);
+              });
+            yield* step([
+              "begin",
+              ["relation", "email", ["person", "address"]],
+              ...first.map((row) => ["fact", ["email", ...row]]),
+              true,
+            ]);
+            yield* step(keep);
+            for (const rows of later) {
+              yield* step(["fact", ...rows.map((row) => ["email", ...row])]);
+            }
+            yield* step([
+              "find",
+              ["array/make", "?p", "?a"],
+              ["email", "?p", "?a"],
+            ]);
+            return seen;
+          });
+        const byRule = yield* outcomes([
+          "rule",
+          ["=", "?a", "?b"],
+          ["email", "?p", "?a"],
+          ["email", "?p", "?b"],
+        ]);
+        const byInvariant = yield* outcomes([
+          "invariant",
+          goal,
+          { assert: "none" },
+        ]);
+        // The same changes are kept, and the same refused, in the invariant's
+        // words, which differ only in naming the form that was added.
+        expect(
+          byRule.map((each) => String(each).replace("rule", "invariant"))
+        ).toEqual(
+          byInvariant.map((each) =>
+            String(each).replace(
+              "This invariant does not hold, so it was not added.",
+              "Adding this invariant breaks an invariant, so nothing changed."
+            )
+          )
+        );
+        // The model: a change is kept when no person ends with two addresses.
+        const held = new Map<string, Set<string>>();
+        const fits = (rows: readonly (readonly [string, string])[]) => {
+          const next = new Map([...held].map(([p, a]) => [p, new Set(a)]));
+          for (const [person, address] of rows) {
+            next.set(person, (next.get(person) ?? new Set()).add(address));
+          }
+          return [...next.values()].every((addresses) => addresses.size <= 1)
+            ? next
+            : undefined;
+        };
+        const start = fits(first);
+        expect(byRule[1] === "kept").toBe(start !== undefined);
+        if (start === undefined) {
+          return;
+        }
+        for (const [person, addresses] of start) {
+          held.set(person, addresses);
+        }
+        for (const [at, rows] of later.entries()) {
+          const next = fits(rows);
+          expect(byRule[at + 2] === "kept").toBe(next !== undefined);
+          for (const [person, addresses] of next ?? []) {
+            held.set(person, addresses);
+          }
+        }
+      })
   );
 });
 

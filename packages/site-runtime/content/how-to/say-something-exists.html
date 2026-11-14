@@ -1,4 +1,4 @@
-<article id="say-something-exists" data-title="Say that something exists" data-summary="Write rules that say a value exists without saying what it is, read the unknowns they invent, keep only known answers, and make unknowns one with a key.">
+<article id="say-something-exists" data-title="Say that something exists" data-summary="Write rules that say a value exists without saying what it is, read the unknowns they invent, keep only known answers, and make unknowns one with a key or an equality rule.">
 <p>This guide shows how to say that something exists when nobody has said what it is, such as a mother for every person or a lead for every team, and how to work with the values Lion invents for it.</p>
 
 <h2>Write a rule that invents</h2>
@@ -125,6 +125,32 @@
    "women": ["find", "?w", ["woman", "?w"]],
    "why fay": ["why", ["woman", "fay"]]}]
 </lion-example>
+
+<h2>Say that two values are the same</h2>
+<p>A rule's head can be <code>["=", a, b]</code>: an equality rule. Whenever its body holds, the two sides are one value. While the relations its body reads are derived, an unknown that a rule invented takes the value on the other side, as it does under a key. Here twins share a mother, and a registered mother is the one a person has:</p>
+<lion-example name="Equality rules">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "registered", ["child", "mother"]],
+  ["fact", ["person", "ben"], ["person", "cy"], ["person", "dee"], ["twin", "ben", "cy"]],
+  ["fact", ["registered", "dee", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]],
+  ["rule", ["=", "?m", "?r"], ["mother", "?c", "?m"], ["registered", "?c", "?r"]],
+  {"mothers": ["query", ["mother", "?child", "?mother"], {"order": "child"}],
+   "why cy": ["why", ["mother", "cy", ["some", "?m", ["mother", "ben", "?m"]]]]}]
+</lion-example>
+<p>An equality rule also holds as the invariant it stands for, <code>["and", goal, ..., ["not", ["=", a, b]]]</code>. A rule that does not hold is not added, and a change that leaves two different known values under it is refused, in an invariant's words. A body that reads only facts has no unknowns to make one, so there the rule is only that check:</p>
+<lion-example name="An equality rule refuses a change" expect="error">
+["begin",
+  ["relation", "email", ["person", "address"]],
+  ["rule", ["=", "?a", "?b"], ["email", "?p", "?a"], ["email", "?p", "?b"]],
+  ["fact", ["email", "ann", "a@x"]],
+  ["fact", ["email", "ann", "ann@y"]]]
+</lion-example>
+<p>An equality rule runs with a relation its body reads that rules derive, one no other of them depends on, and one whose rules invent when there is one, so every other relation it reads is complete first. It cannot change an unknown invented for a relation below that one; the invariant reports such a pair.</p>
 
 <h2>State that something exists in a fact</h2>
 <p>A <code>fact</code> can hold <code>exists</code> too. It adds the row with an unknown in it, the very row a rule with that head would invent. A fact states rows, so it adds the row whether or not the head holds already. <code>why</code> and <code>retract</code> take <code>exists</code> the same way:</p>

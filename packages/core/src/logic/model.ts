@@ -184,8 +184,9 @@ type Derivation =
 interface Match {
   readonly rule: CompiledRule;
   /**
-   * For a row a rule that invents gives only once a key made its unknowns
-   * equal to other values: each such unknown, and the value it equals.
+   * For a row a rule that invents gives only once a key or an equality
+   * rule made its unknowns equal to other values: each such unknown, and
+   * the value it equals.
    */
   readonly same?: readonly (readonly [Unknown, unknown])[];
   readonly vars: Vars;
@@ -1281,7 +1282,7 @@ const explaining =
   ): Step =>
   (rule, answers, into) =>
     Effect.forEach(
-      answers,
+      rule.equates ? [] : answers,
       (vars) =>
         Effect.gen(function* () {
           const same = yield* madeEqual(model, rule, vars, inventions);
@@ -1769,6 +1770,9 @@ const evaluate = (model: Model, { members, rules }: Stratum) =>
     const fired = new Set<string>();
     let triggers: Trigger[] = [];
     const run: Step = (rule, answers, into) => {
+      if (rule.equates) {
+        return equate(model, rule, answers, inventions);
+      }
       if (rule.invents === undefined) {
         return deriveHeads(model, rule, answers, into, inventions);
       }
@@ -1796,6 +1800,28 @@ const evaluate = (model: Model, { members, rules }: Stratum) =>
       for (const trigger of ready) {
         yield* invent(model, trigger, delta, inventions);
       }
+    }
+  });
+
+/**
+ * Makes the two sides of an equality rule one, for each answer: an unknown
+ * the group invented takes the value on the other side, as it does when a
+ * key finds two rows with one key. Two values it cannot make one are left
+ * as they are, for the invariant the rule stands for to report.
+ */
+const equate = (
+  model: Model,
+  rule: CompiledRule,
+  answers: readonly Vars[],
+  inventions: Inventions | undefined
+) =>
+  Effect.gen(function* () {
+    if (inventions === undefined) {
+      return;
+    }
+    for (const vars of answers) {
+      const [left, right] = yield* tupleOf(model, rule.head.args, vars);
+      unify(model, left, right, inventions);
     }
   });
 

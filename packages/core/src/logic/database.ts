@@ -45,6 +45,7 @@ import {
   asked,
   components,
   dependencyEdges,
+  equalityHome,
   isOpaque,
   mentioned,
   reads,
@@ -746,6 +747,27 @@ const recursionProblem = (
     : recursiveAggregateProblem(rules, rule, component, reads.name);
 };
 
+/**
+ * An equality rule runs with the group of one relation its body reads (see
+ * `equalityHome`), so a question it asks about that group could not be
+ * answered in full yet.
+ */
+const equalityProblem = (
+  rule: CompiledRule,
+  rules: readonly CompiledRule[],
+  ordered: Components,
+  edges: ReadonlyMap<string, ReadonlySet<string>>
+) => {
+  const home = equalityHome(rule, rules, edges);
+  const group = home === undefined ? undefined : componentOf(ordered, home);
+  const question = asked(rule.body, rule.head.args).find(({ name }) =>
+    group?.has(name)
+  );
+  return question === undefined
+    ? undefined
+    : `Rule ${show(rule.source)} asks about "${question.name}", which depends on "${home}". A question, such as a goal under "not", cannot go through recursion.`;
+};
+
 const checkProgram = (rules: readonly CompiledRule[]) => {
   const ordered = components(rules);
   const problem =
@@ -754,8 +776,13 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
     return problem;
   }
   const recursive: [CompiledRule, ReadonlySet<string>][] = [];
+  const edges = rules.some((rule) => rule.equates)
+    ? dependencyEdges(rules)
+    : new Map<string, ReadonlySet<string>>();
   for (const rule of rules) {
-    const recursion = recursionProblem(rules, rule, ordered, recursive);
+    const recursion = rule.equates
+      ? equalityProblem(rule, rules, ordered, edges)
+      : recursionProblem(rules, rule, ordered, recursive);
     if (recursion !== undefined) {
       return recursion;
     }
@@ -769,7 +796,8 @@ const checkProgram = (rules: readonly CompiledRule[]) => {
  */
 export const addRules = (
   database: LogicDatabase,
-  added: readonly CompiledRule[]
+  added: readonly CompiledRule[],
+  kept: readonly Omit<Invariant, "key">[] = []
 ): LogicEffect<void> => {
   const held = new Set(database.rules.map((rule) => rule.key));
   const rules = added.filter(
@@ -778,7 +806,9 @@ export const addRules = (
   if (rules.length === 0) {
     return Effect.void;
   }
-  for (const head of rules.flatMap(headsOf)) {
+  for (const head of rules.flatMap((rule) =>
+    rule.equates ? [] : headsOf(rule)
+  )) {
     const { computed, name } = head.relation;
     if (computed !== undefined) {
       return logicError(
@@ -806,10 +836,21 @@ export const addRules = (
   if (problem !== undefined) {
     return logicError(problem);
   }
+  // An equality rule is kept as the invariant it stands for too, in the
+  // same change, so a rule that does not hold is not added.
+  const invariants = database.invariants;
+  const keyed = kept.flatMap((invariant) => {
+    const key = logicKey([invariant.assert, invariant.goal]);
+    return invariants.some((each) => key !== undefined && each.key === key)
+      ? []
+      : [{ ...invariant, ...(key === undefined ? {} : { key }) }];
+  });
   return commit(database, "Adding this rule", () => {
     database.rules = next;
+    database.invariants = [...invariants, ...keyed];
     return () => {
       database.rules = previous;
+      database.invariants = invariants;
     };
   });
 };

@@ -198,6 +198,10 @@ export const dependencyEdges = (rules: readonly CompiledRule[]) => {
     edges.set(head.relation.name, targets);
   };
   for (const rule of rules) {
+    if (rule.equates) {
+      // An equality rule adds no row: it runs with the relations it reads.
+      continue;
+    }
     if (rule.invents === undefined) {
       add(rule.head, rule.body);
     } else {
@@ -277,6 +281,62 @@ export const stronglyConnected = (
   return components;
 };
 
+/**
+ * Where an equality rule runs: with a relation that rules derive and that
+ * its body reads, from a group no other such relation of the body depends
+ * on, so every other relation it reads is complete first. A group whose
+ * rules invent comes before one whose rules do not, since only an unknown
+ * its own group invented can be made one. Undefined when the body reads
+ * only facts: then nothing it reads holds an invented unknown, and the
+ * invariant the rule stands for keeps it.
+ */
+export const equalityHome = (
+  rule: CompiledRule,
+  rules: readonly CompiledRule[],
+  edges: ReadonlyMap<string, ReadonlySet<string>>
+) => {
+  const read = [
+    ...new Set(
+      rule.body.flatMap((literal) =>
+        literal instanceof Atom && edges.has(literal.relation.name)
+          ? [literal.relation.name]
+          : []
+      )
+    ),
+  ];
+  const reaches = (from: string, to: string) => {
+    const seen = new Set<string>();
+    const pending = [from];
+    for (let at = pending.pop(); at !== undefined; at = pending.pop()) {
+      for (const next of edges.get(at) ?? []) {
+        if (next === to) {
+          return true;
+        }
+        if (!seen.has(next)) {
+          seen.add(next);
+          pending.push(next);
+        }
+      }
+    }
+    return false;
+  };
+  const together = (a: string, b: string) =>
+    a === b || (reaches(a, b) && reaches(b, a));
+  const highest = read.filter(
+    (name) =>
+      !read.some((other) => reaches(other, name) && !reaches(name, other))
+  );
+  const inventing = rules.flatMap((each) =>
+    each.invents === undefined
+      ? []
+      : each.invents.heads.map((head) => head.relation.name)
+  );
+  return (
+    highest.find((name) => inventing.some((head) => together(head, name))) ??
+    highest.at(-1)
+  );
+};
+
 /** Relations that depend on each other, and the rules that derive them. */
 export interface Stratum {
   readonly members: ReadonlySet<string>;
@@ -318,8 +378,18 @@ export const strataOf = (
     }
   }
   // Rules keep the order they were added in.
+  // Only an equality rule needs the graph again, to find where it runs.
+  const edges = rules.some((rule) => rule.equates)
+    ? dependencyEdges(rules)
+    : undefined;
   for (const rule of rules) {
-    strata.get(rule.head.relation.name)?.rules.push(rule);
+    const home =
+      rule.equates && edges !== undefined
+        ? equalityHome(rule, rules, edges)
+        : rule.head.relation.name;
+    if (home !== undefined) {
+      strata.get(home)?.rules.push(rule);
+    }
   }
   for (const [name, stratum] of strata) {
     if (stratum.rules.length === 0) {

@@ -33,6 +33,29 @@ const research = (
 
 export const MUTATIONS: readonly Mutation[] = [
   {
+    name: "an equality rule makes no unknowns one",
+    file: core("logic/model.ts"),
+    find: "    for (const vars of answers) {\n      const [left, right] = yield* tupleOf(model, rule.head.args, vars);\n      unify(model, left, right, inventions);\n    }",
+    replace:
+      "    for (const vars of answers.slice(0, 0)) {\n      const [left, right] = yield* tupleOf(model, rule.head.args, vars);\n      unify(model, left, right, inventions);\n    }",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "an equality rule is not kept as the invariant it stands for",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "    yield* addRules(yield* database, rules, invariants);",
+    replace: "    yield* addRules(yield* database, rules, []);",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
+    name: "an equality rule runs with a group that does not invent",
+    file: core("logic/strata.ts"),
+    find: "    highest.find((name) => inventing.some((head) => together(head, name))) ??",
+    replace:
+      "    highest.find((name) => !inventing.some((head) => together(head, name))) ??",
+    tests: EXISTENTIAL_TESTS,
+  },
+  {
     name: "a rule that invents does so even when its head holds already",
     file: core("logic/model.ts"),
     find: "      if ((yield* matches(model, check, vars)).length === 0) {",

@@ -236,7 +236,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 |---|---|
 | `["fact", goal, ...]` | Adds ground facts. Returns the facts added. |
 | `["retract", goal, ...]` | Removes facts. Derived answers update on the next query. |
-| `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. |
+| `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. A head is a relation call, `=` between two values, an `and` of those, or `exists` over relation calls. See [Existential rules](#existential-rules). |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
@@ -501,7 +501,7 @@ Evaluates to `{ "mothers": [{ "child": "ada", "mother": "eve" }, { "child": "ben
 - An unknown is written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. That form is ordinary Lion. Evaluating it gives the same unknown, so a program can write one, put it in a fact, as the fact about `tall` above does, compare it, or look it up.
 - An unknown is data, as a string is: rows, facts, answers, `find`, and aggregates hold it. It equals itself and nothing else, as a constant does, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. `value/unknown?` is true for an unknown, and `value/object?` is false for one. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.
 - `["not", ["value/unknown?", "?m"]]` keeps only known answers. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother, as `not` holds for anything that is not known.
-- A head can be a relation call, an `and` of relation calls, or `exists` over either. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
+- A head can be a relation call, `=`, an `and` of those, or `exists` over relation calls. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
 - With several variables, `exists` invents an unknown for each, and the goal of each `some` mentions the others, which are its own too: `["some", "?f", ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of some pair the goal describes.
 - Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in.
 - `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so in plain code `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
@@ -531,7 +531,31 @@ Evaluates to `[{ "child": "ben", "mother": ["some", "?m", ["mother", "ben", "?m"
 
 - Two different values that are not such unknowns, such as two given mothers, are still an error, with the key's message.
 - An unknown that a fact holds is given, not invented, so a key never changes it. Nor does a key change an unknown invented for a relation that the keyed relation only reads.
-- `why` explains a row by an answer that gives it as it is, when one does. A row that a rule which invents gives only because a key made its unknown equal to another value ends with `{ "same": [unknown, value] }`.
+- `why` explains a row by an answer that gives it as it is, when one does. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with `{ "same": [unknown, value] }`.
+
+A rule's head can also say that two values are the same: `["rule", ["=", "?a", "?b"], goal, ...]` is an equality rule. Whenever its body holds, the two sides are one value. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, as it does under a key, and the rule holds as an invariant, so a change that would leave two different known values under it is refused:
+
+```json
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "registered", ["child", "mother"]],
+  ["fact", ["person", "ben"], ["person", "cy"], ["person", "dee"], ["twin", "ben", "cy"]],
+  ["fact", ["registered", "dee", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]],
+  ["rule", ["=", "?m", "?r"], ["mother", "?c", "?m"], ["registered", "?c", "?r"]],
+  ["query", ["mother", "?child", "?mother"], {"order": "child"}]]
+```
+
+Evaluates to `[{ "child": "ben", "mother": ["some", "?m", ["mother", "ben", "?m"]] }, { "child": "cy", "mother": ["some", "?m", ["mother", "ben", "?m"]] }, { "child": "dee", "mother": "eve" }]`: the twins share one unknown mother, and dee's is the registered one.
+
+- An equality rule holds as the invariant it stands for, `["and", goal, ..., ["not", ["=", "?a", "?b"]]]` with `{"assert": "none"}`, and is reported in an invariant's words. A rule that does not hold is not added, and a change that would break it is refused: with `["rule", ["=", "?a", "?b"], ["email", "?p", "?a"], ["email", "?p", "?b"]]` and `["fact", ["email", "ann", "a@x"]]`, adding `["fact", ["email", "ann", "ann@y"]]` fails with `Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 2, such as {"p":"ann","a":"a@x","b":"ann@y"}: ["and",["email","?p","?a"],["email","?p","?b"],["not",["=","?a","?b"]]].` A snapshot writes the rule and the invariant.
+- It makes unknowns one by the rule a key follows: an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that sorts first, unless it describes the other.
+- It runs with a relation its body reads that rules derive, one no other such relation of its body depends on, and of those, one whose rules invent. So every other relation it reads is complete first. An unknown invented for a relation below that one cannot change any more, and the invariant reports it. A body that reads only facts has nothing to make one, and the invariant keeps it.
+- A head can join relation calls and `=` with `and`: `["and", ["r", "?x"], ["=", "?x", "?y"]]` adds rows to `r` and says the two are the same. `exists` goes over relation calls only.
+- Its body cannot ask a question, such as a goal under `not`, about the group it runs with.
 
 ### Graph algorithms
 

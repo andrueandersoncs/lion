@@ -14,7 +14,7 @@ import {
 } from "@/evaluation/environment";
 import { evaluate } from "@/evaluation/evaluate";
 import { dataStrings, suspend } from "@/evaluation/special-forms/lambda";
-import { compileQuery, compileRule } from "@/logic/compile";
+import { compileQuery, compileRule, equalityGoals } from "@/logic/compile";
 import {
   addInvariant,
   addRules,
@@ -339,7 +339,17 @@ export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
       evaluateAll([head, ...body])
     );
     const rules = yield* compileRule(headValue, bodyValues);
-    yield* addRules(yield* database, rules);
+    // A head that says two values are the same holds as an invariant too.
+    const invariants = yield* Effect.forEach(
+      equalityGoals(headValue, bodyValues),
+      (goal) =>
+        Effect.map(compileQuery(goal), (query) => ({
+          assert: "none" as const,
+          goal,
+          query,
+        }))
+    );
+    yield* addRules(yield* database, rules, invariants);
     return ["rule", render(headValue), ...bodyValues.map(render)];
   });
 

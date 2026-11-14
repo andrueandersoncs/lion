@@ -585,6 +585,17 @@ export const POSITIONS: readonly Position[] = [
     expected: rows,
   },
   {
+    name: "equality rule",
+    // The rule holds only when the expression gives what plain code does,
+    // so a rule it breaks is refused.
+    setup: (expression, model) => [
+      ...expectedFacts(model),
+      ["rule", ["=", expression, "?v"], ["n", X], ["expected", X, "?v"]],
+    ],
+    question: () => ["query", ["n", X], ORDERED],
+    expected: everyX,
+  },
+  {
     name: "inside exists",
     setup: (_, model) => expectedFacts(model),
     question: (expression) => [

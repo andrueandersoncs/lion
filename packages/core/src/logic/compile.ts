@@ -22,6 +22,7 @@ import {
   logicKey,
   ownVariables,
   patternParts,
+  type RelationInfo,
   render,
   replaceVariables,
   show,
@@ -50,6 +51,13 @@ export interface CompiledRule {
    * goal-directed query asks a relation about.
    */
   readonly demand?: true;
+  /**
+   * Set for an equality rule: a head that says two values are the same,
+   * held as the two arguments of `head`, a call of `EQUALITY`. It adds no
+   * row. While the relations its body reads are derived, it makes an
+   * unknown the rules there invented take the value it equals.
+   */
+  readonly equates?: true;
   readonly head: Atom;
   /**
    * Set for a rule whose head says `exists`. Such a rule adds every
@@ -696,18 +704,66 @@ const aggregatesOf = (head: Atom) =>
  * What a rule's head says: its relation calls, and the variables `exists`
  * lists, for which the rule invents values.
  */
+/**
+ * Where an equality rule's head stands: a relation named "=", which no
+ * program can declare, since "=" is the name of a form.
+ */
+export const EQUALITY: RelationInfo = { name: "=", columns: ["left", "right"] };
+
+/** The relation calls and the "=" goals a head joins with "and". */
+const headParts = (
+  goal: unknown
+): { calls: Atom[]; equals: LogicForm[] } | undefined => {
+  if (goal instanceof Atom) {
+    return { calls: [goal], equals: [] };
+  }
+  if (isForm(goal, "=")) {
+    return { calls: [], equals: [goal] };
+  }
+  if (!isForm(goal, "and")) {
+    return undefined;
+  }
+  const parts = { calls: [] as Atom[], equals: [] as LogicForm[] };
+  for (const part of goal.parts) {
+    const inner = headParts(part);
+    if (inner === undefined) {
+      return undefined;
+    }
+    parts.calls.push(...inner.calls);
+    parts.equals.push(...inner.equals);
+  }
+  return parts;
+};
+
+/**
+ * What a rule's head says: its relation calls, the values it says are the
+ * same, and the variables `exists` lists, for which the rule invents
+ * values. `exists` goes over relation calls only.
+ */
 const headOf = (head: unknown) => {
   const [invented, goal] = isForm(head, "exists")
     ? (head.parts as [readonly string[], unknown])
     : [[], head];
-  const calls = callsOf(goal);
-  if (calls === undefined) {
+  const parts =
+    invented.length === 0
+      ? headParts(goal)
+      : { calls: callsOf(goal), equals: [] };
+  if (parts?.calls === undefined) {
     return problem(
-      `A rule head must be a relation call, an "and" of them, or "exists" over those, but found ${show(head)}.`
+      `A rule head must be a relation call or "=", an "and" of those, or "exists" over relation calls, but found ${show(head)}.`
     );
   }
-  return { calls, goal, invented };
+  return { calls: parts.calls, equals: parts.equals, goal, invented };
 };
+
+/**
+ * The invariant an equality rule stands for: no answer of its body gives
+ * the two sides different values. Each "=" of the head gives one.
+ */
+export const equalityGoals = (head: unknown, body: readonly unknown[]) =>
+  (headParts(head)?.equals ?? []).map(
+    (equal) => new LogicForm("and", [...body, new LogicForm("not", [equal])])
+  );
 
 /**
  * Where an unknown can stand: as a whole argument, or inside a record or
@@ -730,8 +786,9 @@ const planHeld = (
 
 export const compileRule = (head: unknown, body: readonly unknown[]) =>
   compiling(() => {
-    const { calls, goal, invented } = headOf(head);
-    const direct = calls.flatMap((call) =>
+    const { calls, equals, goal, invented } = headOf(head);
+    const sides = equals.map((equal) => new Atom(EQUALITY, equal.parts));
+    const direct = [...calls, ...sides].flatMap((call) =>
       call.args.flatMap((arg) => wants(arg, NOTHING))
     );
     if (direct.some((name) => name.startsWith("_"))) {
@@ -759,7 +816,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
       }
       checkValues(
         head,
-        heads.flatMap((call) => call.args),
+        [...heads, ...sides].flatMap((call) => call.args),
         bound,
         (names) =>
           `Unsafe rule head ${show(head)}: ${names} never appears in a relation in the body. To say the head holds for some value nobody has given, list it in "exists": ["exists", [${names
@@ -784,17 +841,26 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
       ...(key === undefined ? {} : { key }),
     };
     if (invented.length === 0) {
-      // Each relation call of the head is a rule of its own.
-      return planned.flatMap(({ body: literals }) =>
-        heads.map(
+      // Each relation call and each "=" of the head is a rule of its own.
+      return planned.flatMap(({ body: literals }) => [
+        ...heads.map(
           (call): CompiledRule => ({
             ...rule,
             aggregates: aggregatesOf(call),
             body: literals,
             head: call,
           })
-        )
-      );
+        ),
+        ...sides.map(
+          (side): CompiledRule => ({
+            ...rule,
+            aggregates: [],
+            body: literals,
+            equates: true,
+            head: side,
+          })
+        ),
+      ]);
     }
     return planned.map(
       ({ body: literals, bound }): CompiledRule => ({
