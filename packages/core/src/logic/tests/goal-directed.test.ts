@@ -1,9 +1,11 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { valueKey } from "@/logic/terms";
 import { stdlib } from "@/modules";
+import { ask, claimProgram, claimWorld, disputedOf, TRAP } from "./claims";
+import { element } from "./programs";
 
 const graph = [
   ["relation", "edge", ["from", "to"]],
@@ -352,5 +354,87 @@ describe("goal-directed queries", () => {
       );
       expect(rows).toEqual([{ to: "y" }, { to: "z" }]);
     })
+  );
+});
+
+const OPTIONS = { timeout: 120_000 };
+
+const questions = Arbitrary.array(ask, { minLength: 1, maxLength: 6 });
+
+describe("goal-directed queries over a model of claims", () => {
+  it.effect.prop(
+    "answer each question as full evaluation does, whatever earlier ones derived",
+    { world: claimWorld, steps: questions },
+    ({ steps, world }) =>
+      Effect.gen(function* () {
+        const program = ["begin", ...claimProgram(world)];
+        const directed = new LogicDatabase();
+        const full = new LogicDatabase({ goalDirected: false });
+        yield* run(program, stdlib, { database: directed });
+        yield* run(program, stdlib, { database: full });
+        for (const step of steps) {
+          const expected = yield* run(step, stdlib, { database: full });
+          expect(yield* run(step, stdlib, { database: directed })).toEqual(
+            expected
+          );
+          // A new database has derived nothing when the question comes.
+          expect(
+            yield* run([...program, step], stdlib, {
+              database: new LogicDatabase(),
+            })
+          ).toEqual(expected);
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "find the questions a plain reading of the claims finds disputed",
+    { world: claimWorld, goalDirected: element([true, false]) },
+    ({ goalDirected, world }) =>
+      Effect.gen(function* () {
+        const rows = (yield* run(
+          [
+            "begin",
+            ...claimProgram(world),
+            ["query", ["flag", "contested", "?q"]],
+          ],
+          stdlib,
+          { database: new LogicDatabase({ goalDirected }) }
+        )) as { q: unknown }[];
+        const keys = (items: readonly unknown[]) =>
+          items.map((item) => valueKey(item)).sort();
+        expect(keys(rows.map(({ q }) => q))).toEqual(keys(disputedOf(world)));
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "never derive a relation that no answer of the question reaches",
+    { world: claimWorld, steps: questions },
+    ({ steps, world }) =>
+      Effect.gen(function* () {
+        // `trap` fails when it is derived, and only a flag of its own kind
+        // reads it, which no question asks for.
+        const trapped = ["begin", ...claimProgram(world), ...TRAP];
+        const directed = new LogicDatabase();
+        const full = new LogicDatabase({ goalDirected: false });
+        yield* run(trapped, stdlib, { database: directed });
+        yield* run(["begin", ...claimProgram(world)], stdlib, {
+          database: full,
+        });
+        for (const step of steps) {
+          const expected = yield* run(step, stdlib, { database: full });
+          expect(yield* run(step, stdlib, { database: directed })).toEqual(
+            expected
+          );
+          expect(
+            yield* run([...trapped, step], stdlib, {
+              database: new LogicDatabase(),
+            })
+          ).toEqual(expected);
+        }
+      }),
+    OPTIONS
   );
 });

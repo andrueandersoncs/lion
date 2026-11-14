@@ -25,11 +25,17 @@ Rules that say something exists without saying what it is. A rule can give every
 - `Facts may only contain JSON data, but ...` is now `Facts may only contain data, but ...`, since a fact can hold an unknown. The rest of the message is unchanged. The other messages about a value that cannot be a row or an answer, such as `The query produced an answer that is not data`, say "data" too.
 - `Unsafe rule head [...]: ?m never appears in a relation in the body.` goes on to say `To say the head holds for some value nobody has given, list it in "exists": ["exists", ["?m"], head].`
 - `exists` and `some` are names of special forms, so a relation, a `define`, or a lambda parameter can no longer be named `"exists"` or `"some"`.
+- A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `["query", ["report", "?t"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.
+
+### Fixed
+
+- Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.
 
 ### Documentation
 
 - A how-to guide, "Say that something exists", and reference entries for `exists`, `some`, and `value/unknown?` on [lionlang.dev](https://lionlang.dev/docs.html). The guarantees state the new check that evaluation finishes, and "How Lion answers logic questions" explains how rules that invent fit Datalog.
 - The research and reasoning skills quote the new fact message, and the research skill's engine is rebuilt with this core.
+- "Goal-directed evaluation" on [lionlang.dev](https://lionlang.dev/docs.html) says where a known value narrows a rule, that what is derived in full is derived once and shared by later queries, and shows a query that never derives a relation no answer reaches.
 
 ## 2026-11-13 — @lionlang/core 0.10.0, @lionlang/cli 0.9.0
 

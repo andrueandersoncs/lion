@@ -115,7 +115,7 @@ describe("a query that knows where a recursive relation starts", () => {
           expect(rows.map(({ to }) => to)).toEqual(expected);
           // A rewritten query keeps its own model; a full one never makes one.
           expect(database.goals.size).toBe(goalDirected ? 1 : 0);
-          const paths = [...database.goals.values()].flatMap((model) =>
+          const paths = [...database.goals.values()].flatMap(({ model }) =>
             [...model.relations].flatMap(([name, tuples]) =>
               name.includes("path") && !name.includes("magic")
                 ? tuples.size

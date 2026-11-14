@@ -184,10 +184,30 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "    if (false && lambdaInfo(fn) !== undefined) {",
   },
   {
-    name: "the relations a find's template asks about are not derived first",
-    file: core("logic/database.ts"),
-    find: "      for (const relation of mentioned(question.parts[0])) {",
-    replace: "      for (const relation of mentioned(undefined)) {",
+    name: "a question reads a relation's rows before they are derived",
+    file: core("logic/model.ts"),
+    find: "  const pending = toRead(model, atom.relation);",
+    replace: "  const pending = undefined;",
+  },
+  {
+    name: "a relation goal reads a relation's rows before they are derived",
+    file: core("logic/model.ts"),
+    find: "            ? toRead(model, literal.relation, true)\n            : undefined;",
+    replace: "            ? undefined\n            : undefined;",
+  },
+  {
+    name: "relations that depend on each other wait for each other's rows",
+    file: core("logic/model.ts"),
+    find: '  if (state === "done" || (reading && state === "running")) {',
+    replace: '  if (state === "done") {',
+  },
+  {
+    name: "a group derives every relation its rules read before it runs",
+    file: core("logic/model.ts"),
+    find: "    yield* evaluate(model, stratum);",
+    replace:
+      "    for (const relation of stratum.rules.flatMap((rule) => rule.body.flatMap(mentioned))) {\n      if (!members.has(relation.name)) {\n        yield* ensure(model, relation);\n      }\n    }\n    yield* evaluate(model, stratum);",
+    tests: ["src/logic/tests/goal-directed.test.ts"],
   },
   {
     name: "anonymous variables are not given names of their own",
@@ -210,8 +230,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a question may go through recursion when it runs",
     file: core("logic/model.ts"),
-    find: '    if (state === "running") {',
-    replace: '    if (state === "never") {',
+    find: '  return state === "running"\n    ? logicError(',
+    replace: '  return state === "never"\n    ? logicError(',
   },
   {
     name: "an aggregate of a find combines the rule's matches",

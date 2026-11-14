@@ -23,7 +23,6 @@ import {
   collect,
   distinct,
   EMPTY,
-  ensure,
   explain,
   holds,
   keyColumns,
@@ -47,7 +46,6 @@ import {
   flowsOf,
   isOpaque,
   mentioned,
-  reads,
   stronglyConnected,
 } from "@/logic/strata";
 import {
@@ -80,6 +78,12 @@ export interface LogicDatabaseOptions {
   readonly goalDirected?: boolean;
 }
 
+/** Bodies to answer a query with, and the model to run them on. */
+export interface GoalModel {
+  readonly bodies: readonly (readonly Literal[])[];
+  readonly model: Model;
+}
+
 /**
  * A goal the database must never answer ("none"), or must always answer
  * ("some"). Every change to facts or rules is checked against it.
@@ -110,8 +114,11 @@ export class LogicDatabase {
   invariants: readonly Invariant[] = [];
   /** The rows derived so far from the current facts and rules. */
   model: Model | undefined;
-  /** Models for goal-directed queries, by query, for the same facts and rules. */
-  readonly goals = new Map<string, Model>();
+  /**
+   * Goal-directed queries, by query, for the same facts and rules: each
+   * query's rewritten bodies, and the model they run on.
+   */
+  readonly goals = new Map<string, GoalModel>();
   readonly goalDirected: boolean;
 
   constructor(options: LogicDatabaseOptions = {}) {
@@ -830,40 +837,45 @@ const reading = <A>(
 /**
  * The model to answer some bodies with, and the bodies to run on it. A body
  * that asks a rule-defined relation about known arguments derives only what
- * it can reach, in a model of its own on top of the database's.
+ * it can reach, in a model of its own on top of the database's, and reads
+ * there what the database's model has already derived in full.
  */
 const answering = (
   database: LogicDatabase,
   model: Model,
   bodies: readonly (readonly Literal[])[]
-) => {
-  const program = database.goalDirected
-    ? rewriteQueries(
-        database.rules,
-        bodies,
-        (relation) => (database.facts.get(relation)?.size ?? 0) > 0
-      )
-    : undefined;
-  if (program === undefined) {
+): GoalModel => {
+  if (!database.goalDirected) {
     return { bodies, model };
   }
   // A body with no key, one that holds a value with no written form, gets
   // a model that is not kept.
   const key = logicKey(bodies);
-  let directed = key === undefined ? undefined : database.goals.get(key);
-  if (directed === undefined) {
-    directed = new Model(database.facts, program.rules, model);
-    for (const relation of program.facts) {
-      directed.relations.set(
-        factsName(relation),
-        database.facts.get(relation) ?? EMPTY
-      );
-    }
-    if (key !== undefined) {
-      database.goals.set(key, directed);
-    }
+  const known = key === undefined ? undefined : database.goals.get(key);
+  if (known !== undefined) {
+    return known;
   }
-  return { bodies: program.bodies, model: directed };
+  const program = rewriteQueries(
+    database.rules,
+    bodies,
+    (relation) => (database.facts.get(relation)?.size ?? 0) > 0,
+    (relation) => model.state.get(relation) === "done"
+  );
+  if (program === undefined) {
+    return { bodies, model };
+  }
+  const directed = new Model(database.facts, program.rules, model);
+  for (const relation of program.facts) {
+    directed.relations.set(
+      factsName(relation),
+      database.facts.get(relation) ?? EMPTY
+    );
+  }
+  const answered = { bodies: program.bodies, model: directed };
+  if (key !== undefined) {
+    database.goals.set(key, answered);
+  }
+  return answered;
 };
 
 /** Every answer of a goal's alternatives. */
@@ -873,13 +885,10 @@ const solve = (
   alternatives: readonly (readonly Literal[])[]
 ) =>
   Effect.suspend(() => {
-    const run = ({ bodies, model }: ReturnType<typeof answering>) =>
+    const run = ({ bodies, model }: GoalModel) =>
       Effect.gen(function* () {
         const found: Vars[] = [];
         for (const body of bodies) {
-          for (const relation of reads(body)) {
-            yield* ensure(model, relation);
-          }
           for (const vars of yield* matches(model, body)) {
             found.push(vars);
           }
@@ -939,10 +948,6 @@ export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
       );
       if (!isForm(question, "find")) {
         return found.length > 0;
-      }
-      // The template may ask questions of its own.
-      for (const relation of mentioned(question.parts[0])) {
-        yield* ensure(model, relation);
       }
       return yield* collect(
         model,
@@ -1114,9 +1119,6 @@ const unaffected = (
     return reading(database, (model) =>
       Effect.gen(function* () {
         for (const body of invariant.query.bodies) {
-          for (const relation of reads(body)) {
-            yield* ensure(model, relation);
-          }
           if ((yield* changedAnswers(model, body, rows)).length > 0) {
             return false;
           }
@@ -1198,7 +1200,6 @@ export const explainFact = (database: LogicDatabase, atom: Atom) =>
           `why expects a fact without variables: ${show(atom)}.`
         );
       }
-      yield* ensure(model, atom.relation);
       return (yield* holds(model, atom, NO_VARS))
         ? yield* explain(model, atom.relation, atom.args)
         : null;
