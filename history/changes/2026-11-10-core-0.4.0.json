@@ -1,0 +1,81 @@
+[
+  {
+    "kind": "Added",
+    "text": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+    "commits": ["beddbed"]
+  },
+  {
+    "kind": "Added",
+    "text": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+    "decisions": ["lattice-recursion"],
+    "commits": ["000fa16"]
+  },
+  {
+    "kind": "Added",
+    "text": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+    "commits": ["f7183b0"]
+  },
+  {
+    "kind": "Added",
+    "text": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+    "commits": ["af7f8fd"]
+  },
+  {
+    "kind": "Added",
+    "text": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+    "commits": ["0781dfb"]
+  },
+  {
+    "kind": "Added",
+    "text": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+    "decisions": ["goal-directed-magic-sets"],
+    "commits": ["f4c7c4c"]
+  },
+  {
+    "kind": "Added",
+    "text": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+    "decisions": ["datalog-logic-layer"],
+    "commits": ["f4c7c4c"]
+  },
+  {
+    "kind": "Added",
+    "text": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+    "decisions": ["keyed-relations-upsert"],
+    "commits": ["2b64585"]
+  },
+  {
+    "kind": "Added",
+    "text": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+    "decisions": ["snapshots-are-programs"],
+    "commits": ["56af8ed"]
+  },
+  {
+    "kind": "Added",
+    "text": "`lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line.",
+    "decisions": ["snapshots-are-programs"],
+    "commits": ["56af8ed"]
+  },
+  {
+    "kind": "Fixed",
+    "text": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+    "commits": ["59f142e"]
+  },
+  {
+    "kind": "Fixed",
+    "text": "A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with \"not JSON data\" instead of finding no answers. Found by comparing goal-directed and full evaluation on 2,000 generated programs.",
+    "decisions": ["goal-directed-magic-sets"],
+    "commits": ["76d833f"]
+  },
+  {
+    "kind": "Fixed",
+    "text": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.",
+    "decisions": ["recursion-cannot-compute-values"],
+    "commits": ["05f2834"]
+  },
+  {
+    "kind": "Fixed",
+    "text": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+    "decisions": ["live-examples-run-real-core"],
+    "commits": ["65ae02d"]
+  }
+]

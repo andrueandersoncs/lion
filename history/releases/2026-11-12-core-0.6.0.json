@@ -1,0 +1,14 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.6.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.5.0"
+    }
+  ],
+  "summary": "Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.",
+  "commit": "1b2d50b"
+}

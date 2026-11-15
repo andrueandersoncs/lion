@@ -240,7 +240,7 @@ How to record a source:
 
 - **`publisher` is who stands behind it**: the organization or person, named as you would print it (`"Acme"`, `"The Guardian"`) and written the same way for every channel they speak through. A company's press release, status page, and filing share one publisher, and so do two articles from one newspaper. This is what keeps one voice from counting twice. The reader sees this name.
 - **`title` is the source's own title**, as the reader would recognize it. Keep your notes about how you read it out of the title.
-- **`kind`** is `primary` (first-hand: filings, data, official statements, the people involved), `secondary` (reporting and analysis built on those), or `tertiary` (summaries of summaries). **`published`** is an integer date such as `20250201`, or `null`.
+- **`kind`** is `primary` (first-hand: filings, data, official statements, the people involved), `secondary` (reporting and analysis built on those), or `tertiary` (summaries of summaries). **`published`** is an integer date such as `20250201`, or `null`. When one publisher speaks several times a day, such as commits to a repository, give the time too, to the minute or the second (`20250201143005`), so its latest word is the one it said last.
 - **Ids are short and plain**: lowercase letters, digits, and hyphens. A source's id names its file in `sources/`.
 
 How to record a claim:
@@ -379,7 +379,7 @@ When the research is done:
    bunx @lionlang/cli page-check.json --database model.json
    ```
 
-   The first command writes `explorer.html` beside the model: one file with the model, the plan, the Lion engine, and the saved text of every source a claim quotes, which opens from disk with no server. Each statement on the page has "Show it in the source", which shows the quote marked in its paragraph of the saved text, and the whole text on request. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record, with one more check: the questions the plan names that the reader's choices set aside, or that sources answer in senses nobody chose between. The second command runs them all and prints the page's wording, so a sentence that reads wrong, a query that fails or comes back empty, or a question the plan should reach through `meant`, shows up before the reader finds it. `bun` runs the scripts too.
+   The first command writes `explorer.html` beside the model: one file with the model, the plan, the Lion engine, and the saved text of every source a claim quotes, which opens from disk with no server, and keeps each screen within a reader's attention: measure it with the [cognitive-load](https://github.com/andrueandersoncs/cognitive-load) skill if you have it. Each statement on the page has "Show it in the source", which shows the quote marked in its paragraph of the saved text, and the whole text on request. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record, with one more check: the questions the plan names that the reader's choices set aside, or that sources answer in senses nobody chose between. The second command runs them all and prints the page's wording, so a sentence that reads wrong, a query that fails or comes back empty, or a question the plan should reach through `meant`, shows up before the reader finds it. `bun` runs the scripts too.
 
 ## The page for the reader
 
@@ -479,7 +479,7 @@ Whatever the shape, keep two views for trust unless the goal makes them pointles
 - **A figure's `value` is always an expression.** The build lists any figure that was typed in, and any text typed into the plan that holds a digit, for you to turn into expressions. A digit in a name, such as a product's, is fine.
 - `title` and view and block titles are plain strings. `names` gives the model's ids the names a reader should see; an id in it is shown by its name everywhere on the page.
 - `define` binds names for the plan's expressions to use: a record of name to Lion value, usually a `lambda`. Put a phrase or a query you use more than once there.
-- `views` are the page's tabs, in order; the first is what the reader sees on opening. Each has a `name` and a list of `blocks`. "Query the model", the Lion editor for readers who know Lion, is always added last.
+- `views` are the page's tabs, in order; the first is what the reader sees on opening. Each has a `name` and a list of `blocks`. "Query the model", the Lion editor for readers who know Lion, is reached from a link at the end of the last view, so the tabs hold only what the reader came for.
 
 The page binds these before any expression runs, for turning values into words:
 
@@ -504,7 +504,7 @@ Every block can have a `title` and a `note` of plain words under it.
 | `table` | a query's rows as a table the reader can sort and filter | `query` |
 | `timeline` | rows in time order, a day at a time | `query` giving `?when` as text from `utc-text`, and `?what`; other columns show under each moment |
 | `comparison` | a grid: one row for each value of one column, one column for each value of another | `query`, and `rows`, `columns`, `cell`: the names of three of its variables |
-| `lookup` | a question the reader completes by choosing from lists; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query`: a `lambda` with one parameter for each name in `choose`, in order, whose body is the query; `example`, one choice for each name |
+| `lookup` | a question the reader completes by choosing, from a list or, past twelve options, from a box that finds them as they type; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query`: a `lambda` with one parameter for each name in `choose`, in order, whose body is the query; `example`, one choice for each name. Optionally `answer`, a `lambda` like `query` that gives the answer in words |
 | `trust` | how solid the findings are, built from the core: what needs the reader's decision (`undecided`), confirmed, disputed, figures their publisher changed (`restated`), one publisher's word (`alone`), second-hand, misquoted, figures not written in their quote (`unquoted`), what the reader chose (`choices`), assumptions, unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
 | `sources` | every source by kind, with its publisher, date, and statements | nothing |
 | `text` | a few paragraphs of your own, for what no query says: context, method, a caveat | `text` |
@@ -512,6 +512,18 @@ Every block can have a `title` and a `note` of plain words under it.
 
 - **`lookup` is the block for "the kinds of question they will keep asking".** One lookup answers a whole family of questions: any service, any person, any year. Its `as` shows the answer as a `"timeline"` or a `"comparison"` instead of a table. Its `example` is what is chosen when the page opens, and what `page-check.json` runs. A choice's `labels` gives its options other names.
 - **A lookup's query is a Lion function.** The page calls it with what the reader chose, each choice passed as data, so text they pick is never read as Lion.
+- **Give a lookup an `answer` when its rows need reading.** With one, the page leads with the sentence it gives for the reader's choice, and folds the query's rows under "Show the evidence", as an `answer` block does. `page-check.json` asks it with the `example`:
+
+  ```json
+  {"type": "lookup", "title": "What does Lion do in this case?",
+   "choose": {"item": {"label": "Behavior", "options": ["aggregate/unique", ["find", "?b", ["claim", "?_", "?_", "?_", ["schema/open", {"behavior": "?b"}]]]]}},
+   "example": {"item": "lambda-extra-arguments"},
+   "answer": ["lambda", ["item"], ["string/concat", "Lion today: ", ["words/listed", ["find", "?v", ["firsthand", {"behavior": "item"}, "?v", "Lion at HEAD"]]], "."]],
+   "query": ["lambda", ["item"], ["query", ["claim", "?statement", "?source", "?_", ["schema/open", {"behavior": "item"}]]]]}
+  ```
+
+  On the page Lion's own research model is built into, it gives "Lion today: ignored."
+- **The page shows how far it has got.** While Lion opens the model, a line under the title says so, then "Working out the answers: 3 of 15" with a bar, and each view shows its questions at once with "Working this out from the model…" until each part is worked out. The view the reader has open is worked out first. The engine derives every relation once and answers each question from that, which on a large model is hundreds of times faster than rewriting the rules for each question.
 - **`custom` is the last resort.** Its script gets `root`, an element to fill, and `kit`: `query` to ask the model, and `el`, `shown`, `table`, `timeline`, `comparison`, and `statement` to build what it shows. Build with those, so text from sources is never placed as markup.
 
 ### Writing what goes in them

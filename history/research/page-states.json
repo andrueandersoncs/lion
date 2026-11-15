@@ -1,0 +1,170 @@
+[
+  {
+    "name": "To decide",
+    "steps": [
+      {
+        "click": "[data-view=\"view-0\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-0 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "To decide, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a behavior",
+    "steps": [
+      {
+        "click": "[data-view=\"view-1\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-1 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a behavior, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a rule",
+    "steps": [
+      {
+        "click": "[data-view=\"view-2\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-2 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a rule, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a decision",
+    "steps": [
+      {
+        "click": "[data-view=\"view-3\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-3 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Check a decision, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Look back",
+    "steps": [
+      {
+        "click": "[data-view=\"view-4\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-4 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Look back, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Sources",
+    "steps": [
+      {
+        "click": "[data-view=\"view-5\"]"
+      },
+      {
+        "waitFor": "document.querySelectorAll('#view-5 .is-waiting').length === 0"
+      },
+      {
+        "scroll": 0
+      },
+      {
+        "wait": 300
+      }
+    ]
+  },
+  {
+    "name": "Sources, next screen",
+    "steps": [
+      {
+        "scroll": 800
+      },
+      {
+        "wait": 300
+      }
+    ]
+  }
+]

@@ -1114,6 +1114,70 @@ describe("the research skill's lookups", () => {
   );
 });
 
+describe("the research skill's lookups that answer", () => {
+  it.effect.prop(
+    "ask the answer with the example, passing the choice as data",
+    { chosen: picked },
+    ({ chosen }) =>
+      Effect.gen(function* () {
+        const { queriesOf } = yield* Effect.promise(() => builder);
+        const block = {
+          answer: ["lambda", ["it"], ["array/make", "it", "it"]],
+          choose: { it: { options: ["quote", [chosen]] } },
+          example: { it: chosen },
+          query: ["lambda", ["it"], ["query", ["=", "?x", "it"]]],
+          type: "lookup",
+        };
+        const outcome = yield* answerOf([
+          "begin",
+          ["relation", "claim", ["id"]],
+          queriesOf({ views: [{ blocks: [block], name: "v" }] }),
+        ]);
+        expect(
+          outcome.ok ? Object.values(outcome.value as never) : outcome
+        ).toEqual([[chosen], [chosen, chosen], [{ x: chosen }]]);
+      }),
+    OPTIONS
+  );
+});
+
+const PLAIN_WORDS = ["lion", "rule", "fact", "why", "goal", "ask"];
+
+describe("the research skill's quote finder", () => {
+  it.effect.prop(
+    "finds each quote in its own text, however searches over several texts interleave",
+    {
+      texts: Arbitrary.array(
+        Arbitrary.array(element(PLAIN_WORDS), { minLength: 3, maxLength: 8 }),
+        { minLength: 2, maxLength: 3 }
+      ),
+      asks: Arbitrary.array(
+        Arbitrary.all({
+          at: between(0, 2),
+          from: between(0, 7),
+          length: between(1, 3),
+        }),
+        { minLength: 1, maxLength: 12 }
+      ),
+    },
+    ({ asks, texts }) =>
+      Effect.gen(function* () {
+        const { whereIn } = yield* Effect.promise(() => locator);
+        for (const { at, from, length } of asks) {
+          const words = texts[at % texts.length] ?? [];
+          const text = words.join(" ");
+          const quote = words
+            .slice(from % words.length, (from % words.length) + length)
+            .join(" ");
+          // Words joined by single spaces: the quote stands where indexOf finds it.
+          const start = text.indexOf(quote);
+          expect(whereIn(text, quote)).toEqual([start, start + quote.length]);
+        }
+      }),
+    OPTIONS
+  );
+});
+
 describe("the research skill's page check", () => {
   it.effect.prop(
     "holds every text and query the plan computes, also when blocks share a title",

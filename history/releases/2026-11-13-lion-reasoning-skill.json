@@ -1,0 +1,15 @@
+{
+  "ships": [
+    {
+      "name": "lion-reasoning skill"
+    }
+  ],
+  "summary": "No package changed. `skills/lion-reasoning` is a new agent skill that uses Lion as the working memory of an agent's reasoning while it works, and the README has a section on it.",
+  "notes": [
+    {
+      "kind": "Changed during the first trial",
+      "text": "Two agents fixed one real bug in history-free copies of Lion from before commit `28ae742`: loading `special-forms/lambda` first crashed with \"Cannot access 'evaluateLambda' before initialization\". One used the skill and one did not. Both found the same cause and the same 11 of 49 modules, and both fixes were verified independently: no module fails when loaded first, the core tests and typecheck pass, and each new test fails on the old code. The cost was the same within noise: 238,607 tokens, 81 tool calls, and 17.5 minutes with the skill; 235,018 tokens, 88 tool calls, and 18.3 minutes without. The skill's agent put 30 to 35% of its effort into the model. The model caught one thing that changed what it did: its \"fails on the old code\" evidence was stale after a later edit to the test, so it ran the check again. It reported five problems with the skill, each fixed above:"
+    }
+  ],
+  "commit": "4c8df1b"
+}

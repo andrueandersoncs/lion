@@ -1,0 +1,20 @@
+{
+  "id": "special-forms-plain-names",
+  "title": "Special forms keep plain names, such as `\"define\"`, with no prefix",
+  "context": "On March 30, 2026, special forms took a leading slash, as in `[\"/define\", \"x\", 1]`. The next day, while the tests were being fixed after list auto-quoting was removed, that spelling was reconsidered.",
+  "decision": "Special forms went back to plain names: `quote`, `eval`, `begin`, `define`, and `lambda`, and every form added since, such as `cond` and `match`, has a plain name too. A form is the array whose first element is its name, and `define` and `lambda` refuse a form's name as a name to bind.",
+  "consequences": "The forms read as their counterparts in Scheme and Racket do, and a slash is left to library names such as `number/add`. The tests written in the slash spelling were rewritten, and `@lionlang/core` 0.1.0 shipped with plain names.",
+  "alternatives": [
+    {
+      "option": "Keep the leading slash, as in `\"/define\"`",
+      "rejected": "The commit that reverted it says only that its author was not feeling it."
+    }
+  ],
+  "supersedes": ["special-forms-slash-prefix"],
+  "commits": [
+    {
+      "commit": "c6c3859",
+      "quote": "revert keyword format back to no-prefix (not feeling it)"
+    }
+  ]
+}

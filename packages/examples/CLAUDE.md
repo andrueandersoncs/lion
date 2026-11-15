@@ -7,7 +7,7 @@ alwaysApply: false
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
+- Tests use Vitest with `@effect/vitest`, as the repository's AGENTS.md says, and run with `bun run test`
 - Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
@@ -26,15 +26,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
-
-```ts#index.test.ts
-import { test, expect } from "bun:test";
-
-test("hello world", () => {
-  expect(1).toBe(1);
-});
-```
+Write property-based tests with `it.prop` or `it.effect.prop` from `@effect/vitest`, as the repository's AGENTS.md says, and run them with `bun run test`.
 
 ## Frontend
 

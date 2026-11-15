@@ -1,0 +1,19 @@
+{
+  "id": "arity-rule",
+  "title": "A call gives a function as many arguments as it takes, and any other number fails with one form of message",
+  "context": "Library functions dropped arguments they did not take and passed `undefined` for ones left out: `[\"number/subtract\", 10, 3, 1]` was `7`, and `[\"object/get\", {\"a\": 1}]` was `null`. Relations, schemas, schema builders, `schema/fits?`, `schema/problems`, `schema/assert`, aggregates, and graph algorithms each checked their arguments on their own, with messages in several forms. It was one of three surprises found while writing Lion programs for the research skill.",
+  "decision": "Every function of the standard library takes a set number of arguments, and a call with any other number fails: `\"number/subtract\" takes 2 arguments but got 3.` One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms, and `over` builds a library function from a schema for each argument. `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do. A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback.",
+  "consequences": "A call with the wrong number of arguments fails where it runs, also where it waits for a logic variable in a rule, a query, or a `find`, and the failure is a `LogicError`. `func/bind` and `func/apply` need the function and its `this`, and a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails, so a lambda is the way to write a callback. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped. The code grew by 62 lines, since the rule and its two helpers cost more than the seven checks and module helpers they replaced. Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`.",
+  "alternatives": [
+    {
+      "option": "Drop extra arguments and pass `undefined` for missing ones, as library functions did before 0.8.0",
+      "rejected": "A wrong call gave a wrong answer instead of an error: `[\"number/subtract\", 10, 3, 1]` was `7`, with the `1` dropped."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "356e74a",
+      "quote": "A call gives a function as many arguments as it takes."
+    }
+  ]
+}

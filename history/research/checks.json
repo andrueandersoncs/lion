@@ -1,0 +1,45 @@
+{
+  "Which commits has the model nothing from?": ["find", "?s", ["silent", "?s"]],
+  "Which assumptions failed, and on what evidence?": [
+    "query",
+    ["violated", "?assumption", "?witness"]
+  ],
+  "Which rules are in force?": ["find", "?r", ["in_force", "?r"]],
+  "Which rules in force predict different behavior for one case?": [
+    "query",
+    ["conflict", "?rule", "?other", "?case", "?value", "?other_value"]
+  ],
+  "Where does Lion not do what a rule in force predicts?": [
+    "query",
+    ["contrary", "?rule", "?case", "?predicted", "?found", "?publisher"]
+  ],
+  "Which decisions were reversed?": [
+    "query",
+    ["reversed", "?topic", "?before", "?after"]
+  ],
+  "What did the project change its word on?": [
+    "query",
+    ["restated", "?question", "?publisher", "?before", "?after"]
+  ],
+  "Where does the repository's word differ from what Lion does?": [
+    "query",
+    ["drift", "?question", "?said", "?does"]
+  ],
+  "What do sources disagree on now?": [
+    "query",
+    ["disputed", "?question", "?values"]
+  ],
+  "Which figures are not written in the words quoted?": [
+    "query",
+    ["unquoted", "?claim", "?field", "?value"]
+  ],
+  "Which statements does no answer rule read?": [
+    "find",
+    "?claim",
+    [
+      "and",
+      ["claim", "?claim", "?_", "?_", "?_"],
+      ["not", ["answer", "?_", "?_", "?claim"]]
+    ]
+  ]
+}

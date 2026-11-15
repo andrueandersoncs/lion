@@ -1,0 +1,19 @@
+{
+  "id": "waiting-rule",
+  "title": "Whatever needs a logic variable's value waits until the variable is bound",
+  "context": "Only functions marked pure waited for a logic variable: the `number`, `string`, `boolean`, `value`, and `array` modules, and a host function marked with `markPure`. Everything else ran at once. A `cond`, `match`, or lambda that branched on a variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable.",
+  "decision": "One rule covers how evaluation meets logic variables: whatever needs a variable's value waits until it is bound, then computes what it would with the value in its place. Every function waits when it is called with a logic variable: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. `logicFunction` marks a host function that takes logic values as they are.",
+  "consequences": "A rule can hold a `cond` or a record over its variables, such as `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place; 35 properties check that equivalence. `markPure` is removed. A filter must be `true` or `false`, where a value such as a number used to pass as true, and a call that fails in a rule or query names itself and its values. An aggregate call combines matches as a whole head argument and a list anywhere else, and an algorithm's input can be a variable that another goal binds. The core has 5% fewer code lines and runs 1.5 to 3 times faster on ten benchmarks.",
+  "alternatives": [
+    {
+      "option": "Let only functions marked pure wait, as the logic layer first did with `markPure`",
+      "rejected": "Everything else ran before its variable had a value, so a `cond`, `match`, or lambda took the same branch for every answer, and a snapshot saved that branch in place of the form."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "aef67af",
+      "quote": "whatever needs a variable's value waits until it is bound, then computes what it would with the value in its place"
+    }
+  ]
+}

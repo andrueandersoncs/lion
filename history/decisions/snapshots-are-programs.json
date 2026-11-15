@@ -1,0 +1,21 @@
+{
+  "id": "snapshots-are-programs",
+  "title": "A logic database is saved as a Lion program of forms that rebuild it",
+  "context": "A logic database lived only in memory. Each `run` got its own, and a host could pass `{ database }` to share one across runs, but Lion had no way to save one, so the `lion` command line could not keep facts and rules from one run to the next.",
+  "decision": "`[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database. Strings that would load as something else, such as relation names, bound names, namespaced names, and `?names`, are written inside `quote`, and so are lists and records. Rules are written from their evaluated goals, so aggregates, `in`, `=`, `not`, `or`, and algorithm goals round-trip. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and `lion program.json --database store.json` loads a snapshot file, runs the program, and saves it back, one form and one fact per line.",
+  "consequences": "A saved database is ordinary Lion that can be read, edited, diffed, and run, and evaluating it into an empty database gives the same answers. A database passed to `run` binds its relations by name, so later runs query them without declaring them again. A program and its snapshot must behave the same, and later changes kept them so: invariants are saved after the rules, a function is written under the name the environment gives it, and a waiting `cond`, record, or lambda is written as its form. A rule or invariant counts as one the database holds when a snapshot would write it the same way.",
+  "commits": [
+    {
+      "commit": "56af8ed",
+      "quote": "returns a Lion program of relation, fact, and rule forms that rebuilds the current database"
+    },
+    {
+      "commit": "47ea840",
+      "quote": "Snapshots save them after the rules"
+    },
+    {
+      "commit": "aef67af",
+      "quote": "Snapshots write a function by the name the environment gives it"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "project-record-in-lion",
+  "title": "Keep the changelog and the decisions as a Lion model of the git history",
+  "context": "`CHANGELOG.md` was prose written by hand at each release, and the reasons behind Lion's design lived only in commit messages and in notes outside the repository. Nothing checked that every feature or fix had an entry, that a release's section listed what that release shipped, or that a changelog entry and the decision behind it agreed. Lion is a language for exactly this: facts, rules that derive the rest, invariants, and `why` for every conclusion.",
+  "decision": "The project record lives in `history/`. Decisions, changes, and releases are plain JSON files, one decision or one piece of work per file, and git is read in as facts: every commit with its parents, time, and message, every tag, and the commit that added each file of the record. A file renamed with nothing else changed keeps the commit that added it; git's renames by likeness are not followed, since two entries share most of their lines, and a new entry would take an old one's commit. Rules in `history/core.json` derive the rest. A change is made by the commits it names, or else by the commit that added its file, and it shipped in the first release whose commit has all of those commits behind it, so nobody writes down which release a change is in. Checks list every `feat` or `fix` commit that no entry records, every quote that is not in the commit message it cites, every breaking change that follows from no decision, and every release whose versions do not rise or whose tag points elsewhere. `CHANGELOG.md` and `DECISIONS.md` are computed by the Lion expressions in `history/outputs.json`, and the record's tests fail when either file is not what the record writes.",
+  "consequences": "`CHANGELOG.md` is no longer edited by hand: a change is recorded in `history/changes/`, and `bun run history write` writes the page. A commit that adds a feature or a fix without an entry fails the check from the next commit on, and in CI, which now fetches the whole history. The record runs on the workspace's own `@lionlang/core`, so a change to Lion that breaks the record's rules fails the tests: the project uses its own language every day. Importing the old changelog showed that its sections already matched what git says each release contained, and the first check found four tags that were never made, for three releases.",
+  "alternatives": [
+    {
+      "option": "Markdown decision records beside a hand-written changelog, as most projects keep them",
+      "rejected": "Nothing would check them against git or against each other, which is the problem the record solves."
+    },
+    {
+      "option": "A changesets tool that collects entries and writes the changelog at release time",
+      "rejected": "It writes text but knows nothing a rule could check, such as ancestry, decisions, or commits that have no entry, and it is another language beside Lion."
+    },
+    {
+      "option": "Keep the record as a saved Lion database, the file `lion --database` reads and writes",
+      "rejected": "The facts from git change with every commit, and a file in a commit cannot hold that commit's own hash. Plain entry files merge cleanly, and git itself stays the source of what was committed when."
+    },
+    {
+      "option": "Write down the release each change belongs to",
+      "rejected": "Ancestry decides it. While the history was backfilled, a fix first placed in 0.1.0 turned out to have reached `main` only after 0.1.1, which a written release would have hidden."
+    }
+  ]
+}

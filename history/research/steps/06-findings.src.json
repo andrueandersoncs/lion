@@ -1,0 +1,34 @@
+[
+  "begin",
+  ["relation", "accepted", ["assumption", "witness", "reason"]],
+  ["relation", "known", ["assumption", "witness", "note"]],
+  ["relation", "open_finding", ["assumption", "witness"]],
+  [
+    "rule",
+    ["open_finding", "?a", "?w"],
+    ["violated", "?a", "?w"],
+    ["not", ["accepted", "?a", "?w", "?_"]],
+    ["not", ["=", "?a", "every-commit-read"]]
+  ],
+  ["relation", "fresh_finding", ["assumption", "witness"]],
+  [
+    "rule",
+    ["fresh_finding", "?a", "?w"],
+    ["open_finding", "?a", "?w"],
+    ["not", ["known", "?a", "?w", "?_"]]
+  ],
+  ["relation", "stale_finding", ["assumption", "witness"]],
+  [
+    "rule",
+    ["stale_finding", "?a", "?w"],
+    ["known", "?a", "?w", "?_"],
+    ["not", ["open_finding", "?a", "?w"]]
+  ],
+  [
+    "rule",
+    ["stale_finding", "?a", "?w"],
+    ["accepted", "?a", "?w", "?_"],
+    ["not", ["violated", "?a", "?w"]]
+  ],
+  "found"
+]

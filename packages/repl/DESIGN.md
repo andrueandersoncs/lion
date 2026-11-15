@@ -141,7 +141,7 @@ The palette is a warm, restrained light scheme: paper neutrals carry the interfa
 - **Muted Sheet:** Gutter, breadcrumb, result, and folded-detail layers.
 - **Sumi:** Primary notation, labels, edges, and icon color.
 - **Muted Sumi:** Secondary metadata and explanatory text.
-- **Crease:** Borders, separators, scrollbars, and graph-grid points.
+- **Crease:** Borders, separators, and scrollbars. Graph-grid points are pure black (`#000`), 1.5px on the 32px rhythm.
 - **Sheet Ink:** High-contrast copy on vermilion and destructive actions.
 - **Destructive:** Invalid graph structure, errors, and irreversible actions.
 
@@ -175,7 +175,7 @@ The surface fills the dynamic viewport beneath a compact command strip. The sema
 
 Search and horizontally scrollable breadcrumbs sit directly above the 32px graph rhythm. The graph itself carries hierarchy, order, roles, and child count; nodes do not repeat those facts. Every semantic branch stays expanded, with values to the left of the expressions that consume them so information flows left to right. Selection reveals only applicable mutation controls, and source ranges and JSON pointers remain available as hover details while exact structure unfolds in place. Arrow keys traverse visible expressions, structural keys act on the selection, and a compact key guide keeps those commands discoverable.
 
-Evaluation appears in a compact, always-open dock over the bottom edge of the canvas after the first run. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run updates the dock without changing graph layout or moving the viewport.
+Evaluation appears in a compact, collapsible dock over the bottom edge of the canvas after the first run. The global Run command evaluates the current revision, while a small play action on each expression-like nonprimitive node evaluates only that subtree. Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. Either run updates the dock without changing graph layout or moving the viewport.
 
 At 899px and below, the command strip wraps its document controls onto a second row, Open and Save stay visibly labeled, the minimap disappears, and the canvas centers the selected expression at a readable scale. The output dock spans the safe width and caps its height so the graph remains visible. Coarse pointers receive a minimum 2.75rem target in the command strip, graph search, node actions, and dock controls.
 
@@ -187,7 +187,7 @@ At 899px and below, the command strip wraps its document controls onto a second 
 
 ## Elevation & Depth
 
-The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy. Soft shadows are reserved for the command strip, graph nodes, graph controls, and overview map; selected nodes add a vermilion ring and slightly deeper lift.
+The system is crease-first, and what can be manipulated is lifted with weight. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy. Shadows are reserved for the command strip, graph nodes, graph controls, and overview map; selected nodes add a vermilion ring and slightly deeper lift.
 
 ### Shadow Vocabulary
 
@@ -239,7 +239,7 @@ Graph search and horizontally scrollable breadcrumbs form the visible canvas nav
 
 ### Evaluation Output Dock
 
-An explicit run opens a bottom-edge canvas dock with status, revision, stale state, copy action, transcript, structured Jev answers, failures, and raw output. The dock remains open and updates in place for subsequent runs. It overlays rather than resizes the graph, keeps the selected node fixed, caps its height, and becomes safe-width on narrow screens.
+An explicit run opens a bottom-edge canvas dock with status, revision, stale state, copy action, transcript, structured Jev answers, failures, and raw output. The dock updates in place for subsequent runs, and its header collapses or expands it. It overlays rather than resizes the graph, keeps the selected node fixed, caps its height, and becomes safe-width on narrow screens.
 
 
 ### Folded Semantic Node

@@ -36,6 +36,26 @@ export const over = <const P extends readonly Schema.Constraint[], B>(
 ) => overEffect(parameters, (...values) => Effect.succeed(operate(...values)));
 
 /**
+ * A library function that cuts a part out of a string or a list, from
+ * `start` up to, but not including, `end`, as JavaScript's `slice` does: a
+ * negative position counts from the end, and a position past either end
+ * stops there. Without `end`, the part runs to the end.
+ */
+export const slicing = <A extends string | readonly unknown[]>(
+  subject: Schema.Decoder<A>
+) => {
+  const toEnd = decode(Schema.Tuple([subject, Schema.Int]));
+  const between = decode(Schema.Tuple([subject, Schema.Int, Schema.Int]));
+  return takes([2, 3], (...args: unknown[]) =>
+    args.length === 2
+      ? Effect.map(toEnd(args), ([value, start]) => value.slice(start))
+      : Effect.map(between(args), ([value, start, end]) =>
+          value.slice(start, end)
+        )
+  );
+};
+
+/**
  * A library function that combines arguments of one kind: one or more of
  * them unless `count` says otherwise, as `+` and `string-append` take any
  * number in Scheme.

@@ -5,35 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Research model</title>
     <style>
+    /*
+      One type scale: the title, a heading, body text, small text in muted
+      and in ink, and figures. Every screen should stay within seven text
+      styles, so add a new size or colour only where the reader needs it.
+    */
     :root {
-      --bg: #f6f5f1;
+      --bg: #f5f3ee;
       --panel: #ffffff;
-      --ink: #1d1c1a;
-      --muted: #625f58;
-      --line: #dedbd2;
-      --accent: #9a4d17;
+      --ink: #1c1b19;
+      --muted: #67635b;
+      --line: #e3dfd5;
+      --soft: #efece5;
+      --accent: #a14f15;
       --accent-ink: #ffffff;
-      --soft: #efece4;
       --good: #2a6642;
       --warn: #7a4e00;
-      --bad: #9c2f28;
+      --bad: #a3322a;
+      --shadow: 0 1px 2px rgb(28 27 25 / 0.05), 0 4px 16px rgb(28 27 25 / 0.04);
+      --radius: 12px;
       --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --small: 0.875rem;
       color-scheme: light dark;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #171614;
-        --panel: #201f1c;
-        --ink: #ece9e1;
-        --muted: #a8a49a;
-        --line: #38362f;
-        --accent: #e39a5c;
+        --bg: #161513;
+        --panel: #1f1e1b;
+        --ink: #ece9e2;
+        --muted: #a7a399;
+        --line: #34322c;
+        --soft: #282622;
+        --accent: #e8a066;
         --accent-ink: #1b1309;
-        --soft: #2a2824;
-        --good: #86cfa3;
-        --warn: #e0b563;
-        --bad: #f0938b;
+        --good: #8ad0a6;
+        --warn: #e3b866;
+        --bad: #f09a92;
+        --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px rgb(0 0 0 / 0.25);
       }
     }
     * {
@@ -44,7 +53,8 @@
     }
     body {
       margin: 0;
-      font: 16px / 1.55 var(--sans);
+      font: 1rem / 1.6 var(--sans);
+      -webkit-font-smoothing: antialiased;
       color: var(--ink);
       background: var(--bg);
     }
@@ -69,68 +79,129 @@
       color: var(--accent);
       text-decoration-color: currentcolor;
     }
-    button {
+    button,
+    input,
+    select,
+    textarea {
       font: inherit;
       color: inherit;
     }
     .wrap {
-      max-width: 900px;
+      max-width: 860px;
       padding: 0 24px;
       margin: 0 auto;
     }
 
-    /* The top of the page: what was asked, and the short answer. */
+    /* The top of the page: its name, the short answer, and how far it has got. */
     .top {
-      padding: 40px 0 20px;
+      padding: 44px 0 18px;
     }
     h1 {
       margin: 0;
-      font-size: 1.75rem;
-      font-weight: 680;
-      line-height: 1.2;
-      letter-spacing: -0.012em;
+      font-size: 1.875rem;
+      font-weight: 650;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
       text-wrap: balance;
     }
     .summary {
-      max-width: 68ch;
-      margin: 14px 0 0;
-      font-size: 1.0625rem;
+      max-width: 62ch;
+      margin: 12px 0 0;
+      text-wrap: pretty;
     }
     .meta {
-      margin: 12px 0 0;
-      font-size: 0.875rem;
+      margin: 10px 0 0;
+      font-size: var(--small);
       color: var(--muted);
     }
+    .progress {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 6px 10px;
+      align-items: center;
+      max-width: 460px;
+      margin: 14px 0 0;
+      font-size: var(--small);
+      color: var(--muted);
+    }
+    .progress[hidden] {
+      display: none;
+    }
+    .progress .bar {
+      grid-column: 1 / -1;
+      height: 3px;
+      overflow: hidden;
+      background: var(--line);
+      border-radius: 3px;
+    }
+    .progress .bar > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 240ms ease-out;
+    }
+    .progress[data-measured="false"] .bar > span {
+      width: 30% !important;
+      animation: sweep 1.2s ease-in-out infinite;
+    }
+    @keyframes sweep {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(340%);
+      }
+    }
+    .spinner {
+      display: inline-block;
+      flex: none;
+      width: 14px;
+      height: 14px;
+      vertical-align: -2px;
+      border: 2px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
-    /* The four views. */
+    /* The parts of the page, as tabs that stay in reach. */
     .views {
       position: sticky;
       top: 0;
       z-index: 2;
-      background: var(--bg);
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
       border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
     }
     .views .wrap {
       display: flex;
-      flex-wrap: wrap;
-      gap: 4px 6px;
+      gap: 2px;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
     .views button {
-      padding: 12px 10px 10px;
-      font: inherit;
-      font-weight: 550;
+      flex: none;
+      padding: 12px 12px 11px;
+      font-size: var(--small);
       color: var(--muted);
+      white-space: nowrap;
       cursor: pointer;
       background: none;
       border: 0;
       border-bottom: 2px solid transparent;
-      border-radius: 0;
       transition:
         color 160ms ease-out,
         border-color 160ms ease-out;
     }
     .views button:first-child {
-      margin-left: -10px;
+      margin-left: -12px;
     }
     .views button:hover {
       color: var(--ink);
@@ -141,29 +212,28 @@
     }
     .views .quiet {
       margin-left: auto;
-      font-size: 0.875rem;
-      font-weight: 450;
     }
     main.wrap {
       padding-top: 28px;
       padding-bottom: 96px;
     }
-    main > section[hidden] {
+    main > section[hidden],
+    #pages > section[hidden] {
       display: none;
     }
     .lead {
-      max-width: 68ch;
+      max-width: 62ch;
       margin: 0 0 24px;
       color: var(--muted);
     }
 
     /* Controls. */
     .button {
-      padding: 5px 12px;
+      padding: 6px 14px;
       cursor: pointer;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 6px;
+      border-radius: 8px;
       transition: border-color 160ms ease-out;
     }
     .button:hover {
@@ -175,28 +245,39 @@
       opacity: 0.45;
     }
     .button.primary {
-      font-weight: 600;
       color: var(--accent-ink);
       background: var(--accent);
       border-color: var(--accent);
     }
     .button.small {
       padding: 1px 8px;
-      font-size: 0.75rem;
+      font-size: var(--small);
+    }
+    .search,
+    .choose select,
+    .choose .pick,
+    .rowtools input {
+      width: 100%;
+      max-width: 420px;
+      padding: 9px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      transition: border-color 160ms ease-out;
+    }
+    .search:focus,
+    .choose select:focus,
+    .choose .pick:focus,
+    .rowtools input:focus {
+      outline: 0;
+      border-color: var(--accent);
     }
     .search {
       display: block;
-      width: 100%;
-      max-width: 420px;
-      padding: 7px 12px;
       margin: 0 0 20px;
-      font: inherit;
-      color: inherit;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
     }
-    .search::placeholder {
+    .search::placeholder,
+    .choose .pick::placeholder {
       color: var(--muted);
     }
     .reveal {
@@ -204,7 +285,7 @@
       gap: 8px;
       align-items: center;
       padding: 4px 0;
-      font-size: 0.9375rem;
+      font-size: var(--small);
       color: var(--accent);
       cursor: pointer;
       background: none;
@@ -228,7 +309,7 @@
     }
     .aside {
       padding: 0;
-      font-size: 0.875rem;
+      font-size: var(--small);
       color: var(--muted);
       text-decoration: underline;
       text-decoration-color: var(--line);
@@ -251,6 +332,17 @@
         transform: translateY(-4px);
       }
     }
+    .ask {
+      margin: 28px 0 0;
+    }
+    .working {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 0;
+      font-size: var(--small);
+      color: var(--muted);
+    }
     @media (prefers-reduced-motion: reduce) {
       * {
         transition: none !important;
@@ -258,21 +350,55 @@
       }
     }
 
-    /* Answers: one question, its answer, and what stands behind it. */
-    .qa {
-      padding: 22px 0;
-      border-top: 1px solid var(--line);
+    /* Blocks: each a card, so a part of the page reads as one thing. */
+    .block {
+      margin: 0 0 16px;
     }
-    .qa h2 {
-      margin: 0;
+    .block.is-answer,
+    .block.is-lookup,
+    .block.is-text,
+    .block.is-waiting {
+      padding: 20px 24px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .blocktitle,
+    .qa h2,
+    .group > h2 {
+      margin: 0 0 8px;
       font-size: 1.125rem;
-      font-weight: 650;
+      font-weight: 600;
       line-height: 1.35;
       text-wrap: balance;
     }
-    .qa .answer {
-      max-width: 70ch;
-      margin: 8px 0 6px;
+    .block.is-waiting .blocktitle {
+      margin-bottom: 12px;
+    }
+    .block > .note,
+    .group > .note {
+      max-width: 62ch;
+      margin: -2px 0 14px;
+      font-size: var(--small);
+      color: var(--muted);
+    }
+    .prose {
+      max-width: 62ch;
+      margin: 0 0 12px;
+    }
+    .prose:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Answers: one question, its answer, and what stands behind it. */
+    .qa h2 {
+      margin-bottom: 6px;
+    }
+    .answer {
+      max-width: 62ch;
+      margin: 0 0 6px;
+      text-wrap: pretty;
     }
     .qa .tools {
       display: flex;
@@ -285,24 +411,81 @@
       color: var(--muted);
     }
 
+    /* Figures: the few numbers that matter, large. */
+    .figures {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      padding: 0;
+      margin: 0;
+    }
+    .figures > div {
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .figures dt {
+      font-size: var(--small);
+      color: var(--muted);
+    }
+    .figures dd {
+      margin: 2px 0 0;
+      font-size: 1.875rem;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    .figures .aside-note {
+      margin-top: 4px;
+      font-size: var(--small);
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    /* Lookups: a question the reader completes. */
+    .choose {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      margin: 0 0 14px;
+    }
+    .choose label {
+      display: grid;
+      flex: 1 1 260px;
+      gap: 4px;
+      max-width: 420px;
+      font-size: var(--small);
+      color: var(--muted);
+    }
+    .choose select,
+    .choose .pick {
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .choose .pick::-webkit-search-cancel-button {
+      appearance: none;
+    }
+    /* A box that finds options as the reader types says so with its icon. */
+    .choose .pick {
+      padding-left: 36px;
+      background: var(--panel)
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238a857b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='m11 11 3.5 3.5'/%3E%3C/svg%3E")
+        no-repeat 12px 50%;
+    }
+    .block.is-lookup .more > .answer {
+      margin-bottom: 8px;
+    }
+
     /* How solid is it: findings grouped by who stands behind them. */
     .group {
       margin: 0 0 40px;
     }
-    .group > h2 {
-      margin: 0 0 4px;
-      font-size: 1.25rem;
-      font-weight: 650;
-      line-height: 1.3;
-    }
     .group > h2 .count {
-      font-weight: 450;
-      color: var(--muted);
-    }
-    .group > .note {
-      max-width: 68ch;
-      margin: 0 0 14px;
-      font-size: 0.9375rem;
+      font-weight: 400;
       color: var(--muted);
     }
     .findings {
@@ -318,12 +501,12 @@
       font-weight: 600;
     }
     .finding .qualifier {
-      font-size: 0.875rem;
+      font-size: var(--small);
       font-weight: 400;
       color: var(--muted);
     }
     .finding .line {
-      max-width: 70ch;
+      max-width: 62ch;
       margin: 3px 0 0;
     }
     .finding .who {
@@ -347,23 +530,23 @@
       list-style: disc;
     }
     .options li {
-      max-width: 68ch;
+      max-width: 62ch;
       margin: 3px 0;
     }
 
     /* A statement: the source's words, and whose they are. */
     .statement {
-      padding-left: 16px;
+      padding-left: 14px;
       margin: 12px 0;
-      border-left: 1px solid var(--line);
+      border-left: 2px solid var(--line);
     }
     .statement blockquote {
-      max-width: 68ch;
+      max-width: 62ch;
       margin: 0;
     }
     .statement figcaption {
       margin-top: 3px;
-      font-size: 0.875rem;
+      font-size: var(--small);
       color: var(--muted);
     }
     .statement .coded {
@@ -373,15 +556,15 @@
     /* A quote where it stands in the saved text of its source. */
     .passage {
       position: relative;
-      max-width: 68ch;
+      max-width: 62ch;
       padding: 10px 12px;
       margin: 8px 0;
-      font-size: 0.9375rem;
+      font-size: var(--small);
       color: var(--muted);
       overflow-wrap: anywhere;
       white-space: pre-wrap;
       background: var(--soft);
-      border-radius: 4px;
+      border-radius: 8px;
     }
     .passage.whole {
       max-height: 22rem;
@@ -394,63 +577,14 @@
     }
     .worked {
       font-family: var(--mono);
-      font-size: 0.875rem;
+      font-size: var(--small);
     }
 
-    /* The blocks a page is made of. */
-    .block {
-      margin: 0 0 36px;
-    }
-    .block.is-answer {
-      margin: 0;
-    }
-    .block.is-answer:first-child .qa {
-      padding-top: 4px;
-      border-top: 0;
-    }
-    .blocktitle {
-      margin: 0 0 10px;
-      font-size: 1.25rem;
-      font-weight: 650;
-      line-height: 1.3;
-    }
-    .block > .note {
-      max-width: 68ch;
-      margin: -4px 0 14px;
-      font-size: 0.9375rem;
-      color: var(--muted);
-    }
-    .prose {
-      max-width: 68ch;
-      margin: 0 0 12px;
-    }
-    .figures {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 18px 28px;
-      padding: 16px 0;
-      margin: 0;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-    .figures dt {
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-    .figures dd {
-      margin: 2px 0 0;
-      font-size: 1.0625rem;
-      font-weight: 600;
-    }
-    .figures .aside-note {
-      font-size: 0.8125rem;
-      font-weight: 400;
-      color: var(--muted);
-    }
+    /* Rows in time order, a day at a time. */
     .day > h3 {
       margin: 22px 0 6px;
-      font-size: 0.9375rem;
-      font-weight: 650;
+      font-size: var(--small);
+      font-weight: 600;
     }
     .day:first-of-type > h3 {
       margin-top: 4px;
@@ -469,39 +603,17 @@
     }
     .moments .time {
       padding-top: 2px;
-      font-size: 0.875rem;
+      font-size: var(--small);
       font-variant-numeric: tabular-nums;
       color: var(--muted);
     }
     .moments .what {
-      font-weight: 550;
+      font-weight: 600;
     }
     .moments .line {
-      max-width: 66ch;
+      max-width: 62ch;
       margin: 2px 0 0;
-      font-size: 0.875rem;
-    }
-    .choose {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 20px;
-      margin: 0 0 14px;
-    }
-    .choose label {
-      display: grid;
-      gap: 3px;
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-    .choose select {
-      min-width: 220px;
-      max-width: 100%;
-      padding: 6px 10px;
-      font: inherit;
-      color: var(--ink);
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      font-size: var(--small);
     }
 
     /* Sources. */
@@ -514,7 +626,7 @@
     }
     .source .about {
       margin: 2px 0 0;
-      font-size: 0.875rem;
+      font-size: var(--small);
       color: var(--muted);
     }
 
@@ -523,17 +635,17 @@
       overflow-x: auto;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
     }
     table {
       width: 100%;
-      font-size: 0.875rem;
+      font-size: var(--small);
       font-variant-numeric: tabular-nums;
       border-collapse: collapse;
     }
     th,
     td {
-      padding: 8px 12px;
+      padding: 9px 12px;
       vertical-align: top;
       text-align: left;
       border-bottom: 1px solid var(--line);
@@ -551,7 +663,6 @@
       user-select: none;
     }
     tbody th {
-      font-weight: 600;
       white-space: normal;
       background: none;
     }
@@ -572,17 +683,12 @@
       gap: 8px 14px;
       align-items: center;
       margin: 0 0 8px;
-      font-size: 0.875rem;
+      font-size: var(--small);
       color: var(--muted);
     }
     .rowtools input {
-      min-width: 200px;
-      padding: 3px 9px;
-      font: inherit;
-      color: inherit;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      max-width: 260px;
+      padding: 5px 10px;
     }
     .pair .key {
       color: var(--muted);
@@ -590,20 +696,27 @@
     .part {
       margin: 0 0 20px;
     }
+    .part:last-child {
+      margin-bottom: 0;
+    }
     .part > h3 {
       margin: 0 0 8px;
-      font-size: 0.9375rem;
+      font-size: var(--small);
       font-weight: 600;
     }
     .plainlist {
       padding-left: 20px;
       margin: 0;
     }
+    .plainlist li {
+      max-width: 62ch;
+      margin: 0 0 8px;
+    }
 
     /* Code, for readers who query the model themselves. */
     .json {
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.8125rem;
       overflow-wrap: anywhere;
       white-space: pre-wrap;
     }
@@ -615,26 +728,34 @@
       margin: 0;
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
     }
     code {
       padding: 1px 4px;
       font-family: var(--mono);
-      font-size: 0.8em;
+      font-size: 0.85em;
       background: var(--soft);
       border-radius: 4px;
     }
     .workbench {
       display: grid;
-      grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+      grid-template-columns: minmax(200px, 250px) minmax(0, 1fr);
       gap: 28px;
       align-items: start;
     }
     .tables h2,
     .bench h2 {
       margin: 0 0 8px;
-      font-size: 0.9375rem;
+      font-size: var(--small);
       font-weight: 600;
+    }
+    .tables summary {
+      font-size: var(--small);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .tables details[open] summary {
+      margin-bottom: 10px;
     }
     .tables .item {
       display: block;
@@ -672,7 +793,7 @@
     .editor {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 10px;
     }
     .editor textarea {
       display: block;
@@ -680,7 +801,6 @@
       min-height: 132px;
       padding: 12px 14px;
       font: 0.8125rem / 1.55 var(--mono);
-      color: inherit;
       tab-size: 2;
       resize: vertical;
       outline: 0;
@@ -707,7 +827,7 @@
       gap: 8px 12px;
       align-items: center;
       margin: 14px 2px 8px;
-      font-size: 0.8125rem;
+      font-size: var(--small);
       color: var(--muted);
     }
     .status .label {
@@ -721,7 +841,7 @@
       overflow-wrap: anywhere;
       white-space: pre-wrap;
       border: 1px solid var(--bad);
-      border-radius: 8px;
+      border-radius: 10px;
     }
     .why {
       padding: 0;
@@ -772,6 +892,18 @@
       h1 {
         font-size: 1.5rem;
       }
+      .block.is-answer,
+      .block.is-lookup,
+      .block.is-text,
+      .block.is-waiting {
+        padding: 16px 18px;
+      }
+      .figures {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+      .figures dd {
+        font-size: 1.5rem;
+      }
       .views .quiet {
         margin-left: 0;
       }
@@ -786,7 +918,20 @@
       <div class="wrap">
         <h1 id="title">Research model</h1>
         <p class="summary" id="summary" hidden></p>
-        <p class="meta" id="meta">Opening the research…</p>
+        <p class="meta" id="meta" hidden></p>
+        <div
+          class="progress"
+          id="progress"
+          role="status"
+          aria-live="polite"
+          data-measured="false"
+        >
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="progress-text">Starting Lion…</span>
+          <span class="bar" aria-hidden="true"
+            ><span id="progress-bar"></span></span
+          >
+        </div>
       </div>
     </header>
     <nav class="views" aria-label="Parts of this research">
@@ -794,12 +939,15 @@
     </nav>
     <main class="wrap">
       <div id="pages"></div>
+      <p class="ask" id="ask">
+        <button type="button" class="aside" id="to-query">
+          Ask your own question, in Lion
+        </button>
+      </p>
       <section id="query" aria-label="Query the model" hidden>
         <p class="lead">
-          Everything on the other pages is computed from a model of the
-          research, written in a small language called Lion. If you know it, you
-          can ask the model anything here. A query can also add to the model, to
-          see what would follow, and
+          Every answer on this page is worked out from a model written in Lion.
+          If you know Lion, ask it anything here;
           <b>Start over</b>
           puts the saved model back.
         </p>

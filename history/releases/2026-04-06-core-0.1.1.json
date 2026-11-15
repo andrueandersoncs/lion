@@ -1,0 +1,5 @@
+{
+  "ships": [{ "name": "@lionlang/core", "version": "0.1.1" }],
+  "summary": "The same code as 0.1.0, published minutes later with the package's README and homepage, so that npm shows them.",
+  "commit": "3a60423"
+}

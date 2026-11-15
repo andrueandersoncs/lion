@@ -8,11 +8,14 @@
 const TIMEOUT_MS = 20_000;
 const WIDTH = 76;
 const SHOWN_AT_FIRST = 6;
+// A choice from more options than this is typed into a search box, not
+// picked from a list.
+const MANY_OPTIONS = 12;
 const FILTER_FROM = 9;
 const URL_PATTERN = /^https?:\/\/\S+$/;
 const CHANGES = /"(?:fact|retract|rule|relation|schema|invariant)"/;
 const SEPARATORS = /[_-]+/g;
-const DAY = /^(\d{4})-?(\d{2})-?(\d{2})$/;
+const DAY = /^(\d{4})-?(\d{2})-?(\d{2})(?:\d{4}(?:\d{2})?)?$/;
 const DAY_AT_START = /^\d{4}-\d{2}-\d{2}/;
 const VALUE_RANKS = { boolean: 1, number: 2, string: 3 };
 const MONTHS = [
@@ -150,7 +153,22 @@ const startWorker = () => {
   });
 };
 
-const send = (message) =>
+// One message at a time: the worker answers in order, and a request's time
+// limit counts only its own run, not the time it waited behind others.
+let queue = Promise.resolve();
+const send = (message) => {
+  const sent = queue.then(async () => {
+    // A run waits for the model, which a stopped run loads again.
+    if (message.type === "run") {
+      await loaded;
+    }
+    return post(message);
+  });
+  queue = sent.catch(() => undefined);
+  return sent;
+};
+
+const post = (message) =>
   new Promise((resolve) => {
     const id = nextId;
     nextId += 1;
@@ -160,7 +178,7 @@ const send = (message) =>
       worker.terminate();
       waiting.clear();
       startWorker();
-      load();
+      loaded = post({ type: "load", snapshot: data.database });
       resolve({
         ok: false,
         error: `Stopped after ${TIMEOUT_MS / 1000} seconds. The model was loaded again.`,
@@ -200,7 +218,7 @@ const sentence = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const label = (name) =>
   LABELS[name] ?? sentence(name.replaceAll(SEPARATORS, " "));
 const counted = (count, one, many = `${one}s`) =>
-  `${count} ${count === 1 ? one : many}`;
+  `${count.toLocaleString("en")} ${count === 1 ? one : many}`;
 
 /** The same text for equal values, whatever order a record lists its keys in. */
 const canonical = (value) => {
@@ -1733,7 +1751,14 @@ const tablesView = async () => {
       ]
     );
   };
-  return [listOf("Recorded", false), listOf("Worked out by rules", true)];
+  // Folded, so the editor is what the page leads with.
+  return el(
+    "details",
+    {},
+    el("summary", {}, counted(all.length, "relation"), " in the model"),
+    listOf("Recorded", false),
+    listOf("Worked out by rules", true)
+  );
 };
 
 // ---- The page plan: views made of blocks, chosen for this reader's goal
@@ -1939,6 +1964,73 @@ const queried = async (block, render) => {
   ];
 };
 
+/** What stands where an answer will be, while the model works it out. */
+const working = (text = "Working this out from the model…") =>
+  el(
+    "p",
+    { class: "working", role: "status" },
+    el("span", { class: "spinner", "aria-hidden": "true" }),
+    text
+  );
+
+let pickerCount = 0;
+
+/**
+ * One choice of a lookup: a list to pick from, or, when there are many
+ * options, a box that finds them as the reader types.
+ */
+const picker = (items, choice, example, changed) => {
+  const labelOf = (item) => choice.labels?.[plain(item)] ?? plain(item);
+  const chosen = items.find((item) => canonical(item) === canonical(example));
+  if (items.length <= MANY_OPTIONS) {
+    const select = el(
+      "select",
+      { onchange: changed },
+      items.map((item) =>
+        el(
+          "option",
+          { value: JSON.stringify(item), selected: item === chosen },
+          labelOf(item)
+        )
+      )
+    );
+    return {
+      choice,
+      control: select,
+      value: () => (select.value === "" ? undefined : JSON.parse(select.value)),
+    };
+  }
+  pickerCount += 1;
+  const list = `choices-${pickerCount}`;
+  const byLabel = new Map(items.map((item) => [labelOf(item), item]));
+  const box = el("input", {
+    type: "search",
+    class: "pick",
+    list,
+    autocomplete: "off",
+    spellcheck: "false",
+    placeholder: `Type to find one of ${counted(items.length, "choice")}`,
+    value: chosen === undefined ? undefined : labelOf(chosen),
+    oninput: () => {
+      if (byLabel.has(box.value)) {
+        changed();
+      }
+    },
+  });
+  return {
+    choice,
+    control: [
+      box,
+      el(
+        "datalist",
+        { id: list },
+        items.map((item) => el("option", { value: labelOf(item) }))
+      ),
+    ],
+    value: () => byLabel.get(box.value),
+  };
+};
+
 const BLOCKS = {
   answer: async (block) => qa({ ...block, answer: await worded(block.answer) }),
   comparison: (block) => queried(block, (rows) => comparison(rows, block)),
@@ -2016,44 +2108,59 @@ const BLOCKS = {
       return [heading(block), failed(options)];
     }
     const result = el("div", { class: "more" });
-    const pickers = choices.map(([name, choice]) => ({
-      choice,
-      name,
-      select: el(
-        "select",
-        { onchange: () => answer() },
-        [options.value[name]].flat().map((value) => {
-          const item = single(value);
-          return el(
-            "option",
-            {
-              value: JSON.stringify(item),
-              selected: canonical(item) === canonical(block.example?.[name]),
-            },
-            choice.labels?.[plain(item)] ?? plain(item)
-          );
-        })
-      ),
-    }));
+    const pickers = choices.map(([name, choice]) =>
+      picker(
+        [options.value[name]].flat().map(single),
+        choice,
+        block.example?.[name],
+        () => answer()
+      )
+    );
+    let asked = 0;
     async function answer() {
-      if (pickers.some(({ select }) => select.value === "")) {
+      const values = pickers.map((each) => each.value());
+      if (values.some((value) => value === undefined)) {
         result.replaceChildren(nothing());
         return;
       }
+      asked += 1;
+      const ticket = asked;
+      result.replaceChildren(working());
       // The block's query is a function of what the reader chose, and each
       // choice is passed to it as data.
-      const query = [
-        block.query,
-        ...pickers.map(({ select }) => ["quote", JSON.parse(select.value)]),
-      ];
+      const chosen = values.map((value) => ["quote", value]);
+      const query =
+        block.query === undefined ? undefined : [block.query, ...chosen];
+      if (block.answer !== undefined) {
+        const said = await worded([block.answer, ...chosen]);
+        const evidence =
+          query &&
+          disclosure("Show the evidence", async () => {
+            const response = await evaluate(within(query));
+            return response.ok
+              ? shaped(block, response.value, query)
+              : failed(response);
+          });
+        if (ticket === asked) {
+          result.replaceChildren(
+            el("p", { class: "answer" }, said ?? ""),
+            ...(evidence ? [evidence.button, evidence.body] : [])
+          );
+        }
+        return;
+      }
       const response = await evaluate(within(query));
-      result.replaceChildren(
-        ...[
-          response.ok ? shaped(block, response.value, query) : failed(response),
-        ]
-          .flat(3)
-          .filter(Boolean)
-      );
+      if (ticket === asked) {
+        result.replaceChildren(
+          ...[
+            response.ok
+              ? shaped(block, response.value, query)
+              : failed(response),
+          ]
+            .flat(3)
+            .filter(Boolean)
+        );
+      }
     }
     await answer();
     return [
@@ -2062,12 +2169,12 @@ const BLOCKS = {
       el(
         "div",
         { class: "choose" },
-        pickers.map(({ choice, name, select }) =>
+        pickers.map(({ choice, control }, at) =>
           el(
             "label",
             {},
-            el("span", {}, choice.label ?? sentence(name)),
-            select
+            el("span", {}, choice.label ?? sentence(choices[at][0])),
+            control
           )
         )
       ),
@@ -2118,23 +2225,77 @@ const blockOf = async (block) => {
   return el("div", { class: `block is-${block?.type ?? "unknown"}` }, content);
 };
 
-/** A view's blocks, with a search box over its questions when it has many. */
-const viewOf = async (view) => {
-  const blocks = await Promise.all(
-    (Array.isArray(view.blocks) ? view.blocks : []).map(blockOf)
+const blocksOf = (view) => (Array.isArray(view?.blocks) ? view.blocks : []);
+
+/** What a block shows until the model has worked it out: its title, and a working line. */
+const placeholder = (block) => {
+  const title = block?.title ?? block?.question;
+  return el(
+    "div",
+    { class: "block is-waiting", "aria-busy": "true" },
+    typeof title === "string" && el("h2", { class: "blocktitle" }, title),
+    working()
   );
-  const questions = blocks.flatMap((block) => [
+};
+
+// ---- Progress, while Lion opens the model and works the page out
+
+const progress = (text, done, total) => {
+  $("progress").hidden = false;
+  $("progress-text").textContent = text;
+  $("progress-bar").style.width =
+    total > 0 ? `${Math.round((100 * done) / total)}%` : "";
+  $("progress").dataset.measured = String(total > 0);
+};
+
+const allBlocks = () =>
+  views.reduce((count, view) => count + blocksOf(view).length, 0);
+let readyBlocks = 0;
+let modelOpen = false;
+const building = new Map();
+
+/**
+ * Fills one view, block by block as the model works each out, and gives it
+ * a search box over its questions when it has many.
+ */
+const fillView = async (at) => {
+  const section = $(pageId(at));
+  const blocks = blocksOf(views[at]);
+  const slots = blocks.map(placeholder);
+  section.replaceChildren(...slots);
+  const built = await Promise.all(
+    blocks.map(async (block, index) => {
+      const content = await blockOf(block);
+      slots[index].replaceWith(content);
+      readyBlocks += 1;
+      progress(
+        `Working out the answers: ${readyBlocks} of ${allBlocks()}`,
+        readyBlocks,
+        allBlocks()
+      );
+      return content;
+    })
+  );
+  const questions = built.flatMap((block) => [
     ...block.querySelectorAll(".qa"),
   ]);
-  return [
-    questions.length >= FILTER_FROM &&
-      searchOver(
+  if (questions.length >= FILTER_FROM) {
+    section.prepend(
+      ...searchOver(
         "Search the questions",
         questions,
         "No question here matches that."
-      ),
-    blocks,
-  ];
+      )
+    );
+  }
+};
+
+/** Starts working out a view, once, and gives the work. */
+const buildView = (at) => {
+  if (!building.has(at)) {
+    building.set(at, fillView(at));
+  }
+  return building.get(at);
 };
 
 // ---- The page
@@ -2142,10 +2303,20 @@ const viewOf = async (view) => {
 const pageId = (at) => `view-${at}`;
 const pageIds = () => [...views.map((_view, at) => pageId(at)), "query"];
 
+let shownView = pageId(0);
+
 function go(id) {
+  shownView = id;
+  const at = views.findIndex((_view, index) => pageId(index) === id);
+  if (modelOpen && at >= 0) {
+    buildView(at);
+  }
   for (const name of pageIds()) {
     $(name).hidden = name !== id;
   }
+  // Asking in Lion is offered at the end of the last part, where a reader
+  // who wants to go further than the page ends up.
+  $("ask").hidden = id !== pageId(views.length - 1);
   for (const button of document.querySelectorAll(".views button")) {
     if (button.dataset.view === id) {
       button.setAttribute("aria-current", "page");
@@ -2162,10 +2333,16 @@ function go(id) {
 const fill = (id, content) =>
   $(id).replaceChildren(...[content].flat(4).filter(Boolean));
 
-/** Builds every view from the model as it now is. */
+/** Builds every view from the model as it now is: the one shown first. */
 async function refresh() {
+  modelOpen = false;
+  building.clear();
+  readyBlocks = 0;
+  progress("Reading the statements…");
   const response = await loadModel();
   if (!response.ok) {
+    $("progress").hidden = true;
+    $("meta").hidden = false;
     $("meta").textContent =
       `This file's model could not be opened: ${response.error}`;
     fill(
@@ -2181,19 +2358,41 @@ async function refresh() {
   $("meta").textContent = [
     relations.has("source") && counted(rowsOf("source").length, "source"),
     relations.has("claim") && counted(rowsOf("claim").length, "statement"),
-    dated(data.generated) && `as of ${dated(data.generated)}`,
+    dated(data.generated),
   ]
     .filter(Boolean)
     .join(" · ");
+  progress("Writing the summary…");
   const summary = await worded(plan.summary);
   $("summary").textContent = summary ?? "";
   $("summary").hidden = !summary;
-  const built = await Promise.all(views.map(viewOf));
-  for (const [at, content] of built.entries()) {
-    fill(pageId(at), content);
+  modelOpen = true;
+  progress(`Working out the answers: 0 of ${allBlocks()}`, 0, allBlocks());
+  const first = views.findIndex((_view, at) => pageId(at) === shownView);
+  const order = [
+    ...(first >= 0 ? [first] : []),
+    ...views.map((_view, at) => at).filter((at) => at !== first),
+  ];
+  for (const at of order) {
+    await buildView(at);
   }
   fill("tables", await tablesView());
+  $("progress").hidden = true;
+  $("meta").hidden = false;
 }
+
+/** How many statements the snapshot holds, counted before Lion has opened it. */
+const statementsIn = () =>
+  forms.reduce(
+    (count, form) =>
+      count +
+      (Array.isArray(form) && form[0] === "fact"
+        ? form
+            .slice(1)
+            .filter((row) => Array.isArray(row) && row[0] === "claim").length
+        : 0),
+    0
+  );
 
 const tab = (id, name, quiet = false) =>
   el(
@@ -2209,9 +2408,11 @@ const tab = (id, name, quiet = false) =>
 
 $("title").textContent = plan.title || data.title || "Research model";
 $("views").replaceChildren(
-  ...views.map((view, at) => tab(pageId(at), view.name ?? `Part ${at + 1}`)),
-  tab("query", "Query the model", true)
+  ...views.map((view, at) => tab(pageId(at), view.name ?? `Part ${at + 1}`))
 );
+// Asking the model in Lion is for readers who know it, so it is reached from
+// the end of every part of the page, not from the tabs.
+$("to-query").addEventListener("click", () => go("query"));
 $("pages").replaceChildren(
   ...views.map((view, at) =>
     el("section", {
@@ -2243,6 +2444,15 @@ $("source").addEventListener("keydown", (event) => {
     run();
   }
 });
+for (const [at, view] of views.entries()) {
+  $(pageId(at)).replaceChildren(...blocksOf(view).map(placeholder));
+}
 go(pageId(0));
+const opening = statementsIn();
+progress(
+  opening > 0
+    ? `Starting Lion and opening ${counted(opening, "statement")}…`
+    : "Starting Lion and opening the model…"
+);
 startWorker();
 load().then(refresh);

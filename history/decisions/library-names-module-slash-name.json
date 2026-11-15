@@ -1,0 +1,8 @@
+{
+  "id": "library-names-module-slash-name",
+  "title": "Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add`",
+  "context": "The first standard library, in December 2025, was a flat set of names in the test environment: `+`, `<`, `not`, `if`, `list`, `first`, `get`. The functions were then grouped into modules in their own files, `math`, `logic`, `list`, `object`, and `func`, but each module was spread into the environment under its bare names.",
+  "decision": "In March 2026 the standard library became one environment in which each function's name is its module's name, a slash, and its own name: `math/+`, `logic/not`, `list/head`. On April 2, 2026, the modules were renamed for the kind of value they work on, and their functions were named in words: `number/add` replaced `math/+`, `boolean/not` replaced `logic/not`, `array/make` replaced `list/list`, and new `string` and `value` modules joined `object`, `func`, and `console`. `logic/if` was not carried over; the `cond` form, added the day before, chooses between branches.",
+  "consequences": "A name says which module a function comes from, and every module added later follows the same form: `aggregate`, `graph`, and `schema` sit beside the first eight. The rename changed every program written against the old names, `packages/agent/src/agent.json` among them, before the first release, so `@lionlang/core` 0.1.0 shipped with the names Lion still uses. A program that wants shorter names binds them itself, as the agent does with `[\"define\", \"[]\", \"array/make\"]`.",
+  "commits": ["0529eec", { "commit": "df689c0", "quote": "refactors stdlib" }]
+}

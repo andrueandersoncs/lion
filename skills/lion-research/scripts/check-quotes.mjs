@@ -62,9 +62,22 @@ const indexed = (text) => {
 
 export const normalize = (text) => indexed(text).text;
 
+// Quotes from one source come together, so the index of the source last
+// searched is kept: a long source is indexed once, not once per quote.
+let lastText;
+let lastIndex;
+const indexedSource = (text) => {
+  if (text !== lastText) {
+    lastText = text;
+    lastIndex = indexed(text);
+  }
+  return lastIndex;
+};
+
 /** Whether the quote is in the text, word for word. */
 export const hasQuote = (text, quote) =>
-  normalize(quote) !== "" && normalize(text).includes(normalize(quote));
+  normalize(quote) !== "" &&
+  indexedSource(text).text.includes(normalize(quote));
 
 /**
  * Where the quote first stands in the text, as the start and end of that
@@ -72,7 +85,7 @@ export const hasQuote = (text, quote) =>
  */
 export const whereIn = (text, quote) => {
   const wanted = normalize(quote);
-  const { from, text: compared, to } = indexed(text);
+  const { from, text: compared, to } = indexedSource(text);
   const at = wanted === "" ? -1 : compared.indexOf(wanted);
   return at === -1 ? undefined : [from[at], to[at + wanted.length - 1]];
 };

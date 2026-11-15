@@ -1,0 +1,732 @@
+[
+  {
+    "case": "array-first-element-function",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["number/add", 1, 2], ["quote", 3]],
+        ["quote", "function-call"]
+      ],
+      ["else", ["quote", "no-call"]]
+    ]
+  },
+  {
+    "case": "array-first-element-not-function",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "five", 5],
+      [
+        "cond",
+        [
+          ["schema/fits?", ["five", 1, 2], ["quote", [5, 1, 2]]],
+          ["quote", "evaluated-elements"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "array-first-element-not-string",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", [1, 2, 3], ["quote", [1, 2, 3]]],
+        ["quote", "evaluated-elements"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "array-first-element-unbound-string",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          ["not-a-function", 2],
+          ["quote", ["not-a-function", 2]]
+        ],
+        ["quote", "evaluated-elements"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "array-of-primitives",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [["schema/fits?", [1, 2, 3], ["quote", [1, 2, 3]]], ["quote", "itself"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "empty-array",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [["schema/fits?", [], ["quote", []]], ["quote", "itself"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "non-string-primitive",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [["schema/fits?", 5, ["quote", 5]], ["quote", "itself"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "bound-string",
+    "area": "names",
+    "program": [
+      "begin",
+      ["define", "x", 5],
+      [
+        "cond",
+        [["schema/fits?", "x", ["quote", 5]], ["quote", "bound-value"]],
+        ["else", ["quote", "itself"]]
+      ]
+    ]
+  },
+  {
+    "case": "unbound-string",
+    "area": "names",
+    "program": [
+      "cond",
+      [["schema/fits?", "zebra", ["quote", "zebra"]], ["quote", "itself"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "unbound-misspelled-module-name",
+    "area": "names",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", "number/ad", ["quote", "number/ad"]],
+        ["quote", "string"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "unbound-slash-string-not-misspelled",
+    "area": "names",
+    "program": [
+      "cond",
+      [["schema/fits?", "n/a", ["quote", "n/a"]], ["quote", "string"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "quoted-misspelled-name",
+    "area": "names",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["quote", "number/ad"], ["quote", "number/ad"]],
+        ["quote", "string"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "record-empty-key",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "array/includes?",
+          [
+            "object/keys",
+            {
+              "": 1,
+              "a": 2
+            }
+          ],
+          ["quote", ""]
+        ],
+        ["quote", "kept"]
+      ],
+      ["else", ["quote", "dropped"]]
+    ]
+  },
+  {
+    "case": "record-proto-key",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "array/includes?",
+          [
+            "object/keys",
+            [
+              "quote",
+              {
+                "__proto__": 1,
+                "a": 2
+              }
+            ]
+          ],
+          ["quote", "__proto__"]
+        ],
+        ["quote", "kept"]
+      ],
+      ["else", ["quote", "dropped"]]
+    ]
+  },
+  {
+    "case": "quote-argument",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          ["array/length", ["quote", ["number/add", 1, 2]]],
+          3
+        ],
+        ["quote", "not-evaluated"]
+      ],
+      ["else", ["quote", "evaluated"]]
+    ]
+  },
+  {
+    "case": "eval-argument",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          ["eval", ["quote", ["number/add", 1, 2]]],
+          ["quote", 3]
+        ],
+        ["quote", "evaluated-twice"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "eval-no-arguments",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["value/function?", ["eval"]], ["quote", "function"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "quote-no-arguments",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["value/function?", ["quote"]], ["quote", "function"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "begin-result",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["begin", 1, 2], ["quote", 2]],
+        ["quote", "last-expression"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "define-result",
+    "area": "forms",
+    "program": [
+      "cond",
+      [["schema/fits?", ["define", "y", 7], ["quote", 7]], ["quote", "value"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "define-inside-lambda",
+    "area": "forms",
+    "program": [
+      "begin",
+      ["define", "f", ["lambda", [], ["define", "inner", 1]]],
+      ["f"],
+      [
+        "cond",
+        [["schema/fits?", "inner", ["quote", 1]], ["quote", "global"]],
+        ["else", ["quote", "local"]]
+      ]
+    ]
+  },
+  {
+    "case": "cond-no-match-no-else",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["cond", [false, 1]], ["quote", null]],
+        ["quote", "null"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "lambda-free-variable",
+    "area": "names",
+    "program": [
+      "begin",
+      ["define", "make", ["lambda", ["n"], ["lambda", [], "n"]]],
+      [
+        "cond",
+        [
+          ["schema/fits?", [["make", 4]], ["quote", 4]],
+          ["quote", "enclosing-scope"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "lambda-global-rebound-after-creation",
+    "area": "names",
+    "program": [
+      "begin",
+      ["define", "g", 1],
+      ["define", "h", ["lambda", [], "g"]],
+      ["define", "g", 2],
+      [
+        "cond",
+        [["schema/fits?", ["h"], ["quote", 2]], ["quote", "updated-value"]],
+        ["else", ["quote", "creation-value"]]
+      ]
+    ]
+  },
+  {
+    "case": "lambda-extra-arguments",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", [["lambda", ["a"], "a"], 1, 2], ["quote", 1]],
+        ["quote", "ignored"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "lambda-missing-arguments",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", [["lambda", ["a", "b"], "a"], 1], ["quote", 1]],
+        ["quote", "accepted"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "library-function-extra-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["number/subtract", 10, 3, 1], ["quote", 7]],
+        ["quote", "ignored"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "library-function-missing-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["value/null?", ["number/subtract", 10]], ["quote", "null"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "add-more-than-two-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["number/add", 1, 2, 3], ["quote", 6]],
+        ["quote", "sum"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "add-no-arguments",
+    "area": "library",
+    "program": [
+      "cond",
+      [["schema/fits?", ["number/add"], ["quote", 0]], ["quote", "zero"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "object-get-missing-key",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        [
+          "value/null?",
+          [
+            "object/get",
+            {
+              "a": 1
+            },
+            ["quote", "b"]
+          ]
+        ],
+        ["quote", "null"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "division-by-zero",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["value/number?", ["number/divide", 1, 0]],
+        ["quote", "infinity-or-nan"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "number-overflow",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["value/number?", ["number/multiply", 1e308, 10]],
+        ["quote", "infinity-or-nan"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "array-head-empty-list",
+    "area": "library",
+    "program": [
+      "cond",
+      [["value/null?", ["array/head", ["quote", []]]], ["quote", "null"]],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "array-tail-empty-list",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["array/tail", ["quote", []]], ["quote", []]],
+        ["quote", "empty-list"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "string-indexOf-missing",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["string/indexOf", "abc", "z"], ["quote", -1]],
+        ["quote", "minus-one"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "string-indexOf-argument-order",
+    "area": "library",
+    "program": [
+      "cond",
+      [
+        ["schema/fits?", ["string/indexOf", "abc", "c"], ["quote", 2]],
+        ["quote", "text-first"]
+      ],
+      ["else", ["quote", "search-first"]]
+    ]
+  },
+  {
+    "case": "string-startsWith-argument-order",
+    "area": "library",
+    "program": [
+      "cond",
+      [["string/startsWith", "abcdef", "abc"], ["quote", "text-first"]],
+      ["else", ["quote", "search-first"]]
+    ]
+  },
+  {
+    "case": "zero-equals-negative-zero",
+    "area": "library",
+    "program": [
+      "cond",
+      [["number/equals?", 0, ["number/subtract", 0, 0.0]], ["quote", "true"]],
+      ["else", ["quote", "false"]]
+    ]
+  },
+  {
+    "case": "match-record-pattern-extra-keys",
+    "area": "schemas",
+    "program": [
+      "match",
+      {
+        "type": "refund",
+        "id": 1
+      },
+      [
+        {
+          "type": ["func/partial", "string/equals?", "refund"]
+        },
+        ["lambda", ["r"], ["quote", "fit"]]
+      ],
+      ["lambda", ["r"], ["quote", "no-fit"]]
+    ]
+  },
+  {
+    "case": "match-plain-value-pattern",
+    "area": "schemas",
+    "program": [
+      "match",
+      "refund",
+      [["quote", "refund"], ["lambda", ["r"], ["quote", "equals"]]],
+      ["lambda", ["r"], ["quote", "no-match"]]
+    ]
+  },
+  {
+    "case": "schema-open-record-extra-keys",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          {
+            "a": 1,
+            "b": 2
+          },
+          [
+            "schema/open",
+            {
+              "a": "value/number?"
+            }
+          ]
+        ],
+        ["quote", "fit"]
+      ],
+      ["else", ["quote", "no-fit"]]
+    ]
+  },
+  {
+    "case": "pattern-repeated-variable-different-values",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "number/equals?",
+          [
+            "array/length",
+            [
+              "query",
+              [
+                "schema/fits?",
+                {
+                  "a": 1,
+                  "b": 2
+                },
+                {
+                  "a": "?x",
+                  "b": "?x"
+                }
+              ]
+            ]
+          ],
+          0
+        ],
+        ["quote", "no-fit"]
+      ],
+      ["else", ["quote", "fit"]]
+    ]
+  },
+  {
+    "case": "misspelled-name-as-schema",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [["schema/fits?", 1, "value/numbr?"], ["quote", "fit"]],
+      ["else", ["quote", "no-fit"]]
+    ]
+  },
+  {
+    "case": "relation-goal-as-value",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["a", "b"]],
+      ["fact", ["edge", 1, 2]],
+      [
+        "cond",
+        [["edge", 1, 2], ["quote", "asked"]],
+        ["else", ["quote", "no-value"]]
+      ]
+    ]
+  },
+  {
+    "case": "exists-goal-as-value",
+    "area": "logic",
+    "program": ["value/identity", ["exists", ["?y"], ["=", "?y", 1]]]
+  },
+  {
+    "case": "keyed-relation-fact-existing-key",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "order",
+        ["id", "status"],
+        {
+          "key": ["id"]
+        }
+      ],
+      ["fact", ["order", 1, ["quote", "new"]]],
+      ["fact", ["order", 1, ["quote", "paid"]]],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            ["find", "?s", ["order", 1, "?s"]],
+            ["quote", ["paid"]]
+          ],
+          ["quote", "replaces"]
+        ],
+        ["else", ["quote", "kept-both"]]
+      ]
+    ]
+  },
+  {
+    "case": "relation-call-wrong-arity",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "e2", ["a", "b"]],
+      [
+        "cond",
+        [["value/array?", ["query", ["e2", "?x"]]], ["quote", "accepted"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "filter-non-boolean",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      ["fact", ["n", 1]],
+      [
+        "cond",
+        [
+          [
+            "value/array?",
+            ["query", ["and", ["n", "?x"], ["number/add", "?x", 1]]]
+          ],
+          ["quote", "truthy"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "recursive-rule-computed-value-flowing-back",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "c", ["x"]],
+      ["fact", ["c", 0]],
+      ["rule", ["c", ["number/add", "?x", 1]], ["c", "?x"]],
+      ["quote", "accepted"]
+    ]
+  },
+  {
+    "case": "recursive-rule-computed-value-not-flowing-back",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x", "y"]],
+      ["fact", ["a", 1]],
+      ["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]],
+      ["rule", ["a", "?x"], ["b", "?x", "?y"]],
+      ["quote", "accepted"]
+    ]
+  },
+  {
+    "case": "not-goal-unbound-variable",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "p", ["x"]],
+      ["relation", "q", ["x", "y"]],
+      ["fact", ["p", 1]],
+      [
+        "cond",
+        [
+          [
+            "value/array?",
+            ["query", ["and", ["p", "?x"], ["not", ["q", "?x", "?y"]]]]
+          ],
+          ["quote", "own-variable"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "cond-empty-string-condition",
+    "area": "forms",
+    "program": ["cond", ["", ["quote", "true"]], ["else", ["quote", "false"]]]
+  },
+  {
+    "case": "cond-zero-condition",
+    "area": "forms",
+    "program": ["cond", [0, ["quote", "true"]], ["else", ["quote", "false"]]]
+  },
+  {
+    "case": "cond-string-condition",
+    "area": "forms",
+    "program": [
+      "cond",
+      ["abc", ["quote", "true"]],
+      ["else", ["quote", "false"]]
+    ]
+  },
+  {
+    "case": "cond-null-condition",
+    "area": "forms",
+    "program": ["cond", [null, ["quote", "true"]], ["else", ["quote", "false"]]]
+  }
+]

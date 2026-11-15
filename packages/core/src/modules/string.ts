@@ -1,7 +1,7 @@
 import { Effect, Schema, String as Str } from "effect";
 import { takes } from "@/errors/evaluation";
 import { numbersIn } from "@/modules/lib/numerals";
-import { combining, decode, over } from "@/modules/lib/shared";
+import { combining, decode, over, slicing } from "@/modules/lib/shared";
 
 // Like the rest of the library, each function takes its subject first:
 // ["string/startsWith", text, prefix]. indexOf returns -1 when the text does
@@ -50,6 +50,8 @@ export const module = {
   ),
   /** The parts of the text between each separator: what `join` joins back. */
   split: onTwo((text, separator): string[] => text.split(separator)),
+  /** The text from `start` up to `end`, as `array/slice` cuts a list. */
+  slice: slicing(Schema.String),
   padStart: padding((text, length, fill) => text.padStart(length, fill)),
   padEnd: padding((text, length, fill) => text.padEnd(length, fill)),
   /**

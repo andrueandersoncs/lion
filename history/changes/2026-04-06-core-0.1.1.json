@@ -1,0 +1,7 @@
+[
+  {
+    "kind": "Added",
+    "text": "The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev.",
+    "commits": ["ca42dc0"]
+  }
+]

@@ -1,0 +1,699 @@
+[
+  "begin",
+  [
+    "define",
+    "word?",
+    [
+      "lambda",
+      ["t"],
+      [
+        "cond",
+        [
+          ["value/string?", "t"],
+          [
+            "boolean/and",
+            ["number/greaterThan", ["string/length", "t"], 0],
+            ["boolean/not", ["string/includes", "t", " "]]
+          ]
+        ],
+        ["else", false]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "text?",
+    [
+      "lambda",
+      ["t"],
+      [
+        "cond",
+        [
+          ["value/string?", "t"],
+          ["number/greaterThan", ["string/length", "t"], 0]
+        ],
+        ["else", false]
+      ]
+    ]
+  ],
+  [
+    "schema",
+    "Area",
+    [
+      "schema/anyOf",
+      ["quote", "evaluation"],
+      ["quote", "names"],
+      ["quote", "forms"],
+      ["quote", "library"],
+      ["quote", "logic"],
+      ["quote", "schemas"],
+      ["quote", "errors"],
+      ["quote", "host"],
+      ["quote", "editor"],
+      ["quote", "cli"],
+      ["quote", "site"],
+      ["quote", "docs"],
+      ["quote", "tests"],
+      ["quote", "metrics"],
+      ["quote", "process"],
+      ["quote", "skills"],
+      ["quote", "record"],
+      ["quote", "build"],
+      ["quote", "packages"],
+      ["quote", "ai"]
+    ],
+    "FeatureKind",
+    [
+      "schema/anyOf",
+      ["quote", "special-form"],
+      ["quote", "function"],
+      ["quote", "module"],
+      ["quote", "package"],
+      ["quote", "error"],
+      ["quote", "option"],
+      ["quote", "command"],
+      ["quote", "page"],
+      ["quote", "skill"],
+      ["quote", "tool"],
+      ["quote", "file"],
+      ["quote", "capability"],
+      ["quote", "message"]
+    ],
+    "Precedent",
+    [
+      "schema/anyOf",
+      ["quote", "scheme"],
+      ["quote", "racket"],
+      ["quote", "javascript"],
+      ["quote", "json"],
+      ["quote", "datalog"],
+      ["quote", "prolog"],
+      ["quote", "effect"],
+      ["quote", "typescript"]
+    ],
+    "Prediction",
+    {
+      "behavior": "word?",
+      "is": "word?"
+    },
+    "Says",
+    [
+      "schema/anyOf",
+      {
+        "feature": "word?",
+        "kind": "FeatureKind",
+        "present": "value/boolean?",
+        "replaced_by": ["schema/optional", "word?"]
+      },
+      {
+        "behavior": "word?",
+        "is": "word?",
+        "area": "Area",
+        "follows": ["schema/optional", "Precedent"],
+        "breaking": ["schema/optional", true],
+        "was": ["schema/optional", "word?"]
+      },
+      {
+        "rule": "word?",
+        "holds": "value/boolean?",
+        "statement": "text?",
+        "area": "Area",
+        "predicts": ["schema/optional", ["schema/arrayOf", "Prediction"]],
+        "except": ["schema/optional", ["schema/arrayOf", "word?"]],
+        "replaced_by": ["schema/optional", "word?"]
+      },
+      {
+        "decision": "word?",
+        "chose": "word?",
+        "over": ["schema/optional", ["schema/arrayOf", "word?"]],
+        "because": ["schema/optional", "text?"],
+        "area": "Area"
+      },
+      {
+        "measured": "word?",
+        "after": "value/number?",
+        "before": ["schema/optional", "value/number?"],
+        "area": "Area"
+      }
+    ]
+  ],
+  [
+    "invariant",
+    ["and", ["claim", "?id", "?_", "?_", "?says"], ["not", ["Says", "?says"]]],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "feature": "?f"
+      },
+      "?present",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "feature": "?f",
+          "present": "?present"
+        }
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "behavior": "?b"
+      },
+      "?is",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "behavior": "?b",
+          "is": "?is"
+        }
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "rule": "?r"
+      },
+      "?holds",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "rule": "?r",
+          "holds": "?holds"
+        }
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "decision": "?t"
+      },
+      "?chose",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "decision": "?t",
+          "chose": "?chose"
+        }
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "answer",
+      {
+        "measured": "?m",
+        "at": "?s"
+      },
+      "?after",
+      "?c"
+    ],
+    [
+      "claim",
+      "?c",
+      "?s",
+      "?_",
+      [
+        "schema/open",
+        {
+          "measured": "?m",
+          "after": "?after"
+        }
+      ]
+    ]
+  ],
+  ["relation", "commit_source", ["source", "published"]],
+  [
+    "rule",
+    ["commit_source", "?s", "?p"],
+    ["source", "?s", "?url", "?_", "Lion repository", "?_", "?p"],
+    ["string/includes", "?url", "/commit/"]
+  ],
+  ["relation", "in_force", ["rule"]],
+  [
+    "rule",
+    ["in_force", "?r"],
+    [
+      "firsthand",
+      {
+        "rule": "?r"
+      },
+      true,
+      "Lion repository"
+    ]
+  ],
+  ["relation", "predicted", ["rule", "case", "value", "claim"]],
+  [
+    "rule",
+    ["predicted", "?r", "?case", "?v", "?c"],
+    ["in_force", "?r"],
+    [
+      "claim",
+      "?c",
+      "?s",
+      "?_",
+      ["schema/open", { "rule": "?r", "holds": true, "predicts": "?ps" }]
+    ],
+    ["in", { "behavior": "?case", "is": "?v" }, "?ps"],
+    ["source", "?s", "?_", "?_", "?_", "?_", "?t"],
+    [
+      "not",
+      [
+        "and",
+        [
+          "claim",
+          "?_",
+          "?later",
+          "?_",
+          ["schema/open", { "rule": "?r", "holds": true, "predicts": "?others" }]
+        ],
+        ["in", { "behavior": "?case", "is": "?w" }, "?others"],
+        ["not", ["=", "?w", "?v"]],
+        ["source", "?later", "?_", "?_", "?_", "?_", "?t2"],
+        ["number/lessThan", "?t", "?t2"]
+      ]
+    ]
+  ],
+  ["relation", "excepted", ["rule", "case"]],
+  [
+    "rule",
+    ["excepted", "?r", "?case"],
+    [
+      "claim",
+      "?_",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "rule": "?r",
+          "except": "?cases"
+        }
+      ]
+    ],
+    ["in", "?case", "?cases"]
+  ],
+  ["relation", "conflict", ["rule", "other", "case", "value", "other_value"]],
+  [
+    "rule",
+    ["conflict", "?r", "?o", "?case", "?v", "?w"],
+    ["predicted", "?r", "?case", "?v", "?_"],
+    ["predicted", "?o", "?case", "?w", "?_"],
+    ["not", ["=", "?v", "?w"]],
+    ["not", ["excepted", "?r", "?case"]],
+    ["not", ["excepted", "?o", "?case"]]
+  ],
+  ["relation", "conflicting", ["case", "rules"]],
+  [
+    "rule",
+    ["conflicting", "?case", ["aggregate/unique", "?r"]],
+    ["conflict", "?r", "?_", "?case", "?_", "?_"]
+  ],
+  ["relation", "contrary", ["rule", "case", "predicted", "found", "publisher"]],
+  [
+    "rule",
+    ["contrary", "?r", "?case", "?v", "?w", "?p"],
+    ["predicted", "?r", "?case", "?v", "?_"],
+    [
+      "firsthand",
+      {
+        "behavior": "?case"
+      },
+      "?w",
+      "?p"
+    ],
+    ["not", ["=", "?v", "?w"]],
+    ["not", ["excepted", "?r", "?case"]]
+  ],
+  ["relation", "precedent", ["case", "follows", "claim"]],
+  [
+    "rule",
+    ["precedent", "?case", "?follows", "?c"],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "behavior": "?case",
+          "is": "?v",
+          "follows": "?follows"
+        }
+      ]
+    ],
+    [
+      "firsthand",
+      {
+        "behavior": "?case"
+      },
+      "?v",
+      "?_"
+    ]
+  ],
+  ["relation", "decided_in", ["source"]],
+  [
+    "rule",
+    ["decided_in", "?s"],
+    [
+      "claim",
+      "?_",
+      "?s",
+      "?_",
+      [
+        "schema/open",
+        {
+          "decision": "?_"
+        }
+      ]
+    ]
+  ],
+  ["relation", "removed", ["feature", "claim", "source"]],
+  [
+    "rule",
+    ["removed", "?f", "?c", "?s"],
+    [
+      "firsthand",
+      {
+        "feature": "?f"
+      },
+      false,
+      "Lion repository"
+    ],
+    [
+      "answer",
+      {
+        "feature": "?f"
+      },
+      false,
+      "?c"
+    ],
+    ["claim", "?c", "?s", "?_", "?_"],
+    [
+      "last_said",
+      {
+        "feature": "?f"
+      },
+      "Lion repository",
+      "?last"
+    ],
+    ["source", "?s", "?_", "?_", "?_", "?_", "?last"]
+  ],
+  ["relation", "undecided_removal", ["feature", "source"]],
+  [
+    "rule",
+    ["undecided_removal", "?f", "?s"],
+    ["removed", "?f", "?_", "?s"],
+    ["not", ["decided_in", "?s"]]
+  ],
+  ["relation", "undecided_breaking", ["case", "source"]],
+  [
+    "rule",
+    ["undecided_breaking", "?case", "?s"],
+    [
+      "claim",
+      "?_",
+      "?s",
+      "?_",
+      [
+        "schema/open",
+        {
+          "behavior": "?case",
+          "breaking": true
+        }
+      ]
+    ],
+    ["not", ["decided_in", "?s"]]
+  ],
+  [
+    "relation",
+    "measure_at",
+    ["metric", "published", "before", "after", "source"]
+  ],
+  [
+    "rule",
+    [
+      "measure_at",
+      "?m",
+      "?p",
+      ["object/get", "?says", "before"],
+      ["object/get", "?says", "after"],
+      "?s"
+    ],
+    ["claim", "?_", "?s", "?_", "?says"],
+    ["value/string?", ["object/get", "?says", "measured"]],
+    ["=", "?m", ["object/get", "?says", "measured"]],
+    ["commit_source", "?s", "?p"]
+  ],
+  [
+    "relation",
+    "chain_break",
+    ["metric", "earlier", "later", "after", "before"]
+  ],
+  [
+    "rule",
+    ["chain_break", "?m", "?s1", "?s2", "?a1", "?b2"],
+    ["measure_at", "?m", "?t1", "?_", "?a1", "?s1"],
+    ["measure_at", "?m", "?t2", "?b2", "?_", "?s2"],
+    ["number/lessThan", "?t1", "?t2"],
+    ["value/number?", "?b2"],
+    ["not", ["=", "?a1", "?b2"]],
+    [
+      "not",
+      [
+        "and",
+        ["measure_at", "?m", "?t3", "?_", "?_", "?_"],
+        ["number/lessThan", "?t1", "?t3"],
+        ["number/lessThan", "?t3", "?t2"]
+      ]
+    ]
+  ],
+  ["relation", "silent", ["source"]],
+  [
+    "rule",
+    ["silent", "?s"],
+    ["commit_source", "?s", "?_"],
+    ["not", ["claim", "?_", "?s", "?_", "?_"]]
+  ],
+  ["relation", "drift", ["question", "said", "does"]],
+  [
+    "rule",
+    ["drift", "?q", "?v", "?w"],
+    ["firsthand", "?q", "?v", "Lion repository"],
+    ["firsthand", "?q", "?w", "Lion at HEAD"],
+    ["not", ["=", "?v", "?w"]]
+  ],
+  ["relation", "reversed", ["topic", "before", "after"]],
+  [
+    "rule",
+    ["reversed", "?t", "?before", "?after"],
+    [
+      "restated",
+      {
+        "decision": "?t"
+      },
+      "Lion repository",
+      "?before",
+      "?after"
+    ]
+  ],
+  [
+    "fact",
+    [
+      "assumption",
+      "consistent-rules",
+      [
+        "quote",
+        "No two rules in force predict different behavior for the same case"
+      ]
+    ],
+    [
+      "assumption",
+      "rules-hold",
+      ["quote", "Lion behaves as every rule in force predicts"]
+    ],
+    [
+      "assumption",
+      "scheme-precedent",
+      [
+        "quote",
+        "Where Lion follows a precedent for a behavior, the precedent is Scheme, Racket, or JSON, or JavaScript for a library function that mirrors a JavaScript operation"
+      ]
+    ],
+    [
+      "assumption",
+      "removals-decided",
+      [
+        "quote",
+        "Every feature Lion removed was removed in a commit that records a decision"
+      ]
+    ],
+    [
+      "assumption",
+      "breaking-decided",
+      [
+        "quote",
+        "Every breaking change comes in a commit that records a decision"
+      ]
+    ],
+    [
+      "assumption",
+      "measures-chain",
+      [
+        "quote",
+        "Each reported measurement starts where the one before it ended"
+      ]
+    ],
+    [
+      "assumption",
+      "every-commit-read",
+      ["quote", "Every commit says something the model records"]
+    ],
+    [
+      "assumption",
+      "docs-match-lion",
+      [
+        "quote",
+        "What the repository says now agrees with what Lion does at HEAD"
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "violated",
+      "consistent-rules",
+      {
+        "rules": "?rules",
+        "case": "?case"
+      }
+    ],
+    ["conflicting", "?case", "?rules"]
+  ],
+  [
+    "rule",
+    [
+      "violated",
+      "rules-hold",
+      {
+        "rule": "?r",
+        "case": "?case",
+        "predicted": "?v",
+        "found": "?w"
+      }
+    ],
+    ["contrary", "?r", "?case", "?v", "?w", "?_"]
+  ],
+  [
+    "rule",
+    ["violated", "scheme-precedent", "?c"],
+    ["precedent", "?_", "?follows", "?c"],
+    ["not", ["in", "?follows", ["quote", ["scheme", "racket", "json"]]]],
+    [
+      "not",
+      [
+        "and",
+        ["=", "?follows", "javascript"],
+        ["claim", "?c", "?_", "?_", ["schema/open", { "area": "library" }]]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    [
+      "violated",
+      "removals-decided",
+      {
+        "feature": "?f",
+        "commit": "?s"
+      }
+    ],
+    ["undecided_removal", "?f", "?s"]
+  ],
+  [
+    "rule",
+    [
+      "violated",
+      "breaking-decided",
+      {
+        "case": "?case",
+        "commit": "?s"
+      }
+    ],
+    ["undecided_breaking", "?case", "?s"]
+  ],
+  [
+    "rule",
+    [
+      "violated",
+      "measures-chain",
+      {
+        "metric": "?m",
+        "from": "?s1",
+        "to": "?s2",
+        "ended": "?a",
+        "started": "?b"
+      }
+    ],
+    ["chain_break", "?m", "?s1", "?s2", "?a", "?b"]
+  ],
+  ["rule", ["violated", "every-commit-read", "?s"], ["silent", "?s"]],
+  [
+    "rule",
+    [
+      "violated",
+      "docs-match-lion",
+      {
+        "question": "?q",
+        "said": "?v",
+        "does": "?w"
+      }
+    ],
+    ["drift", "?q", "?v", "?w"]
+  ],
+  "framed"
+]

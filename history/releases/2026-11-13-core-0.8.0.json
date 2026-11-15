@@ -1,0 +1,14 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.8.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.7.0"
+    }
+  ],
+  "summary": "Three surprises found while writing Lion programs for a research skill, each removed by one rule. A call gives a function as many arguments as it takes. A number has text. A fact that holds a name says which name, and how to write the string.",
+  "commit": "37f1451"
+}

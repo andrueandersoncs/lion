@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "Added",
+    "text": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+    "decisions": ["lion-computes-page-text"]
+  },
+  {
+    "kind": "Documentation",
+    "text": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+    "decisions": ["project-record-in-lion"]
+  },
+  {
+    "kind": "Documentation",
+    "text": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+    "decisions": ["project-record-in-lion"]
+  }
+]

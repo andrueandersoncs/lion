@@ -8,7 +8,6 @@
 //     --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { LogicDatabase } from "@lionlang/core/logic/database";
-import { loadDatabase } from "@lionlang/core/logic/snapshot";
 import { stdlib } from "@lionlang/core/modules";
 import { Cause, Effect, Exit, Scheduler } from "effect";
 
@@ -16,7 +15,14 @@ type Request =
   | { readonly id: number; readonly type: "load"; readonly snapshot: unknown }
   | { readonly id: number; readonly type: "run"; readonly program: unknown };
 
-let database = new LogicDatabase();
+// A page asks many different questions of one model that does not change.
+// Full evaluation derives every relation once and answers each question from
+// it; goal-directed evaluation rewrites the rules for each new question,
+// which on a research model was hundreds of times slower. Both give the
+// same answers.
+const EVALUATION = { goalDirected: false };
+
+let database = new LogicDatabase(EVALUATION);
 
 // A result can hold a function, such as a relation, which neither JSON nor a
 // worker message can carry.
@@ -36,16 +42,23 @@ const evaluate = <A>(effect: Effect.Effect<A, unknown>) =>
     effect.pipe(Effect.provideService(Scheduler.PreventSchedulerYield, true))
   );
 
+/** Runs a snapshot into a new database, and answers from it from then on. */
+const loadInto = (snapshot: unknown) => {
+  const loaded = new LogicDatabase(EVALUATION);
+  return Effect.map(
+    run(snapshot as never, stdlib, { database: loaded }),
+    () => {
+      database = loaded;
+      return null;
+    }
+  );
+};
+
 const handle = async (request: Request) => {
   const started = performance.now();
   const exit =
     request.type === "load"
-      ? await evaluate(
-          Effect.map(loadDatabase(request.snapshot, stdlib), (loaded) => {
-            database = loaded;
-            return null;
-          })
-        )
+      ? await evaluate(loadInto(request.snapshot))
       : await evaluate(run(request.program as never, stdlib, { database }));
   const ms = performance.now() - started;
   return Exit.isSuccess(exit)

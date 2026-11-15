@@ -4,11 +4,11 @@ This document provides essential information for AI coding agents working on the
 
 ## Project Overview
 
-Lion is a TypeScript monorepo with two main packages:
+Lion is a TypeScript monorepo. Its two main packages are:
 - **@lionlang/core**: Core library built with Effect v4 for functional programming
 - **@lionlang/repl**: React-based web application using TanStack Router and Vite
 
-It also holds **@lionlang/metrics**, private tools that measure Lion's complexity, speed, and tests (see [Measuring Complexity](#measuring-complexity)).
+It also holds **@lionlang/metrics**, private tools that measure Lion's complexity, speed, and tests (see [Measuring Complexity](#measuring-complexity)), and **@lionlang/history**, the tools of the project record: Lion's changes, releases, and design decisions as a Lion model of its git history (see [Recording Changes and Decisions](#recording-changes-and-decisions)). The others are **@lionlang/cli**, the `lion` command; **@lionlang/site-runtime**, the evaluator behind the website's live examples; **@lionlang/typesafe-ai**, bindings for TypeSafe's Jev; and `packages/agent` and `packages/examples`, Lion programs run by small hosts.
 
 ## Goals for Every Change
 
@@ -87,8 +87,22 @@ Lion's value comes from features that compose, so one surprising interaction cos
 
 - **Core.** A new library function, special form, logic form, query option, or kind of `why` premise gets a live `<lion-example>` in a fragment of `packages/site-runtime/content/`, where a reader would look for it: its module's example in `reference/standard-library.html` for a library function, and the how-to guide for the task it serves. The docs build runs every example and writes its real result. It fails when a special form or library function appears in no example, so `bun run --cwd packages/site-runtime docs` tells you what is missing. Rebuild `docs/docs.html` with it and commit the result.
 - **Skills.** A new relation of a skill's core program, a new field of its notes, and a new script or option is shown in the skill's `SKILL.md` or its `references/`, as the program or notes with the result Lion gave. Run the example before you write its output down, as `references/patterns.md` says of its own.
-- **Everywhere it changes.** Update the README section of the feature, the CHANGELOG, and every example the change makes untrue. When a change alters what an existing example gives, run the example again and correct its stated output; never leave a documented result that Lion would no longer produce.
+- **Everywhere it changes.** Update the README section of the feature, the project record (see [Recording Changes and Decisions](#recording-changes-and-decisions)), and every example the change makes untrue. When a change alters what an existing example gives, run the example again and correct its stated output; never leave a documented result that Lion would no longer produce.
 - **Examples use the feature for real.** Show a function doing what it is for, combined with what a reader would combine it with, rather than called alone on a constant. Where the playground cannot show it working, such as `object/new`, which needs a class from host code, show what it does without one, and the host case as a `<code-block>`.
+
+## Recording Changes and Decisions
+
+> **IMPORTANT**: `CHANGELOG.md`, `DECISIONS.md`, and the website's timeline `docs/changelog.html` are written by the project record in `history/`. Never edit them by hand: record the change, run `bun run history write`, and commit the record and the pages together.
+
+The record is a Lion model of the git history. Its rules, in `history/core.json`, derive which release shipped each change from the commits that made it, so no entry says which release it is in. The README section "Project Record" describes every file.
+
+- **Record every change in the commit that makes it.** Add `history/changes/<topic>.json`, a list of `{"kind", "text"}` written as the changelog's entries are: what a user of Lion can now do or must now do differently, with an example. An entry with no `"commits"` is made by the commit that adds its file, which is what you want for new work. A `feat` or `fix` commit that no entry records fails `bun run history check` from then on, in the tests and in CI. Commits that change nothing a user meets, such as tooling of a private package, take an entry `{"internal": "why", "commits": [...]}` instead.
+- **Record every design decision.** When a change chooses between ways Lion could behave, or sets a rule for how the project works, add `history/decisions/<id>.json`: the context, the decision, its consequences, and the alternatives with why each was not taken. Name the decisions a change follows from in its `"decisions"`. A `Breaking` change must name one. When a decision replaces an earlier one, say so in `"supersedes"`; the earlier one stays in the record, marked superseded.
+- **Quote, do not paraphrase, when you cite a commit.** A commit can be named as `{"commit": "abc1234", "quote": "..."}`, and the check fails when the words are not in its message. Backfilled entries cite the commits that made them this way.
+- **Releasing.** Add `history/releases/<date>-<name>.json` with what the release `"ships"` and a `"summary"`, run `bun run history write`, and commit. The release is at the commit that adds its file, and every change behind that commit not shipped before moves from "Unreleased" into its section. Tag the commit as `<name>@<version>` afterwards; `bun run history check` lists the releases that have no tag yet.
+- **Ask the record.** `bun run history ask '<lion>'` evaluates any Lion expression against it, such as `["why", ["shipped_in", "<entry>", "<release>"]]`.
+- **Check a decision against the research model before you make it.** `history/research/` reads every commit, the docs, the decisions, and probes of Lion at HEAD into one model, and rules that find where the project disagrees with itself: rules that contradict each other, behavior that breaks a rule in force, removals and breaking changes with no decision, figures that do not chain, docs that do not say what Lion does. `bun run history query '<lion>'` asks it, such as `["query", ["predicted", "?rule", "lambda-extra-arguments", "?predicts", "?_"]]` for what the rules in force say a behavior should be. Give a decision `"claims"` that state, in the research's terms, the rules and behavior it settles, so the model checks it with everything else. See `history/research/README.md`.
+- **Keep the research current.** `bun run history research` builds the model and `docs/research.html`, and fails on a finding that is neither in `history/research/known.json`, with a note, nor in `accepted.json`, with a reason, and on a listed finding that no longer holds. The record's tests run it. When a change brings a new finding, settle it with a decision or a fix, or list it in `known.json` and say so in your report; never accept one to make the check pass. Read the commits it lists as unread into a notes file as the README there says, and add a probe in `history/research/probes.json` for a behavior you change.
 
 ## Measuring Complexity
 
@@ -148,7 +162,7 @@ bun run check
 # Fix linting and formatting issues
 bun run fix
 
-# Prepare development environment (Effect language service)
+# Prepare development environment (installs the git hooks)
 bun run prepare
 
 # Measure complexity, speed, and how well the tests catch broken code
@@ -381,7 +395,7 @@ class ErrorBoundary extends Component {
 
 When adding new UI components:
 ```bash
-# Use bunx (as specified in .cursorrules)
+# Use bunx
 bunx shadcn@latest add button
 bunx shadcn@latest add dialog
 ```
@@ -449,10 +463,12 @@ packages/repl/
 2. **During development**: Use `turbo dev --filter=@lionlang/repl` for REPL development
 3. **Before committing**:
    - Run `bun run check`
-   - Run `bun test`
+   - Run `bun run test`
    - Run `bun run build`
    - For a change to `@lionlang/core`, run `bun run measure --against main` and `bun run bench --against main`, and `bun run mutate` when you added behavior
    - Run `bun run --cwd packages/site-runtime docs`, and give each new feature an example in the docs (see [Documenting Every Feature](#documenting-every-feature))
+   - Record the change in `history/changes/`, and any design decision in `history/decisions/`, then run `bun run history write` and `bun run history check` (see [Recording Changes and Decisions](#recording-changes-and-decisions))
+   - Run `bun run history research`, and list or settle any new finding it reports
    - Do not write any file while `bun run mutate` runs, not even one outside the code: the repository's write hook formats files, and a mutation it reformats is left in place
 4. **After changes**: Update this AGENTS.md if development practices change
 

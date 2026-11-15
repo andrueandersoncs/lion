@@ -1,0 +1,19 @@
+{
+  "id": "engine-computes-model-interprets",
+  "title": "The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote",
+  "context": "The research skill already asked that every figure in a report come from a query, but nothing checked that the numbers in a claim are the ones its quote writes. An agent that converts \"$1.2 billion\" to 1,200 million as it reads, or mistypes a number, leaves a figure no quote shows, and nothing noticed. The change follows what Kepler learned building verifiable AI for finance: the agent interprets, the engine computes and keeps provenance, and every number traces to the words and line item it came from.",
+  "decision": "A figure is recorded as the source writes it, in a shape whose key names that unit, such as `{\"usd_bn\": 1.2}` for \"$1.2 billion\", and an `answer` rule converts it. The core reads the numbers written in each quote with `string/numbers`, and `unquoted` lists every number at the top of a claim's `says` that its quote does not write; a number taken from where the quote stands, such as a year in a heading, goes in a field the frame declares as `context`. Ratios, margins, and totals are computed by rules, and the page shows a computed figure's evidence \"Worked out as\" its arithmetic. Core 0.10.0 adds `number/fromString` and `string/numbers` for this.",
+  "consequences": "A slip in copying or converting shows up at once in `unquoted`, and the report says which figures are not written in their quote. A rounded figure, such as \"near $0.41 billion\", is a question of its own and never disputes the exact one. The research skill needs `@lionlang/cli` 0.9.0, the release that bundles core 0.10.0. A frozen-corpus eval, `verifies-company-figures`, grades a run by stage, among them whether figures were copied as written and whether the model, not the agent, worked out the margin.",
+  "alternatives": [
+    {
+      "option": "Convert a figure to the frame's unit while recording it, as `{\"usd_m\": 1200}` for \"$1.2 billion\"",
+      "rejected": "No quote writes the converted number, so a slip in converting could not be told from a correct figure. Converting is a job for the model."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "41477b1",
+      "quote": "the agent interprets, the engine computes and keeps provenance, and every number traces to the words and line item it came from."
+    }
+  ]
+}

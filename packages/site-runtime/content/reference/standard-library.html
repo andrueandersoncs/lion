@@ -1,5 +1,5 @@
 <article id="standard-library" data-title="Standard library" data-summary="Every function in Lion's default environment, by module: number, boolean, string, array, value, schema, object, func, console, aggregate, and graph.">
-<p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each takes a set number of arguments, and a call with any other number fails and says how many the function takes, as in <code>"number/subtract" takes 2 arguments but got 3.</code> Each module's example below calls every function in the module.</p>
+<p>The default environment, <code>stdlib</code>, names each function <code>module/function</code>. Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. Each says how many arguments it takes, and a call with any other number fails and says how many the function takes, as in <code>"number/subtract" takes 2 arguments but got 3.</code> Each module's example below calls every function in the module.</p>
 <p>Every function <a href="#logic-waiting">waits</a> when it is called with a logic variable among its arguments, so all of them work as filters and computed values in rules and queries. A function that is given a goal gets its answer, <code>true</code> or <code>false</code>; see <a href="#logic-asking">Asking questions</a>. Functions of the <code>aggregate</code> and <code>graph</code> modules take logic variables as they are, to build aggregates and goals.</p>
 
 <h2 id="module-number">number</h2>
@@ -93,6 +93,7 @@
     <tr data-entry="string/indexOf"><td><code>["string/indexOf", text, search]</code></td><td>The position of the first <code>search</code> in <code>text</code>, or <code>-1</code></td></tr>
     <tr data-entry="string/join"><td><code>["string/join", list, separator]</code><br><code>["string/join", list, separator, last]</code></td><td>The strings of <code>list</code> with <code>separator</code> between them. With <code>last</code>, that string stands before the last item in place of the separator: <code>"a, b and c"</code>. Every item must be a string</td></tr>
     <tr data-entry="string/split"><td><code>["string/split", text, separator]</code></td><td>The parts of <code>text</code> between each <code>separator</code>; joining them with the same separator gives <code>text</code> back</td></tr>
+    <tr data-entry="string/slice"><td><code>["string/slice", text, start]</code><br><code>["string/slice", text, start, end]</code></td><td>The part of <code>text</code> from <code>start</code> up to, but not including, <code>end</code>, or to the end without it. A negative position counts from the end, and one past either end stops there, as JavaScript's <code>slice</code> cuts</td></tr>
     <tr data-entry="string/padStart"><td><code>["string/padStart", text, length, fill]</code></td><td><code>text</code> made <code>length</code> long with copies of <code>fill</code> before it; unchanged when it is already that long</td></tr>
     <tr data-entry="string/padEnd"><td><code>["string/padEnd", text, length, fill]</code></td><td>The same, with the copies after it</td></tr>
     <tr data-entry="string/numbers"><td><code>["string/numbers", text]</code><br><code>["string/numbers", text, separator]</code></td><td>Every number written in <code>text</code>, in order, each read as <code>number/fromString</code> reads it with the same separator. A minus sign counts only where no letter, digit, or point is right before it, so <code>"2023-24"</code> holds 2023 and 24. Words for amounts are not read: <code>"$1.2 billion"</code> holds 1.2</td></tr>
@@ -110,6 +111,8 @@
  "join": ["string/join", ["array/make", "a", "b", "c"], ", "],
  "listed": ["string/join", ["array/make", "a", "b", "c"], ", ", " and "],
  "split": ["string/split", "2026-11-13", "-"],
+ "slice": ["string/slice", "2026-11-13", 0, 7],
+ "last": ["string/slice", "lionlang", -4],
  "padStart": ["string/padStart", "7", 2, "0"],
  "padEnd": ["string/padEnd", "7", 3, "."],
  "numbers": ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","],
@@ -126,6 +129,7 @@
     <tr data-entry="array/length"><td><code>["array/length", list]</code></td><td>The number of items</td></tr>
     <tr data-entry="array/head"><td><code>["array/head", list]</code></td><td>The first item, or <code>null</code> for an empty list</td></tr>
     <tr data-entry="array/tail"><td><code>["array/tail", list]</code></td><td>Every item after the first; <code>[]</code> for an empty list</td></tr>
+    <tr data-entry="array/slice"><td><code>["array/slice", list, start]</code><br><code>["array/slice", list, start, end]</code></td><td>The items from <code>start</code> up to, but not including, <code>end</code>, or to the end without it, counting a negative position from the end, as <code>string/slice</code> cuts text</td></tr>
     <tr data-entry="array/concat"><td><code>["array/concat", a, b, ...]</code></td><td>The items of <code>a</code> followed by those of <code>b</code>, and so on for one or more lists</td></tr>
     <tr data-entry="array/includes?"><td><code>["array/includes?", list, item]</code></td><td>Whether the list holds a value equal to <code>item</code>, comparing lists and records by structure</td></tr>
     <tr data-entry="array/map"><td><code>["array/map", list, function]</code></td><td>The list of <code>function</code>'s results for each item</td></tr>
@@ -139,6 +143,8 @@
  "length": ["array/length", ["array/make", 1, 2, 3]],
  "head": ["array/head", ["array/make", 1, 2, 3]],
  "tail": ["array/tail", ["array/make", 1, 2, 3]],
+ "slice": ["array/slice", ["array/make", 1, 2, 3, 4], 1, 3],
+ "lastTwo": ["array/slice", ["array/make", 1, 2, 3, 4], -2],
  "concat": ["array/concat", ["array/make", 1], ["array/make", 2, 3]],
  "includes?": ["array/includes?", ["quote", [1, {"a": 2}]], {"a": 2}],
  "map": ["array/map", ["array/make", 1, 2], ["lambda", ["x"], ["number/add", "x", 1]]],

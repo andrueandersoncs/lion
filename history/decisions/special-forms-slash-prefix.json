@@ -1,0 +1,10 @@
+{
+  "id": "special-forms-slash-prefix",
+  "title": "Special forms are written with a leading slash, such as `\"/define\"`",
+  "context": "Special forms and names share one space of strings: `[\"define\", \"x\", 1]` is a form because its first element is the string `\"define\"`, and `define` refused to bind the names `begin`, `define`, `eval`, and `quote`. Library functions already had names of the form `module/name`, such as `math/+`. On March 30, 2026, the commit that added `lambda` also changed how forms are spelled.",
+  "decision": "Every special form took a leading slash: `\"/quote\"`, `\"/eval\"`, `\"/begin\"`, `\"/define\"`, and the new `\"/lambda\"`. The names that `define` and `lambda` refused to bind became `/begin`, `/define`, `/eval`, and `/quote`.",
+  "consequences": "Every program and test that used a special form changed its spelling, the agent's program in `packages/agent/src/index.ts` among them, as in `[\"/define\", \"message-box\", ...]`. The prefix lasted one day, and no release used it.",
+  "commits": [
+    { "commit": "b673d05", "quote": "adds slash-prefix to special forms" }
+  ]
+}

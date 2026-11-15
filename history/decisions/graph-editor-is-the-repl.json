@@ -1,0 +1,19 @@
+{
+  "id": "graph-editor-is-the-repl",
+  "title": "The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone",
+  "context": "`packages/repl` had held a web REPL since the end of December 2025. In April 2026 a prototype at `/stream` rendered Lion programs evaluated against an environment of React components and changed them with streams of JSON Patch operations. In September 2026 a product brief, `packages/repl/PRODUCT.md`, and 25 tickets in `docs/tickets/graph-editor/` set out a local-first editor for Lion programs that can exceed 1,000 graph nodes.",
+  "decision": "The graph editor, Lion Fold Map, replaced the REPL at `/` on September 17, 2026. The program's JSON is canonical, and the semantic graph, outline, inspector, and results are derived from it; a graph edit becomes a minimal text edit that keeps the bytes of everything it does not touch. The old REPL route, `/stream`, and the UI-streaming code were removed in the same commit. Two days later the CodeMirror source view was removed too, so a program is edited through the graph, its nodes, and the inspector, and on September 21 every semantic branch and the output dock stayed open instead of folding away.",
+  "consequences": "The editor keeps programs local, with no account or backend storage: it opens and saves files through the File System Access API, and downloads the file where a browser lacks it. `@lionlang/core` gained a semantic-analysis API, which the editor runs in a worker beside the layout. Exact JSON is still shown where a node unfolds, but there is no longer a text editor for a whole program.",
+  "alternatives": [
+    {
+      "option": "Keep the `/stream` prototype, which rendered React components from Lion source patched by streams of JSON Patch",
+      "rejected": "No documented product surface used it, and the editor's release ticket called for one coherent product with its superseded prototypes removed."
+    }
+  ],
+  "commits": [
+    "b60f4a1",
+    { "commit": "bdc6d89", "quote": "ship semantic graph editor" },
+    { "commit": "f27e671", "quote": "remove source editor view" },
+    { "commit": "3567d25", "quote": "keep graph editor always open" }
+  ]
+}

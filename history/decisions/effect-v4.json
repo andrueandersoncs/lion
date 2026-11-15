@@ -1,0 +1,11 @@
+{
+  "id": "effect-v4",
+  "title": "Lion moves from Effect 3 to Effect 4",
+  "context": "Lion's evaluator, standard library, tests, and other packages were written with Effect 3, `effect` `^3.21.0`. Effect 4 renamed and reshaped APIs the code used, such as `Schema.decodeUnknown`, `Schema.Tuple`, and `Effect.catchAll`, and in September 2026 it was a release candidate.",
+  "decision": "On September 17, 2026, every package moved to Effect `4.0.0-rc.115`, with `@effect/vitest` to match, and the code was ported: `Schema.decodeUnknownEffect` for `Schema.decodeUnknown`, `Schema.Tuple([a, b])` for `Schema.Tuple(a, b)`, and `Effect.catch` for `Effect.catchAll`. The release of `@lionlang/core` 0.2.0 on November 3 moved to the stable 4.1.2, and the CLI moved from `effect/unstable/cli` to `effect/cli`.",
+  "consequences": "`run` returns an Effect 4 `Effect`, so from `@lionlang/core` 0.2.0 on a host runs Lion with Effect 4, and the README says that the evaluator runs on Effect v4. The examples in `AGENTS.md` use the Effect 4 APIs. `@lionlang/cli`, added four days after the move, was built on Effect 4's CLI module from its first commit.",
+  "commits": [
+    { "commit": "cbb11e3", "quote": "migrate project to Effect v4" },
+    { "commit": "1b380d9", "quote": "upgrade Effect to 4.1.2" }
+  ]
+}

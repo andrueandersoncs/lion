@@ -1,0 +1,23 @@
+{
+  "id": "schemas-are-logic",
+  "title": "Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern",
+  "context": "Lion had no way to say what a value must be. `match` took a predicate or a record of predicates and failed on any other pattern, a relation call compared each argument with its column, so `[\"reading\", \"?sensor\", \"value/number?\"]` matched nothing, and a check on the rows of a relation was an invariant written by hand. Schemas would touch all of these places, and the project's rule is to give such places one rule rather than one each.",
+  "decision": "Anything is a schema, and one rule says what fits it: a function is a predicate, a record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it, so data is a schema for itself. `match`, the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`, the arguments of a relation call, and the relation option `{\"schema\": \"Order\"}` all ask through that rule. A logic variable in a schema is its value once bound and takes the value it meets until then, so `schema/fits?`, a relation call, `=`, and `in` bind the variables of a record, a list, or a built schema: `[\"inbox\", [\"schema/open\", {\"type\": \"order\", \"id\": \"?id\"}]]`. A schema check is an ordinary call, so it waits for logic variables and works under `not` and in a `find` like any other, and the schema of a relation's rows is the invariant a program could write by hand.",
+  "consequences": "A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call, so `[\"reading\", \"?sensor\", \"value/number?\"]` asks for the readings that are numbers, and a relation as the schema of a column is a foreign key. `[\"schema\", \"Tree\", {\"value\": \"value/number?\", \"children\": [\"schema/arrayOf\", \"Tree\"]}]` declares a named schema, one form can declare several that name each other, and snapshots write them. Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys, and a relation with several columns used as a schema is an error where it matched nothing. The change was large: code lines went from 6,035 to 7,798 and messages from 95 to 123, while the grid's cells like plain code went from 336 to 487.",
+  "alternatives": [
+    {
+      "option": "Compare each argument of a relation call with the values in its column, as before 0.7.0",
+      "rejected": "A function there matched nothing, since no row holds a function, so a query such as `[\"reading\", \"?sensor\", \"value/number?\"]` had no answers."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "fbc25a1",
+      "quote": "Anything is a schema, and one rule says what fits it"
+    },
+    {
+      "commit": "ca92729",
+      "quote": "Also pins down schema behavior that no property covered"
+    }
+  ]
+}

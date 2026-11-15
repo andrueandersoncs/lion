@@ -633,6 +633,114 @@ describe("string/padStart and string/padEnd", () => {
   );
 });
 
+/**
+ * The items of a list from `start` up to `end`, picked by position: a
+ * negative position counts from the end, and one past either end stops there.
+ */
+const cut = <A>(items: readonly A[], start: number, end = items.length) => {
+  const at = (position: number) =>
+    position < 0
+      ? Math.max(items.length + position, 0)
+      : Math.min(position, items.length);
+  return items.filter((_, index) => index >= at(start) && index < at(end));
+};
+
+const position = Arbitrary.schema(
+  Schema.Int.check(Schema.isBetween({ minimum: -8, maximum: 8 }))
+);
+
+const notAPosition = Arbitrary.schema(
+  Schema.Union([
+    Schema.Number.check(Schema.isBetween({ minimum: -8, maximum: 8 })),
+    Schema.String,
+    Schema.Null,
+  ])
+).pipe(Arbitrary.filter((value) => !Number.isInteger(value)));
+
+describe("string/slice and array/slice", () => {
+  it.effect.prop(
+    "cut the items between two positions, counting a negative one from the end",
+    { value: text, items: json, start: position, end: position },
+    ({ value, items, start, end }) =>
+      Effect.gen(function* () {
+        const characters = value.split("");
+        expect(
+          yield* evaluate({
+            text: ["string/slice", quote(value), start, end],
+            textToEnd: ["string/slice", quote(value), start],
+            list: ["array/slice", quote(items), start, end],
+            listToEnd: ["array/slice", quote(items), start],
+            waits: waiting("string/slice", quote(value), start, end),
+          })
+        ).toEqual({
+          text: cut(characters, start, end).join(""),
+          textToEnd: cut(characters, start).join(""),
+          list: cut(items, start, end),
+          listToEnd: cut(items, start),
+          waits: [cut(characters, start, end).join("")],
+        });
+      })
+  );
+
+  it.effect.prop(
+    "the two parts of a cut put the text or the list back together",
+    { value: text, items: json, at: position },
+    ({ value, items, at }) =>
+      Effect.gen(function* () {
+        const text = quote(value);
+        const list = quote(items);
+        expect(
+          yield* evaluate({
+            text: [
+              "string/concat",
+              ["string/slice", text, 0, at],
+              ["string/slice", text, at],
+            ],
+            list: [
+              "array/concat",
+              ["array/slice", list, 0, at],
+              ["array/slice", list, at],
+            ],
+          })
+        ).toEqual({ text: value, list: items });
+      })
+  );
+
+  it.effect.prop(
+    "string/slice cuts what array/slice cuts from the text's characters",
+    { value: text, start: position, end: position },
+    ({ value, start, end }) =>
+      Effect.gen(function* () {
+        const text = quote(value);
+        expect(yield* evaluate(["string/slice", text, start, end])).toBe(
+          yield* evaluate([
+            "string/join",
+            ["array/slice", ["string/split", text, ""], start, end],
+            "",
+          ])
+        );
+      })
+  );
+
+  it.effect.prop(
+    "take only text or a list, and whole numbers for positions",
+    { value: notAString, wrong: notAPosition, at: position },
+    ({ value, wrong, at }) =>
+      Effect.gen(function* () {
+        for (const program of [
+          ["string/slice", quote(value), at],
+          ["array/slice", quote(Array.isArray(value) ? 0 : value), at],
+          ["string/slice", "lion", quote(wrong)],
+          ["string/slice", "lion", at, quote(wrong)],
+          ["array/slice", quote([1, 2]), quote(wrong), at],
+        ]) {
+          const result = yield* Effect.exit(evaluate(program));
+          expect(result._tag, JSON.stringify(program)).toBe("Failure");
+        }
+      })
+  );
+});
+
 /** Separators with nothing in them that the text of a number has. */
 const SEPARATORS = [",", " ", "_", "'", "$", "$&", ", "];
 

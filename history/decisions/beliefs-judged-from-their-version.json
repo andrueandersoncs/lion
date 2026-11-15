@@ -1,0 +1,19 @@
+{
+  "id": "beliefs-judged-from-their-version",
+  "title": "A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows",
+  "context": "In the reasoning skill each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so the model must say which versions judge a belief. In the skill's first trial, beliefs that explain no problem were judged only against the present, and a belief the agent had disproved on the old code showed as holding again after the fix. An explanation of a bug judged against the present has the opposite fault: once the bug is fixed, the fixed code counts against it.",
+  "decision": "`record.mjs` stamps each belief with the version it was formed in. A belief is contradicted, borne out, or untested by the evidence of that version and every later one, and once contradicted it stays contradicted, even after the files change again. A belief that explains a problem is judged only in the versions where the problem shows. What a fix will do is a belief of its own, recorded after the change.",
+  "consequences": "An assumption such as \"nothing else calls `total`\" is caught by the edit that adds a caller, and a belief disproved before a fix does not come back after it. A fix does not count against the explanation of its bug, so `settled` can name the explanation left when all its predictions are borne out. A prediction about the fixed code inside the explanation could never be checked there, so the problem was never settled, which is why the skill now says to record it separately. Rebuilt with the new core, the trial's own model marks the belief it had disproved as violated.",
+  "alternatives": [
+    {
+      "option": "Judge a belief that explains no problem against the present only, as the skill's first version did",
+      "rejected": "A belief the agent had disproved on the old code showed as holding again after the fix."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "4c8df1b",
+      "quote": "a belief is judged from the version it was formed in on; a belief that explains a problem is judged where the problem shows, so a fix does not count against the explanation of its bug"
+    }
+  ]
+}

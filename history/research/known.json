@@ -1,0 +1,285 @@
+[
+  {
+    "assumption": "consistent-rules",
+    "witness": {
+      "rules": ["tests-use-vitest-effect", "use-bun-test-runner"],
+      "case": "test-runner"
+    },
+    "note": "AGENTS.md says the tests use Vitest with @effect/vitest (71efcf1); packages/agent/CLAUDE.md (d7628fc) and packages/examples/CLAUDE.md (ca00e8e) said to use `bun test` instead of jest or vitest. Fixed in the working tree: packages/examples/CLAUDE.md now says Vitest, and AGENTS.md says `bun run test`. It clears once the commit that fixes it is read into the notes."
+  },
+  {
+    "assumption": "consistent-rules",
+    "witness": {
+      "rules": ["scheme-racket-semantics", "strings-are-references"],
+      "case": "unbound-string"
+    },
+    "note": "An unbound string evaluates to itself (strings-are-references; the string fallback was kept on purpose in e16eb12), where Scheme raises an unbound-variable error. The departure was decided but never named as an exception to 'approximately Scheme and Racket'. The Scheme predictions are this model's reading of 500bac2's rule."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "scheme-racket-semantics",
+      "case": "unbound-string",
+      "predicted": "error",
+      "found": "itself"
+    },
+    "note": "Same departure as the unbound-string conflict: Lion returns the string, Scheme raises an error. Settle with a decision that lists Lion's departures from Scheme as exceptions."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "automatic-currying",
+      "case": "quote-no-arguments",
+      "predicted": "function",
+      "found": "error"
+    },
+    "note": "e888677 stated that functions given too few arguments return a curried function; fc4959c made `quote` and `eval` with no arguments fail and rewrote the tests, still named 'should return a curried function', to expect the error. No commit withdraws the rule. Settle with a decision that withdraws it."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "automatic-currying",
+      "case": "eval-no-arguments",
+      "predicted": "function",
+      "found": "error"
+    },
+    "note": "e888677 stated that functions given too few arguments return a curried function; fc4959c made `quote` and `eval` with no arguments fail and rewrote the tests, still named 'should return a curried function', to expect the error. No commit withdraws the rule. Settle with a decision that withdraws it."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "values-are-json",
+      "case": "host-function-returns-undefined",
+      "predicted": "error",
+      "found": "undefined"
+    },
+    "note": "e888677 held that every value is JSON, and fc4959c let a host function's undefined through. No later commit says what a host function returning undefined gives; a decision or a probe with a host function would settle it."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "scheme-racket-semantics",
+      "case": "lambda-extra-arguments",
+      "predicted": "error",
+      "found": "ignored"
+    },
+    "note": "A lambda ignores extra arguments 'as in JavaScript' (c771be4, 356e74a, README), so host code can call it as a callback; Scheme raises an error. Decided (lambda-arity) but never named as an exception to the Scheme rule, and the arity rule lists it as its own exception."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "scheme-racket-semantics",
+      "case": "define-inside-lambda",
+      "predicted": "local",
+      "found": "global"
+    },
+    "note": "A define inside a lambda writes the global environment (README; probe gives global), where Scheme's internal define is local. No commit records a decision for it."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "api-credentials-server-side",
+      "case": "editor-jev-api-key-storage",
+      "predicted": "server-side",
+      "found": "tab-memory"
+    },
+    "note": "The vendored typesafe-ai skill (fa4cab8) says to keep API credentials server-side in web apps; the editor's Jev playground (af779dc) keeps the user's key in tab memory and sends it through a proxy. Third-party advice; settle with a decision that says why the playground differs, or withdraw the rule."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "proof-not-in-git",
+      "case": "completion-proof-location",
+      "predicted": "outside-git",
+      "found": "committed"
+    },
+    "note": "AGENTS.md says not to commit proof into git (a7c2a88), yet 38d9144 committed proof videos after it, and two are still in the repository: packages/repl/artifacts/thicker-black-background-dots.webm and .artifacts/proof/repl-server-output-dock.webm. Settle by deleting them."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "crease-first-lightly-lifted",
+      "case": "graph-node-shadow",
+      "predicted": "light",
+      "found": "weighty"
+    },
+    "note": "DESIGN.md said the system is 'crease-first and lightly lifted' (a564abc), while 532cfda and ba16c89 made node shadows weighty. Fixed in the working tree: packages/repl/DESIGN.md now says what can be manipulated is lifted with weight. It clears once the commit that fixes it is read into the notes."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "beliefs-judged-from-their-version",
+      "case": "reasoning-non-explaining-belief-judged",
+      "predicted": "from-formed-version",
+      "found": "present"
+    },
+    "note": "4c8df1b's message says a belief is judged from the version it was formed in, but the plain model in reasoning-skill.test.ts says other beliefs are judged in the present; the mutation list treats judging only in the present as a break, so the test comment looks stale."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "scheme-racket-semantics",
+      "case": "cond-zero-condition",
+      "predicted": "true",
+      "found": "false"
+    },
+    "note": "cond counts a condition as JavaScript does: false, null, 0, and \"\" are false (README, probes), where Scheme counts only #f as false. Filters, by contrast, require true or false (filter-truthiness). No decision covers cond's truthiness."
+  },
+  {
+    "assumption": "scheme-precedent",
+    "witness": "356e74a-12",
+    "note": "Lambdas ignore extra arguments 'as in JavaScript' (356e74a): a base form following JavaScript, not Scheme. See lambda-extra-arguments."
+  },
+  {
+    "assumption": "scheme-precedent",
+    "witness": "doc-readme-83",
+    "note": "The README says arguments beyond a lambda's parameters are ignored 'as in JavaScript'. See lambda-extra-arguments."
+  },
+  {
+    "assumption": "removals-decided",
+    "witness": {
+      "feature": "first",
+      "commit": "3dc63b1"
+    },
+    "note": "3dc63b1 renamed `first` and `rest` to `head` and `tail` with no stated reason or decision; tests changed in the same commit."
+  },
+  {
+    "assumption": "removals-decided",
+    "witness": {
+      "feature": "rest",
+      "commit": "3dc63b1"
+    },
+    "note": "3dc63b1 renamed `first` and `rest` to `head` and `tail` with no stated reason or decision; tests changed in the same commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-code-lines",
+      "from": "c380ce7",
+      "to": "500bac2",
+      "ended": 6035,
+      "started": 6071
+    },
+    "note": "500bac2 measured its tree at 6,035 code lines, where c380ce7 ended, against main at 6,071. Its 'before' is main, not the previous commit, and main is 36 lines away from what c380ce7 reported, so either main had moved or the two counted differently. The frame does not record which baseline a figure is measured against."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-kind-tests",
+      "from": "c380ce7",
+      "to": "500bac2",
+      "ended": 70,
+      "started": 97
+    },
+    "note": "500bac2 measured 70 tests of a value's kind, where c380ce7 ended (it called them instanceof checks), against main at 97, 27 more than c380ce7's 70 and 10 more than its starting 87. The 'before' is main, not the previous commit; the counts of main disagree."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-exceptions",
+      "from": "500bac2",
+      "to": "fbc25a1",
+      "ended": 2,
+      "started": 3
+    },
+    "note": "500bac2 says main (0.6.0) has 2 grid exceptions; fbc25a1 reports '2 exceptions (was 3)'."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "500bac2",
+      "to": "fbc25a1",
+      "ended": 324,
+      "started": 336
+    },
+    "note": "Each commit compares against main measured on its own, larger grid, so fbc25a1 starts at 336 where 500bac2 ended at 324: the baseline is main on the new grid, not the previous commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "fbc25a1",
+      "to": "356e74a",
+      "ended": 487,
+      "started": 498
+    },
+    "note": "Each commit compares against main measured on its own, larger grid, so 356e74a starts at 498 where fbc25a1 ended at 487: the baseline is main on the new grid, not the previous commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "grid-cells-like-plain-code",
+      "from": "356e74a",
+      "to": "841b511",
+      "ended": 509,
+      "started": 520
+    },
+    "note": "Each commit compares against main measured on its own, larger grid, so 841b511 starts at 520 where 356e74a ended at 509: the baseline is main on the new grid, not the previous commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-kind-tests",
+      "from": "786fdc0",
+      "to": "1d5800a",
+      "ended": 120,
+      "started": 122
+    },
+    "note": "786fdc0 ended tests of a value's kind at 120; 1d5800a starts from 122, and b030d8a between them gives no figure."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-code-lines",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 9484,
+      "started": 9489
+    },
+    "note": "1d5800a measures 'against the previous commit', but its starting core-code-lines (9489) is not where b030d8a ended (9484); one of the two was measured on a working tree that differed from its commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-functions",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 1118,
+      "started": 1120
+    },
+    "note": "1d5800a measures 'against the previous commit', but its starting core-functions (1120) is not where b030d8a ended (1118); one of the two was measured on a working tree that differed from its commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-paths",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 2469,
+      "started": 2474
+    },
+    "note": "1d5800a measures 'against the previous commit', but its starting core-paths (2474) is not where b030d8a ended (2469); one of the two was measured on a working tree that differed from its commit."
+  },
+  {
+    "assumption": "measures-chain",
+    "witness": {
+      "metric": "core-nesting-decisions",
+      "from": "b030d8a",
+      "to": "1d5800a",
+      "ended": 1692,
+      "started": 1695
+    },
+    "note": "1d5800a measures 'against the previous commit', but its starting core-nesting-decisions (1695) is not where b030d8a ended (1692); one of the two was measured on a working tree that differed from its commit."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "scheme-racket-semantics",
+      "case": "cond-empty-string-condition",
+      "predicted": "true",
+      "found": "false"
+    },
+    "note": "An empty string counts as false in a cond (README, probe), where Scheme counts every string as true. Part of cond's JavaScript truthiness: see cond-zero-condition."
+  }
+]

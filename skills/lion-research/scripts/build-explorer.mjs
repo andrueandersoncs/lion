@@ -76,7 +76,8 @@ export const within = (page, expression) => [
 
 /** The texts of a block that the plan may compute, each with what it is. */
 const textsOfBlock = (block) => [
-  ["answer", block.answer],
+  // A lookup's answer is a function of the choices, asked with the example.
+  ...(block.type === "lookup" ? [] : [["answer", block.answer]]),
   ["note", block.note],
   ["text", block.text],
   ...(block.type === "figures"
@@ -100,6 +101,15 @@ const queriesOfBlock = (block) => {
         choice.options,
       ]),
       // The query is a function of the choices; the example is one call of it.
+      [
+        "answer with the example",
+        isRecord(block.example) && block.answer !== undefined
+          ? [
+              block.answer,
+              ...choices.map(([name]) => ["quote", block.example[name]]),
+            ]
+          : undefined,
+      ],
       [
         "with the example",
         isRecord(block.example)

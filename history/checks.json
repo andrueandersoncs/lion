@@ -1,0 +1,126 @@
+{
+  "fail": {
+    "Feature and fix commits that no entry records": [
+      "query",
+      ["unaccounted", "?commit", "?subject"],
+      {
+        "order": "commit"
+      }
+    ],
+    "Commits named that no commit starts with": [
+      "query",
+      ["unresolved", "?entry", "?commit"],
+      {
+        "order": "entry"
+      }
+    ],
+    "Commits named that more than one commit starts with": [
+      "query",
+      ["ambiguous_ref", "?entry", "?commit", "?count"],
+      {
+        "order": "entry"
+      }
+    ],
+    "Quotes that are not in the commit message they cite": [
+      "query",
+      ["misquoted_ref", "?entry", "?commit", "?quote"],
+      {
+        "order": "entry"
+      }
+    ],
+    "Decisions named that the record does not hold": [
+      "query",
+      ["unknown_decision", "?entry", "?decision"],
+      {
+        "order": "entry"
+      }
+    ],
+    "Breaking changes that follow from no decision": [
+      "query",
+      ["unjustified", "?entry", "?text"],
+      {
+        "order": "entry"
+      }
+    ],
+    "Decisions whose file is not named for their id": [
+      "query",
+      ["misnamed", "?path", "?id"],
+      {
+        "order": "path"
+      }
+    ],
+    "Decisions that supersede a later one": [
+      "query",
+      ["backwards", "?decision", "?old"],
+      {
+        "order": "decision"
+      }
+    ],
+    "Releases at the same commit": [
+      "query",
+      ["shared_commit", "?release", "?other", "?commit"],
+      {
+        "order": "release"
+      }
+    ],
+    "Versions released twice": [
+      "query",
+      ["repeated_version", "?name", "?version", "?release", "?other"],
+      {
+        "order": "release"
+      }
+    ],
+    "Versions that do not rise from one release to the next": [
+      "query",
+      ["regressed", "?name", "?earlier", "?later"],
+      {
+        "order": "name"
+      }
+    ],
+    "Tags that point at another commit than their release": [
+      "query",
+      ["mistagged", "?release", "?tag", "?commit"],
+      {
+        "order": "release"
+      }
+    ]
+  },
+  "note": {
+    "Releases with no tag yet": [
+      "query",
+      ["untagged", "?release", "?tag"],
+      {
+        "order": "tag"
+      }
+    ],
+    "Changes no release has shipped yet": [
+      "query",
+      ["and", ["unreleased", "?entry"], ["change", "?entry", "?kind", "?_"]],
+      {
+        "order": "entry"
+      }
+    ]
+  },
+  "holds": {
+    "decisions": [
+      "aggregate/count",
+      ["find", "?id", ["decision_of", "?id", "?_", "?_"]]
+    ],
+    "changes": [
+      "aggregate/count",
+      ["find", "?e", ["change", "?e", "?_", "?_"]]
+    ],
+    "releases": [
+      "aggregate/count",
+      ["find", "?r", ["and", ["release", "?r", "?_"], ["not", ["draft", "?r"]]]]
+    ],
+    "commits": [
+      "aggregate/count",
+      [
+        "find",
+        "?h",
+        ["and", ["subject", "?h", "?_"], ["not", ["=", "?h", "working tree"]]]
+      ]
+    ]
+  }
+}

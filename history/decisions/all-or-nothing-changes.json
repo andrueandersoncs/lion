@@ -1,0 +1,23 @@
+{
+  "id": "all-or-nothing-changes",
+  "title": "A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds",
+  "context": "A `retract` with one invalid fact still removed the facts listed before it, so a failed form left the database half changed. Running a setup program again against a database saved with `lion --database` added each rule a second time, so aggregates counted every match twice. And a program could check a condition on its data only when it asked: a query with the `\"assert\"` option checked it once, when the query ran.",
+  "decision": "`[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the database: the goal must have no answers, or with `\"some\"` at least one, when it is added and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was, facts in the same order. Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing, as adding a fact or declaring a relation the same way already did.",
+  "consequences": "One rule answers what a failed form leaves behind: nothing. Several facts that only make sense together go in one `fact` form, and each later form is checked against the result. Invariants are answered the way queries are, with goal-directed rewriting, aggregates, and graph algorithms, and they are saved in snapshots after the rules and enforced by `lion --database`. Running a setup again, or loading a snapshot onto the database it came from, keeps one copy of each rule.",
+  "alternatives": [
+    {
+      "option": "A new keyword for invariants",
+      "rejected": "The query option `\"assert\"` already said that a question must have no answers, or some. An invariant reuses it, compiles its goal like a query, and fails in the same words, so there is no second vocabulary to learn, and anything a query can ask, an invariant can require."
+    },
+    {
+      "option": "Make one run, rather than one form, the unit of change",
+      "rejected": "One form keeps the rule simple, lets facts that only make sense together go in a single `fact` form, and checks each later form against the result."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "47ea840",
+      "quote": "Every form that changes the database is now all or nothing."
+    }
+  ]
+}

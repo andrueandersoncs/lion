@@ -2,7 +2,7 @@ import { Array as Arr, Effect, Option, Schema } from "effect";
 import { logicError } from "@/errors/evaluation";
 import { call } from "@/evaluation/special-forms/function";
 import { listMaker } from "@/logic/terms";
-import { combining, over, overEffect } from "@/modules/lib/shared";
+import { combining, over, overEffect, slicing } from "@/modules/lib/shared";
 
 const MAX_RANGE = 1_000_000;
 
@@ -23,6 +23,9 @@ export const module = {
 
   /** Every item after the first; an empty list has none. */
   tail: over([List], (list): unknown[] => list.slice(1)),
+
+  /** The items from `start` up to `end`, as `string/slice` cuts text. */
+  slice: slicing(List),
 
   length: over([List], Arr.length),
 

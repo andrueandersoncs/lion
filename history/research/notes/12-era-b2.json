@@ -1,0 +1,2783 @@
+{
+  "claims": [
+    {
+      "id": "24f4827-1",
+      "source": "24f4827",
+      "quote": "implements list/reduce function",
+      "says": {
+        "feature": "list/reduce",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "24f4827-2",
+      "source": "24f4827",
+      "quote": "list.reduce([1, 2, 3, 4], 0, (acc: number, x: number) =>",
+      "says": {
+        "behavior": "reduce-parameter-order",
+        "is": "list-initial-function",
+        "area": "library"
+      }
+    },
+    {
+      "id": "24f4827-3",
+      "source": "24f4827",
+      "quote": "[\"lambda\", [\"acc\", \"x\"], [\"math/+\", \"acc\", \"x\"]],",
+      "says": {
+        "behavior": "reduce-callback-parameter-order",
+        "is": "accumulator-then-item",
+        "area": "library"
+      }
+    },
+    {
+      "id": "56671ac-1",
+      "source": "56671ac",
+      "quote": "implements cond special form",
+      "says": {
+        "feature": "cond",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "56671ac-2",
+      "source": "56671ac",
+      "quote": "should return the result of the first case that evaluates to true",
+      "says": {
+        "behavior": "cond-first-true-clause",
+        "is": "returned",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "56671ac-3",
+      "source": "56671ac",
+      "quote": "should not continue evaluating the condition expressions after the first true case",
+      "says": {
+        "behavior": "cond-conditions-after-first-true",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "56671ac-4",
+      "source": "56671ac",
+      "quote": "should not evaluate the result body of more than one true case",
+      "says": {
+        "behavior": "cond-later-true-clause-results",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "56671ac-5",
+      "source": "56671ac",
+      "quote": "should not evaluate the result body of false cases",
+      "says": {
+        "behavior": "cond-false-clause-result",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "56671ac-6",
+      "source": "56671ac",
+      "quote": "return null;",
+      "says": {
+        "behavior": "cond-no-match-no-else",
+        "is": "null",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "56671ac-7",
+      "source": "56671ac",
+      "quote": "export const CondFormWithElseSchema = Schema.Tuple(",
+      "says": {
+        "behavior": "cond-else-clause",
+        "is": "optional",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-1",
+      "source": "df689c0",
+      "quote": "[\"match\", <value>, [<predicate>, <fn>], ..., <fallback-fn>]",
+      "says": {
+        "feature": "match",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-2",
+      "source": "df689c0",
+      "quote": "should apply the function for the first pattern that matches",
+      "says": {
+        "behavior": "match-first-matching-pattern",
+        "is": "applied",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-3",
+      "source": "df689c0",
+      "quote": "should apply ONLY the first pattern that matches",
+      "says": {
+        "behavior": "match-later-matching-patterns",
+        "is": "not-applied",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-4",
+      "source": "df689c0",
+      "quote": "should apply the fallback function if no pattern matches",
+      "says": {
+        "behavior": "match-no-pattern-matches",
+        "is": "fallback-applied",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-5",
+      "source": "df689c0",
+      "quote": "should require at least one pattern and a fallback function",
+      "says": {
+        "behavior": "match-fallback",
+        "is": "required",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-6",
+      "source": "df689c0",
+      "quote": "should accept arbitrary predicates as pattern matchers",
+      "says": {
+        "behavior": "match-pattern-predicate",
+        "is": "any-function",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-7",
+      "source": "df689c0",
+      "quote": "Effect.catchAll(() => Effect.succeed(false))",
+      "says": {
+        "behavior": "match-predicate-error",
+        "is": "no-match",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-8",
+      "source": "df689c0",
+      "quote": "Schema.decodeUnknown(Schema.Boolean)",
+      "says": {
+        "behavior": "match-predicate-non-boolean-result",
+        "is": "no-match",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "df689c0-9",
+      "source": "df689c0",
+      "quote": "refactors stdlib",
+      "says": {
+        "decision": "library-module-organization",
+        "chose": "value-kind-modules",
+        "over": ["math-logic-list-modules"],
+        "area": "library"
+      }
+    },
+    {
+      "id": "df689c0-10",
+      "source": "df689c0",
+      "quote": "\"./modules/array\": \"./dist/modules/array.mjs\",",
+      "says": {
+        "feature": "array",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-11",
+      "source": "df689c0",
+      "quote": "\"./modules/boolean\": \"./dist/modules/boolean.mjs\",",
+      "says": {
+        "feature": "boolean",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-12",
+      "source": "df689c0",
+      "quote": "\"./modules/number\": \"./dist/modules/number.mjs\",",
+      "says": {
+        "feature": "number",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-13",
+      "source": "df689c0",
+      "quote": "\"./modules/string\": \"./dist/modules/string.mjs\",",
+      "says": {
+        "feature": "string",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-14",
+      "source": "df689c0",
+      "quote": "\"./modules/value\": \"./dist/modules/value.mjs\",",
+      "says": {
+        "feature": "value",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-15",
+      "source": "df689c0",
+      "quote": "\"./modules/list\": \"./dist/modules/list.mjs\",",
+      "says": {
+        "feature": "list",
+        "kind": "module",
+        "present": false,
+        "replaced_by": "array"
+      }
+    },
+    {
+      "id": "df689c0-16",
+      "source": "df689c0",
+      "quote": "\"./modules/logic\": \"./dist/modules/logic.mjs\",",
+      "says": {
+        "feature": "logic",
+        "kind": "module",
+        "present": false,
+        "replaced_by": "boolean"
+      }
+    },
+    {
+      "id": "df689c0-17",
+      "source": "df689c0",
+      "quote": "\"./modules/math\": \"./dist/modules/math.mjs\",",
+      "says": {
+        "feature": "math",
+        "kind": "module",
+        "present": false,
+        "replaced_by": "number"
+      }
+    },
+    {
+      "id": "df689c0-18",
+      "source": "df689c0",
+      "quote": "[\"define\", \"[]\", \"array/make\"],",
+      "says": {
+        "feature": "array/make",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-19",
+      "source": "df689c0",
+      "quote": "[\"define\", \"[]\", \"list/list\"],",
+      "says": {
+        "feature": "list/list",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "array/make"
+      }
+    },
+    {
+      "id": "df689c0-20",
+      "source": "df689c0",
+      "quote": "\"./modules/list\": \"./dist/modules/list.mjs\",",
+      "says": {
+        "feature": "list/reduce",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "array/reduce"
+      }
+    },
+    {
+      "id": "df689c0-21",
+      "source": "df689c0",
+      "quote": "reduce: flow(",
+      "says": {
+        "feature": "array/reduce",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-22",
+      "source": "df689c0",
+      "quote": "head: flow(",
+      "says": {
+        "feature": "array/head",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-23",
+      "source": "df689c0",
+      "quote": "tail: flow(",
+      "says": {
+        "feature": "array/tail",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-24",
+      "source": "df689c0",
+      "quote": "length: flow(decode(Schema.Array(Schema.Any)), Effect.map(Arr.length)),",
+      "says": {
+        "feature": "array/length",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-25",
+      "source": "df689c0",
+      "quote": "concat: flow(",
+      "says": {
+        "feature": "array/concat",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-26",
+      "source": "df689c0",
+      "quote": "\"includes?\": flow(",
+      "says": {
+        "feature": "array/includes?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-27",
+      "source": "df689c0",
+      "quote": "map: flow(",
+      "says": {
+        "feature": "array/map",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-28",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => a === b)",
+      "says": {
+        "feature": "boolean/equals?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-29",
+      "source": "df689c0",
+      "quote": "not: flow(decode(Schema.Boolean), Effect.map(Bool.not)),",
+      "says": {
+        "feature": "boolean/not",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-30",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => Bool.and(a, b))",
+      "says": {
+        "feature": "boolean/and",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-31",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => Bool.or(a, b))",
+      "says": {
+        "feature": "boolean/or",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-32",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => Bool.xor(a, b))",
+      "says": {
+        "feature": "boolean/xor",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-33",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => Bool.nand(a, b))",
+      "says": {
+        "feature": "boolean/nand",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-34",
+      "source": "df689c0",
+      "quote": "Effect.map(([a, b]) => Bool.nor(a, b))",
+      "says": {
+        "feature": "boolean/nor",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-35",
+      "source": "df689c0",
+      "quote": "const result = yield* run([\"math/+\", 1, 2], stdlib);",
+      "says": {
+        "feature": "math/+",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "number/add"
+      }
+    },
+    {
+      "id": "df689c0-36",
+      "source": "df689c0",
+      "quote": "const result = yield* run([\"number/add\", 1, 2], stdlib);",
+      "says": {
+        "feature": "number/add",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-37",
+      "source": "df689c0",
+      "quote": "expect(yield* run([\"math/-\", a, b], stdlib)).toBe(a - b);",
+      "says": {
+        "feature": "math/-",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "number/subtract"
+      }
+    },
+    {
+      "id": "df689c0-38",
+      "source": "df689c0",
+      "quote": "expect(yield* run([\"number/subtract\", a, b], stdlib)).toBe(a - b);",
+      "says": {
+        "feature": "number/subtract",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-39",
+      "source": "df689c0",
+      "quote": "expect(yield* run([\"math/*\", a, b], stdlib)).toBe(a * b);",
+      "says": {
+        "feature": "math/*",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "number/multiply"
+      }
+    },
+    {
+      "id": "df689c0-40",
+      "source": "df689c0",
+      "quote": "expect(yield* run([\"number/multiply\", a, b], stdlib)).toBe(a * b);",
+      "says": {
+        "feature": "number/multiply",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-41",
+      "source": "df689c0",
+      "quote": "const result = yield* run(\"func/identity\", stdlib);",
+      "says": {
+        "feature": "func/identity",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "value/identity"
+      }
+    },
+    {
+      "id": "df689c0-42",
+      "source": "df689c0",
+      "quote": "const result = yield* run(\"value/identity\", stdlib);",
+      "says": {
+        "feature": "value/identity",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-43",
+      "source": "df689c0",
+      "quote": "[\"value/number?\", [\"lambda\", [\"x\"], [\"number/add\", \"x\", 1]]],",
+      "says": {
+        "feature": "value/number?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-44",
+      "source": "df689c0",
+      "quote": "[\"value/string?\", \"value/identity\"],",
+      "says": {
+        "feature": "value/string?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-45",
+      "source": "df689c0",
+      "quote": "[\"lambda\", [\"x\"], [\"number/equals?\", \"x\", 1]],",
+      "says": {
+        "feature": "number/equals?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "df689c0-46",
+      "source": "df689c0",
+      "quote": "\"agent-response-log.json\",",
+      "says": {
+        "behavior": "agent-response-log",
+        "is": "written-to-file",
+        "area": "ai",
+        "was": "logged-to-console"
+      }
+    },
+    {
+      "id": "aa35e61-1",
+      "source": "aa35e61",
+      "quote": "should evaluate the value expression before applying the patterns",
+      "says": {
+        "behavior": "match-value-expression",
+        "is": "evaluated",
+        "area": "forms",
+        "was": "not-evaluated"
+      }
+    },
+    {
+      "id": "aa35e61-2",
+      "source": "aa35e61",
+      "quote": "\"flat-map\": flow(",
+      "says": {
+        "feature": "array/flat-map",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aa35e61-3",
+      "source": "aa35e61",
+      "quote": "[\"string/equals?\", [\".\", \"c\", \"type\"], \"text\"]",
+      "says": {
+        "behavior": "agent-response-step-rendering",
+        "is": "by-content-type",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "f6737fa-1",
+      "source": "f6737fa",
+      "quote": "move shared lib into lib folder",
+      "says": {
+        "decision": "library-helpers-location",
+        "chose": "modules-lib-folder",
+        "over": ["modules-folder"],
+        "area": "library"
+      }
+    },
+    {
+      "id": "96eed18-1",
+      "source": "96eed18",
+      "quote": "implement structural record pattern matching",
+      "says": {
+        "feature": "structural-record-patterns",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "96eed18-2",
+      "source": "96eed18",
+      "quote": "should accept structural predicates as pattern matchers",
+      "says": {
+        "behavior": "match-record-pattern-extra-keys",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-3",
+      "source": "96eed18",
+      "quote": "if (!Record.keys(record).every((key) => Record.has(value, key))) {",
+      "says": {
+        "behavior": "match-record-pattern-missing-key",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-4",
+      "source": "96eed18",
+      "quote": "should only match structural predicates if all substructures match",
+      "says": {
+        "behavior": "match-record-pattern-value-mismatch",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-5",
+      "source": "96eed18",
+      "quote": "should match nested structural predicates",
+      "says": {
+        "behavior": "match-record-pattern-nested",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-6",
+      "source": "96eed18",
+      "quote": "if (!Schema.is(AnyRecordSchema)(value)) {",
+      "says": {
+        "behavior": "match-record-pattern-non-record",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-7",
+      "source": "96eed18",
+      "quote": "if (!Record.keys(record).every((key) => Record.has(value, key))) {",
+      "says": {
+        "decision": "record-pattern-keys",
+        "chose": "pattern-keys-only",
+        "area": "schemas"
+      }
+    },
+    {
+      "id": "96eed18-8",
+      "source": "96eed18",
+      "quote": "partial: (fn: unknown, ...args: unknown[]) =>",
+      "says": {
+        "feature": "func/partial",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "96eed18-9",
+      "source": "96eed18",
+      "quote": "return fn(...args, ...moreArgs);",
+      "says": {
+        "behavior": "func-partial-argument-order",
+        "is": "bound-arguments-first",
+        "area": "library"
+      }
+    },
+    {
+      "id": "96eed18-10",
+      "source": "96eed18",
+      "quote": "\"Tool Result\",",
+      "says": {
+        "behavior": "agent-tool-result-display",
+        "is": "shown",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "98ce5dd-1",
+      "source": "98ce5dd",
+      "quote": "implements proper global/local environment distinctions",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "Environments chain from local to global, and a lambda closes over the scope it is made in and sees later changes to global bindings",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98ce5dd-2",
+      "source": "98ce5dd",
+      "quote": "name: debug-mode",
+      "says": {
+        "feature": "debug-mode",
+        "kind": "skill",
+        "present": true
+      }
+    },
+    {
+      "id": "a51324b-1",
+      "source": "a51324b",
+      "quote": "fixes define/lambda closure issue",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "a51324b-2",
+      "source": "a51324b",
+      "quote": ".agents/skills/debug-mode/scripts/cli.js",
+      "says": {
+        "feature": "debug-mode-cli-bundle",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "c63b79d-1",
+      "source": "c63b79d",
+      "quote": "better solution to lambda/closure issue",
+      "says": {
+        "decision": "closure-environment-implementation",
+        "chose": "shared-mutable-frames",
+        "over": ["copy-and-sync-global"],
+        "because": "better solution to lambda/closure issue",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "c63b79d-2",
+      "source": "c63b79d",
+      "quote": "setGlobalBinding(environment, id, value),",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "c63b79d-3",
+      "source": "c63b79d",
+      "quote": "Effect.map(Option.getOrElse(() => name))",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "c63b79d-4",
+      "source": "c63b79d",
+      "quote": "return yield* getBinding(environment.parent, name);",
+      "says": {
+        "behavior": "name-lookup-local-miss",
+        "is": "parent-environment",
+        "area": "names"
+      }
+    },
+    {
+      "id": "c63b79d-5",
+      "source": "c63b79d",
+      "quote": "if (args.length < parameters.length) {",
+      "says": {
+        "behavior": "lambda-missing-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "c63b79d-6",
+      "source": "c63b79d",
+      "quote": "return yield* new ArgumentMismatchError();",
+      "says": {
+        "feature": "ArgumentMismatchError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "35446bc-1",
+      "source": "35446bc",
+      "quote": "onNone: () => getBinding(parent, name),",
+      "says": {
+        "behavior": "name-lookup-local-miss",
+        "is": "parent-environment",
+        "area": "names"
+      }
+    },
+    {
+      "id": "35446bc-2",
+      "source": "35446bc",
+      "quote": "implements functional getBinding()",
+      "says": {
+        "decision": "effect-code-style",
+        "chose": "pipe",
+        "over": ["effect-gen"],
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "861278b-1",
+      "source": "861278b",
+      "quote": "setGlobalBinding(parent, name, value)",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "861278b-2",
+      "source": "861278b",
+      "quote": "more functionalization of environment.ts",
+      "says": {
+        "decision": "effect-code-style",
+        "chose": "pipe",
+        "over": ["effect-gen"],
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "884d50c-1",
+      "source": "884d50c",
+      "quote": "adds messages from response into messages array in agent",
+      "says": {
+        "behavior": "agent-conversation-history",
+        "is": "kept",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "12be7a6-1",
+      "source": "12be7a6",
+      "quote": "clears input after message sent",
+      "says": {
+        "behavior": "agent-input-after-send",
+        "is": "cleared",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "9dd7605-1",
+      "source": "9dd7605",
+      "quote": "adds read-directory tool",
+      "says": {
+        "feature": "read-directory",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "9dd7605-2",
+      "source": "9dd7605",
+      "quote": "implements handling for non-string tool results",
+      "says": {
+        "behavior": "agent-non-string-tool-result",
+        "is": "json-stringified",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "9dd7605-3",
+      "source": "9dd7605",
+      "quote": "\"stopWhen\": [\"()\", \"AI\", \"stepCountIs\", 8],",
+      "says": {
+        "behavior": "agent-steps-per-message",
+        "is": "at-most-8",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "9dd7605-4",
+      "source": "9dd7605",
+      "quote": "\"agent-response-log.json\",",
+      "says": {
+        "behavior": "agent-response-log",
+        "is": "not-written",
+        "area": "ai",
+        "was": "written-to-file"
+      }
+    },
+    {
+      "id": "9dd7605-5",
+      "source": "9dd7605",
+      "quote": ").catch((e) => console.error(e));",
+      "says": {
+        "behavior": "func-callback-effect-failure",
+        "is": "rejects",
+        "area": "library",
+        "was": "logged"
+      }
+    },
+    {
+      "id": "e5c7188-1",
+      "source": "e5c7188",
+      "quote": "dogfooding achieved internally",
+      "says": {
+        "feature": "agent-dogfooding",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-2",
+      "source": "e5c7188",
+      "quote": "Read files (`read-file`)",
+      "says": {
+        "feature": "read-file",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-3",
+      "source": "e5c7188",
+      "quote": "List directory contents (`read-directory`)",
+      "says": {
+        "feature": "read-directory",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-4",
+      "source": "e5c7188",
+      "quote": "Edit files with string replacement (`edit-file`)",
+      "says": {
+        "feature": "edit-file",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-5",
+      "source": "e5c7188",
+      "quote": "The edit tool enforces exactly one match for replacements to prevent accidental changes",
+      "says": {
+        "behavior": "agent-edit-file-match-count-not-one",
+        "is": "error",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "e5c7188-6",
+      "source": "e5c7188",
+      "quote": "Maintains conversation context for multi-turn interactions",
+      "says": {
+        "behavior": "agent-conversation-history",
+        "is": "kept",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "e5c7188-7",
+      "source": "e5c7188",
+      "quote": "An AI-powered terminal UI agent built with OpenTUI that provides an interactive chat interface with file system capabilities.",
+      "says": {
+        "feature": "@lion/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-8",
+      "source": "e5c7188",
+      "quote": "The application is configured via `src/agent.json` using a declarative Lisp-like syntax that defines:",
+      "says": {
+        "rule": "agent-as-lion-program",
+        "holds": true,
+        "statement": "The coding agent in packages/agent is a Lion program, agent.json, run by a small host file",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "e5c7188-9",
+      "source": "e5c7188",
+      "quote": ") => Effect.succeed(fn.apply(obj, args)),",
+      "says": {
+        "feature": "func/apply",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-10",
+      "source": "e5c7188",
+      "quote": "throw e;",
+      "says": {
+        "behavior": "func-callback-effect-failure",
+        "is": "logged-and-rethrown",
+        "area": "library",
+        "was": "rejects"
+      }
+    },
+    {
+      "id": "e5c7188-11",
+      "source": "e5c7188",
+      "quote": "return yield* new InvalidPathError({ path });",
+      "says": {
+        "feature": "InvalidPathError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "e5c7188-12",
+      "source": "e5c7188",
+      "quote": "return yield* new InvalidPathError({ path });",
+      "says": {
+        "behavior": "object-get-path-non-string-path",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "e5c7188-13",
+      "source": "e5c7188",
+      "quote": "// FIXME: technically any value can have a method through its prototype chain",
+      "says": {
+        "behavior": "object-call-method-on-primitive",
+        "is": "allowed",
+        "area": "library",
+        "was": "not-an-object-error"
+      }
+    },
+    {
+      "id": "b44276c-1",
+      "source": "b44276c",
+      "quote": "feat: create static marketing site for Lion",
+      "says": {
+        "feature": "marketing-site",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "b44276c-2",
+      "source": "b44276c",
+      "quote": "All code is valid JSON. All JSON is valid code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": true,
+        "statement": "All code is valid JSON, and all JSON is valid Lion code",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b44276c-3",
+      "source": "b44276c",
+      "quote": "Any system that reads JSON can work with Lion programs. No special tooling required.",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value, evaluated as it is, with no parser of its own",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "program-syntax",
+            "is": "json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b44276c-4",
+      "source": "b44276c",
+      "quote": "<span class=\"stat-value\">0</span>",
+      "says": {
+        "measured": "custom-parsers-needed",
+        "after": 0,
+        "area": "site"
+      }
+    },
+    {
+      "id": "b44276c-5",
+      "source": "b44276c",
+      "quote": "<span class=\"stat-value\">100%</span>",
+      "says": {
+        "measured": "json-compatible-percent",
+        "after": 100,
+        "area": "site"
+      }
+    },
+    {
+      "id": "b44276c-6",
+      "source": "b44276c",
+      "quote": "Built with Effect and Schema for runtime type validation and powerful error handling.",
+      "says": {
+        "rule": "evaluate-with-effect",
+        "holds": true,
+        "statement": "The evaluator is written with Effect, with Schema validating arguments at run time",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b44276c-7",
+      "source": "b44276c",
+      "quote": "Released under the MIT License.",
+      "says": {
+        "decision": "license",
+        "chose": "mit",
+        "area": "packages"
+      }
+    },
+    {
+      "id": "b44276c-8",
+      "source": "b44276c",
+      "quote": "Function calls use Lisp-style prefix notation within JSON arrays.",
+      "says": {
+        "behavior": "array-first-element-function",
+        "is": "function-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b44276c-9",
+      "source": "b44276c",
+      "quote": "Objects evaluate their values while preserving keys.",
+      "says": {
+        "behavior": "record-expression-values",
+        "is": "evaluated",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b44276c-10",
+      "source": "b44276c",
+      "quote": "<span class=\"code-comment\">// => [\"math/+\", 1, 2]</span>",
+      "says": {
+        "behavior": "quote-argument",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b44276c-11",
+      "source": "b44276c",
+      "quote": "Add custom functions to the environment. Your functions become first-class citizens.",
+      "says": {
+        "behavior": "host-function-in-environment",
+        "is": "callable",
+        "area": "host"
+      }
+    },
+    {
+      "id": "b44276c-12",
+      "source": "b44276c",
+      "quote": "Use logic/if for conditional branching with full expression support.",
+      "says": {
+        "feature": "logic/if",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b44276c-13",
+      "source": "b44276c",
+      "quote": "<span class=\"code-string\">\"math/+\"</span>",
+      "says": {
+        "feature": "math/+",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b44276c-14",
+      "source": "b44276c",
+      "quote": "<span class=\"code-string\">\"math/>\"</span>",
+      "says": {
+        "feature": "math/>",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b44276c-15",
+      "source": "b44276c",
+      "quote": "Define anonymous functions with the lambda special form.",
+      "says": {
+        "feature": "lambda",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "b44276c-16",
+      "source": "b44276c",
+      "quote": "npm install @lion/core",
+      "says": {
+        "feature": "@lion/core",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "f26de75-1",
+      "source": "f26de75",
+      "quote": "Create static marketing site for Lion",
+      "says": {
+        "feature": "marketing-site",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "80b6db6-1",
+      "source": "80b6db6",
+      "quote": "lionlang.dev",
+      "says": {
+        "decision": "site-domain",
+        "chose": "lionlang-dev",
+        "area": "site"
+      }
+    },
+    {
+      "id": "b9ddf0d-1",
+      "source": "b9ddf0d",
+      "quote": "Lion is a JSON-based Lisp. Every Lion program is valid JSON",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value, evaluated as it is, with no parser of its own",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "program-syntax",
+            "is": "json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b9ddf0d-2",
+      "source": "b9ddf0d",
+      "quote": "Lion is a JSON-based Lisp. All code is valid JSON, and all JSON is valid Lion code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": false,
+        "statement": "All code is valid JSON, and all JSON is valid Lion code",
+        "area": "evaluation",
+        "replaced_by": "json-programs"
+      }
+    },
+    {
+      "id": "b9ddf0d-3",
+      "source": "b9ddf0d",
+      "quote": "Numbers, booleans, and `null` evaluate to themselves.",
+      "says": {
+        "behavior": "non-string-primitive",
+        "is": "itself",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b9ddf0d-4",
+      "source": "b9ddf0d",
+      "quote": "Strings are treated as references first; if no binding exists, the original string is returned.",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b9ddf0d-5",
+      "source": "b9ddf0d",
+      "quote": "Strings are treated as references first; if no binding exists, the original string is returned.",
+      "says": {
+        "behavior": "bound-string",
+        "is": "bound-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b9ddf0d-6",
+      "source": "b9ddf0d",
+      "quote": "Arrays are always treated as executable expressions:",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "An array is always a special form or a function call, never a list that evaluates to its elements",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b9ddf0d-7",
+      "source": "b9ddf0d",
+      "quote": "function calls when the first element evaluates to a function",
+      "says": {
+        "behavior": "array-first-element-function",
+        "is": "function-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b9ddf0d-8",
+      "source": "b9ddf0d",
+      "quote": "Objects preserve their keys and evaluate each value.",
+      "says": {
+        "behavior": "record-expression-values",
+        "is": "evaluated",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b9ddf0d-9",
+      "source": "b9ddf0d",
+      "quote": "Objects preserve their keys and evaluate each value.",
+      "says": {
+        "behavior": "record-expression-keys",
+        "is": "preserved",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b9ddf0d-10",
+      "source": "b9ddf0d",
+      "quote": "Returns its argument without evaluating it.",
+      "says": {
+        "behavior": "quote-argument",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-11",
+      "source": "b9ddf0d",
+      "quote": "Evaluates its argument, then evaluates the result.",
+      "says": {
+        "behavior": "eval-argument",
+        "is": "evaluated-twice",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-12",
+      "source": "b9ddf0d",
+      "quote": "Evaluates expressions in order and returns the last result.",
+      "says": {
+        "behavior": "begin-result",
+        "is": "last-expression",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-13",
+      "source": "b9ddf0d",
+      "quote": "Evaluates a value, stores it in the global environment, and returns the stored value.",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b9ddf0d-14",
+      "source": "b9ddf0d",
+      "quote": "Evaluates a value, stores it in the global environment, and returns the stored value.",
+      "says": {
+        "behavior": "define-result",
+        "is": "value",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-15",
+      "source": "b9ddf0d",
+      "quote": "Creates a Lion function with lexical scope.",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "Environments chain from local to global, and a lambda closes over the scope it is made in and sees later changes to global bindings",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          },
+          {
+            "behavior": "lambda-global-rebound-after-creation",
+            "is": "updated-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b9ddf0d-16",
+      "source": "b9ddf0d",
+      "quote": "Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.",
+      "says": {
+        "behavior": "lambda-free-variable",
+        "is": "enclosing-scope",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b9ddf0d-17",
+      "source": "b9ddf0d",
+      "quote": "Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.",
+      "says": {
+        "behavior": "lambda-global-rebound-after-creation",
+        "is": "updated-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b9ddf0d-18",
+      "source": "b9ddf0d",
+      "quote": "Evaluates condition/result pairs in order and returns the first matching result.",
+      "says": {
+        "behavior": "cond-first-true-clause",
+        "is": "returned",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-19",
+      "source": "b9ddf0d",
+      "quote": "An `else` branch is optional.",
+      "says": {
+        "behavior": "cond-else-clause",
+        "is": "optional",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-20",
+      "source": "b9ddf0d",
+      "quote": "If no branch matches and no `else` is provided, `cond` returns `null`.",
+      "says": {
+        "behavior": "cond-no-match-no-else",
+        "is": "null",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-21",
+      "source": "b9ddf0d",
+      "quote": "Pattern matches a value against predicate/function pairs, then applies the first matching branch.",
+      "says": {
+        "behavior": "match-first-matching-pattern",
+        "is": "applied",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-22",
+      "source": "b9ddf0d",
+      "quote": "The last argument is a fallback function.",
+      "says": {
+        "behavior": "match-fallback",
+        "is": "required",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b9ddf0d-23",
+      "source": "b9ddf0d",
+      "quote": "`match` also supports structural predicates:",
+      "says": {
+        "feature": "structural-record-patterns",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-24",
+      "source": "b9ddf0d",
+      "quote": "The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name, with modules named for the kind of value they work on",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-name-form",
+            "is": "module-slash-name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b9ddf0d-25",
+      "source": "b9ddf0d",
+      "quote": "[\"number/add\", 1, 2]",
+      "says": {
+        "feature": "number/add",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-26",
+      "source": "b9ddf0d",
+      "quote": "[\"number/subtract\", 10, 3]",
+      "says": {
+        "feature": "number/subtract",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-27",
+      "source": "b9ddf0d",
+      "quote": "[\"number/multiply\", 5, 4]",
+      "says": {
+        "feature": "number/multiply",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-28",
+      "source": "b9ddf0d",
+      "quote": "[\"number/divide\", 20, 4]",
+      "says": {
+        "feature": "number/divide",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-29",
+      "source": "b9ddf0d",
+      "quote": "[\"number/equals?\", 5, 5]",
+      "says": {
+        "feature": "number/equals?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-30",
+      "source": "b9ddf0d",
+      "quote": "[\"number/lessThan\", 3, 5]",
+      "says": {
+        "feature": "number/lessThan",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-31",
+      "source": "b9ddf0d",
+      "quote": "[\"number/greaterThan\", 5, 3]",
+      "says": {
+        "feature": "number/greaterThan",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-32",
+      "source": "b9ddf0d",
+      "quote": "[\"number/lessThanOrEqualTo\", 3, 5]",
+      "says": {
+        "feature": "number/lessThanOrEqualTo",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-33",
+      "source": "b9ddf0d",
+      "quote": "[\"number/greaterThanOrEqualTo\", 5, 5]",
+      "says": {
+        "feature": "number/greaterThanOrEqualTo",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-34",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/not\", true]",
+      "says": {
+        "feature": "boolean/not",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-35",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/and\", true, false]",
+      "says": {
+        "feature": "boolean/and",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-36",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/or\", false, true]",
+      "says": {
+        "feature": "boolean/or",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-37",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/xor\", true, false]",
+      "says": {
+        "feature": "boolean/xor",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-38",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/nand\", true, true]",
+      "says": {
+        "feature": "boolean/nand",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-39",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/nor\", false, false]",
+      "says": {
+        "feature": "boolean/nor",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-40",
+      "source": "b9ddf0d",
+      "quote": "[\"boolean/equals?\", true, true]",
+      "says": {
+        "feature": "boolean/equals?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-41",
+      "source": "b9ddf0d",
+      "quote": "[\"array/make\", 1, 2, 3]",
+      "says": {
+        "feature": "array/make",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-42",
+      "source": "b9ddf0d",
+      "quote": "[\"array/head\", [\"array/make\", 1, 2, 3]]",
+      "says": {
+        "feature": "array/head",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-43",
+      "source": "b9ddf0d",
+      "quote": "[\"array/tail\", [\"array/make\", 1, 2, 3]]",
+      "says": {
+        "feature": "array/tail",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-44",
+      "source": "b9ddf0d",
+      "quote": "[\"array/length\", [\"array/make\", 1, 2, 3]]",
+      "says": {
+        "feature": "array/length",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-45",
+      "source": "b9ddf0d",
+      "quote": "[\"array/concat\", [\"array/make\", 1, 2], [\"array/make\", 3, 4]]",
+      "says": {
+        "feature": "array/concat",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-46",
+      "source": "b9ddf0d",
+      "quote": "[\"array/includes?\", [\"array/make\", 1, 2, 3], 2]",
+      "says": {
+        "feature": "array/includes?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-47",
+      "source": "b9ddf0d",
+      "quote": "[\"array/map\", [\"array/make\", 1, 2, 3], [\"lambda\", [\"x\"], [\"number/add\", \"x\", 1]]]",
+      "says": {
+        "feature": "array/map",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-48",
+      "source": "b9ddf0d",
+      "quote": "[\"array/flat-map\", [\"array/make\", 1, 2], [\"lambda\", [\"x\"], [\"array/make\", \"x\", \"x\"]]]",
+      "says": {
+        "feature": "array/flat-map",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-49",
+      "source": "b9ddf0d",
+      "quote": "[\"array/reduce\", [\"array/make\", 1, 2, 3], 0, [\"lambda\", [\"acc\", \"x\"], [\"number/add\", \"acc\", \"x\"]]]",
+      "says": {
+        "feature": "array/reduce",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-50",
+      "source": "b9ddf0d",
+      "quote": "[\"string/equals?\", \"a\", \"a\"]",
+      "says": {
+        "feature": "string/equals?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-51",
+      "source": "b9ddf0d",
+      "quote": "[\"string/length\", \"lion\"]",
+      "says": {
+        "feature": "string/length",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-52",
+      "source": "b9ddf0d",
+      "quote": "[\"string/concat\", \"lion\", \"ized\"]",
+      "says": {
+        "feature": "string/concat",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-53",
+      "source": "b9ddf0d",
+      "quote": "[\"string/startsWith\", \"lion\", \"li\"]",
+      "says": {
+        "feature": "string/startsWith",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-54",
+      "source": "b9ddf0d",
+      "quote": "[\"string/endsWith\", \"lion\", \"on\"]",
+      "says": {
+        "feature": "string/endsWith",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-55",
+      "source": "b9ddf0d",
+      "quote": "[\"string/includes\", \"lion\", \"io\"]",
+      "says": {
+        "feature": "string/includes",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-56",
+      "source": "b9ddf0d",
+      "quote": "[\"string/indexOf\", \"lion\", \"o\"]",
+      "says": {
+        "feature": "string/indexOf",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-57",
+      "source": "b9ddf0d",
+      "quote": "[\"object/get-path\", {\"a\": {\"b\": {\"c\": 42}}}, \"a.b.c\"]",
+      "says": {
+        "feature": "object/get-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-58",
+      "source": "b9ddf0d",
+      "quote": "[\"object/keys\", {\"a\": 1, \"b\": 2}]",
+      "says": {
+        "feature": "object/keys",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-59",
+      "source": "b9ddf0d",
+      "quote": "[\"object/values\", {\"a\": 1, \"b\": 2}]",
+      "says": {
+        "feature": "object/values",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-60",
+      "source": "b9ddf0d",
+      "quote": "[\"object/json-stringify\", {\"a\": 1}, null, 2]",
+      "says": {
+        "feature": "object/json-stringify",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-61",
+      "source": "b9ddf0d",
+      "quote": "[\"object/get-method\", \"obj\", \"methodName\"]",
+      "says": {
+        "feature": "object/get-method",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-62",
+      "source": "b9ddf0d",
+      "quote": "[\"object/call-method\", \"obj\", \"methodName\", 1, 2]",
+      "says": {
+        "feature": "object/call-method",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-63",
+      "source": "b9ddf0d",
+      "quote": "[\"object/get-method-path\", \"obj\", \"nested.methodName\"]",
+      "says": {
+        "feature": "object/get-method-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-64",
+      "source": "b9ddf0d",
+      "quote": "[\"object/call-method-path\", \"obj\", \"nested.methodName\", 1, 2]",
+      "says": {
+        "feature": "object/call-method-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-65",
+      "source": "b9ddf0d",
+      "quote": "[\"object/new\", \"SomeClass\", \"arg1\", \"arg2\"]",
+      "says": {
+        "feature": "object/new",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-66",
+      "source": "b9ddf0d",
+      "quote": "[\"func/bind\", \"fn\", \"obj\"]",
+      "says": {
+        "feature": "func/bind",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-67",
+      "source": "b9ddf0d",
+      "quote": "[\"func/apply\", \"fn\", \"obj\", 1, 2]",
+      "says": {
+        "feature": "func/apply",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-68",
+      "source": "b9ddf0d",
+      "quote": "[\"func/callback\", [\"lambda\", [\"x\"], [\"number/add\", \"x\", 1]]]",
+      "says": {
+        "feature": "func/callback",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-69",
+      "source": "b9ddf0d",
+      "quote": "[\"func/partial\", \"fn\", 1, 2]",
+      "says": {
+        "feature": "func/partial",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-70",
+      "source": "b9ddf0d",
+      "quote": "[\"value/function?\", \"x\"]",
+      "says": {
+        "feature": "value/function?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-71",
+      "source": "b9ddf0d",
+      "quote": "[\"value/number?\", 1]",
+      "says": {
+        "feature": "value/number?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-72",
+      "source": "b9ddf0d",
+      "quote": "[\"value/string?\", \"lion\"]",
+      "says": {
+        "feature": "value/string?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-73",
+      "source": "b9ddf0d",
+      "quote": "[\"value/boolean?\", true]",
+      "says": {
+        "feature": "value/boolean?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-74",
+      "source": "b9ddf0d",
+      "quote": "[\"value/object?\", {\"a\": 1}]",
+      "says": {
+        "feature": "value/object?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-75",
+      "source": "b9ddf0d",
+      "quote": "[\"value/array?\", [\"array/make\", 1, 2]]",
+      "says": {
+        "feature": "value/array?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-76",
+      "source": "b9ddf0d",
+      "quote": "[\"value/null?\", null]",
+      "says": {
+        "feature": "value/null?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-77",
+      "source": "b9ddf0d",
+      "quote": "[\"value/identity\", 42]",
+      "says": {
+        "feature": "value/identity",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-78",
+      "source": "b9ddf0d",
+      "quote": "[\"console/log\", \"hello\"]",
+      "says": {
+        "feature": "console/log",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-79",
+      "source": "b9ddf0d",
+      "quote": "[\"console/log-json\", {\"hello\": \"world\"}]",
+      "says": {
+        "feature": "console/log-json",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-80",
+      "source": "b9ddf0d",
+      "quote": "[\"object/get\", {\"a\": 1}, \"a\"]",
+      "says": {
+        "feature": "object/get",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-81",
+      "source": "b9ddf0d",
+      "quote": "`value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.",
+      "says": {
+        "feature": "value/undefined?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-82",
+      "source": "b9ddf0d",
+      "quote": "`value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment.",
+      "says": {
+        "feature": "value/symbol?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-83",
+      "source": "b9ddf0d",
+      "quote": "`object/get-path` understands dot paths and numeric array segments such as `\"users.1.name\"`.",
+      "says": {
+        "behavior": "object-get-path-numeric-segment",
+        "is": "array-index",
+        "area": "library"
+      }
+    },
+    {
+      "id": "b9ddf0d-84",
+      "source": "b9ddf0d",
+      "quote": "`func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment.",
+      "says": {
+        "behavior": "func-callback-environment",
+        "is": "preserved",
+        "area": "host"
+      }
+    },
+    {
+      "id": "b9ddf0d-85",
+      "source": "b9ddf0d",
+      "quote": "Lion works well as a configuration and orchestration layer over ordinary JavaScript objects and functions.",
+      "says": {
+        "feature": "host-interop",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-86",
+      "source": "b9ddf0d",
+      "quote": "That lets Lion drive a non-trivial terminal UI agent entirely from JSON.",
+      "says": {
+        "rule": "agent-as-lion-program",
+        "holds": true,
+        "statement": "The coding agent in packages/agent is a Lion program, agent.json, run by a small host file",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "b9ddf0d-87",
+      "source": "b9ddf0d",
+      "quote": "core/   evaluator, special forms, stdlib",
+      "says": {
+        "feature": "@lion/core",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-88",
+      "source": "b9ddf0d",
+      "quote": "repl/   interactive web REPL",
+      "says": {
+        "feature": "@lion/repl",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-89",
+      "source": "b9ddf0d",
+      "quote": "agent/  real-world Lion program driving an OpenTUI + AI agent",
+      "says": {
+        "feature": "@lion/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b9ddf0d-90",
+      "source": "b9ddf0d",
+      "quote": "Runnable examples for the current Lion evaluator and stdlib.",
+      "says": {
+        "feature": "@lion/examples",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-1",
+      "source": "26bc1dc",
+      "quote": "Remove lambda example, add list operations",
+      "says": {
+        "decision": "site-examples",
+        "chose": "list-operations",
+        "over": ["lambda-example"],
+        "because": "docs: update website to match README changes",
+        "area": "site"
+      }
+    },
+    {
+      "id": "26bc1dc-2",
+      "source": "26bc1dc",
+      "quote": "Lion is a JSON-based Lisp. All code is valid JSON, and all JSON is valid Lion code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": true,
+        "statement": "All code is valid JSON, and all JSON is valid Lion code",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "evaluated-elements"
+          }
+        ]
+      }
+    },
+    {
+      "id": "26bc1dc-3",
+      "source": "26bc1dc",
+      "quote": "Otherwise, the expression evaluates each of its elements and returns the resulting array:",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": false,
+        "statement": "An array is always a special form or a function call, never a list that evaluates to its elements",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "26bc1dc-4",
+      "source": "26bc1dc",
+      "quote": "Otherwise, the expression evaluates each of its elements and returns the resulting array:",
+      "says": {
+        "behavior": "array-first-element-not-function",
+        "is": "evaluated-elements",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "26bc1dc-5",
+      "source": "26bc1dc",
+      "quote": "When the first element of an array evaluates to a function, it is called with the remaining evaluated arguments",
+      "says": {
+        "behavior": "array-first-element-function",
+        "is": "function-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "26bc1dc-6",
+      "source": "26bc1dc",
+      "quote": "### `math`",
+      "says": {
+        "feature": "math",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-7",
+      "source": "26bc1dc",
+      "quote": "### `logic`",
+      "says": {
+        "feature": "logic",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-8",
+      "source": "26bc1dc",
+      "quote": "### `list`",
+      "says": {
+        "feature": "list",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-9",
+      "source": "26bc1dc",
+      "quote": "[\"math/+\", 1, 2]       // 3",
+      "says": {
+        "feature": "math/+",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-10",
+      "source": "26bc1dc",
+      "quote": "[\"logic/if\", true, \"yes\", \"no\"]    // \"yes\"",
+      "says": {
+        "feature": "logic/if",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-11",
+      "source": "26bc1dc",
+      "quote": "[\"list/list\", 1, 2, 3]            // [1, 2, 3]",
+      "says": {
+        "feature": "list/list",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-12",
+      "source": "26bc1dc",
+      "quote": "[\"func/identity\", 42]             // 42",
+      "says": {
+        "feature": "func/identity",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "26bc1dc-13",
+      "source": "26bc1dc",
+      "quote": "<span class=\"code-string\">\"list/head\"</span>",
+      "says": {
+        "feature": "list/head",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "32b3996-1",
+      "source": "32b3996",
+      "quote": "Correct namespace prefixes and import paths in docs.",
+      "says": {
+        "decision": "library-module-organization",
+        "chose": "value-kind-modules",
+        "over": ["math-logic-list-modules"],
+        "area": "docs"
+      }
+    },
+    {
+      "id": "32b3996-2",
+      "source": "32b3996",
+      "quote": "Lion is a JSON-based Lisp. Every Lion program is valid JSON",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value, evaluated as it is, with no parser of its own",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "program-syntax",
+            "is": "json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "32b3996-3",
+      "source": "32b3996",
+      "quote": "Lion is a JSON-based Lisp. All code is valid JSON, and all JSON is valid Lion code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": false,
+        "statement": "All code is valid JSON, and all JSON is valid Lion code",
+        "area": "evaluation",
+        "replaced_by": "json-programs"
+      }
+    },
+    {
+      "id": "32b3996-4",
+      "source": "32b3996",
+      "quote": "Arrays are always treated as executable expressions:",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "An array is always a special form or a function call, never a list that evaluates to its elements",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "32b3996-5",
+      "source": "32b3996",
+      "quote": "Use cond for multi-branch conditionals with pattern matching.",
+      "says": {
+        "feature": "logic/if",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "cond"
+      }
+    },
+    {
+      "id": "32b3996-6",
+      "source": "32b3996",
+      "quote": "<span class=\"code-string\">\"number/add\"</span>",
+      "says": {
+        "feature": "math/+",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "number/add"
+      }
+    },
+    {
+      "id": "32b3996-7",
+      "source": "32b3996",
+      "quote": "Create functions with lexical scope using lambda.",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "Environments chain from local to global, and a lambda closes over the scope it is made in and sees later changes to global bindings",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          },
+          {
+            "behavior": "lambda-global-rebound-after-creation",
+            "is": "updated-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "32b3996-8",
+      "source": "32b3996",
+      "quote": "Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.",
+      "says": {
+        "behavior": "lambda-global-rebound-after-creation",
+        "is": "updated-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "32b3996-9",
+      "source": "32b3996",
+      "quote": "Evaluates a value, stores it in the global environment, and returns the stored value.",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "32b3996-10",
+      "source": "32b3996",
+      "quote": "If no branch matches and no `else` is provided, `cond` returns `null`.",
+      "says": {
+        "behavior": "cond-no-match-no-else",
+        "is": "null",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "32b3996-11",
+      "source": "32b3996",
+      "quote": "Strings are treated as references first; if no binding exists, the original string is returned.",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "32b3996-12",
+      "source": "32b3996",
+      "quote": "The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name, with modules named for the kind of value they work on",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-name-form",
+            "is": "module-slash-name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f7c97be-1",
+      "source": "f7c97be",
+      "quote": "Update documentation and examples for list operations and quickstart",
+      "says": {
+        "feature": "marketing-site",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "4be765d-1",
+      "source": "4be765d",
+      "quote": "conflicts resolved",
+      "says": {
+        "decision": "docs-rebase-conflicts",
+        "chose": "resolved",
+        "area": "process"
+      }
+    },
+    {
+      "id": "b33ffd1-1",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lionlang/core\",",
+      "says": {
+        "decision": "package-scope",
+        "chose": "lionlang",
+        "over": ["lion"],
+        "area": "packages"
+      }
+    },
+    {
+      "id": "b33ffd1-2",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lionlang/core\",",
+      "says": {
+        "feature": "@lionlang/core",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b33ffd1-3",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lion/core\",",
+      "says": {
+        "feature": "@lion/core",
+        "kind": "package",
+        "present": false,
+        "replaced_by": "@lionlang/core"
+      }
+    },
+    {
+      "id": "b33ffd1-4",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lionlang/repl\",",
+      "says": {
+        "feature": "@lionlang/repl",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b33ffd1-5",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lion/repl\",",
+      "says": {
+        "feature": "@lion/repl",
+        "kind": "package",
+        "present": false,
+        "replaced_by": "@lionlang/repl"
+      }
+    },
+    {
+      "id": "b33ffd1-6",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lionlang/agent\",",
+      "says": {
+        "feature": "@lionlang/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b33ffd1-7",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lion/agent\",",
+      "says": {
+        "feature": "@lion/agent",
+        "kind": "package",
+        "present": false,
+        "replaced_by": "@lionlang/agent"
+      }
+    },
+    {
+      "id": "b33ffd1-8",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lionlang/examples\",",
+      "says": {
+        "feature": "@lionlang/examples",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "b33ffd1-9",
+      "source": "b33ffd1",
+      "quote": "\"name\": \"@lion/examples\",",
+      "says": {
+        "feature": "@lion/examples",
+        "kind": "package",
+        "present": false,
+        "replaced_by": "@lionlang/examples"
+      }
+    },
+    {
+      "id": "b33ffd1-10",
+      "source": "b33ffd1",
+      "quote": "\"access\": \"public\"",
+      "says": {
+        "decision": "core-npm-access",
+        "chose": "public",
+        "area": "packages"
+      }
+    },
+    {
+      "id": "b33ffd1-11",
+      "source": "b33ffd1",
+      "quote": "should fail with NotAFunctionError when target is not a function",
+      "says": {
+        "behavior": "object-call-method-primitive-missing-method",
+        "is": "not-a-function-error",
+        "area": "library",
+        "was": "not-an-object-error"
+      }
+    },
+    {
+      "id": "b33ffd1-12",
+      "source": "b33ffd1",
+      "quote": "Use cond for multi-branch conditionals with pattern matching.",
+      "says": {
+        "feature": "logic/if",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "cond"
+      }
+    },
+    {
+      "id": "b33ffd1-13",
+      "source": "b33ffd1",
+      "quote": "npm install @lionlang/core",
+      "says": {
+        "feature": "@lionlang/core",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "ca42dc0-1",
+      "source": "ca42dc0",
+      "quote": "updates npm metadata",
+      "says": {
+        "feature": "core-npm-readme",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "ca42dc0-2",
+      "source": "ca42dc0",
+      "quote": "\"homepage\": \"https://lionlang.dev\",",
+      "says": {
+        "decision": "core-homepage",
+        "chose": "lionlang-dev",
+        "area": "packages"
+      }
+    },
+    {
+      "id": "ca42dc0-3",
+      "source": "ca42dc0",
+      "quote": "Lion is a JSON-based Lisp. Every Lion program is valid JSON",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value, evaluated as it is, with no parser of its own",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "program-syntax",
+            "is": "json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca42dc0-4",
+      "source": "ca42dc0",
+      "quote": "Arrays are always treated as executable expressions:",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "An array is always a special form or a function call, never a list that evaluates to its elements",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca42dc0-5",
+      "source": "ca42dc0",
+      "quote": "Creates a Lion function with lexical scope.",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "Environments chain from local to global, and a lambda closes over the scope it is made in and sees later changes to global bindings",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          },
+          {
+            "behavior": "lambda-global-rebound-after-creation",
+            "is": "updated-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca42dc0-6",
+      "source": "ca42dc0",
+      "quote": "Evaluates a value, stores it in the global environment, and returns the stored value.",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "id": "ca42dc0-7",
+      "source": "ca42dc0",
+      "quote": "If no branch matches and no `else` is provided, `cond` returns `null`.",
+      "says": {
+        "behavior": "cond-no-match-no-else",
+        "is": "null",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "ca42dc0-8",
+      "source": "ca42dc0",
+      "quote": "Strings are treated as references first; if no binding exists, the original string is returned.",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "ca42dc0-9",
+      "source": "ca42dc0",
+      "quote": "The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name, with modules named for the kind of value they work on",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-name-form",
+            "is": "module-slash-name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3a60423-1",
+      "source": "3a60423",
+      "quote": "\"version\": \"0.1.1\",",
+      "says": {
+        "feature": "@lionlang/core",
+        "kind": "package",
+        "present": true
+      }
+    }
+  ]
+}

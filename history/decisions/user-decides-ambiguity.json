@@ -1,0 +1,23 @@
+{
+  "id": "user-decides-ambiguity",
+  "title": "A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed",
+  "context": "A word in a task can mean two things: revenue as reported or excluding fuel surcharges, a fiscal or a calendar year, the development build or the release build. An agent that picks one and carries on breaks everything built on that choice, and nothing it observes later can contradict a choice, so the mistake never shows as a contradiction. Kepler's agents stop and ask when a word in the task means two things.",
+  "decision": "In the research skill, the frame declares as a `reading` each key of a question that picks one sense of a word. The core lists in `ambiguous` the questions sources answer in more than one sense, the agent asks the reader which they mean and records the answer in their words as `decided`, and rules that reach a question through `meant` follow it. In the reasoning skill, notes list under `ask` the questions only the user, or the source `of` names, may settle; the core lists in `undecided` those not yet answered, and in `presumed` every answer from anyone else, such as the agent, a file, or a doc. The user's decision holds in every version, since it is about what they want and not about the files.",
+  "consequences": "A choice made for the user is listed rather than hidden, and the reasoning skill's standing checks ask both `undecided` and `presumed`. Until the reader chooses, research rules use every sense: the Tarnwell example's margin is 26.4% on revenue as reported and 22.5% excluding fuel surcharges, and one choice leaves one margin. If the agent cannot ask, it says that the answer depends on the choice and gives each sense. The research page leads its trust view with what needs the reader's decision.",
+  "alternatives": [
+    {
+      "option": "The agent picks the sense that seems most natural and carries on",
+      "rejected": "One wrong reading early breaks everything built on it, and nothing observed later can contradict a choice."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "41477b1",
+      "quote": "lists questions sources answer in more than one sense (reading, ambiguous), records the reader's choice (decided) and the questions they mean (meant, set_aside)"
+    },
+    {
+      "commit": "52600b2",
+      "quote": "notes list under `ask` the questions only one source may settle, the user unless `of` names another."
+    }
+  ]
+}

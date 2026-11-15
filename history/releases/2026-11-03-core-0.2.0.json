@@ -1,0 +1,17 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.2.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.1.0"
+    },
+    {
+      "name": "@lionlang/typesafe-ai",
+      "version": "0.1.0"
+    }
+  ],
+  "commit": "1b380d9"
+}

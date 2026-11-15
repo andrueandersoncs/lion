@@ -559,6 +559,7 @@ const renderPage = (docs: readonly Doc[], search: readonly SearchEntry[]) => {
         <div class="nav-links">
           ${links.join("\n          ")}
           <a href="docs.html" aria-current="page">Docs</a>
+          <a href="changelog.html">Changelog</a>
           <a href="https://github.com/andrueandersoncs/lion" target="_blank" rel="noopener" class="nav-github">${GITHUB_ICON}GitHub</a>
         </div>
         <button type="button" class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
@@ -570,6 +571,7 @@ const renderPage = (docs: readonly Doc[], search: readonly SearchEntry[]) => {
       <div class="mobile-menu" id="mobile-menu">
         ${links.join("\n        ")}
         <a href="docs.html" aria-current="page">Docs</a>
+        <a href="changelog.html">Changelog</a>
         <a href="https://github.com/andrueandersoncs/lion" target="_blank" rel="noopener">GitHub</a>
       </div>
     </nav>

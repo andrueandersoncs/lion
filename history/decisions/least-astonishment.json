@@ -1,0 +1,16 @@
+{
+  "id": "least-astonishment",
+  "title": "Lion's features and semantics are designed by the principle of least astonishment",
+  "context": "Lion's value comes from features that compose, so one surprising interaction costs more than a missing feature. Surprises sat where features met: a failed `retract` left partial changes behind, and running a setup again against a saved database counted every aggregate match twice. Nothing written down told a contributor how a new feature should behave beside the others.",
+  "decision": "Before adding a feature or changing how something behaves, ask what someone who already knows Lion would expect it to do, on its own and combined with every existing feature, and make it do that. Reuse the vocabulary Lion has before inventing more. When a feature needs a rule, follow the rule a similar feature already has, and when that rule falls short, change it for every feature at once. Walk through the combinations, keep equivalent programs equivalent, such as a program and its snapshot or goal-directed and full evaluation, and point out surprising behavior and fix it instead of building on it. AGENTS.md and CLAUDE.md state the principle, and the docs explain the rules features share on a page of their own.",
+  "consequences": "Invariants reuse the query option `\"assert\"` and fail in the words of a failed query assertion. Every form that changes the database is all or nothing, and adding what the database already holds changes nothing. The waiting rule and the asking rule each replaced a list of special cases with one rule, and each added to AGENTS.md the pairs it keeps equivalent: an expression over a logic variable and the same expression with the value in its place, and a question asked in a rule and the same question asked in plain code with the rule's variables bound. Where results may differ, such as answer order without the `\"order\"` option, the docs say so.",
+  "commits": [
+    {
+      "commit": "47ea840",
+      "quote": "the principle of least astonishment when designing features and semantics"
+    },
+    "b5f87d4",
+    "aef67af",
+    "c380ce7"
+  ]
+}

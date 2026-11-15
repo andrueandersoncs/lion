@@ -1,0 +1,31 @@
+{
+  "id": "goal-directed-magic-sets",
+  "title": "A query with a known argument runs a magic-sets rewrite and gives the answers full evaluation gives",
+  "context": "Bottom-up evaluation derives every fact a program implies, while a query usually needs far less: the paths from one node do not need the paths from every other node. A query for the paths from one node of a 3,000-node chain would derive about 4.5 million paths in full.",
+  "decision": "When a query gives a rule-defined relation a known argument, such as `\"a\"` in `[\"path\", \"a\", \"?to\"]`, Lion rewrites the rules with the magic-sets technique: each relation gets a copy for that pattern of known arguments, guarded by magic relations that pass the known values down through the rule bodies. Known arguments are values, variables that earlier goals bind, and values computed from them. Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end. Relations that are aggregated, computed by an algorithm, or negated, and what they depend on, are computed in full first. The rewrite changes how much is computed, never what the answers are, and `new LogicDatabase({ goalDirected: false })` turns it off.",
+  "consequences": "The query along the 3,000-node chain returns in milliseconds. Tests run a corpus of programs both ways and require the same answers. Comparing the two ways on 2,000 generated programs found a query whose argument was not JSON data failing where full evaluation found no answers; such an argument now counts as unknown. Answers can come in a different order, so the `\"order\"` query option is the way to fix one. How a recursive rule is written matters: with a known start, recursion on the left asks only about that start, while recursion on the right asks about every node the paths pass through.",
+  "alternatives": [
+    {
+      "option": "Let values that functions compute inside a rule drive the rewrite",
+      "rejected": "A rewritten rule could then ask about new values without end. Values computed by functions never drive the rewrite inside a rule, so it still finishes."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "f4c7c4c",
+      "quote": "answers match full evaluation"
+    },
+    {
+      "commit": "76d833f",
+      "quote": "such arguments now count as unknown and only filter the rewritten relation, so both evaluations agree"
+    },
+    {
+      "commit": "f617c07",
+      "quote": "with recursion on the left the rewrite asks only about the start"
+    },
+    {
+      "commit": "aef67af",
+      "quote": "Goal-directed queries count arguments bound by = or in, and values computed from bound variables, as known."
+    }
+  ]
+}

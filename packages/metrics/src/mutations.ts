@@ -31,6 +31,44 @@ const research = (
   tests: ["src/tests/research-skill.test.ts"],
 });
 
+/** A break in the research skill's scripts, caught by the skill's properties. */
+const researchScript = (
+  name: string,
+  file: string,
+  find: string,
+  replace: string
+): Mutation => research(name, find, replace, `scripts/${file}`);
+
+/** A break in the project record's rules or pages, caught by its properties. */
+const record = (
+  name: string,
+  find: string,
+  replace: string,
+  file = "core.json"
+): Mutation => ({
+  file: `history/${file}`,
+  find,
+  name,
+  package: "history",
+  replace,
+  tests: ["src/tests/record.test.ts"],
+});
+
+/** A break in the research's frame or findings, caught by the research's properties. */
+const researchStep = (
+  name: string,
+  find: string,
+  replace: string,
+  file = "01-frame.src.json"
+): Mutation => ({
+  file: `history/research/steps/${file}`,
+  find,
+  name,
+  package: "history",
+  replace,
+  tests: ["src/tests/research.test.ts"],
+});
+
 export const MUTATIONS: readonly Mutation[] = [
   {
     name: "an equality rule makes no unknowns one",
@@ -1460,4 +1498,204 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "[e][+-]",
     tests: ["src/modules/tests/models.test.ts"],
   },
+  {
+    name: "string/slice and array/slice ignore where to stop",
+    file: core("modules/lib/shared.ts"),
+    find: "value.slice(start, end)",
+    replace: "value.slice(start)",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  {
+    name: "a negative position of a slice counts from the start",
+    file: core("modules/lib/shared.ts"),
+    find: "([value, start]) => value.slice(start))",
+    replace: "([value, start]) => value.slice(Math.max(start, 0)))",
+    tests: ["src/modules/tests/models.test.ts"],
+  },
+  record(
+    "a change ships in every release that has its commits, not the oldest",
+    '    ["not", ["and", ["covers", "?earlier", "?e"], ["before", "?earlier", "?r"]]]',
+    '    ["value/string?", "?r"]'
+  ),
+  record(
+    "a release reaches its commit's parents but not theirs",
+    '    ["parent", "?hash", "?older"]',
+    '    ["parent", "?hash", "?older"],\n    ["release_at", "?r", "?hash"]'
+  ),
+  record(
+    "an entry that names its commits is also made by the commit that added it",
+    '    ["not", ["names", "?e", "?_"]],\n',
+    ""
+  ),
+  record(
+    "a fix commit needs no entry",
+    '["quote", ["feat", "fix"]]',
+    '["quote", ["feat"]]'
+  ),
+  record(
+    "a quote must keep the line breaks of its commit message",
+    '["words", "?message"]',
+    '"?message"'
+  ),
+  record(
+    "a superseded decision stays in force",
+    '    ["not", ["supersedes", "?_", "?id"]]',
+    '    ["value/string?", "?id"]'
+  ),
+  record(
+    "a breaking change needs no decision",
+    '["change", "?e", "Breaking", "?text"]',
+    '["change", "?e", "Broken", "?text"]'
+  ),
+  record(
+    "a release that repeats the last version counts as a rise",
+    '      "number/greaterThanOrEqualTo",\n      ["versionRank", "?earlier"],',
+    '      "number/greaterThan",\n      ["versionRank", "?earlier"],'
+  ),
+  record(
+    "a decision is in effect from every release that has its first commit",
+    '["and", ["contains", "?earlier", "?hash"], ["before", "?earlier", "?r"]]',
+    '["before", "?r", "?r"]'
+  ),
+  record(
+    "the changelog orders sections as their kinds appear, not breaking first",
+    '"Breaking": 0,',
+    '"Breaking": 9,',
+    "outputs.json"
+  ),
+  record(
+    "the changelog lists releases oldest first",
+    '["number/subtract", 0, "?time"]',
+    '"?time"',
+    "outputs.json"
+  ),
+  record(
+    "the changelog lists a change under every kind its release has",
+    '["string/equals?", ["at", "f", 1], "kind"],\n                    ["array/make", ["bulletOf"',
+    'true,\n                    ["array/make", ["bulletOf"',
+    "outputs.json"
+  ),
+  record(
+    "a draft release counts as a release",
+    '    ["not", ["draft", "?r"]],\n    ["made_by", "?r", "?hash"]',
+    '    ["made_by", "?r", "?hash"]'
+  ),
+  record(
+    "the timeline writes < in text as it is",
+    '"<", "&lt;"',
+    '"<", "<"',
+    "outputs.json"
+  ),
+  record(
+    "the timeline writes code as prose",
+    '"<code>",',
+    '"",',
+    "outputs.json"
+  ),
+  record(
+    "the timeline writes a link's text as markup",
+    '["escape", "label"]',
+    '"label"',
+    "outputs.json"
+  ),
+  record(
+    "the timeline lists every decision under every release",
+    '["in_effect_from", "?id", "r"]',
+    '["in_effect_from", "?id", "?_"]',
+    "outputs.json"
+  ),
+  {
+    name: "a renamed file of the record is traced to the commit that renamed it",
+    file: "packages/history/src/git.ts",
+    find: "added.set(second, added.get(first) ?? commit);",
+    replace: "added.set(second, commit);",
+    package: "history",
+    tests: ["src/tests/git.test.ts"],
+  },
+  {
+    name: "a new file of the record that only looks like a removed one is its rename",
+    file: "packages/history/src/git.ts",
+    find: '    "--reverse",\n    "-M100%",',
+    replace: '    "--reverse",\n    "-M",',
+    package: "history",
+    tests: ["src/tests/git.test.ts"],
+  },
+  {
+    name: "a file of the record renamed in the index belongs to the working tree",
+    file: "packages/history/src/git.ts",
+    find: "      added.set(second, added.get(first) ?? WORKING_TREE);",
+    replace: "      added.delete(second);",
+    package: "history",
+    tests: ["src/tests/git.test.ts"],
+  },
+  researchStep(
+    "a rule that no longer holds still predicts behavior",
+    '    ["predicted", "?r", "?case", "?v", "?c"],\n    ["in_force", "?r"],',
+    '    ["predicted", "?r", "?case", "?v", "?c"],\n    ["value/string?", "?r"],'
+  ),
+  researchStep(
+    "a library function that follows JavaScript breaks the precedent assumption",
+    '        ["=", "?follows", "javascript"],',
+    '        ["=", "?follows", "json"],'
+  ),
+  researchStep(
+    "a rule's earlier prediction stands after a later statement predicts otherwise",
+    '        ["number/lessThan", "?t", "?t2"]',
+    '        ["number/lessThan", "?t2", "?t2"]'
+  ),
+  researchStep(
+    "a rule's exception does not excuse its conflicts",
+    '    ["not", ["excepted", "?r", "?case"]],\n    ["not", ["excepted", "?o", "?case"]]',
+    '    ["value/string?", "?r"],\n    ["value/string?", "?o"]'
+  ),
+  researchStep(
+    "a removal counts as decided by a decision in any commit",
+    '    ["removed", "?f", "?_", "?s"],\n    ["not", ["decided_in", "?s"]]',
+    '    ["removed", "?f", "?_", "?s"],\n    ["not", ["decided_in", "?_"]]'
+  ),
+  researchStep(
+    "a broken chain of figures ignores the measurements between",
+    '        ["number/lessThan", "?t1", "?t3"],\n        ["number/lessThan", "?t3", "?t2"]',
+    '        ["number/lessThan", "?t1", "?t3"],\n        ["number/lessThan", "?t3", "?t1"]'
+  ),
+  researchStep(
+    "drift compares the repository's word with its own",
+    '    ["firsthand", "?q", "?w", "Lion at HEAD"],',
+    '    ["firsthand", "?q", "?w", "Lion repository"],'
+  ),
+  researchStep(
+    "a commit is read when any commit has a claim",
+    '    ["not", ["claim", "?_", "?s", "?_", "?_"]]',
+    '    ["not", ["claim", "?_", "?_", "?_", "?_"]]'
+  ),
+  researchStep(
+    "an accepted finding is still open",
+    '    ["not", ["accepted", "?a", "?w", "?_"]],',
+    '    ["value/string?", "?a"],',
+    "06-findings.src.json"
+  ),
+  researchStep(
+    "a known finding is still reported as new",
+    '    ["not", ["known", "?a", "?w", "?_"]]',
+    '    ["value/string?", "?a"]',
+    "06-findings.src.json"
+  ),
+  researchStep(
+    "an accepted finding the model no longer finds is not stale",
+    '    ["accepted", "?a", "?w", "?_"],\n    ["not", ["violated", "?a", "?w"]]',
+    '    ["accepted", "?a", "?w", "?_"],\n    ["violated", "?a", "?w"]',
+    "06-findings.src.json"
+  ),
+  researchScript(
+    "the quote finder keeps searching the first text it indexed",
+    "check-quotes.mjs",
+    "  if (text !== lastText) {",
+    "  if (lastText === undefined) {"
+  ),
+  researchScript(
+    "the page check leaves out a lookup's answer",
+    "build-explorer.mjs",
+    "        isRecord(block.example) && block.answer !== undefined",
+    "        false"
+  ),
 ];

@@ -23,20 +23,23 @@ packages/
   typesafe-ai/  TypeSafe AI and Jev expression bindings
   repl/         interactive graph editor
   agent/        real-world Lion program driving an OpenTUI + AI agent
+  examples/     example Lion programs and the hosts that run them
   site-runtime/ in-browser evaluator (Web Worker) for the live examples on lionlang.dev
+  metrics/      private tools that measure Lion's complexity, speed, and tests
+  history/      the project record and the research model of Lion's development
 ```
 
 ## Graph Editor
 
-`@lionlang/repl` is the Lion Fold Map: a local-first semantic graph and exact JSON workbench. Source text remains canonical while graph, outline, inspector, diagnostics, and evaluation results track explicit document revisions.
+`@lionlang/repl` is the Lion Fold Map: a local-first semantic graph editor for Lion JSON files. The JSON source remains canonical while the graph, diagnostics, and evaluation results track explicit document revisions.
 
 ```bash
 bun install
 bun run prepare
-bun run dev --filter=@lionlang/repl
+turbo dev --filter=@lionlang/repl
 ```
 
-Open `http://localhost:3000`, import or open a Lion JSON file, edit through either synchronized view, run against the standard library, then save to the original file handle or download the exact source. See [`packages/repl/README.md`](packages/repl/README.md) for shortcuts, browser fallback behavior, verification, and architecture.
+Open `http://localhost:3000`, import or open a Lion JSON file, and edit it in the graph: there is no text pane beside it, so you edit literals in their graph nodes or replace the selected expression with JSON. Run against the standard library, then save to the original file handle or download the exact source. See [`packages/repl/README.md`](packages/repl/README.md) for shortcuts, browser fallback behavior, verification, and architecture.
 
 ## Command Line
 
@@ -173,7 +176,7 @@ await Effect.runPromise(run(["clamp", 0, 100, 150], env));
 
 ### Primitives
 
-Numbers, booleans, and `null` evaluate to themselves. Strings are treated as references first; if no binding exists, the original string is returned.
+Numbers, booleans, and `null` evaluate to themselves. Strings are treated as references first; if no binding exists, the original string is returned, except for the two kinds of string below.
 
 ```json
 42
@@ -196,7 +199,7 @@ Fails with `Nothing is bound to "number/ad". Did you mean "number/add"? To mean 
 
 ### Arrays
 
-Arrays are always treated as executable expressions:
+The empty array `[]` evaluates to itself. Every other array is treated as an executable expression:
 
 1. special forms such as `["define", "x", 1]`
 2. function calls when the first element evaluates to a function
@@ -279,7 +282,7 @@ Evaluates condition/result pairs in order and returns the first matching result.
   ["else", "retry"]]
 ```
 
-If no branch matches and no `else` is provided, `cond` returns `null`. `else` is an ordinary string, and a string counts as true. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
+If no branch matches and no `else` is provided, `cond` returns `null`. A condition counts as false when it is `false`, `null`, `0`, or the empty string `""`, and as true when it is anything else, so `else`, an ordinary string, counts as true. A filter in a rule or query is stricter: it must be `true` or `false`. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
 
 ### `match`
 
@@ -444,12 +447,12 @@ A goal with a relation in it is a question, and any expression can ask it. As a 
 Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind": "has children" }, { "name": "ben", "children": [], "kind": "no children" }, { "name": "cy", "children": [], "kind": "no children" }], "in plain code": ["ben", "cy"], "as a value": false, "as a predicate": [true, false] }`.
 
 - When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. So `["not", ["and", ["parent", "?p", "?c"], ["retired", "?c"]]]` asks whether `?p` has a retired child, for the `?p` the rule has bound.
-- In plain code a question is asked right away, and every variable in it is its own. In a rule, query, invariant, or `find`, a question is part of what is written, and is asked for each answer when that runs. A question gives in a rule what it gives in plain code with the rule's variables in place.
+- In plain code a question is asked as soon as something needs its value, and every variable in it is its own. In a rule, query, invariant, or `find`, a question is part of what is written, and is asked for each answer when that runs. A question gives in a rule what it gives in plain code with the rule's variables in place.
 - `find` gives one value for every match, sorted in the fixed order values sort in, so its list never depends on how the matches were found. It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values. A `find` must bind every variable of its template that the rule around it does not.
-- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
+- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. So does a program, or a `begin`, whose value is a goal: it gives the goal as written. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
 - A question sees every row of the relations it asks about, so those are derived in full first. A rule cannot ask about a relation that depends on the rule's own head.
 - Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
-- `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`. See [Existential rules](#existential-rules).
+- `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: as a value, `["value/identity", ["exists", ["?y"], ["=", "?y", 1]]]` is `true`. See [Existential rules](#existential-rules).
 
 ### Keys
 
@@ -626,7 +629,7 @@ Evaluates to `{ "mothers": [{ "child": "ada", "mother": "eve" }, { "child": "ben
 - A head can be a relation call, `=`, an `and` of those, or `exists` over relation calls. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
 - With several variables, `exists` invents an unknown for each, and the goal of each `some` mentions the others, which are its own too: `["some", "?f", ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of some pair the goal describes.
 - Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in.
-- `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so in plain code `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
+- `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so as a value `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
 - The variables of `exists` must be named logic variables, each listed once, and its goal must mention each. In a rule head, it cannot list a variable the body binds.
 - A `fact` or `retract` can hold `exists`. `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. A fact states rows, so it adds the row whether or not the head holds already. `why` takes `exists` too.
 - Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. Its goal is a relation call or an `and` of them, and an argument can be a value, one of its variables, or a record or list of those. A question among the arguments is asked. Nothing may compute with one of its own variables; that is an error.
@@ -982,7 +985,7 @@ An empty list means `incoming` fits. Schemas are data like the rest of a Lion pr
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.
 
-Every function takes a set number of arguments. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
+Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
 
 ```json
 ["number/subtract", 10, 3, 1]
@@ -1064,6 +1067,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/make", 1, 2, 3]
 ["array/head", ["array/make", 1, 2, 3]]
 ["array/tail", ["array/make", 1, 2, 3]]
+["array/slice", ["array/make", 1, 2, 3, 4], 1, 3]
+["array/slice", ["array/make", 1, 2, 3, 4], -2]
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
 ["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
@@ -1088,6 +1093,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/join", ["array/make", "a", "b", "c"], ", "]
 ["string/join", ["array/make", "a", "b", "c"], ", ", " and "]
 ["string/split", "a,b,c", ","]
+["string/slice", "lionlang", 0, 4]
+["string/slice", "lionlang", -4]
 ["string/padStart", "7", 2, "0"]
 ["string/padEnd", "7", 3, "."]
 ["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
@@ -1095,7 +1102,7 @@ Called on a list, each function combines it. Called on anything else, it waits f
 
 `string/join` is a list of strings with the separator between them: `"a, b, c"`. With a third string, that one stands before the last item in place of the separator, as `#:before-last` does in Racket: `"a, b and c"`, and `"a and b"` for two items. One item is itself, and an empty list is `""`. Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`.
 
-`string/split` is the parts of the text between each separator, as JavaScript splits: `["a", "b", "c"]`. Joining the parts with the same separator gives the text back. `string/padStart` and `string/padEnd` make the text as long as the number says by putting copies of the last argument before it or after it, as JavaScript does: `"07"` and `"7.."`. Text that is already that long is unchanged.
+`string/split` is the parts of the text between each separator, as JavaScript splits: `["a", "b", "c"]`. Joining the parts with the same separator gives the text back. `string/slice` is the text from one position up to, but not including, another, as JavaScript's `slice` cuts it: `"lion"`. A negative position counts from the end, a position past either end stops there, and without the second position the part runs to the end: `"lang"`. `array/slice` cuts a list the same way, `[2, 3]` and `[3, 4]` above, so the two parts of a cut at any position join back into the whole. `string/padStart` and `string/padEnd` make the text as long as the number says by putting copies of the last argument before it or after it, as JavaScript does: `"07"` and `"7.."`. Text that is already that long is unchanged.
 
 `string/numbers` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator: the example is `[1250.5, 2023, 24, -3]`. A minus sign counts only where no letter, digit, or point stands right before it, so the range `2023-24` holds 2023 and 24, and `COVID-19` holds 19. Words for amounts, such as "million", are not read: `"$1.2 billion"` holds `1.2`. It is how a program can check that a figure was copied from the words it is said to come from, rather than worked out by whoever copied it.
 
@@ -1203,7 +1210,7 @@ The `packages/agent` package is the clearest example. It injects:
 - Zod constructors
 - a renderer instance
 
-Then Lion code in [`packages/agent/src/agent.json`](/Users/andrueanderson/Workspace/TypeScript/lion/packages/agent/src/agent.json) uses:
+Then Lion code in [`packages/agent/src/agent.json`](packages/agent/src/agent.json) uses:
 
 - `object/get-path` to traverse host APIs
 - `object/new` to construct classes
@@ -1337,6 +1344,64 @@ Its scripts do the mechanical parts, and run the published `@lionlang/cli`, so a
 
 The properties in `packages/metrics/src/tests/reasoning-skill.test.ts` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder against the notes it was given, a version's hashes against the files they were taken from, a path git ignores against the disk, the chain from files to the present answer on files that change, and each script started through a link. `bun run mutate` breaks each of these behaviors in turn; a mutation can now run the tests of another package than core, with `package`.
 
+## Project Record
+
+Lion keeps its own changelog and design decisions as a Lion model of its git history, in [`history/`](history/). [`CHANGELOG.md`](CHANGELOG.md), [`DECISIONS.md`](DECISIONS.md), and the timeline at [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) are written from it, so change the record, not those files.
+
+What people write are plain JSON files, one piece of work per file:
+
+- `history/changes/<topic>.json` is a list of changes, each `{"kind", "text"}`, with optional `"decisions"` it follows from and `"commits"` that made it. The kind is the heading the change appears under, such as `Breaking`, `Added`, `Changed`, `Fixed`, or `Documentation`. An entry `{"internal", "commits"}` records commits that need no line in the changelog, and says why.
+- `history/decisions/<id>.json` is one decision: `{"id", "title", "context", "decision", "consequences"}`, with optional `"alternatives"` (each an `"option"` and why it was `"rejected"`), `"supersedes"`, and `"commits"`.
+- `history/releases/<date>-<name>.json` is one release: `{"ships": [{"name", "version"}]}`, with an optional `"summary"`, `"notes"` under a section, and `"commit"`.
+
+A commit is named by the start of its hash, or as `{"commit", "quote"}` with words from its message, which must be there. An entry that names no commits is made by the commit that added its file. A file renamed with nothing else changed keeps that commit; a renamed and edited file counts as added anew, since git's renames by likeness would pair two different entries that share most of their lines. Everything else is derived by the rules in [`history/core.json`](history/core.json) from those files and from git, which is read in as facts: every commit with its parents, time, and message, every tag, and the commit that added each file of the record.
+
+- A change shipped in the oldest release whose commit reaches every commit that made it, so no file says which release a change is in, and a change waits in "Unreleased" until a release is made after it.
+- A decision is in force until another supersedes it, and in effect from the first release after its earliest commit.
+- `bun run history check` fails on a `feat` or `fix` commit that no entry records, a commit named that no commit or more than one starts with, a quote that is not in its commit's message, a decision named that does not exist, a breaking change that follows from no decision, a version that does not rise from one release to the next, a tag on another commit than its release, and a page that is not what the record writes. It lists releases that have no tag yet. The record's tests run it, so the pre-commit hook and CI do too.
+
+The pages are Lion expressions in [`history/outputs.json`](history/outputs.json), evaluated against the record, so every heading, date, and link in them comes from the model. The timeline, `docs/changelog.html`, is HTML that Lion writes the same way: each release on a line through time, newest first, with what it shipped by kind, the decisions it put into effect, and a link from each change to the decisions it follows and the commits that made it. Lion turns the record's Markdown into HTML itself, code spans and links included. `docs/changelog.css` and `docs/changelog.js` only style it and let a reader filter by kind and search; without the script the page shows everything.
+
+```bash
+bun run history write    # write CHANGELOG.md, DECISIONS.md, and docs/changelog.html
+bun run history check    # what in the record needs fixing
+bun run history ask '["query", ["and", ["supersedes", "?decision", "?old"], ["in_effect_from", "?decision", "?release"]], {"order": "old"}]'
+```
+
+The last asks which decisions replaced another, and from which release:
+
+```json
+[
+  {"decision": "records-are-exact", "old": "record-patterns-by-keys", "release": "history/releases/2026-11-12-core-0.7.0.json"},
+  {"decision": "special-forms-plain-names", "old": "special-forms-slash-prefix", "release": "history/releases/2026-04-06-core-0.1.0.json"}
+]
+```
+
+The record was backfilled from the git history: every entry of the hand-written changelog, tied to the commits that made it, lands by ancestry alone in the release it was written under, and every decision quotes the commit messages it rests on. The tooling lives in `packages/history`, and runs on the workspace's own `@lionlang/core`. Its properties check the rules against a plain model of generated commit graphs, merges, releases, tags, and entries, the pages against that model by reading them back, the facts from git against real repositories built step by step, and the repository's own record against `git rev-list`.
+
+### The research model
+
+The record says what changed and why. [`history/research/`](history/research/) holds a deeper model of the same history, built with the [lion-research skill](skills/lion-research/): every statement each commit made, quoted word for word from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each case a probe runs. Rules over those statements check the project against itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, a base form that follows a precedent other than Scheme, Racket, or JSON, a removal or breaking change in a commit that records no decision, a figure that does not start where the one before it ended, and documentation that says something other than what Lion does.
+
+A publisher's latest word counts, so a rule is in force while the repository's latest word on it says it holds, it predicts for a case what its latest statement naming the case predicts, and a decision decided again differently is reversed. A decision in `history/decisions/` can carry `"claims"`, each a quote from its own words and what it says, so a new decision is checked against everything else as soon as it is written. Every finding waits in `history/research/known.json` for a decision, or is accepted with a reason in `accepted.json`; `bun run history research` fails on a finding in neither, and the record's tests run it.
+
+```bash
+bun run history research    # build the model and docs/research.html, and list what it finds
+bun run history query '["query", ["reversed", "?topic", "?before", "?after"], {"limit": 3}]'
+```
+
+The query asks which decisions the project made one way and later another:
+
+```json
+[
+  {"topic": "repl-surface", "before": "terminal-repl", "after": "graph-editor"},
+  {"topic": "library-function-arity", "before": "two-arguments", "after": "strict"},
+  {"topic": "evaluation-error-representation", "before": "tagged-errors", "after": "parse-error"}
+]
+```
+
+The page, [lionlang.dev/research.html](https://lionlang.dev/research.html), is for a reader who will not write a query: what needs attention first, then what the project has said about any rule, decision, behavior, feature, or figure, with each statement shown where it stands in its commit. `history/research/README.md` says how to read new commits into the model and how to settle a finding.
+
 ## Development
 
 From the repo root:
@@ -1368,6 +1433,8 @@ The documentation page, [`docs/docs.html`](https://lionlang.dev/docs.html), is g
 ```bash
 bun run --cwd packages/site-runtime docs
 ```
+
+[`docs/changelog.html`](https://lionlang.dev/changelog.html), the changelog as a timeline, is written by the project record with `bun run history write` (see [Project Record](#project-record)), and Biome leaves it alone, as it does `docs/docs.html`.
 
 GitHub Pages lets browsers cache every file for ten minutes, so `docs/index.html` and `docs/docs.html` load their scripts and stylesheet with a `?v=` hash of the site's assets, and the scripts pass it on to the worker and highlighter. A returning visitor therefore never runs new examples on a cached evaluator. The build above updates the hash. After editing only files in `docs/`, update it with:
 

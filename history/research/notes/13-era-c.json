@@ -1,0 +1,2685 @@
+{
+  "claims": [
+    {
+      "id": "5271396-1",
+      "source": "5271396",
+      "quote": "hide horizontal scroll",
+      "says": {
+        "behavior": "site-horizontal-scroll",
+        "is": "hidden",
+        "area": "site"
+      }
+    },
+    {
+      "id": "5271396-2",
+      "source": "5271396",
+      "quote": "stack footer links",
+      "says": {
+        "behavior": "site-footer-links-narrow",
+        "is": "stacked",
+        "area": "site"
+      }
+    },
+    {
+      "id": "5271396-3",
+      "source": "5271396",
+      "quote": "Reduce hero title size",
+      "says": {
+        "behavior": "site-hero-title-narrow",
+        "is": "reduced",
+        "area": "site"
+      }
+    },
+    {
+      "id": "5271396-4",
+      "source": "5271396",
+      "quote": "word-break: break-word;",
+      "says": {
+        "behavior": "site-code-block-long-line-narrow",
+        "is": "wraps",
+        "area": "site"
+      }
+    },
+    {
+      "id": "ff62b9c-1",
+      "source": "ff62b9c",
+      "quote": "packages/agent/package.json",
+      "says": {
+        "feature": "@lionlang/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "294925c-1",
+      "source": "294925c",
+      "quote": "Improve mobile responsiveness and update documentation",
+      "says": {
+        "behavior": "site-layout-narrow",
+        "is": "responsive",
+        "area": "site"
+      }
+    },
+    {
+      "id": "799f6bf-1",
+      "source": "799f6bf",
+      "quote": "overflow-x: auto;",
+      "says": {
+        "behavior": "site-code-block-long-line-narrow",
+        "is": "scrolls",
+        "area": "site"
+      }
+    },
+    {
+      "id": "799f6bf-2",
+      "source": "799f6bf",
+      "quote": "All code is valid JSON. All JSON is valid code. Serializable, homoiconic, and trivially parseable by any system.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": true,
+        "statement": "All code is valid JSON, and all JSON is valid code.",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "json-value-is-program",
+            "is": "true"
+          }
+        ]
+      }
+    },
+    {
+      "id": "799f6bf-3",
+      "source": "799f6bf",
+      "quote": "All code is valid JSON. All JSON is valid code. Serializable, homoiconic, and trivially parseable by any system.",
+      "says": {
+        "rule": "json-programs",
+        "holds": true,
+        "statement": "A Lion program is a JSON value that any system can parse.",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "lion-program-format",
+            "is": "json"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b0161c8-1",
+      "source": "b0161c8",
+      "quote": "Improve mobile responsiveness and update documentation",
+      "says": {
+        "behavior": "site-layout-narrow",
+        "is": "responsive",
+        "area": "site"
+      }
+    },
+    {
+      "id": "9605505-1",
+      "source": "9605505",
+      "quote": "Core: $ui tagged record schemas (15 component types) and pure constructors",
+      "says": {
+        "feature": "ui",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-2",
+      "source": "9605505",
+      "quote": "Core: $ui tagged record schemas (15 component types) and pure constructors",
+      "says": {
+        "measured": "ui-component-types",
+        "after": 15,
+        "area": "library"
+      }
+    },
+    {
+      "id": "9605505-3",
+      "source": "9605505",
+      "quote": "Core: UIStreamMessage protocol (replace/append/update/clear) with path targeting",
+      "says": {
+        "feature": "ui-stream-message-protocol",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-4",
+      "source": "9605505",
+      "quote": "REPL: React renderer mapping $ui nodes to shadcn components",
+      "says": {
+        "feature": "ui-renderer",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-5",
+      "source": "9605505",
+      "quote": "REPL: useUIStream hook for SSE and local push streaming",
+      "says": {
+        "feature": "ui-stream-hook",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-6",
+      "source": "9605505",
+      "quote": "REPL: /stream route with agent demo simulator (DeFi dashboard)",
+      "says": {
+        "feature": "stream-route",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-7",
+      "source": "9605505",
+      "quote": "Tests: 7 tests for ui module output shapes",
+      "says": {
+        "measured": "ui-module-tests",
+        "after": 7,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "9605505-8",
+      "source": "9605505",
+      "quote": "// If the first arg is a plain object without $ui, treat it as props",
+      "says": {
+        "behavior": "ui-constructor-leading-record",
+        "is": "props",
+        "area": "library"
+      }
+    },
+    {
+      "id": "9605505-9",
+      "source": "9605505",
+      "quote": "same pattern as the existing `evm` module",
+      "says": {
+        "feature": "evm",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-10",
+      "source": "9605505",
+      "quote": "# Dynamic UI Streaming Prototype — Implementation Plan",
+      "says": {
+        "feature": "dynamic-ui-streaming-plan",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "9605505-11",
+      "source": "9605505",
+      "quote": "Unknown UI component: {node.$ui}",
+      "says": {
+        "behavior": "ui-renderer-unknown-component",
+        "is": "error-message",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "e16eb12-1",
+      "source": "e16eb12",
+      "quote": "Remove experimental ui module (ui.ts, ui.test.ts, schemas/ui.ts)",
+      "says": {
+        "feature": "ui",
+        "kind": "module",
+        "present": false
+      }
+    },
+    {
+      "id": "e16eb12-2",
+      "source": "e16eb12",
+      "quote": "Lion core has no UI module, no `$ui` schema, no renderer-facing types.",
+      "says": {
+        "rule": "no-ui-primitives-in-core",
+        "holds": true,
+        "statement": "Lion core has no UI-specific primitives; a UI is Lion plus a host environment that binds tags to components.",
+        "area": "host",
+        "predicts": [
+          {
+            "behavior": "core-ui-module",
+            "is": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "e16eb12-3",
+      "source": "e16eb12",
+      "quote": "language has no UI-specific primitives anymore; it's just Lion + a host",
+      "says": {
+        "behavior": "core-ui-module",
+        "is": "absent",
+        "area": "library"
+      }
+    },
+    {
+      "id": "e16eb12-4",
+      "source": "e16eb12",
+      "quote": "This is a double translation: Lion source → `$ui` records → React. There is no reason for the middle step.",
+      "says": {
+        "decision": "ui-streaming-architecture",
+        "chose": "source-as-state",
+        "area": "editor",
+        "over": ["ui-tagged-records"],
+        "because": "Shipping $ui records is a double translation, Lion source to $ui records to React, with no reason for the middle step."
+      }
+    },
+    {
+      "id": "e16eb12-5",
+      "source": "e16eb12",
+      "quote": "Drop empty barrel (src/index.ts); consumers import from subpath exports.",
+      "says": {
+        "feature": "core-root-export",
+        "kind": "file",
+        "present": false
+      }
+    },
+    {
+      "id": "e16eb12-6",
+      "source": "e16eb12",
+      "quote": "Drop empty barrel (src/index.ts); consumers import from subpath exports.",
+      "says": {
+        "decision": "core-entry-point",
+        "chose": "subpath-exports",
+        "area": "packages",
+        "over": ["barrel"],
+        "because": "The barrel was empty; consumers import from subpath exports."
+      }
+    },
+    {
+      "id": "e16eb12-7",
+      "source": "e16eb12",
+      "quote": "return plain strings — Lion's calling convention auto-wraps non-Effect",
+      "says": {
+        "behavior": "host-function-non-effect-return",
+        "is": "auto-wrapped",
+        "area": "host"
+      }
+    },
+    {
+      "id": "e16eb12-8",
+      "source": "e16eb12",
+      "quote": "ui-env.ts: environment factory.",
+      "says": {
+        "feature": "ui-env",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "e16eb12-9",
+      "source": "e16eb12",
+      "quote": "Streaming uses RFC 6902 JSON Patch against two documents: the source tree and a separate bindings document. No custom stream protocol.",
+      "says": {
+        "decision": "ui-stream-transport",
+        "chose": "json-patch",
+        "area": "editor",
+        "over": ["ui-stream-message-protocol"]
+      }
+    },
+    {
+      "id": "e16eb12-10",
+      "source": "e16eb12",
+      "quote": "Bindings paths are flat (`/eth-price`), so they never shift",
+      "says": {
+        "decision": "ui-stream-documents",
+        "chose": "source-and-bindings",
+        "area": "editor",
+        "over": ["single-source"],
+        "because": "Bindings paths are flat, so they never shift, while source paths can shift on insert."
+      }
+    },
+    {
+      "id": "e16eb12-11",
+      "source": "e16eb12",
+      "quote": "Remove dead code from prior $ui approach: ui-renderer.tsx, use-ui-stream.ts.",
+      "says": {
+        "feature": "ui-renderer",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "e16eb12-12",
+      "source": "e16eb12",
+      "quote": "Remove dead code from prior $ui approach: ui-renderer.tsx, use-ui-stream.ts.",
+      "says": {
+        "feature": "ui-stream-hook",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "e16eb12-13",
+      "source": "e16eb12",
+      "quote": "Delete: `packages/core/src/schemas/ui.ts` (both `UINodeSchema` and `UIStreamMessageSchema`; the latter is replaced by JSON Patch).",
+      "says": {
+        "feature": "ui-stream-message-protocol",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "json-patch"
+      }
+    },
+    {
+      "id": "e16eb12-14",
+      "source": "e16eb12",
+      "quote": "If the silent string-fallback becomes a source of real bugs during use",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "e16eb12-15",
+      "source": "e16eb12",
+      "quote": "No language-level changes to Lion (no `ref`, no `call`, no change to string-lookup semantics).",
+      "says": {
+        "decision": "unbound-string-semantics",
+        "chose": "keep-string-fallback",
+        "area": "names",
+        "over": ["ref-form", "call-form"],
+        "because": "Revisit only if the silent string fallback causes real bugs, with a dev-mode warning first and a language change last."
+      }
+    },
+    {
+      "id": "e16eb12-16",
+      "source": "e16eb12",
+      "quote": "`quote` and `eval` remain the escape hatches when literal-vs-reference disambiguation is needed at a specific site.",
+      "says": {
+        "rule": "quote-disambiguates-literals",
+        "holds": true,
+        "statement": "Where a string or array could be read as a reference or a literal, quote and eval settle it at that site.",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "quoted-string",
+            "is": "literal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "e16eb12-17",
+      "source": "e16eb12",
+      "quote": "special forms (cond instead",
+      "says": {
+        "feature": "cond",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "e16eb12-18",
+      "source": "e16eb12",
+      "quote": "docs/plans/2026-04-18-lisp-powered-ui.md documents the design.",
+      "says": {
+        "feature": "lisp-powered-ui-plan",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "9a1522e-1",
+      "source": "9a1522e",
+      "quote": "feat(repl): source-as-state UI streaming with direct React component env",
+      "says": {
+        "decision": "ui-streaming-architecture",
+        "chose": "source-as-state",
+        "area": "editor",
+        "over": ["ui-tagged-records"]
+      }
+    },
+    {
+      "id": "425c226-1",
+      "source": "425c226",
+      "quote": "The bindings layer was redundant: live values can live directly in the Lion",
+      "says": {
+        "decision": "ui-stream-documents",
+        "chose": "single-source",
+        "area": "editor",
+        "over": ["source-and-bindings"],
+        "because": "The bindings layer was redundant: live values can live in the source at concrete paths and be patched where they sit."
+      }
+    },
+    {
+      "id": "425c226-2",
+      "source": "425c226",
+      "quote": "use-ui-source.ts: drop Bindings document.",
+      "says": {
+        "feature": "ui-stream-bindings-document",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "425c226-3",
+      "source": "425c226",
+      "quote": "Mental model is now: one JSON tree, one stream of JSON-Patch ops, that's",
+      "says": {
+        "rule": "ui-stream-one-document",
+        "holds": true,
+        "statement": "One JSON tree and one stream of JSON-Patch ops are the whole streaming protocol.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "ui-stream-live-value-update",
+            "is": "source-patch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "425c226-4",
+      "source": "425c226",
+      "quote": "Live values live at specific paths inside the source and update in place.",
+      "says": {
+        "behavior": "ui-stream-live-value-update",
+        "is": "source-patch",
+        "area": "editor",
+        "was": "bindings-patch"
+      }
+    },
+    {
+      "id": "ef979f3-1",
+      "source": "ef979f3",
+      "quote": "refactor(repl): collapse source+bindings into a single source document",
+      "says": {
+        "decision": "ui-stream-documents",
+        "chose": "single-source",
+        "area": "editor",
+        "over": ["source-and-bindings"]
+      }
+    },
+    {
+      "id": "b60f4a1-1",
+      "source": "b60f4a1",
+      "quote": "chore: harden project quality gates",
+      "says": {
+        "rule": "quality-gates",
+        "holds": true,
+        "statement": "Every commit runs the tests, and CI checks formatting, types, tests, and the build on every pull request and push to main.",
+        "area": "build",
+        "predicts": [
+          {
+            "behavior": "ci-pull-request",
+            "is": "checked"
+          },
+          {
+            "behavior": "ci-push-main",
+            "is": "checked"
+          },
+          {
+            "behavior": "pre-commit-hook",
+            "is": "runs-tests"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b60f4a1-2",
+      "source": "b60f4a1",
+      "quote": "name: CI",
+      "says": {
+        "feature": "ci-workflow",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "b60f4a1-3",
+      "source": "b60f4a1",
+      "quote": "pull_request:",
+      "says": {
+        "behavior": "ci-pull-request",
+        "is": "checked",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-4",
+      "source": "b60f4a1",
+      "quote": "push:",
+      "says": {
+        "behavior": "ci-push-main",
+        "is": "checked",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-5",
+      "source": "b60f4a1",
+      "quote": "run: bun run check",
+      "says": {
+        "behavior": "ci-format-and-lint",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-6",
+      "source": "b60f4a1",
+      "quote": "run: bun run typecheck",
+      "says": {
+        "behavior": "ci-typecheck",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-7",
+      "source": "b60f4a1",
+      "quote": "run: bun run test",
+      "says": {
+        "behavior": "ci-tests",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-8",
+      "source": "b60f4a1",
+      "quote": "run: bun run build",
+      "says": {
+        "behavior": "ci-build",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-9",
+      "source": "b60f4a1",
+      "quote": "bun run test",
+      "says": {
+        "behavior": "pre-commit-hook",
+        "is": "runs-tests",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-10",
+      "source": "b60f4a1",
+      "quote": "bun run test",
+      "says": {
+        "decision": "test-command",
+        "chose": "bun-run-test",
+        "area": "build",
+        "over": ["bun-test"]
+      }
+    },
+    {
+      "id": "b60f4a1-11",
+      "source": "b60f4a1",
+      "quote": "// Generated by TanStack Router and shadcn; validated by their upstream tooling.",
+      "says": {
+        "decision": "lint-generated-files",
+        "chose": "excluded",
+        "area": "build",
+        "over": ["linted"],
+        "because": "Generated by TanStack Router and shadcn; validated by their upstream tooling."
+      }
+    },
+    {
+      "id": "b60f4a1-12",
+      "source": "b60f4a1",
+      "quote": "linker = \"hoisted\"",
+      "says": {
+        "decision": "bun-install-linker",
+        "chose": "hoisted",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b60f4a1-13",
+      "source": "b60f4a1",
+      "quote": "Lion is a homoiconic programming language where all code is valid JSON, and all JSON is valid code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": true,
+        "statement": "All code is valid JSON, and all JSON is valid code.",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "json-value-is-program",
+            "is": "true"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b60f4a1-14",
+      "source": "b60f4a1",
+      "quote": "packages/repl/PRODUCT.md",
+      "says": {
+        "feature": "repl-product-doc",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "b60f4a1-15",
+      "source": "b60f4a1",
+      "quote": "docs/tickets/graph-editor/000-product-epic.md",
+      "says": {
+        "feature": "graph-editor-tickets",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "cbb11e3-1",
+      "source": "cbb11e3",
+      "quote": "chore: migrate project to Effect v4",
+      "says": {
+        "decision": "effect-version",
+        "chose": "effect-4",
+        "area": "packages",
+        "over": ["effect-3"]
+      }
+    },
+    {
+      "id": "cbb11e3-2",
+      "source": "cbb11e3",
+      "quote": "chore: migrate project to Effect v4",
+      "says": {
+        "rule": "effect-v4",
+        "holds": true,
+        "statement": "Lion moves from Effect 3 to Effect 4.",
+        "area": "packages"
+      }
+    },
+    {
+      "id": "bdc6d89-1",
+      "source": "bdc6d89",
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "graph-editor",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "bdc6d89-2",
+      "source": "bdc6d89",
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "feature": "stream-route",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "graph-editor"
+      }
+    },
+    {
+      "id": "bdc6d89-3",
+      "source": "bdc6d89",
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "feature": "repl-route",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "graph-editor"
+      }
+    },
+    {
+      "id": "bdc6d89-4",
+      "source": "bdc6d89",
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "decision": "repl-surface",
+        "chose": "graph-editor",
+        "area": "editor",
+        "over": ["terminal-repl", "stream-prototype"]
+      }
+    },
+    {
+      "id": "bdc6d89-5",
+      "source": "bdc6d89",
+      "quote": "Removed the terminal REPL route, `/stream` prototype, UI-streaming simulator, obsolete demo assets, generated route entries, and unused prototype dependencies.",
+      "says": {
+        "feature": "ui-stream-simulator",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "bdc6d89-6",
+      "source": "bdc6d89",
+      "quote": "packages/repl/src/lib/ui-env.ts",
+      "says": {
+        "feature": "ui-env",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "bdc6d89-7",
+      "source": "bdc6d89",
+      "quote": "`@lionlang/repl` is the Lion Fold Map: a local-first semantic graph and exact JSON workbench.",
+      "says": {
+        "rule": "graph-editor-is-the-repl",
+        "holds": true,
+        "statement": "`@lionlang/repl` is the Lion Fold Map, a local-first semantic graph editor over the program's JSON.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "repl-root-route",
+            "is": "graph-editor"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bdc6d89-8",
+      "source": "bdc6d89",
+      "quote": "Lion Fold Map local-first graph editor at `/`",
+      "says": {
+        "behavior": "repl-root-route",
+        "is": "graph-editor",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-9",
+      "source": "bdc6d89",
+      "quote": "Source text remains canonical while graph, outline, inspector, diagnostics, and evaluation results track explicit document revisions.",
+      "says": {
+        "rule": "editor-source-canonical",
+        "holds": true,
+        "statement": "The JSON source is canonical; graph, outline, inspector, diagnostics, and results derive from explicit document revisions.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "editor-undo",
+            "is": "exact-source-restored"
+          },
+          {
+            "behavior": "editor-untouched-text",
+            "is": "byte-identical"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bdc6d89-10",
+      "source": "bdc6d89",
+      "quote": "Undo and redo restore exact source snapshots regardless of edit origin.",
+      "says": {
+        "behavior": "editor-undo",
+        "is": "exact-source-restored",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-11",
+      "source": "bdc6d89",
+      "quote": "untouched text and object-key order stay byte-identical",
+      "says": {
+        "behavior": "editor-untouched-text",
+        "is": "byte-identical",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-12",
+      "source": "bdc6d89",
+      "quote": "Invalid JSON retains the last valid projection without accepting graph mutation or evaluation.",
+      "says": {
+        "behavior": "editor-invalid-json-projection",
+        "is": "last-valid-kept",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-13",
+      "source": "bdc6d89",
+      "quote": "Invalid JSON retains the last valid projection without accepting graph mutation or evaluation.",
+      "says": {
+        "behavior": "editor-invalid-json-evaluation",
+        "is": "refused",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-14",
+      "source": "bdc6d89",
+      "quote": "The deliberate limitation is strict JSON: comments and trailing commas are diagnostics, not silently normalized.",
+      "says": {
+        "behavior": "editor-json-comments",
+        "is": "diagnostic",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-15",
+      "source": "bdc6d89",
+      "quote": "The deliberate limitation is strict JSON: comments and trailing commas are diagnostics, not silently normalized.",
+      "says": {
+        "decision": "editor-json-strictness",
+        "chose": "strict-json",
+        "area": "editor",
+        "over": ["normalize"]
+      }
+    },
+    {
+      "id": "bdc6d89-16",
+      "source": "bdc6d89",
+      "quote": "Revision checks reject obsolete worker responses and stale graph intents.",
+      "says": {
+        "behavior": "editor-stale-worker-response",
+        "is": "rejected",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-17",
+      "source": "bdc6d89",
+      "quote": "**Editor:** CodeMirror 6 with the JSON language package.",
+      "says": {
+        "decision": "editor-text-component",
+        "chose": "codemirror-6",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-18",
+      "source": "bdc6d89",
+      "quote": "**Graph:** React Flow for interaction and bounded rendering, with ELK layered layout in a module worker.",
+      "says": {
+        "decision": "editor-graph-library",
+        "chose": "react-flow-elk",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-19",
+      "source": "bdc6d89",
+      "quote": "`jsonc-parser` configured for strict JSON",
+      "says": {
+        "decision": "editor-json-parser",
+        "chose": "jsonc-parser-strict",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-20",
+      "source": "bdc6d89",
+      "quote": "Warm worker-equivalent parse/analyze medians: wide 1,000 = 10.67 ms; deep 1,000 = 11.68 ms; wide 5,000 = 119.10 ms; deep 5,000 = 57.04 ms.",
+      "says": {
+        "measured": "editor-parse-analyze-wide-1000-ms",
+        "after": 10.67,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-21",
+      "source": "bdc6d89",
+      "quote": "Warm worker-equivalent parse/analyze medians: wide 1,000 = 10.67 ms; deep 1,000 = 11.68 ms; wide 5,000 = 119.10 ms; deep 5,000 = 57.04 ms.",
+      "says": {
+        "measured": "editor-parse-analyze-deep-1000-ms",
+        "after": 11.68,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-22",
+      "source": "bdc6d89",
+      "quote": "Warm worker-equivalent parse/analyze medians: wide 1,000 = 10.67 ms; deep 1,000 = 11.68 ms; wide 5,000 = 119.10 ms; deep 5,000 = 57.04 ms.",
+      "says": {
+        "measured": "editor-parse-analyze-wide-5000-ms",
+        "after": 119.1,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-23",
+      "source": "bdc6d89",
+      "quote": "Warm worker-equivalent parse/analyze medians: wide 1,000 = 10.67 ms; deep 1,000 = 11.68 ms; wide 5,000 = 119.10 ms; deep 5,000 = 57.04 ms.",
+      "says": {
+        "measured": "editor-parse-analyze-deep-5000-ms",
+        "after": 57.04,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-24",
+      "source": "bdc6d89",
+      "quote": "The production build repeated that import-to-mounted path in 543.23 ms with exactly 300 React Flow nodes.",
+      "says": {
+        "measured": "editor-import-5000-to-mounted-ms",
+        "after": 543.23,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-25",
+      "source": "bdc6d89",
+      "quote": "at most 300 graph nodes are mounted at once",
+      "says": {
+        "measured": "editor-mounted-graph-nodes-max",
+        "after": 300,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-26",
+      "source": "bdc6d89",
+      "quote": "local files are capped at 10 MiB",
+      "says": {
+        "measured": "editor-file-size-cap-mib",
+        "after": 10,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-27",
+      "source": "bdc6d89",
+      "quote": "the overview is intentionally hidden below 900 px where it would obstruct the canvas",
+      "says": {
+        "behavior": "editor-overview-narrow",
+        "is": "hidden",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-28",
+      "source": "bdc6d89",
+      "quote": "Core reports 98 passing tests; REPL reports 13 passing tests.",
+      "says": {
+        "measured": "core-tests",
+        "after": 98,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "bdc6d89-29",
+      "source": "bdc6d89",
+      "quote": "Core reports 98 passing tests; REPL reports 13 passing tests.",
+      "says": {
+        "measured": "repl-tests",
+        "after": 13,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "bdc6d89-30",
+      "source": "bdc6d89",
+      "quote": "passes all 12 desktop and narrow Chromium workflows",
+      "says": {
+        "measured": "repl-e2e-workflows",
+        "after": 12,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "bdc6d89-31",
+      "source": "bdc6d89",
+      "quote": "All 25 implementation tickets are complete.",
+      "says": {
+        "measured": "graph-editor-tickets-complete",
+        "after": 25,
+        "area": "process"
+      }
+    },
+    {
+      "id": "bdc6d89-32",
+      "source": "bdc6d89",
+      "quote": "Passing unit tests alone is not completion.",
+      "says": {
+        "rule": "completion-needs-browser-proof",
+        "holds": true,
+        "statement": "A product is complete only when its real workflows are proven in a browser; passing unit tests alone is not completion.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "completion-with-unit-tests-only",
+            "is": "incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bdc6d89-33",
+      "source": "bdc6d89",
+      "quote": "# Changelog",
+      "says": {
+        "feature": "changelog",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "bdc6d89-34",
+      "source": "bdc6d89",
+      "quote": "# LION-EDITOR-002 — Add a public Lion semantic-analysis API",
+      "says": {
+        "feature": "semantic-analysis",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "bdc6d89-35",
+      "source": "bdc6d89",
+      "quote": "returns an invalid node instead of throwing for malformed forms",
+      "says": {
+        "behavior": "analyze-malformed-form",
+        "is": "invalid-node",
+        "area": "host"
+      }
+    },
+    {
+      "id": "bdc6d89-36",
+      "source": "bdc6d89",
+      "quote": "const node = analyze([\"define\", \"x\"]);",
+      "says": {
+        "behavior": "analyze-define-missing-value",
+        "is": "invalid-call",
+        "area": "host"
+      }
+    },
+    {
+      "id": "bdc6d89-37",
+      "source": "bdc6d89",
+      "quote": "classifies every supported special form from evaluator schemas",
+      "says": {
+        "rule": "analysis-uses-evaluator-schemas",
+        "holds": true,
+        "statement": "Semantic analysis classifies special forms with the evaluator's own form schemas.",
+        "area": "host",
+        "predicts": [
+          {
+            "behavior": "analyze-define-missing-value",
+            "is": "invalid-call"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bdc6d89-38",
+      "source": "bdc6d89",
+      "quote": "preserves record order, paths, and ambiguous string relationships",
+      "says": {
+        "behavior": "analyze-record-key-order",
+        "is": "preserved",
+        "area": "host"
+      }
+    },
+    {
+      "id": "bdc6d89-39",
+      "source": "bdc6d89",
+      "quote": "{ kind: \"reference-candidate\", name: \"x\" },",
+      "says": {
+        "behavior": "analyze-string",
+        "is": "reference-candidate",
+        "area": "host"
+      }
+    },
+    {
+      "id": "bdc6d89-40",
+      "source": "bdc6d89",
+      "quote": "expect(analyze([]).kind).toBe(\"empty-array\");",
+      "says": {
+        "behavior": "analyze-empty-array",
+        "is": "empty-array",
+        "area": "host"
+      }
+    },
+    {
+      "id": "bdc6d89-41",
+      "source": "bdc6d89",
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "graph-branch-folding",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "bdc6d89-42",
+      "source": "bdc6d89",
+      "quote": "Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.",
+      "says": {
+        "feature": "editor-live-evaluation",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "bdc6d89-43",
+      "source": "bdc6d89",
+      "quote": "File System Access open/save workflows with permission and external-change handling, plus import/download fallback.",
+      "says": {
+        "feature": "editor-file-system-access",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-1",
+      "source": "fa4cab8",
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "@lionlang/typesafe-ai",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-2",
+      "source": "fa4cab8",
+      "quote": "\"typesafe/noul\",",
+      "says": {
+        "feature": "typesafe/noul",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-3",
+      "source": "fa4cab8",
+      "quote": "\"typesafe/choice\",",
+      "says": {
+        "feature": "typesafe/choice",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-4",
+      "source": "fa4cab8",
+      "quote": "\"typesafe/score\",",
+      "says": {
+        "feature": "typesafe/score",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-5",
+      "source": "fa4cab8",
+      "quote": "\"typesafe/system-one\",",
+      "says": {
+        "feature": "typesafe/system-one",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-6",
+      "source": "fa4cab8",
+      "quote": "run([\"typesafe/models\"], environment)",
+      "says": {
+        "feature": "typesafe/models",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-7",
+      "source": "fa4cab8",
+      "quote": "name: typesafe-ai",
+      "says": {
+        "feature": "typesafe-ai",
+        "kind": "skill",
+        "present": true
+      }
+    },
+    {
+      "id": "fa4cab8-8",
+      "source": "fa4cab8",
+      "quote": "Lion arrays are executable, so literal arrays in state, instructions, or score criteria must use `quote`.",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "Lion arrays are executable, so a literal array must be quoted.",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "literal-array-unquoted",
+            "is": "call"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fa4cab8-9",
+      "source": "fa4cab8",
+      "quote": "Lion arrays are executable, so literal arrays in state, instructions, or score criteria must use `quote`.",
+      "says": {
+        "behavior": "literal-array-unquoted",
+        "is": "call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "fa4cab8-10",
+      "source": "fa4cab8",
+      "quote": "Network calls are represented as Effects so Lion waits for the TypeSafe API",
+      "says": {
+        "behavior": "host-function-effect-return",
+        "is": "awaited",
+        "area": "host"
+      }
+    },
+    {
+      "id": "fa4cab8-11",
+      "source": "fa4cab8",
+      "quote": "instead of returning an unresolved promise.",
+      "says": {
+        "behavior": "host-function-promise-return",
+        "is": "unresolved-promise",
+        "area": "host"
+      }
+    },
+    {
+      "id": "fa4cab8-12",
+      "source": "fa4cab8",
+      "quote": "Creates ready-to-spread Lion environment bindings under `typesafe/*`.",
+      "says": {
+        "behavior": "typesafe-bindings-namespace",
+        "is": "typesafe",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "fa4cab8-13",
+      "source": "fa4cab8",
+      "quote": "TypeSafe AI Jev evaluation from a standalone Lion JSON program",
+      "says": {
+        "feature": "jev-example",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "af779dc-1",
+      "source": "af779dc",
+      "quote": "treats quoted form-shaped arrays as literal data",
+      "says": {
+        "behavior": "analyze-quoted-form-shaped-array",
+        "is": "literal-data",
+        "area": "host"
+      }
+    },
+    {
+      "id": "af779dc-2",
+      "source": "af779dc",
+      "quote": "Use **Jev** to load a TypeSafe System One starter program.",
+      "says": {
+        "feature": "editor-jev-playground",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "af779dc-3",
+      "source": "af779dc",
+      "quote": "keeps it only in tab memory",
+      "says": {
+        "behavior": "editor-jev-api-key-storage",
+        "is": "tab-memory",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "af779dc-4",
+      "source": "af779dc",
+      "quote": "Jev programs are always explicit-run to prevent accidental network requests.",
+      "says": {
+        "behavior": "editor-jev-live-evaluation",
+        "is": "disabled",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "af779dc-5",
+      "source": "af779dc",
+      "quote": "Jev programs are always explicit-run to prevent accidental network requests.",
+      "says": {
+        "decision": "jev-evaluation-trigger",
+        "chose": "explicit-run",
+        "area": "ai",
+        "over": ["live"],
+        "because": "Explicit runs prevent accidental network requests."
+      }
+    },
+    {
+      "id": "af779dc-6",
+      "source": "af779dc",
+      "quote": "Jev support sends requests through the app's same-origin proxy",
+      "says": {
+        "feature": "typesafe-proxy",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "af779dc-7",
+      "source": "af779dc",
+      "quote": "return jsonResponse(404, \"Unknown TypeSafe API route.\");",
+      "says": {
+        "behavior": "typesafe-proxy-unlisted-route",
+        "is": "not-found",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "af779dc-8",
+      "source": "af779dc",
+      "quote": "Jev support sends requests through the app's same-origin proxy with a user-provided, preferably scoped development key that remains in browser memory",
+      "says": {
+        "behavior": "editor-evaluation-environment",
+        "is": "stdlib-and-typesafe",
+        "area": "editor",
+        "was": "stdlib-only"
+      }
+    },
+    {
+      "id": "af779dc-9",
+      "source": "af779dc",
+      "quote": "Files above 10 MiB are rejected before parsing.",
+      "says": {
+        "behavior": "editor-file-over-10-mib",
+        "is": "rejected",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "18e3ae1-1",
+      "source": "18e3ae1",
+      "quote": "places argument values left of consuming expressions",
+      "says": {
+        "behavior": "graph-argument-position",
+        "is": "left-of-consumer",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "18e3ae1-2",
+      "source": "18e3ae1",
+      "quote": "id: `${node.id}->${node.parentId}`,",
+      "says": {
+        "behavior": "graph-edge-direction",
+        "is": "value-to-consumer",
+        "area": "editor",
+        "was": "parent-to-child"
+      }
+    },
+    {
+      "id": "18e3ae1-3",
+      "source": "18e3ae1",
+      "quote": "fix(repl): orient graph value flow left to right",
+      "says": {
+        "decision": "graph-value-flow-direction",
+        "chose": "left-to-right",
+        "area": "editor",
+        "over": ["right-to-left"]
+      }
+    },
+    {
+      "id": "e013ec1-1",
+      "source": "e013ec1",
+      "quote": "The graph uses a 32px point rhythm over the continuous warm paper field.",
+      "says": {
+        "behavior": "graph-background",
+        "is": "paper-field",
+        "area": "editor",
+        "was": "diagonal-crease-field"
+      }
+    },
+    {
+      "id": "e013ec1-2",
+      "source": "e013ec1",
+      "quote": "The graph uses a 32px point rhythm over the continuous warm paper field.",
+      "says": {
+        "measured": "graph-point-rhythm-px",
+        "after": 32,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "e013ec1-3",
+      "source": "e013ec1",
+      "quote": "selection uses a clear vermilion border and soft ring without adding a second edge",
+      "says": {
+        "behavior": "graph-node-selection-mark",
+        "is": "border-and-ring",
+        "area": "editor",
+        "was": "left-edge-mark"
+      }
+    },
+    {
+      "id": "e013ec1-4",
+      "source": "e013ec1",
+      "quote": "At desktop widths the graph receives 62% of the horizontal workbench and the source/inspector column receives 38%",
+      "says": {
+        "measured": "editor-graph-pane-percent",
+        "after": 62,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "e013ec1-5",
+      "source": "e013ec1",
+      "quote": "Graph, Source, Inspect, and Result become four mutually exclusive tabs",
+      "says": {
+        "behavior": "editor-narrow-panes",
+        "is": "four-tabs",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "e013ec1-6",
+      "source": "e013ec1",
+      "quote": "{nodes.length > 12 ? (",
+      "says": {
+        "behavior": "graph-minimap-small-document",
+        "is": "hidden",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "e013ec1-7",
+      "source": "e013ec1",
+      "quote": "nodesDraggable={false}",
+      "says": {
+        "behavior": "graph-node-free-drag",
+        "is": "disabled",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3f3d293-1",
+      "source": "3f3d293",
+      "quote": "Open and Save remain labeled outline commands at every width.",
+      "says": {
+        "behavior": "editor-open-save-labels",
+        "is": "always-labeled",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3f3d293-2",
+      "source": "3f3d293",
+      "quote": "The graph centers the selected node at a readable scale instead of shrinking the full branch to fit.",
+      "says": {
+        "behavior": "graph-narrow-selection-camera",
+        "is": "centered",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3f3d293-3",
+      "source": "3f3d293",
+      "quote": "Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar.",
+      "says": {
+        "behavior": "graph-node-actions",
+        "is": "replace-and-add-child",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3f3d293-4",
+      "source": "3f3d293",
+      "quote": "Connection handles appear only on ordered child containers so every visible connector represents a valid move.",
+      "says": {
+        "rule": "graph-connectors-valid-moves",
+        "holds": true,
+        "statement": "Connection handles appear only on ordered child containers, so every visible connector represents a valid move.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-handle-on-non-container",
+            "is": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3f3d293-5",
+      "source": "3f3d293",
+      "quote": "Parent-to-child sumi edges carry role labels",
+      "says": {
+        "behavior": "graph-edge-direction",
+        "is": "parent-to-child",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "f27e671-1",
+      "source": "f27e671",
+      "quote": "refactor(repl): remove source editor view",
+      "says": {
+        "feature": "editor-source-view",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "f27e671-2",
+      "source": "f27e671",
+      "quote": "refactor(repl): remove source editor view",
+      "says": {
+        "behavior": "editor-source-text-pane",
+        "is": "absent",
+        "area": "editor",
+        "was": "present"
+      }
+    },
+    {
+      "id": "f27e671-3",
+      "source": "f27e671",
+      "quote": "reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression.",
+      "says": {
+        "decision": "editor-source-pane",
+        "chose": "no-persistent-text-pane",
+        "area": "editor",
+        "over": ["synchronized-source-pane"]
+      }
+    },
+    {
+      "id": "f27e671-4",
+      "source": "f27e671",
+      "quote": "reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression.",
+      "says": {
+        "rule": "no-persistent-text-editor-pane",
+        "holds": true,
+        "statement": "Do not reintroduce a persistent text-editor pane; exact JSON edits focus on the selected expression.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "editor-source-text-pane",
+            "is": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f27e671-5",
+      "source": "f27e671",
+      "quote": "collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views.",
+      "says": {
+        "rule": "graph-and-json-equally-authoritative",
+        "holds": false,
+        "statement": "Graph and exact JSON remain synchronized, equally authoritative views.",
+        "area": "editor",
+        "replaced_by": "no-persistent-text-editor-pane"
+      }
+    },
+    {
+      "id": "f27e671-6",
+      "source": "f27e671",
+      "quote": "At desktop widths the graph receives 68% of the horizontal workbench and a tabbed inspector, outline, or result pane receives 32%.",
+      "says": {
+        "measured": "editor-graph-pane-percent",
+        "after": 68,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "f27e671-7",
+      "source": "f27e671",
+      "quote": "Graph, Inspect, and Result become three mutually exclusive tabs",
+      "says": {
+        "behavior": "editor-narrow-panes",
+        "is": "three-tabs",
+        "area": "editor",
+        "was": "four-tabs"
+      }
+    },
+    {
+      "id": "f27e671-8",
+      "source": "f27e671",
+      "quote": "The JSON document remains canonical; graph, outline, inspector, and result views derive from the same revision.",
+      "says": {
+        "rule": "editor-source-canonical",
+        "holds": true,
+        "statement": "The JSON document remains canonical; every view derives from the same revision.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "editor-undo",
+            "is": "exact-source-restored"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f27e671-9",
+      "source": "f27e671",
+      "quote": "invalid source keeps the graph blocked until a new document",
+      "says": {
+        "behavior": "editor-invalid-source-graph",
+        "is": "blocked-until-new-document",
+        "area": "editor",
+        "was": "stale-until-repair"
+      }
+    },
+    {
+      "id": "4ef20fb-1",
+      "source": "4ef20fb",
+      "quote": "feat(repl): add editable literal nodes",
+      "says": {
+        "feature": "graph-editable-literal-nodes",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "4ef20fb-2",
+      "source": "4ef20fb",
+      "quote": "text and number changes commit on blur or Enter, while checkboxes commit immediately",
+      "says": {
+        "behavior": "graph-literal-text-commit",
+        "is": "blur-or-enter",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "4ef20fb-3",
+      "source": "4ef20fb",
+      "quote": "text and number changes commit on blur or Enter, while checkboxes commit immediately",
+      "says": {
+        "behavior": "graph-literal-checkbox-commit",
+        "is": "immediate",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "4ef20fb-4",
+      "source": "4ef20fb",
+      "quote": "Every accepted edit is one undoable document transaction.",
+      "says": {
+        "rule": "every-edit-one-transaction",
+        "holds": true,
+        "statement": "Every accepted edit is one undoable document transaction.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-literal-edit-undo",
+            "is": "one-step"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a564abc-1",
+      "source": "a564abc",
+      "quote": "After completing any task, **MUST capture a screen recording** that demonstrates the delivered behavior working as intended.",
+      "says": {
+        "rule": "completion-proof-recording",
+        "holds": true,
+        "statement": "After completing any task, capture a screen recording that demonstrates the delivered behavior; screenshots, logs, and tests never replace it.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "completion-without-recording",
+            "is": "not-complete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a564abc-2",
+      "source": "a564abc",
+      "quote": "Binary files /dev/null and b/.artifacts/proof/repl-server-output-dock.webm differ",
+      "says": {
+        "behavior": "completion-proof-location",
+        "is": "committed",
+        "area": "process"
+      }
+    },
+    {
+      "id": "a564abc-3",
+      "source": "a564abc",
+      "quote": "The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.",
+      "says": {
+        "decision": "editor-workspace-layout",
+        "chose": "full-width-graph",
+        "area": "editor",
+        "over": ["graph-and-inspector-panes"]
+      }
+    },
+    {
+      "id": "a564abc-4",
+      "source": "a564abc",
+      "quote": "The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.",
+      "says": {
+        "feature": "editor-inspector-pane",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "a564abc-5",
+      "source": "a564abc",
+      "quote": "Evaluation appears in a compact dock over the bottom edge of the canvas.",
+      "says": {
+        "feature": "editor-output-dock",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "a564abc-6",
+      "source": "a564abc",
+      "quote": "collapsing it leaves a one-line receipt with status and a result preview",
+      "says": {
+        "behavior": "editor-output-dock",
+        "is": "collapsible",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a564abc-7",
+      "source": "a564abc",
+      "quote": "Desktop and narrow screens keep the graph as the only primary workspace",
+      "says": {
+        "behavior": "editor-narrow-panes",
+        "is": "graph-only",
+        "area": "editor",
+        "was": "three-tabs"
+      }
+    },
+    {
+      "id": "a564abc-8",
+      "source": "a564abc",
+      "quote": "A run expands the dock without changing graph layout or moving the viewport",
+      "says": {
+        "behavior": "editor-run-viewport",
+        "is": "unchanged",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a564abc-9",
+      "source": "a564abc",
+      "quote": "**The One Sheet Rule.** Editing, inspection, navigation, and evaluation remain within the canvas; do not reintroduce detached workbench panes.",
+      "says": {
+        "rule": "one-sheet-rule",
+        "holds": true,
+        "statement": "Editing, inspection, navigation, and evaluation remain within the canvas; detached workbench panes are not reintroduced.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "editor-narrow-panes",
+            "is": "graph-only"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a564abc-10",
+      "source": "a564abc",
+      "quote": "Arrow keys traverse visible expressions, structural keys act on the selection",
+      "says": {
+        "behavior": "graph-arrow-keys",
+        "is": "traverse-visible",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a564abc-11",
+      "source": "a564abc",
+      "quote": "left and right move to parent and child",
+      "says": {
+        "behavior": "graph-arrow-left",
+        "is": "parent",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a564abc-12",
+      "source": "a564abc",
+      "quote": "and `/` focuses search",
+      "says": {
+        "behavior": "graph-slash-key",
+        "is": "focus-search",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a564abc-13",
+      "source": "a564abc",
+      "quote": "The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy.",
+      "says": {
+        "rule": "crease-first-lightly-lifted",
+        "holds": true,
+        "statement": "Creases, borders, and tonal changes carry most hierarchy; lifts stay light.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-node-shadow",
+            "is": "light"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a564abc-14",
+      "source": "a564abc",
+      "quote": "**Crease:** Borders, separators, scrollbars, and graph-grid points.",
+      "says": {
+        "behavior": "graph-grid-point-color",
+        "is": "crease",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "5847eba-1",
+      "source": "5847eba",
+      "quote": "Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree",
+      "says": {
+        "feature": "editor-scoped-evaluation",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "5847eba-2",
+      "source": "5847eba",
+      "quote": "Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action.",
+      "says": {
+        "rule": "scoped-evaluation-expression-like-only",
+        "holds": true,
+        "statement": "Only expression-like nonprimitive nodes get a play action that evaluates their subtree.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-play-action-define",
+            "is": "absent"
+          },
+          {
+            "behavior": "graph-play-action-primitive",
+            "is": "absent"
+          },
+          {
+            "behavior": "graph-play-action-quoted-data",
+            "is": "absent"
+          },
+          {
+            "behavior": "graph-play-action-call",
+            "is": "present"
+          }
+        ]
+      }
+    },
+    {
+      "id": "5847eba-3",
+      "source": "5847eba",
+      "quote": "await expect(page.getByRole(\"button\", { name: \"Run define\" })).toHaveCount(0);",
+      "says": {
+        "behavior": "graph-play-action-define",
+        "is": "absent",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "5847eba-4",
+      "source": "5847eba",
+      "quote": "page.getByRole(\"button\", { name: \"Run number/add\" })",
+      "says": {
+        "behavior": "graph-play-action-call",
+        "is": "present",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "5847eba-5",
+      "source": "5847eba",
+      "quote": "await expect(page.getByRole(\"button\", { name: \"Run quote\" })).toBeVisible();",
+      "says": {
+        "behavior": "graph-play-action-quote-form",
+        "is": "present",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "5847eba-6",
+      "source": "5847eba",
+      "quote": "Evaluate explicitly at the document or expression level by default, with an optional whole-document live-evaluation mode.",
+      "says": {
+        "behavior": "editor-live-evaluation-scope",
+        "is": "whole-document",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3567d25-1",
+      "source": "3567d25",
+      "quote": "After completing any development task where any app behavior is changed, **you MUST capture a screen recording** that demonstrates the delivered behavior working as intended.",
+      "says": {
+        "rule": "completion-proof-recording",
+        "holds": true,
+        "statement": "After any development task that changes app behavior, capture a screen recording that demonstrates the delivered behavior.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "completion-without-recording",
+            "is": "not-complete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3567d25-2",
+      "source": "3567d25",
+      "quote": "packages/repl/artifacts/always-open-graph-editor.webm",
+      "says": {
+        "behavior": "completion-proof-location",
+        "is": "committed",
+        "area": "process"
+      }
+    },
+    {
+      "id": "3567d25-3",
+      "source": "3567d25",
+      "quote": "Every semantic branch stays expanded",
+      "says": {
+        "behavior": "graph-branch-expansion",
+        "is": "always-expanded",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3567d25-4",
+      "source": "3567d25",
+      "quote": "feat(repl): keep graph editor always open",
+      "says": {
+        "feature": "graph-branch-folding",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "3567d25-5",
+      "source": "3567d25",
+      "quote": "Semantic branches remain expanded.",
+      "says": {
+        "decision": "graph-branch-folding",
+        "chose": "always-expanded",
+        "area": "editor",
+        "over": ["collapsible-branches"]
+      }
+    },
+    {
+      "id": "3567d25-6",
+      "source": "3567d25",
+      "quote": "Evaluation appears in a compact, always-open dock over the bottom edge of the canvas after the first run.",
+      "says": {
+        "behavior": "editor-output-dock",
+        "is": "always-open",
+        "area": "editor",
+        "was": "collapsible"
+      }
+    },
+    {
+      "id": "3567d25-7",
+      "source": "3567d25",
+      "quote": "The dock remains open and updates in place for subsequent runs.",
+      "says": {
+        "decision": "output-dock-collapsing",
+        "chose": "always-open",
+        "area": "editor",
+        "over": ["collapsible"]
+      }
+    },
+    {
+      "id": "a7c2a88-1",
+      "source": "a7c2a88",
+      "quote": "Do not commit proof into git.",
+      "says": {
+        "rule": "proof-not-in-git",
+        "holds": true,
+        "statement": "Completion proof is not committed into git.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "completion-proof-location",
+            "is": "outside-git"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a7c2a88-2",
+      "source": "a7c2a88",
+      "quote": "Do not commit proof into git.",
+      "says": {
+        "decision": "completion-proof-storage",
+        "chose": "outside-git",
+        "area": "process",
+        "over": ["committed"]
+      }
+    },
+    {
+      "id": "4042de8-1",
+      "source": "4042de8",
+      "quote": "Jev example renders every visible parent-child connection",
+      "says": {
+        "behavior": "graph-parent-child-connections",
+        "is": "all-rendered",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "4042de8-2",
+      "source": "4042de8",
+      "quote": "isConnectableStart={acceptsConnections}",
+      "says": {
+        "behavior": "graph-handle-on-non-container",
+        "is": "shown-not-connectable",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "907cfd5-1",
+      "source": "907cfd5",
+      "quote": "Value-to-consumer sumi edges carry role labels and arrowheads so the graph shows evaluation flow",
+      "says": {
+        "behavior": "graph-edge-direction",
+        "is": "value-to-consumer",
+        "area": "editor",
+        "was": "parent-to-child"
+      }
+    },
+    {
+      "id": "907cfd5-2",
+      "source": "907cfd5",
+      "quote": "Value-to-consumer sumi edges carry role labels and arrowheads so the graph shows evaluation flow",
+      "says": {
+        "decision": "graph-edge-direction",
+        "chose": "value-to-consumer",
+        "area": "editor",
+        "over": ["parent-to-child"],
+        "because": "Value-to-consumer edges show evaluation flow."
+      }
+    },
+    {
+      "id": "907cfd5-3",
+      "source": "907cfd5",
+      "quote": "Every non-root node exposes its outgoing value handle, while connection targets appear only on ordered child containers so every completed connector represents a valid move.",
+      "says": {
+        "rule": "graph-connectors-valid-moves",
+        "holds": true,
+        "statement": "Every non-root node exposes its outgoing value handle; connection targets appear only on ordered child containers, so every completed connector is a valid move.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-target-on-non-container",
+            "is": "not-connectable"
+          },
+          {
+            "behavior": "graph-handle-on-non-container",
+            "is": "shown-not-connectable"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c2360e9-1",
+      "source": "c2360e9",
+      "quote": "places child values left of their consuming expression",
+      "says": {
+        "behavior": "graph-argument-position",
+        "is": "left-of-consumer",
+        "area": "editor",
+        "was": "right-of-consumer"
+      }
+    },
+    {
+      "id": "c2360e9-2",
+      "source": "c2360e9",
+      "quote": "left moves to the first child, right moves to the parent",
+      "says": {
+        "behavior": "graph-arrow-left",
+        "is": "first-child",
+        "area": "editor",
+        "was": "parent"
+      }
+    },
+    {
+      "id": "c2360e9-3",
+      "source": "c2360e9",
+      "quote": "left moves to the first child, right moves to the parent",
+      "says": {
+        "behavior": "graph-arrow-right",
+        "is": "parent",
+        "area": "editor",
+        "was": "first-child"
+      }
+    },
+    {
+      "id": "c2360e9-4",
+      "source": "c2360e9",
+      "quote": "fix(repl): lay out graph flow left to right",
+      "says": {
+        "decision": "graph-value-flow-direction",
+        "chose": "left-to-right",
+        "area": "editor",
+        "over": ["right-to-left"]
+      }
+    },
+    {
+      "id": "5ec44b7-1",
+      "source": "5ec44b7",
+      "quote": "feat(repl): add labeled per-edge graph ports",
+      "says": {
+        "feature": "graph-labeled-ports",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "5ec44b7-2",
+      "source": "5ec44b7",
+      "quote": "typeof segment === \"number\" ? `[${segment}]` : (segment ?? child.role);",
+      "says": {
+        "behavior": "graph-input-port-label",
+        "is": "path-segment",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "5ec44b7-3",
+      "source": "5ec44b7",
+      "quote": "label: \"value\",",
+      "says": {
+        "behavior": "graph-output-port-label",
+        "is": "value",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "8f4eb60-1",
+      "source": "8f4eb60",
+      "quote": "places sibling nodes top-to-bottom in model order",
+      "says": {
+        "behavior": "graph-sibling-order",
+        "is": "model-order",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "8f4eb60-2",
+      "source": "8f4eb60",
+      "quote": "literal nodes fit their editors without empty body space",
+      "says": {
+        "behavior": "graph-literal-node-height",
+        "is": "fits-editor",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "38d9144-1",
+      "source": "38d9144",
+      "quote": "expect(array?.kind).toBe(\"array\");",
+      "says": {
+        "behavior": "analyze-quoted-array",
+        "is": "array",
+        "area": "host",
+        "was": "call"
+      }
+    },
+    {
+      "id": "38d9144-2",
+      "source": "38d9144",
+      "quote": "expect(flat.find(({ pointer }) => pointer === \"/1/0\")?.quoted).toBe(true);",
+      "says": {
+        "behavior": "analyze-quoted-array-head",
+        "is": "quoted",
+        "area": "host"
+      }
+    },
+    {
+      "id": "38d9144-3",
+      "source": "38d9144",
+      "quote": "muted semantic inks distinguish node types",
+      "says": {
+        "feature": "graph-node-type-colors",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "38d9144-4",
+      "source": "38d9144",
+      "quote": "Color supplements the existing icon silhouette, operation label, literal control, and invalid-state treatment; it never carries node identity alone.",
+      "says": {
+        "rule": "color-never-sole-cue",
+        "holds": true,
+        "statement": "Color supplements other cues and never carries node identity alone.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "graph-node-type-identity",
+            "is": "redundant-cues"
+          }
+        ]
+      }
+    },
+    {
+      "id": "38d9144-5",
+      "source": "38d9144",
+      "quote": "selecting a graph node preserves the camera",
+      "says": {
+        "behavior": "graph-selection-camera",
+        "is": "preserved",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "38d9144-6",
+      "source": "38d9144",
+      "quote": "packages/repl/artifacts/node-type-colors.webm",
+      "says": {
+        "behavior": "completion-proof-location",
+        "is": "committed",
+        "area": "process"
+      }
+    },
+    {
+      "id": "b9e5881-1",
+      "source": "b9e5881",
+      "quote": "presentation?.mark !== \"record\" &&",
+      "says": {
+        "behavior": "graph-structured-node-header",
+        "is": "omitted",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "2753a40-1",
+      "source": "2753a40",
+      "quote": "feat(cli): add Effect CLI package",
+      "says": {
+        "feature": "@lionlang/cli",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "2753a40-2",
+      "source": "2753a40",
+      "quote": "The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.",
+      "says": {
+        "feature": "lion",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "id": "2753a40-3",
+      "source": "2753a40",
+      "quote": "The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.",
+      "says": {
+        "behavior": "cli-input-validation",
+        "is": "lion-expression-schema",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2753a40-4",
+      "source": "2753a40",
+      "quote": "The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.",
+      "says": {
+        "behavior": "cli-evaluation-environment",
+        "is": "stdlib",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2753a40-5",
+      "source": "2753a40",
+      "quote": "The `lion` command validates the file as a Lion expression, evaluates it with the standard library, and writes the result as formatted JSON.",
+      "says": {
+        "behavior": "cli-output-format",
+        "is": "formatted-json",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2753a40-6",
+      "source": "2753a40",
+      "quote": "alwaysBundle: [/^@lionlang\\/core(?:\\/|$)/],",
+      "says": {
+        "behavior": "cli-core-dependency",
+        "is": "bundled",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2753a40-7",
+      "source": "2753a40",
+      "quote": "edit through either synchronized view",
+      "says": {
+        "behavior": "editor-source-text-pane",
+        "is": "present",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "2ca94fd-1",
+      "source": "2ca94fd",
+      "quote": "Serve the bundled graph editor locally:",
+      "says": {
+        "feature": "lion-repl",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "id": "2ca94fd-2",
+      "source": "2ca94fd",
+      "quote": "Use `--host` and `--port`",
+      "says": {
+        "feature": "lion-repl-host",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "2ca94fd-3",
+      "source": "2ca94fd",
+      "quote": "Use `--host` and `--port`",
+      "says": {
+        "feature": "lion-repl-port",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "2ca94fd-4",
+      "source": "2ca94fd",
+      "quote": "The editor listens on `127.0.0.1:3000` by default.",
+      "says": {
+        "behavior": "lion-repl-default-host",
+        "is": "loopback",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2ca94fd-5",
+      "source": "2ca94fd",
+      "quote": "The editor listens on `127.0.0.1:3000` by default.",
+      "says": {
+        "measured": "lion-repl-default-port",
+        "after": 3000,
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2ca94fd-6",
+      "source": "2ca94fd",
+      "quote": "The published CLI includes the production editor,",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The published CLI includes the production editor and core, so a project needs neither the monorepo nor a separate REPL install.",
+        "area": "cli",
+        "predicts": [
+          {
+            "behavior": "cli-editor",
+            "is": "bundled"
+          },
+          {
+            "behavior": "cli-core-dependency",
+            "is": "bundled"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2ca94fd-7",
+      "source": "2ca94fd",
+      "quote": "copy: [{ from: \"../repl/.output\", to: \"dist\", rename: \"repl\" }],",
+      "says": {
+        "behavior": "cli-editor",
+        "is": "bundled",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2ca94fd-8",
+      "source": "2ca94fd",
+      "quote": "cause: new Error(\"Port must be between 1 and 65535.\"),",
+      "says": {
+        "behavior": "lion-repl-invalid-port",
+        "is": "error",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "2ca94fd-9",
+      "source": "2ca94fd",
+      "quote": "opened programs local to the browser and saves through the browser's file APIs.",
+      "says": {
+        "behavior": "editor-program-storage",
+        "is": "browser-local",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "3cf2d0b-1",
+      "source": "3cf2d0b",
+      "quote": "<Background color=\"#000\" gap={32} size={2} />",
+      "says": {
+        "behavior": "graph-grid-point-color",
+        "is": "black",
+        "area": "editor",
+        "was": "crease"
+      }
+    },
+    {
+      "id": "3cf2d0b-2",
+      "source": "3cf2d0b",
+      "quote": "<Background color=\"#000\" gap={32} size={2} />",
+      "says": {
+        "measured": "graph-background-dot-size",
+        "after": 2,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "cfd42a9-1",
+      "source": "cfd42a9",
+      "quote": "fix(repl): make output drawer collapsible",
+      "says": {
+        "behavior": "editor-output-dock",
+        "is": "collapsible",
+        "area": "editor",
+        "was": "always-open"
+      }
+    },
+    {
+      "id": "cfd42a9-2",
+      "source": "cfd42a9",
+      "quote": "fix(repl): make output drawer collapsible",
+      "says": {
+        "decision": "output-dock-collapsing",
+        "chose": "collapsible",
+        "area": "editor",
+        "over": ["always-open"]
+      }
+    },
+    {
+      "id": "9ee0d86-1",
+      "source": "9ee0d86",
+      "quote": "Binary files /dev/null and b/packages/repl/artifacts/thicker-black-background-dots.webm differ",
+      "says": {
+        "behavior": "completion-proof-location",
+        "is": "committed",
+        "area": "process"
+      }
+    },
+    {
+      "id": "db1f0f7-1",
+      "source": "db1f0f7",
+      "quote": "<Background color=\"#000\" gap={32} size={1.5} />",
+      "says": {
+        "measured": "graph-background-dot-size",
+        "after": 1.5,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "532cfda-1",
+      "source": "532cfda",
+      "quote": "Gives graph nodes, graph controls, and the document overview a weighty tactile lift with both contact and cast shadows.",
+      "says": {
+        "behavior": "graph-node-shadow",
+        "is": "weighty",
+        "area": "editor",
+        "was": "light"
+      }
+    },
+    {
+      "id": "ba16c89-1",
+      "source": "ba16c89",
+      "quote": "Gives graph nodes, graph controls, and the document overview a compact, weighty lift with dark contact and cast shadows.",
+      "says": {
+        "behavior": "graph-node-shadow",
+        "is": "weighty",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bb86fe2-1",
+      "source": "bb86fe2",
+      "quote": "Value-to-consumer edges use a two-pixel sumi stroke, matching closed arrowheads, and bold role labels so the graph shows evaluation flow at a glance",
+      "says": {
+        "behavior": "graph-edge-direction",
+        "is": "value-to-consumer",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bb86fe2-2",
+      "source": "bb86fe2",
+      "quote": "Value-to-consumer edges use a two-pixel sumi stroke, matching closed arrowheads, and bold role labels so the graph shows evaluation flow at a glance",
+      "says": {
+        "behavior": "graph-edge-label-weight",
+        "is": "bold",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bb86fe2-3",
+      "source": "bb86fe2",
+      "quote": "--xy-edge-stroke-width: 2;",
+      "says": {
+        "measured": "graph-edge-stroke-px",
+        "after": 2,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "a3b1db6-1",
+      "source": "a3b1db6",
+      "quote": "fix(repl): move graph input labels inside nodes",
+      "says": {
+        "behavior": "graph-input-port-label-position",
+        "is": "inside-consumer",
+        "area": "editor",
+        "was": "outside-consumer"
+      }
+    },
+    {
+      "id": "bdc6d89-44",
+      "source": "bdc6d89",
+      "quote": "| Open, parse, and analyze 1,000 nodes | 500 ms |",
+      "says": {
+        "measured": "editor-budget-open-1000-nodes-ms",
+        "after": 500,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-45",
+      "source": "bdc6d89",
+      "quote": "| Open folded 5,000-node program | 2,000 ms |",
+      "says": {
+        "measured": "editor-budget-open-folded-5000-nodes-ms",
+        "after": 2000,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "bdc6d89-46",
+      "source": "bdc6d89",
+      "quote": "The actual development app imported the 5,003-node browser fixture and reached `300 mounted` in 914.93 ms",
+      "says": {
+        "measured": "editor-import-5000-to-mounted-dev-ms",
+        "after": 914.93,
+        "area": "editor"
+      }
+    },
+    {
+      "id": "fa4cab8-14",
+      "source": "fa4cab8",
+      "quote": "Set `TYPESAFE_API_KEY`, create the bindings once in the host, and spread them into the evaluation environment:",
+      "says": {
+        "behavior": "typesafe-api-key-source-host",
+        "is": "env-var",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "fa4cab8-15",
+      "source": "fa4cab8",
+      "quote": "Keep API credentials server-side in web apps.",
+      "says": {
+        "rule": "api-credentials-server-side",
+        "holds": true,
+        "statement": "Keep API credentials server-side in web apps.",
+        "area": "ai",
+        "predicts": [
+          {
+            "behavior": "editor-jev-api-key-storage",
+            "is": "server-side"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a564abc-15",
+      "source": "a564abc",
+      "quote": "The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.",
+      "says": {
+        "feature": "editor-outline-pane",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "a564abc-16",
+      "source": "a564abc",
+      "quote": "The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar.",
+      "says": {
+        "feature": "editor-result-pane",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "2ca94fd-10",
+      "source": "2ca94fd",
+      "quote": "Install `@lionlang/cli` in a project or globally:",
+      "says": {
+        "decision": "cli-install-scope",
+        "chose": "project-or-global",
+        "area": "cli",
+        "over": ["global-only"]
+      }
+    }
+  ]
+}

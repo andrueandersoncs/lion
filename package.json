@@ -14,7 +14,8 @@
     "measure": "bun run --cwd packages/metrics measure",
     "bench": "bun run --cwd packages/metrics bench",
     "mutate": "bun run --cwd packages/metrics mutate",
-    "compare": "bun run --cwd packages/metrics compare"
+    "compare": "bun run --cwd packages/metrics compare",
+    "history": "bun run --cwd packages/history history"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.7",

@@ -22,7 +22,11 @@ const HASHED = [
   "styles.css",
 ];
 
-/** Each page, and the files it references directly. */
+/**
+ * Each page, and the files it references directly. changelog.html is not
+ * here: the project record writes it (history/outputs.json), and it runs no
+ * evaluator, so a stylesheet cached for a few minutes cannot break it.
+ */
 export const PAGES: Readonly<Record<string, readonly string[]>> = {
   "index.html": [
     "styles.css",

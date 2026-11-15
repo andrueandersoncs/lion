@@ -1,0 +1,13 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.3.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.2.0"
+    }
+  ],
+  "commit": "235b0e0"
+}

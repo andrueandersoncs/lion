@@ -1,0 +1,19 @@
+{
+  "id": "research-counts-publishers",
+  "title": "The research skill counts the publishers who give an answer first-hand, not the sources that state it",
+  "context": "The research skill's core program says how well each answer is backed. Its first version followed each claim to the source it was credited to and counted distinct sources. A trial run on the Microsoft 365 outage of 12 November 2026, with 19 sources and 175 claims, called 15 answers corroborated, and 8 of them were not. Two channels of one company counted as two origins in three of them, two articles from one newspaper in one, and in four an origin was a source that was only credited, either unread or saying something else.",
+  "decision": "Only a publisher who gives an answer first-hand, in a claim credited to nobody else, counts. Every source records its `publisher`, written the same way for each channel that publisher speaks through, so a company's press release, status page, and filing are one voice, and a source that relays another adds nothing. `backing` lists the publishers behind each answer, `corroborated` the answers two or more publishers give first-hand, `single_origin` those that rest on one publisher's word, and `secondhand` those every source credits to someone else.",
+  "consequences": "On the trial's evidence the new core calls 7 answers corroborated, the 7 the trial's agent reached with stricter rules of its own, and reports 4 misquotes and 26 answers known only second-hand. The rule is strict on purpose: a statement repeated by ten outlets is still one statement. A person quoted by an outlet is a source of their own, credited by the outlet, so a spokesperson quoted in three papers does not read as three voices. Properties check the core against a plain model of provenance for any sources, publishers, claims, and attributions.",
+  "alternatives": [
+    {
+      "option": "Count the distinct sources an answer can be followed back to, as the skill's first version did",
+      "rejected": "On the trial's model it called 15 answers corroborated, and 8 of them had no two publishers behind them first-hand."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "284f00f",
+      "quote": "The first version's core counted distinct sources and called 15 answers corroborated on the first trial's model; 8 had no two publishers behind them first-hand."
+    }
+  ]
+}

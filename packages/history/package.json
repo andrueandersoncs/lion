@@ -1,0 +1,22 @@
+{
+  "name": "@lionlang/history",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Lion's project record: its decisions, changes, and releases as a Lion model over the git history, and the CHANGELOG and DECISIONS pages the model writes.",
+  "scripts": {
+    "history": "bun run history.ts",
+    "test": "vitest run && bun run history.ts check && bun run history.ts research",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lionlang/core": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@effect/vitest": "4.1.2",
+    "@types/node": "latest",
+    "typescript": "catalog:",
+    "vitest": "^5.0.1"
+  }
+}

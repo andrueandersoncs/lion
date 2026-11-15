@@ -1,0 +1,45 @@
+[
+  {
+    "kind": "Documentation",
+    "text": "A checked model of Lion's development, at [lionlang.dev/research.html](https://lionlang.dev/research.html). Every statement each commit made, quoted from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each probed case are one Lion model, built with the lion-research skill. Rules over it find where the project disagrees with itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, removals and breaking changes in commits that record no decision, figures that do not chain, and docs that do not say what Lion does. The page answers what the project has said about any rule, decision, behavior, feature, or figure, and shows each statement where it stands in its commit.",
+    "decisions": ["research-model-of-development"]
+  },
+  {
+    "kind": "Documentation",
+    "text": "`bun run history research` builds the model and the page and fails on a finding that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history query` asks the model anything, such as `[\"query\", [\"reversed\", \"?topic\", \"?before\", \"?after\"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `\"claims\"` quoted from its own words, so the model checks what it settles against every rule and behavior.",
+    "decisions": ["research-model-of-development"]
+  },
+  {
+    "kind": "Fixed",
+    "text": "The research skill's page reads a `published` date written to the minute or second, such as `20261114144313`, as its day, and its SKILL.md says to give the time when one publisher speaks several times a day, so its latest word is the one it said last."
+  },
+  {
+    "kind": "Documentation",
+    "text": "The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `\"\"`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `[\"exists\", [\"?y\"], [\"=\", \"?y\", 1]]` is `true` as a value, as in `[\"value/identity\", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does."
+  },
+  {
+    "kind": "Documentation",
+    "text": "In the research model, what a rule predicts for a case is what its latest statement naming that case predicts, so a rule reworded to allow a case, as the editor's connector rule was, stops predicting the old behavior.",
+    "decisions": ["research-model-of-development"]
+  },
+  {
+    "kind": "Changed",
+    "text": "The research skill's page shows how far it has got. While Lion opens the model, a line under the title says so, then \"Working out the answers: 3 of 15\" with a bar, and every view shows its questions at once, each with \"Working this out from the model…\" until it is worked out, the view the reader has open first. It used to stay empty until every view was done."
+  },
+  {
+    "kind": "Added",
+    "text": "A lookup on a research page can lead with an answer in words: `\"answer\"` is a `lambda` like its `query`, the page shows the sentence it gives for what the reader chose, and folds the rows under \"Show the evidence\". A lookup with more than twelve options is a box that finds them as the reader types, not a long list. `page-check.json` asks the answer with the example."
+  },
+  {
+    "kind": "Changed",
+    "text": "On a research page, \"Query the model\" is a link at the end of the last view instead of a tab, so the tabs hold only what the reader came for."
+  },
+  {
+    "kind": "Fixed",
+    "text": "A research page derives every relation of its model once and answers each question from that, and sends Lion one question at a time, so a query's time limit counts its own run and not its wait behind others. On Lion's own research model the page's questions took 40 seconds, two of them stopped at the limit, and now they take a fraction of a second. `build-explorer.mjs` indexes each source's text once, not once per quote: building that page took 73 seconds and takes one."
+  },
+  {
+    "kind": "Documentation",
+    "text": "The research page at lionlang.dev/research.html is laid out for what its reader came to do: To decide, with each kind of inconsistency and what would settle it; Check a behavior, Check a rule, and Check a decision, each a box to type a name into and an answer in words; Look back; and Sources. Each screen stays within a reader's attention as the cognitive-load skill measures it: about 110 words, 12 things to click, and 7 text styles."
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "ships": [{ "name": "@lionlang/core", "version": "0.1.0" }],
+  "summary": "The first release of `@lionlang/core` on npm. There was no changelog yet: this section was written from the git history when the project record began.",
+  "commit": "4be765d"
+}

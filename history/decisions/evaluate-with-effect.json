@@ -1,0 +1,18 @@
+{
+  "id": "evaluate-with-effect",
+  "title": "The evaluator is written with Effect, and evaluating a program gives an Effect",
+  "context": "The first evaluator, in December 2025, was a plain recursive TypeScript function. It took the environment as a plain object, library functions were plain functions, and it threw `Error(\"Invalid expression\")` when `eval` met a value that was not an expression.",
+  "decision": "In December 2025 the evaluator was rewritten with Effect. Evaluating an expression returns an `Effect`, and a failure is a value in its error channel instead of a thrown exception. The environment is a service the evaluation reads from its context, holding a `Ref` of the bindings. `Match` dispatches on the kind of expression, and `Schema` says what a Lion expression and a Lion value are. Library functions return Effects too. `run(program, environment)` decodes the program, evaluates it, and provides the environment.",
+  "consequences": "A host runs a Lion program as it runs any Effect, for example `Effect.runPromise(run(program, stdlib))`, so `@lionlang/core` depends on `effect` and its users meet Effect in its API. Errors are tagged values, such as `InvalidFunctionCallError`, that a host catches by tag. A host function may return a plain value or an Effect, and a call wraps a plain value. In March 2026 the evaluator's `Effect.gen` blocks were rewritten as pipelines of `pipe`, `Match`, and `Effect.flatMap`; later code uses both styles.",
+  "commits": [
+    "57ac08c",
+    { "commit": "f0c3573", "quote": "full effect conversion using matchers" },
+    { "commit": "fc4959c", "quote": "effectify" },
+    { "commit": "d4226c6", "quote": "remove effect.gen()s" },
+    {
+      "commit": "b2ea83c",
+      "quote": "remove effect.gen() from primitive evaluation"
+    },
+    "98c3cbc"
+  ]
+}

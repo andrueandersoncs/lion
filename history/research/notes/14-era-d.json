@@ -1,0 +1,5686 @@
+{
+  "claims": [
+    {
+      "id": "1b380d9-1",
+      "source": "1b380d9",
+      "quote": "effect, @effect/platform-node, @effect/platform-node-shared, @effect/vitest -> 4.1.2",
+      "says": {
+        "decision": "effect-version",
+        "chose": "effect-4",
+        "area": "build",
+        "over": ["effect-4-0-0-rc-115"]
+      }
+    },
+    {
+      "id": "1b380d9-2",
+      "source": "1b380d9",
+      "quote": "cli: import from stable effect/cli (was effect/unstable/cli)",
+      "says": {
+        "decision": "cli-effect-cli-module",
+        "chose": "stable-effect-cli",
+        "area": "cli",
+        "over": ["unstable-effect-cli"]
+      }
+    },
+    {
+      "id": "1b380d9-3",
+      "source": "1b380d9",
+      "quote": "core: define property test computes the expected value in an independent environment so generated values that reference the defined name no longer flake",
+      "says": {
+        "behavior": "define-property-test-flake",
+        "is": "fixed",
+        "area": "tests",
+        "was": "flaky"
+      }
+    },
+    {
+      "id": "1b380d9-4",
+      "source": "1b380d9",
+      "quote": "evaluates it before binding, so compute the expectation in a separate",
+      "says": {
+        "behavior": "define-value-evaluation-order",
+        "is": "before-binding",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b2855e0-1",
+      "source": "b2855e0",
+      "quote": "canvas background of Lion tokens that swirl around the cursor and ripple on clicks and on each hero evaluation; respects prefers-reduced-motion",
+      "says": {
+        "feature": "site-expression-graph-background",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b2855e0-2",
+      "source": "b2855e0",
+      "quote": "canvas background of Lion tokens that swirl around the cursor and ripple on clicks and on each hero evaluation; respects prefers-reduced-motion",
+      "says": {
+        "behavior": "site-background-reduced-motion",
+        "is": "respected",
+        "area": "site"
+      }
+    },
+    {
+      "id": "b2855e0-3",
+      "source": "b2855e0",
+      "quote": "self-typing hero cycling through Lion programs with their real results",
+      "says": {
+        "feature": "site-self-typing-hero",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b2855e0-4",
+      "source": "b2855e0",
+      "quote": "card spotlight, magnetic buttons, tilt panels, stdlib marquee",
+      "says": {
+        "feature": "site-magnetic-buttons",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b2855e0-5",
+      "source": "b2855e0",
+      "quote": "new Graph Editor (Fold Map screenshot) and Packages sections; quick start covers @lionlang/cli",
+      "says": {
+        "feature": "site-graph-editor-section",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "b2855e0-6",
+      "source": "b2855e0",
+      "quote": "new Graph Editor (Fold Map screenshot) and Packages sections; quick start covers @lionlang/cli",
+      "says": {
+        "feature": "site-packages-section",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "b2855e0-7",
+      "source": "b2855e0",
+      "quote": "Every example on the page now shows the result the standard library returns.",
+      "says": {
+        "behavior": "site-example-results",
+        "is": "standard-library-results",
+        "area": "site"
+      }
+    },
+    {
+      "id": "ab082c3-1",
+      "source": "ab082c3",
+      "quote": "example cards are editors (textarea over highlighted code) that re-run as you type, on Cmd/Ctrl+Enter, or via Run; Reset restores the example",
+      "says": {
+        "feature": "site-live-example-editors",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "ab082c3-2",
+      "source": "ab082c3",
+      "quote": "programs run on @lionlang/core in a Web Worker built by the new private @lionlang/site-runtime package into docs/lion-worker.js (37 KB gzip)",
+      "says": {
+        "feature": "@lionlang/site-runtime",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "ab082c3-3",
+      "source": "ab082c3",
+      "quote": "programs run on @lionlang/core in a Web Worker built by the new private @lionlang/site-runtime package into docs/lion-worker.js (37 KB gzip)",
+      "says": {
+        "measured": "site-worker-gzip-kb",
+        "after": 37,
+        "area": "site"
+      }
+    },
+    {
+      "id": "ab082c3-4",
+      "source": "ab082c3",
+      "quote": "results, typed errors, and console/log output are shown per card",
+      "says": {
+        "behavior": "site-example-output",
+        "is": "result-errors-and-logs",
+        "area": "site"
+      }
+    },
+    {
+      "id": "ab082c3-5",
+      "source": "ab082c3",
+      "quote": "runaway programs are terminated after 1.5 s and other in-flight cards are re-sent to a fresh worker",
+      "says": {
+        "behavior": "site-example-runaway-program",
+        "is": "terminated",
+        "area": "site"
+      }
+    },
+    {
+      "id": "ab082c3-6",
+      "source": "ab082c3",
+      "quote": "runaway programs are terminated after 1.5 s and other in-flight cards are re-sent to a fresh worker",
+      "says": {
+        "measured": "site-example-timeout-seconds",
+        "after": 1.5,
+        "area": "site"
+      }
+    },
+    {
+      "id": "ab082c3-7",
+      "source": "ab082c3",
+      "quote": "remove the magnetic button effect so buttons stay put under the cursor",
+      "says": {
+        "feature": "site-magnetic-buttons",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "ab082c3-8",
+      "source": "ab082c3",
+      "quote": "remove the magnetic button effect so buttons stay put under the cursor",
+      "says": {
+        "decision": "site-button-effect",
+        "chose": "still-buttons",
+        "area": "site",
+        "over": ["magnetic-buttons"],
+        "because": "buttons stay put under the cursor"
+      }
+    },
+    {
+      "id": "ab082c3-9",
+      "source": "ab082c3",
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every example on lionlang.dev runs on the real @lionlang/core",
+        "area": "site",
+        "predicts": [
+          {
+            "behavior": "site-example-result-source",
+            "is": "evaluator"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ab082c3-10",
+      "source": "ab082c3",
+      "quote": "After changing the core evaluator, rebuild and commit it:",
+      "says": {
+        "rule": "rebuild-site-worker-after-core-change",
+        "holds": true,
+        "statement": "After changing the core evaluator, rebuild and commit the site's worker bundle",
+        "area": "process"
+      }
+    },
+    {
+      "id": "ab082c3-11",
+      "source": "ab082c3",
+      "quote": "is served by GitHub Pages straight from `docs/`, with no build step",
+      "says": {
+        "behavior": "site-build-step",
+        "is": "none",
+        "area": "site"
+      }
+    },
+    {
+      "id": "32e81b0-1",
+      "source": "32e81b0",
+      "quote": "core and typesafe-ai tsconfigs had no include, so tsc checked their own dist/ build output (38 files in core) and raced with tsdown rebuilding it",
+      "says": {
+        "behavior": "typecheck-includes-dist-output",
+        "is": "false",
+        "area": "build",
+        "was": "true"
+      }
+    },
+    {
+      "id": "32e81b0-2",
+      "source": "32e81b0",
+      "quote": "core and typesafe-ai tsconfigs had no include, so tsc checked their own dist/ build output (38 files in core) and raced with tsdown rebuilding it",
+      "says": {
+        "measured": "core-dist-files-typechecked-before-fix",
+        "after": 38,
+        "area": "build"
+      }
+    },
+    {
+      "id": "32e81b0-3",
+      "source": "32e81b0",
+      "quote": "typecheck did not depend on ^build, so on a clean checkout (CI) agent/cli/repl/... failed with TS2307",
+      "says": {
+        "behavior": "typecheck-depends-on-build",
+        "is": "true",
+        "area": "build",
+        "was": "false"
+      }
+    },
+    {
+      "id": "32e81b0-4",
+      "source": "32e81b0",
+      "quote": "typecheck sources only and after dependency builds",
+      "says": {
+        "decision": "typecheck-scope",
+        "chose": "sources-only",
+        "area": "build",
+        "over": ["sources-and-dist"]
+      }
+    },
+    {
+      "id": "04632de-1",
+      "source": "04632de",
+      "quote": "unbound \"?name\" strings evaluate to logic variables; bound names still win",
+      "says": {
+        "behavior": "unbound-question-mark-string",
+        "is": "logic-variable",
+        "area": "names"
+      }
+    },
+    {
+      "id": "04632de-2",
+      "source": "04632de",
+      "quote": "unbound \"?name\" strings evaluate to logic variables; bound names still win",
+      "says": {
+        "behavior": "bound-question-mark-string",
+        "is": "bound-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "04632de-3",
+      "source": "04632de",
+      "quote": "unbound \"?name\" strings evaluate to logic variables; bound names still win",
+      "says": {
+        "decision": "question-mark-name-precedence",
+        "chose": "binding-wins",
+        "area": "names",
+        "over": ["logic-variable"]
+      }
+    },
+    {
+      "id": "04632de-4",
+      "source": "04632de",
+      "quote": "relations are callable values: [\"relation\", \"edge\", [\"from\", \"to\"]] binds edge, and calling it builds a goal instead of searching",
+      "says": {
+        "feature": "relation",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-5",
+      "source": "04632de",
+      "quote": "relations are callable values: [\"relation\", \"edge\", [\"from\", \"to\"]] binds edge, and calling it builds a goal instead of searching",
+      "says": {
+        "behavior": "relation-call",
+        "is": "goal",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-6",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "fact",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-7",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "retract",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-8",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "rule",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-9",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "query",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-10",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "why",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-11",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "not",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-12",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "and",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-13",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "or",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-14",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "feature": "=",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-15",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "behavior": "and-on-booleans",
+        "is": "boolean-operator",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-16",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "behavior": "or-on-booleans",
+        "is": "boolean-operator",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-17",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "behavior": "not-on-boolean",
+        "is": "negation",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-18",
+      "source": "04632de",
+      "quote": "new special forms fact, retract, rule, query, why, not, and, or, and =; with plain booleans, and/or/not/= act as ordinary boolean operators",
+      "says": {
+        "behavior": "unify-without-logic-variables",
+        "is": "equality",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-19",
+      "source": "04632de",
+      "quote": "pure stdlib functions (number, string, boolean, value, array) called on logic variables wait until the variables are bound, so they work as filters and computed values inside rules",
+      "says": {
+        "rule": "pure-functions-wait",
+        "holds": true,
+        "statement": "Pure standard library functions (number, string, boolean, value, array) called on logic variables wait until the variables are bound",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "pure-function-logic-variable-argument",
+            "is": "waits"
+          }
+        ]
+      }
+    },
+    {
+      "id": "04632de-20",
+      "source": "04632de",
+      "quote": "pure stdlib functions (number, string, boolean, value, array) called on logic variables wait until the variables are bound, so they work as filters and computed values inside rules",
+      "says": {
+        "behavior": "pure-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-21",
+      "source": "04632de",
+      "quote": "Ordinary lambdas run as usual, so a lambda can build and return goals.",
+      "says": {
+        "behavior": "lambda-called-with-logic-variable",
+        "is": "runs",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-22",
+      "source": "04632de",
+      "quote": "rules are checked for safety when added, negation is stratified, and recursive rules cannot compute new head values, so evaluation always finishes; answers use semi-naive evaluation and are cached until facts or rules change",
+      "says": {
+        "behavior": "rule-safety-check-time",
+        "is": "when-added",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-23",
+      "source": "04632de",
+      "quote": "rules are checked for safety when added, negation is stratified, and recursive rules cannot compute new head values, so evaluation always finishes; answers use semi-naive evaluation and are cached until facts or rules change",
+      "says": {
+        "behavior": "logic-evaluation-strategy",
+        "is": "semi-naive",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-24",
+      "source": "04632de",
+      "quote": "rules are checked for safety when added, negation is stratified, and recursive rules cannot compute new head values, so evaluation always finishes; answers use semi-naive evaluation and are cached until facts or rules change",
+      "says": {
+        "behavior": "logic-answer-cache",
+        "is": "until-facts-or-rules-change",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-25",
+      "source": "04632de",
+      "quote": "Negation cannot go through recursion, so every program has a single well-defined answer.",
+      "says": {
+        "rule": "stratified-negation",
+        "holds": true,
+        "statement": "Negation cannot go through recursion, so every program has a single well-defined answer",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "negation-through-recursion",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "04632de-26",
+      "source": "04632de",
+      "quote": "A recursive rule cannot compute new values in its head, so evaluation always finishes.",
+      "says": {
+        "rule": "recursion-cannot-compute-values",
+        "holds": true,
+        "statement": "A recursive rule cannot compute new values in its head, so evaluation always finishes",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-computed-head-value",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "04632de-27",
+      "source": "04632de",
+      "quote": "Every variable in a rule head, filter, or `not` must first be bound by a relation goal or `=`.",
+      "says": {
+        "rule": "safe-rules",
+        "holds": true,
+        "statement": "Every variable in a rule head, filter, or not must first be bound by a relation goal or =",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "rule-head-variable-unbound",
+            "is": "error"
+          },
+          {
+            "behavior": "filter-variable-unbound",
+            "is": "error"
+          },
+          {
+            "behavior": "not-goal-unbound-variable",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "04632de-28",
+      "source": "04632de",
+      "quote": "why explains any derived fact as a tree of rules, facts, checks, and absences",
+      "says": {
+        "behavior": "why-derived-fact",
+        "is": "explanation-tree",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-29",
+      "source": "04632de",
+      "quote": "Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold.",
+      "says": {
+        "behavior": "why-goal-not-holding",
+        "is": "null",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-30",
+      "source": "04632de",
+      "quote": "each run gets its own database through LionDatabaseService; pass { database } as run's third argument to share one across runs",
+      "says": {
+        "behavior": "run-logic-database",
+        "is": "fresh-per-run",
+        "area": "host"
+      }
+    },
+    {
+      "id": "04632de-31",
+      "source": "04632de",
+      "quote": "each run gets its own database through LionDatabaseService; pass { database } as run's third argument to share one across runs",
+      "says": {
+        "feature": "run-database-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-32",
+      "source": "04632de",
+      "quote": "A goal with no variables returns `[{}]` when it holds and `[]` when it does not.",
+      "says": {
+        "behavior": "query-ground-goal-holds",
+        "is": "list-of-empty-record",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-33",
+      "source": "04632de",
+      "quote": "A goal with no variables returns `[{}]` when it holds and `[]` when it does not.",
+      "says": {
+        "behavior": "query-ground-goal-fails",
+        "is": "empty-list",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-34",
+      "source": "04632de",
+      "quote": "Returns one record per distinct answer, keyed by variable name without the `?`.",
+      "says": {
+        "behavior": "query-answer-shape",
+        "is": "record-per-distinct-answer",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-35",
+      "source": "04632de",
+      "quote": "is anonymous: each occurrence is a separate variable, and inside `not` it matches anything.",
+      "says": {
+        "behavior": "anonymous-variable-occurrences",
+        "is": "separate-variables",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-36",
+      "source": "04632de",
+      "quote": "is anonymous: each occurrence is a separate variable, and inside `not` it matches anything.",
+      "says": {
+        "behavior": "anonymous-variable-under-not",
+        "is": "matches-anything",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-37",
+      "source": "04632de",
+      "quote": "Raised by relations, rules, facts, and queries.",
+      "says": {
+        "feature": "LogicError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-38",
+      "source": "04632de",
+      "quote": "the Fold Map editor recognizes the logic forms and gives them one color",
+      "says": {
+        "behavior": "fold-map-logic-forms",
+        "is": "one-color",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "04632de-39",
+      "source": "04632de",
+      "quote": "docs: Logic section in the root and core READMEs, logic example in packages/examples",
+      "says": {
+        "feature": "examples-logic-program",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "04632de-40",
+      "source": "04632de",
+      "quote": "Lion includes a Datalog-style logic layer. Relations, goals, and logic variables are ordinary values, so rules and queries use the same JSON syntax as the rest of the language and query results are plain Lion data.",
+      "says": {
+        "rule": "datalog-logic-layer",
+        "holds": true,
+        "statement": "Lion includes a Datalog-style logic layer whose relations, goals, and logic variables are ordinary values, written in the same JSON as the rest of the language",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-call",
+            "is": "goal"
+          },
+          {
+            "behavior": "query-result-type",
+            "is": "plain-data"
+          }
+        ]
+      }
+    },
+    {
+      "id": "04632de-41",
+      "source": "04632de",
+      "quote": "takes ${relation.columns.length} arguments (${relation.columns.join(\", \")}) but got ${args.length}.",
+      "says": {
+        "behavior": "relation-call-wrong-arity",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-42",
+      "source": "04632de",
+      "quote": "expects relation calls, but found",
+      "says": {
+        "behavior": "fact-non-relation-call",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-43",
+      "source": "04632de",
+      "quote": "Removes facts. Derived answers update on the next query.",
+      "says": {
+        "behavior": "retract-derived-answers",
+        "is": "update-on-next-query",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "04632de-44",
+      "source": "04632de",
+      "quote": "Adds ground facts. Returns the facts added.",
+      "says": {
+        "behavior": "fact-form-result",
+        "is": "facts-added",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "6d1d662-1",
+      "source": "6d1d662",
+      "quote": "new Logic programming section with four live cards: recursive rules, negation, filters and computed values, and why explanations",
+      "says": {
+        "feature": "site-logic-programming-section",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "6d1d662-2",
+      "source": "6d1d662",
+      "quote": "highlight logic forms like other special forms and ?variables in their own color",
+      "says": {
+        "behavior": "site-highlight-logic-variables",
+        "is": "own-color",
+        "area": "site"
+      }
+    },
+    {
+      "id": "6d1d662-3",
+      "source": "6d1d662",
+      "quote": "results keep short arrays and records on one line so why trees fit in a card, and functions nested in results print as <function> (the escaped marker never matched before)",
+      "says": {
+        "behavior": "site-short-results",
+        "is": "one-line",
+        "area": "site"
+      }
+    },
+    {
+      "id": "6d1d662-4",
+      "source": "6d1d662",
+      "quote": "results keep short arrays and records on one line so why trees fit in a card, and functions nested in results print as <function> (the escaped marker never matched before)",
+      "says": {
+        "behavior": "site-nested-function-result",
+        "is": "function-marker",
+        "area": "site",
+        "was": "escaped-marker"
+      }
+    },
+    {
+      "id": "235b0e0-1",
+      "source": "235b0e0",
+      "quote": "cli 0.2.0 bundles core 0.3.0 and the updated graph editor",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "235b0e0-2",
+      "source": "235b0e0",
+      "quote": "site hero badge and package cards show the new versions",
+      "says": {
+        "rule": "releases-update-site-versions",
+        "holds": true,
+        "statement": "Each release updates the site's hero badge and package cards to the new versions",
+        "area": "process"
+      }
+    },
+    {
+      "id": "235b0e0-3",
+      "source": "235b0e0",
+      "quote": "`@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs",
+      "says": {
+        "behavior": "cli-logic-programs",
+        "is": "runs",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "65ae02d-1",
+      "source": "65ae02d",
+      "quote": "A visitor who had the 0.2.0 worker cached got the new page and ran the logic examples on the old evaluator, which failed with InvalidFunctionCallError.",
+      "says": {
+        "behavior": "site-cached-worker-with-new-page",
+        "is": "never-paired",
+        "area": "site",
+        "was": "invalid-function-call-error"
+      }
+    },
+    {
+      "id": "65ae02d-2",
+      "source": "65ae02d",
+      "quote": "version asset URLs so cached workers never pair with new pages",
+      "says": {
+        "decision": "site-asset-caching",
+        "chose": "hash-versioned-urls",
+        "area": "site",
+        "over": ["plain-urls"],
+        "because": "cached workers never pair with new pages"
+      }
+    },
+    {
+      "id": "65ae02d-3",
+      "source": "65ae02d",
+      "quote": "docs/index.html loads styles.css, constellation.js, script.js, and playground.js with ?v=<hash of the site's assets>",
+      "says": {
+        "behavior": "site-asset-urls",
+        "is": "hash-versioned",
+        "area": "site"
+      }
+    },
+    {
+      "id": "65ae02d-4",
+      "source": "65ae02d",
+      "quote": "packages/site-runtime stamp updates the hash; the site-runtime build runs it, and CI fails when docs/index.html is out of date",
+      "says": {
+        "feature": "site-runtime-stamp",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "65ae02d-5",
+      "source": "65ae02d",
+      "quote": "packages/site-runtime stamp updates the hash; the site-runtime build runs it, and CI fails when docs/index.html is out of date",
+      "says": {
+        "rule": "ci-checks-site-asset-versions",
+        "holds": true,
+        "statement": "CI fails when the site's asset version hash is out of date",
+        "area": "process"
+      }
+    },
+    {
+      "id": "beddbed-1",
+      "source": "beddbed",
+      "quote": "an argument such as [\"aggregate/sum\", \"?amount\"] in a rule head combines the body's matches, grouped by the head's other columns",
+      "says": {
+        "behavior": "aggregate-in-rule-head",
+        "is": "groups-by-other-columns",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-2",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-3",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/count",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-4",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/countUnique",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-5",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/sum",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-6",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/mean",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-7",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/min",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-8",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/max",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-9",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/collect",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-10",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "feature": "aggregate/unique",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "beddbed-11",
+      "source": "beddbed",
+      "quote": "new aggregate module: count, countUnique, sum, mean, min, max, collect, and unique; called on a plain list, each combines the list right away",
+      "says": {
+        "behavior": "aggregate-on-plain-list",
+        "is": "combines-list",
+        "area": "library"
+      }
+    },
+    {
+      "id": "beddbed-12",
+      "source": "beddbed",
+      "quote": "each match of a rule body counts once, so a match that several alternatives of one or find counts once, while separate rules add up",
+      "says": {
+        "behavior": "aggregate-match-found-by-several-or-alternatives",
+        "is": "counts-once",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-13",
+      "source": "beddbed",
+      "quote": "each match of a rule body counts once, so a match that several alternatives of one or find counts once, while separate rules add up",
+      "says": {
+        "behavior": "aggregate-separate-rules-same-relation",
+        "is": "add-up",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-14",
+      "source": "beddbed",
+      "quote": "aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts",
+      "says": {
+        "rule": "stratified-aggregation",
+        "holds": true,
+        "statement": "Aggregation is stratified like negation: it cannot go through recursion",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-aggregate-sum",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-aggregate-min",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "beddbed-15",
+      "source": "beddbed",
+      "quote": "aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts",
+      "says": {
+        "decision": "aggregation-through-recursion",
+        "chose": "never",
+        "area": "logic",
+        "because": "aggregation is stratified like negation"
+      }
+    },
+    {
+      "id": "beddbed-16",
+      "source": "beddbed",
+      "quote": "aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts",
+      "says": {
+        "behavior": "aggregated-relation-rules-aggregate-differently",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-17",
+      "source": "beddbed",
+      "quote": "aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts",
+      "says": {
+        "behavior": "aggregated-relation-facts",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-18",
+      "source": "beddbed",
+      "quote": "why lists the matches an aggregated fact combines; for min and max it explains the match that produced the value",
+      "says": {
+        "behavior": "why-aggregated-fact",
+        "is": "lists-matches",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-19",
+      "source": "beddbed",
+      "quote": "why lists the matches an aggregated fact combines; for min and max it explains the match that produced the value",
+      "says": {
+        "behavior": "why-aggregate-min-max-fact",
+        "is": "producing-match",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-20",
+      "source": "beddbed",
+      "quote": "a total order on JSON values (compareValues) keeps collect, unique, min, and max independent of how answers were found",
+      "says": {
+        "rule": "order-independent-results",
+        "holds": true,
+        "statement": "Results never depend on how answers were found or on the order facts were added",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "aggregate-collect-order",
+            "is": "sorted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "beddbed-21",
+      "source": "beddbed",
+      "quote": "A group exists only when something matches, so a count is never `0`.",
+      "says": {
+        "behavior": "aggregate-count-empty-group",
+        "is": "no-group",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-22",
+      "source": "beddbed",
+      "quote": "(`mean` of nothing is `null`)",
+      "says": {
+        "behavior": "aggregate-mean-empty",
+        "is": "null",
+        "area": "library"
+      }
+    },
+    {
+      "id": "beddbed-23",
+      "source": "beddbed",
+      "quote": "expects all numbers or all strings, but found",
+      "says": {
+        "behavior": "aggregate-min-mixed-types",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "beddbed-24",
+      "source": "beddbed",
+      "quote": "Logic variables must be direct arguments, not nested inside arrays or records",
+      "says": {
+        "behavior": "logic-variable-nested-in-record",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-25",
+      "source": "beddbed",
+      "quote": "Logic variables must be direct arguments, not nested inside arrays or records",
+      "says": {
+        "behavior": "logic-variable-nested-in-array",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "beddbed-26",
+      "source": "beddbed",
+      "quote": "site: live Aggregates card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-aggregates",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "000fa16-1",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "feature": "aggregate/shortest",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "000fa16-2",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "feature": "aggregate/union",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "000fa16-3",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "rule": "lattice-recursion",
+        "holds": true,
+        "statement": "aggregate/min, aggregate/max, aggregate/shortest, and aggregate/union are lattice aggregates whose value only moves one way, so a recursive rule can aggregate with them and compute the value",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-aggregate-min",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-lattice-aggregate-computed-value",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-aggregate-sum",
+            "is": "error"
+          },
+          {
+            "behavior": "lattice-cycle-non-aggregating-relation",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "000fa16-4",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "decision": "aggregation-through-recursion",
+        "chose": "lattice-aggregates-only",
+        "area": "logic",
+        "over": ["never"],
+        "because": "a group's value only moves one way"
+      }
+    },
+    {
+      "id": "000fa16-5",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "behavior": "recursive-rule-aggregate-min",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-6",
+      "source": "000fa16",
+      "quote": "aggregate/min, aggregate/max, and the new aggregate/shortest and aggregate/union are lattice aggregates: a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible",
+      "says": {
+        "behavior": "recursive-rule-lattice-aggregate-computed-value",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-7",
+      "source": "000fa16",
+      "quote": "Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates.",
+      "says": {
+        "rule": "stratified-aggregation",
+        "holds": false,
+        "statement": "Aggregation cannot go through recursion",
+        "area": "logic",
+        "replaced_by": "lattice-recursion"
+      }
+    },
+    {
+      "id": "000fa16-8",
+      "source": "000fa16",
+      "quote": "each group keeps its best value; rounds re-run the rules on rows that improved and stop once nothing improves",
+      "says": {
+        "behavior": "lattice-group-value",
+        "is": "keeps-best",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-9",
+      "source": "000fa16",
+      "quote": "every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it; other aggregates still cannot recurse, and computed group columns still cannot recurse",
+      "says": {
+        "behavior": "lattice-cycle-non-aggregating-relation",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-10",
+      "source": "000fa16",
+      "quote": "every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it; other aggregates still cannot recurse, and computed group columns still cannot recurse",
+      "says": {
+        "behavior": "recursive-rule-aggregate-sum",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-11",
+      "source": "000fa16",
+      "quote": "every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it; other aggregates still cannot recurse, and computed group columns still cannot recurse",
+      "says": {
+        "behavior": "recursive-rule-computed-group-column",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-12",
+      "source": "000fa16",
+      "quote": "a cycle still improving after 10,000 rounds (such as a negative-weight cycle under min) fails with an error instead of running forever",
+      "says": {
+        "behavior": "lattice-recursion-still-improving",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-13",
+      "source": "000fa16",
+      "quote": "a cycle still improving after 10,000 rounds (such as a negative-weight cycle under min) fails with an error instead of running forever",
+      "says": {
+        "measured": "lattice-max-rounds",
+        "after": 10000,
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-14",
+      "source": "000fa16",
+      "quote": "shortest breaks ties by the smaller value so results never depend on match order; why explains a minimum with the chain that produced it",
+      "says": {
+        "behavior": "aggregate-shortest-tie",
+        "is": "smaller-value",
+        "area": "library"
+      }
+    },
+    {
+      "id": "000fa16-15",
+      "source": "000fa16",
+      "quote": "shortest breaks ties by the smaller value so results never depend on match order; why explains a minimum with the chain that produced it",
+      "says": {
+        "rule": "order-independent-results",
+        "holds": true,
+        "statement": "Results never depend on how answers were found or on the order facts were added",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "aggregate-shortest-tie",
+            "is": "smaller-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "000fa16-16",
+      "source": "000fa16",
+      "quote": "shortest breaks ties by the smaller value so results never depend on match order; why explains a minimum with the chain that produced it",
+      "says": {
+        "behavior": "why-lattice-minimum",
+        "is": "producing-chain",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "000fa16-17",
+      "source": "000fa16",
+      "quote": "A recursive rule cannot compute new values in its head columns, so evaluation always finishes. Recursion through a lattice aggregate stops when no value improves, or fails with an error after 10,000 rounds.",
+      "says": {
+        "rule": "recursion-cannot-compute-values",
+        "holds": true,
+        "statement": "A recursive rule cannot compute new values in its head columns, so evaluation always finishes; recursion through a lattice aggregate stops when no value improves",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-computed-head-value",
+            "is": "error"
+          }
+        ],
+        "except": ["recursive-rule-lattice-aggregate-computed-value"]
+      }
+    },
+    {
+      "id": "000fa16-18",
+      "source": "000fa16",
+      "quote": "site: live Shortest distances card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-shortest-distances",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "f7183b0-1",
+      "source": "f7183b0",
+      "quote": "[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}] sorts, pages, and checks answers",
+      "says": {
+        "feature": "query-option-order",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "f7183b0-2",
+      "source": "f7183b0",
+      "quote": "[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}] sorts, pages, and checks answers",
+      "says": {
+        "feature": "query-option-offset",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "f7183b0-3",
+      "source": "f7183b0",
+      "quote": "[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}] sorts, pages, and checks answers",
+      "says": {
+        "feature": "query-option-limit",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "f7183b0-4",
+      "source": "f7183b0",
+      "quote": "[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}] sorts, pages, and checks answers",
+      "says": {
+        "feature": "query-option-assert",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "f7183b0-5",
+      "source": "f7183b0",
+      "quote": "order takes a variable name or a list of them; a leading - sorts descending and the ? is optional",
+      "says": {
+        "behavior": "query-order-leading-minus",
+        "is": "descending",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-6",
+      "source": "f7183b0",
+      "quote": "order takes a variable name or a list of them; a leading - sorts descending and the ? is optional",
+      "says": {
+        "behavior": "query-order-question-mark",
+        "is": "optional",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-7",
+      "source": "f7183b0",
+      "quote": "assert \"some\" fails a query with no answers and \"none\" fails one with any; the assertion sees every answer, before offset and limit",
+      "says": {
+        "behavior": "query-assert-some-no-answers",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-8",
+      "source": "f7183b0",
+      "quote": "assert \"some\" fails a query with no answers and \"none\" fails one with any; the assertion sees every answer, before offset and limit",
+      "says": {
+        "behavior": "query-assert-none-with-answers",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-9",
+      "source": "f7183b0",
+      "quote": "assert \"some\" fails a query with no answers and \"none\" fails one with any; the assertion sees every answer, before offset and limit",
+      "says": {
+        "behavior": "query-assert-scope",
+        "is": "before-offset-and-limit",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-10",
+      "source": "f7183b0",
+      "quote": "options are read as written, like a relation's column list; unknown options, unknown variables, and bad values are reported",
+      "says": {
+        "rule": "options-read-as-written",
+        "holds": true,
+        "statement": "Options are read as written, not evaluated, like a relation's column list",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "query-options-evaluated",
+            "is": "not-evaluated"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f7183b0-11",
+      "source": "f7183b0",
+      "quote": "options are read as written, like a relation's column list; unknown options, unknown variables, and bad values are reported",
+      "says": {
+        "behavior": "query-unknown-option",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-12",
+      "source": "f7183b0",
+      "quote": "options are read as written, like a relation's column list; unknown options, unknown variables, and bad values are reported",
+      "says": {
+        "behavior": "query-order-unknown-variable",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-13",
+      "source": "f7183b0",
+      "quote": "values sort in a fixed order across types (null, booleans, numbers, strings, arrays, records)",
+      "says": {
+        "rule": "total-value-order",
+        "holds": true,
+        "statement": "Values sort in a fixed order across types: null, booleans, numbers, strings, arrays, then records",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "sort-order-across-types",
+            "is": "null-booleans-numbers-strings-arrays-records"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f7183b0-14",
+      "source": "f7183b0",
+      "quote": "values sort in a fixed order across types (null, booleans, numbers, strings, arrays, records)",
+      "says": {
+        "behavior": "sort-order-across-types",
+        "is": "null-booleans-numbers-strings-arrays-records",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-15",
+      "source": "f7183b0",
+      "quote": "Without `\"order\"`, answers come in the order they are found.",
+      "says": {
+        "behavior": "query-answer-order-without-order-option",
+        "is": "found-order",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f7183b0-16",
+      "source": "f7183b0",
+      "quote": "site: live Order and limit card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-order-and-limit",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "af7f8fd-1",
+      "source": "af7f8fd",
+      "quote": "[\"in\", element, list] binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values in facts or lists computed from other variables",
+      "says": {
+        "feature": "in",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "af7f8fd-2",
+      "source": "af7f8fd",
+      "quote": "[\"in\", element, list] binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values in facts or lists computed from other variables",
+      "says": {
+        "behavior": "in-unbound-element",
+        "is": "binds-each-item",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-3",
+      "source": "af7f8fd",
+      "quote": "[\"in\", element, list] binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values in facts or lists computed from other variables",
+      "says": {
+        "behavior": "in-bound-element",
+        "is": "membership-test",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-4",
+      "source": "af7f8fd",
+      "quote": "the list must be bound first; duplicate items bind once; a value that is not a list is reported",
+      "says": {
+        "behavior": "in-unbound-list",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-5",
+      "source": "af7f8fd",
+      "quote": "the list must be bound first; duplicate items bind once; a value that is not a list is reported",
+      "says": {
+        "behavior": "in-duplicate-items",
+        "is": "binds-once",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-6",
+      "source": "af7f8fd",
+      "quote": "the list must be bound first; duplicate items bind once; a value that is not a list is reported",
+      "says": {
+        "behavior": "in-non-list",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-7",
+      "source": "af7f8fd",
+      "quote": "without logic variables, in is plain membership",
+      "says": {
+        "behavior": "in-without-logic-variables",
+        "is": "membership",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "af7f8fd-8",
+      "source": "af7f8fd",
+      "quote": "new array/range makes a list of whole numbers from start up to end",
+      "says": {
+        "feature": "array/range",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "af7f8fd-9",
+      "source": "af7f8fd",
+      "quote": "expect(yield* run([\"array/range\", 2, 5], stdlib)).toEqual([2, 3, 4]);",
+      "says": {
+        "behavior": "array-range-end",
+        "is": "exclusive",
+        "area": "library"
+      }
+    },
+    {
+      "id": "af7f8fd-10",
+      "source": "af7f8fd",
+      "quote": "expect(yield* run([\"array/range\", 5, 2], stdlib)).toEqual([]);",
+      "says": {
+        "behavior": "array-range-start-after-end",
+        "is": "empty-list",
+        "area": "library"
+      }
+    },
+    {
+      "id": "af7f8fd-11",
+      "source": "af7f8fd",
+      "quote": "at most 1000000 numbers",
+      "says": {
+        "behavior": "array-range-too-long",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "af7f8fd-12",
+      "source": "af7f8fd",
+      "quote": "at most 1000000 numbers",
+      "says": {
+        "measured": "array-range-max-numbers",
+        "after": 1000000,
+        "area": "library"
+      }
+    },
+    {
+      "id": "af7f8fd-13",
+      "source": "af7f8fd",
+      "quote": "Every variable in a rule head, filter, or `not` must first be bound by a relation goal, `=`, or `in`.",
+      "says": {
+        "rule": "safe-rules",
+        "holds": true,
+        "statement": "Every variable in a rule head, filter, or not must first be bound by a relation goal, =, or in",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "rule-head-variable-unbound",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "af7f8fd-14",
+      "source": "af7f8fd",
+      "quote": "the analyzer, the Fold Map editor, and the site highlighter recognize in",
+      "says": {
+        "behavior": "fold-map-in-form",
+        "is": "recognized",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "af7f8fd-15",
+      "source": "af7f8fd",
+      "quote": "site: live Lists with in card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-lists-with-in",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-1",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-2",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph/shortestPath",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-3",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph/pageRank",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-4",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph/components",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-5",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph/stronglyConnected",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-6",
+      "source": "0781dfb",
+      "quote": "new graph module: shortestPath (Dijkstra, with optional weights), pageRank, components, stronglyConnected, and topologicalOrder",
+      "says": {
+        "feature": "graph/topologicalOrder",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-7",
+      "source": "0781dfb",
+      "quote": "[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"] builds a goal over a computed relation; it runs once its input relation is complete, so its rows work in queries, rule bodies, not, and aggregates",
+      "says": {
+        "behavior": "graph-algorithm-call",
+        "is": "goal",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-8",
+      "source": "0781dfb",
+      "quote": "[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"] builds a goal over a computed relation; it runs once its input relation is complete, so its rows work in queries, rule bodies, not, and aggregates",
+      "says": {
+        "behavior": "graph-algorithm-run-time",
+        "is": "after-input-complete",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-9",
+      "source": "0781dfb",
+      "quote": "results never depend on fact order: components are named after their smallest node and ties go to the smaller value",
+      "says": {
+        "rule": "order-independent-results",
+        "holds": true,
+        "statement": "Results never depend on how answers were found or on the order facts were added",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "graph-components-naming",
+            "is": "smallest-node"
+          },
+          {
+            "behavior": "graph-algorithm-tie",
+            "is": "smaller-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "0781dfb-10",
+      "source": "0781dfb",
+      "quote": "results never depend on fact order: components are named after their smallest node and ties go to the smaller value",
+      "says": {
+        "behavior": "graph-components-naming",
+        "is": "smallest-node",
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-11",
+      "source": "0781dfb",
+      "quote": "results never depend on fact order: components are named after their smallest node and ties go to the smaller value",
+      "says": {
+        "behavior": "graph-algorithm-tie",
+        "is": "smaller-value",
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-12",
+      "source": "0781dfb",
+      "quote": "computed relations cannot have facts or rules and cannot sit in a recursive cycle; why shows their rows as computed",
+      "says": {
+        "behavior": "computed-relation-facts",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-13",
+      "source": "0781dfb",
+      "quote": "computed relations cannot have facts or rules and cannot sit in a recursive cycle; why shows their rows as computed",
+      "says": {
+        "behavior": "computed-relation-rules",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-14",
+      "source": "0781dfb",
+      "quote": "computed relations cannot have facts or rules and cannot sit in a recursive cycle; why shows their rows as computed",
+      "says": {
+        "behavior": "computed-relation-in-recursive-cycle",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-15",
+      "source": "0781dfb",
+      "quote": "computed relations cannot have facts or rules and cannot sit in a recursive cycle; why shows their rows as computed",
+      "says": {
+        "behavior": "why-computed-row",
+        "is": "marked-computed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-16",
+      "source": "0781dfb",
+      "quote": "defineAlgorithm (@lionlang/core/logic/algorithms) lets hosts add their own algorithms",
+      "says": {
+        "feature": "defineAlgorithm",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "0781dfb-17",
+      "source": "0781dfb",
+      "quote": "PageRank with damping 0.85, rounded to 6 decimal places. The ranks add up to 1.",
+      "says": {
+        "measured": "pagerank-damping",
+        "after": 0.85,
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-18",
+      "source": "0781dfb",
+      "quote": "PageRank with damping 0.85, rounded to 6 decimal places. The ranks add up to 1.",
+      "says": {
+        "measured": "pagerank-decimal-places",
+        "after": 6,
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-19",
+      "source": "0781dfb",
+      "quote": "Positions from 0 in a topological order, or an error that names a cycle.",
+      "says": {
+        "behavior": "graph-topologicalOrder-cycle",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-20",
+      "source": "0781dfb",
+      "quote": "A third edge column is the weight, at least 0; without one, every edge costs 1.",
+      "says": {
+        "behavior": "graph-shortestPath-unweighted-edge-cost",
+        "is": "one",
+        "area": "library"
+      }
+    },
+    {
+      "id": "0781dfb-21",
+      "source": "0781dfb",
+      "quote": "Inputs such as `start` must be values when the goal is built.",
+      "says": {
+        "behavior": "algorithm-input-variable",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "0781dfb-22",
+      "source": "0781dfb",
+      "quote": "site: live Graph algorithms card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-graph-algorithms",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "f4c7c4c-1",
+      "source": "f4c7c4c",
+      "quote": "a query that gives a rule-defined relation a known argument, such as [\"path\", \"a\", \"?to\"], rewrites the rules so evaluation derives only the facts the query can reach (adorned copies guarded by magic relations)",
+      "says": {
+        "rule": "goal-directed-magic-sets",
+        "holds": true,
+        "statement": "A query that gives a rule-defined relation a known argument runs a magic-sets rewrite, so evaluation derives only the facts the query can reach",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-2",
+      "source": "f4c7c4c",
+      "quote": "a query that gives a rule-defined relation a known argument, such as [\"path\", \"a\", \"?to\"], rewrites the rules so evaluation derives only the facts the query can reach (adorned copies guarded by magic relations)",
+      "says": {
+        "decision": "query-evaluation",
+        "chose": "goal-directed-magic-sets",
+        "area": "logic",
+        "over": ["full-bottom-up"],
+        "because": "evaluation derives only the facts the query can reach"
+      }
+    },
+    {
+      "id": "f4c7c4c-3",
+      "source": "f4c7c4c",
+      "quote": "known arguments are values or variables bound by earlier relation goals; values computed by functions never drive the rewrite, so it still finishes",
+      "says": {
+        "behavior": "goal-directed-query-computed-argument",
+        "is": "unknown",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-4",
+      "source": "f4c7c4c",
+      "quote": "aggregated, computed, and negated relations, and what they depend on, are computed in full first; answers match full evaluation",
+      "says": {
+        "behavior": "goal-directed-aggregated-relation",
+        "is": "computed-in-full",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-5",
+      "source": "f4c7c4c",
+      "quote": "aggregated, computed, and negated relations, and what they depend on, are computed in full first; answers match full evaluation",
+      "says": {
+        "rule": "goal-directed-magic-sets",
+        "holds": true,
+        "statement": "Goal-directed queries give the answers full evaluation gives",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "goal-directed-vs-full-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f4c7c4c-6",
+      "source": "f4c7c4c",
+      "quote": "aggregated, computed, and negated relations, and what they depend on, are computed in full first; answers match full evaluation",
+      "says": {
+        "behavior": "goal-directed-vs-full-answers",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-7",
+      "source": "f4c7c4c",
+      "quote": "rewritten models are cached per query until a fact or rule changes; new LogicDatabase({ goalDirected: false }) turns the rewrite off",
+      "says": {
+        "behavior": "goal-directed-rewrite-cache",
+        "is": "per-query-until-change",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-8",
+      "source": "f4c7c4c",
+      "quote": "rewritten models are cached per query until a fact or rule changes; new LogicDatabase({ goalDirected: false }) turns the rewrite off",
+      "says": {
+        "feature": "goal-directed-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "f4c7c4c-9",
+      "source": "f4c7c4c",
+      "quote": "a 3,000-step chain: about 9 s to about 100 ms",
+      "says": {
+        "measured": "chain-3000-query-ms",
+        "after": 100,
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-10",
+      "source": "f4c7c4c",
+      "quote": "why keeps premises in rule order",
+      "says": {
+        "behavior": "why-premise-order",
+        "is": "rule-order",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-11",
+      "source": "f4c7c4c",
+      "quote": "tests: a corpus of programs run both ways must agree",
+      "says": {
+        "rule": "goal-directed-full-equivalence-tested",
+        "holds": true,
+        "statement": "A corpus of programs run goal-directed and in full must agree",
+        "area": "tests"
+      }
+    },
+    {
+      "id": "f4c7c4c-12",
+      "source": "f4c7c4c",
+      "quote": "A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds.",
+      "says": {
+        "measured": "chain-3000-full-evaluation-paths-millions",
+        "after": 4.5,
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-13",
+      "source": "f4c7c4c",
+      "quote": "The answers are the same either way, but they can come in a different order.",
+      "says": {
+        "behavior": "goal-directed-answer-order",
+        "is": "may-differ",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f4c7c4c-14",
+      "source": "f4c7c4c",
+      "quote": "site: live Goal-directed queries card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-goal-directed-queries",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "05f2834-1",
+      "source": "05f2834",
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-unify",
+        "is": "error",
+        "area": "logic",
+        "was": "non-terminating"
+      }
+    },
+    {
+      "id": "05f2834-2",
+      "source": "05f2834",
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-in",
+        "is": "error",
+        "area": "logic",
+        "was": "non-terminating"
+      }
+    },
+    {
+      "id": "05f2834-3",
+      "source": "05f2834",
+      "quote": "head variables of a recursive rule must now come from facts: bound by a relation goal, or by = or in from such variables or plain values",
+      "says": {
+        "behavior": "recursive-rule-head-variable-source",
+        "is": "facts",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "05f2834-4",
+      "source": "05f2834",
+      "quote": "the error suggests a non-recursive rule or a lattice aggregate, which may compute its value while recursing",
+      "says": {
+        "behavior": "recursive-computed-value-error-hint",
+        "is": "non-recursive-rule-or-lattice-aggregate",
+        "area": "errors"
+      }
+    },
+    {
+      "id": "05f2834-5",
+      "source": "05f2834",
+      "quote": "A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `[\"=\", \"?m\", \"?to\"]` with `?to` from a relation, are fine.",
+      "says": {
+        "rule": "recursion-cannot-compute-values",
+        "holds": true,
+        "statement": "A recursive rule cannot compute new values for its head columns, in the head itself or through = or in, so evaluation always finishes",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-computed-value-through-unify",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-computed-value-through-in",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-unify-from-fact-value",
+            "is": "allowed"
+          }
+        ],
+        "except": ["recursive-rule-lattice-aggregate-computed-value"]
+      }
+    },
+    {
+      "id": "05f2834-6",
+      "source": "05f2834",
+      "quote": "A recursive rule cannot compute new values for its head columns, in the head itself or through `=` or `in`, so evaluation always finishes. Values that come from facts, such as `[\"=\", \"?m\", \"?to\"]` with `?to` from a relation, are fine.",
+      "says": {
+        "behavior": "recursive-rule-unify-from-fact-value",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-1",
+      "source": "2b64585",
+      "quote": "[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}] holds at most one row per key: a fact whose key is already present replaces the old row, and the last of several facts for one key wins",
+      "says": {
+        "feature": "relation-option-key",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "2b64585-2",
+      "source": "2b64585",
+      "quote": "[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}] holds at most one row per key: a fact whose key is already present replaces the old row, and the last of several facts for one key wins",
+      "says": {
+        "rule": "keyed-relations-upsert",
+        "holds": true,
+        "statement": "A keyed relation holds at most one row per key, and a fact whose key is already present replaces the old row",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "keyed-relation-fact-existing-key",
+            "is": "replaces"
+          },
+          {
+            "behavior": "keyed-relation-repeated-key-in-one-fact-form",
+            "is": "last-wins"
+          },
+          {
+            "behavior": "keyed-relation-rules-derive-conflicting-rows",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2b64585-3",
+      "source": "2b64585",
+      "quote": "[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}] holds at most one row per key: a fact whose key is already present replaces the old row, and the last of several facts for one key wins",
+      "says": {
+        "behavior": "keyed-relation-fact-existing-key",
+        "is": "replaces",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-4",
+      "source": "2b64585",
+      "quote": "[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}] holds at most one row per key: a fact whose key is already present replaces the old row, and the last of several facts for one key wins",
+      "says": {
+        "behavior": "keyed-relation-repeated-key-in-one-fact-form",
+        "is": "last-wins",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-5",
+      "source": "2b64585",
+      "quote": "A keyed relation holds at most one row per key, so a fact whose key is already present replaces the old row, like an upsert.",
+      "says": {
+        "decision": "keyed-relation-fact-semantics",
+        "chose": "upsert",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-6",
+      "source": "2b64585",
+      "quote": "keys can span several columns; a single key column can be written without the list",
+      "says": {
+        "behavior": "relation-key-several-columns",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-7",
+      "source": "2b64585",
+      "quote": "keys can span several columns; a single key column can be written without the list",
+      "says": {
+        "behavior": "relation-key-single-column-without-list",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-8",
+      "source": "2b64585",
+      "quote": "rules may derive rows of a keyed relation, but two different rows with one key fail with an error naming both, in goal-directed queries too",
+      "says": {
+        "behavior": "keyed-relation-rules-derive-conflicting-rows",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-9",
+      "source": "2b64585",
+      "quote": "redeclaring a relation must repeat its columns and key",
+      "says": {
+        "behavior": "relation-redeclared-differently",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-10",
+      "source": "2b64585",
+      "quote": "`retract` removes a row only when every column matches.",
+      "says": {
+        "behavior": "keyed-relation-retract-partial-match",
+        "is": "no-change",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-11",
+      "source": "2b64585",
+      "quote": "The only relation option is \"key\".",
+      "says": {
+        "behavior": "relation-unknown-option",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "2b64585-12",
+      "source": "2b64585",
+      "quote": "relation options are read as written",
+      "says": {
+        "rule": "options-read-as-written",
+        "holds": true,
+        "statement": "Options are read as written, not evaluated, like a relation's column list",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-options-evaluated",
+            "is": "not-evaluated"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2b64585-13",
+      "source": "2b64585",
+      "quote": "relation indexes now drop deleted rows in place instead of rebuilding",
+      "says": {
+        "behavior": "relation-index-deletion",
+        "is": "in-place",
+        "area": "logic",
+        "was": "rebuild"
+      }
+    },
+    {
+      "id": "2b64585-14",
+      "source": "2b64585",
+      "quote": "site: live Keys and upserts card; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-keys-and-upserts",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "56af8ed-1",
+      "source": "56af8ed",
+      "quote": "[\"snapshot\"] returns a Lion program of relation, fact, and rule forms that rebuilds the current database",
+      "says": {
+        "feature": "snapshot",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "56af8ed-2",
+      "source": "56af8ed",
+      "quote": "Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.",
+      "says": {
+        "rule": "snapshots-are-programs",
+        "holds": true,
+        "statement": "A logic database is saved as a Lion program of forms that rebuild it, and evaluating the program into an empty database gives the same answers",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "snapshot-reload-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "56af8ed-3",
+      "source": "56af8ed",
+      "quote": "Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run.",
+      "says": {
+        "decision": "database-save-format",
+        "chose": "lion-program",
+        "area": "logic",
+        "because": "a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run"
+      }
+    },
+    {
+      "id": "56af8ed-4",
+      "source": "56af8ed",
+      "quote": "strings that would load as something else (relation names, bound names, namespaced names, ?names) and lists and records are written inside quote",
+      "says": {
+        "behavior": "snapshot-string-that-loads-as-something-else",
+        "is": "quoted",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "56af8ed-5",
+      "source": "56af8ed",
+      "quote": "strings that would load as something else (relation names, bound names, namespaced names, ?names) and lists and records are written inside quote",
+      "says": {
+        "behavior": "snapshot-lists-and-records",
+        "is": "quoted",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "56af8ed-6",
+      "source": "56af8ed",
+      "quote": "rules are written from their evaluated goals, so aggregates, in, =, not, or, and algorithm goals round-trip; rules holding functions fail with an error",
+      "says": {
+        "behavior": "snapshot-rule-round-trip",
+        "is": "round-trips",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "56af8ed-7",
+      "source": "56af8ed",
+      "quote": "rules are written from their evaluated goals, so aggregates, in, =, not, or, and algorithm goals round-trip; rules holding functions fail with an error",
+      "says": {
+        "behavior": "snapshot-rule-holding-function",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "56af8ed-8",
+      "source": "56af8ed",
+      "quote": "saveDatabase and loadDatabase in @lionlang/core/logic/snapshot do the same from TypeScript",
+      "says": {
+        "feature": "saveDatabase",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "56af8ed-9",
+      "source": "56af8ed",
+      "quote": "saveDatabase and loadDatabase in @lionlang/core/logic/snapshot do the same from TypeScript",
+      "says": {
+        "feature": "loadDatabase",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "56af8ed-10",
+      "source": "56af8ed",
+      "quote": "a database passed to run binds its relations by name, so later runs query them without declaring them again; environment bindings win",
+      "says": {
+        "behavior": "run-database-relations-bound-by-name",
+        "is": "bound",
+        "area": "host"
+      }
+    },
+    {
+      "id": "56af8ed-11",
+      "source": "56af8ed",
+      "quote": "a database passed to run binds its relations by name, so later runs query them without declaring them again; environment bindings win",
+      "says": {
+        "behavior": "database-relation-name-vs-environment-binding",
+        "is": "environment-wins",
+        "area": "names"
+      }
+    },
+    {
+      "id": "56af8ed-12",
+      "source": "56af8ed",
+      "quote": "cli: lion program.json --database store.json loads the database from a snapshot file, runs the program, and saves it back, one form and one fact per line",
+      "says": {
+        "feature": "cli-database-flag",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "id": "56af8ed-13",
+      "source": "56af8ed",
+      "quote": "cli: lion program.json --database store.json loads the database from a snapshot file, runs the program, and saves it back, one form and one fact per line",
+      "says": {
+        "behavior": "cli-database-file-format",
+        "is": "one-form-and-fact-per-line",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "56af8ed-14",
+      "source": "56af8ed",
+      "quote": "A file that does not exist yet starts empty.",
+      "says": {
+        "behavior": "cli-database-missing-file",
+        "is": "starts-empty",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "56af8ed-15",
+      "source": "56af8ed",
+      "quote": "Rules are written as they were evaluated, so a name like `budget` in a rule appears as its value.",
+      "says": {
+        "behavior": "snapshot-rule-name",
+        "is": "written-as-value",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "56af8ed-16",
+      "source": "56af8ed",
+      "quote": "site: live Snapshots card, CLI card mentions --database; rebuilt docs/lion-worker.js",
+      "says": {
+        "feature": "site-card-snapshots",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "76d833f-1",
+      "source": "76d833f",
+      "quote": "A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with \"not JSON data\" instead of finding no answers.",
+      "says": {
+        "behavior": "goal-directed-non-json-argument",
+        "is": "no-answers",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "id": "76d833f-2",
+      "source": "76d833f",
+      "quote": "such arguments now count as unknown and only filter the rewritten relation, so both evaluations agree",
+      "says": {
+        "behavior": "goal-directed-non-json-argument-known",
+        "is": "unknown",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "76d833f-3",
+      "source": "76d833f",
+      "quote": "found by comparing goal-directed and full evaluation on 2,000 generated programs; the corpus test covers the case",
+      "says": {
+        "measured": "generated-programs-compared",
+        "after": 2000,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "f617c07-1",
+      "source": "f617c07",
+      "quote": "the Goal-directed queries card and README example used a right-recursive path rule; from a small start, the rewrite then asks about every later node and the live card timed out",
+      "says": {
+        "behavior": "site-goal-directed-example-right-recursive",
+        "is": "timed-out",
+        "area": "site"
+      }
+    },
+    {
+      "id": "f617c07-2",
+      "source": "f617c07",
+      "quote": "with recursion on the left the rewrite asks only about the start, so every start answers within about 200 ms in the browser",
+      "says": {
+        "decision": "goal-directed-example-recursion",
+        "chose": "left-recursion",
+        "area": "docs",
+        "over": ["right-recursion"],
+        "because": "with recursion on the left the rewrite asks only about the start"
+      }
+    },
+    {
+      "id": "f617c07-3",
+      "source": "f617c07",
+      "quote": "with recursion on the left the rewrite asks only about the start, so every start answers within about 200 ms in the browser",
+      "says": {
+        "measured": "goal-directed-example-browser-ms",
+        "after": 200,
+        "area": "site"
+      }
+    },
+    {
+      "id": "f617c07-4",
+      "source": "f617c07",
+      "quote": "How a recursive rule is written matters. With a known start, recursion on the left, as in `[\"path\", \"?x\", \"?y\"], [\"edge\", \"?y\", \"?z\"]`, asks only about that start. Recursion on the right, as in `[\"edge\", \"?x\", \"?y\"], [\"path\", \"?y\", \"?z\"]`, asks about every node the paths pass through, which can cost as much as full evaluation.",
+      "says": {
+        "behavior": "goal-directed-left-recursion-known-start",
+        "is": "asks-start-only",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "f617c07-5",
+      "source": "f617c07",
+      "quote": "How a recursive rule is written matters. With a known start, recursion on the left, as in `[\"path\", \"?x\", \"?y\"], [\"edge\", \"?y\", \"?z\"]`, asks only about that start. Recursion on the right, as in `[\"edge\", \"?x\", \"?y\"], [\"path\", \"?y\", \"?z\"]`, asks about every node the paths pass through, which can cost as much as full evaluation.",
+      "says": {
+        "behavior": "goal-directed-right-recursion-known-start",
+        "is": "asks-every-node",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "59f142e-1",
+      "source": "59f142e",
+      "quote": "Effect yields to the scheduler every 2,048 steps, and in a browser each yield waits on a clamped setTimeout, so long logic queries spent most of their time idle",
+      "says": {
+        "measured": "effect-scheduler-yield-steps",
+        "after": 2048,
+        "area": "site"
+      }
+    },
+    {
+      "id": "59f142e-2",
+      "source": "59f142e",
+      "quote": "a 3,000-answer query took about 1.8 s in Chromium and hit the 1.5 s limit",
+      "says": {
+        "measured": "site-3000-answer-query-seconds-before-fix",
+        "after": 1.8,
+        "area": "site"
+      }
+    },
+    {
+      "id": "59f142e-3",
+      "source": "59f142e",
+      "quote": "the worker now sets Scheduler.PreventSchedulerYield, since the page already terminates runaway programs; the same query takes about 150 ms",
+      "says": {
+        "behavior": "site-worker-scheduler-yield",
+        "is": "prevented",
+        "area": "site",
+        "was": "yields"
+      }
+    },
+    {
+      "id": "59f142e-4",
+      "source": "59f142e",
+      "quote": "the worker now sets Scheduler.PreventSchedulerYield, since the page already terminates runaway programs; the same query takes about 150 ms",
+      "says": {
+        "decision": "site-worker-scheduler",
+        "chose": "prevent-scheduler-yield",
+        "area": "site",
+        "over": ["yield-to-scheduler"],
+        "because": "the page already terminates runaway programs"
+      }
+    },
+    {
+      "id": "59f142e-5",
+      "source": "59f142e",
+      "quote": "the worker now sets Scheduler.PreventSchedulerYield, since the page already terminates runaway programs; the same query takes about 150 ms",
+      "says": {
+        "measured": "site-3000-answer-query-ms",
+        "after": 150,
+        "area": "site"
+      }
+    },
+    {
+      "id": "ee854d0-1",
+      "source": "ee854d0",
+      "quote": "cli 0.3.0 bundles core 0.4.0 and adds --database",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "ee854d0-2",
+      "source": "ee854d0",
+      "quote": "site hero badge and package cards show the new versions",
+      "says": {
+        "rule": "releases-update-site-versions",
+        "holds": true,
+        "statement": "Each release updates the site's hero badge and package cards to the new versions",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-1",
+      "source": "47ea840",
+      "quote": "Add [\"invariant\", goal, {\"assert\": \"none\" | \"some\"}], a query assertion the logic database keeps.",
+      "says": {
+        "feature": "invariant",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "47ea840-2",
+      "source": "47ea840",
+      "quote": "It must hold when it is added, and every later fact, retract, or rule form is checked against it.",
+      "says": {
+        "behavior": "invariant-not-holding-when-added",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-3",
+      "source": "47ea840",
+      "quote": "It must hold when it is added, and every later fact, retract, or rule form is checked against it.",
+      "says": {
+        "behavior": "invariant-checked-on-change",
+        "is": "every-fact-retract-rule-form",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-4",
+      "source": "47ea840",
+      "quote": "A form that would break one fails and leaves the database exactly as it was, with facts in the same order.",
+      "says": {
+        "behavior": "fact-breaking-invariant",
+        "is": "no-change",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-5",
+      "source": "47ea840",
+      "quote": "A form that would break one fails and leaves the database exactly as it was, with facts in the same order.",
+      "says": {
+        "behavior": "failed-change-fact-order",
+        "is": "preserved",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-6",
+      "source": "47ea840",
+      "quote": "Invariants are answered the way queries are, including goal-directed rewriting, aggregates, and graph algorithms.",
+      "says": {
+        "behavior": "invariant-evaluation",
+        "is": "like-queries",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-7",
+      "source": "47ea840",
+      "quote": "Snapshots save them after the rules, and `lion --database` enforces them.",
+      "says": {
+        "behavior": "snapshot-invariants-position",
+        "is": "after-rules",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-8",
+      "source": "47ea840",
+      "quote": "Snapshots save them after the rules, and `lion --database` enforces them.",
+      "says": {
+        "behavior": "cli-database-invariants",
+        "is": "enforced",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "47ea840-9",
+      "source": "47ea840",
+      "quote": "Every form that changes the database is now all or nothing.",
+      "says": {
+        "rule": "all-or-nothing-changes",
+        "holds": true,
+        "statement": "Every form that changes the logic database either makes all of its changes or none",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "retract-with-invalid-fact",
+            "is": "no-change"
+          },
+          {
+            "behavior": "fact-breaking-invariant",
+            "is": "no-change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "47ea840-10",
+      "source": "47ea840",
+      "quote": "Every form that changes the database is now all or nothing.",
+      "says": {
+        "decision": "database-change-atomicity",
+        "chose": "all-or-nothing",
+        "area": "logic",
+        "over": ["partial"]
+      }
+    },
+    {
+      "id": "47ea840-11",
+      "source": "47ea840",
+      "quote": "Before, a retract with one bad fact still removed the facts listed ahead of it.",
+      "says": {
+        "behavior": "retract-with-invalid-fact",
+        "is": "no-change",
+        "area": "logic",
+        "was": "partial-removal"
+      }
+    },
+    {
+      "id": "47ea840-12",
+      "source": "47ea840",
+      "quote": "Adding a rule or invariant the database already holds now changes nothing.",
+      "says": {
+        "rule": "idempotent-additions",
+        "holds": true,
+        "statement": "Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "re-add-rule",
+            "is": "no-change"
+          },
+          {
+            "behavior": "re-add-invariant",
+            "is": "no-change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "47ea840-13",
+      "source": "47ea840",
+      "quote": "Before, re-running a setup against a saved database added each rule again, so aggregates counted every match twice.",
+      "says": {
+        "behavior": "re-add-rule",
+        "is": "no-change",
+        "area": "logic",
+        "was": "added-again"
+      }
+    },
+    {
+      "id": "47ea840-14",
+      "source": "47ea840",
+      "quote": "\"Already holds\" means a snapshot would write it the same way.",
+      "says": {
+        "behavior": "rule-identity",
+        "is": "snapshot-form",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-15",
+      "source": "47ea840",
+      "quote": "\"in\", \"snapshot\", and \"invariant\" are now reserved identifiers, like the other special forms.",
+      "says": {
+        "behavior": "special-form-name-as-identifier",
+        "is": "reserved",
+        "area": "names"
+      }
+    },
+    {
+      "id": "47ea840-16",
+      "source": "47ea840",
+      "quote": "The core build now leaves tests/ folders out of the published package.",
+      "says": {
+        "behavior": "core-package-tests-folders",
+        "is": "excluded",
+        "area": "build"
+      }
+    },
+    {
+      "id": "47ea840-17",
+      "source": "47ea840",
+      "quote": "The new logic tests are property-based, using effect/Arbitrary with it.effect.prop.",
+      "says": {
+        "decision": "test-style",
+        "chose": "property-based",
+        "area": "tests",
+        "over": ["example-based"]
+      }
+    },
+    {
+      "id": "47ea840-18",
+      "source": "47ea840",
+      "quote": "Write property-based tests, not example-based unit tests. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior.",
+      "says": {
+        "rule": "property-based-tests",
+        "holds": true,
+        "statement": "Write property-based tests, not example-based unit tests, and add no fixed-example tests for new behavior",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-19",
+      "source": "47ea840",
+      "quote": "Follow the principle of least astonishment.",
+      "says": {
+        "rule": "least-astonishment",
+        "holds": true,
+        "statement": "Follow the principle of least astonishment: a feature does what someone who knows Lion expects, on its own and combined with every existing feature",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-20",
+      "source": "47ea840",
+      "quote": "**Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example, invariants take the query option `\"assert\"` instead of a new keyword, and report failures in the same words as a failed query assertion.",
+      "says": {
+        "rule": "reuse-what-exists",
+        "holds": true,
+        "statement": "Build a new feature out of vocabulary Lion already has before inventing more",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "invariant-failure-message",
+            "is": "same-as-query-assertion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "47ea840-21",
+      "source": "47ea840",
+      "quote": "**Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example, invariants take the query option `\"assert\"` instead of a new keyword, and report failures in the same words as a failed query assertion.",
+      "says": {
+        "decision": "invariant-syntax",
+        "chose": "query-assert-option",
+        "area": "logic",
+        "over": ["new-keyword"]
+      }
+    },
+    {
+      "id": "47ea840-22",
+      "source": "47ea840",
+      "quote": "**Reuse what exists.** Build a new feature out of vocabulary Lion already has before inventing more. For example, invariants take the query option `\"assert\"` instead of a new keyword, and report failures in the same words as a failed query assertion.",
+      "says": {
+        "behavior": "invariant-failure-message",
+        "is": "same-as-query-assertion",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-23",
+      "source": "47ea840",
+      "quote": "**Apply one rule everywhere.** When a feature needs a rule, look for a similar feature that already has one and follow it.",
+      "says": {
+        "rule": "one-rule-everywhere",
+        "holds": true,
+        "statement": "When a feature needs a rule, follow the rule a similar feature already has, and if it falls short change it for every feature at once",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "retract-with-invalid-fact",
+            "is": "no-change"
+          },
+          {
+            "behavior": "re-add-rule",
+            "is": "no-change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "47ea840-24",
+      "source": "47ea840",
+      "quote": "**Walk through the combinations.** Surprises hide where two features meet.",
+      "says": {
+        "rule": "walk-through-combinations",
+        "holds": true,
+        "statement": "Before settling a behavior, trace how it interacts with each existing feature",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-25",
+      "source": "47ea840",
+      "quote": "**Keep equivalent programs equivalent.** These pairs should behave the same:",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same: a program and its snapshot, goal-directed and full evaluation, a name and the value bound to it",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "program-vs-snapshot-answers",
+            "is": "same"
+          },
+          {
+            "behavior": "goal-directed-vs-full-answers",
+            "is": "same"
+          },
+          {
+            "behavior": "name-vs-bound-value",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "47ea840-26",
+      "source": "47ea840",
+      "quote": "Where results may differ, such as answer order without the `\"order\"` query option, say so in the docs.",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same, and where results may differ, such as answer order, the docs say so",
+        "area": "process",
+        "except": ["goal-directed-answer-order"]
+      }
+    },
+    {
+      "id": "47ea840-27",
+      "source": "47ea840",
+      "quote": "**Don't build on surprising behavior.**",
+      "says": {
+        "rule": "dont-build-on-surprises",
+        "holds": true,
+        "statement": "When existing behavior would astonish a user, point it out and fix it, or propose a fix, instead of working around it",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-28",
+      "source": "47ea840",
+      "quote": "**Pin the expectation down.** State the behavior users expect as a property and test it",
+      "says": {
+        "rule": "pin-expectations-as-properties",
+        "holds": true,
+        "statement": "State the behavior users expect as a property and test it",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-29",
+      "source": "47ea840",
+      "quote": "**Document how features combine.** Describe each feature's semantics in the README, including what it does alongside the features it touches.",
+      "says": {
+        "rule": "document-feature-combinations",
+        "holds": true,
+        "statement": "Describe each feature's semantics in the README, including what it does alongside the features it touches",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-30",
+      "source": "47ea840",
+      "quote": "Check behavior against something independent of the code under test:",
+      "says": {
+        "rule": "test-against-independent-model",
+        "holds": true,
+        "statement": "Check behavior against something independent of the code under test: a simpler model, a round trip, or an equivalence",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-31",
+      "source": "47ea840",
+      "quote": "Shape generators so they reach the interesting cases, then confirm they do.",
+      "says": {
+        "rule": "generators-reach-interesting-cases",
+        "holds": true,
+        "statement": "Shape generators so they reach the interesting cases, then confirm they do",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-32",
+      "source": "47ea840",
+      "quote": "Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it.",
+      "says": {
+        "rule": "properties-can-fail",
+        "holds": true,
+        "statement": "Make sure each property can fail: break the code it covers on purpose and confirm the property catches it",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-33",
+      "source": "47ea840",
+      "quote": "Keep a domain's generators in a module next to its tests and reuse them across files",
+      "says": {
+        "rule": "shared-generators",
+        "holds": true,
+        "statement": "Keep a domain's generators in a module next to its tests and reuse them across files",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-34",
+      "source": "47ea840",
+      "quote": "AGENTS.md and the new CLAUDE.md ask for property-based tests and for the principle of least astonishment when designing features and semantics.",
+      "says": {
+        "feature": "claude-md",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "47ea840-35",
+      "source": "47ea840",
+      "quote": "A form is checked once it has made all of its changes, so one `fact` form can add several facts that only keep an invariant together.",
+      "says": {
+        "behavior": "invariant-check-timing",
+        "is": "after-whole-form",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-36",
+      "source": "47ea840",
+      "quote": "Separate forms in a `begin` are separate changes, each checked on its own.",
+      "says": {
+        "behavior": "begin-forms-invariant-check",
+        "is": "each-separately",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-37",
+      "source": "47ea840",
+      "quote": "If checking an invariant fails, for example because `graph/topologicalOrder` finds a cycle, the change is undone too.",
+      "says": {
+        "behavior": "invariant-check-error",
+        "is": "change-undone",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-38",
+      "source": "47ea840",
+      "quote": "Like rules, they cannot be removed.",
+      "says": {
+        "behavior": "invariant-removal",
+        "is": "impossible",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-39",
+      "source": "47ea840",
+      "quote": "Like rules, they cannot be removed.",
+      "says": {
+        "behavior": "rule-removal",
+        "is": "impossible",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-40",
+      "source": "47ea840",
+      "quote": "A program that fails, such as one that would break an [invariant](#invariants) saved in the file, leaves the file as it was.",
+      "says": {
+        "behavior": "cli-database-failed-program",
+        "is": "file-unchanged",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "47ea840-41",
+      "source": "47ea840",
+      "quote": "Running the same setup again keeps one copy of each rule and invariant.",
+      "says": {
+        "behavior": "cli-database-rerun-setup",
+        "is": "one-copy",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "47ea840-42",
+      "source": "47ea840",
+      "quote": "so `[\"limit\", \"k\"]` with `k` bound to 3 is the same rule as `[\"limit\", 3]`, while the variable `\"?x\"` and the string `[\"quote\", \"?x\"]` differ",
+      "says": {
+        "behavior": "rule-name-vs-bound-value",
+        "is": "same-rule",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-43",
+      "source": "47ea840",
+      "quote": "so `[\"limit\", \"k\"]` with `k` bound to 3 is the same rule as `[\"limit\", 3]`, while the variable `\"?x\"` and the string `[\"quote\", \"?x\"]` differ",
+      "says": {
+        "behavior": "rule-variable-vs-quoted-string",
+        "is": "different-rules",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "47ea840-44",
+      "source": "47ea840",
+      "quote": "Invariants take only the `\"assert\"` option, read as written.",
+      "says": {
+        "rule": "options-read-as-written",
+        "holds": true,
+        "statement": "Options are read as written, not evaluated, like a relation's column list",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "invariant-options-evaluated",
+            "is": "not-evaluated"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4efc928-1",
+      "source": "4efc928",
+      "quote": "Lion's values are JSON, and the standard library now agrees everywhere JavaScript and JSON differ, and everywhere it disagreed with the README.",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "Lion's values are JSON, and the standard library agrees with JSON everywhere JavaScript and JSON differ",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "division-by-zero",
+            "is": "error"
+          },
+          {
+            "behavior": "number-overflow",
+            "is": "error"
+          },
+          {
+            "behavior": "object-get-missing-key",
+            "is": "null"
+          },
+          {
+            "behavior": "array-head-empty-list",
+            "is": "null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4efc928-2",
+      "source": "4efc928",
+      "quote": "string/startsWith, endsWith, includes, and indexOf take the text first, as documented and as the rest of the library does.",
+      "says": {
+        "behavior": "string-startsWith-argument-order",
+        "is": "text-first",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-3",
+      "source": "4efc928",
+      "quote": "string/startsWith, endsWith, includes, and indexOf take the text first, as documented and as the rest of the library does.",
+      "says": {
+        "behavior": "string-endsWith-argument-order",
+        "is": "text-first",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-4",
+      "source": "4efc928",
+      "quote": "string/startsWith, endsWith, includes, and indexOf take the text first, as documented and as the rest of the library does.",
+      "says": {
+        "behavior": "string-includes-argument-order",
+        "is": "text-first",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-5",
+      "source": "4efc928",
+      "quote": "string/startsWith, endsWith, includes, and indexOf take the text first, as documented and as the rest of the library does.",
+      "says": {
+        "behavior": "string-indexOf-argument-order",
+        "is": "text-first",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-6",
+      "source": "4efc928",
+      "quote": "string/startsWith, endsWith, includes, and indexOf take the text first, as documented and as the rest of the library does.",
+      "says": {
+        "decision": "string-argument-order",
+        "chose": "text-first",
+        "area": "library",
+        "over": ["search-first"],
+        "because": "as documented and as the rest of the library does"
+      }
+    },
+    {
+      "id": "4efc928-7",
+      "source": "4efc928",
+      "quote": "Like the rest of the library, each function takes its subject first:",
+      "says": {
+        "rule": "subject-first",
+        "holds": true,
+        "statement": "Standard library functions take their subject first",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "string-startsWith-argument-order",
+            "is": "text-first"
+          },
+          {
+            "behavior": "string-indexOf-argument-order",
+            "is": "text-first"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4efc928-8",
+      "source": "4efc928",
+      "quote": "indexOf returns a number, or -1, instead of an Effect Option.",
+      "says": {
+        "behavior": "string-indexOf-result",
+        "is": "number",
+        "area": "library",
+        "was": "effect-option"
+      }
+    },
+    {
+      "id": "4efc928-9",
+      "source": "4efc928",
+      "quote": "indexOf returns -1 when the text does +// not contain the search string, as JavaScript does.",
+      "says": {
+        "behavior": "string-indexOf-missing",
+        "is": "minus-one",
+        "area": "library",
+        "follows": "javascript"
+      }
+    },
+    {
+      "id": "4efc928-10",
+      "source": "4efc928",
+      "quote": "Standard library functions that mirror a JavaScript operation must agree",
+      "says": {
+        "rule": "stdlib-agrees-with-javascript",
+        "holds": true,
+        "statement": "Standard library functions that mirror a JavaScript operation agree with it on every input",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "string-indexOf-missing",
+            "is": "minus-one"
+          }
+        ]
+      }
+    },
+    {
+      "id": "4efc928-11",
+      "source": "4efc928",
+      "quote": "array/head and array/tail return null and [] for an empty list instead of crashing.",
+      "says": {
+        "behavior": "array-head-empty-list",
+        "is": "null",
+        "area": "library",
+        "was": "crash"
+      }
+    },
+    {
+      "id": "4efc928-12",
+      "source": "4efc928",
+      "quote": "array/head and array/tail return null and [] for an empty list instead of crashing.",
+      "says": {
+        "behavior": "array-tail-empty-list",
+        "is": "empty-list",
+        "area": "library",
+        "was": "crash"
+      }
+    },
+    {
+      "id": "4efc928-13",
+      "source": "4efc928",
+      "quote": "func/apply returns what calling the function returns, instead of an Effect that never ran.",
+      "says": {
+        "behavior": "func-apply-result",
+        "is": "function-result",
+        "area": "library",
+        "was": "unrun-effect"
+      }
+    },
+    {
+      "id": "4efc928-14",
+      "source": "4efc928",
+      "quote": "Arithmetic with no finite result, such as division by zero or an overflow, fails with the new ArithmeticError instead of producing Infinity or NaN, which JSON cannot hold.",
+      "says": {
+        "feature": "ArithmeticError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "4efc928-15",
+      "source": "4efc928",
+      "quote": "Arithmetic with no finite result, such as division by zero or an overflow, fails with the new ArithmeticError instead of producing Infinity or NaN, which JSON cannot hold.",
+      "says": {
+        "behavior": "division-by-zero",
+        "is": "error",
+        "area": "library",
+        "follows": "json",
+        "was": "infinity-or-nan"
+      }
+    },
+    {
+      "id": "4efc928-16",
+      "source": "4efc928",
+      "quote": "Arithmetic with no finite result, such as division by zero or an overflow, fails with the new ArithmeticError instead of producing Infinity or NaN, which JSON cannot hold.",
+      "says": {
+        "behavior": "number-overflow",
+        "is": "error",
+        "area": "library",
+        "follows": "json",
+        "was": "infinity-or-nan"
+      }
+    },
+    {
+      "id": "4efc928-17",
+      "source": "4efc928",
+      "quote": "Arithmetic with no finite result, such as division by zero or an overflow, fails with the new ArithmeticError instead of producing Infinity or NaN, which JSON cannot hold.",
+      "says": {
+        "decision": "non-finite-arithmetic",
+        "chose": "arithmetic-error",
+        "area": "library",
+        "over": ["infinity-or-nan"],
+        "because": "JSON cannot hold Infinity or NaN"
+      }
+    },
+    {
+      "id": "4efc928-18",
+      "source": "4efc928",
+      "quote": "This covers number/add, subtract, multiply, and divide, and aggregate/sum and aggregate/mean on a list.",
+      "says": {
+        "behavior": "aggregate-sum-non-finite",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-19",
+      "source": "4efc928",
+      "quote": "value/object? is true for records and other objects but not lists.",
+      "says": {
+        "behavior": "value-object-list",
+        "is": "false",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-20",
+      "source": "4efc928",
+      "quote": "object/get returns null for a missing key instead of undefined.",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "null",
+        "area": "library",
+        "was": "undefined"
+      }
+    },
+    {
+      "id": "4efc928-21",
+      "source": "4efc928",
+      "quote": "Every method function works on any value except null, as call-method did; null fails with NotAnObjectError instead of crashing call-method.",
+      "says": {
+        "behavior": "method-function-on-non-object-value",
+        "is": "works",
+        "area": "library"
+      }
+    },
+    {
+      "id": "4efc928-22",
+      "source": "4efc928",
+      "quote": "Every method function works on any value except null, as call-method did; null fails with NotAnObjectError instead of crashing call-method.",
+      "says": {
+        "behavior": "method-function-on-null",
+        "is": "error",
+        "area": "library",
+        "was": "crash"
+      }
+    },
+    {
+      "id": "4efc928-23",
+      "source": "4efc928",
+      "quote": "object errors carry messages, so the CLI and editor show what went wrong instead of \"An error occurred\".",
+      "says": {
+        "behavior": "object-error-message",
+        "is": "descriptive",
+        "area": "errors",
+        "was": "generic"
+      }
+    },
+    {
+      "id": "4efc928-24",
+      "source": "4efc928",
+      "quote": "Each fix has property tests, written first and confirmed to fail.",
+      "says": {
+        "rule": "bugs-become-properties",
+        "holds": true,
+        "statement": "Each fix gets property tests, written first and confirmed to fail",
+        "area": "tests"
+      }
+    },
+    {
+      "id": "b5f87d4-1",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "feature": "docs-page",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "b5f87d4-2",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "decision": "docs-organization",
+        "chose": "diataxis",
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-3",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-documents",
+        "after": 35,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-4",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-tutorials",
+        "after": 3,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-5",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-how-to-guides",
+        "after": 17,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-6",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-reference-pages",
+        "after": 9,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-7",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-explanations",
+        "after": 5,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-8",
+      "source": "b5f87d4",
+      "quote": "lionlang.dev/docs.html documents every feature of Lion in 35 documents, organized by the Di\u00e1taxis framework: 3 tutorials, 17 how-to guides, 9 reference pages, and 5 explanations. 110 live examples run on the same evaluator as @lionlang/core.",
+      "says": {
+        "measured": "docs-live-examples",
+        "after": 110,
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-9",
+      "source": "b5f87d4",
+      "quote": "The build runs every example with the evaluator the page uses and writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id.",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every docs example runs with the evaluator the page uses, and the build writes its real result",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "docs-example-unexpected-error",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-example-too-slow",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-link-to-missing-id",
+            "is": "build-fails"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b5f87d4-10",
+      "source": "b5f87d4",
+      "quote": "The site-runtime tests fail when docs.html is not what its fragments build.",
+      "says": {
+        "behavior": "docs-page-out-of-date",
+        "is": "tests-fail",
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-11",
+      "source": "b5f87d4",
+      "quote": "Without JavaScript every document shows.",
+      "says": {
+        "behavior": "docs-without-javascript",
+        "is": "every-document-shown",
+        "area": "docs"
+      }
+    },
+    {
+      "id": "b5f87d4-12",
+      "source": "b5f87d4",
+      "quote": "After editing a fragment, or the core evaluator, rebuild the page:",
+      "says": {
+        "rule": "rebuild-docs-after-change",
+        "holds": true,
+        "statement": "After editing a docs fragment or the core evaluator, rebuild the docs page",
+        "area": "process"
+      }
+    },
+    {
+      "id": "b5f87d4-13",
+      "source": "b5f87d4",
+      "quote": "Biome leaves the content fragments and the generated page alone, so formatting never reflows example code.",
+      "says": {
+        "behavior": "biome-docs-content",
+        "is": "ignored",
+        "area": "build"
+      }
+    },
+    {
+      "id": "b5f87d4-14",
+      "source": "b5f87d4",
+      "quote": "The page is generated by @lionlang/site-runtime's build-docs.ts from one fragment per document in packages/site-runtime/content.",
+      "says": {
+        "feature": "build-docs",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "b5f87d4-15",
+      "source": "b5f87d4",
+      "quote": "The worker's evaluation and formatting move to src/evaluate.ts, shared by the worker and the build, so published results match the page.",
+      "says": {
+        "behavior": "docs-published-results",
+        "is": "match-page",
+        "area": "docs"
+      }
+    },
+    {
+      "id": "e443b58-1",
+      "source": "e443b58",
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before.",
+      "says": {
+        "behavior": "string-startsWith-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      }
+    },
+    {
+      "id": "e443b58-2",
+      "source": "e443b58",
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before.",
+      "says": {
+        "behavior": "string-endsWith-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      }
+    },
+    {
+      "id": "e443b58-3",
+      "source": "e443b58",
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before.",
+      "says": {
+        "behavior": "string-includes-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      }
+    },
+    {
+      "id": "e443b58-4",
+      "source": "e443b58",
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before.",
+      "says": {
+        "behavior": "string-indexOf-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      }
+    },
+    {
+      "id": "e443b58-5",
+      "source": "e443b58",
+      "quote": "`value/object?` is true for records and other objects, but no longer for lists.",
+      "says": {
+        "behavior": "value-object-list",
+        "is": "false",
+        "area": "library",
+        "was": "true"
+      }
+    },
+    {
+      "id": "e443b58-6",
+      "source": "e443b58",
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "e443b58-7",
+      "source": "e443b58",
+      "quote": "the site hero badge points to the new docs, and the package cards show the new versions",
+      "says": {
+        "rule": "releases-update-site-versions",
+        "holds": true,
+        "statement": "Each release updates the site's hero badge and package cards to the new versions",
+        "area": "process"
+      }
+    },
+    {
+      "id": "aef67af-1",
+      "source": "aef67af",
+      "quote": "One rule now covers how evaluation meets logic variables: whatever needs a variable's value waits until it is bound, then computes what it would with the value in its place.",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs a logic variable's value waits until the variable is bound, then computes what it would with the value in its place",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "host-function-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "pure-function-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "func-partial-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "cond-on-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "match-on-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "eval-of-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "logic-variable-nested-in-record",
+            "is": "waits"
+          },
+          {
+            "behavior": "lambda-passed-to-waiting-call",
+            "is": "waits"
+          },
+          {
+            "behavior": "expression-over-variable-vs-value",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aef67af-2",
+      "source": "aef67af",
+      "quote": "Every function waits when called with a logic variable: the standard library, host functions as they are, and func/partial results.",
+      "says": {
+        "behavior": "host-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-3",
+      "source": "aef67af",
+      "quote": "Every function waits when called with a logic variable: the standard library, host functions as they are, and func/partial results.",
+      "says": {
+        "behavior": "pure-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-4",
+      "source": "aef67af",
+      "quote": "Every function waits when called with a logic variable: the standard library, host functions as they are, and func/partial results.",
+      "says": {
+        "behavior": "func-partial-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-5",
+      "source": "aef67af",
+      "quote": "logicFunction marks a function that takes variables as they are.",
+      "says": {
+        "feature": "logicFunction",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-6",
+      "source": "aef67af",
+      "quote": "cond, match, eval, and records wait the same way, and so do lambdas passed to a waiting call.",
+      "says": {
+        "behavior": "cond-on-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-7",
+      "source": "aef67af",
+      "quote": "cond, match, eval, and records wait the same way, and so do lambdas passed to a waiting call.",
+      "says": {
+        "behavior": "match-on-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-8",
+      "source": "aef67af",
+      "quote": "cond, match, eval, and records wait the same way, and so do lambdas passed to a waiting call.",
+      "says": {
+        "behavior": "eval-of-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-9",
+      "source": "aef67af",
+      "quote": "cond, match, eval, and records wait the same way, and so do lambdas passed to a waiting call.",
+      "says": {
+        "behavior": "logic-variable-nested-in-record",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-10",
+      "source": "aef67af",
+      "quote": "cond, match, eval, and records wait the same way, and so do lambdas passed to a waiting call.",
+      "says": {
+        "behavior": "lambda-passed-to-waiting-call",
+        "is": "waits",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-11",
+      "source": "aef67af",
+      "quote": "A lambda that branches or calls itself now gives the right answers on a logic variable.",
+      "says": {
+        "behavior": "lambda-branching-on-logic-variable",
+        "is": "right-answers",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-12",
+      "source": "aef67af",
+      "quote": "A lambda that branches or calls itself now gives the right answers on a logic variable.",
+      "says": {
+        "behavior": "recursive-lambda-on-logic-variable",
+        "is": "right-answers",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-13",
+      "source": "aef67af",
+      "quote": "A filter must be true or false, and a call that fails in a rule or query names itself and its values.",
+      "says": {
+        "behavior": "filter-non-boolean",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-14",
+      "source": "aef67af",
+      "quote": "A filter must be true or false, and a call that fails in a rule or query names itself and its values.",
+      "says": {
+        "behavior": "failed-call-in-rule-message",
+        "is": "names-call-and-values",
+        "area": "errors"
+      }
+    },
+    {
+      "id": "aef67af-15",
+      "source": "aef67af",
+      "quote": "Query answers and derived rows must be JSON data.",
+      "says": {
+        "behavior": "query-answer-non-json",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-16",
+      "source": "aef67af",
+      "quote": "Query answers and derived rows must be JSON data.",
+      "says": {
+        "behavior": "derived-row-non-json",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-17",
+      "source": "aef67af",
+      "quote": "not takes any goal.",
+      "says": {
+        "behavior": "not-on-compound-goal",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-18",
+      "source": "aef67af",
+      "quote": "and/or stop at the first argument that decides them, as in Scheme, and a goal with no relation in it is also a value.",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "logic",
+        "follows": "scheme"
+      }
+    },
+    {
+      "id": "aef67af-19",
+      "source": "aef67af",
+      "quote": "and/or stop at the first argument that decides them, as in Scheme, and a goal with no relation in it is also a value.",
+      "says": {
+        "behavior": "or-after-true",
+        "is": "not-evaluated",
+        "area": "logic",
+        "follows": "scheme"
+      }
+    },
+    {
+      "id": "aef67af-20",
+      "source": "aef67af",
+      "quote": "and/or stop at the first argument that decides them, as in Scheme, and a goal with no relation in it is also a value.",
+      "says": {
+        "decision": "and-or-evaluation",
+        "chose": "short-circuit",
+        "area": "logic",
+        "over": ["evaluate-all"],
+        "because": "as in Scheme"
+      }
+    },
+    {
+      "id": "aef67af-21",
+      "source": "aef67af",
+      "quote": "and/or stop at the first argument that decides them, as in Scheme, and a goal with no relation in it is also a value.",
+      "says": {
+        "behavior": "goal-without-relation-as-value",
+        "is": "boolean-value",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-22",
+      "source": "aef67af",
+      "quote": "An aggregate call combines matches as a whole head argument and a list anywhere else, and its argument can be a constant.",
+      "says": {
+        "behavior": "aggregate-call-whole-head-argument",
+        "is": "combines-matches",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-23",
+      "source": "aef67af",
+      "quote": "An aggregate call combines matches as a whole head argument and a list anywhere else, and its argument can be a constant.",
+      "says": {
+        "behavior": "aggregate-call-elsewhere",
+        "is": "combines-list",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-24",
+      "source": "aef67af",
+      "quote": "An aggregate call combines matches as a whole head argument and a list anywhere else, and its argument can be a constant.",
+      "says": {
+        "behavior": "aggregate-constant-argument",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-25",
+      "source": "aef67af",
+      "quote": "An algorithm's value input can be a variable that another goal binds.",
+      "says": {
+        "behavior": "algorithm-input-variable",
+        "is": "runs-per-binding",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-26",
+      "source": "aef67af",
+      "quote": "Snapshots write a function by the name the environment gives it, and a waiting cond, record, or lambda as its form, so rules that call a function through another name, or hold a lambda, load again.",
+      "says": {
+        "behavior": "snapshot-rule-holding-function",
+        "is": "written-by-environment-name",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-27",
+      "source": "aef67af",
+      "quote": "Snapshots write a function by the name the environment gives it, and a waiting cond, record, or lambda as its form, so rules that call a function through another name, or hold a lambda, load again.",
+      "says": {
+        "behavior": "snapshot-rule-holding-lambda",
+        "is": "written-as-form",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-28",
+      "source": "aef67af",
+      "quote": "Goal-directed queries count arguments bound by = or in, and values computed from bound variables, as known.",
+      "says": {
+        "behavior": "goal-directed-query-argument-bound-by-unify",
+        "is": "known",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-29",
+      "source": "aef67af",
+      "quote": "Goal-directed queries count arguments bound by = or in, and values computed from bound variables, as known.",
+      "says": {
+        "behavior": "goal-directed-query-computed-argument",
+        "is": "known",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-30",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/remainder",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-31",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/power",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-32",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/min",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-33",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/max",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-34",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/absolute",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-35",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/floor",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-36",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/ceiling",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-37",
+      "source": "aef67af",
+      "quote": "New number functions: remainder, power, min, max, absolute, floor, ceiling, and round.",
+      "says": {
+        "feature": "number/round",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "aef67af-38",
+      "source": "aef67af",
+      "quote": "array/map, array/flat-map, array/reduce, and match take host functions that return plain values.",
+      "says": {
+        "behavior": "list-function-host-callback",
+        "is": "allowed",
+        "area": "library"
+      }
+    },
+    {
+      "id": "aef67af-39",
+      "source": "aef67af",
+      "quote": "Breaking: markPure is removed, since every function waits.",
+      "says": {
+        "feature": "markPure",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "aef67af-40",
+      "source": "aef67af",
+      "quote": "Breaking: markPure is removed, since every function waits.",
+      "says": {
+        "decision": "which-functions-wait",
+        "chose": "every-function",
+        "area": "logic",
+        "over": ["pure-functions-only"],
+        "because": "every function waits"
+      }
+    },
+    {
+      "id": "aef67af-41",
+      "source": "aef67af",
+      "quote": "Breaking: markPure is removed, since every function waits.",
+      "says": {
+        "rule": "pure-functions-wait",
+        "holds": false,
+        "statement": "Only pure standard library functions wait for logic variables",
+        "area": "logic",
+        "replaced_by": "waiting-rule"
+      }
+    },
+    {
+      "id": "aef67af-42",
+      "source": "aef67af",
+      "quote": "A filter that is not true or false is an error instead of being read as truthy.",
+      "says": {
+        "behavior": "filter-non-boolean",
+        "is": "error",
+        "area": "logic",
+        "breaking": true,
+        "was": "truthy"
+      }
+    },
+    {
+      "id": "aef67af-43",
+      "source": "aef67af",
+      "quote": "A filter that is not true or false is an error instead of being read as truthy.",
+      "says": {
+        "decision": "filter-truthiness",
+        "chose": "strict-boolean",
+        "area": "logic",
+        "over": ["truthy"]
+      }
+    },
+    {
+      "id": "aef67af-44",
+      "source": "aef67af",
+      "quote": "and/or no longer evaluate the arguments after the one that decides them.",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "logic",
+        "breaking": true,
+        "was": "evaluated"
+      }
+    },
+    {
+      "id": "aef67af-45",
+      "source": "aef67af",
+      "quote": "and/or no longer evaluate the arguments after the one that decides them.",
+      "says": {
+        "behavior": "or-after-true",
+        "is": "not-evaluated",
+        "area": "logic",
+        "breaking": true,
+        "was": "evaluated"
+      }
+    },
+    {
+      "id": "aef67af-46",
+      "source": "aef67af",
+      "quote": "cond fails when it tests a relation goal.",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "error",
+        "area": "logic",
+        "breaking": true
+      }
+    },
+    {
+      "id": "aef67af-47",
+      "source": "aef67af",
+      "quote": "Fixed on the way: a query that held false and the \"order\" option failed, match read a two-item fallback as a pattern, and 0 did not equal -0.",
+      "says": {
+        "behavior": "query-false-with-order-option",
+        "is": "no-answers",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "id": "aef67af-48",
+      "source": "aef67af",
+      "quote": "Fixed on the way: a query that held false and the \"order\" option failed, match read a two-item fallback as a pattern, and 0 did not equal -0.",
+      "says": {
+        "behavior": "match-two-item-fallback",
+        "is": "fallback",
+        "area": "forms",
+        "was": "pattern"
+      }
+    },
+    {
+      "id": "aef67af-49",
+      "source": "aef67af",
+      "quote": "Fixed on the way: a query that held false and the \"order\" option failed, match read a two-item fallback as a pattern, and 0 did not equal -0.",
+      "says": {
+        "behavior": "zero-equals-negative-zero",
+        "is": "true",
+        "area": "logic",
+        "was": "false"
+      }
+    },
+    {
+      "id": "aef67af-50",
+      "source": "aef67af",
+      "quote": "The core has 5% fewer code lines and runs 1.5 to 3 times faster on ten benchmarks.",
+      "says": {
+        "measured": "core-code-lines-reduction-percent",
+        "after": 5,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "aef67af-51",
+      "source": "aef67af",
+      "quote": "The core has 5% fewer code lines and runs 1.5 to 3 times faster on ten benchmarks.",
+      "says": {
+        "measured": "speedup-benchmarks-min",
+        "after": 1.5,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "aef67af-52",
+      "source": "aef67af",
+      "quote": "The core has 5% fewer code lines and runs 1.5 to 3 times faster on ten benchmarks.",
+      "says": {
+        "measured": "speedup-benchmarks-max",
+        "after": 3,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "aef67af-53",
+      "source": "aef67af",
+      "quote": "35 new property tests check each case against plain evaluation with the value in place of the variable.",
+      "says": {
+        "measured": "new-property-tests",
+        "after": 35,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "aef67af-54",
+      "source": "aef67af",
+      "quote": "an expression over a logic variable and the same expression with the variable's value in its place",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same, including an expression over a logic variable and the same expression with the variable's value in its place",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "expression-over-variable-vs-value",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aef67af-55",
+      "source": "aef67af",
+      "quote": "`else` is an ordinary string, and a string counts as true.",
+      "says": {
+        "behavior": "cond-else",
+        "is": "ordinary-string",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "aef67af-56",
+      "source": "aef67af",
+      "quote": "`else` is an ordinary string, and a string counts as true.",
+      "says": {
+        "behavior": "cond-string-condition",
+        "is": "true",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "aef67af-57",
+      "source": "aef67af",
+      "quote": "Functions run forward only: `[\"=\", [\"number/add\", \"?x\", 1], 5]` does not solve for `?x`.",
+      "says": {
+        "behavior": "unify-function-call-with-value",
+        "is": "no-solve",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-58",
+      "source": "aef67af",
+      "quote": "A filter runs as soon as its variables are bound, and filters that are ready together run in the order written.",
+      "says": {
+        "behavior": "filter-run-order",
+        "is": "as-written",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-59",
+      "source": "aef67af",
+      "quote": "Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule.",
+      "says": {
+        "behavior": "rule-name-redefined-later",
+        "is": "unchanged",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-60",
+      "source": "aef67af",
+      "quote": "A lambda that calls itself by name is the exception: it looks its name up each time it runs, as it does outside of rules.",
+      "says": {
+        "behavior": "recursive-lambda-name-in-rule",
+        "is": "looked-up-each-run",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-61",
+      "source": "aef67af",
+      "quote": "A goal-directed query also never fails on a row it does not derive, where full evaluation would.",
+      "says": {
+        "behavior": "goal-directed-vs-full-failure-on-underived-row",
+        "is": "differs",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-62",
+      "source": "aef67af",
+      "quote": "Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be JSON data.",
+      "says": {
+        "rule": "nothing-is-guessed",
+        "holds": true,
+        "statement": "Nothing is guessed at: a filter must be true or false, and derived rows and query answers must be JSON data",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "filter-non-boolean",
+            "is": "error"
+          },
+          {
+            "behavior": "query-answer-non-json",
+            "is": "error"
+          },
+          {
+            "behavior": "derived-row-non-json",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "aef67af-63",
+      "source": "aef67af",
+      "quote": "`func/partial` gives a function that behaves like the one it wraps: made from a relation, it builds goals.",
+      "says": {
+        "behavior": "func-partial-of-relation",
+        "is": "builds-goals",
+        "area": "library"
+      }
+    },
+    {
+      "id": "aef67af-64",
+      "source": "aef67af",
+      "quote": "A relation goal has no value; it holds or not only as a goal of a rule or query.",
+      "says": {
+        "behavior": "relation-goal-as-value",
+        "is": "no-value",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "aef67af-65",
+      "source": "aef67af",
+      "quote": "the evaluator and the analyzer share one table of special forms",
+      "says": {
+        "decision": "special-form-table",
+        "chose": "shared-by-evaluator-and-analyzer",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "c380ce7-1",
+      "source": "c380ce7",
+      "quote": "A second rule now mirrors the waiting rule: whatever needs the value of a goal asks it.",
+      "says": {
+        "rule": "asking-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a goal asks it; a goal with a relation in it is a question",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "cond-relation-goal-condition",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-function-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-record-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-unify-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-in-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-fact-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-match-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-as-match-predicate",
+            "is": "predicate"
+          },
+          {
+            "behavior": "goal-in-define",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-lambda",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-and",
+            "is": "kept"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c380ce7-2",
+      "source": "c380ce7",
+      "quote": "As a value, a goal is true when it has a match and false when it has none: in a cond condition, as an argument of a function, as an operand of = or in, as a value of a record, as an argument of fact, retract, or why, and as the value match looks at.",
+      "says": {
+        "behavior": "relation-goal-as-value",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-3",
+      "source": "c380ce7",
+      "quote": "As a value, a goal is true when it has a match and false when it has none: in a cond condition, as an argument of a function, as an operand of = or in, as a value of a record, as an argument of fact, retract, or why, and as the value match looks at.",
+      "says": {
+        "behavior": "relation-goal-as-retract-argument",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-4",
+      "source": "c380ce7",
+      "quote": "As a value, a goal is true when it has a match and false when it has none: in a cond condition, as an argument of a function, as an operand of = or in, as a value of a record, as an argument of fact, retract, or why, and as the value match looks at.",
+      "says": {
+        "behavior": "relation-goal-as-why-argument",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-5",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-function-argument",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true,
+        "was": "waits"
+      }
+    },
+    {
+      "id": "c380ce7-6",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-record-value",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true,
+        "was": "waits"
+      }
+    },
+    {
+      "id": "c380ce7-7",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-unify-operand",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true
+      }
+    },
+    {
+      "id": "c380ce7-8",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-in-operand",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true
+      }
+    },
+    {
+      "id": "c380ce7-9",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-fact-argument",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true,
+        "was": "error"
+      }
+    },
+    {
+      "id": "c380ce7-10",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true,
+        "was": "error"
+      }
+    },
+    {
+      "id": "c380ce7-11",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "behavior": "relation-goal-as-match-value",
+        "is": "asked",
+        "area": "logic",
+        "breaking": true
+      }
+    },
+    {
+      "id": "c380ce7-12",
+      "source": "c380ce7",
+      "quote": "Breaking: a relation goal given to a plain function, a record, =, in, fact, cond, or match is asked, where it used to make the call or record wait, or fail.",
+      "says": {
+        "decision": "goal-as-value",
+        "chose": "asked",
+        "area": "logic",
+        "over": ["waits", "fails"]
+      }
+    },
+    {
+      "id": "c380ce7-13",
+      "source": "c380ce7",
+      "quote": "A relation is a predicate for match and for functions that are given it, such as array/map.",
+      "says": {
+        "behavior": "relation-as-match-predicate",
+        "is": "predicate",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-14",
+      "source": "c380ce7",
+      "quote": "A relation is a predicate for match and for functions that are given it, such as array/map.",
+      "says": {
+        "behavior": "relation-as-function-argument",
+        "is": "predicate",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-15",
+      "source": "c380ce7",
+      "quote": "[\"find\", template, goal] returns the template's value for every match of the goal, as a sorted list.",
+      "says": {
+        "feature": "find",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-16",
+      "source": "c380ce7",
+      "quote": "[\"find\", template, goal] returns the template's value for every match of the goal, as a sorted list.",
+      "says": {
+        "behavior": "find-result-order",
+        "is": "sorted",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-17",
+      "source": "c380ce7",
+      "quote": "When a question is asked, the variables that the rule or query around it has bound are fixed, and every other variable is the question's own. So a goal under not can join on variables of its own.",
+      "says": {
+        "rule": "question-variables-scoped",
+        "holds": true,
+        "statement": "When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "not-goal-unbound-variable",
+            "is": "own-variable"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c380ce7-18",
+      "source": "c380ce7",
+      "quote": "A variable that only a goal under not mentions is that goal's own instead of an unsafe-goal error.",
+      "says": {
+        "behavior": "not-goal-unbound-variable",
+        "is": "own-variable",
+        "area": "logic",
+        "breaking": true,
+        "was": "error"
+      }
+    },
+    {
+      "id": "c380ce7-19",
+      "source": "c380ce7",
+      "quote": "Every variable in a rule head or a filter must first be bound by a relation goal, `=`, or `in`. So must every input of an algorithm goal.",
+      "says": {
+        "rule": "safe-rules",
+        "holds": true,
+        "statement": "Every variable in a rule head or a filter must first be bound by a relation goal, =, or in, and so must every input of an algorithm goal",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "rule-head-variable-unbound",
+            "is": "error"
+          },
+          {
+            "behavior": "filter-variable-unbound",
+            "is": "error"
+          }
+        ],
+        "except": ["not-goal-unbound-variable"]
+      }
+    },
+    {
+      "id": "c380ce7-20",
+      "source": "c380ce7",
+      "quote": "Plain code asks right away, goal-directed.",
+      "says": {
+        "behavior": "plain-code-question",
+        "is": "asked-immediately",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-21",
+      "source": "c380ce7",
+      "quote": "A rule, query, invariant, or find holds its questions and asks them for each answer when it runs, so a question gives in a rule what it gives in plain code with the rule's variables in place.",
+      "says": {
+        "behavior": "question-in-rule",
+        "is": "asked-per-answer",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-22",
+      "source": "c380ce7",
+      "quote": "A rule, query, invariant, or find holds its questions and asks them for each answer when it runs, so a question gives in a rule what it gives in plain code with the rule's variables in place.",
+      "says": {
+        "behavior": "question-in-rule-vs-plain-code",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-23",
+      "source": "c380ce7",
+      "quote": "An aggregate of a find combines the find's list, also as a whole head argument, so aggregates work outside rule heads and a count can be 0.",
+      "says": {
+        "behavior": "aggregate-of-find",
+        "is": "combines-find-list",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-24",
+      "source": "c380ce7",
+      "quote": "An aggregate of a find combines the find's list, also as a whole head argument, so aggregates work outside rule heads and a count can be 0.",
+      "says": {
+        "behavior": "aggregate-count-of-empty-find",
+        "is": "zero",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-25",
+      "source": "c380ce7",
+      "quote": "define, and, or, not, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-define",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-26",
+      "source": "c380ce7",
+      "quote": "define, and, or, not, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-lambda",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-27",
+      "source": "c380ce7",
+      "quote": "define, and, or, not, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-and",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-28",
+      "source": "c380ce7",
+      "quote": "A rule cannot ask about a relation that depends on its own head: the rule against negation through recursion now covers every question.",
+      "says": {
+        "rule": "stratified-questions",
+        "holds": true,
+        "statement": "A rule cannot ask a question about a relation that depends on its own head",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "negation-through-recursion",
+            "is": "error"
+          },
+          {
+            "behavior": "find-through-recursion",
+            "is": "error"
+          },
+          {
+            "behavior": "relation-goal-as-value-through-recursion",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c380ce7-29",
+      "source": "c380ce7",
+      "quote": "A rule cannot ask about a relation that depends on its own head: the rule against negation through recursion now covers every question.",
+      "says": {
+        "rule": "stratified-negation",
+        "holds": false,
+        "statement": "Negation cannot go through recursion",
+        "area": "logic",
+        "replaced_by": "stratified-questions"
+      }
+    },
+    {
+      "id": "c380ce7-30",
+      "source": "c380ce7",
+      "quote": "A call through a func/partial result is a call to the function it wraps, so a snapshot can write a rule that makes one.",
+      "says": {
+        "behavior": "func-partial-call",
+        "is": "call-to-wrapped-function",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c380ce7-31",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "Negation",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      }
+    },
+    {
+      "id": "c380ce7-32",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "Conjunction",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      }
+    },
+    {
+      "id": "c380ce7-33",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "Disjunction",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      }
+    },
+    {
+      "id": "c380ce7-34",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "Unification",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      }
+    },
+    {
+      "id": "c380ce7-35",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "Membership",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      }
+    },
+    {
+      "id": "c380ce7-36",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "LogicForm",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-37",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "feature": "isForm",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-38",
+      "source": "c380ce7",
+      "quote": "In @lionlang/core, the Negation, Conjunction, Disjunction, Unification, and Membership classes are one LogicForm class, tested with isForm.",
+      "says": {
+        "decision": "logic-form-classes",
+        "chose": "one-logic-form-class",
+        "area": "host",
+        "over": ["class-per-form"]
+      }
+    },
+    {
+      "id": "c380ce7-39",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "isSymbolic",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-40",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "literalGoal",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-41",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "matchesAtom",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-42",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "queryOutputs",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-43",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "CondCaseSchema",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-44",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "MatchPatternSchema",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-45",
+      "source": "c380ce7",
+      "quote": "isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed.",
+      "says": {
+        "feature": "SnapshotFormSchema",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "c380ce7-46",
+      "source": "c380ce7",
+      "quote": "The call in logic/terms is now invoke, and call in evaluation/special-forms/function calls a Lion function from host code.",
+      "says": {
+        "feature": "invoke",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-47",
+      "source": "c380ce7",
+      "quote": "The call in logic/terms is now invoke, and call in evaluation/special-forms/function calls a Lion function from host code.",
+      "says": {
+        "feature": "call",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-48",
+      "source": "c380ce7",
+      "quote": "It derives a relation's rows the first time something reads them and keeps them until a fact or rule changes, so a query that is not goal-directed derives only the relations it reads.",
+      "says": {
+        "behavior": "non-goal-directed-query-derivation",
+        "is": "relations-read-only",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-49",
+      "source": "c380ce7",
+      "quote": "It derives a relation's rows the first time something reads them and keeps them until a fact or rule changes, so a query that is not goal-directed derives only the relations it reads.",
+      "says": {
+        "decision": "engine-derivation",
+        "chose": "on-demand-per-relation",
+        "area": "logic",
+        "over": ["all-relations"]
+      }
+    },
+    {
+      "id": "c380ce7-50",
+      "source": "c380ce7",
+      "quote": "WaitingError reports a value that is needed before it is known.",
+      "says": {
+        "feature": "WaitingError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-51",
+      "source": "c380ce7",
+      "quote": "The core has 4.7% more code lines (5,762 to 6,035) and 20% fewer instanceof checks (87 to 70).",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 6035,
+        "area": "metrics",
+        "before": 5762
+      }
+    },
+    {
+      "id": "c380ce7-52",
+      "source": "c380ce7",
+      "quote": "The core has 4.7% more code lines (5,762 to 6,035) and 20% fewer instanceof checks (87 to 70).",
+      "says": {
+        "measured": "core-kind-tests",
+        "after": 70,
+        "area": "metrics",
+        "before": 87
+      }
+    },
+    {
+      "id": "c380ce7-53",
+      "source": "c380ce7",
+      "quote": "The core has 4.7% more code lines (5,762 to 6,035) and 20% fewer instanceof checks (87 to 70).",
+      "says": {
+        "measured": "core-code-lines-increase-percent",
+        "after": 4.7,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "c380ce7-54",
+      "source": "c380ce7",
+      "quote": "The core has 4.7% more code lines (5,762 to 6,035) and 20% fewer instanceof checks (87 to 70).",
+      "says": {
+        "measured": "core-kind-tests-reduction-percent",
+        "after": 20,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "c380ce7-55",
+      "source": "c380ce7",
+      "quote": "List callbacks run about 10% slower, since they go through the call rule.",
+      "says": {
+        "measured": "slowdown-list-callbacks-percent",
+        "after": 10,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "c380ce7-56",
+      "source": "c380ce7",
+      "quote": "17 new property tests check each use of a question against a model computed from the facts",
+      "says": {
+        "measured": "new-property-tests",
+        "after": 17,
+        "area": "tests"
+      }
+    },
+    {
+      "id": "c380ce7-57",
+      "source": "c380ce7",
+      "quote": "a question asked in a rule and the same question asked in plain code with the rule's variables bound",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same, including a question asked in a rule and the same question asked in plain code with the rule's variables bound",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "question-in-rule-vs-plain-code",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c380ce7-58",
+      "source": "c380ce7",
+      "quote": "a database that has derived rows for earlier queries and one that has derived nothing yet",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same, including a database that has derived rows for earlier queries and one that has derived nothing yet",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "derived-rows-present-vs-absent-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c380ce7-59",
+      "source": "c380ce7",
+      "quote": "Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.",
+      "says": {
+        "rule": "one-rule-everywhere",
+        "holds": true,
+        "statement": "When a feature needs a rule, follow the rule a similar feature already has; whatever needs a logic variable's value waits, and whatever needs a goal's value asks it, in every form and function",
+        "area": "process"
+      }
+    },
+    {
+      "id": "c380ce7-60",
+      "source": "c380ce7",
+      "quote": "What the database has already derived never changes an answer.",
+      "says": {
+        "behavior": "derived-rows-present-vs-absent-answers",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-61",
+      "source": "c380ce7",
+      "quote": "A `find` must bind every variable of its template that the rule around it does not.",
+      "says": {
+        "behavior": "find-template-unbound-variable",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-62",
+      "source": "c380ce7",
+      "quote": "It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values.",
+      "says": {
+        "behavior": "find-duplicate-values",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-63",
+      "source": "c380ce7",
+      "quote": "is anonymous: each occurrence is a separate variable, and it never appears in an answer.",
+      "says": {
+        "behavior": "anonymous-variable-in-answer",
+        "is": "never-appears",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-64",
+      "source": "c380ce7",
+      "quote": "Within a rule or query, a name is one variable, also inside the questions nested in it.",
+      "says": {
+        "behavior": "nested-question-variable-name",
+        "is": "same-variable",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-65",
+      "source": "c380ce7",
+      "quote": "with a new guide, \"Use answers as values\"",
+      "says": {
+        "feature": "docs-guide-use-answers-as-values",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "id": "c380ce7-66",
+      "source": "c380ce7",
+      "quote": "A goal given to a host function is asked first, so the function receives `true` or `false`.",
+      "says": {
+        "behavior": "relation-goal-as-host-function-argument",
+        "is": "asked",
+        "area": "host"
+      }
+    },
+    {
+      "id": "c380ce7-67",
+      "source": "c380ce7",
+      "quote": "A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda.",
+      "says": {
+        "behavior": "snapshot-rule-holding-recursive-lambda",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "c380ce7-68",
+      "source": "c380ce7",
+      "quote": "A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda.",
+      "says": {
+        "behavior": "snapshot-rule-holding-unnamed-function",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "1b2d50b-1",
+      "source": "1b2d50b",
+      "quote": "Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a logic variable waits for it",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "1b2d50b-2",
+      "source": "1b2d50b",
+      "quote": "Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.",
+      "says": {
+        "rule": "asking-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a goal asks it",
+        "area": "logic"
+      }
+    },
+    {
+      "id": "1b2d50b-3",
+      "source": "1b2d50b",
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer",
+      "says": {
+        "behavior": "cond-on-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "ran-early"
+      }
+    },
+    {
+      "id": "1b2d50b-4",
+      "source": "1b2d50b",
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer",
+      "says": {
+        "behavior": "match-on-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "ran-early"
+      }
+    },
+    {
+      "id": "1b2d50b-5",
+      "source": "1b2d50b",
+      "quote": "`eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "eval-of-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "returns-variable"
+      }
+    },
+    {
+      "id": "1b2d50b-6",
+      "source": "1b2d50b",
+      "quote": "A `cond` whose condition was a relation goal took that case whether or not the goal had a match.",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "asked",
+        "area": "logic",
+        "was": "always-taken"
+      }
+    },
+    {
+      "id": "1b2d50b-7",
+      "source": "1b2d50b",
+      "quote": "A snapshot wrote a function under the name the program called it by, such as a name bound with `define`, which is not there when the snapshot loads. It now writes the name the environment gives the function.",
+      "says": {
+        "behavior": "snapshot-function-name",
+        "is": "environment-name",
+        "area": "logic",
+        "was": "program-name"
+      }
+    },
+    {
+      "id": "1b2d50b-8",
+      "source": "1b2d50b",
+      "quote": "`[\"=\", 0, -0]` was `false`. JSON writes both as `0`, so they are the same number.",
+      "says": {
+        "behavior": "zero-equals-negative-zero",
+        "is": "true",
+        "area": "logic",
+        "follows": "json",
+        "was": "false"
+      }
+    },
+    {
+      "id": "1b2d50b-9",
+      "source": "1b2d50b",
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme, so `[\"and\", false, [\"number/divide\", 1, 0]]` is `false` instead of an error.",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "logic",
+        "follows": "scheme"
+      }
+    },
+    {
+      "id": "1b2d50b-10",
+      "source": "1b2d50b",
+      "quote": "A goal such as `[\"number/add\", \"?x\", 1]` used to pass as true; now the rule or query fails and shows the value.",
+      "says": {
+        "behavior": "filter-non-boolean",
+        "is": "error",
+        "area": "logic",
+        "was": "truthy"
+      }
+    },
+    {
+      "id": "1b2d50b-11",
+      "source": "1b2d50b",
+      "quote": "A variable bound to a function used to be left out of the answer; now the query fails and shows the answer.",
+      "says": {
+        "behavior": "query-answer-non-json",
+        "is": "error",
+        "area": "logic",
+        "was": "omitted"
+      }
+    },
+    {
+      "id": "1b2d50b-12",
+      "source": "1b2d50b",
+      "quote": "A query that is not goal-directed derives only the relations it reads, instead of every relation that rules define.",
+      "says": {
+        "behavior": "non-goal-directed-query-derivation",
+        "is": "relations-read-only",
+        "area": "logic",
+        "was": "all-rule-relations"
+      }
+    },
+    {
+      "id": "1b2d50b-13",
+      "source": "1b2d50b",
+      "quote": "Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "speedup-benchmarks-min",
+        "after": 1.5,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "1b2d50b-14",
+      "source": "1b2d50b",
+      "quote": "Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "speedup-benchmarks-max",
+        "after": 3.5,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "1b2d50b-15",
+      "source": "1b2d50b",
+      "quote": "Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "benchmark-negation-facts",
+        "after": 20000,
+        "area": "metrics"
+      }
+    },
+    {
+      "id": "1b2d50b-16",
+      "source": "1b2d50b",
+      "quote": "`markPure` and `isPureFunction` are removed, since every function waits.",
+      "says": {
+        "feature": "isPureFunction",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "1b2d50b-17",
+      "source": "1b2d50b",
+      "quote": "`markPure` and `isPureFunction` are removed, since every function waits.",
+      "says": {
+        "decision": "which-functions-wait",
+        "chose": "every-function",
+        "area": "logic",
+        "over": ["pure-functions-only"],
+        "because": "every function waits"
+      }
+    },
+    {
+      "id": "1b2d50b-18",
+      "source": "1b2d50b",
+      "quote": "The `Aggregate` class is removed: an aggregate is a waiting call.",
+      "says": {
+        "feature": "Aggregate",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "1b2d50b-19",
+      "source": "1b2d50b",
+      "quote": "The `Aggregate` class is removed: an aggregate is a waiting call.",
+      "says": {
+        "decision": "aggregate-representation",
+        "chose": "waiting-call",
+        "area": "host",
+        "over": ["aggregate-class"],
+        "because": "an aggregate is a waiting call"
+      }
+    },
+    {
+      "id": "1b2d50b-20",
+      "source": "1b2d50b",
+      "quote": "`relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "relationInfo",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "relationOf"
+      }
+    },
+    {
+      "id": "1b2d50b-21",
+      "source": "1b2d50b",
+      "quote": "`relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "RelationValue",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "1b2d50b-22",
+      "source": "1b2d50b",
+      "quote": "`relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isRelationValue",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "1b2d50b-23",
+      "source": "1b2d50b",
+      "quote": "`relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isLogicTerm",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "id": "1b2d50b-24",
+      "source": "1b2d50b",
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it.",
+      "says": {
+        "behavior": "relation-goal-as-function-argument",
+        "is": "asked",
+        "area": "logic",
+        "was": "goal-itself"
+      }
+    },
+    {
+      "id": "1b2d50b-25",
+      "source": "1b2d50b",
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it.",
+      "says": {
+        "behavior": "relation-goal-as-fact-argument",
+        "is": "asked",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "id": "1b2d50b-26",
+      "source": "1b2d50b",
+      "quote": "the changelog lists what changed since 0.5.0, each line checked by running the same program on both versions",
+      "says": {
+        "rule": "changelog-checked-by-running",
+        "holds": true,
+        "statement": "Each changelog line is checked by running the same program on both versions",
+        "area": "process"
+      }
+    },
+    {
+      "id": "1b2d50b-27",
+      "source": "1b2d50b",
+      "quote": "cli 0.5.0 bundles core 0.6.0",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      }
+    },
+    {
+      "id": "1b2d50b-28",
+      "source": "1b2d50b",
+      "quote": "the site hero badge points to the new guide, and the package cards show the new versions",
+      "says": {
+        "rule": "releases-update-site-versions",
+        "holds": true,
+        "statement": "Each release updates the site's hero badge and package cards to the new versions",
+        "area": "process"
+      }
+    },
+    {
+      "id": "1b2d50b-29",
+      "source": "1b2d50b",
+      "quote": "A program sees it when a <code>fact</code>, <code>retract</code>, or <code>why</code> written inside a rule, query, or <code>find</code> is given a question: those forms act right away, so they cannot wait.",
+      "says": {
+        "behavior": "fact-in-rule-given-question",
+        "is": "waiting-error",
+        "area": "errors"
+      }
+    },
+    {
+      "id": "1b2d50b-30",
+      "source": "1b2d50b",
+      "quote": "A lambda is called with fewer arguments than it has parameters.",
+      "says": {
+        "behavior": "lambda-missing-arguments",
+        "is": "error",
+        "area": "errors"
+      }
+    },
+    {
+      "id": "65ae02d-6",
+      "source": "65ae02d",
+      "quote": "After editing only files in `docs/`, update it with:",
+      "says": {
+        "rule": "stamp-site-assets-after-docs-edit",
+        "holds": true,
+        "statement": "After editing only files in docs/, update the site's asset version hash with the stamp script",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-45",
+      "source": "47ea840",
+      "quote": "Keep the principle of least astonishment in mind whenever you consider a new feature or semantic.",
+      "says": {
+        "rule": "least-astonishment",
+        "holds": true,
+        "statement": "Follow the principle of least astonishment: a feature does what someone who knows Lion expects, on its own and combined with every existing feature",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-46",
+      "source": "47ea840",
+      "quote": "Point out existing surprises instead of building on them.",
+      "says": {
+        "rule": "dont-build-on-surprises",
+        "holds": true,
+        "statement": "When existing behavior would astonish a user, point it out and fix it, or propose a fix, instead of working around it",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-47",
+      "source": "47ea840",
+      "quote": "Use `it.prop` for synchronous properties and `it.effect.prop` for Effect properties, both from `@effect/vitest`.",
+      "says": {
+        "rule": "effect-vitest-properties",
+        "holds": true,
+        "statement": "Write properties with it.prop or it.effect.prop from @effect/vitest, with Schemas or effect/Arbitrary generators as inputs",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-48",
+      "source": "47ea840",
+      "quote": "When a property rarely reaches its interesting cases, raise its runs with the fourth argument",
+      "says": {
+        "rule": "raise-runs-for-rare-cases",
+        "holds": true,
+        "statement": "When a property rarely reaches its interesting cases, raise its runs",
+        "area": "process"
+      }
+    },
+    {
+      "id": "47ea840-49",
+      "source": "47ea840",
+      "quote": "Use `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`, and check behavior against a simpler model, a round trip, or an equivalence.",
+      "says": {
+        "rule": "test-against-independent-model",
+        "holds": true,
+        "statement": "Check behavior against something independent of the code under test: a simpler model, a round trip, or an equivalence",
+        "area": "process"
+      }
+    },
+    {
+      "id": "aef67af-66",
+      "source": "aef67af",
+      "quote": "everything that waits for a logic variable: function calls, `cond`, `match`, `eval`, records, and lambdas passed to a waiting call",
+      "says": {
+        "rule": "walk-through-combinations",
+        "holds": true,
+        "statement": "Before settling a behavior, trace how it interacts with each existing feature, including everything that waits for a logic variable",
+        "area": "process"
+      }
+    },
+    {
+      "id": "c380ce7-69",
+      "source": "c380ce7",
+      "quote": "everything that asks a question: `not`, `find`, and a goal used as a value, in plain code and inside a rule, with variables of its own",
+      "says": {
+        "rule": "walk-through-combinations",
+        "holds": true,
+        "statement": "Before settling a behavior, trace how it interacts with each existing feature, including everything that asks a question",
+        "area": "process"
+      }
+    },
+    {
+      "id": "b2855e0-8",
+      "source": "b2855e0",
+      "quote": "All code is valid JSON. All JSON is valid code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": false,
+        "statement": "All code is valid JSON, and all JSON is valid code.",
+        "area": "docs",
+        "replaced_by": "json-programs"
+      }
+    }
+  ]
+}

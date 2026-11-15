@@ -1,0 +1,15 @@
+{
+  "id": "cli-bundles-editor",
+  "title": "`@lionlang/cli` carries its own copy of `@lionlang/core` and the built graph editor, so it is released with every core release",
+  "context": "Until September 2026 a Lion program ran only from TypeScript, through `run`, and the graph editor ran from the monorepo with `bun run dev --filter=@lionlang/repl`. A project could not evaluate a Lion file or open the editor without writing host code or checking out the repository.",
+  "decision": "`@lionlang/cli`, built on Effect's CLI module, adds the `lion` command. `lion program.json` checks the file as a Lion expression, evaluates it with the standard library, and prints the result as JSON, and `lion repl` serves the production graph editor on `127.0.0.1:3000`, with `--host` and `--port` to change it. Its build bundles `@lionlang/core` into the command and copies the editor's build output into the package, so an installed CLI needs neither the monorepo nor a separate editor.",
+  "consequences": "A change to the core or to the editor reaches users of the CLI only in a new CLI release. Every release of `@lionlang/core` since 0.2.0 ships a new `@lionlang/cli` beside it, and the changelog says which core each one bundles, such as `@lionlang/cli` 0.2.0 with `@lionlang/core` 0.3.0. The CLI has its own version numbers, starting at 0.1.0 with core 0.2.0.",
+  "commits": [
+    { "commit": "2753a40", "quote": "add Effect CLI package" },
+    { "commit": "2ca94fd", "quote": "serve bundled graph editor" },
+    {
+      "commit": "1b380d9",
+      "quote": "release core 0.2.0, cli 0.1.0, typesafe-ai 0.1.0"
+    }
+  ]
+}

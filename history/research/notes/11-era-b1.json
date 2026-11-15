@@ -1,0 +1,2780 @@
+{
+  "claims": [
+    {
+      "id": "c6c1f39-1",
+      "source": "c6c1f39",
+      "quote": "fix: implements repl web app",
+      "says": {
+        "feature": "repl-web-app",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "c6c1f39-2",
+      "source": "c6c1f39",
+      "quote": "fix: implements repl web app",
+      "says": {
+        "decision": "repl-surface",
+        "chose": "web-app",
+        "area": "editor",
+        "over": ["terminal"]
+      }
+    },
+    {
+      "id": "c6c1f39-3",
+      "source": "c6c1f39",
+      "quote": "yield* terminal.display(\"Lion REPL v0.0.1\\n\");",
+      "says": {
+        "feature": "terminal-repl",
+        "kind": "tool",
+        "present": false
+      }
+    },
+    {
+      "id": "c6c1f39-4",
+      "source": "c6c1f39",
+      "quote": "it(\"should add many numbers\", () => {",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "sum",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c6c1f39-5",
+      "source": "c6c1f39",
+      "quote": "Effect.map(Array.reduce(0, add))",
+      "says": {
+        "behavior": "add-no-arguments",
+        "is": "zero",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c6c1f39-6",
+      "source": "c6c1f39",
+      "quote": "Schema.decodeUnknown(Schema.Array(Schema.Number)),",
+      "says": {
+        "decision": "library-function-arity",
+        "chose": "variadic",
+        "area": "library",
+        "over": ["two-arguments"]
+      }
+    },
+    {
+      "id": "c6c1f39-7",
+      "source": "c6c1f39",
+      "quote": "Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error(\"Key not found\"))))",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "error",
+        "area": "library",
+        "was": "undefined"
+      }
+    },
+    {
+      "id": "c6c1f39-8",
+      "source": "c6c1f39",
+      "quote": "Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error(\"Key not found\"))))",
+      "says": {
+        "decision": "object-get-missing-key",
+        "chose": "error",
+        "area": "library",
+        "over": ["undefined"]
+      }
+    },
+    {
+      "id": "c6c1f39-9",
+      "source": "c6c1f39",
+      "quote": "Schema.decodeUnknown(Schema.Record({ key: Schema.String, value: Schema.Unknown })),",
+      "says": {
+        "behavior": "object-keys-non-object",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c6c1f39-10",
+      "source": "c6c1f39",
+      "quote": "export * from \"./src/modules/math.ts\";",
+      "says": {
+        "behavior": "core-exports-library-modules",
+        "is": "exported",
+        "area": "host"
+      }
+    },
+    {
+      "id": "76f3fd4-1",
+      "source": "76f3fd4",
+      "quote": "moved tests into dedicated folders",
+      "says": {
+        "rule": "tests-in-tests-folders",
+        "holds": true,
+        "statement": "Tests live in a tests folder beside the code they test",
+        "area": "tests"
+      }
+    },
+    {
+      "id": "76f3fd4-2",
+      "source": "76f3fd4",
+      "quote": "moved tests into dedicated folders",
+      "says": {
+        "decision": "test-location",
+        "chose": "tests-folder",
+        "area": "tests",
+        "over": ["colocated"]
+      }
+    },
+    {
+      "id": "71efcf1-1",
+      "source": "71efcf1",
+      "quote": "added AGENTS.md",
+      "says": {
+        "feature": "agents-md",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "71efcf1-2",
+      "source": "71efcf1",
+      "quote": "**@lion/repl**: React-based web application using TanStack Router and Vite",
+      "says": {
+        "feature": "@lionlang/repl",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "71efcf1-3",
+      "source": "71efcf1",
+      "quote": "**@lion/core**: Core library built with Effect.js for functional programming",
+      "says": {
+        "feature": "@lionlang/core",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "71efcf1-4",
+      "source": "71efcf1",
+      "quote": "**@lion/core**: Core library built with Effect.js for functional programming",
+      "says": {
+        "rule": "evaluate-with-effect",
+        "holds": true,
+        "statement": "The core library is built with Effect",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "71efcf1-5",
+      "source": "71efcf1",
+      "quote": "**Framework**: Vitest with @effect/vitest",
+      "says": {
+        "rule": "tests-use-vitest-effect",
+        "holds": true,
+        "statement": "Tests run on Vitest with @effect/vitest",
+        "area": "tests",
+        "predicts": [
+          {
+            "behavior": "test-runner",
+            "is": "vitest"
+          }
+        ]
+      }
+    },
+    {
+      "id": "71efcf1-6",
+      "source": "71efcf1",
+      "quote": "it(\"should perform operation\", () => {",
+      "says": {
+        "rule": "example-based-tests",
+        "holds": true,
+        "statement": "Tests are describe/it blocks that check an operation against its expected result",
+        "area": "tests"
+      }
+    },
+    {
+      "id": "71efcf1-7",
+      "source": "71efcf1",
+      "quote": "1. **Before coding**: Run `npm install` and `npm run prepare`",
+      "says": {
+        "rule": "dev-commands-npm",
+        "holds": true,
+        "statement": "Development commands are run with npm and npx",
+        "area": "process"
+      }
+    },
+    {
+      "id": "71efcf1-8",
+      "source": "71efcf1",
+      "quote": "**Indentation**: Tabs (not spaces)",
+      "says": {
+        "rule": "biome-formatting",
+        "holds": true,
+        "statement": "Code is formatted by Biome with tabs and double quotes",
+        "area": "build"
+      }
+    },
+    {
+      "id": "71efcf1-9",
+      "source": "71efcf1",
+      "quote": "Use conventional commit format when possible",
+      "says": {
+        "rule": "conventional-commits",
+        "holds": true,
+        "statement": "Commits use the conventional commit format when possible",
+        "area": "process"
+      }
+    },
+    {
+      "id": "71efcf1-10",
+      "source": "71efcf1",
+      "quote": "Run tests and linting before committing",
+      "says": {
+        "rule": "quality-gates",
+        "holds": true,
+        "statement": "Run the tests and the linter before committing",
+        "area": "process"
+      }
+    },
+    {
+      "id": "71efcf1-11",
+      "source": "71efcf1",
+      "quote": "Validate all inputs using Effect Schemas",
+      "says": {
+        "rule": "validate-inputs-with-schemas",
+        "holds": true,
+        "statement": "All inputs are validated with Effect Schemas",
+        "area": "library"
+      }
+    },
+    {
+      "id": "71efcf1-12",
+      "source": "71efcf1",
+      "quote": "This document should be updated whenever development practices, tooling, or code standards change in the Lion project.",
+      "says": {
+        "rule": "update-agents-md",
+        "holds": true,
+        "statement": "AGENTS.md is updated whenever development practices, tooling, or code standards change",
+        "area": "process"
+      }
+    },
+    {
+      "id": "71efcf1-13",
+      "source": "71efcf1",
+      "quote": "export type ExpressionFunctor<A> = Data.TaggedEnum<{",
+      "says": {
+        "feature": "expression-functor",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "0727135-1",
+      "source": "0727135",
+      "quote": "export const ConsExprF = <A>() => Data.taggedEnum<ExpressionFunctor<A>>();",
+      "says": {
+        "feature": "expression-functor",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "0727135-2",
+      "source": "0727135",
+      "quote": "Array.map(x, evaluate),",
+      "says": {
+        "behavior": "call-argument-evaluation",
+        "is": "before-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "0529eec-1",
+      "source": "0529eec",
+      "quote": "adds ultracite",
+      "says": {
+        "feature": "ultracite",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "0529eec-2",
+      "source": "0529eec",
+      "quote": "adds ultracite",
+      "says": {
+        "decision": "lint-format-tool",
+        "chose": "ultracite",
+        "area": "build",
+        "over": ["per-package-biome"]
+      }
+    },
+    {
+      "id": "0529eec-3",
+      "source": "0529eec",
+      "quote": "\"prepare\": \"husky\",",
+      "says": {
+        "feature": "husky-pre-commit",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "0529eec-4",
+      "source": "0529eec",
+      "quote": "bun x ultracite fix",
+      "says": {
+        "rule": "quality-gates",
+        "holds": true,
+        "statement": "Every commit runs the tests and the Ultracite formatter in a pre-commit hook",
+        "area": "process"
+      }
+    },
+    {
+      "id": "0529eec-5",
+      "source": "0529eec",
+      "quote": "\"test\": \"turbo test\",",
+      "says": {
+        "feature": "turbo",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "0529eec-6",
+      "source": "0529eec",
+      "quote": "\"command\": \"bun fix --skip=correctness/noUnusedImports\",",
+      "says": {
+        "feature": "format-on-edit-hook",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "0529eec-7",
+      "source": "0529eec",
+      "quote": "\"packageManager\": \"bun@1.3.11\"",
+      "says": {
+        "decision": "package-manager",
+        "chose": "bun",
+        "area": "build"
+      }
+    },
+    {
+      "id": "0529eec-8",
+      "source": "0529eec",
+      "quote": "### Resumable Evaluation",
+      "says": {
+        "feature": "resumable-evaluation-spec",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "0529eec-9",
+      "source": "0529eec",
+      "quote": "Implement a function evaluate() which takes in an oplog (Operation Log).",
+      "says": {
+        "decision": "evaluation-runtime",
+        "chose": "resumable-oplog",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "0529eec-10",
+      "source": "0529eec",
+      "quote": "When continuing an evaluation, all non-effectful expressions are re-evaluated, all effectful operations are hydrated from the oplog.",
+      "says": {
+        "rule": "resumable-evaluation",
+        "holds": true,
+        "statement": "Evaluation pauses at an effectful operation the oplog has not completed, and resumes from an oplog that holds its completion, re-evaluating pure expressions and hydrating effectful ones",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "host-function-call-without-oplog-entry",
+            "is": "paused"
+          },
+          {
+            "behavior": "host-function-call-completed-in-oplog",
+            "is": "result-from-oplog"
+          }
+        ]
+      }
+    },
+    {
+      "id": "0529eec-11",
+      "source": "0529eec",
+      "quote": "There can only be EXACTLY one operation_completed entry for a given operation_started entry",
+      "says": {
+        "rule": "one-completion-per-operation",
+        "holds": true,
+        "statement": "An operation_started entry has exactly one operation_completed entry",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "oplog-two-completions-for-one-operation",
+            "is": "invalid"
+          }
+        ]
+      }
+    },
+    {
+      "id": "0529eec-12",
+      "source": "0529eec",
+      "quote": "All operations passed into the environment are considered effectful by default.",
+      "says": {
+        "decision": "host-operation-effectfulness",
+        "chose": "effectful-by-default",
+        "area": "evaluation",
+        "because": "it's currently impossible to break evaluation and I'd like to keep it that way until I can think of a better solution"
+      }
+    },
+    {
+      "id": "0529eec-13",
+      "source": "0529eec",
+      "quote": "should should return a list cons expression if the function call is not a function",
+      "says": {
+        "behavior": "array-first-element-not-function",
+        "is": "evaluated-elements",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "0529eec-14",
+      "source": "0529eec",
+      "quote": "Match.orElse(flow(Array.map(evaluate), Effect.all))",
+      "says": {
+        "behavior": "array-first-element-not-string",
+        "is": "evaluated-elements",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "0529eec-15",
+      "source": "0529eec",
+      "quote": "Match.when(Array.isEmptyReadonlyArray, Effect.succeed),",
+      "says": {
+        "behavior": "empty-array",
+        "is": "itself",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-1",
+      "source": "333b695",
+      "quote": "continue fixing resumable evaluation",
+      "says": {
+        "feature": "resumable-evaluation",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "333b695-2",
+      "source": "333b695",
+      "quote": "export class ContinuationNeededError extends Schema.TaggedError<ContinuationNeededError>(",
+      "says": {
+        "feature": "ContinuationNeededError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "333b695-3",
+      "source": "333b695",
+      "quote": "export class OplogMismatchError extends Schema.TaggedError<OplogMismatchError>(",
+      "says": {
+        "feature": "OplogMismatchError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "333b695-4",
+      "source": "333b695",
+      "quote": "const pureFunctions = HashSet.make();",
+      "says": {
+        "behavior": "stdlib-function-call-oplog",
+        "is": "logged",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-5",
+      "source": "333b695",
+      "quote": "new ContinuationNeededError({",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "paused",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-6",
+      "source": "333b695",
+      "quote": "return opCompleted.result;",
+      "says": {
+        "behavior": "host-function-call-completed-in-oplog",
+        "is": "result-from-oplog",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-7",
+      "source": "333b695",
+      "quote": ": new OplogMismatchError({",
+      "says": {
+        "behavior": "oplog-entry-mismatch",
+        "is": "error",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-8",
+      "source": "333b695",
+      "quote": "arguments: Arr.tailNonEmpty(impureFunctionCallExpression), // fixme: evaluate the arguments",
+      "says": {
+        "behavior": "oplog-started-arguments",
+        "is": "unevaluated",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "333b695-9",
+      "source": "333b695",
+      "quote": "\"./modules\": \"./src/modules/index.ts\",",
+      "says": {
+        "behavior": "core-package-entry",
+        "is": "subpath-exports",
+        "area": "packages"
+      }
+    },
+    {
+      "id": "a7580a1-1",
+      "source": "a7580a1",
+      "quote": "should ignore oplog for pure functions",
+      "says": {
+        "behavior": "stdlib-function-call-oplog",
+        "is": "ignored",
+        "area": "evaluation",
+        "was": "logged"
+      }
+    },
+    {
+      "id": "a7580a1-2",
+      "source": "a7580a1",
+      "quote": "should pause evaluation for impure functions that haven't been started",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "paused",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "6025a41-1",
+      "source": "6025a41",
+      "quote": "const result = yield* evaluateFunctionCall([\"math/+\", 1, 2]);",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name, such as math/+",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-naming",
+            "is": "module-slash-name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "6025a41-2",
+      "source": "6025a41",
+      "quote": "const result = yield* evaluateFunctionCall([\"math/+\", 1, 2]);",
+      "says": {
+        "decision": "library-function-names",
+        "chose": "module-slash-name",
+        "area": "library",
+        "over": ["bare-name"]
+      }
+    },
+    {
+      "id": "6025a41-3",
+      "source": "6025a41",
+      "quote": "expect(result).toBeInstanceOf(ContinuationNeededError);",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "paused",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "6025a41-4",
+      "source": "6025a41",
+      "quote": "expression: FunctionCallFormSchema,",
+      "says": {
+        "behavior": "oplog-entry-content",
+        "is": "call-expression",
+        "area": "evaluation",
+        "was": "operation-name-and-arguments"
+      }
+    },
+    {
+      "id": "6025a41-5",
+      "source": "6025a41",
+      "quote": "export class EvaluationPaused extends Schema.TaggedClass<EvaluationPaused>(",
+      "says": {
+        "decision": "evaluation-pause-signal",
+        "chose": "error",
+        "area": "evaluation",
+        "over": ["result-value"]
+      }
+    },
+    {
+      "id": "b1e3f0e-1",
+      "source": "b1e3f0e",
+      "quote": "implement wholistic evaluation tests",
+      "says": {
+        "rule": "property-based-tests",
+        "holds": true,
+        "statement": "Evaluation is tested with properties over generated expressions",
+        "area": "tests"
+      }
+    },
+    {
+      "id": "b1e3f0e-2",
+      "source": "b1e3f0e",
+      "quote": "implement wholistic evaluation tests",
+      "says": {
+        "decision": "test-style",
+        "chose": "property-based",
+        "area": "tests",
+        "over": ["example-based"]
+      }
+    },
+    {
+      "id": "b1e3f0e-3",
+      "source": "b1e3f0e",
+      "quote": "export type ExprF<A> = Data.TaggedEnum<{",
+      "says": {
+        "feature": "expression-functor",
+        "kind": "file",
+        "present": false
+      }
+    },
+    {
+      "id": "b1e3f0e-4",
+      "source": "b1e3f0e",
+      "quote": "export type ExprF<A> = Data.TaggedEnum<{",
+      "says": {
+        "decision": "evaluator-design",
+        "chose": "match-dispatch",
+        "area": "evaluation",
+        "over": ["expression-functor"]
+      }
+    },
+    {
+      "id": "b1e3f0e-5",
+      "source": "b1e3f0e",
+      "quote": "primitive array expressions should evaluate to themselves (autoquote)",
+      "says": {
+        "feature": "list-auto-quote",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b1e3f0e-6",
+      "source": "b1e3f0e",
+      "quote": "primitive array expressions should evaluate to themselves (autoquote)",
+      "says": {
+        "behavior": "array-of-primitives",
+        "is": "itself",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-7",
+      "source": "b1e3f0e",
+      "quote": "primitives should evaluate to themselves",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b1e3f0e-8",
+      "source": "b1e3f0e",
+      "quote": "primitives should evaluate to themselves",
+      "says": {
+        "behavior": "non-string-primitive",
+        "is": "itself",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-9",
+      "source": "b1e3f0e",
+      "quote": "an eval expression should evaluate to the same result as calling evaluate() on its argument",
+      "says": {
+        "behavior": "eval-in-empty-environment",
+        "is": "same-as-argument",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b1e3f0e-10",
+      "source": "b1e3f0e",
+      "quote": "should return the argument unevaluated",
+      "says": {
+        "behavior": "quote-argument",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b1e3f0e-11",
+      "source": "b1e3f0e",
+      "quote": "should evaluate record expressions by evaluating the values of the record",
+      "says": {
+        "behavior": "record-expression",
+        "is": "values-evaluated",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-12",
+      "source": "b1e3f0e",
+      "quote": "should evaluate pure function calls by applying the function to the arguments",
+      "says": {
+        "behavior": "stdlib-function-call",
+        "is": "applied",
+        "area": "library"
+      }
+    },
+    {
+      "id": "b1e3f0e-13",
+      "source": "b1e3f0e",
+      "quote": "should pause evaluation, inserting an operation_started entry for impure functions that haven't been started",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "paused",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-14",
+      "source": "b1e3f0e",
+      "quote": "expect(impureFunction).not.toHaveBeenCalled();",
+      "says": {
+        "behavior": "host-function-called-when-paused",
+        "is": "not-called",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-15",
+      "source": "b1e3f0e",
+      "quote": "should continue evaluation, reusing the existing value from the operation_completed entry for impure functions that were already completed",
+      "says": {
+        "behavior": "host-function-call-completed-in-oplog",
+        "is": "result-from-oplog",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b1e3f0e-16",
+      "source": "b1e3f0e",
+      "quote": "Data.array(opCompleted.expression),",
+      "says": {
+        "behavior": "oplog-entry-match",
+        "is": "structural-equality",
+        "area": "evaluation",
+        "was": "reference-equality"
+      }
+    },
+    {
+      "id": "d4226c6-1",
+      "source": "d4226c6",
+      "quote": "remove effect.gen()s",
+      "says": {
+        "decision": "effect-code-style",
+        "chose": "pipe",
+        "area": "evaluation",
+        "over": ["effect-gen"]
+      }
+    },
+    {
+      "id": "2ebcfac-1",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "feature": "resumable-evaluation",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "2ebcfac-2",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "decision": "evaluation-runtime",
+        "chose": "run-to-completion",
+        "area": "evaluation",
+        "over": ["resumable-oplog"]
+      }
+    },
+    {
+      "id": "2ebcfac-3",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "rule": "resumable-evaluation",
+        "holds": false,
+        "statement": "Evaluation pauses at effectful operations and resumes from an oplog",
+        "area": "evaluation",
+        "replaced_by": "no-resumable-evaluation"
+      }
+    },
+    {
+      "id": "2ebcfac-4",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "rule": "no-resumable-evaluation",
+        "holds": true,
+        "statement": "Evaluation runs to its end in one pass and calls host functions directly, with no oplog",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "host-function-call-without-oplog-entry",
+            "is": "called"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2ebcfac-5",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "rule": "one-completion-per-operation",
+        "holds": false,
+        "statement": "An operation_started entry has exactly one operation_completed entry",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "2ebcfac-6",
+      "source": "2ebcfac",
+      "quote": "remove resumability",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "called",
+        "area": "evaluation",
+        "was": "paused"
+      }
+    },
+    {
+      "id": "2ebcfac-7",
+      "source": "2ebcfac",
+      "quote": "export class ContinuationNeededError extends Schema.TaggedError<ContinuationNeededError>(",
+      "says": {
+        "feature": "ContinuationNeededError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "id": "2ebcfac-8",
+      "source": "2ebcfac",
+      "quote": "export class OplogMismatchError extends Schema.TaggedError<OplogMismatchError>(",
+      "says": {
+        "feature": "OplogMismatchError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "id": "b2ea83c-1",
+      "source": "b2ea83c",
+      "quote": "remove effect.gen() from primitive evaluation",
+      "says": {
+        "decision": "effect-code-style",
+        "chose": "pipe",
+        "area": "evaluation",
+        "over": ["effect-gen"]
+      }
+    },
+    {
+      "id": "b2ea83c-2",
+      "source": "b2ea83c",
+      "quote": "Effect.map(Option.getOrElse(() => name))",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "98c3cbc-1",
+      "source": "98c3cbc",
+      "quote": "adds README.md, run() simplification",
+      "says": {
+        "feature": "readme",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-2",
+      "source": "98c3cbc",
+      "quote": "adds README.md, run() simplification",
+      "says": {
+        "feature": "run",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-3",
+      "source": "98c3cbc",
+      "quote": "adds README.md, run() simplification",
+      "says": {
+        "decision": "host-entry-point",
+        "chose": "run",
+        "area": "host",
+        "over": ["evaluate-with-environment-service"]
+      }
+    },
+    {
+      "id": "98c3cbc-4",
+      "source": "98c3cbc",
+      "quote": "Lion is a JSON-based Lisp. All code is valid JSON, and all JSON is valid Lion code.",
+      "says": {
+        "rule": "all-json-is-code",
+        "holds": true,
+        "statement": "All code is valid JSON, and all JSON is valid Lion code",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "record-empty-key",
+            "is": "kept"
+          },
+          {
+            "behavior": "record-proto-key",
+            "is": "kept"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98c3cbc-5",
+      "source": "98c3cbc",
+      "quote": "Strings are looked up as references in the environment; if no binding is found, the string evaluates to itself.",
+      "says": {
+        "rule": "strings-are-references",
+        "holds": true,
+        "statement": "A string is looked up in the environment, and evaluates to itself when nothing is bound to it",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "unbound-string",
+            "is": "itself"
+          },
+          {
+            "behavior": "bound-string",
+            "is": "bound-value"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98c3cbc-6",
+      "source": "98c3cbc",
+      "quote": "numbers, booleans, and `null` evaluate to themselves",
+      "says": {
+        "behavior": "non-string-primitive",
+        "is": "itself",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "98c3cbc-7",
+      "source": "98c3cbc",
+      "quote": "If the environment contains `{ \"x\": 10 }`, this evaluates to `10`. If `\"x\"` is not bound, it evaluates to `\"x\"`.",
+      "says": {
+        "behavior": "bound-string",
+        "is": "bound-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "98c3cbc-8",
+      "source": "98c3cbc",
+      "quote": "If the environment contains `{ \"x\": 10 }`, this evaluates to `10`. If `\"x\"` is not bound, it evaluates to `\"x\"`.",
+      "says": {
+        "behavior": "unbound-string",
+        "is": "itself",
+        "area": "names"
+      }
+    },
+    {
+      "id": "98c3cbc-9",
+      "source": "98c3cbc",
+      "quote": "an array with a string as its first element is a function call",
+      "says": {
+        "rule": "string-head-is-call",
+        "holds": true,
+        "statement": "An array with a string as its first element is a function call",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "function-call"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98c3cbc-10",
+      "source": "98c3cbc",
+      "quote": "All elements are evaluated before the function is applied.",
+      "says": {
+        "behavior": "call-argument-evaluation",
+        "is": "before-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "98c3cbc-11",
+      "source": "98c3cbc",
+      "quote": "An array without a string head evaluates each of its elements and returns the resulting array",
+      "says": {
+        "rule": "non-call-arrays-are-lists",
+        "holds": true,
+        "statement": "An array that is not a function call evaluates each of its elements and returns the resulting array",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-string",
+            "is": "evaluated-elements"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98c3cbc-12",
+      "source": "98c3cbc",
+      "quote": "each value in the object is evaluated; keys are preserved.",
+      "says": {
+        "behavior": "record-expression",
+        "is": "values-evaluated",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "98c3cbc-13",
+      "source": "98c3cbc",
+      "quote": "Returns its argument unevaluated.",
+      "says": {
+        "feature": "quote",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-14",
+      "source": "98c3cbc",
+      "quote": "Returns its argument unevaluated.",
+      "says": {
+        "behavior": "quote-argument",
+        "is": "not-evaluated",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "98c3cbc-15",
+      "source": "98c3cbc",
+      "quote": "Evaluates its argument, then evaluates the result.",
+      "says": {
+        "feature": "eval",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-16",
+      "source": "98c3cbc",
+      "quote": "Evaluates its argument, then evaluates the result.",
+      "says": {
+        "behavior": "eval-argument",
+        "is": "evaluated-twice",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "98c3cbc-17",
+      "source": "98c3cbc",
+      "quote": "Functions are namespaced with `/`.",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are namespaced with a slash, as module/name",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-naming",
+            "is": "module-slash-name"
+          }
+        ]
+      }
+    },
+    {
+      "id": "98c3cbc-18",
+      "source": "98c3cbc",
+      "quote": "### `math`",
+      "says": {
+        "feature": "math",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-19",
+      "source": "98c3cbc",
+      "quote": "### `logic`",
+      "says": {
+        "feature": "logic",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-20",
+      "source": "98c3cbc",
+      "quote": "### `list`",
+      "says": {
+        "feature": "list",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-21",
+      "source": "98c3cbc",
+      "quote": "### `object`",
+      "says": {
+        "feature": "object",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-22",
+      "source": "98c3cbc",
+      "quote": "### `func`",
+      "says": {
+        "feature": "func",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-23",
+      "source": "98c3cbc",
+      "quote": "[\"math/+\", 1, 2]",
+      "says": {
+        "feature": "math/+",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-24",
+      "source": "98c3cbc",
+      "quote": "[\"math/-\", 10, 3]",
+      "says": {
+        "feature": "math/-",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-25",
+      "source": "98c3cbc",
+      "quote": "[\"math/*\", 5, 4]",
+      "says": {
+        "feature": "math/*",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-26",
+      "source": "98c3cbc",
+      "quote": "[\"math//\", 20, 4]",
+      "says": {
+        "feature": "math//",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-27",
+      "source": "98c3cbc",
+      "quote": "[\"math/=\", 5, 5]",
+      "says": {
+        "feature": "math/=",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-28",
+      "source": "98c3cbc",
+      "quote": "[\"math/<\", 3, 5]",
+      "says": {
+        "feature": "math/<",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-29",
+      "source": "98c3cbc",
+      "quote": "[\"math/>\", 5, 3]",
+      "says": {
+        "feature": "math/>",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-30",
+      "source": "98c3cbc",
+      "quote": "[\"math/<=\", 3, 5]",
+      "says": {
+        "feature": "math/<=",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-31",
+      "source": "98c3cbc",
+      "quote": "[\"math/>=\", 5, 5]",
+      "says": {
+        "feature": "math/>=",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-32",
+      "source": "98c3cbc",
+      "quote": "[\"logic/not\", true]",
+      "says": {
+        "feature": "logic/not",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-33",
+      "source": "98c3cbc",
+      "quote": "[\"logic/and\", true, false]",
+      "says": {
+        "feature": "logic/and",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-34",
+      "source": "98c3cbc",
+      "quote": "[\"logic/or\", false, true]",
+      "says": {
+        "feature": "logic/or",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-35",
+      "source": "98c3cbc",
+      "quote": "[\"logic/if\", true, \"yes\", \"no\"]",
+      "says": {
+        "feature": "logic/if",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-36",
+      "source": "98c3cbc",
+      "quote": "[\"list/list\", 1, 2, 3]",
+      "says": {
+        "feature": "list/list",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-37",
+      "source": "98c3cbc",
+      "quote": "[\"list/head\", [1, 2, 3]]",
+      "says": {
+        "feature": "list/head",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-38",
+      "source": "98c3cbc",
+      "quote": "[\"list/tail\", [1, 2, 3]]",
+      "says": {
+        "feature": "list/tail",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-39",
+      "source": "98c3cbc",
+      "quote": "[\"list/length\", [1, 2, 3]]",
+      "says": {
+        "feature": "list/length",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-40",
+      "source": "98c3cbc",
+      "quote": "[\"list/concat\", [1, 2], [3, 4]]",
+      "says": {
+        "feature": "list/concat",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-41",
+      "source": "98c3cbc",
+      "quote": "[\"object/get\", {\"a\": 1}, \"a\"]",
+      "says": {
+        "feature": "object/get",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-42",
+      "source": "98c3cbc",
+      "quote": "[\"object/keys\", {\"a\": 1, \"b\": 2}]",
+      "says": {
+        "feature": "object/keys",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-43",
+      "source": "98c3cbc",
+      "quote": "[\"object/values\", {\"a\": 1}]",
+      "says": {
+        "feature": "object/values",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-44",
+      "source": "98c3cbc",
+      "quote": "[\"func/identity\", 42]",
+      "says": {
+        "feature": "func/identity",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "98c3cbc-45",
+      "source": "98c3cbc",
+      "quote": "Lion is implemented in TypeScript with [Effect](https://effect.website).",
+      "says": {
+        "rule": "evaluate-with-effect",
+        "holds": true,
+        "statement": "Lion is implemented in TypeScript with Effect",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "98c3cbc-46",
+      "source": "98c3cbc",
+      "quote": "Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "error",
+        "area": "library",
+        "was": "sum"
+      }
+    },
+    {
+      "id": "98c3cbc-47",
+      "source": "98c3cbc",
+      "quote": "Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))",
+      "says": {
+        "behavior": "add-no-arguments",
+        "is": "error",
+        "area": "library",
+        "was": "zero"
+      }
+    },
+    {
+      "id": "98c3cbc-48",
+      "source": "98c3cbc",
+      "quote": "Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number))",
+      "says": {
+        "decision": "library-function-arity",
+        "chose": "two-arguments",
+        "area": "library",
+        "over": ["variadic"]
+      }
+    },
+    {
+      "id": "b37ced1-1",
+      "source": "b37ced1",
+      "quote": "if the first element of an array expression evaluates to a function, the array is treated as a function call.",
+      "says": {
+        "rule": "function-head-is-call",
+        "holds": true,
+        "statement": "An array whose first element evaluates to a function is a function call",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-function",
+            "is": "function-call"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b37ced1-2",
+      "source": "b37ced1",
+      "quote": "if the first element of an array expression evaluates to a function, the array is treated as a function call.",
+      "says": {
+        "rule": "string-head-is-call",
+        "holds": false,
+        "statement": "An array with a string as its first element is a function call",
+        "area": "evaluation",
+        "replaced_by": "function-head-is-call"
+      }
+    },
+    {
+      "id": "b37ced1-3",
+      "source": "b37ced1",
+      "quote": "Otherwise, the expression evaluates each of its elements and returns the resulting array:",
+      "says": {
+        "rule": "non-call-arrays-are-lists",
+        "holds": true,
+        "statement": "An array whose first element does not evaluate to a function evaluates each of its elements and returns the resulting array",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "evaluated-elements"
+          },
+          {
+            "behavior": "array-first-element-not-string",
+            "is": "evaluated-elements"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b37ced1-4",
+      "source": "b37ced1",
+      "quote": "Evaluates to `[\"hi\", 5, true]`.",
+      "says": {
+        "behavior": "array-first-element-not-function",
+        "is": "evaluated-elements",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b37ced1-5",
+      "source": "b37ced1",
+      "quote": "When the first element of an array evaluates to a function, it is called with the remaining evaluated arguments:",
+      "says": {
+        "behavior": "array-first-element-function",
+        "is": "function-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "b37ced1-6",
+      "source": "b37ced1",
+      "quote": "Environment values can be functions.",
+      "says": {
+        "behavior": "host-function-in-environment",
+        "is": "callable",
+        "area": "host"
+      }
+    },
+    {
+      "id": "b37ced1-7",
+      "source": "b37ced1",
+      "quote": "<span className=\"text-[#7ee787]\">[\"math/+\", 1, 2, 3]</span>",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "sum",
+        "area": "editor"
+      }
+    },
+    {
+      "id": "00f403c-1",
+      "source": "00f403c",
+      "quote": "\"build\": \"tsdown\"",
+      "says": {
+        "feature": "tsdown",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "id": "00f403c-2",
+      "source": "00f403c",
+      "quote": "removes old spec",
+      "says": {
+        "feature": "resumable-evaluation-spec",
+        "kind": "file",
+        "present": false
+      }
+    },
+    {
+      "id": "00f403c-3",
+      "source": "00f403c",
+      "quote": "removes old spec",
+      "says": {
+        "decision": "evaluation-runtime",
+        "chose": "run-to-completion",
+        "area": "evaluation",
+        "over": ["resumable-oplog"]
+      }
+    },
+    {
+      "id": "00f403c-4",
+      "source": "00f403c",
+      "quote": "\"license\": \"MIT\",",
+      "says": {
+        "decision": "core-package-visibility",
+        "chose": "public",
+        "area": "packages",
+        "over": ["private"]
+      }
+    },
+    {
+      "id": "d7628fc-1",
+      "source": "d7628fc",
+      "quote": "fixed run function return, repl index file",
+      "says": {
+        "feature": "run",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "d7628fc-2",
+      "source": "d7628fc",
+      "quote": "\"name\": \"agent\",",
+      "says": {
+        "feature": "@lionlang/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "d7628fc-3",
+      "source": "d7628fc",
+      "quote": "Default to using Bun instead of Node.js.",
+      "says": {
+        "rule": "use-bun-not-npm",
+        "holds": true,
+        "statement": "Use Bun instead of Node.js, npm, pnpm, or vite",
+        "area": "process"
+      }
+    },
+    {
+      "id": "d7628fc-4",
+      "source": "d7628fc",
+      "quote": "Use `bun test` instead of `jest` or `vitest`",
+      "says": {
+        "rule": "use-bun-test-runner",
+        "holds": true,
+        "statement": "Tests run with bun test instead of jest or vitest",
+        "area": "tests",
+        "predicts": [
+          {
+            "behavior": "test-runner",
+            "is": "bun-test"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d7628fc-5",
+      "source": "d7628fc",
+      "quote": "\"build\": \"turbo build\"",
+      "says": {
+        "feature": "turbo-build",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "id": "ff59f98-1",
+      "source": "ff59f98",
+      "quote": "initial POC for coding agent",
+      "says": {
+        "feature": "coding-agent",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "ff59f98-2",
+      "source": "ff59f98",
+      "quote": "export const evaluateBegin = ([_, ...args]: typeof BeginFormSchema.Type) =>",
+      "says": {
+        "feature": "begin",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "ff59f98-3",
+      "source": "ff59f98",
+      "quote": "should evaluate the arguments in order and return the last result",
+      "says": {
+        "behavior": "begin-result",
+        "is": "last-value",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "ff59f98-4",
+      "source": "ff59f98",
+      "quote": "Effect.map(Option.getOrElse(() => []))",
+      "says": {
+        "behavior": "begin-empty",
+        "is": "empty-array",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "ff59f98-5",
+      "source": "ff59f98",
+      "quote": "return Effect.isEffect(result) ? result : Effect.succeed(result);",
+      "says": {
+        "behavior": "host-function-returns-plain-value",
+        "is": "value",
+        "area": "host"
+      }
+    },
+    {
+      "id": "ff59f98-6",
+      "source": "ff59f98",
+      "quote": "should call a function when in call position",
+      "says": {
+        "behavior": "array-first-element-function",
+        "is": "function-call",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "ff59f98-7",
+      "source": "ff59f98",
+      "quote": "should return a function as a value",
+      "says": {
+        "behavior": "library-function-name-alone",
+        "is": "function-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "ff59f98-8",
+      "source": "ff59f98",
+      "quote": "const program = [[\"object/access\", \"obj\", \"fn\"], 1, 2];",
+      "says": {
+        "feature": "object/access",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "2d48418-1",
+      "source": "2d48418",
+      "quote": "adds define special form, fixes agent TUI",
+      "says": {
+        "feature": "define",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "2d48418-2",
+      "source": "2d48418",
+      "quote": "Effect.map(() => value)",
+      "says": {
+        "behavior": "define-result",
+        "is": "value",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "2d48418-3",
+      "source": "2d48418",
+      "quote": "Ref.update(environment, Record.set(id, value)),",
+      "says": {
+        "behavior": "define-binding",
+        "is": "stored-in-environment",
+        "area": "names"
+      }
+    },
+    {
+      "id": "2d48418-4",
+      "source": "2d48418",
+      "quote": "const DISALLOWED_IDENTIFIERS = [\"begin\", \"define\", \"eval\", \"quote\"];",
+      "says": {
+        "behavior": "define-special-form-name",
+        "is": "rejected",
+        "area": "names"
+      }
+    },
+    {
+      "id": "2d48418-5",
+      "source": "2d48418",
+      "quote": "Schema.minLength(1)",
+      "says": {
+        "behavior": "define-empty-name",
+        "is": "rejected",
+        "area": "names"
+      }
+    },
+    {
+      "id": "f4db299-1",
+      "source": "f4db299",
+      "quote": "adds console module",
+      "says": {
+        "feature": "console",
+        "kind": "module",
+        "present": true
+      }
+    },
+    {
+      "id": "f4db299-2",
+      "source": "f4db299",
+      "quote": "[\"func/callback\", \"console/log\"]",
+      "says": {
+        "feature": "console/log",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "f4db299-3",
+      "source": "f4db299",
+      "quote": "adds callback function to func module",
+      "says": {
+        "feature": "func/callback",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "f4db299-4",
+      "source": "f4db299",
+      "quote": "describe(\"func/js-bind\", () => {",
+      "says": {
+        "feature": "func/js-bind",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "f4db299-5",
+      "source": "f4db299",
+      "quote": "Console.log(message).pipe(Effect.map(() => message)),",
+      "says": {
+        "behavior": "console-log-result",
+        "is": "message",
+        "area": "library"
+      }
+    },
+    {
+      "id": "f4db299-6",
+      "source": "f4db299",
+      "quote": "if (typeof fn !== \"function\") {",
+      "says": {
+        "behavior": "func-callback-non-function",
+        "is": "returns-value",
+        "area": "library"
+      }
+    },
+    {
+      "id": "f4db299-7",
+      "source": "f4db299",
+      "quote": "return Effect.runPromise(",
+      "says": {
+        "behavior": "callback-effect-result",
+        "is": "promise",
+        "area": "host"
+      }
+    },
+    {
+      "id": "f4db299-8",
+      "source": "f4db299",
+      "quote": "// should be stored in the environment",
+      "says": {
+        "behavior": "define-binding",
+        "is": "stored-in-environment",
+        "area": "names"
+      }
+    },
+    {
+      "id": "f4db299-9",
+      "source": "f4db299",
+      "quote": "adds input handler to agent",
+      "says": {
+        "feature": "agent-input-handler",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "b673d05-1",
+      "source": "b673d05",
+      "quote": "adds lambda",
+      "says": {
+        "feature": "lambda",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "id": "b673d05-2",
+      "source": "b673d05",
+      "quote": "adds object/new",
+      "says": {
+        "feature": "object/new",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b673d05-3",
+      "source": "b673d05",
+      "quote": "adds slash-prefix to special forms",
+      "says": {
+        "decision": "special-form-prefix",
+        "chose": "slash",
+        "area": "forms",
+        "over": ["plain"]
+      }
+    },
+    {
+      "id": "b673d05-4",
+      "source": "b673d05",
+      "quote": "adds slash-prefix to special forms",
+      "says": {
+        "rule": "special-forms-slash-prefix",
+        "holds": true,
+        "statement": "Special forms are written with a leading slash, such as \"/define\"",
+        "area": "forms",
+        "predicts": [
+          {
+            "behavior": "special-form-without-slash",
+            "is": "not-special-form"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b673d05-5",
+      "source": "b673d05",
+      "quote": "Schema.Literal(\"/define\"),",
+      "says": {
+        "behavior": "special-form-without-slash",
+        "is": "not-special-form",
+        "area": "forms",
+        "was": "special-form"
+      }
+    },
+    {
+      "id": "b673d05-6",
+      "source": "b673d05",
+      "quote": "updates func/js-bind to func/bind",
+      "says": {
+        "feature": "func/js-bind",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "func/bind"
+      }
+    },
+    {
+      "id": "b673d05-7",
+      "source": "b673d05",
+      "quote": "updates func/js-bind to func/bind",
+      "says": {
+        "feature": "func/bind",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "b673d05-8",
+      "source": "b673d05",
+      "quote": "updates func/js-bind to func/bind",
+      "says": {
+        "decision": "bind-function-name",
+        "chose": "func/bind",
+        "area": "library",
+        "over": ["func/js-bind"]
+      }
+    },
+    {
+      "id": "b673d05-9",
+      "source": "b673d05",
+      "quote": "export class ArgumentMismatchError extends Schema.TaggedError<ArgumentMismatchError>(",
+      "says": {
+        "feature": "ArgumentMismatchError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "b673d05-10",
+      "source": "b673d05",
+      "quote": "if (parameters.length !== args.length) {",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b673d05-11",
+      "source": "b673d05",
+      "quote": "if (parameters.length !== args.length) {",
+      "says": {
+        "behavior": "lambda-missing-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b673d05-12",
+      "source": "b673d05",
+      "quote": "should evaluate to a function that can be called with the given arguments",
+      "says": {
+        "behavior": "lambda-call",
+        "is": "applied",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "b673d05-13",
+      "source": "b673d05",
+      "quote": "const environment = yield* Ref.get(environmentRef);",
+      "says": {
+        "behavior": "lambda-environment",
+        "is": "copy-at-creation",
+        "area": "names"
+      }
+    },
+    {
+      "id": "b673d05-14",
+      "source": "b673d05",
+      "quote": "if (typeof classRef !== \"function\") {",
+      "says": {
+        "behavior": "object-new-non-function",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "b673d05-15",
+      "source": "b673d05",
+      "quote": "implements functional message appending in messages box in agent",
+      "says": {
+        "feature": "agent-message-appending",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-1",
+      "source": "c11efe8",
+      "quote": "\"get-path\": (obj: unknown, path: string) =>",
+      "says": {
+        "feature": "object/get-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-2",
+      "source": "c11efe8",
+      "quote": "\"get-method\": (obj: unknown, key: unknown) =>",
+      "says": {
+        "feature": "object/get-method",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-3",
+      "source": "c11efe8",
+      "quote": "\"call-method\": (obj: unknown, key: unknown, ...args: unknown[]) =>",
+      "says": {
+        "feature": "object/call-method",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-4",
+      "source": "c11efe8",
+      "quote": "\"get-method-path\": (obj: unknown, path: string) =>",
+      "says": {
+        "feature": "object/get-method-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-5",
+      "source": "c11efe8",
+      "quote": "\"call-method-path\": (obj: unknown, path: string, ...args: unknown[]) =>",
+      "says": {
+        "feature": "object/call-method-path",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-6",
+      "source": "c11efe8",
+      "quote": "access: flow(",
+      "says": {
+        "feature": "object/access",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "object/get"
+      }
+    },
+    {
+      "id": "c11efe8-7",
+      "source": "c11efe8",
+      "quote": "access: flow(",
+      "says": {
+        "decision": "property-access-function",
+        "chose": "object/get",
+        "area": "library",
+        "over": ["object/access"]
+      }
+    },
+    {
+      "id": "c11efe8-8",
+      "source": "c11efe8",
+      "quote": "should return undefined for missing keys",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "undefined",
+        "area": "library",
+        "was": "error"
+      }
+    },
+    {
+      "id": "c11efe8-9",
+      "source": "c11efe8",
+      "quote": "should return undefined for missing keys",
+      "says": {
+        "decision": "object-get-missing-key",
+        "chose": "undefined",
+        "area": "library",
+        "over": ["error"]
+      }
+    },
+    {
+      "id": "c11efe8-10",
+      "source": "c11efe8",
+      "quote": "should fail with NotAnObjectError when obj is not an object",
+      "says": {
+        "behavior": "object-get-non-object",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c11efe8-11",
+      "source": "c11efe8",
+      "quote": "should fail with KeyNotFoundError when key does not exist",
+      "says": {
+        "behavior": "object-get-path-missing-key",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c11efe8-12",
+      "source": "c11efe8",
+      "quote": "should fail with PathTraversalError when intermediate value is not an object",
+      "says": {
+        "behavior": "object-get-path-through-non-object",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c11efe8-13",
+      "source": "c11efe8",
+      "quote": "return method.bind(obj);",
+      "says": {
+        "behavior": "object-get-method-result",
+        "is": "bound-method",
+        "area": "library"
+      }
+    },
+    {
+      "id": "c11efe8-14",
+      "source": "c11efe8",
+      "quote": "class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>(",
+      "says": {
+        "feature": "NotAnObjectError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-15",
+      "source": "c11efe8",
+      "quote": "class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>(",
+      "says": {
+        "feature": "KeyNotFoundError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-16",
+      "source": "c11efe8",
+      "quote": "class NotAFunctionError extends Schema.TaggedError<NotAFunctionError>(",
+      "says": {
+        "feature": "NotAFunctionError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-17",
+      "source": "c11efe8",
+      "quote": "class NotAConstructorError extends Schema.TaggedError<NotAConstructorError>(",
+      "says": {
+        "feature": "NotAConstructorError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-18",
+      "source": "c11efe8",
+      "quote": "class PathTraversalError extends Schema.TaggedError<PathTraversalError>(",
+      "says": {
+        "feature": "PathTraversalError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-19",
+      "source": "c11efe8",
+      "quote": "class EmptyPathError extends Schema.TaggedError<EmptyPathError>(",
+      "says": {
+        "feature": "EmptyPathError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-20",
+      "source": "c11efe8",
+      "quote": "class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>(",
+      "says": {
+        "feature": "MethodNotFoundError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-21",
+      "source": "c11efe8",
+      "quote": "class ObjectError extends Schema.TaggedError<ObjectError>(\"ObjectError\")(",
+      "says": {
+        "feature": "ObjectError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "id": "c11efe8-22",
+      "source": "c11efe8",
+      "quote": "adds LLM and AI functionality to agent package",
+      "says": {
+        "feature": "agent-llm",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "c11efe8-23",
+      "source": "c11efe8",
+      "quote": "All commands should be run from the root directory using Turbo:",
+      "says": {
+        "rule": "commands-from-root-with-turbo",
+        "holds": true,
+        "statement": "All commands are run from the root directory using Turbo",
+        "area": "process"
+      }
+    },
+    {
+      "id": "c11efe8-24",
+      "source": "c11efe8",
+      "quote": "1. **Before coding**: Run `bun install` and `bun run prepare`",
+      "says": {
+        "rule": "use-bun-not-npm",
+        "holds": true,
+        "statement": "Development commands are run with bun",
+        "area": "process"
+      }
+    },
+    {
+      "id": "c11efe8-25",
+      "source": "c11efe8",
+      "quote": "1. **Before coding**: Run `bun install` and `bun run prepare`",
+      "says": {
+        "rule": "dev-commands-npm",
+        "holds": false,
+        "statement": "Development commands are run with npm and npx",
+        "area": "process",
+        "replaced_by": "use-bun-not-npm"
+      }
+    },
+    {
+      "id": "1d1dacf-1",
+      "source": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical",
+      "says": {
+        "feature": "list-auto-quote",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "1d1dacf-2",
+      "source": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical",
+      "says": {
+        "decision": "array-without-function-head",
+        "chose": "error",
+        "area": "evaluation",
+        "over": ["list-of-evaluated-elements"],
+        "because": "too magical"
+      }
+    },
+    {
+      "id": "1d1dacf-3",
+      "source": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical",
+      "says": {
+        "rule": "non-call-arrays-are-lists",
+        "holds": false,
+        "statement": "An array whose first element does not evaluate to a function evaluates each of its elements and returns the resulting array",
+        "area": "evaluation",
+        "replaced_by": "arrays-are-never-data"
+      }
+    },
+    {
+      "id": "1d1dacf-4",
+      "source": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "An array is always a special form or a call, never a list that evaluates to itself",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "error"
+          },
+          {
+            "behavior": "array-first-element-not-string",
+            "is": "error"
+          },
+          {
+            "behavior": "array-of-primitives",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "id": "1d1dacf-5",
+      "source": "1d1dacf",
+      "quote": "new InvalidFunctionCallError({ expression: functionCallExpression })",
+      "says": {
+        "behavior": "array-first-element-not-function",
+        "is": "error",
+        "area": "evaluation",
+        "was": "evaluated-elements"
+      }
+    },
+    {
+      "id": "1d1dacf-6",
+      "source": "1d1dacf",
+      "quote": "Effect.fail(new InvalidFunctionCallError({ expression }))",
+      "says": {
+        "behavior": "array-first-element-not-string",
+        "is": "error",
+        "area": "evaluation",
+        "was": "evaluated-elements"
+      }
+    },
+    {
+      "id": "1d1dacf-7",
+      "source": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical",
+      "says": {
+        "behavior": "array-of-primitives",
+        "is": "error",
+        "area": "evaluation",
+        "was": "itself"
+      }
+    },
+    {
+      "id": "1d1dacf-8",
+      "source": "1d1dacf",
+      "quote": "export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunctionCallError>(",
+      "says": {
+        "feature": "InvalidFunctionCallError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "1d1dacf-9",
+      "source": "1d1dacf",
+      "quote": "// TODO: FIXME: lambda breaks global environment (code inside lambda does not have access to global environment)",
+      "says": {
+        "behavior": "lambda-body-global-environment",
+        "is": "inaccessible",
+        "area": "names"
+      }
+    },
+    {
+      "id": "c6c3859-1",
+      "source": "c6c3859",
+      "quote": "revert keyword format back to no-prefix (not feeling it)",
+      "says": {
+        "decision": "special-form-prefix",
+        "chose": "plain",
+        "area": "forms",
+        "over": ["slash"],
+        "because": "not feeling it"
+      }
+    },
+    {
+      "id": "c6c3859-2",
+      "source": "c6c3859",
+      "quote": "revert keyword format back to no-prefix (not feeling it)",
+      "says": {
+        "rule": "special-forms-slash-prefix",
+        "holds": false,
+        "statement": "Special forms are written with a leading slash, such as \"/define\"",
+        "area": "forms",
+        "replaced_by": "special-forms-plain-names"
+      }
+    },
+    {
+      "id": "c6c3859-3",
+      "source": "c6c3859",
+      "quote": "revert keyword format back to no-prefix (not feeling it)",
+      "says": {
+        "rule": "special-forms-plain-names",
+        "holds": true,
+        "statement": "Special forms keep plain names, such as \"define\", with no prefix",
+        "area": "forms",
+        "predicts": [
+          {
+            "behavior": "special-form-without-slash",
+            "is": "special-form"
+          }
+        ]
+      }
+    },
+    {
+      "id": "c6c3859-4",
+      "source": "c6c3859",
+      "quote": "Schema.Literal(\"define\"),",
+      "says": {
+        "behavior": "special-form-without-slash",
+        "is": "special-form",
+        "area": "forms",
+        "was": "not-special-form"
+      }
+    },
+    {
+      "id": "c6c3859-5",
+      "source": "c6c3859",
+      "quote": "finish fixing tests after removing autoquote",
+      "says": {
+        "feature": "list-auto-quote",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "id": "c6c3859-6",
+      "source": "c6c3859",
+      "quote": "string references should evaluate to the value of the reference",
+      "says": {
+        "behavior": "bound-string",
+        "is": "bound-value",
+        "area": "names"
+      }
+    },
+    {
+      "id": "c6c3859-7",
+      "source": "c6c3859",
+      "quote": "Schema.minLength(1)",
+      "says": {
+        "behavior": "record-empty-key",
+        "is": "invalid",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "c6c3859-8",
+      "source": "c6c3859",
+      "quote": "const DISALLOWED_KEYS = [\"__proto__\"] as const;",
+      "says": {
+        "behavior": "record-proto-key",
+        "is": "invalid",
+        "area": "evaluation"
+      }
+    },
+    {
+      "id": "c6c3859-9",
+      "source": "c6c3859",
+      "quote": "should evaluate to a function, calling the function with incorrect arguments should produce an error",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "ca00e8e-1",
+      "source": "ca00e8e",
+      "quote": "moves agent into .json file",
+      "says": {
+        "rule": "agent-as-lion-program",
+        "holds": true,
+        "statement": "The coding agent is a Lion program kept in agent.json and run by a small host file",
+        "area": "ai"
+      }
+    },
+    {
+      "id": "ca00e8e-2",
+      "source": "ca00e8e",
+      "quote": "moves agent into .json file",
+      "says": {
+        "decision": "agent-program-format",
+        "chose": "json-file",
+        "area": "ai",
+        "over": ["inline-typescript"]
+      }
+    },
+    {
+      "id": "ca00e8e-3",
+      "source": "ca00e8e",
+      "quote": "import agent from \"./agent.json\";",
+      "says": {
+        "feature": "agent-json",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "ca00e8e-4",
+      "source": "ca00e8e",
+      "quote": "\"name\": \"@lion/agent\",",
+      "says": {
+        "feature": "@lionlang/agent",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "ca00e8e-5",
+      "source": "ca00e8e",
+      "quote": "\"name\": \"@lion/examples\",",
+      "says": {
+        "feature": "@lionlang/examples",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "id": "ca00e8e-6",
+      "source": "ca00e8e",
+      "quote": "implements basic fizzbuzz example",
+      "says": {
+        "feature": "fizzbuzz-example",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "id": "ca00e8e-7",
+      "source": "ca00e8e",
+      "quote": "// - math/% (modulo operator) for divisibility checks",
+      "says": {
+        "behavior": "modulo-function",
+        "is": "missing",
+        "area": "library"
+      }
+    },
+    {
+      "id": "ca00e8e-8",
+      "source": "ca00e8e",
+      "quote": "// - list/range (to generate numbers 1-100)",
+      "says": {
+        "behavior": "range-function",
+        "is": "missing",
+        "area": "library"
+      }
+    },
+    {
+      "id": "ca00e8e-9",
+      "source": "ca00e8e",
+      "quote": "// - list/map or recursion utilities for iteration",
+      "says": {
+        "behavior": "map-function",
+        "is": "missing",
+        "area": "library"
+      }
+    },
+    {
+      "id": "ca00e8e-10",
+      "source": "ca00e8e",
+      "quote": "Default to using Bun instead of Node.js.",
+      "says": {
+        "rule": "use-bun-not-npm",
+        "holds": true,
+        "statement": "Use Bun instead of Node.js, npm, pnpm, or vite",
+        "area": "process"
+      }
+    },
+    {
+      "id": "ca00e8e-11",
+      "source": "ca00e8e",
+      "quote": "Use `bun test` instead of `jest` or `vitest`",
+      "says": {
+        "rule": "use-bun-test-runner",
+        "holds": true,
+        "statement": "Tests run with bun test instead of jest or vitest",
+        "area": "tests",
+        "predicts": [
+          {
+            "behavior": "test-runner",
+            "is": "bun-test"
+          }
+        ]
+      }
+    },
+    {
+      "id": "1628fa3-1",
+      "source": "1628fa3",
+      "quote": "NEVER use `npx` or `npm` commands. Use `bun` or `turbo` instead.",
+      "says": {
+        "rule": "use-bun-not-npm",
+        "holds": true,
+        "statement": "Never use npx or npm commands; use bun or turbo",
+        "area": "process"
+      }
+    },
+    {
+      "id": "1628fa3-2",
+      "source": "1628fa3",
+      "quote": "[\"console/log-json\", [\".\", \"response\", \"steps\"]]",
+      "says": {
+        "feature": "console/log-json",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "1628fa3-3",
+      "source": "1628fa3",
+      "quote": "\"json-stringify\": (",
+      "says": {
+        "feature": "object/json-stringify",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "1628fa3-4",
+      "source": "1628fa3",
+      "quote": "class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>(",
+      "says": {
+        "feature": "IndexOutOfBoundsError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "1628fa3-5",
+      "source": "1628fa3",
+      "quote": "class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>(",
+      "says": {
+        "feature": "NotAnArrayError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "id": "1628fa3-6",
+      "source": "1628fa3",
+      "quote": "should access array elements using numeric keys",
+      "says": {
+        "behavior": "object-get-path-array-index",
+        "is": "element",
+        "area": "library"
+      }
+    },
+    {
+      "id": "1628fa3-7",
+      "source": "1628fa3",
+      "quote": "should fail with IndexOutOfBoundsError for out of bounds array index",
+      "says": {
+        "behavior": "object-get-path-index-out-of-bounds",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "id": "1628fa3-8",
+      "source": "1628fa3",
+      "quote": "should handle negative array indices as object keys (not array access)",
+      "says": {
+        "behavior": "object-get-path-negative-index",
+        "is": "object-key",
+        "area": "library"
+      }
+    },
+    {
+      "id": "1628fa3-9",
+      "source": "1628fa3",
+      "quote": ".catch((e) => console.error(e));",
+      "says": {
+        "behavior": "callback-effect-failure",
+        "is": "logged",
+        "area": "host"
+      }
+    },
+    {
+      "id": "1628fa3-10",
+      "source": "1628fa3",
+      "quote": "finishes read-file tool in agent.json",
+      "says": {
+        "feature": "agent-read-file-tool",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "id": "c771be4-1",
+      "source": "c771be4",
+      "quote": "implements list/map function",
+      "says": {
+        "feature": "list/map",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "id": "c771be4-2",
+      "source": "c771be4",
+      "quote": "implements list/map function",
+      "says": {
+        "behavior": "map-function",
+        "is": "present",
+        "area": "library",
+        "was": "missing"
+      }
+    },
+    {
+      "id": "c771be4-3",
+      "source": "c771be4",
+      "quote": "if (args.length < parameters.length) {",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "ignored",
+        "area": "forms",
+        "was": "error"
+      }
+    },
+    {
+      "id": "c771be4-4",
+      "source": "c771be4",
+      "quote": "calling the function with too few arguments should produce an error",
+      "says": {
+        "behavior": "lambda-missing-arguments",
+        "is": "error",
+        "area": "forms"
+      }
+    },
+    {
+      "id": "c771be4-5",
+      "source": "c771be4",
+      "quote": "if (args.length < parameters.length) {",
+      "says": {
+        "decision": "lambda-arity",
+        "chose": "extra-arguments-ignored",
+        "area": "forms",
+        "over": ["exact-count"]
+      }
+    },
+    {
+      "id": "c771be4-6",
+      "source": "c771be4",
+      "quote": "should map a list (via run())",
+      "says": {
+        "behavior": "list-map",
+        "is": "applies-function",
+        "area": "library"
+      }
+    }
+  ]
+}

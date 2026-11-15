@@ -1,0 +1,2675 @@
+[
+  "begin",
+  ["define", "one", ["lambda", ["xs"], ["array/head", "xs"]]],
+  [
+    "define",
+    "filled?",
+    [
+      "lambda",
+      ["v"],
+      [
+        "cond",
+        [
+          ["value/array?", "v"],
+          ["number/greaterThan", ["array/length", "v"], 0]
+        ],
+        ["else", false]
+      ]
+    ]
+  ],
+  ["define", "at", ["lambda", ["xs", "i"], ["object/get", "xs", "i"]]],
+  [
+    "define",
+    "distinct",
+    [
+      "lambda",
+      ["xs"],
+      [
+        "array/reduce",
+        "xs",
+        ["array/make"],
+        [
+          "lambda",
+          ["seen", "x"],
+          [
+            "cond",
+            [["array/includes?", "seen", "x"], "seen"],
+            ["else", ["array/concat", "seen", ["array/make", "x"]]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["define", "sorted", ["lambda", ["xs"], ["find", "?x", ["in", "?x", "xs"]]]],
+  [
+    "define",
+    "page",
+    [
+      "lambda",
+      ["blocks"],
+      ["string/concat", ["string/join", "blocks", "\n\n"], "\n"]
+    ]
+  ],
+  [
+    "define",
+    "counted",
+    [
+      "lambda",
+      ["n", "singular", "plural"],
+      [
+        "string/concat",
+        ["number/toString", "n"],
+        " ",
+        ["cond", [["number/equals?", "n", 1], "singular"], ["else", "plural"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "GENERATED",
+    "<!-- Written by `bun run history write` from the project record in history/. Change the record, not this file. -->"
+  ],
+  [
+    "define",
+    "RANKS",
+    [
+      "quote",
+      {
+        "Breaking": 0,
+        "Added": 1,
+        "Changed": 2,
+        "Fixed": 3,
+        "Documentation": 4
+      }
+    ]
+  ],
+  [
+    "define",
+    "rankOf",
+    [
+      "lambda",
+      ["kind"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "RANKS", "kind"]],
+          ["object/get", "RANKS", "kind"]
+        ],
+        ["else", 5]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "keyed",
+    [
+      "lambda",
+      ["rows"],
+      [
+        "array/reduce",
+        "rows",
+        {},
+        [
+          "lambda",
+          ["acc", "row"],
+          ["object/set", "acc", ["at", "row", 0], ["at", "row", 1]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "grouped",
+    [
+      "lambda",
+      ["rows"],
+      [
+        "array/reduce",
+        "rows",
+        {},
+        [
+          "lambda",
+          ["acc", "row"],
+          [
+            "object/set",
+            "acc",
+            ["at", "row", 0],
+            [
+              "array/concat",
+              [
+                "cond",
+                [
+                  ["value/array?", ["object/get", "acc", ["at", "row", 0]]],
+                  ["object/get", "acc", ["at", "row", 0]]
+                ],
+                ["else", ["array/make"]]
+              ],
+              ["array/make", ["at", "row", 1]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "ENTRY_DATA",
+    [
+      "keyed",
+      ["find", ["array/make", "?e", "?d"], ["entry", "?e", "?_", "?_", "?d"]]
+    ]
+  ],
+  [
+    "define",
+    "TITLES",
+    [
+      "keyed",
+      ["find", ["array/make", "?id", "?t"], ["decision_of", "?id", "?_", "?t"]]
+    ]
+  ],
+  [
+    "define",
+    "SUBJECTS",
+    ["keyed", ["find", ["array/make", "?h", "?s"], ["subject", "?h", "?s"]]]
+  ],
+  [
+    "define",
+    "MADE_BY",
+    [
+      "grouped",
+      [
+        "array/map",
+        [
+          "find",
+          ["array/make", "?e", "?t", "?h"],
+          ["and", ["made_by", "?e", "?h"], ["commit", "?h", "?t", "?_", "?_"]]
+        ],
+        ["lambda", ["r"], ["array/make", ["at", "r", 0], ["at", "r", 2]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "SHIPPED",
+    [
+      "grouped",
+      ["find", ["array/make", "?e", "?r"], ["shipped_in", "?e", "?r"]]
+    ]
+  ],
+  [
+    "define",
+    "FOLLOWERS",
+    [
+      "grouped",
+      [
+        "array/map",
+        [
+          "find",
+          ["array/make", "?id", "?pos", "?c"],
+          ["and", ["follows", "?c", "?id"], ["position", "?c", "?pos"]]
+        ],
+        ["lambda", ["r"], ["array/make", ["at", "r", 0], ["at", "r", 2]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "QUOTED",
+    [
+      "grouped",
+      [
+        "find",
+        ["array/make", ["string/concat", "?e", " ", "?h"], "?q"],
+        ["and", ["quotes", "?e", "?p", "?q"], ["resolved", "?p", "?h"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "DECISION_ENTRY",
+    [
+      "keyed",
+      ["find", ["array/make", "?id", "?e"], ["decision_of", "?id", "?e", "?_"]]
+    ]
+  ],
+  [
+    "define",
+    "DECIDED_ON",
+    [
+      "keyed",
+      [
+        "find",
+        ["array/make", "?id", "?d"],
+        ["and", ["decision_of", "?id", "?e", "?_"], ["dated", "?e", "?d"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "SUPERSEDED_BY",
+    [
+      "grouped",
+      ["find", ["array/make", "?old", "?by"], ["supersedes", "?by", "?old"]]
+    ]
+  ],
+  [
+    "define",
+    "IN_EFFECT",
+    [
+      "grouped",
+      ["find", ["array/make", "?id", "?r"], ["in_effect_from", "?id", "?r"]]
+    ]
+  ],
+  ["define", "entryData", ["lambda", ["e"], ["object/get", "ENTRY_DATA", "e"]]],
+  [
+    "define",
+    "titleOf",
+    [
+      "lambda",
+      ["id"],
+      [
+        "cond",
+        [
+          ["value/string?", ["object/get", "TITLES", "id"]],
+          ["object/get", "TITLES", "id"]
+        ],
+        ["else", ["string/concat", "`", "id", "`"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionLink",
+    [
+      "lambda",
+      ["id"],
+      ["string/concat", "[", ["titleOf", "id"], "](DECISIONS.md#", "id", ")"]
+    ]
+  ],
+  [
+    "define",
+    "bulletOf",
+    [
+      "lambda",
+      ["e"],
+      [
+        [
+          "lambda",
+          ["data"],
+          [
+            "string/concat",
+            "- ",
+            ["object/get", "data", ["quote", "text"]],
+            [
+              "cond",
+              [
+                ["filled?", ["object/get", "data", ["quote", "decisions"]]],
+                [
+                  "string/concat",
+                  " See ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["object/get", "data", ["quote", "decisions"]],
+                      "decisionLink"
+                    ],
+                    ", ",
+                    " and "
+                  ],
+                  "."
+                ]
+              ],
+              ["else", ""]
+            ]
+          ]
+        ],
+        ["entryData", "e"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "kindsOf",
+    [
+      "lambda",
+      ["found", "notes"],
+      [
+        "array/map",
+        [
+          "sorted",
+          [
+            [
+              "lambda",
+              ["kinds"],
+              [
+                "array/map",
+                ["array/range", 0, ["array/length", "kinds"]],
+                [
+                  "lambda",
+                  ["i"],
+                  [
+                    "array/make",
+                    ["rankOf", ["at", "kinds", "i"]],
+                    "i",
+                    ["at", "kinds", "i"]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "distinct",
+              [
+                "array/concat",
+                ["array/map", "found", ["lambda", ["f"], ["at", "f", 1]]],
+                [
+                  "array/map",
+                  "notes",
+                  ["lambda", ["n"], ["object/get", "n", ["quote", "kind"]]]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ["lambda", ["ranked"], ["at", "ranked", 2]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "sectionsOf",
+    [
+      "lambda",
+      ["found", "notes"],
+      [
+        "array/flat-map",
+        ["kindsOf", "found", "notes"],
+        [
+          "lambda",
+          ["kind"],
+          [
+            [
+              "lambda",
+              ["bullets"],
+              [
+                "array/concat",
+                ["array/make", ["string/concat", "### ", "kind"]],
+                [
+                  "array/flat-map",
+                  "notes",
+                  [
+                    "lambda",
+                    ["n"],
+                    [
+                      "cond",
+                      [
+                        [
+                          "string/equals?",
+                          ["object/get", "n", ["quote", "kind"]],
+                          "kind"
+                        ],
+                        ["array/make", ["object/get", "n", ["quote", "text"]]]
+                      ],
+                      ["else", ["array/make"]]
+                    ]
+                  ]
+                ],
+                [
+                  "cond",
+                  [
+                    ["number/greaterThan", ["array/length", "bullets"], 0],
+                    ["array/make", ["string/join", "bullets", "\n"]]
+                  ],
+                  ["else", ["array/make"]]
+                ]
+              ]
+            ],
+            [
+              "array/flat-map",
+              "found",
+              [
+                "lambda",
+                ["f"],
+                [
+                  "cond",
+                  [
+                    ["string/equals?", ["at", "f", 1], "kind"],
+                    ["array/make", ["bulletOf", ["at", "f", 2]]]
+                  ],
+                  ["else", ["array/make"]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "releaseData",
+    ["lambda", ["r"], ["one", ["find", "?d", ["release", "r", "?d"]]]]
+  ],
+  [
+    "define",
+    "releaseDate",
+    [
+      "lambda",
+      ["r"],
+      [
+        "one",
+        [
+          "find",
+          "?date",
+          [
+            "and",
+            ["release_at", "r", "?c"],
+            ["commit", "?c", "?_", "?date", "?_"]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "shippedName",
+    [
+      "lambda",
+      ["item"],
+      [
+        "cond",
+        [
+          ["value/string?", ["object/get", "item", ["quote", "version"]]],
+          [
+            "string/concat",
+            ["object/get", "item", ["quote", "name"]],
+            " ",
+            ["object/get", "item", ["quote", "version"]]
+          ]
+        ],
+        ["else", ["object/get", "item", ["quote", "name"]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "releaseTitle",
+    [
+      "lambda",
+      ["r"],
+      [
+        "string/concat",
+        ["releaseDate", "r"],
+        " — ",
+        [
+          "string/join",
+          [
+            "array/map",
+            ["object/get", ["releaseData", "r"], ["quote", "ships"]],
+            "shippedName"
+          ],
+          ", "
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "listOr",
+    [
+      "lambda",
+      ["value"],
+      ["cond", [["value/array?", "value"], "value"], ["else", ["array/make"]]]
+    ]
+  ],
+  [
+    "define",
+    "releaseBlocks",
+    [
+      "lambda",
+      ["r"],
+      [
+        "array/concat",
+        ["array/make", ["string/concat", "## ", ["releaseTitle", "r"]]],
+        [
+          "cond",
+          [
+            [
+              "value/string?",
+              ["object/get", ["releaseData", "r"], ["quote", "summary"]]
+            ],
+            [
+              "array/make",
+              ["object/get", ["releaseData", "r"], ["quote", "summary"]]
+            ]
+          ],
+          ["else", ["array/make"]]
+        ],
+        [
+          "sectionsOf",
+          [
+            "find",
+            ["array/make", "?pos", "?kind", "?e"],
+            [
+              "and",
+              ["shipped_in", "?e", "r"],
+              ["change", "?e", "?kind", "?_"],
+              ["position", "?e", "?pos"]
+            ]
+          ],
+          ["listOr", ["object/get", ["releaseData", "r"], ["quote", "notes"]]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "newestFirst",
+    [
+      "array/map",
+      [
+        "find",
+        ["array/make", ["number/subtract", 0, "?time"], "?r"],
+        [
+          "and",
+          ["release_at", "?r", "?c"],
+          ["commit", "?c", "?time", "?_", "?_"]
+        ]
+      ],
+      ["lambda", ["pair"], ["at", "pair", 1]]
+    ]
+  ],
+  [
+    "define",
+    "releaseName",
+    [
+      "lambda",
+      ["r"],
+      [
+        "string/join",
+        [
+          "array/map",
+          ["object/get", ["releaseData", "r"], ["quote", "ships"]],
+          "shippedName"
+        ],
+        ", "
+      ]
+    ]
+  ],
+  [
+    "define",
+    "releasedAs",
+    [
+      "lambda",
+      ["e"],
+      [
+        [
+          "lambda",
+          ["releases"],
+          [
+            "cond",
+            [
+              ["number/greaterThan", ["array/length", "releases"], 0],
+              ["releaseName", ["one", "releases"]]
+            ],
+            ["else", "Unreleased"]
+          ]
+        ],
+        [
+          "cond",
+          [
+            ["value/array?", ["object/get", "SHIPPED", "e"]],
+            ["object/get", "SHIPPED", "e"]
+          ],
+          ["else", ["array/make"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "anchor",
+    [
+      "lambda",
+      ["id"],
+      ["string/concat", "[", ["titleOf", "id"], "](#", "id", ")"]
+    ]
+  ],
+  [
+    "define",
+    "decisionEntry",
+    ["lambda", ["id"], ["object/get", "DECISION_ENTRY", "id"]]
+  ],
+  [
+    "define",
+    "decidedOn",
+    ["lambda", ["id"], ["object/get", "DECIDED_ON", "id"]]
+  ],
+  [
+    "define",
+    "supersededBy",
+    [
+      "lambda",
+      ["id"],
+      [
+        "cond",
+        [
+          ["value/array?", ["object/get", "SUPERSEDED_BY", "id"]],
+          ["object/get", "SUPERSEDED_BY", "id"]
+        ],
+        ["else", ["array/make"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "statusOf",
+    [
+      "lambda",
+      ["id"],
+      [
+        "cond",
+        [
+          ["number/greaterThan", ["array/length", ["supersededBy", "id"]], 0],
+          [
+            "string/concat",
+            "Superseded by ",
+            [
+              "string/join",
+              ["array/map", ["supersededBy", "id"], "anchor"],
+              ", ",
+              " and "
+            ]
+          ]
+        ],
+        ["else", "In force"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "oldestFirst",
+    [
+      "array/map",
+      [
+        "find",
+        ["array/make", "?time", "?id"],
+        [
+          "and",
+          ["decision_of", "?id", "?e", "?_"],
+          ["first_time", "?e", "?time"]
+        ]
+      ],
+      ["lambda", ["pair"], ["at", "pair", 1]]
+    ]
+  ],
+  [
+    "define",
+    "commitLine",
+    [
+      "lambda",
+      ["e", "hash"],
+      [
+        "cond",
+        [["string/equals?", "hash", "working tree"], "- Not committed yet."],
+        [
+          "else",
+          [
+            [
+              "lambda",
+              ["said"],
+              [
+                "string/concat",
+                "- `",
+                ["string/slice", "hash", 0, 7],
+                "` ",
+                ["object/get", "SUBJECTS", "hash"],
+                [
+                  "cond",
+                  [
+                    ["number/greaterThan", ["array/length", "said"], 0],
+                    [
+                      "string/concat",
+                      ": ",
+                      [
+                        "string/join",
+                        [
+                          "array/map",
+                          "said",
+                          ["lambda", ["q"], ["string/concat", "“", "q", "”"]]
+                        ],
+                        ", "
+                      ]
+                    ]
+                  ],
+                  ["else", ""]
+                ]
+              ]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "value/array?",
+                  ["object/get", "QUOTED", ["string/concat", "e", " ", "hash"]]
+                ],
+                ["object/get", "QUOTED", ["string/concat", "e", " ", "hash"]]
+              ],
+              ["else", ["array/make"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "inEffectFrom",
+    [
+      "lambda",
+      ["id"],
+      [
+        [
+          "lambda",
+          ["releases"],
+          [
+            "cond",
+            [
+              ["filled?", "releases"],
+              [
+                "string/concat",
+                "First released in ",
+                [
+                  "string/join",
+                  ["array/map", "releases", "releaseName"],
+                  " and "
+                ],
+                "."
+              ]
+            ],
+            ["else", "Not released yet."]
+          ]
+        ],
+        [
+          "cond",
+          [
+            ["value/array?", ["object/get", "IN_EFFECT", "id"]],
+            ["object/get", "IN_EFFECT", "id"]
+          ],
+          ["else", ["array/make"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionBlocks",
+    [
+      "lambda",
+      ["id"],
+      [
+        [
+          "lambda",
+          ["e", "data"],
+          [
+            "array/concat",
+            [
+              "array/make",
+              ["string/concat", "<a id=\"", "id", "\"></a>"],
+              ["string/concat", "## ", ["titleOf", "id"]]
+            ],
+            [
+              "array/make",
+              [
+                "string/concat",
+                "Decided ",
+                ["decidedOn", "id"],
+                ". ",
+                ["statusOf", "id"],
+                ". ",
+                ["inEffectFrom", "id"]
+              ]
+            ],
+            [
+              "cond",
+              [
+                ["filled?", ["object/get", "data", ["quote", "supersedes"]]],
+                [
+                  "array/make",
+                  [
+                    "string/concat",
+                    "Supersedes ",
+                    [
+                      "string/join",
+                      [
+                        "array/map",
+                        ["object/get", "data", ["quote", "supersedes"]],
+                        "anchor"
+                      ],
+                      ", ",
+                      " and "
+                    ],
+                    "."
+                  ]
+                ]
+              ],
+              ["else", ["array/make"]]
+            ],
+            [
+              "array/make",
+              "### Context",
+              ["object/get", "data", ["quote", "context"]]
+            ],
+            [
+              "array/make",
+              "### Decision",
+              ["object/get", "data", ["quote", "decision"]]
+            ],
+            [
+              "array/make",
+              "### Consequences",
+              ["object/get", "data", ["quote", "consequences"]]
+            ],
+            [
+              "cond",
+              [
+                ["filled?", ["object/get", "data", ["quote", "alternatives"]]],
+                [
+                  "array/make",
+                  "### Alternatives considered",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      ["object/get", "data", ["quote", "alternatives"]],
+                      [
+                        "lambda",
+                        ["a"],
+                        [
+                          "string/concat",
+                          "- **",
+                          ["object/get", "a", ["quote", "option"]],
+                          ".** ",
+                          ["object/get", "a", ["quote", "rejected"]]
+                        ]
+                      ]
+                    ],
+                    "\n"
+                  ]
+                ]
+              ],
+              ["else", ["array/make"]]
+            ],
+            [
+              [
+                "lambda",
+                ["followers"],
+                [
+                  "cond",
+                  [
+                    ["number/greaterThan", ["array/length", "followers"], 0],
+                    [
+                      "array/make",
+                      "### Changes that follow from it",
+                      [
+                        "string/join",
+                        [
+                          "array/map",
+                          "followers",
+                          [
+                            "lambda",
+                            ["c"],
+                            [
+                              "string/concat",
+                              "- ",
+                              ["releasedAs", "c"],
+                              ": ",
+                              [
+                                "object/get",
+                                ["entryData", "c"],
+                                ["quote", "text"]
+                              ]
+                            ]
+                          ]
+                        ],
+                        "\n"
+                      ]
+                    ]
+                  ],
+                  ["else", ["array/make"]]
+                ]
+              ],
+              [
+                "cond",
+                [
+                  ["value/array?", ["object/get", "FOLLOWERS", "id"]],
+                  ["object/get", "FOLLOWERS", "id"]
+                ],
+                ["else", ["array/make"]]
+              ]
+            ],
+            [
+              "array/make",
+              "### Commits",
+              [
+                "string/join",
+                [
+                  "array/map",
+                  [
+                    "cond",
+                    [
+                      ["value/array?", ["object/get", "MADE_BY", "e"]],
+                      ["object/get", "MADE_BY", "e"]
+                    ],
+                    ["else", ["array/make"]]
+                  ],
+                  ["lambda", ["hash"], ["commitLine", "e", "hash"]]
+                ],
+                "\n"
+              ]
+            ]
+          ]
+        ],
+        ["decisionEntry", "id"],
+        ["entryData", ["decisionEntry", "id"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionIndex",
+    [
+      "string/join",
+      [
+        "array/concat",
+        [
+          "array/make",
+          "| Decided | Decision | Status |",
+          "| --- | --- | --- |"
+        ],
+        [
+          "array/map",
+          "oldestFirst",
+          [
+            "lambda",
+            ["id"],
+            [
+              "string/concat",
+              "| ",
+              ["decidedOn", "id"],
+              " | ",
+              ["anchor", "id"],
+              " | ",
+              ["statusOf", "id"],
+              " |"
+            ]
+          ]
+        ]
+      ],
+      "\n"
+    ]
+  ],
+  ["define", "GITHUB", ["quote", "https://github.com/andrueandersoncs/lion"]],
+  [
+    "define",
+    "replaceAll",
+    [
+      "lambda",
+      ["t", "from", "into"],
+      ["string/join", ["string/split", "t", "from"], "into"]
+    ]
+  ],
+  [
+    "define",
+    "escape",
+    [
+      "lambda",
+      ["t"],
+      [
+        "replaceAll",
+        [
+          "replaceAll",
+          ["replaceAll", ["replaceAll", "t", "&", "&amp;"], "<", "&lt;"],
+          ">",
+          "&gt;"
+        ],
+        "\"",
+        "&quot;"
+      ]
+    ]
+  ],
+  [
+    "define",
+    "linked",
+    [
+      "lambda",
+      ["t"],
+      [
+        [
+          "lambda",
+          ["open"],
+          [
+            "cond",
+            [["number/lessThan", "open", 0], ["escape", "t"]],
+            [
+              "else",
+              [
+                [
+                  "lambda",
+                  ["rest"],
+                  [
+                    [
+                      "lambda",
+                      ["middle"],
+                      [
+                        [
+                          "lambda",
+                          ["label"],
+                          [
+                            [
+                              "lambda",
+                              ["after"],
+                              [
+                                [
+                                  "lambda",
+                                  ["close"],
+                                  [
+                                    "cond",
+                                    [
+                                      [
+                                        "boolean/or",
+                                        ["number/lessThan", "middle", 0],
+                                        [
+                                          "boolean/or",
+                                          ["number/lessThan", "close", 0],
+                                          ["string/includes", "label", "["]
+                                        ]
+                                      ],
+                                      [
+                                        "string/concat",
+                                        [
+                                          "escape",
+                                          [
+                                            "string/slice",
+                                            "t",
+                                            0,
+                                            ["number/add", "open", 1]
+                                          ]
+                                        ],
+                                        ["linked", "rest"]
+                                      ]
+                                    ],
+                                    [
+                                      "else",
+                                      [
+                                        "string/concat",
+                                        [
+                                          "escape",
+                                          ["string/slice", "t", 0, "open"]
+                                        ],
+                                        "<a href=\"",
+                                        [
+                                          "escape",
+                                          ["string/slice", "after", 0, "close"]
+                                        ],
+                                        "\">",
+                                        ["escape", "label"],
+                                        "</a>",
+                                        [
+                                          "linked",
+                                          [
+                                            "string/slice",
+                                            "after",
+                                            ["number/add", "close", 1]
+                                          ]
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ],
+                                ["string/indexOf", "after", ")"]
+                              ]
+                            ],
+                            [
+                              "string/slice",
+                              "rest",
+                              ["number/add", "middle", 2]
+                            ]
+                          ]
+                        ],
+                        ["string/slice", "rest", 0, ["number/max", "middle", 0]]
+                      ]
+                    ],
+                    ["string/indexOf", "rest", "]("]
+                  ]
+                ],
+                ["string/slice", "t", ["number/add", "open", 1]]
+              ]
+            ]
+          ]
+        ],
+        ["string/indexOf", "t", "["]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "inline",
+    [
+      "lambda",
+      ["md"],
+      [
+        [
+          "lambda",
+          ["parts"],
+          [
+            "string/join",
+            [
+              "array/map",
+              ["array/range", 0, ["array/length", "parts"]],
+              [
+                "lambda",
+                ["i"],
+                [
+                  "cond",
+                  [
+                    ["number/equals?", ["number/remainder", "i", 2], 0],
+                    ["linked", ["at", "parts", "i"]]
+                  ],
+                  [
+                    "else",
+                    [
+                      "string/concat",
+                      "<code>",
+                      ["escape", ["at", "parts", "i"]],
+                      "</code>"
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            ""
+          ]
+        ],
+        ["string/split", "md", "`"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "paragraphs",
+    [
+      "lambda",
+      ["md", "kind"],
+      [
+        "string/join",
+        [
+          "array/map",
+          ["string/split", "md", "\n\n"],
+          [
+            "lambda",
+            ["p"],
+            [
+              "string/concat",
+              "<p class=\"",
+              "kind",
+              "\">",
+              ["inline", "p"],
+              "</p>"
+            ]
+          ]
+        ],
+        ""
+      ]
+    ]
+  ],
+  [
+    "define",
+    "MONTHS",
+    [
+      "quote",
+      [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec"
+      ]
+    ]
+  ],
+  [
+    "define",
+    "monthDay",
+    [
+      "lambda",
+      ["d"],
+      [
+        [
+          "lambda",
+          ["parts"],
+          [
+            "string/concat",
+            [
+              "at",
+              "MONTHS",
+              ["number/subtract", ["number/fromString", ["at", "parts", 1]], 1]
+            ],
+            " ",
+            ["number/toString", ["number/fromString", ["at", "parts", 2]]]
+          ]
+        ],
+        ["string/split", "d", "-"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "yearOf",
+    ["lambda", ["d"], ["array/head", ["string/split", "d", "-"]]]
+  ],
+  [
+    "define",
+    "longDate",
+    [
+      "lambda",
+      ["d"],
+      ["string/concat", ["monthDay", "d"], ", ", ["yearOf", "d"]]
+    ]
+  ],
+  [
+    "define",
+    "basename",
+    [
+      "lambda",
+      ["path"],
+      [
+        [
+          "lambda",
+          ["parts"],
+          [
+            "string/slice",
+            ["at", "parts", ["number/subtract", ["array/length", "parts"], 1]],
+            0,
+            -5
+          ]
+        ],
+        ["string/split", "path", "/"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "KIND_CLASSES",
+    [
+      "quote",
+      {
+        "Breaking": "breaking",
+        "Added": "added",
+        "Changed": "changed",
+        "Fixed": "fixed",
+        "Documentation": "documentation"
+      }
+    ]
+  ],
+  [
+    "define",
+    "kindClass",
+    [
+      "lambda",
+      ["kind"],
+      [
+        "cond",
+        [
+          ["value/string?", ["object/get", "KIND_CLASSES", "kind"]],
+          ["string/concat", "kind-", ["object/get", "KIND_CLASSES", "kind"]]
+        ],
+        ["else", ["quote", "kind-other"]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "commitChips",
+    [
+      "lambda",
+      ["e"],
+      [
+        "string/join",
+        [
+          "array/flat-map",
+          [
+            "cond",
+            [
+              ["value/array?", ["object/get", "MADE_BY", "e"]],
+              ["object/get", "MADE_BY", "e"]
+            ],
+            ["else", ["array/make"]]
+          ],
+          [
+            "lambda",
+            ["hash"],
+            [
+              "cond",
+              [["string/equals?", "hash", "working tree"], ["array/make"]],
+              [
+                "else",
+                [
+                  "array/make",
+                  [
+                    "string/concat",
+                    "<a class=\"commit\" href=\"",
+                    "GITHUB",
+                    "/commit/",
+                    "hash",
+                    "\" title=\"",
+                    ["escape", ["object/get", "SUBJECTS", "hash"]],
+                    "\">",
+                    ["string/slice", "hash", 0, 7],
+                    "</a>"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        ""
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionLinks",
+    [
+      "lambda",
+      ["ids", "kind"],
+      [
+        "string/join",
+        [
+          "array/map",
+          "ids",
+          [
+            "lambda",
+            ["id"],
+            [
+              "string/concat",
+              "<a class=\"",
+              "kind",
+              "\" href=\"#decision-",
+              "id",
+              "\">",
+              ["inline", ["titleOf", "id"]],
+              "</a>"
+            ]
+          ]
+        ],
+        " "
+      ]
+    ]
+  ],
+  [
+    "define",
+    "changeItem",
+    [
+      "lambda",
+      ["e"],
+      [
+        [
+          "lambda",
+          ["data"],
+          [
+            [
+              "lambda",
+              ["reasons"],
+              [
+                [
+                  "lambda",
+                  ["chips"],
+                  [
+                    "string/concat",
+                    "<li class=\"change\" data-kind=\"",
+                    ["escape", ["object/get", "data", ["quote", "kind"]]],
+                    "\">",
+                    "<div class=\"change-text\">",
+                    ["inline", ["object/get", "data", ["quote", "text"]]],
+                    "</div>",
+                    [
+                      "cond",
+                      [
+                        [
+                          "boolean/or",
+                          [
+                            "number/greaterThan",
+                            ["array/length", "reasons"],
+                            0
+                          ],
+                          ["number/greaterThan", ["string/length", "chips"], 0]
+                        ],
+                        [
+                          "string/concat",
+                          "<div class=\"change-meta\">",
+                          [
+                            "cond",
+                            [
+                              [
+                                "number/greaterThan",
+                                ["array/length", "reasons"],
+                                0
+                              ],
+                              [
+                                "string/concat",
+                                "<span class=\"change-why\"><span class=\"change-why-label\">Why</span> ",
+                                [
+                                  "decisionLinks",
+                                  "reasons",
+                                  ["quote", "decision-link"]
+                                ],
+                                "</span>"
+                              ]
+                            ],
+                            ["else", ""]
+                          ],
+                          "<span class=\"commits\">",
+                          "chips",
+                          "</span></div>"
+                        ]
+                      ],
+                      ["else", ""]
+                    ],
+                    "</li>"
+                  ]
+                ],
+                ["commitChips", "e"]
+              ]
+            ],
+            [
+              "cond",
+              [
+                ["filled?", ["object/get", "data", ["quote", "decisions"]]],
+                ["object/get", "data", ["quote", "decisions"]]
+              ],
+              ["else", ["array/make"]]
+            ]
+          ]
+        ],
+        ["entryData", "e"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "kindSection",
+    [
+      "lambda",
+      ["kind", "found", "notes"],
+      [
+        [
+          "lambda",
+          ["items"],
+          [
+            "string/concat",
+            "<section class=\"kind-section ",
+            ["kindClass", "kind"],
+            "\" data-kind=\"",
+            ["escape", "kind"],
+            "\">",
+            "<h3 class=\"kind-title\"><span class=\"kind-dot\" aria-hidden=\"true\"></span>",
+            ["escape", "kind"],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "items"], 0],
+                [
+                  "string/concat",
+                  " <span class=\"kind-count\">",
+                  ["number/toString", ["array/length", "items"]],
+                  "</span>"
+                ]
+              ],
+              ["else", ""]
+            ],
+            "</h3>",
+            [
+              "string/join",
+              [
+                "array/flat-map",
+                "notes",
+                [
+                  "lambda",
+                  ["n"],
+                  [
+                    "cond",
+                    [
+                      [
+                        "string/equals?",
+                        ["object/get", "n", ["quote", "kind"]],
+                        "kind"
+                      ],
+                      [
+                        "array/make",
+                        [
+                          "paragraphs",
+                          ["object/get", "n", ["quote", "text"]],
+                          ["quote", "kind-note"]
+                        ]
+                      ]
+                    ],
+                    ["else", ["array/make"]]
+                  ]
+                ]
+              ],
+              ""
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "items"], 0],
+                [
+                  "string/concat",
+                  "<ul class=\"changes\">",
+                  ["string/join", ["array/map", "items", "changeItem"], ""],
+                  "</ul>"
+                ]
+              ],
+              ["else", ""]
+            ],
+            "</section>"
+          ]
+        ],
+        [
+          "array/flat-map",
+          "found",
+          [
+            "lambda",
+            ["f"],
+            [
+              "cond",
+              [
+                ["string/equals?", ["at", "f", 1], "kind"],
+                ["array/make", ["at", "f", 2]]
+              ],
+              ["else", ["array/make"]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "kindTally",
+    [
+      "lambda",
+      ["found"],
+      [
+        "string/concat",
+        "<ul class=\"kind-tally\">",
+        [
+          "string/join",
+          [
+            "array/map",
+            ["kindsOf", "found", ["array/make"]],
+            [
+              "lambda",
+              ["kind"],
+              [
+                "string/concat",
+                "<li class=\"",
+                ["kindClass", "kind"],
+                "\"><span class=\"kind-dot\" aria-hidden=\"true\"></span>",
+                [
+                  "number/toString",
+                  [
+                    "array/length",
+                    [
+                      "array/flat-map",
+                      "found",
+                      [
+                        "lambda",
+                        ["f"],
+                        [
+                          "cond",
+                          [
+                            ["string/equals?", ["at", "f", 1], "kind"],
+                            ["array/make", 1]
+                          ],
+                          ["else", ["array/make"]]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                " ",
+                ["escape", "kind"],
+                "</li>"
+              ]
+            ]
+          ],
+          ""
+        ],
+        "</ul>"
+      ]
+    ]
+  ],
+  [
+    "define",
+    "changesBlock",
+    [
+      "lambda",
+      ["found", "notes", "open"],
+      [
+        [
+          "lambda",
+          ["count"],
+          [
+            "cond",
+            [
+              [
+                "boolean/or",
+                ["number/greaterThan", "count", 0],
+                ["number/greaterThan", ["array/length", "notes"], 0]
+              ],
+              [
+                "string/concat",
+                "<details class=\"release-changes\"",
+                ["cond", ["open", " open"], ["else", ""]],
+                ">",
+                "<summary><span class=\"summary-label\">",
+                ["counted", "count", ["quote", "change"], ["quote", "changes"]],
+                "</span></summary>",
+                "<div class=\"kind-sections\">",
+                [
+                  "string/join",
+                  [
+                    "array/map",
+                    ["kindsOf", "found", "notes"],
+                    [
+                      "lambda",
+                      ["kind"],
+                      ["kindSection", "kind", "found", "notes"]
+                    ]
+                  ],
+                  ""
+                ],
+                "</div></details>"
+              ]
+            ],
+            ["else", ""]
+          ]
+        ],
+        ["array/length", "found"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionItem",
+    [
+      "lambda",
+      ["id"],
+      [
+        [
+          "lambda",
+          ["e"],
+          [
+            [
+              "lambda",
+              ["data"],
+              [
+                [
+                  "lambda",
+                  ["by"],
+                  [
+                    "string/concat",
+                    "<details class=\"decision\" id=\"decision-",
+                    "id",
+                    "\">",
+                    "<summary><span class=\"decision-mark\" aria-hidden=\"true\"></span>",
+                    "<span class=\"decision-title\">",
+                    ["inline", ["object/get", "data", ["quote", "title"]]],
+                    "</span>",
+                    [
+                      "cond",
+                      [
+                        ["number/greaterThan", ["array/length", "by"], 0],
+                        "<span class=\"decision-status is-superseded\">Superseded</span>"
+                      ],
+                      [
+                        "else",
+                        "<span class=\"decision-status\">In force</span>"
+                      ]
+                    ],
+                    "</summary>",
+                    "<div class=\"decision-body\">",
+                    [
+                      "string/concat",
+                      "<p class=\"decision-meta\">Decided ",
+                      ["longDate", ["decidedOn", "id"]],
+                      ".",
+                      [
+                        "cond",
+                        [
+                          ["number/greaterThan", ["array/length", "by"], 0],
+                          [
+                            "string/concat",
+                            " Superseded by ",
+                            ["decisionLinks", "by", ["quote", "decision-link"]],
+                            "."
+                          ]
+                        ],
+                        ["else", ""]
+                      ],
+                      [
+                        "cond",
+                        [
+                          [
+                            "filled?",
+                            ["object/get", "data", ["quote", "supersedes"]]
+                          ],
+                          [
+                            "string/concat",
+                            " Supersedes ",
+                            [
+                              "decisionLinks",
+                              ["object/get", "data", ["quote", "supersedes"]],
+                              ["quote", "decision-link"]
+                            ],
+                            "."
+                          ]
+                        ],
+                        ["else", ""]
+                      ],
+                      "</p>"
+                    ],
+                    "<h4>Context</h4>",
+                    [
+                      "paragraphs",
+                      ["object/get", "data", ["quote", "context"]],
+                      ["quote", "decision-text"]
+                    ],
+                    "<h4>Decision</h4>",
+                    [
+                      "paragraphs",
+                      ["object/get", "data", ["quote", "decision"]],
+                      ["quote", "decision-text"]
+                    ],
+                    "<h4>Consequences</h4>",
+                    [
+                      "paragraphs",
+                      ["object/get", "data", ["quote", "consequences"]],
+                      ["quote", "decision-text"]
+                    ],
+                    [
+                      "cond",
+                      [
+                        [
+                          "filled?",
+                          ["object/get", "data", ["quote", "alternatives"]]
+                        ],
+                        [
+                          "string/concat",
+                          "<h4>Alternatives considered</h4><ul class=\"alternatives\">",
+                          [
+                            "string/join",
+                            [
+                              "array/map",
+                              ["object/get", "data", ["quote", "alternatives"]],
+                              [
+                                "lambda",
+                                ["a"],
+                                [
+                                  "string/concat",
+                                  "<li><strong>",
+                                  [
+                                    "inline",
+                                    ["object/get", "a", ["quote", "option"]]
+                                  ],
+                                  ".</strong> ",
+                                  [
+                                    "inline",
+                                    ["object/get", "a", ["quote", "rejected"]]
+                                  ],
+                                  "</li>"
+                                ]
+                              ]
+                            ],
+                            ""
+                          ],
+                          "</ul>"
+                        ]
+                      ],
+                      ["else", ""]
+                    ],
+                    [
+                      "string/concat",
+                      "<p class=\"decision-commits\">",
+                      ["commitChips", "e"],
+                      "</p>"
+                    ],
+                    "</div></details>"
+                  ]
+                ],
+                ["supersededBy", "id"]
+              ]
+            ],
+            ["entryData", "e"]
+          ]
+        ],
+        ["decisionEntry", "id"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionsBlock",
+    [
+      "lambda",
+      ["ids", "verb"],
+      [
+        "cond",
+        [
+          ["number/greaterThan", ["array/length", "ids"], 0],
+          [
+            "string/concat",
+            "<div class=\"release-decisions\"><h3 class=\"decisions-title\">",
+            [
+              "counted",
+              ["array/length", "ids"],
+              ["quote", "decision"],
+              ["quote", "decisions"]
+            ],
+            " ",
+            "verb",
+            "</h3>",
+            ["string/join", ["array/map", "ids", "decisionItem"], ""],
+            "</div>"
+          ]
+        ],
+        ["else", ""]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "shippedChanges",
+    [
+      "lambda",
+      ["r"],
+      [
+        "find",
+        ["array/make", "?pos", "?kind", "?e"],
+        [
+          "and",
+          ["shipped_in", "?e", "r"],
+          ["change", "?e", "?kind", "?_"],
+          ["position", "?e", "?pos"]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "releaseTime",
+    [
+      "lambda",
+      ["r"],
+      [
+        "array/head",
+        [
+          "find",
+          "?t",
+          ["and", ["release_at", "r", "?c"], ["commit", "?c", "?t", "?_", "?_"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "decisionsFrom",
+    [
+      "lambda",
+      ["r"],
+      [
+        "array/map",
+        [
+          "find",
+          ["array/make", "?time", "?id"],
+          [
+            "and",
+            ["in_effect_from", "?id", "r"],
+            ["decision_of", "?id", "?e", "?_"],
+            ["first_time", "?e", "?time"]
+          ]
+        ],
+        ["lambda", ["pair"], ["at", "pair", 1]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "shipPills",
+    [
+      "lambda",
+      ["ships"],
+      [
+        "string/join",
+        [
+          "array/map",
+          "ships",
+          [
+            "lambda",
+            ["item"],
+            [
+              "string/concat",
+              "<span class=\"ship\"><span class=\"ship-name\">",
+              ["escape", ["object/get", "item", ["quote", "name"]]],
+              "</span>",
+              [
+                "cond",
+                [
+                  [
+                    "value/string?",
+                    ["object/get", "item", ["quote", "version"]]
+                  ],
+                  [
+                    "string/concat",
+                    " <span class=\"ship-version\">",
+                    ["escape", ["object/get", "item", ["quote", "version"]]],
+                    "</span>"
+                  ]
+                ],
+                ["else", ""]
+              ],
+              "</span>"
+            ]
+          ]
+        ],
+        " "
+      ]
+    ]
+  ],
+  [
+    "define",
+    "releaseItem",
+    [
+      "lambda",
+      ["r", "open"],
+      [
+        [
+          "lambda",
+          ["data"],
+          [
+            [
+              "lambda",
+              ["found"],
+              [
+                [
+                  "lambda",
+                  ["date"],
+                  [
+                    "string/concat",
+                    "<li class=\"timeline-item release ",
+                    [
+                      "cond",
+                      [
+                        [
+                          "array/includes?",
+                          [
+                            "array/map",
+                            ["object/get", "data", ["quote", "ships"]],
+                            [
+                              "lambda",
+                              ["s"],
+                              [
+                                "value/string?",
+                                ["object/get", "s", ["quote", "version"]]
+                              ]
+                            ]
+                          ],
+                          true
+                        ],
+                        ["quote", "is-package"]
+                      ],
+                      ["else", ["quote", "is-other"]]
+                    ],
+                    "\" id=\"release-",
+                    ["basename", "r"],
+                    "\">",
+                    "<div class=\"timeline-when\"><time datetime=\"",
+                    "date",
+                    "\"><span class=\"when-day\">",
+                    ["monthDay", "date"],
+                    "</span><span class=\"when-year\">",
+                    ["yearOf", "date"],
+                    "</span></time></div>",
+                    "<div class=\"timeline-marker\" aria-hidden=\"true\"></div>",
+                    "<article class=\"release-card\">",
+                    "<h2 class=\"release-title\">",
+                    ["shipPills", ["object/get", "data", ["quote", "ships"]]],
+                    "</h2>",
+                    [
+                      "cond",
+                      [
+                        [
+                          "value/string?",
+                          ["object/get", "data", ["quote", "summary"]]
+                        ],
+                        [
+                          "paragraphs",
+                          ["object/get", "data", ["quote", "summary"]],
+                          ["quote", "release-summary"]
+                        ]
+                      ],
+                      ["else", ""]
+                    ],
+                    ["kindTally", "found"],
+                    [
+                      "changesBlock",
+                      "found",
+                      ["listOr", ["object/get", "data", ["quote", "notes"]]],
+                      "open"
+                    ],
+                    [
+                      "decisionsBlock",
+                      ["decisionsFrom", "r"],
+                      ["quote", "took effect"]
+                    ],
+                    "</article></li>"
+                  ]
+                ],
+                ["releaseDate", "r"]
+              ]
+            ],
+            ["shippedChanges", "r"]
+          ]
+        ],
+        ["releaseData", "r"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "gapItem",
+    [
+      "lambda",
+      ["newer", "older"],
+      [
+        [
+          "lambda",
+          ["months"],
+          [
+            "cond",
+            [
+              ["number/greaterThanOrEqualTo", "months", 1],
+              [
+                "string/concat",
+                "<li class=\"timeline-gap\" aria-hidden=\"true\"><span>",
+                ["counted", "months", ["quote", "month"], ["quote", "months"]],
+                " earlier</span></li>"
+              ]
+            ],
+            ["else", ""]
+          ]
+        ],
+        [
+          "number/round",
+          [
+            "number/divide",
+            [
+              "number/subtract",
+              ["releaseTime", "newer"],
+              ["releaseTime", "older"]
+            ],
+            2629746
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "stat",
+    [
+      "lambda",
+      ["value", "label"],
+      [
+        "string/concat",
+        "<div class=\"changelog-stat\"><dt>",
+        "label",
+        "</dt><dd>",
+        ["number/toString", "value"],
+        "</dd></div>"
+      ]
+    ]
+  ],
+  ["define", "nextDraft", ["array/head", ["find", "?r", ["draft", "?r"]]]],
+  [
+    "define",
+    "unreleasedItem",
+    [
+      [
+        "lambda",
+        ["found"],
+        [
+          [
+            "lambda",
+            ["ids"],
+            [
+              "cond",
+              [
+                [
+                  "boolean/or",
+                  ["number/greaterThan", ["array/length", "found"], 0],
+                  ["number/greaterThan", ["array/length", "ids"], 0]
+                ],
+                [
+                  "string/concat",
+                  "<li class=\"timeline-item release is-unreleased\" id=\"unreleased\">",
+                  "<div class=\"timeline-when\"><span class=\"when-day\">Next</span><span class=\"when-year\">unreleased</span></div>",
+                  "<div class=\"timeline-marker\" aria-hidden=\"true\"></div>",
+                  [
+                    "string/concat",
+                    "<article class=\"release-card\"><h2 class=\"release-title\"><span class=\"ship\"><span class=\"ship-name\">Unreleased</span></span>",
+                    [
+                      "cond",
+                      [
+                        ["value/string?", "nextDraft"],
+                        [
+                          "string/concat",
+                          " ",
+                          [
+                            "shipPills",
+                            [
+                              "object/get",
+                              ["releaseData", "nextDraft"],
+                              ["quote", "ships"]
+                            ]
+                          ]
+                        ]
+                      ],
+                      ["else", ""]
+                    ],
+                    "</h2>",
+                    [
+                      "cond",
+                      [
+                        [
+                          "value/string?",
+                          [
+                            "cond",
+                            [
+                              ["value/string?", "nextDraft"],
+                              [
+                                "object/get",
+                                ["releaseData", "nextDraft"],
+                                ["quote", "summary"]
+                              ]
+                            ],
+                            ["else", null]
+                          ]
+                        ],
+                        [
+                          "paragraphs",
+                          [
+                            "object/get",
+                            ["releaseData", "nextDraft"],
+                            ["quote", "summary"]
+                          ],
+                          ["quote", "release-summary"]
+                        ]
+                      ],
+                      [
+                        "else",
+                        "<p class=\"release-summary\">On <code>main</code>, waiting for the next release.</p>"
+                      ]
+                    ]
+                  ],
+                  ["kindTally", "found"],
+                  ["changesBlock", "found", ["array/make"], true],
+                  [
+                    "decisionsBlock",
+                    "ids",
+                    ["quote", "will take effect with it"]
+                  ],
+                  "</article></li>"
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          [
+            "array/map",
+            [
+              "find",
+              ["array/make", "?time", "?id"],
+              [
+                "and",
+                ["decision_of", "?id", "?e", "?_"],
+                ["first_time", "?e", "?time"],
+                ["not", ["in_effect_from", "?id", "?_"]]
+              ]
+            ],
+            ["lambda", ["pair"], ["at", "pair", 1]]
+          ]
+        ]
+      ],
+      [
+        "find",
+        ["array/make", "?pos", "?kind", "?e"],
+        [
+          "and",
+          ["unreleased", "?e"],
+          ["change", "?e", "?kind", "?_"],
+          ["position", "?e", "?pos"]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "unreleasedBlocks",
+    [
+      [
+        "lambda",
+        ["found"],
+        [
+          "cond",
+          [
+            ["number/greaterThan", ["array/length", "found"], 0],
+            [
+              "array/concat",
+              [
+                "array/make",
+                [
+                  "cond",
+                  [
+                    ["value/string?", "nextDraft"],
+                    [
+                      "string/concat",
+                      "## Unreleased — ",
+                      ["releaseName", "nextDraft"]
+                    ]
+                  ],
+                  ["else", "## Unreleased"]
+                ]
+              ],
+              [
+                "cond",
+                [
+                  ["boolean/and", ["value/string?", "nextDraft"], true],
+                  [
+                    "cond",
+                    [
+                      [
+                        "value/string?",
+                        [
+                          "cond",
+                          [
+                            ["value/string?", "nextDraft"],
+                            [
+                              "object/get",
+                              ["releaseData", "nextDraft"],
+                              ["quote", "summary"]
+                            ]
+                          ],
+                          ["else", null]
+                        ]
+                      ],
+                      [
+                        "array/make",
+                        [
+                          "object/get",
+                          ["releaseData", "nextDraft"],
+                          ["quote", "summary"]
+                        ]
+                      ]
+                    ],
+                    ["else", ["array/make"]]
+                  ]
+                ],
+                ["else", ["array/make"]]
+              ],
+              [
+                "sectionsOf",
+                "found",
+                [
+                  "cond",
+                  [
+                    ["value/string?", "nextDraft"],
+                    [
+                      "listOr",
+                      [
+                        "object/get",
+                        ["releaseData", "nextDraft"],
+                        ["quote", "notes"]
+                      ]
+                    ]
+                  ],
+                  ["else", ["array/make"]]
+                ]
+              ]
+            ]
+          ],
+          ["else", ["array/make"]]
+        ]
+      ],
+      [
+        "find",
+        ["array/make", "?pos", "?kind", "?e"],
+        [
+          "and",
+          ["unreleased", "?e"],
+          ["change", "?e", "?kind", "?_"],
+          ["position", "?e", "?pos"]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "timelineItems",
+    [
+      "string/concat",
+      "unreleasedItem",
+      [
+        "string/join",
+        [
+          "array/map",
+          ["array/range", 0, ["array/length", "newestFirst"]],
+          [
+            "lambda",
+            ["i"],
+            [
+              "string/concat",
+              [
+                "cond",
+                [
+                  ["number/greaterThan", "i", 0],
+                  [
+                    "gapItem",
+                    ["at", "newestFirst", ["number/subtract", "i", 1]],
+                    ["at", "newestFirst", "i"]
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "releaseItem",
+                ["at", "newestFirst", "i"],
+                ["number/equals?", "i", 0]
+              ]
+            ]
+          ]
+        ],
+        ""
+      ]
+    ]
+  ],
+  [
+    "define",
+    "allKinds",
+    [
+      "kindsOf",
+      [
+        "find",
+        ["array/make", "?pos", "?kind", "?e"],
+        ["and", ["change", "?e", "?kind", "?_"], ["position", "?e", "?pos"]]
+      ],
+      ["array/make"]
+    ]
+  ],
+  [
+    "define",
+    "kindFilters",
+    [
+      "string/concat",
+      "<div class=\"changelog-filters\" role=\"group\" aria-label=\"Kinds of change\">",
+      [
+        "string/join",
+        [
+          "array/map",
+          "allKinds",
+          [
+            "lambda",
+            ["kind"],
+            [
+              "string/concat",
+              "<button type=\"button\" class=\"filter ",
+              ["kindClass", "kind"],
+              "\" data-kind=\"",
+              ["escape", "kind"],
+              "\" aria-pressed=\"true\"><span class=\"kind-dot\" aria-hidden=\"true\"></span>",
+              ["escape", "kind"],
+              " <span class=\"filter-count\">",
+              [
+                "number/toString",
+                ["array/length", ["find", "?e", ["change", "?e", "kind", "?_"]]]
+              ],
+              "</span></button>"
+            ]
+          ]
+        ],
+        ""
+      ],
+      "</div>"
+    ]
+  ],
+  [
+    "define",
+    "firstReleaseDate",
+    [
+      "releaseDate",
+      [
+        "at",
+        "newestFirst",
+        ["number/subtract", ["array/length", "newestFirst"], 1]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "changeCount",
+    ["array/length", ["find", "?e", ["change", "?e", "?_", "?_"]]]
+  ],
+  [
+    "define",
+    "commitCount",
+    [
+      "array/length",
+      [
+        "find",
+        "?h",
+        ["and", ["subject", "?h", "?_"], ["not", ["=", "?h", "working tree"]]]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "NAV_LINKS",
+    [
+      "quote",
+      [
+        ["index.html#features", "Features"],
+        ["index.html#examples", "Examples"],
+        ["index.html#logic", "Logic"],
+        ["index.html#editor", "Editor"],
+        ["index.html#packages", "Packages"],
+        ["docs.html", "Docs"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "GITHUB_ICON",
+    [
+      "quote",
+      "<svg aria-hidden=\"true\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z\"/></svg>"
+    ]
+  ],
+  [
+    "define",
+    "navLinks",
+    [
+      "string/join",
+      [
+        "array/map",
+        "NAV_LINKS",
+        [
+          "lambda",
+          ["link"],
+          [
+            "string/concat",
+            "<a href=\"",
+            ["at", "link", 0],
+            "\">",
+            ["at", "link", 1],
+            "</a>"
+          ]
+        ]
+      ],
+      "\n          "
+    ]
+  ],
+  [
+    "define",
+    "timelinePage",
+    [
+      "string/concat",
+      "<!DOCTYPE html>\n",
+      "<html lang=\"en\">\n<head>\n",
+      "<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n",
+      "<title>Changelog — Lion</title>\n",
+      "<meta name=\"description\" content=\"",
+      [
+        "string/concat",
+        "Every release of Lion",
+        [
+          "cond",
+          [
+            ["filled?", "newestFirst"],
+            ["string/concat", " since ", ["longDate", "firstReleaseDate"]]
+          ],
+          ["else", ""]
+        ],
+        ", each change it shipped, and the decisions behind them, written by Lion from its project record."
+      ],
+      "\">\n<meta name=\"theme-color\" content=\"#09090b\">\n",
+      "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n",
+      "<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap\" rel=\"stylesheet\">\n",
+      "<link rel=\"stylesheet\" href=\"styles.css\">\n<link rel=\"stylesheet\" href=\"changelog.css\">\n",
+      "<link rel=\"icon\" href=\"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>\">\n",
+      "<script>\"use strict\"; document.documentElement.classList.add(\"js\");</script>\n",
+      "<script type=\"module\" src=\"script.js\"></script>\n<script type=\"module\" src=\"changelog.js\"></script>\n",
+      "</head>\n<body>\n",
+      "<nav class=\"nav is-scrolled\"><div class=\"nav-content\">",
+      "<a href=\"index.html\" class=\"logo\" aria-label=\"Lion home\"><span class=\"logo-mark\" aria-hidden=\"true\">[ ]</span><span class=\"logo-icon\">Lion</span></a>",
+      "<div class=\"nav-links\">\n          ",
+      "navLinks",
+      "\n          <a href=\"changelog.html\" aria-current=\"page\">Changelog</a>",
+      "\n          <a href=\"https://github.com/andrueandersoncs/lion\" target=\"_blank\" rel=\"noopener\" class=\"nav-github\">",
+      "GITHUB_ICON",
+      "GitHub</a></div>",
+      "<button type=\"button\" class=\"mobile-menu-btn\" aria-label=\"Toggle menu\" aria-expanded=\"false\" aria-controls=\"mobile-menu\"><span></span><span></span><span></span></button></div>",
+      "<div class=\"mobile-menu\" id=\"mobile-menu\">",
+      "navLinks",
+      "<a href=\"changelog.html\" aria-current=\"page\">Changelog</a><a href=\"https://github.com/andrueandersoncs/lion\" target=\"_blank\" rel=\"noopener\">GitHub</a></div></nav>\n",
+      "<main class=\"changelog\" id=\"top\">\n",
+      "<header class=\"changelog-hero\">",
+      "<p class=\"changelog-eyebrow\">Changelog</p>",
+      "<h1>How Lion got here</h1>",
+      "<p class=\"changelog-lead\">",
+      [
+        "string/concat",
+        "Every release",
+        [
+          "cond",
+          [
+            ["filled?", "newestFirst"],
+            ["string/concat", " since ", ["longDate", "firstReleaseDate"]]
+          ],
+          ["else", ""]
+        ],
+        ", with each change it shipped and the decisions behind them. Lion writes this page itself, from the ",
+        "<a href=\"",
+        "GITHUB",
+        "/tree/main/history\">project record</a> kept beside its code: which release shipped a change is worked out from git, not written down. What every commit said, and where the project disagrees with itself, is in <a href=\"research.html\">the checked model of Lion's development</a>."
+      ],
+      "</p>",
+      "<dl class=\"changelog-stats\">",
+      ["stat", ["array/length", "newestFirst"], ["quote", "Releases"]],
+      ["stat", "changeCount", ["quote", "Changes"]],
+      ["stat", ["array/length", "oldestFirst"], ["quote", "Decisions"]],
+      ["stat", "commitCount", ["quote", "Commits"]],
+      "</dl></header>\n",
+      "<div class=\"changelog-controls\">",
+      "kindFilters",
+      "<div class=\"changelog-tools\"><label class=\"changelog-search\"><span class=\"sr-only\">Search changes and decisions</span>",
+      "<input type=\"search\" placeholder=\"Search changes and decisions\" autocomplete=\"off\" spellcheck=\"false\"></label>",
+      "<button type=\"button\" class=\"changelog-expand\" aria-pressed=\"false\">Expand all</button></div>",
+      "<p class=\"changelog-status\" aria-live=\"polite\"></p></div>\n",
+      "<ol class=\"timeline\">",
+      "timelineItems",
+      "</ol>\n",
+      "</main>\n",
+      "<footer class=\"footer\"><div class=\"footer-bottom\"><p>Written by <code>bun run history write</code> from ",
+      "<a href=\"",
+      "GITHUB",
+      "/tree/main/history\">history/</a>, where each change, release, and decision is a file and Lion's rules derive the rest. The same record writes ",
+      "<a href=\"",
+      "GITHUB",
+      "/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and <a href=\"",
+      "GITHUB",
+      "/blob/main/DECISIONS.md\">DECISIONS.md</a>.</p></div></footer>\n",
+      "</body>\n</html>\n"
+    ]
+  ],
+  {
+    "CHANGELOG.md": [
+      "page",
+      [
+        "array/concat",
+        ["array/make", "GENERATED", "# Changelog"],
+        "unreleasedBlocks",
+        ["array/flat-map", "newestFirst", "releaseBlocks"]
+      ]
+    ],
+    "DECISIONS.md": [
+      "page",
+      [
+        "array/concat",
+        [
+          "array/make",
+          "GENERATED",
+          "# Decisions",
+          [
+            "string/concat",
+            "Why Lion is the way it is. Each decision says what called for it, what was decided, what follows from it, what else was considered, and the commits it was made in. The record holds ",
+            [
+              "counted",
+              ["array/length", "oldestFirst"],
+              ["quote", "decision"],
+              ["quote", "decisions"]
+            ],
+            ", and ",
+            [
+              "counted",
+              ["array/length", ["find", "?id", ["standing", "?id"]]],
+              ["quote", "of them is"],
+              ["quote", "of them are"]
+            ],
+            " in force. They are kept in `history/decisions/`, and this page is written from them."
+          ],
+          "decisionIndex"
+        ],
+        ["array/flat-map", "oldestFirst", "decisionBlocks"]
+      ]
+    ],
+    "docs/changelog.html": "timelinePage"
+  }
+]

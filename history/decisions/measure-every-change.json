@@ -1,0 +1,23 @@
+{
+  "id": "measure-every-change",
+  "title": "Measure every change to core for its code, its semantics, its speed, and how well its tests catch broken code",
+  "context": "Lion's aim is one rule in place of special cases, so that an expression gives in a rule head, a filter, a `find`, or a reloaded snapshot what it gives in plain code. Until 0.6.0 nothing in the repository counted how far Lion fell short of that, or whether a change left the code and the language simpler or harder to know. Speed and the strength of the tests were not measured either.",
+  "decision": "`@lionlang/metrics`, a private package, measures the working tree beside any earlier commit. `bun run measure` counts the code of `@lionlang/core` without its tests (code lines, functions, paths through functions, nesting-weighted decisions, and `instanceof` tests) and its semantics: special forms, library functions, kinds of error, distinct messages, and the exceptions of the interop grid, which runs every kind of expression in every place one can stand and compares each with plain code. `bun run bench` times a set of programs, each version in a process of its own, `bun run mutate` breaks the code in each listed place and checks that a property fails, and `bun run compare` runs the same programs on two commits. AGENTS.md asks that every change to core be measured before it is done, that the numbers go in the commit message also when they went up, and that a new exception in the grid be fixed rather than added to `KNOWN`.",
+  "consequences": "The grid counted 209 exceptions for 0.5.0 and 2 for 0.6.0, and every later core commit that measured it found the same 2 documented ones. Each core commit since states its numbers, including the ones that grew: schemas took the code from 6,035 to 7,798 lines, and the arity rule's commit says the rule cost more lines than the checks it replaced. A new exception fails the tests of `packages/metrics`, and a mutation no property catches is reported as `MISSED`, so a change brings a mutation and a property for each behavior it adds. Benchmark times move by a few percent between runs, so `bun run bench` is run twice.",
+  "alternatives": [
+    {
+      "option": "Time both versions of the evaluator in one process",
+      "rejected": "Loading both evaluators into one process slowed the second one down by up to a fifth on code that had not changed."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "500bac2",
+      "quote": "leave Lion simpler in code and in semantics, give every feature and every bug a property, be ambitious, and report what was measured"
+    },
+    {
+      "commit": "d45c397",
+      "quote": "Each version is now timed in a process of its own"
+    }
+  ]
+}

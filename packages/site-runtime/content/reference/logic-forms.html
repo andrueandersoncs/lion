@@ -50,9 +50,9 @@
 </ul>
 <ul>
   <li>When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. Two questions that use the same name for a variable of their own do not share it.</li>
-  <li>In plain code a question is asked right away, and every variable in it is its own. In a rule, query, invariant, or find, a question is part of what is written: it is asked for each answer, when that runs.</li>
+  <li>In plain code a question is asked as soon as something needs its value, and every variable in it is its own. In a rule, query, invariant, or find, a question is part of what is written: it is asked for each answer, when that runs.</li>
   <li>A question asked from a rule sees every row of the relations it asks about, so those are derived first. A rule cannot ask about a relation that depends on the rule's own head.</li>
-  <li><code>define</code>, <code>and</code>, <code>or</code>, <code>not</code>, and a lambda keep a goal as it is, so goals can still be named, combined, and passed around.</li>
+  <li><code>define</code>, <code>and</code>, <code>or</code>, <code>not</code>, and a lambda keep a goal as it is, so goals can still be named, combined, and passed around. So does a program, or a <code>begin</code>, whose value is a goal: it gives the goal as written.</li>
 </ul>
 <lion-example name="Asking in plain code">
 ["begin",
@@ -430,7 +430,7 @@
 <ul>
   <li>Holds when <code>goal</code> holds for some value of each listed variable. The variables must be named logic variables, each listed once, and the goal must mention each.</li>
   <li>The listed variables are its own wherever it stands, as a <a href="#logic-asking">question's</a> own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer.</li>
-  <li>It is a question, also when its goal has no relation in it. In plain code it is <code>true</code> or <code>false</code>, and it works in a query, a rule body, under <code>not</code>, in a <code>find</code>, as a value, and in an invariant.</li>
+  <li>It is a question, also when its goal has no relation in it. As a value it is <code>true</code> or <code>false</code>, and it works in a query, a rule body, under <code>not</code>, in a <code>find</code>, as a value, and in an invariant.</li>
   <li>As a <a href="#form-rule">rule</a> head, over a relation call or an <code>and</code> of them, it says the head holds for values nobody has given. For each answer of the body whose head does not hold already, the rule invents an <a href="#form-some">unknown</a> for each listed variable. It cannot list a variable the body binds, and a rule that invents cannot aggregate. A listed variable can stand as an argument of the head, or inside a record or list there, but nothing can compute with it.</li>
   <li>Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. The result does not depend on the order rules or facts were added in.</li>
   <li>Rules that invent may recurse only as long as what they invent never flows back into inventing more; see <a href="#guarantee-termination">Termination</a>. A relation that rules invent rows of is derived in full, as an aggregated relation is.</li>

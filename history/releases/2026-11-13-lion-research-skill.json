@@ -1,0 +1,15 @@
+{
+  "ships": [
+    {
+      "name": "lion-research skill"
+    }
+  ],
+  "summary": "No package changed. `skills/lion-research` is a new agent skill that uses Lion as the working memory of a deep research run, and the README has a section on it.",
+  "notes": [
+    {
+      "kind": "Changed during the first trial",
+      "text": "A trial run researched the Microsoft 365 outage of 12 November 2026 with the first version of the skill: 19 sources and 175 claims. That version's core followed each claim to the source it was credited to and counted distinct sources. On the trial's model it called 15 answers corroborated. Eight of them were not: two channels of one company counted as two origins in three, two articles from one newspaper in one, and in four an origin was a source that was only credited, either unread or saying something else. The core above replaced it. On the same evidence it calls 7 answers corroborated, the 7 the trial's agent reached with stricter rules of its own, and it reports 4 misquotes and 26 answers known only second-hand."
+    }
+  ],
+  "commit": "284f00f"
+}

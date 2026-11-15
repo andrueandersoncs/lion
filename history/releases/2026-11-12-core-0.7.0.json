@@ -1,0 +1,14 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.7.0"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.6.0"
+    }
+  ],
+  "summary": "Schemas say what a value must be, and one rule says what fits: whatever checks a value against a schema asks whether the value fits it. A logic variable in a schema is the value it meets, so a schema is also a pattern that takes data apart.",
+  "commit": "af7dc58"
+}
