@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Each decision says what called for it, what was decided, what follows from it, what else was considered, and the commits it was made in. The record holds 44 decisions, and 42 of them are in force. They are kept in `history/decisions/`, and this page is written from them.
+Why Lion is the way it is. Each decision says what called for it, what was decided, what follows from it, what else was considered, and the commits it was made in. The record holds 48 decisions, and 46 of them are in force. They are kept in `history/decisions/`, and this page is written from them.
 
 | Decided | Decision | Status |
 | --- | --- | --- |
@@ -50,6 +50,10 @@ Why Lion is the way it is. Each decision says what called for it, what was decid
 | 2026-11-14 | [Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it](#goal-directed-shares-full-relations) | In force |
 | 2026-11-14 | [Keep the changelog and the decisions as a Lion model of the git history](#project-record-in-lion) | In force |
 | 2026-11-14 | [Keep a research model of Lion's development that checks the project against itself](#research-model-of-development) | In force |
+| 2026-11-15 | [A research lead is done when every question it pursues has an answer two publishers give first-hand](#lead-done-when-confirmed) | In force |
+| 2026-11-15 | [A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff](#patience-since-last-payoff) | In force |
+| 2026-11-15 | [A version improves a score when its worst run beats the best that any earlier version was sure to give](#score-improves-past-noise) | In force |
+| 2026-11-15 | [A version's runs of a score count only where what the score requires holds](#score-requirements) | In force |
 
 <a id="json-programs"></a>
 
@@ -1438,3 +1442,131 @@ Inconsistencies in the project's history are listed where everyone can see them,
 ### Commits
 
 - `44e509d` feat: keep Lion's changelog, decisions, and a checked model of its development in Lion
+
+<a id="lead-done-when-confirmed"></a>
+
+## A research lead is done when every question it pursues has an answer two publishers give first-hand
+
+Decided 2026-11-15. In force. Not released yet.
+
+### Context
+
+The research skill's leads record what each line of inquiry set out to find. A lead needs an end besides running out of patience, and the core already says what confirmation is: an answer two publishers give first-hand, with relays not counted.
+
+### Decision
+
+A lead pursues questions written as patterns: a record covers every answered question that has its keys and values, so `{"warehouses": "tarnwell"}` covers the count on every date. Senses the reader set aside are not covered. The lead is done when every pattern covers an answer that is `corroborated`. Disputes do not hold a lead open; `disputed` reports them as before.
+
+### Consequences
+
+In the Tarnwell corpus, the lead for an outside count of warehouses is done once the licensing registry says 37 first-hand, though Cargo Ledger's 39 is still a dispute. A question only one publisher can answer never finishes its lead, which then runs out of patience, and the report says that nobody independent gives it.
+
+### Alternatives considered
+
+- **Done only when the covered questions are also undisputed.** One outlier source would keep a lead open for as long as anyone kept reading, and the dispute is already a finding of its own.
+- **Done when any source answers the question.** One publisher's word repeated by ten outlets would finish it, which is the mistake the research core exists to catch.
+
+### Changes that follow from it
+
+- Unreleased: The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for".
+
+### Commits
+
+- Not committed yet.
+
+<a id="patience-since-last-payoff"></a>
+
+## A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff
+
+Decided 2026-11-15. In force. Not released yet.
+
+### Context
+
+Taylor's map-driven autoresearch keeps a map of ideas, runs experiments on some, and moves effort from the ideas that stall to the ones that pay. The reasoning skill's directions (ideas for improving a score) and the research skill's leads (lines of inquiry) both need a rule for when to stop spending on one. A direction's experiment pays off when its version improves a score; a lead's source pays off when it says something first-hand the lead covers.
+
+### Decision
+
+Each direction and lead has a patience, 3 unless it says. Its misses are the experiments, or the sources read for it, that paid nothing and came after its last payoff; when they reach its patience it is set aside, and it stays in the model with why. A payoff starts the count again, as patience does in early stopping. Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`. The research recorder numbers the sources read for leads in the order their notes are recorded, so "in a row" has a meaning there too.
+
+### Consequences
+
+A direction that keeps paying off keeps its budget, and one that never pays is dropped after its patience. The list of where to try next puts the live directions that paid off most first, then those tried least; it is advice, and the agent says why when it goes against it. A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research), and an answer otherwise rules a direction out.
+
+### Alternatives considered
+
+- **Count every miss, not only those since the last payoff.** The most productive direction also misses most often in absolute terms, so it would be the first set aside.
+- **A fixed number of experiments or sources for each, whatever they find.** It spends as much on an idea that has stopped paying as on one that pays every time, which is what reallocating effort is meant to avoid.
+- **Let the model choose the next experiment.** Which idea to try next weighs things the model does not hold, such as cost and how promising an untried idea looks; the model says what the evidence shows and the agent decides.
+
+### Changes that follow from it
+
+- Unreleased: The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first.
+- Unreleased: The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for".
+
+### Commits
+
+- Not committed yet.
+
+<a id="score-improves-past-noise"></a>
+
+## A version improves a score when its worst run beats the best that any earlier version was sure to give
+
+Decided 2026-11-15. In force. Not released yet.
+
+### Context
+
+The reasoning skill now keeps the record of an experiment loop, after Karpathy's autoresearch and Mike Taylor's map-driven version of it: change the files, run a score, keep the change if the score got better, revert it otherwise. A benchmark's time or an agent eval's grade moves from run to run, so a loop that compares one run with one run keeps changes that only got lucky, and an agent that may run again when a result disappoints can stop once it is ahead.
+
+### Decision
+
+A score's runs in a version are its range, and what the version is sure to give is its worst run. The best a score has been is the best of those across versions. A version improves a score when its worst run beats the best that the versions which appeared before it were sure to give; which came before is the order the files first held each state. With one run each this is beating the best so far. Runs of a score that differ are its spread, so `disputed` leaves scores out. The files as they are now have regressed when every run on them is worse than the best.
+
+### Consequences
+
+Best, improvement, and regression rest on the one notion of what a version is sure to give, so a lucky run counts on neither side. Another run of the new version can only lower what it is sure to give, and another run of an earlier version can only raise what came before, which takes an improvement back: the verdicts follow the evidence, not the order it came in. In the first trial an agent's dropped change ran 11, 11, and 22 ms; a rule that took the best from any single run named it the best on its 11, and under this rule the best is 13, the worst run of the version the agent kept. The skill asks for the same number of runs on each version, since a version run once has only the one run to be sure of. `why` on an improvement ends in the runs it compared and a check such as `["number/lessThan", 62, 117]`, because the rules compare the values as recorded: one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117`.
+
+### Alternatives considered
+
+- **Every run of the version beats every run of every earlier version.** A score with a ceiling can never improve once any run reaches it. In the loop over the research skill, the baseline's two runs passed 17 and 23 of 23 checks; the next versions were sure to give 22 and then 23, and this rule called both changes misses because of the baseline's one lucky 23.
+- **Compare the mean of each version's runs.** With the few runs an agent makes, a mean moves with every run, so an improvement inside the noise gets claimed, and stopping once the mean is ahead is the easiest way to claim one.
+- **An improvement must clear a margin the score declares.** A margin is a number the agent picks, and a wrong one either hides real improvements or admits noise; the runs themselves show how far a score moves.
+- **Compare one run with one run, as autoresearch does.** It is the same rule when each version has one run, and ignores the others when a version has more.
+
+### Changes that follow from it
+
+- Unreleased: The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first.
+
+### Commits
+
+- Not committed yet.
+
+<a id="score-requirements"></a>
+
+## A version's runs of a score count only where what the score requires holds
+
+Decided 2026-11-15. In force. Not released yet.
+
+### Context
+
+An experiment loop that keeps whatever scores best keeps the change that makes a benchmark fast by breaking what it measures. In the skill's own trial, an early exit cut a sort's comparisons from 117 to 27 and failed a test. The reasoning skill already had beliefs, but a belief is judged from the version it was formed in on and stays contradicted once contradicted, which is the wrong rule for a condition each version must meet on its own.
+
+### Decision
+
+A score can list `requires`: questions and the answers a version must have, such as no failing tests. Where one is unanswered, or answered otherwise in any run, the version has no score: no range, no best, no improvement. `unmet(version, score, question, needed)` lists such versions.
+
+### Consequences
+
+A requirement has to be run on each version, as the score is, so a change is not kept until both have run on it. The skill tells the agent to fix or drop such a change and never to relax the requirement to let a score count.
+
+### Alternatives considered
+
+- **Record the requirement as a belief.** A belief contradicted in one version stays contradicted, so one broken experiment would mark every later version.
+- **Leave it to the agent to discard broken versions.** An unwritten check is the one that gets skipped, and the record would still call the broken version the best.
+
+### Changes that follow from it
+
+- Unreleased: A lion-reasoning score can list what it `requires`, such as `{"question": {"failing tests": "test.mjs"}, "value": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.
+
+### Commits
+
+- Not committed yet.

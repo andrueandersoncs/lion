@@ -1,0 +1,25 @@
+{
+  "id": "score-improves-past-noise",
+  "title": "A version improves a score when its worst run beats the best that any earlier version was sure to give",
+  "context": "The reasoning skill now keeps the record of an experiment loop, after Karpathy's autoresearch and Mike Taylor's map-driven version of it: change the files, run a score, keep the change if the score got better, revert it otherwise. A benchmark's time or an agent eval's grade moves from run to run, so a loop that compares one run with one run keeps changes that only got lucky, and an agent that may run again when a result disappoints can stop once it is ahead.",
+  "decision": "A score's runs in a version are its range, and what the version is sure to give is its worst run. The best a score has been is the best of those across versions. A version improves a score when its worst run beats the best that the versions which appeared before it were sure to give; which came before is the order the files first held each state. With one run each this is beating the best so far. Runs of a score that differ are its spread, so `disputed` leaves scores out. The files as they are now have regressed when every run on them is worse than the best.",
+  "consequences": "Best, improvement, and regression rest on the one notion of what a version is sure to give, so a lucky run counts on neither side. Another run of the new version can only lower what it is sure to give, and another run of an earlier version can only raise what came before, which takes an improvement back: the verdicts follow the evidence, not the order it came in. In the first trial an agent's dropped change ran 11, 11, and 22 ms; a rule that took the best from any single run named it the best on its 11, and under this rule the best is 13, the worst run of the version the agent kept. The skill asks for the same number of runs on each version, since a version run once has only the one run to be sure of. `why` on an improvement ends in the runs it compared and a check such as `[\"number/lessThan\", 62, 117]`, because the rules compare the values as recorded: one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117`.",
+  "alternatives": [
+    {
+      "option": "Every run of the version beats every run of every earlier version",
+      "rejected": "A score with a ceiling can never improve once any run reaches it. In the loop over the research skill, the baseline's two runs passed 17 and 23 of 23 checks; the next versions were sure to give 22 and then 23, and this rule called both changes misses because of the baseline's one lucky 23."
+    },
+    {
+      "option": "Compare the mean of each version's runs",
+      "rejected": "With the few runs an agent makes, a mean moves with every run, so an improvement inside the noise gets claimed, and stopping once the mean is ahead is the easiest way to claim one."
+    },
+    {
+      "option": "An improvement must clear a margin the score declares",
+      "rejected": "A margin is a number the agent picks, and a wrong one either hides real improvements or admits noise; the runs themselves show how far a score moves."
+    },
+    {
+      "option": "Compare one run with one run, as autoresearch does",
+      "rejected": "It is the same rule when each version has one run, and ignores the others when a version has more."
+    }
+  ]
+}

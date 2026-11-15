@@ -52,6 +52,12 @@ const CORE = [
   "ambiguous",
   "decided",
   "set_aside",
+  "lead",
+  "pursues",
+  "progress",
+  "done",
+  "exhausted",
+  "blocked",
 ];
 /** How much of a source's text shows on each side of a quote. */
 const PASSAGE = 600;
@@ -1447,6 +1453,66 @@ const notRead = () => {
   );
 };
 
+const searched = (keep) => {
+  const progress = new Map(rowsOf("progress").map((row) => [row.lead, row]));
+  const done = new Set(rowsOf("done").map((row) => row.lead));
+  const exhausted = new Set(rowsOf("exhausted").map((row) => row.lead));
+  const waiting = new Map();
+  for (const row of rowsOf("blocked")) {
+    pushTo(waiting, row.lead, row.key);
+  }
+  const pursued = new Map();
+  for (const row of rowsOf("pursues")) {
+    pushTo(pursued, row.lead, row.question);
+  }
+  const rows = rowsOf("lead").filter((row) =>
+    (pursued.get(row.id) ?? []).some((question) => keep({ question }))
+  );
+  const outcome = (lead) => {
+    const keys = [...new Set(waiting.get(lead) ?? [])];
+    const misses = progress.get(lead)?.misses ?? 0;
+    if (done.has(lead)) {
+      return [verdict("Found", "good"), ": two publishers say it first-hand."];
+    }
+    if (keys.length > 0) {
+      return [
+        verdict("Waiting for your choice", "warn"),
+        ` of what ${listed(keys)} means.`,
+      ];
+    }
+    if (exhausted.has(lead)) {
+      return [
+        verdict("Set aside", "bad"),
+        `: the last ${counted(misses, "source")} read for it gave nothing first-hand.`,
+      ];
+    }
+    return [verdict("Still open"), "."];
+  };
+  return group(
+    "What was looked for",
+    rows.length,
+    "The lines of inquiry this research followed: what each set out to find, and how it ended. One set aside after reading sources that only repeat others is a search that came up empty, not a finding against it.",
+    el(
+      "ul",
+      { class: "findings" },
+      rows.map((row) => {
+        const counts = progress.get(row.id) ?? { paid_off: 0, read: 0 };
+        return el(
+          "li",
+          { class: "finding" },
+          el("div", { class: "what" }, row.statement),
+          el("p", { class: "line" }, outcome(row.id)),
+          el(
+            "p",
+            { class: "line who" },
+            `${counted(counts.read, "source")} read for it, ${counts.paid_off} with something first-hand.`
+          )
+        );
+      })
+    )
+  );
+};
+
 // ---- Sources
 
 const sourceItem = (source) => {
@@ -1771,6 +1837,7 @@ const TRUST = {
   disputed: disagreed,
   misquoted: misquotes,
   restated: restatements,
+  searched,
   secondhand: relayedOnly,
   undecided,
   unquoted: unquotedFigures,
@@ -1787,6 +1854,7 @@ const TRUST_ORDER = [
   "unquoted",
   "choices",
   "assumptions",
+  "searched",
   "unread",
 ];
 const DEFAULT_PLAN = {

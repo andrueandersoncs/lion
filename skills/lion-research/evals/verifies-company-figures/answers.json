@@ -35,7 +35,13 @@
         "reefer-quarterly"
       ]
     },
-
+    {
+      "stage": "reading",
+      "check": "The run records the lines of inquiry it followed, and the sources read for each",
+      "query": ["find", "?lead", ["read_for", "?_", "?lead", "?_"]],
+      "expect": "some",
+      "rests_on": []
+    },
     {
       "stage": "framing",
       "check": "The frame names the fields that pick a reading of a question",
@@ -58,7 +64,6 @@
       "expect": "none",
       "rests_on": []
     },
-
     {
       "stage": "conclusions",
       "check": "Tarnwell restated fiscal 2025 revenue from $412.6M to $409.8M",
@@ -137,7 +142,6 @@
       "expect": "some",
       "rests_on": []
     },
-
     {
       "stage": "page",
       "check": "The page was built",
@@ -168,7 +172,6 @@
       "page": "plain",
       "rests_on": []
     },
-
     {
       "stage": "report",
       "check": "The report gives revenue as restated, $409.8M",

@@ -6,7 +6,8 @@
       "title": "Tarnwell Cold Chain grows on pharma demand",
       "publisher": "Cargo Ledger",
       "kind": "secondary",
-      "published": 20250807
+      "published": 20250807,
+      "for": ["outside-warehouses"]
     },
     {
       "id": "ashgrove-note",
@@ -22,7 +23,8 @@
       "title": "Who's who in Midwest cold storage",
       "publisher": "Supply Notes",
       "kind": "tertiary",
-      "published": 20250820
+      "published": 20250820,
+      "for": ["outside-staff"]
     },
     {
       "id": "reefer-quarterly",
@@ -30,7 +32,8 @@
       "title": "Interview: Dana Okafor, Tarnwell Cold Chain",
       "publisher": "Reefer Quarterly",
       "kind": "secondary",
-      "published": 20250901
+      "published": 20250901,
+      "for": ["outside-warehouses", "outside-staff"]
     },
     {
       "id": "okafor",
@@ -58,7 +61,11 @@
       "id": "ledger-warehouses",
       "source": "cargo-ledger",
       "quote": "ran 39 warehouses across the Great Lakes states when its fiscal year ended on June 30, according to a review of its website by Cargo Ledger",
-      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 39 }
+      "says": {
+        "warehouses": "tarnwell",
+        "on": 20250630,
+        "count": 39
+      }
     },
     {
       "id": "ashgrove-calendar",
@@ -100,21 +107,33 @@
       "id": "notes-staff",
       "source": "supply-notes",
       "quote": "The company has 2,400 employees, according to its earnings release.",
-      "says": { "staff": "tarnwell", "on": 20250630, "people": 2400 },
+      "says": {
+        "staff": "tarnwell",
+        "on": 20250630,
+        "people": 2400
+      },
       "credits": ["fy25-release"]
     },
     {
       "id": "okafor-staff",
       "source": "reefer-quarterly",
       "quote": "told Reefer Quarterly that the company now has 2,140 employees",
-      "says": { "staff": "tarnwell", "on": 20250901, "people": 2140 },
+      "says": {
+        "staff": "tarnwell",
+        "on": 20250901,
+        "people": 2140
+      },
       "credits": ["okafor"]
     },
     {
       "id": "okafor-sites",
       "source": "reefer-quarterly",
       "quote": "every one of our 37 sites is running above 90 percent occupancy",
-      "says": { "warehouses": "tarnwell", "on": 20250901, "count": 37 },
+      "says": {
+        "warehouses": "tarnwell",
+        "on": 20250901,
+        "count": 37
+      },
       "credits": ["okafor"]
     }
   ]

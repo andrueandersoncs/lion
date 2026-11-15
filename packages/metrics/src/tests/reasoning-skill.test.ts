@@ -623,6 +623,495 @@ describe("the reasoning skill's rival explanations", () => {
   );
 });
 
+// ----------------------------------------------------- scores and directions
+
+type Better = "lower" | "higher";
+
+interface Run {
+  /** The hash its source depended on, or null when it depends on nothing. */
+  readonly hash: number | null;
+  readonly kind: (typeof KINDS)[number];
+  readonly question: string;
+  readonly source: string;
+  readonly tries: string | undefined;
+  readonly value: number | boolean;
+}
+
+interface Trial {
+  readonly asked: readonly string[];
+  readonly better: Readonly<Record<string, Better>>;
+  readonly directions: readonly {
+    readonly id: string;
+    readonly needs: readonly [string, boolean] | undefined;
+    readonly patience: number;
+  }[];
+  /** Whether the first score counts only where the check is 0. */
+  readonly guarded: boolean;
+  /** What the watched path holds in each version, numbered from 1. */
+  readonly hashes: readonly number[];
+  readonly runs: readonly Run[];
+}
+
+const SCORES = ["q0", "q1"];
+const CHECK = "g";
+const NEEDS = ["n0", "n1"];
+const questionOf = (q: string) =>
+  q.startsWith("n") ? { need: q } : { topic: q };
+
+/**
+ * A few versions of one watched path, scores of both kinds run in them,
+ * a check the first score may require, and directions whose experiments
+ * are some of those runs, some needing a question the user may answer.
+ * Values are few, so versions often tie, improve, and fall back.
+ */
+const trial: Arbitrary.Arbitrary<Trial> = Arbitrary.map(
+  Arbitrary.all({
+    asked: Arbitrary.array(between(0, 1), { maxLength: 2 }),
+    better: Arbitrary.array(between(0, 1), { minLength: 2, maxLength: 2 }),
+    directions: Arbitrary.array(
+      Arbitrary.all({
+        needs: between(0, 3),
+        patience: between(1, 2),
+        value: between(0, 1),
+      }),
+      { maxLength: 3 }
+    ),
+    guarded: between(0, 1),
+    hashes: Arbitrary.array(between(0, 3), { minLength: 2, maxLength: 5 }),
+    runs: Arbitrary.array(
+      Arbitrary.all({
+        at: between(0, 9),
+        kind: element([...KINDS]),
+        question: between(0, 6),
+        tries: between(0, 4),
+        user: between(0, 1),
+        value: between(0, 9),
+      }),
+      { maxLength: 12 }
+    ),
+  }),
+  ({ asked, better, directions, guarded, hashes, runs }) => {
+    const ids = directions.map((_, at) => `d${at}`);
+    return {
+      asked: [...new Set(asked.map((at) => NEEDS[at] as string))],
+      better: Object.fromEntries(
+        SCORES.map((q, at) => [q, better[at] === 0 ? "lower" : "higher"])
+      ),
+      directions: directions.map((direction, at) => ({
+        id: ids[at] as string,
+        needs:
+          direction.needs < 2
+            ? [NEEDS[direction.needs] as string, direction.value === 1]
+            : undefined,
+        patience: direction.patience,
+      })),
+      guarded: guarded === 1,
+      hashes,
+      runs: runs.map((run, at) => {
+        const question = ["q0", "q1", CHECK, "n0", "n1", "q0", "q1"][
+          run.question
+        ] as string;
+        const needed = question.startsWith("n");
+        const byUser = needed && run.user === 1;
+        let value: number | boolean = run.value;
+        if (needed) {
+          value = run.value % 2 === 1;
+        } else if (question === CHECK) {
+          value = run.value % 2;
+        }
+        return {
+          hash:
+            byUser || run.at === 9
+              ? null
+              : (hashes[run.at % hashes.length] as number),
+          kind: byUser ? "told" : run.kind,
+          question,
+          source: byUser ? "user" : `s${at}`,
+          tries: needed ? undefined : ids[run.tries],
+          value,
+        };
+      }),
+    };
+  }
+);
+
+/** Version names as the skill gives them: one per state, `now` its own. */
+const namesOf = (hashes: readonly number[]) =>
+  hashes.map((hash, at) => {
+    if (at === hashes.length - 1) {
+      return NOW;
+    }
+    const earlier = hashes.indexOf(hash);
+    return `v${earlier}`;
+  });
+
+const trialProgram = (given: Trial) => {
+  const names = namesOf(given.hashes);
+  const states = unique(
+    names.map((name, at) => [name, given.hashes[at] as number] as const)
+  );
+  const sources = unique(
+    given.runs.map((run) => [run.source, run.kind, run.hash] as const)
+  );
+  return [
+    "begin",
+    core,
+    [
+      "fact",
+      ...sources.flatMap(([id, kind, hash]) => [
+        ["source", quoted(id), quoted(kind), quoted("w")],
+        ...(hash === null
+          ? []
+          : [["about", quoted(id), quoted("p"), quoted(`h${hash}`)]]),
+      ]),
+      ...given.runs.flatMap((run, at) => [
+        [
+          "observed",
+          quoted(`o${at}`),
+          quoted(run.source),
+          quoted("q"),
+          quoted(questionOf(run.question)),
+          run.value,
+        ],
+        ...(run.tries === undefined
+          ? []
+          : [["tries", quoted(`o${at}`), quoted(run.tries)]]),
+      ]),
+      ...SCORES.map((q) => [
+        "scored",
+        quoted(questionOf(q)),
+        quoted(given.better[q]),
+      ]),
+      ...(given.guarded
+        ? [["requires", quoted(questionOf("q0")), quoted(questionOf(CHECK)), 0]]
+        : []),
+      ...given.directions.flatMap((direction) => [
+        ["direction", quoted(direction.id), quoted("s"), direction.patience],
+        ...(direction.needs === undefined
+          ? []
+          : [
+              [
+                "needs",
+                quoted(direction.id),
+                quoted(questionOf(direction.needs[0])),
+                direction.needs[1],
+              ],
+            ]),
+      ]),
+      ...given.asked.map((q) => ["ask", quoted(questionOf(q)), "user"]),
+      ...names.map((name, at) => ["version", quoted(name), at + 1]),
+      ...states.map(([name, hash]) => [
+        "at",
+        quoted(name),
+        quoted("p"),
+        quoted(`h${hash}`),
+      ]),
+    ],
+    {
+      best: ask(["?q", "?v"], ["best", "?q", "?v"]),
+      blocked: ask(["?d", "?q"], ["blocked", "?d", "?q"]),
+      disputed: ask(["?q", "?vs"], ["disputed", "?q", "?vs"]),
+      exhausted: ["find", "?d", ["exhausted", "?d"]],
+      experiment: ask(["?d", "?v"], ["experiment", "?d", "?v"]),
+      improved: ask(
+        ["?q", "?v", "?b", "?a"],
+        ["improved", "?q", "?v", "?b", "?a"]
+      ),
+      live: ["find", "?d", ["live", "?d"]],
+      paid: ask(["?d", "?v", "?q"], ["paid_off", "?d", "?v", "?q"]),
+      progress: ask(
+        ["?d", "?t", "?p", "?m"],
+        ["progress", "?d", "?t", "?p", "?m"]
+      ),
+      regressed: ask(["?q", "?n", "?b"], ["regressed", "?q", "?n", "?b"]),
+      ruled: ask(
+        ["?d", "?q", "?n", "?f"],
+        ["ruled_out", "?d", "?q", "?n", "?f"]
+      ),
+      score: ask(
+        ["?v", "?q", "?b", "?w"],
+        ["score_in", "?v", "?q", "?b", "?w"]
+      ),
+      unmet: ask(["?v", "?s", "?q", "?n"], ["unmet", "?v", "?s", "?q", "?n"]),
+    },
+  ];
+};
+
+/**
+ * What the skill says scores and directions derive, the plain way. A
+ * version's runs of a score are its range, unless a run of what the score
+ * requires there says otherwise; a version improves a score when its worst
+ * run beats the best that every version before it was sure to give. A direction's
+ * experiment is the first version its run speaks for; it misses when it
+ * improves nothing, and a direction is set aside after as many misses in a
+ * row as its patience, when the user has not decided what it needs, or when
+ * what it needs is answered otherwise.
+ */
+const trialExpected = (given: Trial) => {
+  const names = namesOf(given.hashes);
+  const hashOf = (name: string) => given.hashes[names.indexOf(name)];
+  const first = (name: string) => names.indexOf(name) + 1;
+  const versions = [...new Set(names)];
+  const runs = given.runs.map((run, at) => ({ ...run, id: `o${at}` }));
+  const same = (a: unknown, b: unknown) => canonical(a) === canonical(b);
+  const answersIn = (name: string) => {
+    const valid = runs.filter(
+      (run) => run.hash === null || run.hash === hashOf(name)
+    );
+    return valid.filter(
+      (run) =>
+        !(
+          HEARD.has(run.kind) &&
+          valid.some(
+            (by) =>
+              !HEARD.has(by.kind) &&
+              by.question === run.question &&
+              !same(by.value, run.value)
+          )
+        )
+    );
+  };
+  const valuesIn = (name: string, q: string) =>
+    answersIn(name)
+      .filter((run) => run.question === q)
+      .map((run) => run.value);
+  const unmet = (name: string, q: string) =>
+    given.guarded &&
+    q === "q0" &&
+    valuesIn(name, q).length > 0 &&
+    (!valuesIn(name, CHECK).some((value) => same(value, 0)) ||
+      valuesIn(name, CHECK).some((value) => !same(value, 0)));
+  const rangeIn = (name: string, q: string) => {
+    const values = valuesIn(name, q) as number[];
+    return values.length === 0 || unmet(name, q)
+      ? undefined
+      : ([Math.min(...values), Math.max(...values)] as const);
+  };
+  const lower = (q: string) => given.better[q] === "lower";
+  const ranges = (q: string, keep: (name: string) => boolean) =>
+    versions.filter(keep).flatMap((name) => {
+      const range = rangeIn(name, q);
+      return range === undefined ? [] : [range];
+    });
+  // The best a score is sure to give: the best of the versions' worst runs.
+  const bestOf = (q: string) => {
+    const all = ranges(q, () => true);
+    if (all.length === 0) {
+      return undefined;
+    }
+    return lower(q)
+      ? Math.min(...all.map(([, high]) => high))
+      : Math.max(...all.map(([low]) => low));
+  };
+  // A version improves a score when its worst run beats the best that every
+  // version before it was sure to give: the best of their worst runs.
+  const improved = SCORES.flatMap((q) =>
+    versions.flatMap((name) => {
+      const range = rangeIn(name, q);
+      const before = ranges(q, (u) => first(u) < first(name));
+      if (range === undefined || before.length === 0) {
+        return [];
+      }
+      if (lower(q)) {
+        const sure = Math.min(...before.map(([, h]) => h));
+        return range[1] < sure ? [[questionOf(q), name, sure, range[1]]] : [];
+      }
+      const sure = Math.max(...before.map(([l]) => l));
+      return range[0] > sure ? [[questionOf(q), name, sure, range[0]]] : [];
+    })
+  );
+  const experimentsOf = (id: string) =>
+    unique(
+      runs.flatMap((run) => {
+        if (run.tries !== id) {
+          return [];
+        }
+        const valid = versions.filter(
+          (name) => run.hash === null || run.hash === hashOf(name)
+        );
+        if (valid.length === 0) {
+          return [];
+        }
+        const n = Math.min(...valid.map(first));
+        return [names[n - 1] as string];
+      })
+    );
+  const paidOf = (id: string) =>
+    experimentsOf(id).flatMap((name) =>
+      improved
+        .filter(([, v]) => v === name)
+        .map(([q]) => [id, name, q] as const)
+    );
+  const missesOf = (id: string) => {
+    const paid = paidOf(id).map(([, name]) => first(name));
+    const last = paid.length === 0 ? undefined : Math.max(...paid);
+    return experimentsOf(id).filter(
+      (name) =>
+        !paid.includes(first(name)) &&
+        (last === undefined || first(name) > last)
+    );
+  };
+  const undecided = (q: string) =>
+    given.asked.includes(q) &&
+    !runs.some((run) => run.source === "user" && run.question === q);
+  const answersNow = (q: string) => valuesIn(NOW, q);
+  const blockedOf = (direction: Trial["directions"][number]) =>
+    direction.needs !== undefined &&
+    (undecided(direction.needs[0]) ||
+      answersNow(direction.needs[0]).length === 0)
+      ? [[direction.id, questionOf(direction.needs[0])]]
+      : [];
+  const ruledOf = (direction: Trial["directions"][number]) => {
+    const needs = direction.needs;
+    if (needs === undefined || undecided(needs[0])) {
+      return [];
+    }
+    return unique(answersNow(needs[0]))
+      .filter((found) => !same(found, needs[1]))
+      .map((found) => [direction.id, questionOf(needs[0]), needs[1], found]);
+  };
+  const exhausted = given.directions
+    .filter((direction) => missesOf(direction.id).length >= direction.patience)
+    .map((direction) => direction.id);
+  const now = (q: string) => rangeIn(NOW, q);
+  return {
+    best: SCORES.flatMap((q) => {
+      const best = bestOf(q);
+      return best === undefined ? [] : [[questionOf(q), best]];
+    }),
+    blocked: given.directions.flatMap(blockedOf),
+    // The runs of a score differ by nature; only other questions are disputed.
+    disputed: [CHECK, ...NEEDS].flatMap((q) => {
+      const values = unique(answersNow(q));
+      return values.length > 1 ? [[questionOf(q), values]] : [];
+    }),
+    exhausted,
+    experiment: given.directions.flatMap((direction) =>
+      experimentsOf(direction.id).map((name) => [direction.id, name])
+    ),
+    improved,
+    live: given.directions
+      .filter(
+        (direction) =>
+          !exhausted.includes(direction.id) &&
+          blockedOf(direction).length === 0 &&
+          ruledOf(direction).length === 0
+      )
+      .map((direction) => direction.id),
+    paid: given.directions.flatMap((direction) => paidOf(direction.id)),
+    progress: given.directions.map((direction) => [
+      direction.id,
+      experimentsOf(direction.id).length,
+      unique(paidOf(direction.id).map(([, name]) => name)).length,
+      missesOf(direction.id).length,
+    ]),
+    regressed: SCORES.flatMap((q) => {
+      const range = now(q);
+      const best = bestOf(q);
+      if (range === undefined || best === undefined) {
+        return [];
+      }
+      if (lower(q)) {
+        return range[0] > best ? [[questionOf(q), range[0], best]] : [];
+      }
+      return range[1] < best ? [[questionOf(q), range[1], best]] : [];
+    }),
+    ruled: given.directions.flatMap(ruledOf),
+    score: SCORES.flatMap((q) =>
+      versions.flatMap((name) => {
+        const range = rangeIn(name, q);
+        if (range === undefined) {
+          return [];
+        }
+        return [
+          lower(q)
+            ? [name, questionOf(q), range[0], range[1]]
+            : [name, questionOf(q), range[1], range[0]],
+        ];
+      })
+    ),
+    unmet: versions.flatMap((name) =>
+      unmet(name, "q0") ? [[name, questionOf("q0"), questionOf(CHECK), 0]] : []
+    ),
+  };
+};
+
+describe("the reasoning skill's scores and directions", () => {
+  it.effect.prop(
+    "count a version's runs only when every answer to what the score requires there is the one it needs",
+    {
+      checks: Arbitrary.array(between(0, 2), { maxLength: 4 }),
+      runs: Arbitrary.array(between(0, 9), { minLength: 1, maxLength: 3 }),
+    },
+    ({ checks, runs }) =>
+      Effect.gen(function* () {
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          [
+            "fact",
+            ["version", "now", 1],
+            ...[...runs, ...checks].map((_, at) => [
+              "source",
+              quoted(`s${at}`),
+              "ran",
+              quoted("w"),
+            ]),
+            ...runs.map((value, at) => [
+              "observed",
+              quoted(`r${at}`),
+              quoted(`s${at}`),
+              quoted("q"),
+              quoted({ topic: "speed" }),
+              value,
+            ]),
+            ...checks.map((value, at) => [
+              "observed",
+              quoted(`c${at}`),
+              quoted(`s${runs.length + at}`),
+              quoted("q"),
+              quoted({ topic: "check" }),
+              value,
+            ]),
+            ["scored", quoted({ topic: "speed" }), "lower"],
+            [
+              "requires",
+              quoted({ topic: "speed" }),
+              quoted({ topic: "check" }),
+              0,
+            ],
+          ],
+          {
+            score: ask(["?b", "?w"], ["score_in", "now", "?_", "?b", "?w"]),
+            unmet: ["find", "?n", ["unmet", "now", "?_", "?_", "?n"]],
+          },
+        ]);
+        const met = checks.length > 0 && checks.every((value) => value === 0);
+        expect(outcome).toEqual({
+          ok: true,
+          value: {
+            score: met ? [[Math.min(...runs), Math.max(...runs)]] : [],
+            unmet: met ? [] : [0],
+          },
+        });
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "derive what a plain model of ranges, improvements, and patience derives",
+    { given: trial },
+    ({ given }) =>
+      Effect.gen(function* () {
+        const outcome = yield* answerOf(trialProgram(given));
+        expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
+          asSets(trialExpected(given) as never)
+        );
+      }),
+    { ...OPTIONS, arbitrary: { runs: 300 } }
+  );
+});
+
 // --------------------------------------------------------------- the recorder
 
 interface Notes {
@@ -639,12 +1128,22 @@ interface Notes {
     }[];
     readonly statement: string;
   }[];
+  readonly directions?: readonly {
+    readonly id: string;
+    readonly needs?: readonly {
+      readonly question: unknown;
+      readonly value: unknown;
+    }[];
+    readonly patience?: number;
+    readonly statement: string;
+  }[];
   readonly needed: readonly unknown[];
   readonly observations: readonly {
     readonly id: string;
     readonly question: unknown;
     readonly quote: string;
     readonly source: string;
+    readonly tries?: string;
     readonly value: unknown;
   }[];
   readonly problems: readonly {
@@ -652,6 +1151,14 @@ interface Notes {
     readonly question: unknown;
     readonly statement: string;
     readonly value: unknown;
+  }[];
+  readonly scores?: readonly {
+    readonly better: string;
+    readonly question: unknown;
+    readonly requires?: readonly {
+      readonly question: unknown;
+      readonly value: unknown;
+    }[];
   }[];
   readonly sources: readonly {
     readonly about?: readonly string[];
@@ -837,6 +1344,95 @@ describe("the reasoning skill's recorder", () => {
           say.trim() === "" ? ids.length : ids.length - 1
         );
         expect(problemsOf(notes, holding(""))).toHaveLength(ids.length);
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "records scores, what they require, directions, what they need, and experiments as data, with a patience of 3 unless a direction says",
+    {
+      names: Arbitrary.array(word, { minLength: 1, maxLength: 3 }),
+      patience: Arbitrary.array(between(0, 4), { minLength: 3, maxLength: 3 }),
+      say: risky,
+    },
+    ({ names, patience, say }) =>
+      Effect.gen(function* () {
+        const { sourcesOf, stepOf } = yield* Effect.promise(() => recorder);
+        const ids = [...new Set(names)];
+        const notes: Notes = {
+          beliefs: [],
+          directions: ids.map((id, at) => ({
+            id: `d-${id}`,
+            needs: [{ question: { [say]: id }, value: [say] }],
+            statement: say,
+            ...((patience[at] ?? 0) > 0 ? { patience: patience[at] } : {}),
+          })),
+          needed: [],
+          observations: ids.map((id, at) => ({
+            id: `o-${id}`,
+            question: { [say]: [say, at] },
+            quote: say,
+            source: "s",
+            tries: `d-${id}`,
+            value: at,
+          })),
+          problems: [],
+          scores: ids.map((id, at) => ({
+            better: at % 2 === 0 ? "lower" : "higher",
+            question: { [say]: [say, at] },
+            requires: [{ question: { [say]: id }, value: say }],
+          })),
+          sources: [{ id: "s", kind: "ran", what: say }],
+        };
+        const sources = sourcesOf(notes, {
+          hash: (path) => `hash of ${path}`,
+          known: [],
+          ran: () => undefined,
+          root: "/project",
+        });
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          stepOf(notes, sources, 1),
+          {
+            directions: ask(
+              ["?d", "?s", "?p"],
+              ["direction", "?d", "?s", "?p"]
+            ),
+            needs: ask(["?d", "?q", "?v"], ["needs", "?d", "?q", "?v"]),
+            requires: ask(["?s", "?q", "?v"], ["requires", "?s", "?q", "?v"]),
+            scored: ask(["?q", "?b"], ["scored", "?q", "?b"]),
+            tries: ask(["?o", "?d"], ["tries", "?o", "?d"]),
+          },
+        ]);
+        expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
+          asSets({
+            directions: notes.directions?.map((direction) => [
+              direction.id,
+              direction.statement,
+              direction.patience ?? 3,
+            ]),
+            needs: notes.directions?.flatMap((direction) =>
+              (direction.needs ?? []).map((need) => [
+                direction.id,
+                need.question,
+                need.value,
+              ])
+            ),
+            requires: notes.scores?.flatMap((score) =>
+              (score.requires ?? []).map((need) => [
+                score.question,
+                need.question,
+                need.value,
+              ])
+            ),
+            scored: notes.scores?.map((score) => [
+              score.question,
+              score.better,
+            ]),
+            tries: notes.observations.map((seen) => [seen.id, seen.tries]),
+          } as never)
+        );
       }),
     OPTIONS
   );

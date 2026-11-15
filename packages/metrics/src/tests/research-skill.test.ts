@@ -7,7 +7,13 @@
  * against JavaScript's, and the page against what it was given.
  */
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, readFileSync, symlinkSync } from "node:fs";
+import {
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "@effect/vitest";
@@ -667,6 +673,270 @@ describe("the research skill's core rules", () => {
             set_aside: setAside,
           })
         );
+      }),
+    OPTIONS
+  );
+});
+
+// ------------------------------------------------------------------ leads
+
+interface Lead {
+  readonly id: string;
+  readonly patience: number;
+  /** The questions it pursues, as patterns: a topic, or any question. */
+  readonly pursues: readonly Record<string, string>[];
+}
+
+interface Inquiry {
+  readonly leads: readonly Lead[];
+  /** A source, a lead it was read for, and the order it was read in. */
+  readonly reads: readonly (readonly [string, string, number])[];
+  readonly world: World;
+}
+
+/**
+ * The provenance world above, with leads pursuing one topic, the other, or
+ * any question, and sources read for them in an order with ties, so leads
+ * often pay off, miss, run out of patience, and finish.
+ */
+const inquiry: Arbitrary.Arbitrary<Inquiry> = Arbitrary.map(
+  Arbitrary.all({
+    leads: Arbitrary.array(
+      Arbitrary.all({
+        patience: between(1, 2),
+        pursues: Arbitrary.array(between(0, 2), { minLength: 1, maxLength: 2 }),
+      }),
+      { minLength: 1, maxLength: 3 }
+    ),
+    reads: Arbitrary.array(
+      Arbitrary.all([between(0, 3), between(0, 2), between(1, 4)]),
+      { maxLength: 8 }
+    ),
+    world,
+  }),
+  ({ leads, reads, world: given }) => {
+    const named = leads.map((lead, at) => ({
+      id: `l${at}`,
+      patience: lead.patience,
+      pursues: unique(
+        lead.pursues.map((which) => (which === 2 ? {} : { topic: `t${which}` }))
+      ),
+    }));
+    const pairs = reads.flatMap(([source, lead, order]) => {
+      const to = named[lead % named.length]?.id as string;
+      return [[`s${source % given.sources.length}`, to, order] as const];
+    });
+    return {
+      leads: named,
+      // A source is read for a lead once.
+      reads: [
+        ...new Map(
+          pairs.map((read) => [`${read[0]} ${read[1]}`, read])
+        ).values(),
+      ],
+      world: given,
+    };
+  }
+);
+
+const inquiryProgram = ({ leads, reads, world: given }: Inquiry) => {
+  const base = program(given) as unknown[];
+  return [
+    ...base.slice(0, -1),
+    [
+      "fact",
+      ...leads.flatMap((lead) => [
+        ["lead", lead.id, ["quote", "look"], lead.patience],
+        ...lead.pursues.map((pattern) => [
+          "pursues",
+          lead.id,
+          ["quote", pattern],
+        ]),
+      ]),
+      ...reads.map(([source, lead, order]) => [
+        "read_for",
+        source,
+        lead,
+        order,
+      ]),
+    ],
+    {
+      done: ["find", "?l", ["done", "?l"]],
+      exhausted: ["find", "?l", ["exhausted", "?l"]],
+      live: ["find", "?l", ["live", "?l"]],
+      miss: rows(["?l", "?s"], ["miss", "?l", "?s"]),
+      paid: rows(["?l", "?s"], ["paid_off", "?l", "?s"]),
+      progress: rows(
+        ["?l", "?r", "?p", "?m"],
+        ["progress", "?l", "?r", "?p", "?m"]
+      ),
+    },
+  ];
+};
+
+/**
+ * What the skill says leads derive, the plain way. A lead covers each answer
+ * whose question fits a pattern it pursues, and is done when every pattern
+ * covers an answer two publishers give first-hand. A source read for it pays
+ * off when it says something first-hand that the lead covers; the sources
+ * that do not, read after its last payoff, are its misses, and a lead with
+ * as many misses as its patience is set aside.
+ */
+const inquiryExpected = ({ leads, reads, world: given }: Inquiry) => {
+  const corroborated = expected(given).corroborated.map(
+    ([question]) => (question as { topic: string }).topic
+  );
+  const fits = (pattern: Record<string, string>, topic: string) =>
+    pattern.topic === undefined || pattern.topic === topic;
+  const firstHand = (source: string) =>
+    given.claims
+      .filter(
+        (claim) =>
+          claim.source === source &&
+          !given.attributed.some(([id]) => id === claim.id)
+      )
+      .map((claim) => claim.topic);
+  const paidOf = (lead: Lead) =>
+    reads.filter(
+      ([source, id]) =>
+        id === lead.id &&
+        firstHand(source).some((topic) =>
+          lead.pursues.some((pattern) => fits(pattern, topic))
+        )
+    );
+  const missesOf = (lead: Lead) => {
+    const paid = paidOf(lead);
+    const last =
+      paid.length === 0 ? undefined : Math.max(...paid.map(([, , n]) => n));
+    return reads.filter(
+      (read) =>
+        read[1] === lead.id &&
+        !paid.includes(read) &&
+        (last === undefined || read[2] >= last)
+    );
+  };
+  const done = leads
+    .filter((lead) =>
+      lead.pursues.every((pattern) =>
+        corroborated.some((topic) => fits(pattern, topic))
+      )
+    )
+    .map((lead) => lead.id);
+  const exhausted = leads
+    .filter((lead) => missesOf(lead).length >= lead.patience)
+    .map((lead) => lead.id);
+  return {
+    done,
+    exhausted,
+    live: leads
+      .map((lead) => lead.id)
+      .filter((id) => !(done.includes(id) || exhausted.includes(id))),
+    miss: leads.flatMap((lead) =>
+      missesOf(lead).map(([source]) => [lead.id, source])
+    ),
+    paid: leads.flatMap((lead) =>
+      paidOf(lead).map(([source]) => [lead.id, source])
+    ),
+    progress: leads.map((lead) => [
+      lead.id,
+      reads.filter(([, id]) => id === lead.id).length,
+      paidOf(lead).length,
+      missesOf(lead).length,
+    ]),
+  };
+};
+
+describe("the research skill's leads", () => {
+  it.effect.prop(
+    "derive what a plain model of payoffs, misses, and patience derives",
+    { given: inquiry },
+    ({ given }) =>
+      Effect.gen(function* () {
+        const outcome = yield* answerOf(inquiryProgram(given));
+        expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
+          asSets(inquiryExpected(given))
+        );
+      }),
+    { ...OPTIONS, arbitrary: { runs: 300 } }
+  );
+
+  it.effect.prop(
+    "wait for the reader while sources answer a question they pursue in two senses, and cover only the sense the reader chose",
+    {
+      chosen: between(0, 2),
+      senses: Arbitrary.array(between(0, 2), { minLength: 1, maxLength: 4 }),
+    },
+    ({ chosen, senses }) =>
+      Effect.gen(function* () {
+        const stated = [...new Set(senses)].map((sense) => `b${sense}`);
+        const decided = chosen < 2 ? `b${chosen}` : undefined;
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          ["fact", ["reading", "basis"]],
+          [
+            "rule",
+            ["answer", { revenue: "?co", basis: "?b" }, "?v", "?c"],
+            [
+              "claim",
+              "?c",
+              "?_",
+              "?_",
+              { revenue: "?co", basis: "?b", v: "?v" },
+            ],
+          ],
+          [
+            "fact",
+            ...stated.map((sense) => [
+              "source",
+              ["quote", sense],
+              "https://example.com",
+              ["quote", "a"],
+              ["quote", sense],
+              "primary",
+              null,
+            ]),
+            ...stated.map((sense) => [
+              "claim",
+              ["quote", `c-${sense}`],
+              ["quote", sense],
+              ["quote", "said so"],
+              ["quote", { revenue: "acme", basis: sense, v: 1 }],
+            ]),
+            ["lead", "rev", ["quote", "revenue"], 2],
+            ["pursues", "rev", ["quote", { revenue: "acme" }]],
+            ...(decided === undefined
+              ? []
+              : [
+                  [
+                    "decided",
+                    "basis",
+                    ["quote", decided],
+                    ["quote", "this one"],
+                  ],
+                ]),
+          ],
+          {
+            blocked: rows(["?k"], ["blocked", "rev", "?_", "?k"]),
+            covered: ["find", "?q", ["covered", "rev", "?_", "?q"]],
+          },
+        ]);
+        const got = outcome.ok
+          ? (outcome.value as Record<string, readonly unknown[]>)
+          : {};
+        expect({
+          ...asSets(got as never),
+          failed: outcome.ok ? undefined : outcome,
+        }).toEqual({
+          ...asSets({
+            blocked:
+              stated.length > 1 && decided === undefined ? [["basis"]] : [],
+            covered: stated
+              .filter((sense) => decided === undefined || sense === decided)
+              .map((sense) => ({ basis: sense, revenue: "acme" })),
+          }),
+          failed: undefined,
+        });
       }),
     OPTIONS
   );
@@ -1376,6 +1646,12 @@ interface Notes {
     readonly value: unknown;
     readonly words: string;
   }[];
+  readonly leads?: readonly {
+    readonly id: string;
+    readonly patience?: number;
+    readonly pursues: readonly unknown[];
+    readonly statement: string;
+  }[];
   readonly sources: readonly Record<string, unknown>[];
 }
 
@@ -1384,7 +1660,8 @@ const recorder = scripts<{
     notes: Notes,
     textOf: (source: string) => string | undefined
   ) => readonly string[];
-  readonly stepOf: (notes: Notes) => unknown;
+  readonly readBefore: (name: string, folder?: string) => number;
+  readonly stepOf: (notes: Notes, first?: number) => unknown;
 }>("record.mjs");
 
 /** Text a note can hold that Lion would read as something else if left bare. */
@@ -1394,6 +1671,155 @@ const risky = oneOf(
 );
 
 describe("the research skill's recorder", () => {
+  it.prop(
+    "continues the numbers of sources read for leads from the notes recorded before, and keeps them when notes are recorded again",
+    {
+      counts: Arbitrary.array(between(0, 3), { minLength: 2, maxLength: 3 }),
+    },
+    ({ counts }) => {
+      const folder = mkdtempSync(join(tmpdir(), "lion-research-record-"));
+      const record = (name: string) =>
+        spawnSync(
+          "node",
+          [join(SKILL, "scripts/record.mjs"), `notes/${name}`],
+          {
+            cwd: folder,
+            encoding: "utf8",
+          }
+        );
+      const names = counts.map((_, at) => `0${at + 2}-batch.json`);
+      spawnSync("mkdir", [
+        "-p",
+        join(folder, "notes"),
+        join(folder, "sources"),
+      ]);
+      for (const [at, count] of counts.entries()) {
+        const sources = Array.from({ length: count }, (_, which) => ({
+          for: ["lead"],
+          id: `s${at}-${which}`,
+          kind: "primary",
+          published: null,
+          publisher: "p",
+          title: "t",
+          url: "https://example.com",
+        }));
+        writeFileSync(
+          join(folder, "notes", names[at] as string),
+          JSON.stringify({ claims: [], sources })
+        );
+      }
+      const numbers = () =>
+        names.flatMap((name) => {
+          const step = JSON.parse(
+            readFileSync(join(folder, "steps", name), "utf8")
+          ) as unknown[];
+          return (step[1] as unknown[][])
+            .filter((row) => row[0] === "read_for")
+            .map((row) => row[3]);
+        });
+      for (const name of names) {
+        expect(record(name).status).toBe(0);
+      }
+      const total = counts.reduce((sum, count) => sum + count, 0);
+      const expected = Array.from({ length: total }, (_, at) => at + 1);
+      expect(numbers()).toEqual(expected);
+      expect(record(names[0] as string).status).toBe(0);
+      expect(numbers()).toEqual(expected);
+    },
+    { arbitrary: { runs: 30 } }
+  );
+
+  it.effect.prop(
+    "records leads and the sources read for them, numbered in order from where the steps before left off",
+    {
+      first: between(1, 5),
+      ids: Arbitrary.array(risky, { minLength: 1, maxLength: 3 }),
+      patience: between(0, 3),
+      reads: Arbitrary.array(Arbitrary.array(between(0, 2), { maxLength: 2 }), {
+        minLength: 1,
+        maxLength: 4,
+      }),
+      say: risky,
+    },
+    ({ first, ids, patience, reads, say }) =>
+      Effect.gen(function* () {
+        const { readBefore, stepOf } = yield* Effect.promise(() => recorder);
+        const names = [...new Set(ids)];
+        const leadOf = (at: number) => `l-${names[at % names.length]}`;
+        const notes: Notes = {
+          claims: [],
+          leads: names.map((id) => ({
+            id: `l-${id}`,
+            pursues: [{ [`k${say}`]: id }],
+            statement: say,
+            ...(patience > 0 ? { patience } : {}),
+          })),
+          sources: reads.map((leads, at) => ({
+            id: `s${at}`,
+            kind: "primary",
+            published: null,
+            publisher: say,
+            title: say,
+            url: "https://example.com",
+            ...(leads.length > 0
+              ? { for: [...new Set(leads.map(leadOf))] }
+              : {}),
+          })),
+        };
+        const step = stepOf(notes, first);
+        const outcome = yield* answerOf([
+          "begin",
+          core,
+          step,
+          {
+            leads: rows(["?l", "?s", "?p"], ["lead", "?l", "?s", "?p"]),
+            pursues: rows(["?l", "?q"], ["pursues", "?l", "?q"]),
+            read: rows(["?s", "?l", "?n"], ["read_for", "?s", "?l", "?n"]),
+          },
+        ]);
+        const reading = notes.sources.filter(
+          (source) => source.for !== undefined
+        );
+        const numbered = reading.flatMap((source, at) =>
+          (source.for as string[]).map((lead) => [source.id, lead, first + at])
+        );
+        const got = outcome.ok
+          ? (outcome.value as Record<string, readonly unknown[]>)
+          : {};
+        expect({
+          ...asSets(got as never),
+          failed: outcome.ok ? undefined : outcome,
+        }).toEqual({
+          ...asSets({
+            leads: (notes.leads ?? []).map((lead) => [
+              lead.id,
+              lead.statement,
+              lead.patience ?? 3,
+            ]),
+            pursues: (notes.leads ?? []).flatMap((lead) =>
+              lead.pursues.map((question) => [lead.id, question])
+            ),
+            read: numbered,
+          }),
+          failed: undefined,
+        });
+        const folder = mkdtempSync(join(tmpdir(), "lion-research-steps-"));
+        writeFileSync(join(folder, "01-early.json"), JSON.stringify(step));
+        writeFileSync(
+          join(folder, "03-late.json"),
+          JSON.stringify(stepOf(notes, first + 10))
+        );
+        const last = (offset: number) =>
+          numbered.length === 0 ? 0 : first + offset + reading.length - 1;
+        expect([
+          readBefore("01-early.json", folder),
+          readBefore("02-middle.json", folder),
+          readBefore("04-after.json", folder),
+        ]).toEqual([0, last(0), last(10)]);
+      }),
+    OPTIONS
+  );
+
   it.effect.prop(
     "records notes as the data they are, and refuses a quote its source does not hold",
     {
@@ -1598,7 +2024,7 @@ describe("the research skill's frozen eval", () => {
           const model = [
             core,
             JSON.parse(caseFile("reference/frame.src.json")),
-            ...notes.map(stepOf),
+            ...notes.map((note) => stepOf(note)),
           ];
           const queried = yield* answerOf([
             "begin",

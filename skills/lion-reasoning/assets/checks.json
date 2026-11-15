@@ -62,5 +62,96 @@
   "What did I settle that was the user's to decide?": [
     "query",
     ["presumed", "?question", "?value", "?observation"]
+  ],
+  "What is each score on the files as they are now?": [
+    "query",
+    ["score_in", "now", "?score", "?best", "?worst"]
+  ],
+  "Which scores have no run that counts on the files as they are now?": [
+    "find",
+    "?score",
+    [
+      "and",
+      ["scored", "?score", "?_"],
+      ["not", ["score_in", "now", "?score", "?_", "?_"]]
+    ]
+  ],
+  "What is the best each score is sure to give, and in which version?": [
+    "query",
+    [
+      "and",
+      ["best", "?score", "?best"],
+      ["score_in", "?version", "?score", "?_", "?best"],
+      ["not", ["=", "?version", "now"]]
+    ]
+  ],
+  "Which scores are worse now than their best?": [
+    "query",
+    ["regressed", "?score", "?now", "?best"]
+  ],
+  "Which versions improved a score, from what to what?": [
+    "query",
+    ["improved", "?score", "?version", "?before", "?after"]
+  ],
+  "Which versions' scores do not count, because a requirement is not met?": [
+    "query",
+    ["unmet", "?version", "?score", "?question", "?needed"]
+  ],
+  "Where should the next experiment go?": [
+    "query",
+    [
+      "and",
+      ["live", "?direction"],
+      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+    ],
+    {
+      "order": ["-paid_off", "tried"]
+    }
+  ],
+  "Which directions are set aside, and why?": [
+    "find",
+    {
+      "direction": "?direction",
+      "why": "?why"
+    },
+    [
+      "or",
+      [
+        "and",
+        ["exhausted", "?direction"],
+        ["progress", "?direction", "?_", "?_", "?misses"],
+        [
+          "=",
+          "?why",
+          {
+            "missed in a row": "?misses"
+          }
+        ]
+      ],
+      [
+        "and",
+        ["blocked", "?direction", "?question"],
+        [
+          "=",
+          "?why",
+          {
+            "waits for": "?question"
+          }
+        ]
+      ],
+      [
+        "and",
+        ["ruled_out", "?direction", "?question", "?needed", "?found"],
+        [
+          "=",
+          "?why",
+          {
+            "needs": "?question",
+            "to be": "?needed",
+            "but is": "?found"
+          }
+        ]
+      ]
+    ]
   ]
 }

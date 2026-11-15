@@ -1,6 +1,6 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer four questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer five questions:
 
 | Question | Command |
 | --- | --- |
@@ -8,6 +8,7 @@ Tools that measure Lion, so a change can be judged by numbers and not by feel. T
 | Did it make Lion faster or slower? | `bun run bench --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
 | What does the change do to a program's result? | `bun run compare main programs.json` |
+| How well does an agent do a skill's eval case? | `bun run skill-eval lion-research verifies-company-figures` |
 
 Run them from the repository root. Each one measures the working tree. `--against <commit>` also measures an earlier commit, such as `main`, a tag, or a hash, and shows the two side by side. The earlier commit is checked out under `out/metrics/`, which git ignores, and removed when the command ends.
 
@@ -138,6 +139,57 @@ Runs each program of a file on an earlier commit and on the working tree, and sh
 ```
 
 Use it before you write that a change fixes, breaks, or keeps something: a changelog line about behavior should be a program that gives one thing before and another after.
+
+## Skills: `bun run skill-eval`
+
+```bash
+bun run skill-eval lion-research verifies-company-figures --runs 2
+```
+
+A skill's frozen eval case (a folder under `skills/<skill>/evals/` with a `prompt.md`, a `case.yaml`, a corpus, and a `grade.mjs`) is run by headless agents, `claude -p`, each in a folder of its own under `out/skill-eval/`. Each agent gets a copy of the skill without its `evals/` folder, so it cannot read the answers, and the case's corpus where the prompt says it is. The session's own skills are switched off and only project settings load, so an installed copy of the skill cannot stand in for the one under test. The case's grader then grades what each run made, with the repository's own Lion build or the one `LION_CLI` names, and each run prints lines like these:
+
+```
+run: out/skill-eval/lion-research-verifies-company-figures-2026-11-14T16-36-01-186Z-2
+checks passed: 17 of 23
+checks failed: 6
+cost usd: 2.13
+minutes: 5.3
+turns: 28
+  failed  The page names no question a choice set aside or that has two senses: [["Questions the plan names that a choice set aside, or that have readings nobody chose between",[{"revenue":"tarnwell"},{"revenue":"tarnwell"}]]]
+  failed  The report gives revenue as restated, $409.8M: no report.md
+  failed  The report says the earlier figure was $412.6M: no report.md
+  failed  The report gives the gross margin, 26.4%: no report.md
+  failed  The report says a source counts 39 warehouses: no report.md
+  failed  The report says the blog misquotes the headcount as 2,400: no report.md
+```
+
+The other run of the same command passed 23 of 23, for $2.85 in 7.4 minutes: two runs of one skill can differ by six checks, which is why a change to a skill is judged on more than one run.
+
+`--runs n` runs n agents at once. `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, `--model` and `--budget` (US dollars per run) pass on to `claude -p`, and `--grade <run folder>` grades a run again. A run costs what an agent session of the case's length costs, so run few, and more than one only where the runs disagree.
+
+### An experiment loop over a skill
+
+The lines are written to be recorded by the lion-reasoning skill, whose scores and directions keep the record of an experiment loop. Declare the grade and the cost as scores. The cost of a run counts only when it passed every check, and neither counts when the eval itself was changed:
+
+```json
+{"scores": [
+   {"question": {"checks passed": "lion-research verifies-company-figures"}, "better": "higher",
+    "requires": [{"question": {"eval lines changed": "lion-research"}, "value": 0}]},
+   {"question": {"cost usd": "lion-research verifies-company-figures"}, "better": "lower",
+    "requires": [{"question": {"checks failed": "lion-research verifies-company-figures"}, "value": 0},
+                 {"question": {"eval lines changed": "lion-research"}, "value": 0}]}],
+ "directions": [
+   {"id": "worked-example", "statement": "Lead SKILL.md with one worked research run, start to finish", "patience": 2}]}
+```
+
+Each experiment is a change to `skills/<skill>/`, then the eval run through `see.mjs`, so the runs belong to the version of the skill they ran on, and a check that the eval is untouched. `see.mjs` runs its command through the shell, so give a pipeline as one quoted string, not wrapped in `sh -c`:
+
+```bash
+node <lion-reasoning>/scripts/see.mjs e3 --about skills/lion-research -- bun run skill-eval lion-research verifies-company-figures --runs 2
+node <lion-reasoning>/scripts/see.mjs d3 --about skills/lion-research -- 'git diff -- skills/lion-research/evals | wc -l'
+```
+
+Record each run's "checks passed", "checks failed", and "cost usd" as observations that `tries` the direction, and let the model say which version is best, whether the change cleared the spread of the runs, and where to spend the next run. Revert a miss with git: the runs of the version you return to speak for the present again.
 
 ## Tests
 

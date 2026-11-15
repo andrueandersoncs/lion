@@ -1,0 +1,21 @@
+{
+  "id": "patience-since-last-payoff",
+  "title": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff",
+  "context": "Taylor's map-driven autoresearch keeps a map of ideas, runs experiments on some, and moves effort from the ideas that stall to the ones that pay. The reasoning skill's directions (ideas for improving a score) and the research skill's leads (lines of inquiry) both need a rule for when to stop spending on one. A direction's experiment pays off when its version improves a score; a lead's source pays off when it says something first-hand the lead covers.",
+  "decision": "Each direction and lead has a patience, 3 unless it says. Its misses are the experiments, or the sources read for it, that paid nothing and came after its last payoff; when they reach its patience it is set aside, and it stays in the model with why. A payoff starts the count again, as patience does in early stopping. Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`. The research recorder numbers the sources read for leads in the order their notes are recorded, so \"in a row\" has a meaning there too.",
+  "consequences": "A direction that keeps paying off keeps its budget, and one that never pays is dropped after its patience. The list of where to try next puts the live directions that paid off most first, then those tried least; it is advice, and the agent says why when it goes against it. A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research), and an answer otherwise rules a direction out.",
+  "alternatives": [
+    {
+      "option": "Count every miss, not only those since the last payoff",
+      "rejected": "The most productive direction also misses most often in absolute terms, so it would be the first set aside."
+    },
+    {
+      "option": "A fixed number of experiments or sources for each, whatever they find",
+      "rejected": "It spends as much on an idea that has stopped paying as on one that pays every time, which is what reallocating effort is meant to avoid."
+    },
+    {
+      "option": "Let the model choose the next experiment",
+      "rejected": "Which idea to try next weighs things the model does not hold, such as cost and how promising an untried idea looks; the model says what the evidence shows and the agent decides."
+    }
+  ]
+}

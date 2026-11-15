@@ -205,7 +205,7 @@ export const namedReadingsOf = (page) => {
   return named.length === 0
     ? {}
     : {
-        "Questions the plan names that a choice set aside, or that have readings nobody chose between":
+        "Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean":
           [
             "find",
             "?question",
@@ -352,6 +352,11 @@ const main = (args) => {
   console.log(
     `${check} (${Object.keys(checks).length} texts, queries, and checks)`
   );
+  if (Object.keys(namedReadingsOf(page)).length > 0) {
+    console.log(
+      "The plan names questions as records. The last check in page-check.json lists those a choice set aside or that have senses nobody chose; run it, and change the plan until it gives []."
+    );
+  }
   const typed = typedFigures(page);
   for (const [name, text] of typed) {
     console.log(`typed in  ${name}: ${String(text).slice(0, SHOWN)}`);

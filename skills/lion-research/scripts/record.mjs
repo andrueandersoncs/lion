@@ -14,10 +14,16 @@
 //                 "credits": ["another source's id"],
 //                 "where": "p. 4, Highlights"}],
 //    "decisions": [{"key": "basis", "value": "gaap",
-//                   "words": "the reader's own words"}]}
+//                   "words": "the reader's own words"}],
+//    "leads": [{"id": "outside-revenue", "statement": "…",
+//               "pursues": [{"revenue": "acme"}], "patience": 3}]}
 //
 // `credits`, `where` (where in the source the quote stands), and
-// `decisions` (the reader's choice of a reading) may be left out.
+// `decisions` (the reader's choice of a reading) may be left out. A lead
+// is a line of inquiry: the questions it pursues, and how many sources in a
+// row may give nothing first-hand on them before it is set aside, 3 unless
+// it says. A source read to follow leads names them in `"for"`, and is
+// numbered in the order it was recorded.
 //
 // It writes steps/<the notes file's name>, which the lion command then runs.
 // Each quote is looked for in sources/<source id>.txt, word for word. A
@@ -26,6 +32,7 @@
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   realpathSync,
   writeFileSync,
@@ -35,14 +42,17 @@ import { fileURLToPath } from "node:url";
 import { hasQuote } from "./check-quotes.mjs";
 
 const SHOWN = 80;
+/** How many sources in a row a lead may read for nothing, unless it says. */
+const PATIENCE = 3;
 const quoted = (value) => ["quote", value];
 
 /**
  * The step that records the notes: one `fact` form, so sources and the
  * claims that cite them go in together. Everything is written as data, so no
- * text in the notes can be read as a name, a variable, or code.
+ * text in the notes can be read as a name, a variable, or code. The sources
+ * read for a lead are numbered from `first` on, in the order they are listed.
  */
-export const stepOf = (notes) => [
+export const stepOf = (notes, first = 1) => [
   "begin",
   [
     "fact",
@@ -78,6 +88,31 @@ export const stepOf = (notes) => [
       quoted(decision.value),
       quoted(decision.words),
     ]),
+    ...(notes.leads ?? []).flatMap((lead) => [
+      [
+        "lead",
+        quoted(lead.id),
+        quoted(lead.statement ?? ""),
+        quoted(lead.patience ?? PATIENCE),
+      ],
+      ...(lead.pursues ?? []).map((question) => [
+        "pursues",
+        quoted(lead.id),
+        quoted(question),
+      ]),
+    ]),
+    ...(notes.sources ?? [])
+      .filter((source) => [source.for ?? []].flat().length > 0)
+      .flatMap((source, at) =>
+        [source.for]
+          .flat()
+          .map((lead) => [
+            "read_for",
+            quoted(source.id),
+            quoted(lead),
+            first + at,
+          ])
+      ),
   ],
   "recorded",
 ];
@@ -102,6 +137,27 @@ export const problemsOf = (notes, textOf) =>
         ];
   });
 
+/**
+ * The number of the last source read for a lead in the steps before `name`,
+ * or 0: a step recorded again keeps its sources' numbers.
+ */
+export const readBefore = (name, folder = "steps") =>
+  existsSync(folder)
+    ? Math.max(
+        0,
+        ...readdirSync(folder)
+          .filter((file) => file.endsWith(".json") && file < name)
+          .flatMap((file) => {
+            const step = JSON.parse(readFileSync(join(folder, file), "utf8"));
+            return (Array.isArray(step) ? step : [])
+              .filter((form) => Array.isArray(form) && form[0] === "fact")
+              .flatMap((form) => form.slice(1))
+              .filter((row) => Array.isArray(row) && row[0] === "read_for")
+              .map((row) => Number(row[3]));
+          })
+      )
+    : 0;
+
 const main = (path) => {
   if (path === undefined || !existsSync(path)) {
     console.error("Usage: node record.mjs notes/<name>.json");
@@ -121,9 +177,12 @@ const main = (path) => {
   }
   mkdirSync("steps", { recursive: true });
   const step = join("steps", basename(path));
-  writeFileSync(step, `${JSON.stringify(stepOf(notes), null, 1)}\n`);
+  writeFileSync(
+    step,
+    `${JSON.stringify(stepOf(notes, readBefore(basename(path)) + 1), null, 1)}\n`
+  );
   console.log(
-    `${step}: sources ${(notes.sources ?? []).length}, claims ${(notes.claims ?? []).length}, every quote found.`
+    `${step}: sources ${(notes.sources ?? []).length}, claims ${(notes.claims ?? []).length}${(notes.leads ?? []).length > 0 ? `, leads ${notes.leads.length}` : ""}, every quote found.`
   );
 };
 

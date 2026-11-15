@@ -44,13 +44,21 @@
       "id": "release-warehouses",
       "source": "fy25-release",
       "quote": "The company operated 37 warehouses at June 30, 2025",
-      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 37 }
+      "says": {
+        "warehouses": "tarnwell",
+        "on": 20250630,
+        "count": 37
+      }
     },
     {
       "id": "release-staff",
       "source": "fy25-release",
       "quote": "employed 2,140 people at year end",
-      "says": { "staff": "tarnwell", "on": 20250630, "people": 2140 }
+      "says": {
+        "staff": "tarnwell",
+        "on": 20250630,
+        "people": 2140
+      }
     },
     {
       "id": "report-revenue",
@@ -68,22 +76,56 @@
       "id": "report-cost",
       "source": "fy25-annual-report",
       "quote": "Cost of services                       301.5",
-      "says": { "cost": "tarnwell", "period": "fiscal 2025", "usd_m": 301.5 },
+      "says": {
+        "cost": "tarnwell",
+        "period": "fiscal 2025",
+        "usd_m": 301.5
+      },
       "where": "Page 47, Consolidated Statements of Operations"
     },
     {
       "id": "report-warehouses",
       "source": "fy25-annual-report",
       "quote": "Warehouses in operation at June 30, 2025: 37.",
-      "says": { "warehouses": "tarnwell", "on": 20250630, "count": 37 },
+      "says": {
+        "warehouses": "tarnwell",
+        "on": 20250630,
+        "count": 37
+      },
       "where": "Page 3, Item 1"
     },
     {
       "id": "report-staff",
       "source": "fy25-annual-report",
       "quote": "Employees at June 30, 2025: 2,140.",
-      "says": { "staff": "tarnwell", "on": 20250630, "people": 2140 },
+      "says": {
+        "staff": "tarnwell",
+        "on": 20250630,
+        "people": 2140
+      },
       "where": "Page 3, Item 1"
+    }
+  ],
+  "leads": [
+    {
+      "id": "outside-warehouses",
+      "statement": "Find a count of warehouses from someone other than Tarnwell",
+      "pursues": [
+        {
+          "warehouses": "tarnwell"
+        }
+      ],
+      "patience": 2
+    },
+    {
+      "id": "outside-staff",
+      "statement": "Find a headcount from someone other than Tarnwell",
+      "pursues": [
+        {
+          "staff": "tarnwell"
+        }
+      ],
+      "patience": 2
     }
   ]
 }

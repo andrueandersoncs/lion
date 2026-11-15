@@ -1,0 +1,17 @@
+{
+  "id": "lead-done-when-confirmed",
+  "title": "A research lead is done when every question it pursues has an answer two publishers give first-hand",
+  "context": "The research skill's leads record what each line of inquiry set out to find. A lead needs an end besides running out of patience, and the core already says what confirmation is: an answer two publishers give first-hand, with relays not counted.",
+  "decision": "A lead pursues questions written as patterns: a record covers every answered question that has its keys and values, so `{\"warehouses\": \"tarnwell\"}` covers the count on every date. Senses the reader set aside are not covered. The lead is done when every pattern covers an answer that is `corroborated`. Disputes do not hold a lead open; `disputed` reports them as before.",
+  "consequences": "In the Tarnwell corpus, the lead for an outside count of warehouses is done once the licensing registry says 37 first-hand, though Cargo Ledger's 39 is still a dispute. A question only one publisher can answer never finishes its lead, which then runs out of patience, and the report says that nobody independent gives it.",
+  "alternatives": [
+    {
+      "option": "Done only when the covered questions are also undisputed",
+      "rejected": "One outlier source would keep a lead open for as long as anyone kept reading, and the dispute is already a finding of its own."
+    },
+    {
+      "option": "Done when any source answers the question",
+      "rejected": "One publisher's word repeated by ten outlets would finish it, which is the mistake the research core exists to catch."
+    }
+  ]
+}

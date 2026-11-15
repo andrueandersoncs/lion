@@ -70,6 +70,64 @@ const researchStep = (
 });
 
 export const MUTATIONS: readonly Mutation[] = [
+  research(
+    "a lead covers only questions written exactly as it pursues them",
+    '["schema/fits?", "?q", ["schema/open", "?p"]],',
+    '["schema/fits?", "?q", "?p"],'
+  ),
+  research(
+    "a lead covers the senses the reader set aside",
+    '["schema/fits?", "?q", ["schema/open", "?p"]],\n    ["not", ["set_aside", "?q", "?_", "?_", "?_"]]',
+    '["schema/fits?", "?q", ["schema/open", "?p"]]'
+  ),
+  research(
+    "a lead is done when one publisher answers it",
+    '["covered", "?l", "?p", "?q"],\n    ["corroborated", "?q", "?_"]',
+    '["covered", "?l", "?p", "?q"],\n    ["backing", "?q", "?_", "?_"]'
+  ),
+  research(
+    "a lead is done when any one question it pursues is firm",
+    '["not", ["and", ["pursues", "?l", "?p"], ["not", ["firm", "?l", "?p"]]]]',
+    '["firm", "?l", "?_"]'
+  ),
+  research(
+    "a lead does not wait for the reader's choice of a sense",
+    '["base", "?q", "?base"],\n    ["ambiguous", "?base", "?key", "?_"]',
+    '["base", "?q", "?base"],\n    ["ambiguous", "?base", "?key", "?_"],\n    ["=", 1, 2]'
+  ),
+  research(
+    "a source that only relays pays off for a lead",
+    '["not", ["attributed", "?c", "?_"]],\n    ["answer", "?q", "?_", "?c"],\n    ["covered", "?l", "?_", "?q"]',
+    '["answer", "?q", "?_", "?c"],\n    ["covered", "?l", "?_", "?q"]'
+  ),
+  research(
+    "sources read for a lead before its last payoff still count as misses",
+    '["not", ["paid_off", "?l", "?s"]],\n    [\n      "not",\n      [\n        "and",\n        ["last_payoff", "?l", "?last"],\n        ["number/lessThan", "?n", "?last"]\n      ]\n    ]',
+    '["not", ["paid_off", "?l", "?s"]]'
+  ),
+  research(
+    "a lead out of patience stays live",
+    '["not", ["done", "?l"]],\n    ["not", ["exhausted", "?l"]],',
+    '["not", ["done", "?l"]],'
+  ),
+  research(
+    "a lead that names no patience gets none",
+    "quoted(lead.patience ?? PATIENCE)",
+    "quoted(lead.patience ?? null)",
+    "scripts/record.mjs"
+  ),
+  research(
+    "the sources read for leads are all numbered from the start",
+    "stepOf(notes, readBefore(basename(path)) + 1)",
+    "stepOf(notes, 1)",
+    "scripts/record.mjs"
+  ),
+  research(
+    "a step's sources are numbered after the steps that come after it",
+    'file.endsWith(".json") && file < name',
+    'file.endsWith(".json")',
+    "scripts/record.mjs"
+  ),
   {
     name: "an equality rule makes no unknowns one",
     file: core("logic/model.ts"),
@@ -1228,6 +1286,134 @@ export const MUTATIONS: readonly Mutation[] = [
     file: reasoning("assets/core.json"),
     find: '["untested", "?b", "?q", "?value"],\n    ["holds", "?b"],',
     replace: '["untested", "?b", "?q", "?value"],',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a version improves a score when its best run beats what came before, not its worst",
+    file: reasoning("assets/core.json"),
+    find: '["range_in", "?v", "?q", "?_", "?after"],\n    ["sure_before", "?v", "?q", "?before", "?_"],',
+    replace:
+      '["range_in", "?v", "?q", "?after", "?_"],\n    ["sure_before", "?v", "?q", "?before", "?_"],',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a version improves a score when it beats the luckiest run before it",
+    file: reasoning("assets/core.json"),
+    find: '      "sure_before",\n      "?v",\n      "?q",\n      ["aggregate/min", "?high"],\n      ["aggregate/max", "?low"]',
+    replace:
+      '      "sure_before",\n      "?v",\n      "?q",\n      ["aggregate/min", "?low"],\n      ["aggregate/max", "?high"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a version is compared with the versions after it too",
+    file: reasoning("assets/core.json"),
+    find: '["first", "?u", "?m"],\n    ["number/lessThan", "?m", "?n"]',
+    replace: '["first", "?u", "?m"],\n    ["not", ["=", "?m", "?n"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a score counts where what it requires is not met",
+    file: reasoning("assets/core.json"),
+    find: '["answer_in", "?v", "?q", "?x", "?_"],\n    ["not", ["unmet", "?v", "?q", "?_", "?_"]]',
+    replace: '["answer_in", "?v", "?q", "?x", "?_"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a requirement answered both ways counts as met",
+    file: reasoning("assets/core.json"),
+    find: '["answer_in", "?v", "?q", "?found", "?_"],\n    ["not", ["=", "?found", "?needed"]]',
+    replace: '["answer_in", "?v", "?q", "?found", "?_"],\n    ["=", 1, 2]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a higher-is-better score is judged as lower-is-better",
+    file: reasoning("assets/core.json"),
+    find: '["score_in", "?v", "?q", "?high", "?low"],\n    ["scored", "?q", "higher"],',
+    replace:
+      '["score_in", "?v", "?q", "?low", "?high"],\n    ["scored", "?q", "higher"],',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the best of a lower-is-better score is taken from the wrong end",
+    file: reasoning("assets/core.json"),
+    find: '["best", "?q", "?sure"],\n    ["scored", "?q", "lower"],\n    ["sure_ever", "?q", "?sure", "?_"]',
+    replace:
+      '["best", "?q", "?sure"],\n    ["scored", "?q", "lower"],\n    ["sure_ever", "?q", "?_", "?sure"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a version's luckiest run counts as the best it is sure to give",
+    file: reasoning("assets/core.json"),
+    find: '["sure_ever", "?q", ["aggregate/min", "?high"], ["aggregate/max", "?low"]]',
+    replace:
+      '["sure_ever", "?q", ["aggregate/min", "?low"], ["aggregate/max", "?high"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a score at its best counts as worse than its best",
+    file: reasoning("assets/core.json"),
+    find: '["best", "?q", "?best"],\n    ["number/greaterThan", "?now", "?best"]',
+    replace:
+      '["best", "?q", "?best"],\n    ["number/greaterThanOrEqualTo", "?now", "?best"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "an experiment counts for the last version its run speaks for",
+    file: reasoning("assets/core.json"),
+    find: '["ran_in", "?o", ["aggregate/min", "?n"]]',
+    replace: '["ran_in", "?o", ["aggregate/max", "?n"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "misses before a direction's last payoff still count against it",
+    file: reasoning("assets/core.json"),
+    find: '["first", "?v", "?n"],\n    [\n      "not",\n      [\n        "and",\n        ["last_payoff", "?d", "?last"],\n        ["number/lessThan", "?n", "?last"]\n      ]\n    ]',
+    replace: '["first", "?v", "?n"]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a direction is set aside one miss early",
+    file: reasoning("assets/core.json"),
+    find: '["aggregate/unique", ["find", "?v", ["miss", "?d", "?v"]]]\n      ],\n      "?patience"',
+    replace:
+      '["aggregate/unique", ["find", "?v", ["miss", "?d", "?v"]]]\n      ],\n      ["number/subtract", "?patience", 1]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a direction waiting for the user's decision stays live",
+    file: reasoning("assets/core.json"),
+    find: '["needs", "?d", "?q", "?_"],\n    ["undecided", "?q", "?_"]',
+    replace:
+      '["needs", "?d", "?q", "?_"],\n    ["undecided", "?q", "?_"],\n    ["=", 1, 2]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a direction whose need is answered otherwise stays live",
+    file: reasoning("assets/core.json"),
+    find: '["not", ["blocked", "?d", "?_"]],\n    ["not", ["ruled_out", "?d", "?_", "?_", "?_"]]',
+    replace: '["not", ["blocked", "?d", "?_"]]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the runs of a score that differ are reported as a dispute",
+    file: reasoning("assets/core.json"),
+    find: '["number/greaterThan", ["array/length", "?values"], 1],\n    ["not", ["scored", "?q", "?_"]]',
+    replace: '["number/greaterThan", ["array/length", "?values"], 1]',
+    ...REASONING_TESTS,
+  },
+  {
+    name: "a direction that names no patience gets none",
+    file: reasoning("scripts/record.mjs"),
+    find: "quoted(direction.patience ?? PATIENCE)",
+    replace: "quoted(direction.patience ?? null)",
+    ...REASONING_TESTS,
+  },
+  {
+    name: "the recorder leaves out what an observation tries",
+    file: reasoning("scripts/record.mjs"),
+    find: '.map((direction) => ["tries", quoted(seen.id), quoted(direction)]),',
+    replace:
+      '.map((direction) => ["tries", quoted(seen.id), quoted(direction)])\n        .slice(0, 0),',
     ...REASONING_TESTS,
   },
   {

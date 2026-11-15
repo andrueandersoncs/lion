@@ -9,6 +9,7 @@ Ways to model the shapes reasoning usually takes. Each example was run with the 
 - [Checking what you were told](#checking-what-you-were-told)
 - [Assumptions a prediction cannot state](#assumptions-a-prediction-cannot-state)
 - [A plan with dependencies](#a-plan-with-dependencies)
+- [Improving a score that moves between runs](#improving-a-score-that-moves-between-runs)
 - [What if](#what-if)
 
 ## Finding the cause of a bug
@@ -162,6 +163,49 @@ A plan is tasks, what each waits for, and when each is done. Make "done" a quest
 ```
 
 With the tests above, `done` gives `["parser", "schema"]` and `ready` gives `["docs", "lists"]`. `["query", ["graph/topologicalOrder", "blocks", "?task", "?position"], {"order": "position"}]` gives an order to do them in: schema, parser, docs, lists. If the dependencies form a loop, it fails and names the cycle.
+
+## Improving a score that moves between runs
+
+A timing moves from run to run, so one run per version can make a change look better or worse than it is. Run the score the same number of times on each version, three to start with, and put what the runs share in its question: here the benchmark and its number of rounds. A small project joins 200,000 strings twenty times, and two ideas compete to make it faster:
+
+```bash
+for i in 1 2 3; do node <skill>/scripts/see.mjs a$i -- node bench.mjs; done
+# change join.mjs to append with a template literal
+for i in 1 2 3; do node <skill>/scripts/see.mjs b$i -- node bench.mjs; done
+# change join.mjs to join the array in one call
+for i in 1 2 3; do node <skill>/scripts/see.mjs c$i -- node bench.mjs; done
+```
+
+```json
+{"scores": [{"question": {"ms": "bench.mjs", "rounds": 20}, "better": "lower"}],
+ "directions": [
+   {"id": "template", "statement": "Append with a template literal", "patience": 1},
+   {"id": "array-join", "statement": "Join the array in one call", "patience": 1}],
+ "observations": [
+   {"id": "a1-ms", "source": "a1", "quote": "ms: 105", "question": {"ms": "bench.mjs", "rounds": 20}, "value": 105},
+   {"id": "b1-ms", "source": "b1", "quote": "ms: 110", "question": {"ms": "bench.mjs", "rounds": 20}, "value": 110, "tries": "template"},
+   {"id": "c1-ms", "source": "c1", "quote": "ms: 34", "question": {"ms": "bench.mjs", "rounds": 20}, "value": 34, "tries": "array-join"}]}
+```
+
+(and an observation for each of the other six runs). The model gives each version the range of its runs, and an improvement only where the version's slowest run beats the most any earlier version was sure to give, its slowest run:
+
+```json
+{"score in each version": [
+   {"version": "v0001", "score": {"ms": "bench.mjs", "rounds": 20}, "best": 104, "worst": 105},
+   {"version": "v0002", "score": {"ms": "bench.mjs", "rounds": 20}, "best": 110, "worst": 116},
+   {"version": "v0003", "score": {"ms": "bench.mjs", "rounds": 20}, "best": 34, "worst": 35},
+   {"version": "now", "score": {"ms": "bench.mjs", "rounds": 20}, "best": 34, "worst": 35}],
+ "improved": [{"score": {"ms": "bench.mjs", "rounds": 20}, "version": "v0003", "before": 105, "after": 35}],
+ "progress": [
+   {"direction": "template", "tried": 1, "paid_off": 0, "misses": 1},
+   {"direction": "array-join", "tried": 1, "paid_off": 1, "misses": 0}]}
+```
+
+The template literal's slowest run, 116, was no better than the 105 the first version was sure to give, so it missed and, with a patience of one, is set aside. Joining the array's slowest run, 35, beat 105. Had its slowest run been above 105, the model would not call it an improvement, however low its fastest run: run each again, or say that the change is within the noise.
+
+A requirement keeps a score honest, as in [Scores and directions](../SKILL.md#scores-and-directions): give the score `"requires": [{"question": {"failing tests": "core"}, "value": 0}]` and run the tests on each version, so a faster version that breaks something has no score at all.
+
+Versions are of the one project the task folder is in, so run experiments one after another in it. Experiments in other checkouts, such as worktrees, have files the task's versions do not hold, and their runs speak for no version here.
 
 ## What if
 

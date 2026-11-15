@@ -126,6 +126,9 @@ bun run mutate
 
 # Run the same programs on main and on the working tree
 bun run compare main programs.json
+
+# Run a skill's frozen eval case with headless agents, and grade each run
+bun run skill-eval lion-research verifies-company-figures --runs 2
 ```
 
 - **Code complexity** is counted from the source of `@lionlang/core` without its tests: code lines, functions, paths through functions, decisions weighted by how deep they nest, and `instanceof` tests of a value's kind.

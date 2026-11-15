@@ -1,6 +1,6 @@
 ---
 name: lion-reasoning
-description: Keep a Lion logic model of what you have observed and what you believe while you work, so a belief the evidence contradicts, evidence that went out of date when a file changed, and a claim that rests only on what you were told are caught as they happen, not in your final answer. Use it for work where a wrong belief is costly or easy to slip in. That includes debugging and finding the cause of a failure, a change that has to be verified across many places, auditing docs, notes, or memory against the code, mapping how parts of a system depend on each other, and any task long enough that your context will be summarized before it ends. Use it even when the user never mentions Lion or a model. Skip it for a task a few tool calls settle.
+description: Keep a Lion logic model of what you have observed and what you believe while you work, so a belief the evidence contradicts, evidence that went out of date when a file changed, and a claim that rests only on what you were told are caught as they happen, not in your final answer. Use it for work where a wrong belief is costly or easy to slip in. That includes debugging and finding the cause of a failure, a change that has to be verified across many places, auditing docs, notes, or memory against the code, mapping how parts of a system depend on each other, making a number better (a benchmark, a size, a test or eval score) by experiments you keep or revert, and any task long enough that your context will be summarized before it ends. Use it even when the user never mentions Lion or a model. Skip it for a task a few tool calls settle.
 ---
 
 # Reasoning with a Lion model
@@ -143,6 +143,64 @@ Say you read `package.json` and recorded that the build to speed up is the relea
 
 Once they say "the dev server, it takes 40 s to start", recorded as the value `development`, the first list is empty, and the second still names `o1`: the release build was your guess, and it was wrong.
 
+### Scores and directions
+
+When the task is to make a number better, such as a benchmark's time, a bundle's size, or an eval's grade, declare the number a **score** and the ideas you will try as **directions**. The model then keeps the record of an experiment loop: each experiment is a version of the files with its runs, a version counts as an improvement only when it beats the best so far, and a direction that keeps missing is set aside, so you spend the next experiment where the evidence says it pays.
+
+```json
+{"scores": [{"question": {"comparisons": "bench.mjs"}, "better": "lower",
+             "requires": [{"question": {"failing tests": "test.mjs"}, "value": 0}]}],
+ "directions": [
+   {"id": "insertion", "statement": "Insert each item into the sorted part before it", "patience": 2},
+   {"id": "early-exit", "statement": "Stop a pass as soon as the rest is in order", "patience": 1},
+   {"id": "binary", "statement": "Find each item's place in the sorted part by binary search", "patience": 2},
+   {"id": "built-in", "statement": "Use the built-in Array sort",
+    "needs": [{"question": {"may use built-ins": "sort.mjs"}, "value": true}]}],
+ "ask": [{"question": {"may use built-ins": "sort.mjs"}, "of": "user"}]}
+```
+
+- A score's **question** holds everything that makes two runs comparable: the command, its input, the machine, and the budget, such as `{"val_bpb": "train.py", "minutes": 5}`. A run under another budget answers another question, so the two are never compared.
+- **`better`** is `lower` or `higher`.
+- **`requires`** lists the answers a version must have for its runs to count, such as no failing tests. Where a requirement is unanswered or answered otherwise, the version has no score, so a change that breaks the tests can never become the best.
+- A **direction** is an idea you will try. Its **`patience`** is how many experiments in a row it may make without improving a score before it is set aside, 3 unless you say. An experiment that improves a score starts the count again.
+- **`needs`** lists the answers a direction depends on. While such a question is unanswered, or not yet decided by whoever `ask` names, the direction waits; once it is answered otherwise, the direction is ruled out. A choice that is the user's goes here, so their answer prunes the directions.
+
+An experiment is a change to the files, then a run of the score with `see.mjs`, recorded as an observation that **`tries`** the direction. Run what the score requires on the same files, and record it in the same notes:
+
+```json
+{"observations": [
+  {"id": "o3", "source": "b1", "quote": "comparisons: 117", "question": {"comparisons": "bench.mjs"}, "value": 117, "tries": "insertion"},
+  {"id": "o4", "source": "t1", "quote": "tests: 0 failed of 7", "question": {"failing tests": "test.mjs"}, "value": 0}]}
+```
+
+How the model judges, for each version of the files:
+
+- **A score's runs in a version are its range.** Run it again to see how far it moves; runs of a score that differ are its spread, not a dispute.
+- **What a version is sure to give is its worst run.** The **best** is the best of those across versions, so one lucky run never becomes the best.
+- **A version improves a score when even its worst run beats the best that any version before it was sure to give.** With one run each, that is beating the best so far. With several, the improvement has to clear the noise on both sides, and a later run of an earlier version can take an improvement back: the verdicts follow the evidence, not the order it came in. Run the score the same number of times on each version, since a version run once has a worst run that is its only one.
+- **An experiment is the version its run was made on.** It pays off when that version improved a score, and misses otherwise.
+
+When an experiment misses, put the files back with git. Once they hold what they held before, the runs made on them speak for the present again, so the score is known without running it again.
+
+After an early exit that cut the comparisons to 27 but failed a test, the standing questions in this example gave:
+
+```json
+{"Which versions' scores do not count, because a requirement is not met?": [
+   {"version": "v0003", "score": {"comparisons": "bench.mjs"}, "question": {"failing tests": "test.mjs"}, "needed": 0}],
+ "What is the best each score is sure to give, and in which version?": [
+   {"score": {"comparisons": "bench.mjs"}, "best": 117, "version": "v0002"}],
+ "Where should the next experiment go?": [
+   {"direction": "insertion", "tried": 1, "paid_off": 1, "misses": 0},
+   {"direction": "binary", "tried": 0, "paid_off": 0, "misses": 0}],
+ "Which directions are set aside, and why?": [
+   {"direction": "built-in", "why": {"waits for": {"may use built-ins": "sort.mjs"}}},
+   {"direction": "early-exit", "why": {"missed in a row": 1}}]}
+```
+
+The 27 does not count, the best is still insertion's 117, and the early exit used up its patience. Binary search then brought the best to 62, and when the user said "No built-ins, please", `built-in` moved from waiting to ruled out: `{"needs": {"may use built-ins": "sort.mjs"}, "to be": true, "but is": false}`. `why` on a payoff ends in the runs it compared: `["why", ["paid_off", "binary", "v0004", ["quote", {"comparisons": "bench.mjs"}]]]` reaches the observations of 62 and 117 and the check `["number/lessThan", 62, 117]`.
+
+"Where should the next experiment go?" lists the live directions, those that paid off most first, then those tried least. It is advice, not an order: choose with your judgment, and say why when you go against it.
+
 ### Recording
 
 ```bash
@@ -160,7 +218,7 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
 | `answer(question, value, observation)` | The present answer to a question: observations whose files are unchanged, minus what you were told or recalled that what you saw contradicts. |
 | `stale(source, path)` | Evidence whose file changed since. Its observations no longer count as the present. |
 | `changed(question, before, after)` | Questions answered differently now than in an earlier version: what your work changed. |
-| `disputed(question, values)` | Current observations that disagree. Two runs or two reads that differ are a finding: flakiness, two versions, or a misreading. |
+| `disputed(question, values)` | Current observations that disagree. Two runs or two reads that differ are a finding: flakiness, two versions, or a misreading. The runs of a score are left out: they have a spread instead. |
 | `overruled(observation, by)` | What you were told or recalled, contradicted by what you ran or read. |
 | `hearsay(question, value)` | Present answers that rest only on what you were told or recalled. |
 | `contradicted(belief, question, predicted, found, observation)` | A prediction the evidence answered otherwise, in a version that judges the belief. |
@@ -175,6 +233,18 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
 | `open(question)` | What the task needs and no current observation answers. |
 | `undecided(question, of)` | A question only `of` may settle, usually the user, that they have not answered. Ask them. |
 | `presumed(question, value, observation)` | An answer to such a question from anyone else: a choice made for the user. |
+| `score_in(version, question, best, worst)` | A score's best and worst run in a version, for versions that meet what it requires. `now` is the files as they are. |
+| `best(question, value)` | The best a score is sure to give: of every version's worst run, the best. One lucky run never becomes the best. |
+| `improved(question, version, before, after)` | Versions whose worst run, `after`, beats `before`: the best that any earlier version was sure to give. |
+| `regressed(question, now, best)` | Every run of the files as they are now is worse than the best: put the best version back, or say why not. |
+| `unmet(version, score, question, needed)` | A version whose runs of a score do not count, because what the score requires is unanswered there or answered otherwise. |
+| `experiment(direction, version)` | The versions a direction was tried on. |
+| `paid_off(direction, version, question)` | Experiments that improved a score. |
+| `exhausted(direction)` | Directions that missed as many times in a row as their patience. |
+| `blocked(direction, question)` | Directions waiting for an answer they need: one nobody has given, or one only the user may give. |
+| `ruled_out(direction, question, needed, found)` | Directions whose need is answered otherwise. |
+| `live(direction)` | Directions that are not exhausted, blocked, or ruled out. |
+| `progress(direction, tried, paid_off, misses)` | Each direction's experiments, payoffs, and misses since its last payoff. |
 
 ## The loop
 
@@ -202,6 +272,9 @@ Record what you observe before you change what it depends on. `see.mjs` hashes t
    - **Disputed**: find out why before you pick one.
    - **Undecided**: stop and ask the user before any work depends on it. If you cannot ask, say in your answer which way you went and that it was their call.
    - **Presumed**: you, a file, or a doc settled what was the user's to decide. Ask them, and say so.
+   - **Regressed**: the files do worse than the best version. Put the best back, unless the change is one the task needs anyway.
+   - **Unmet**: a version's score does not count, because what it requires failed there. Fix the change or drop it; never relax the requirement to let a score count.
+   - **The next experiment**: try a direction from the list, and record the run as an experiment of it. A direction set aside stays in the model, with why.
 5. **Grow the model.** When you form a belief, record it then. When you check the same thing by hand a second time, write a rule that derives it (a step of your own, then `replay.mjs`). When you meet a kind of fact the checks do not cover, add a question to `checks.json`.
 6. **Change things.** Edit, fix, refactor. The model notices by itself: what depended on the files you changed goes out of date, and the next `ask` shows it.
 7. **Verify** by observing again after the change. `changed` shows what your work changed, and `open` shows what is still unverified.
@@ -218,7 +291,7 @@ Before you tell the user what you found or did:
      | jq -c '.. | objects | select(.given) | .fact'
    ```
 
-3. **State the limits the model shows**: stale evidence you did not observe again, predictions still untested, problems not settled, what rests on hearsay, what was overruled, what `open` still lists, and what the user has not decided or what was decided for them (`undecided`, `presumed`). "Not verified since the last edit" is a fact worth stating.
+3. **State the limits the model shows**: stale evidence you did not observe again, predictions still untested, problems not settled, what rests on hearsay, what was overruled, what `open` still lists, and what the user has not decided or what was decided for them (`undecided`, `presumed`). "Not verified since the last edit" is a fact worth stating. For scores, give the best and the version that holds it, how many runs each figure rests on, the directions still live, and those set aside with why.
 
 Keep the task folder. A follow-up question, a later session, or another agent can ask the model instead of starting over.
 

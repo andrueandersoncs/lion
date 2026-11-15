@@ -16,19 +16,58 @@
     "relation",
     "source",
     ["id", "url", "title", "publisher", "kind", "published"],
-    { "key": "id", "schema": "Source" }
+    {
+      "key": "id",
+      "schema": "Source"
+    }
   ],
-  ["relation", "claim", ["id", "source", "quote", "says"], { "key": "id" }],
+  [
+    "relation",
+    "claim",
+    ["id", "source", "quote", "says"],
+    {
+      "key": "id"
+    }
+  ],
   ["relation", "attributed", ["claim", "to"]],
-  ["relation", "assumption", ["id", "statement"], { "key": "id" }],
-  ["relation", "located", ["claim", "where"], { "key": "claim" }],
+  [
+    "relation",
+    "assumption",
+    ["id", "statement"],
+    {
+      "key": "id"
+    }
+  ],
+  [
+    "relation",
+    "located",
+    ["claim", "where"],
+    {
+      "key": "claim"
+    }
+  ],
   ["relation", "context", ["field"]],
   ["relation", "reading", ["key"]],
-  ["relation", "decided", ["key", "value", "words"], { "key": "key" }],
-
+  [
+    "relation",
+    "decided",
+    ["key", "value", "words"],
+    {
+      "key": "key"
+    }
+  ],
+  [
+    "relation",
+    "lead",
+    ["id", "statement", "patience"],
+    {
+      "key": "id"
+    }
+  ],
+  ["relation", "pursues", ["lead", "question"]],
+  ["relation", "read_for", ["source", "lead", "order"]],
   ["relation", "answer", ["question", "value", "claim"]],
   ["relation", "violated", ["assumption", "witness"]],
-
   ["relation", "unquoted", ["claim", "field", "value"]],
   [
     "relation",
@@ -54,7 +93,16 @@
   ["relation", "answers", ["question", "values"]],
   ["relation", "disputed", ["question", "values"]],
   ["relation", "holds", ["assumption"]],
-
+  ["relation", "covered", ["lead", "pursued", "question"]],
+  ["relation", "firm", ["lead", "pursued"]],
+  ["relation", "done", ["lead"]],
+  ["relation", "blocked", ["lead", "base", "key"]],
+  ["relation", "paid_off", ["lead", "source"]],
+  ["relation", "last_payoff", ["lead", "order"]],
+  ["relation", "miss", ["lead", "source"]],
+  ["relation", "exhausted", ["lead"]],
+  ["relation", "live", ["lead"]],
+  ["relation", "progress", ["lead", "read", "paid_off", "misses"]],
   [
     "invariant",
     [
@@ -62,7 +110,9 @@
       ["claim", "?id", "?source", "?_", "?_"],
       ["not", ["source", "?source", "?_", "?_", "?_", "?_", "?_"]]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
@@ -71,7 +121,9 @@
       ["claim", "?id", "?_", "?quote", "?says"],
       ["not", ["and", ["value/string?", "?quote"], ["value/object?", "?says"]]]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
@@ -87,7 +139,9 @@
         ]
       ]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
@@ -96,7 +150,9 @@
       ["attributed", "?claim", "?to"],
       ["claim", "?claim", "?to", "?_", "?_"]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
@@ -105,7 +161,9 @@
       ["violated", "?assumption", "?_"],
       ["not", ["assumption", "?assumption", "?_"]]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
@@ -114,14 +172,72 @@
       ["located", "?claim", "?_"],
       ["not", ["claim", "?claim", "?_", "?_", "?_"]]
     ],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
   [
     "invariant",
     ["and", ["decided", "?key", "?_", "?_"], ["not", ["reading", "?key"]]],
-    { "assert": "none" }
+    {
+      "assert": "none"
+    }
   ],
-
+  [
+    "invariant",
+    [
+      "and",
+      ["lead", "?l", "?_", "?patience"],
+      [
+        "not",
+        [
+          "and",
+          ["value/integer?", "?patience"],
+          ["number/greaterThan", "?patience", 0]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    ["and", ["lead", "?l", "?_", "?_"], ["not", ["pursues", "?l", "?_"]]],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["pursues", "?l", "?q"],
+      ["not", ["and", ["lead", "?l", "?_", "?_"], ["value/object?", "?q"]]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["read_for", "?s", "?l", "?n"],
+      [
+        "not",
+        [
+          "and",
+          ["source", "?s", "?_", "?_", "?_", "?_", "?_"],
+          ["lead", "?l", "?_", "?_"],
+          ["value/integer?", "?n"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
   [
     "rule",
     ["unquoted", "?c", "?field", "?value"],
@@ -132,7 +248,6 @@
     ["value/number?", "?value"],
     ["not", ["in", "?value", ["string/numbers", "?words", ","]]]
   ],
-
   [
     "rule",
     ["said_at", "?q", "?v", "?publisher", "?published", "?c"],
@@ -169,7 +284,6 @@
     ["restated", "?q", "?_", "?v", "?_"],
     ["not", ["firsthand", "?q", "?v", "?_"]]
   ],
-
   [
     "rule",
     [
@@ -264,7 +378,6 @@
     ["attributed", "?_", "?to"],
     ["not", ["claim", "?_", "?to", "?_", "?_"]]
   ],
-
   [
     "rule",
     ["answers", "?q", ["aggregate/unique", "?v"]],
@@ -277,12 +390,108 @@
     ["answers", "?q", "?vs"],
     ["number/greaterThan", ["array/length", "?vs"], 1]
   ],
-
   [
     "rule",
     ["holds", "?a"],
     ["assumption", "?a", "?_"],
     ["not", ["violated", "?a", "?_"]]
+  ],
+  [
+    "rule",
+    ["covered", "?l", "?p", "?q"],
+    ["pursues", "?l", "?p"],
+    ["answer", "?q", "?_", "?_"],
+    ["schema/fits?", "?q", ["schema/open", "?p"]],
+    ["not", ["set_aside", "?q", "?_", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    ["firm", "?l", "?p"],
+    ["covered", "?l", "?p", "?q"],
+    ["corroborated", "?q", "?_"]
+  ],
+  [
+    "rule",
+    ["done", "?l"],
+    ["lead", "?l", "?_", "?_"],
+    ["not", ["and", ["pursues", "?l", "?p"], ["not", ["firm", "?l", "?p"]]]]
+  ],
+  [
+    "rule",
+    ["blocked", "?l", "?base", "?key"],
+    ["covered", "?l", "?_", "?q"],
+    ["base", "?q", "?base"],
+    ["ambiguous", "?base", "?key", "?_"]
+  ],
+  [
+    "rule",
+    ["paid_off", "?l", "?s"],
+    ["read_for", "?s", "?l", "?_"],
+    ["claim", "?c", "?s", "?_", "?_"],
+    ["not", ["attributed", "?c", "?_"]],
+    ["answer", "?q", "?_", "?c"],
+    ["covered", "?l", "?_", "?q"]
+  ],
+  [
+    "rule",
+    ["last_payoff", "?l", ["aggregate/max", "?n"]],
+    ["paid_off", "?l", "?s"],
+    ["read_for", "?s", "?l", "?n"]
+  ],
+  [
+    "rule",
+    ["miss", "?l", "?s"],
+    ["read_for", "?s", "?l", "?n"],
+    ["not", ["paid_off", "?l", "?s"]],
+    [
+      "not",
+      [
+        "and",
+        ["last_payoff", "?l", "?last"],
+        ["number/lessThan", "?n", "?last"]
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["exhausted", "?l"],
+    ["lead", "?l", "?_", "?patience"],
+    [
+      "number/greaterThanOrEqualTo",
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?s", ["miss", "?l", "?s"]]]
+      ],
+      "?patience"
+    ]
+  ],
+  [
+    "rule",
+    ["live", "?l"],
+    ["lead", "?l", "?_", "?_"],
+    ["not", ["done", "?l"]],
+    ["not", ["exhausted", "?l"]],
+    ["not", ["blocked", "?l", "?_", "?_"]]
+  ],
+  [
+    "rule",
+    [
+      "progress",
+      "?l",
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?s", ["read_for", "?s", "?l", "?_"]]]
+      ],
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?s", ["paid_off", "?l", "?s"]]]
+      ],
+      [
+        "array/length",
+        ["aggregate/unique", ["find", "?s", ["miss", "?l", "?s"]]]
+      ]
+    ],
+    ["lead", "?l", "?_", "?_"]
   ],
   "ready"
 ]

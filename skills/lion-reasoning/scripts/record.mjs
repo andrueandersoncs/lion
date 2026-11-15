@@ -18,10 +18,20 @@
 //                 "predicts": [{"question": {…}, "value": …}],
 //                 "explains": ["p1"]}],
 //    "needed": [{"cause of": "p1"}],
-//    "ask": [{"question": {"keep": "old date format"}, "of": "user"}]}
+//    "ask": [{"question": {"keep": "old date format"}, "of": "user"}],
+//    "scores": [{"question": {"ms": "bench parse"}, "better": "lower",
+//                "requires": [{"question": {"failing tests": "core"},
+//                              "value": 0}]}],
+//    "directions": [{"id": "cache", "statement": "…", "patience": 3,
+//                    "needs": [{"question": {…}, "value": …}]}]}
 //
 // `ask` lists questions only one source may settle, the user unless `of`
 // names another: what they want, or which of two meanings they meant.
+// `scores` are questions whose numbers you are trying to improve, and
+// `directions` the ideas you try to improve them with; an observation that
+// `tries` a direction is an experiment of it. A direction's patience is how
+// many experiments in a row may improve no score before it is set aside,
+// 3 unless it says.
 //
 // A source run with see.mjs needs no entry in "sources": it is taken from
 // seen/<id>.json, with the hashes of what it depended on when it ran. A
@@ -49,6 +59,8 @@ import {
 import { replay } from "./replay.mjs";
 
 const SHOWN = 80;
+/** How many experiments in a row a direction may miss, unless it says. */
+const PATIENCE = 3;
 const ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 const KINDS = ["ran", "read", "told", "recalled"];
 
@@ -124,13 +136,41 @@ export const stepOf = (notes, sources, version) => [
         quoted(hash),
       ]),
     ]),
-    ...(notes.observations ?? []).map((seen) => [
-      "observed",
-      quoted(seen.id),
-      quoted(seen.source),
-      quoted(seen.quote),
-      quoted(seen.question),
-      quoted(seen.value ?? null),
+    ...(notes.observations ?? []).flatMap((seen) => [
+      [
+        "observed",
+        quoted(seen.id),
+        quoted(seen.source),
+        quoted(seen.quote),
+        quoted(seen.question),
+        quoted(seen.value ?? null),
+      ],
+      ...[seen.tries ?? []]
+        .flat()
+        .map((direction) => ["tries", quoted(seen.id), quoted(direction)]),
+    ]),
+    ...(notes.scores ?? []).flatMap((score) => [
+      ["scored", quoted(score.question), quoted(score.better)],
+      ...(score.requires ?? []).map(({ question, value }) => [
+        "requires",
+        quoted(score.question),
+        quoted(question),
+        quoted(value ?? null),
+      ]),
+    ]),
+    ...(notes.directions ?? []).flatMap((direction) => [
+      [
+        "direction",
+        quoted(direction.id),
+        quoted(direction.statement ?? ""),
+        quoted(direction.patience ?? PATIENCE),
+      ],
+      ...(direction.needs ?? []).map(({ question, value }) => [
+        "needs",
+        quoted(direction.id),
+        quoted(question),
+        quoted(value ?? null),
+      ]),
     ]),
     ...(notes.problems ?? []).map((problem) => [
       "problem",
@@ -261,8 +301,19 @@ const main = (path) => {
     process.exit(1);
   }
   const count = (name) => (notes[name] ?? []).length;
+  const listed = [
+    "observations",
+    "problems",
+    "beliefs",
+    "needed",
+    "ask",
+    "scores",
+    "directions",
+  ]
+    .filter((name) => count(name) > 0)
+    .map((name) => `${count(name)} ${name === "ask" ? "to ask" : name}`);
   console.log(
-    `${step}: ${sources.length} sources, ${count("observations")} observations, ${count("problems")} problems, ${count("beliefs")} beliefs, ${count("needed")} needed, ${count("ask")} to ask; every quote found. The model has ${result.steps} steps.`
+    `${step}: ${[`${sources.length} sources`, ...listed].join(", ")}; every quote found. The model has ${result.steps} steps.`
   );
 };
 

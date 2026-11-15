@@ -9,6 +9,7 @@
     "bench": "bun run bench.ts",
     "mutate": "bun run mutate.ts",
     "compare": "bun run compare.ts",
+    "skill-eval": "bun run skill-eval.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

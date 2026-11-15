@@ -55,7 +55,7 @@ research/<topic>/
   page.json       the plan of the reader's page: its views and what each holds,
                   chosen for what this reader wants to know
   explorer.html   the page for the reader, built from the model and the plan
-  report.md       the written answer, if the user wants a file
+  report.md       the written answer, every time, beside the model it came from
 ```
 
 `steps/` is the source and `model.json` is what it builds. Rules, schemas, and invariants cannot be removed from a model once added, so to change one you edit the step that wrote it and replay the steps:
@@ -84,6 +84,9 @@ You record these:
 | `reading(key)` | A key of your questions that picks one sense of a word, such as `"basis"` (as reported, or excluding fuel surcharges) or `"period"` (fiscal or calendar). You declare these in the frame. |
 | `context(field)` | A field of `says` whose number comes from where the quote stands, not from its words, such as a date given in the heading. You declare these in the frame. |
 | `decided(key, value, words)` | The reader's choice of a reading, in their own words. |
+| `lead(id, statement, patience)` | A line of inquiry you follow, and how many sources in a row may give nothing first-hand on it before it is set aside. |
+| `pursues(lead, question)` | A question a lead sets out to answer, as a pattern: `{"warehouses": "tarnwell"}` covers every question with that key and value, whatever else it has. |
+| `read_for(source, lead, order)` | A source read to follow a lead, numbered in the order you recorded it. |
 
 Your rules add to these two:
 
@@ -111,6 +114,13 @@ And the core derives the rest:
 | `meant(base, question)` | The questions the reader means by `base`: every reading the sources answer, less those the reader's choices set aside. |
 | `set_aside(question, key, stated, chosen)` | A question answered in another sense than the one the reader chose. |
 | `holds(assumption)` | Assumptions with no evidence against them. |
+| `covered(lead, pursued, question)` | The answered questions a lead's pattern covers, leaving out senses the reader set aside. |
+| `done(lead)` | Leads whose every pattern covers an answer two publishers give first-hand. |
+| `blocked(lead, base, key)` | Leads waiting for the reader to choose a sense of a question they cover. |
+| `paid_off(lead, source)` | Sources read for a lead that say something first-hand it covers. A relay is not a payoff. |
+| `exhausted(lead)` | Leads whose sources since their last payoff gave nothing, as many as their patience. |
+| `live(lead)` | Leads that are not done, exhausted, or blocked. |
+| `progress(lead, read, paid_off, misses)` | Each lead's sources read, payoffs, and misses since its last payoff. |
 
 Only first-hand claims count as confirmation. Two sources with one publisher are one voice, and a source that relays another adds nothing to it. That is strict on purpose: a statement repeated by ten outlets is still one statement. A publisher's later word replaces its earlier one, so a figure a company corrected in its annual report is not a dispute with its own press release: it is a restatement, and the earlier figure is set aside along with everyone who repeats it.
 
@@ -196,6 +206,13 @@ Start `checks.json` now too, with the standing questions every run asks. These a
   "Which questions do sources answer in more than one sense?": ["query", ["ambiguous", "?question", "?key", "?readings"]],
   "Which credited sources are still unread?": ["find", "?source", ["unread", "?source"]],
   "Which assumptions failed, and on what evidence?": ["query", ["violated", "?assumption", "?witness"]],
+  "Where should the next search go?": ["query", ["and", ["live", "?lead"],
+    ["progress", "?lead", "?read", "?paid_off", "?misses"]], {"order": ["-paid_off", "read"]}],
+  "Which leads are done, set aside, or waiting for the reader?": ["find", {"lead": "?lead", "why": "?why"}, ["or",
+    ["and", ["done", "?lead"], ["=", "?why", "confirmed by two publishers first-hand"]],
+    ["and", ["exhausted", "?lead"], ["progress", "?lead", "?_", "?_", "?misses"],
+      ["=", "?why", {"read for nothing first-hand, in a row": "?misses"}]],
+    ["and", ["blocked", "?lead", "?base", "?key"], ["=", "?why", {"waits for the reader to choose": "?key", "of": "?base"}]]]],
   "Which statements does no answer rule read?": ["find", "?claim", ["and",
     ["claim", "?claim", "?_", "?_", "?_"], ["not", ["answer", "?_", "?_", "?claim"]]]]
 }
@@ -317,10 +334,45 @@ Let the answers decide what you read next. This is where the model earns its kee
 - **A misquote**: a source credited another with something it does not say. Report what the credited source does say, and treat the rest of the misquoting source with more care.
 - **A failed assumption**: either the evidence is wrong or you were. Check the witness. Never delete an assumption to make the failure go away; a belief the evidence overturned is one of the most useful things the research found, and the report should say so.
 - **Nothing where you expected an answer**: a gap. [references/patterns.md](references/patterns.md) shows how to make the model list its own gaps.
+- **The next search**: follow a live lead, and name it in the source's `"for"` when you record what you read.
 
 When a write fails, read the message before retrying. It names the row and the rule it broke. Usually it is a typo in a key, which you fix in the step. Sometimes it is the evidence contradicting the frame, and then the frame is what needs to change.
 
 Do not wait for a batch to ask. Whenever you are about to lean on something, a figure you will build on or a source you are starting to trust, ask the model about it first. A one-line query costs seconds, and `why` on an answer that surprises you shows which statements and rules produced it, before you believe it or dismiss it.
+
+#### Leads
+
+Research is a set of lines of inquiry run side by side: find an outside count of warehouses, find who first reported the outage, find the filing behind a figure. Record each as a **lead** when you start it, with the questions it pursues, and name it in `"for"` on every source you read to follow it:
+
+```json
+{"leads": [
+   {"id": "outside-warehouses", "statement": "Find a count of warehouses from someone other than Tarnwell",
+    "pursues": [{"warehouses": "tarnwell"}], "patience": 2},
+   {"id": "outside-staff", "statement": "Find a headcount from someone other than Tarnwell",
+    "pursues": [{"staff": "tarnwell"}], "patience": 2},
+   {"id": "revenue", "statement": "Confirm Tarnwell's revenue", "pursues": [{"revenue": "tarnwell"}]}],
+ "sources": [
+   {"id": "cargo-ledger", "url": "https://cargoledger.example/tarnwell-pharma",
+    "title": "Tarnwell Cold Chain grows on pharma demand", "publisher": "Cargo Ledger",
+    "kind": "secondary", "published": 20250807, "for": ["outside-warehouses"]}]}
+```
+
+A source **pays off** for a lead when it says something first-hand that the lead covers; a relay of what someone else said does not, by the same rule that keeps relays from confirming anything. A lead is **done** once every question it pursues has an answer two publishers give first-hand. It is **set aside** when as many sources in a row as its **patience**, 3 unless you say, gave it nothing, and it **waits** while the sources answer its question in more than one sense and the reader has not chosen. The model numbers the sources read for leads in the order you record them, so "in a row" means since the lead's last payoff.
+
+Here three leads were followed through the Tarnwell sources. After the press coverage, the standing questions gave:
+
+```json
+{"Where should the next search go?": [
+   {"lead": "outside-warehouses", "read": 2, "paid_off": 1, "misses": 1}],
+ "Which leads are done, set aside, or waiting for the reader?": [
+   {"lead": "outside-staff", "why": {"read for nothing first-hand, in a row": 2}},
+   {"lead": "revenue", "why": {"waits for the reader to choose": "basis", "of": {"revenue": "tarnwell"}}},
+   {"lead": "revenue", "why": {"waits for the reader to choose": "period", "of": {"revenue": "tarnwell"}}}]}
+```
+
+Cargo Ledger counted the warehouses itself, so it paid off, and Reefer Quarterly, which credits Tarnwell's spokesperson, did not. The headcount lead read two sources that only relay Tarnwell and is set aside: what it found is that nobody independent gives a headcount, which the report should say. After the state licensing registry, the warehouse lead is `done`: Tarnwell and the registry both say 37 first-hand. The dispute with Cargo Ledger's 39 is still listed by `disputed`, where it belongs.
+
+A lead set aside stays in the model with its sources, and the page's "What was looked for" shows the reader each lead, how it ended, and how many sources were read for it.
 
 ### 5. Grow the model as you learn
 
@@ -339,6 +391,7 @@ The frame you wrote at the start knew little. Each thing you learn about the top
 | follow a chain: causes, dependencies, ownership, citations | a recursive rule for everything downstream, and `graph/topologicalOrder`, which fails and names the cycle if sources describe a loop. |
 | weigh competing explanations | what each predicts, as facts, and a rule that lists which predictions the evidence bears out. |
 | wonder what you still lack | a rule that lists the questions with no answer. An empty list is a reason to stop searching. |
+| start a line of inquiry | a lead, with the questions it pursues, and `"for"` on each source you read to follow it. |
 | wonder what would follow if something were true | the same step run against a copy of the model. |
 
 [references/patterns.md](references/patterns.md) has a tested rule for each row.
@@ -370,9 +423,10 @@ When the research is done:
    ```
 
    In the report, cite sources. The quotes themselves live in the model, where the page shows them beside each finding. `why` on a figure a rule computed shows the arithmetic with the values it was given, `{"check": ["=", 26.4, ["number/divide", ["number/round", ["number/multiply", 1000, ["number/divide", ["number/subtract", 409.8, 301.5], 409.8]]], 10]]}`, so a ratio or a total traces to the line items it came from.
-5. **Say what the model says about its own limits**: what is disputed and how you resolved it, which figures their publisher changed, which questions depend on a sense of a word the reader has not chosen, what rests on one publisher's word, what is known only second-hand, what was misquoted, which figures are not written in their quote, which assumptions failed, and what is still missing.
-6. **Design the page for this reader** and write its plan, `page.json`. See [The page for the reader](#the-page-for-the-reader).
-7. **Build the page, and run every query in it**:
+5. **Say what the model says about its own limits**: which leads were set aside, after how many sources, and which still wait for the reader, what is disputed and how you resolved it, which figures their publisher changed, which questions depend on a sense of a word the reader has not chosen, what rests on one publisher's word, what is known only second-hand, what was misquoted, which figures are not written in their quote, which assumptions failed, and what is still missing.
+6. **Write the answer to `report.md`** in the research folder: the user's questions answered in plain words, each figure from a query, the sources cited, and the limits from step 5. Write it even when the user asked only for an answer in chat, and give them the same words there.
+7. **Design the page for this reader** and write its plan, `page.json`. See [The page for the reader](#the-page-for-the-reader).
+8. **Build the page, and run every query in it**:
 
    ```bash
    node <this skill's folder>/scripts/build-explorer.mjs model.json --page page.json
@@ -380,6 +434,8 @@ When the research is done:
    ```
 
    The first command writes `explorer.html` beside the model: one file with the model, the plan, the Lion engine, and the saved text of every source a claim quotes, which opens from disk with no server, and keeps each screen within a reader's attention: measure it with the [cognitive-load](https://github.com/andrueandersoncs/cognitive-load) skill if you have it. Each statement on the page has "Show it in the source", which shows the quote marked in its paragraph of the saved text, and the whole text on request. It also writes `page-check.json`, every text the plan computes and every query it asks, as one Lion record, with one more check: the questions the plan names that the reader's choices set aside, or that sources answer in senses nobody chose between. The second command runs them all and prints the page's wording, so a sentence that reads wrong, a query that fails or comes back empty, or a question the plan should reach through `meant`, shows up before the reader finds it. `bun` runs the scripts too.
+
+   The last check, "Questions the plan names…", must give `[]`. A question it lists has more than one sense the reader has not chosen between, or one their choice set aside, and the page has picked a sense for them: reach the question through `meant`, as [Writing what goes in them](#writing-what-goes-in-them) shows, rebuild, and run the check again. When the reader has not chosen, the page says the answer depends on it.
 
 ## The page for the reader
 
@@ -505,7 +561,7 @@ Every block can have a `title` and a `note` of plain words under it.
 | `timeline` | rows in time order, a day at a time | `query` giving `?when` as text from `utc-text`, and `?what`; other columns show under each moment |
 | `comparison` | a grid: one row for each value of one column, one column for each value of another | `query`, and `rows`, `columns`, `cell`: the names of three of its variables |
 | `lookup` | a question the reader completes by choosing, from a list or, past twelve options, from a box that finds them as they type; the answer changes as they choose | `choose`: for each name a `label` and `options`, a query giving the list; `query`: a `lambda` with one parameter for each name in `choose`, in order, whose body is the query; `example`, one choice for each name. Optionally `answer`, a `lambda` like `query` that gives the answer in words |
-| `trust` | how solid the findings are, built from the core: what needs the reader's decision (`undecided`), confirmed, disputed, figures their publisher changed (`restated`), one publisher's word (`alone`), second-hand, misquoted, figures not written in their quote (`unquoted`), what the reader chose (`choices`), assumptions, unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
+| `trust` | how solid the findings are, built from the core: what needs the reader's decision (`undecided`), confirmed, disputed, figures their publisher changed (`restated`), one publisher's word (`alone`), second-hand, misquoted, figures not written in their quote (`unquoted`), what the reader chose (`choices`), assumptions, what was looked for (`searched`), unread | nothing. `show` picks and orders the parts; `about` keeps the findings whose question has a given key, such as `"region hit"` |
 | `sources` | every source by kind, with its publisher, date, and statements | nothing |
 | `text` | a few paragraphs of your own, for what no query says: context, method, a caveat | `text` |
 | `custom` | anything the others cannot | `script`: the body of a function of `root` and `kit` |
@@ -541,7 +597,7 @@ After the model changes, rebuild and run `page-check.json` again. The texts foll
 
 ## What to hand over
 
-- The written answer, in whatever form the user asked for, with its limits stated.
+- The written answer, with its limits stated, saved as `report.md` in the research folder, and also given in whatever form the user asked for. The file keeps the answer beside the model it came from, so a follow-up, an audit, or a check against known answers reads the same words the user read.
 - `explorer.html`, as the place to read the answers and check them. Say that it opens in a browser from the file, and what its parts are for.
 - The research folder, for anyone who wants to rebuild or extend the model: the steps, `model.json`, `page.json`, and the replay command.
 - An offer to answer further questions from the model.
