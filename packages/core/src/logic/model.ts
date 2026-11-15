@@ -26,7 +26,7 @@ import {
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
 import { originalName } from "@/logic/magic";
-import { mentioned, reads, type Stratum, strataOf } from "@/logic/strata";
+import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
   Atom,
   callsOf,
@@ -207,6 +207,8 @@ export class Model {
   readonly rules: readonly CompiledRule[];
   /** The model that holds every relation these rules do not derive. */
   readonly base: Model | undefined;
+  /** The group of each relation these rules derive, by relation name. */
+  readonly strata: ReadonlyMap<string, Stratum>;
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -216,6 +218,7 @@ export class Model {
     this.facts = facts;
     this.rules = rules;
     this.base = base;
+    this.strata = strataOf(rules);
   }
 }
 
@@ -604,9 +607,17 @@ const decide = (model: Model, goal: LogicForm, vars: Vars) =>
   });
 
 /** True when a relation goal has a match for an answer. */
-const matchesAny = (model: Model, atom: Atom, vars: Vars) => {
+const matchesAny = (
+  model: Model,
+  atom: Atom,
+  vars: Vars
+): LogicEffect<boolean> => {
   if (!atom.plain || atom.relation.computed !== undefined) {
     return Effect.map(solve(model, atom, vars), (found) => found.length > 0);
+  }
+  const pending = toRead(model, atom.relation);
+  if (pending !== undefined) {
+    return Effect.flatMap(pending, () => matchesAny(model, atom, vars));
   }
   // Nothing to compute: look the rows up directly.
   const found = candidates(atom, vars, rowsOf(model, atom.relation.name));
@@ -830,15 +841,26 @@ export const matches = (
   Effect.gen(function* () {
     let answers: readonly Vars[] = [start];
     for (const [position, literal] of body.entries()) {
-      answers =
-        literal instanceof Atom
-          ? yield* matchRows(
-              model,
-              literal,
-              answers,
-              changed?.(position) ?? rowsOf(model, literal.relation.name)
-            )
-          : yield* testEach(model, literal, answers);
+      if (literal instanceof Atom) {
+        const rows = changed?.(position);
+        // A relation is derived the first time a goal reads it, so a
+        // query derives only the relations its goals reach with an answer.
+        const pending =
+          rows === undefined
+            ? toRead(model, literal.relation, true)
+            : undefined;
+        if (pending !== undefined) {
+          yield* pending;
+        }
+        answers = yield* matchRows(
+          model,
+          literal,
+          answers,
+          rows ?? rowsOf(model, literal.relation.name)
+        );
+      } else {
+        answers = yield* testEach(model, literal, answers);
+      }
       if (answers.length === 0) {
         break;
       }
@@ -1868,7 +1890,7 @@ const compute = (model: Model, relation: RelationInfo): LogicEffect<void> =>
           `Relation "${dependency}" is not declared here.`
         );
       }
-      yield* complete(model, dependency);
+      yield* deriving(model, dependency, false) ?? Effect.void;
     }
     const tuples = new TupleSet();
     const asked = new Map<string, string | undefined>();
@@ -1909,24 +1931,15 @@ const forget = (model: Model, members: ReadonlySet<string>) => {
 };
 
 /**
- * Derives the rows of relations that depend on each other: first every
- * relation their rules read, then their own rules, on top of their facts.
+ * Derives the rows of relations that depend on each other, by running their
+ * rules on top of their facts. A relation the rules read is derived when a
+ * goal first reads it.
  */
 const derive = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
-    const { members, rules } = stratum;
+    const { members } = stratum;
     for (const name of members) {
       model.state.set(name, "running");
-    }
-    const read = rules.flatMap((rule) =>
-      headsOf(rule).flatMap((head) => reads(rule.body, head.args))
-    );
-    for (const relation of read) {
-      if (!members.has(relation.name)) {
-        yield* ensure(model, relation);
-      }
-    }
-    for (const name of members) {
       const facts =
         model.base === undefined ? model.facts.get(name) : undefined;
       model.relations.set(name, facts?.clone() ?? new TupleSet());
@@ -1939,35 +1952,45 @@ const derive = (model: Model, stratum: Stratum) =>
     Effect.onError(() => Effect.sync(() => forget(model, stratum.members)))
   );
 
-/** Makes the rows of a declared relation complete. */
-const complete = (model: Model, name: string): LogicEffect<void> =>
-  Effect.suspend(() => {
-    const stratum = strataOf(model.rules).get(name);
-    if (stratum === undefined) {
-      return model.base === undefined
-        ? Effect.void
-        : complete(model.base, name);
-    }
-    const state = model.state.get(name);
-    if (state === "running") {
-      return logicError(
-        `"${originalName(name)}" was asked about while its own rows were being derived. A question cannot go through recursion.`
-      );
-    }
-    return state === "done" ? Effect.void : derive(model, stratum);
-  });
-
 /**
- * Makes a relation's rows complete: derives the relations its rules read,
- * then runs its rules, unless that is already done.
+ * What must run before a declared relation's rows can be read, or undefined
+ * when nothing must: its rules, unless they are done. A goal of a body that
+ * is `reading` the rows takes them as they stand while they are derived, as
+ * relations that depend on each other read each other while their rules
+ * run; a question about them then fails.
  */
+const deriving = (
+  model: Model,
+  name: string,
+  reading: boolean
+): LogicEffect<void> | undefined => {
+  const stratum = model.strata.get(name);
+  if (stratum === undefined) {
+    return model.base && deriving(model.base, name, reading);
+  }
+  const state = model.state.get(name);
+  if (state === "done" || (reading && state === "running")) {
+    return;
+  }
+  return state === "running"
+    ? logicError(
+        `"${originalName(name)}" was asked about while its own rows were being derived. A question cannot go through recursion.`
+      )
+    : derive(model, stratum);
+};
+
+/** What must run before a relation's rows can be read, as `deriving` says. */
+const toRead = (model: Model, relation: RelationInfo, reading = false) =>
+  relation.computed === undefined
+    ? deriving(model, relation.name, reading)
+    : compute(model.base ?? model, relation);
+
+/** Makes a relation's rows complete, unless they are already. */
 export const ensure = (
   model: Model,
   relation: RelationInfo
 ): LogicEffect<void> =>
-  relation.computed === undefined
-    ? complete(model, relation.name)
-    : compute(model.base ?? model, relation);
+  Effect.suspend(() => toRead(model, relation) ?? Effect.void);
 
 /**
  * Answers a question that comes up while the model is read, such as one a

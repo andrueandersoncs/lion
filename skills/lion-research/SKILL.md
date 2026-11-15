@@ -523,7 +523,7 @@ Every block can have a `title` and a `note` of plain words under it.
   ```
 
   On the page Lion's own research model is built into, it gives "Lion today: ignored."
-- **The page shows how far it has got.** While Lion opens the model, a line under the title says so, then "Working out the answers: 3 of 15" with a bar, and each view shows its questions at once with "Working this out from the model…" until each part is worked out. The view the reader has open is worked out first. The engine derives every relation once and answers each question from that, which on a large model is hundreds of times faster than rewriting the rules for each question.
+- **The page shows how far it has got.** While Lion opens the model, a line under the title says so, then "Working out the answers: 3 of 15" with a bar, and each view shows its questions at once with "Working this out from the model…" until each part is worked out. The view the reader has open is worked out first, and the page asks Lion one question at a time, so a question's time limit counts only its own run.
 - **`custom` is the last resort.** Its script gets `root`, an element to fill, and `kit`: `query` to ask the model, and `el`, `shown`, `table`, `timeline`, `comparison`, and `statement` to build what it shows. Build with those, so text from sources is never placed as markup.
 
 ### Writing what goes in them

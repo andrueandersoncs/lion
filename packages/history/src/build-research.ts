@@ -35,13 +35,6 @@ import {
 
 const SOURCE = /\.src\.json$/;
 
-/**
- * The research model is asked many different questions and does not change
- * between them, so it derives every relation once rather than rewriting its
- * rules for each question. Both give the same answers.
- */
-const EVALUATION = { goalDirected: false };
-
 /** The reader's page, beside the changelog's timeline on the website. */
 export const PAGE = "docs/research.html";
 
@@ -261,7 +254,7 @@ export const buildResearch = (
     const problems = writeNoteSteps(root, scripts, textOf);
     writeFindingsStep(root);
     expandSteps(repository, steps, scripts);
-    const database = new LogicDatabase(EVALUATION);
+    const database = new LogicDatabase();
     const ran = yield* runSteps(steps, database);
     const saved = yield* saveDatabase(database);
     writeFileSync(join(root, "model.json"), formatSnapshot(saved as unknown[]));
@@ -317,7 +310,7 @@ export const queryResearch = (
     const saved = join(repository, folder, "model.json");
     let database: LogicDatabase;
     if (existsSync(saved)) {
-      database = new LogicDatabase(EVALUATION);
+      database = new LogicDatabase();
       yield* run(readJson(saved) as never, stdlib, { database });
     } else {
       database = (yield* buildResearch(repository, folder)).database;

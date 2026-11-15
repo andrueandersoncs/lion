@@ -36,7 +36,7 @@
   },
   {
     "kind": "Fixed",
-    "text": "A research page derives every relation of its model once and answers each question from that, and sends Lion one question at a time, so a query's time limit counts its own run and not its wait behind others. On Lion's own research model the page's questions took 40 seconds, two of them stopped at the limit, and now they take a fraction of a second. `build-explorer.mjs` indexes each source's text once, not once per quote: building that page took 73 seconds and takes one."
+    "text": "A research page sends Lion one question at a time, so a question's time limit counts its own run and not its wait behind the others: on Lion's own research model two of the page's questions used to stop at the limit. `build-explorer.mjs` indexes each source's text once, not once per quote: building that page took 73 seconds and takes one."
   },
   {
     "kind": "Documentation",

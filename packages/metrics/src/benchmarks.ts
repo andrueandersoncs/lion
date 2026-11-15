@@ -85,6 +85,74 @@ const PEOPLE = [
   ],
 ];
 
+const TOPICS = 60;
+const RULE_CLAIMS = 20;
+
+/**
+ * A model shaped like a research model: 600 claims whose content is a
+ * record, read by rules that take it apart with `schema/open` under heads
+ * that hold records, and 80 open questions about it. Which questions are
+ * disputed reads `said` and `answer` with no known argument, and `said`
+ * asks `answer` about each question.
+ */
+const CLAIMS = [
+  ["relation", "claim", ["id", "says"]],
+  ["relation", "question", ["q", "open"]],
+  ["relation", "answer", ["question", "value", "claim"]],
+  ["relation", "said", ["question", "value"]],
+  ["relation", "disputed", ["question"]],
+  ["relation", "flag", ["kind", "question"]],
+  [
+    "fact",
+    ...range(600).map((id) => [
+      "claim",
+      `c${id}`,
+      id < 400
+        ? { topic: `t${id % TOPICS}`, value: (id * 7) % 3 }
+        : { rule: `r${id % RULE_CLAIMS}`, holds: id % 2 },
+    ]),
+  ],
+  [
+    "fact",
+    ...range(TOPICS).map((index) => ["question", { topic: `t${index}` }, true]),
+    ...range(RULE_CLAIMS).map((index) => [
+      "question",
+      { rule: `r${index}` },
+      true,
+    ]),
+  ],
+  [
+    "rule",
+    ["answer", { topic: "?t" }, "?v", "?c"],
+    ["claim", "?c", ["schema/open", { topic: "?t", value: "?v" }]],
+  ],
+  [
+    "rule",
+    ["answer", { rule: "?r" }, "?v", "?c"],
+    ["claim", "?c", ["schema/open", { rule: "?r", holds: "?v" }]],
+  ],
+  [
+    "rule",
+    ["said", "?q", "?v"],
+    ["question", "?q", true],
+    ["answer", "?q", "?v", "?_"],
+  ],
+  [
+    "rule",
+    ["disputed", "?q"],
+    ["said", "?q", "?v"],
+    ["said", "?q", "?w"],
+    ["number/lessThan", "?v", "?w"],
+  ],
+  ["rule", ["flag", "contested", "?q"], ["disputed", "?q"]],
+  [
+    "rule",
+    ["flag", "quiet", "?q"],
+    ["question", "?q", "?_"],
+    ["not", ["said", "?q", "?_"]],
+  ],
+];
+
 const FIB = [
   "lambda",
   ["n"],
@@ -123,6 +191,37 @@ export const BENCHMARKS: readonly Benchmark[] = [
   {
     name: "rules: goal-directed path on a 3,000 chain",
     program: ["begin", ...chain(3000), ["query", ["path", 2997, "?to"]]],
+  },
+  {
+    // Each question knows an argument, so each is goal-directed, and each
+    // is a different question, so none is answered from an earlier one.
+    // Which questions are contested reads `disputed`, `said`, and `answer`
+    // with no argument known, which every question but the first can share.
+    name: "rules: 30 questions asked in turn of one model of 600 claims",
+    program: [
+      "begin",
+      ...CLAIMS,
+      ...range(10).flatMap((index) => [
+        ["query", ["said", { topic: `t${index}` }, "?v"]],
+        [
+          "aggregate/count",
+          [
+            "find",
+            "?q",
+            [
+              "and",
+              ["flag", "contested", "?q"],
+              ["answer", "?q", "?_", `c${index}`],
+            ],
+          ],
+        ],
+        [
+          "cond",
+          [["flag", "quiet", { rule: `r${index}` }], "yes"],
+          ["else", "no"],
+        ],
+      ]),
+    ],
   },
   {
     name: "rules: every path on a 150 chain",

@@ -71,7 +71,7 @@
 
 <h2 id="guarantee-equivalence">Equivalent ways to answer</h2>
 <ul>
-  <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives. A relation that rules invent rows of is derived in full, since what such a rule adds depends on every row.</li>
+  <li>Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives. A relation that rules invent rows of is derived in full, since what such a rule adds depends on every row. Either way, a relation is derived only when a goal reads it with an answer to extend, so neither fails on a relation that no answer reaches.</li>
   <li>What the database has derived for earlier queries never changes an answer: a query gives what it would give on a database that has derived nothing yet.</li>
   <li>A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.</li>
   <li>The relation option <code>"schema"</code> and the invariant it stands for keep the same changes, with the same messages, and are saved as the same snapshot.</li>

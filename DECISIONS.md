@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Each decision says what called for it, what was decided, what follows from it, what else was considered, and the commits it was made in. The record holds 43 decisions, and 41 of them are in force. They are kept in `history/decisions/`, and this page is written from them.
+Why Lion is the way it is. Each decision says what called for it, what was decided, what follows from it, what else was considered, and the commits it was made in. The record holds 44 decisions, and 42 of them are in force. They are kept in `history/decisions/`, and this page is written from them.
 
 | Decided | Decision | Status |
 | --- | --- | --- |
@@ -47,6 +47,7 @@ Why Lion is the way it is. Each decision says what called for it, what was decid
 | 2026-11-13 | [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](#engine-computes-model-interprets) | In force |
 | 2026-11-13 | [A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed](#user-decides-ambiguity) | In force |
 | 2026-11-13 | [`why` shows every goal of a rule's body as it held, `=` and `in` among them](#why-shows-every-goal) | In force |
+| 2026-11-14 | [Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it](#goal-directed-shares-full-relations) | In force |
 | 2026-11-14 | [Keep the changelog and the decisions as a Lion model of the git history](#project-record-in-lion) | In force |
 | 2026-11-14 | [Keep a research model of Lion's development that checks the project against itself](#research-model-of-development) | In force |
 
@@ -1335,6 +1336,40 @@ Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic
 
 - `41477b1` feat(core,skill): figures you can check against their sources: “why now shows every goal of a rule body as it held, = and in among them, so a computed figure shows its arithmetic on the values it used; one rule replaces the case that left them out.”
 
+<a id="goal-directed-shares-full-relations"></a>
+
+## Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it
+
+Decided 2026-11-14. In force. Not released yet.
+
+### Context
+
+A goal-directed query rewrote the rules with magic sets into a model of its own, and every rule-defined goal it reached became a copy for the arguments it knew, even a goal that knew none, whose copy holds every row of the relation. Nothing was shared between queries, so a page that asks a model many different questions derived the same relations once per question. A copy also always led with the guard that holds the values asked about, so when a rule could only test a known value, inside a record pattern or a `schema/open`, it scanned its relation once for each value asked about: on the research model of Lion's own development, one copy took 2 seconds where deriving the whole relation took 15 milliseconds. The page's 37 questions took 36.6 seconds goal-directed and 0.12 seconds in full, so the page and the research build switched to full evaluation, and every host with such a model would have had to know to do the same.
+
+### Decision
+
+A relation goal gets a copy only when it knows an argument and the database has not derived the relation in full; any other goal reads the relation itself, which the database derives once and keeps for every later query. A copy's guard leads only when a relation goal of the rule can look rows up by what it binds, a variable that stands whole as an argument or a record or list made of such; otherwise the guard is a test where the rule's own plan has bound what it holds, so a copy never does more than the rule. In both strategies a relation is derived the first time a goal reads it with an answer to extend, rather than before the rules that read it run, and a goal-directed query's rewritten bodies are kept with the model they run on.
+
+### Consequences
+
+Goal-directed evaluation is the default that works on large, rule-heavy models: the research page's questions take 0.11 seconds, as full evaluation takes, and a question asked on a database that has derived nothing yet costs at most about what full evaluation costs, and often far less, since it derives only what its answers reach. A query may now derive a whole relation where it used to derive a copy of it, when it knows nothing about it; the database keeps that relation, so the cost is paid once. Neither strategy fails on a relation that no answer reaches, as goal-directed queries already did not fail on rows they never derive; a program that failed on such a relation now answers. What the database has derived for earlier queries still never changes an answer.
+
+### Alternatives considered
+
+- **Keep full evaluation in the research page and build, as a workaround.** Every host would have to learn that the default is unusable on its model, and a single question on a model nobody has asked yet is faster goal-directed, since it derives only what it reaches.
+- **One goal-directed model per database that grows as queries add demand.** It needs groups of relations that already finished to run again when new demand arrives, which is more machinery than sharing what is derived in full, and on these workloads sharing already makes goal-directed as fast as full evaluation.
+- **Give a relation a copy only for arguments its rules can look rows up by, and derive it in full otherwise.** A known argument that a rule can only test still keeps a join from being built in full: with `["pair", "?x", "?y"]` defined by `in` over two ranges, asking about one `?x` gives one row per `?y`, where deriving `pair` in full gives the whole cross product.
+- **Always lead a copy with its guard, as the textbook rewrite does.** It assumes every known value narrows a lookup. In Lion a known value can sit inside a pattern or a schema, where it only tests rows, and then leading scans the relation once per value asked about, without bound.
+
+### Changes that follow from it
+
+- Unreleased: Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.
+- Unreleased: A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `["query", ["report", "?t"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.
+
+### Commits
+
+- `330aec0` fix(core): goal-directed queries share what is derived in full
+
 <a id="project-record-in-lion"></a>
 
 ## Keep the changelog and the decisions as a Lion model of the git history
@@ -1368,7 +1403,7 @@ The project record lives in `history/`. Decisions, changes, and releases are pla
 
 ### Commits
 
-- Not committed yet.
+- `44e509d` feat: keep Lion's changelog, decisions, and a checked model of its development in Lion
 
 <a id="research-model-of-development"></a>
 
@@ -1402,4 +1437,4 @@ Inconsistencies in the project's history are listed where everyone can see them,
 
 ### Commits
 
-- Not committed yet.
+- `44e509d` feat: keep Lion's changelog, decisions, and a checked model of its development in Lion

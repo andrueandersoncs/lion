@@ -3681,7 +3681,7 @@
     {
       "id": "doc-readme-328",
       "source": "doc-readme",
-      "quote": "A relation is derived the first time something reads it, and kept until a fact or rule changes, so a query never pays for relations it does not read.",
+      "quote": "A relation is derived the first time a goal reads it, and kept until a fact or rule changes, so a query never pays for relations it does not reach, and never fails on one",
       "says": {
         "behavior": "logic-answer-cache",
         "is": "until-facts-or-rules-change",
