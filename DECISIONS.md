@@ -1472,7 +1472,7 @@ In the Tarnwell corpus, the lead for an outside count of warehouses is done once
 
 ### Commits
 
-- Not committed yet.
+- `2b711ad` feat(skills): experiment loops in lion-reasoning, leads in lion-research, and skill evals by headless agents
 
 <a id="patience-since-last-payoff"></a>
 
@@ -1505,7 +1505,7 @@ A direction that keeps paying off keeps its budget, and one that never pays is d
 
 ### Commits
 
-- Not committed yet.
+- `2b711ad` feat(skills): experiment loops in lion-reasoning, leads in lion-research, and skill evals by headless agents
 
 <a id="score-improves-past-noise"></a>
 
@@ -1538,7 +1538,7 @@ Best, improvement, and regression rest on the one notion of what a version is su
 
 ### Commits
 
-- Not committed yet.
+- `2b711ad` feat(skills): experiment loops in lion-reasoning, leads in lion-research, and skill evals by headless agents
 
 <a id="score-requirements"></a>
 
@@ -1569,4 +1569,4 @@ A requirement has to be run on each version, as the score is, so a change is not
 
 ### Commits
 
-- Not committed yet.
+- `2b711ad` feat(skills): experiment loops in lion-reasoning, leads in lion-research, and skill evals by headless agents
