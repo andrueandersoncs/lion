@@ -2,9 +2,9 @@
 
 # Changelog
 
-## Unreleased — @lionlang/core
+## 2026-11-16 — @lionlang/core 0.11.0, @lionlang/cli 0.10.0
 
-Rules that say something exists without saying what it is. A rule can give every person a mother nobody has named, and the value it invents is ordinary Lion data that a program can write, store, compare, and look up.
+Rules that say something exists without saying what it is. A rule can give every person a mother nobody has named, and the value it invents is ordinary Lion data that a program can write, store, compare, and look up. Keys and equality rules make two such values one, and a goal-directed query shares what full evaluation has derived.
 
 ### Breaking
 
