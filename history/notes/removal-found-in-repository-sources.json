@@ -1,0 +1,15 @@
+{
+  "claims": [
+    {
+      "quote": "A probe that sees a feature gone is no longer taken for the commit that removed it. Once the note that records a removal had a commit of its own, `bun run history check` reported the probe's observation, such as `run-feature-decision-supersedes-field`, as a removal that records no decision. A removal with no decision is now found only among what the repository's own sources say.",
+      "says": {
+        "behavior": "removal-finding-source",
+        "is": "repository-sources-only",
+        "area": "record",
+        "fixes": true,
+        "was": "any-source"
+      },
+      "decisions": ["probes-observe-the-repository"]
+    }
+  ]
+}

@@ -471,7 +471,7 @@
       "Lion repository",
       "?last"
     ],
-    ["source", "?s", "?_", "?_", "?_", "?_", "?last"]
+    ["source", "?s", "?_", "?_", "Lion repository", "?_", "?last"]
   ],
   ["relation", "undecided_removal", ["feature", "source"]],
   ["relation", "undecided_breaking", ["case", "source"]],

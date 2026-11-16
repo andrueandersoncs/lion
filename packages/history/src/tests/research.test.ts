@@ -149,8 +149,13 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.flatMap(
           maxLength: 18,
         }),
         Arbitrary.array(int(0, 4), { maxLength: count, minLength: count }),
+        // What the document and a run say of a feature, so a run often sees
+        // gone what the repository's latest word says is gone.
+        Arbitrary.array(Arbitrary.all([boolean, pick(FEATURES), boolean]), {
+          maxLength: 4,
+        }),
       ]),
-      ([said, gaps]) => {
+      ([said, gaps, seen]) => {
         // Commits at rising times, some at the same time; then a document and
         // a run, both dated by the last commit.
         let time = 20_260_101_000_000;
@@ -176,16 +181,25 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.flatMap(
           publisher: HEAD,
         });
         const claims = said.map(([at, s], n): Claim => {
-          // Runs only observe behavior; everything else comes from commits or the doc.
+          // Runs observe behavior, and whether a feature is there; everything
+          // else comes from commits or the doc.
           const source = sources[Math.min(at, sources.length - 1)] as Source;
-          const fromRun = source.publisher === HEAD && !("behavior" in s);
+          const fromRun =
+            source.publisher === HEAD && !("behavior" in s || "feature" in s);
           return {
             id: `k${n}`,
             says: s,
             source: fromRun ? (sources[0] as Source).id : source.id,
           };
         });
-        return { claims, sources };
+        const observed = seen.map(
+          ([byRun, feature, present], n): Claim => ({
+            id: `o${n}`,
+            says: { feature, kind: "function", present },
+            source: byRun ? "run" : "doc",
+          })
+        );
+        return { claims: [...claims, ...observed], sources };
       }
     )
 );

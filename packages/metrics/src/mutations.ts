@@ -1928,6 +1928,11 @@ export const MUTATIONS: readonly Mutation[] = [
     '    ["accepted", "?a", "?w", "?_"],\n    ["violated", "?a", "?w"]',
     "06-findings.src.json"
   ),
+  researchStep(
+    "a run that sees a feature gone is taken for the commit that removed it",
+    '    ["source", "?s", "?_", "?_", "Lion repository", "?_", "?last"]',
+    '    ["source", "?s", "?_", "?_", "?_", "?_", "?last"]'
+  ),
   researchScript(
     "the quote finder keeps searching the first text it indexed",
     "check-quotes.mjs",
