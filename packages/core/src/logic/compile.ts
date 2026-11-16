@@ -376,13 +376,32 @@ const binders = (goal: unknown): readonly string[] => {
   return goal.parts.flatMap((part) => holes(part, goal instanceof Atom));
 };
 
+/**
+ * The variables some literals can bind: the scope of the questions among
+ * them, whose other variables are their own.
+ */
+export const scopeOf = (
+  literals: readonly Literal[],
+  bound: Iterable<string> = []
+): ReadonlySet<string> => new Set([...bound, ...literals.flatMap(binders)]);
+
+/**
+ * True when a term can be evaluated once the variables in `bound` are, in a
+ * body whose literals bind `scope`. A question in it waits only for the
+ * variables of the scope, since the rest are the question's own.
+ */
+export const isEvaluable = (
+  term: unknown,
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>
+) => wants(term, scope).every((name) => bound.has(name));
+
 const isReady = (
   literal: Literal,
   bound: ReadonlySet<string>,
   scope: ReadonlySet<string>
 ) => {
-  const known = (term: unknown) =>
-    wants(term, scope).every((name) => bound.has(name));
+  const known = (term: unknown) => isEvaluable(term, bound, scope);
   // A value can be matched against a variable, or against a pattern once
   // everything in it but its variables is known.
   const free = (term: unknown, asSchema = false) =>
@@ -597,7 +616,7 @@ export const planLiterals = (
   const remaining = [...literals];
   const ordered: Literal[] = [];
   const bound = new Set<string>(initiallyBound);
-  const scope = new Set([...bound, ...literals.flatMap(binders)]);
+  const scope = scopeOf(literals, bound);
   for (let [stuck] = remaining; stuck !== undefined; [stuck] = remaining) {
     const next = nextReady(remaining, bound, scope);
     if (next === undefined) {

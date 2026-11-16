@@ -1,0 +1,7 @@
+[
+  {
+    "kind": "Fixed",
+    "text": "A goal-directed query that knows an argument a rule's head computes by asking a question of its own, such as `[\"query\", [\"meant\", {\"revenue\": \"t\"}, \"?q\"]]` over `[\"rule\", [\"base\", \"?q\", [\"array/reduce\", [\"find\", \"?key\", [\"reading\", \"?key\"]], \"?q\", [\"lambda\", [\"rest\", \"key\"], [\"object/remove\", \"rest\", \"key\"]]]], [\"answer\", \"?q\", \"?_\"]]` and `[\"rule\", [\"meant\", \"?base\", \"?q\"], [\"base\", \"?q\", \"?base\"]]`, gives the answers of full evaluation again, instead of failing with an internal error, `undefined is not an object (evaluating 'literal.parts')`. The rewrite took the `find`'s own `?key` for a variable the rule had to bind first. This is the `meant` relation of the lion-research skill. The rewrite now follows the asking rule wherever it asks what a value needs: a query whose argument is computed by a question with variables of its own, such as `[\"path\", [\"array/reduce\", [\"find\", \"?a\", [\"start\", \"?a\"]], 0, [\"lambda\", [\"sum\", \"a\"], [\"number/add\", \"sum\", \"a\"]]], \"?to\"]`, now derives only what it reaches, as one that writes the value does.",
+    "decisions": ["asking-rule", "goal-directed-shares-full-relations"]
+  }
+]

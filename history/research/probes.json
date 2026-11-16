@@ -728,5 +728,97 @@
     "case": "cond-null-condition",
     "area": "forms",
     "program": ["cond", [null, ["quote", "true"]], ["else", ["quote", "false"]]]
+  },
+  {
+    "case": "goal-directed-query-knows-value-head-asks-for",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "answer", ["question", "value"]],
+      ["relation", "reading", ["key"]],
+      ["relation", "base", ["question", "base"]],
+      ["relation", "meant", ["base", "question"]],
+      [
+        "rule",
+        [
+          "base",
+          "?q",
+          [
+            "array/reduce",
+            ["find", "?key", ["reading", "?key"]],
+            "?q",
+            ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]
+          ]
+        ],
+        ["answer", "?q", "?_"]
+      ],
+      ["rule", ["meant", "?base", "?q"], ["base", "?q", "?base"]],
+      [
+        "fact",
+        ["reading", ["quote", "basis"]],
+        [
+          "answer",
+          [
+            "quote",
+            {
+              "revenue": "t",
+              "basis": "r"
+            }
+          ],
+          1
+        ],
+        [
+          "answer",
+          [
+            "quote",
+            {
+              "revenue": "t",
+              "basis": "x"
+            }
+          ],
+          2
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            [
+              "query",
+              [
+                "meant",
+                [
+                  "quote",
+                  {
+                    "revenue": "t"
+                  }
+                ],
+                "?q"
+              ]
+            ],
+            [
+              "quote",
+              [
+                {
+                  "q": {
+                    "revenue": "t",
+                    "basis": "r"
+                  }
+                },
+                {
+                  "q": {
+                    "revenue": "t",
+                    "basis": "x"
+                  }
+                }
+              ]
+            ]
+          ],
+          ["quote", "answered"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

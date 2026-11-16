@@ -1,8 +1,9 @@
 /**
  * A goal-directed query derives only what it asks about. An argument counts
  * as known when it is a value, or a variable the query has already bound,
- * however it was bound, or a value computed from such variables. Whatever
- * the form, the answers are those of evaluating every relation in full.
+ * however it was bound, or a value computed from such variables, also by a
+ * question with variables of its own. Whatever the form, the answers are
+ * those of evaluating every relation in full.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
@@ -84,6 +85,19 @@ const FORMS: Record<
       ],
     ],
     from: by > 0 ? at + by : at,
+  }),
+  "a value a question in the argument computes": (at, by) => ({
+    goal: [
+      "path",
+      [
+        "array/reduce",
+        ["find", "?a", ["start", "?a"]],
+        by,
+        ["lambda", ["sum", "a"], ["number/add", "sum", "a"]],
+      ],
+      "?to",
+    ],
+    from: at + by,
   }),
 };
 

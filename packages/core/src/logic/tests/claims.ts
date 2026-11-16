@@ -3,8 +3,9 @@
  * goal-directed queries: claims whose content is a record, rules that take
  * claims apart with record patterns and `schema/open`, heads that hold
  * records, constants, and computed values, recursion, negation, and `in`.
- * Questions about them know their arguments in each of those places. A plain
- * model reads a world as lists.
+ * Questions about them know their arguments in each of those places. Some
+ * heads hold a value that asks a question of its own, a `find` or a goal,
+ * and questions know that value too. A plain model reads a world as lists.
  */
 import { Arbitrary } from "effect";
 import { element, oneOf } from "./programs";
@@ -12,6 +13,8 @@ import { element, oneOf } from "./programs";
 export const TOPICS = ["t0", "t1", "t2", "t3"];
 const RULE_NAMES = ["r0", "r1"];
 const TAGS = ["x", "y", "z"];
+/** The keys of a claim's content besides its topic or rule. */
+const DETAILS = ["value", "holds", "tags"];
 
 /** What a claim says: a topic's value, whether a rule holds, or tags. */
 export type Says =
@@ -28,6 +31,8 @@ export interface ClaimWorld {
   readonly links: readonly (readonly [string, string])[];
   /** Questions, each open or not. */
   readonly questions: readonly (readonly [Question, boolean])[];
+  /** The keys a claim's base leaves out of its content. */
+  readonly readings: readonly string[];
 }
 
 const says: Arbitrary.Arbitrary<Says> = oneOf<Says>(
@@ -58,6 +63,10 @@ export const claimWorld: Arbitrary.Arbitrary<ClaimWorld> = Arbitrary.all({
   links: Arbitrary.array(Arbitrary.all([element(TOPICS), element(TOPICS)]), {
     maxLength: 4,
   }),
+  readings: Arbitrary.map(
+    Arbitrary.array(element(DETAILS), { maxLength: 3 }),
+    (keys) => [...new Set(keys)]
+  ),
 });
 
 /** The kinds of flag the rules raise, none of them a relation's name. */
@@ -76,9 +85,18 @@ const written = (content: Says) =>
  * - `flag` has a constant in each head, and reads `disputed` with no known
  *   argument, asks `said` under `not`, and follows `reach`;
  * - `tagged` binds its first column with `in`, and `scaled` computes its
- *   second.
+ *   second;
+ * - `base` computes a claim's content without the keys `reading` holds, with
+ *   a `find` of those keys, and `meant` reads it under another name;
+ *   `values` holds what a `find` of `said` gives a question, and `settled`
+ *   whether the goal `disputed` holds of it.
  */
-export const claimProgram = ({ claims, links, questions }: ClaimWorld) => [
+export const claimProgram = ({
+  claims,
+  links,
+  questions,
+  readings,
+}: ClaimWorld) => [
   ["relation", "claim", ["id", "says"]],
   ["relation", "question", ["q", "open"]],
   ["relation", "link", ["from", "to"]],
@@ -89,10 +107,18 @@ export const claimProgram = ({ claims, links, questions }: ClaimWorld) => [
   ["relation", "reach", ["from", "to"]],
   ["relation", "tagged", ["tag", "claim"]],
   ["relation", "scaled", ["question", "value"]],
+  ["relation", "reading", ["key"]],
+  ["relation", "base", ["claim", "base"]],
+  ["relation", "meant", ["base", "claim"]],
+  ["relation", "values", ["question", "values"]],
+  ["relation", "settled", ["question", "settled"]],
   [
     "fact",
     ...claims.map((content, at) => ["claim", `c${at}`, written(content)]),
   ],
+  ...(readings.length === 0
+    ? []
+    : [["fact", ...readings.map((key) => ["reading", ["quote", key]])]]),
   ...(questions.length === 0
     ? []
     : [["fact", ...questions.map(([q, open]) => ["question", q, open])]]),
@@ -157,6 +183,31 @@ export const claimProgram = ({ claims, links, questions }: ClaimWorld) => [
     ["scaled", "?q", ["number/multiply", "?v", 10]],
     ["said", "?q", "?v"],
   ],
+  [
+    "rule",
+    [
+      "base",
+      "?c",
+      [
+        "array/reduce",
+        ["find", "?key", ["reading", "?key"]],
+        "?says",
+        ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]],
+      ],
+    ],
+    ["claim", "?c", "?says"],
+  ],
+  ["rule", ["meant", "?base", "?c"], ["base", "?c", "?base"]],
+  [
+    "rule",
+    ["values", "?q", ["find", "?v", ["said", "?q", "?v"]]],
+    ["question", "?q", "?_"],
+  ],
+  [
+    "rule",
+    ["settled", "?q", ["not", ["disputed", "?q"]]],
+    ["question", "?q", true],
+  ],
 ];
 
 /**
@@ -175,8 +226,77 @@ export const TRAP = [
   ["rule", ["flag", "trapped", "?q"], ["trap", "?_"], ["question", "?q", "?_"]],
 ];
 
+/** A claim's content as Lion writes it, without some keys. */
+const without = (content: Says, keys: readonly string[]) =>
+  Object.fromEntries(
+    Object.entries(written(content)).filter(([key]) => !keys.includes(key))
+  );
+
+/**
+ * What a claim's base can be: its content without some of the keys besides
+ * its topic or rule.
+ */
+const base = Arbitrary.map(
+  Arbitrary.all([says, Arbitrary.array(element(DETAILS), { maxLength: 3 })]),
+  ([content, dropped]) => without(content, dropped)
+);
+
+const VALUE_LISTS = [[], [0], [1], [0, 1], [0, 2], [1, 2], [0, 1, 2]];
+
+/**
+ * Questions that know an argument a rule's head computes by asking a
+ * question, a `find` or a goal used as a value, with bases from `bases`.
+ */
+const askComputedOf = (
+  bases: Arbitrary.Arbitrary<Record<string, unknown>>
+): Arbitrary.Arbitrary<unknown> =>
+  oneOf<unknown>(
+    Arbitrary.map(bases, (b) => ["query", ["meant", b, "?c"], { order: "c" }]),
+    Arbitrary.map(bases, (b) => ["query", ["base", "?c", b], { order: "c" }]),
+    Arbitrary.map(bases, (b) => [
+      "query",
+      ["and", ["=", "?b", b], ["meant", "?b", "?c"]],
+      { order: "c" },
+    ]),
+    Arbitrary.map(bases, (b) => ["find", "?c", ["meant", b, "?c"]]),
+    Arbitrary.map(element(VALUE_LISTS), (values) => [
+      "query",
+      ["values", "?q", ["array/make", ...values]],
+      { order: "q" },
+    ]),
+    Arbitrary.map(question, (q) => [
+      "query",
+      ["values", "?q", ["find", "?v", ["said", q, "?v"]]],
+      { order: "q" },
+    ]),
+    Arbitrary.map(element([true, false]), (settled) => [
+      "query",
+      ["settled", "?q", settled],
+      { order: "q" },
+    ])
+  );
+
+/**
+ * A world, and a question about it that knows an argument a head computes
+ * by asking. Half of its bases are those of the world's own claims.
+ */
+export const computedQuestion = Arbitrary.flatMap(claimWorld, (world) =>
+  Arbitrary.map(
+    askComputedOf(
+      oneOf(
+        base,
+        Arbitrary.map(element(world.claims), (content) =>
+          without(content, world.readings)
+        )
+      )
+    ),
+    (step) => ({ step, world })
+  )
+);
+
 /** Something to ask of the model, each knowing an argument somewhere. */
 export const ask: Arbitrary.Arbitrary<unknown> = oneOf<unknown>(
+  askComputedOf(base),
   Arbitrary.map(question, (q) => [
     "query",
     ["answer", q, "?v", "?c"],

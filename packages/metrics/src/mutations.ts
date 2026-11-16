@@ -306,6 +306,21 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/logic/tests/goal-directed.test.ts"],
   },
   {
+    name: "a copy's guard waits for the variables of a question it holds, which are the question's own",
+    file: core("logic/magic.ts"),
+    find: "  for (; at < body.length && !isEvaluable(guard, known, scope); at += 1) {",
+    replace:
+      "  for (; !guard.variables.every((name) => known.has(name)); at += 1) {",
+    tests: ["src/logic/tests/goal-directed.test.ts"],
+  },
+  {
+    name: "a query's argument is not known when a question in it has variables of its own",
+    file: core("logic/magic.ts"),
+    find: "    ? isQuery && isEvaluable(term, bound, scope)",
+    replace: "    ? isQuery && term.variables.every((name) => bound.has(name))",
+    tests: ["src/logic/tests/known-arguments.test.ts"],
+  },
+  {
     name: "anonymous variables are not given names of their own",
     file: core("logic/compile.ts"),
     find: "  return isBinder(goal) ? goal.map(fresh) : goal;",

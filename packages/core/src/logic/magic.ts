@@ -24,8 +24,10 @@ import {
   type CompiledRule,
   compilable,
   headsOf,
+  isEvaluable,
   type Literal,
   planLiterals,
+  scopeOf,
 } from "@/logic/compile";
 import {
   Atom,
@@ -80,18 +82,20 @@ export const originalName = (name: string) => {
  * asks about values without end; a query runs once, so there a value
  * computed from bound variables counts too. Other values, such as functions,
  * can never match a fact, so they are left to filter the rewritten relation
- * instead of seeding it.
+ * instead of seeding it. A question in a value waits only for the variables
+ * of `scope`, the body around it; the rest are its own.
  */
 const isKnown = (
   term: unknown,
   bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>,
   isQuery: boolean
 ) => {
   if (term instanceof LogicVariable) {
     return bound.has(term.name);
   }
   return term instanceof LogicValue
-    ? isQuery && term.variables.every((name) => bound.has(name))
+    ? isQuery && isEvaluable(term, bound, scope)
     : isGroundValue(term);
 };
 
@@ -148,10 +152,11 @@ const guarded = (body: readonly Literal[], guard: Atom): Literal[] => {
   if (led !== undefined) {
     return led;
   }
-  const needed = guard.variables;
+  // What the guard holds can ask questions, of variables of their own.
+  const scope = scopeOf(body);
   const known = new Set<string>();
   let at = 0;
-  for (; !needed.every((name) => known.has(name)); at += 1) {
+  for (; at < body.length && !isEvaluable(guard, known, scope); at += 1) {
     bindVariables(body[at] as Literal, known);
   }
   return [...body.slice(0, at), guard, ...body.slice(at)];
@@ -192,10 +197,11 @@ class Rewrite {
   body(planned: readonly Literal[], source: unknown, isQuery: boolean) {
     const out: Literal[] = [];
     const bound = new Set<string>();
+    const scope = scopeOf(planned);
     for (const literal of planned) {
       const adornment =
         literal instanceof Atom && this.eligible(literal.relation.name)
-          ? literal.args.map((arg) => isKnown(arg, bound, isQuery))
+          ? literal.args.map((arg) => isKnown(arg, bound, scope, isQuery))
           : [];
       const copied = adornment.some(Boolean);
       this.directed ||= isQuery && copied;

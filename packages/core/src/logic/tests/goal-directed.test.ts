@@ -4,7 +4,14 @@ import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { valueKey } from "@/logic/terms";
 import { stdlib } from "@/modules";
-import { ask, claimProgram, claimWorld, disputedOf, TRAP } from "./claims";
+import {
+  ask,
+  claimProgram,
+  claimWorld,
+  computedQuestion,
+  disputedOf,
+  TRAP,
+} from "./claims";
 import { element } from "./programs";
 
 const graph = [
@@ -384,6 +391,21 @@ describe("goal-directed queries over a model of claims", () => {
             })
           ).toEqual(expected);
         }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "answer as full evaluation does when a question knows a value that a head computes by asking",
+    { asked: computedQuestion },
+    ({ asked: { step, world } }) =>
+      Effect.gen(function* () {
+        const program = ["begin", ...claimProgram(world)];
+        const answer = (goalDirected: boolean) =>
+          run([...program, step], stdlib, {
+            database: new LogicDatabase({ goalDirected }),
+          }).pipe(Effect.map(sorted));
+        expect(yield* answer(true)).toEqual(yield* answer(false));
       }),
     OPTIONS
   );
