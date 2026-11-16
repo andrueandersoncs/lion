@@ -1,0 +1,206 @@
+{
+  "title": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff",
+  "context": "Taylor's map-driven autoresearch keeps a map of ideas, runs experiments on some, and moves effort from the ideas that stall to the ones that pay. The reasoning skill's directions (ideas for improving a score) and the research skill's leads (lines of inquiry) both need a rule for when to stop spending on one. A direction's experiment pays off when its version improves a score; a lead's source pays off when it says something first-hand the lead covers.",
+  "decision": "Each direction and lead has a patience, 3 unless it says. Its misses are the experiments, or the sources read for it, that paid nothing and came after its last payoff; when they reach its patience it is set aside, and it stays in the model with why. A payoff starts the count again, as patience does in early stopping. Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`. The research recorder numbers the sources read for leads in the order their notes are recorded, so \"in a row\" has a meaning there too.",
+  "consequences": "A direction that keeps paying off keeps its budget, and one that never pays is dropped after its patience. The list of where to try next puts the live directions that paid off most first, then those tried least; it is advice, and the agent says why when it goes against it. A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research), and an answer otherwise rules a direction out.",
+  "alternatives": [
+    {
+      "option": "Count every miss, not only those since the last payoff",
+      "rejected": "The most productive direction also misses most often in absolute terms, so it would be the first set aside."
+    },
+    {
+      "option": "A fixed number of experiments or sources for each, whatever they find",
+      "rejected": "It spends as much on an idea that has stopped paying as on one that pays every time, which is what reallocating effort is meant to avoid."
+    },
+    {
+      "option": "Let the model choose the next experiment",
+      "rejected": "Which idea to try next weighs things the model does not hold, such as cost and how promising an untried idea looks; the model says what the evidence shows and the agent decides."
+    }
+  ],
+  "commits": ["2b711ade78fe"],
+  "claims": [
+    {
+      "quote": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff",
+      "says": {
+        "decision": "direction-stopping",
+        "chose": "patience-since-last-payoff",
+        "over": ["every-miss", "fixed-budget"],
+        "because": "the most productive direction also misses most often in absolute terms",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "Its misses are the experiments, or the sources read for it, that paid nothing and came after its last payoff; when they reach its patience it is set aside, and it stays in the model with why",
+      "says": {
+        "rule": "patience-since-last-payoff",
+        "holds": true,
+        "statement": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff, and stays in the model with why",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "direction-miss-count-after-payoff",
+            "is": "reset"
+          },
+          {
+            "behavior": "exhausted-direction-in-model",
+            "is": "kept-with-why"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Each direction and lead has a patience, 3 unless it says",
+      "says": {
+        "measured": "default-patience",
+        "after": 3,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A payoff starts the count again, as patience does in early stopping",
+      "says": {
+        "behavior": "direction-miss-count-after-payoff",
+        "is": "reset",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "it stays in the model with why",
+      "says": {
+        "behavior": "exhausted-direction-in-model",
+        "is": "kept-with-why",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "reasoning-paid-off",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "reasoning-miss",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "reasoning-exhausted",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "reasoning-live",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "reasoning-progress",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "research-paid-off",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "research-miss",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "research-exhausted",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "research-live",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress`",
+      "says": {
+        "feature": "research-progress",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The research recorder numbers the sources read for leads in the order their notes are recorded",
+      "says": {
+        "behavior": "research-lead-source-order",
+        "is": "recording-order",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "The list of where to try next puts the live directions that paid off most first, then those tried least",
+      "says": {
+        "behavior": "reasoning-next-direction-order",
+        "is": "most-paid-off-first",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "it is advice, and the agent says why when it goes against it",
+      "says": {
+        "decision": "next-experiment-choice",
+        "chose": "agent-decides",
+        "over": ["model-chooses"],
+        "because": "which idea to try next weighs things the model does not hold, such as cost",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research)",
+      "says": {
+        "behavior": "reasoning-direction-needing-user-answer",
+        "is": "waits",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research)",
+      "says": {
+        "behavior": "research-lead-ambiguous-question",
+        "is": "waits",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "an answer otherwise rules a direction out",
+      "says": {
+        "behavior": "reasoning-direction-answered-otherwise",
+        "is": "ruled-out",
+        "area": "skills"
+      }
+    }
+  ]
+}

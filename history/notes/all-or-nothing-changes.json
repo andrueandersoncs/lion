@@ -1,0 +1,241 @@
+{
+  "title": "A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds",
+  "context": "A `retract` with one invalid fact still removed the facts listed before it, so a failed form left the database half changed. Running a setup program again against a database saved with `lion --database` added each rule a second time, so aggregates counted every match twice. And a program could check a condition on its data only when it asked: a query with the `\"assert\"` option checked it once, when the query ran.",
+  "decision": "`[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the database: the goal must have no answers, or with `\"some\"` at least one, when it is added and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was, facts in the same order. Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing, as adding a fact or declaring a relation the same way already did.",
+  "consequences": "One rule answers what a failed form leaves behind: nothing. Several facts that only make sense together go in one `fact` form, and each later form is checked against the result. Invariants are answered the way queries are, with goal-directed rewriting, aggregates, and graph algorithms, and they are saved in snapshots after the rules and enforced by `lion --database`. Running a setup again, or loading a snapshot onto the database it came from, keeps one copy of each rule.",
+  "alternatives": [
+    {
+      "option": "A new keyword for invariants",
+      "rejected": "The query option `\"assert\"` already said that a question must have no answers, or some. An invariant reuses it, compiles its goal like a query, and fails in the same words, so there is no second vocabulary to learn, and anything a query can ask, an invariant can require."
+    },
+    {
+      "option": "Make one run, rather than one form, the unit of change",
+      "rejected": "One form keeps the rule simple, lets facts that only make sense together go in a single `fact` form, and checks each later form against the result."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "47ea840",
+      "quote": "Every form that changes the database is now all or nothing."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A change to the logic database is all or nothing",
+      "says": {
+        "decision": "database-change-atomicity",
+        "chose": "all-or-nothing",
+        "over": ["partial"],
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "An invariant reuses it, compiles its goal like a query, and fails in the same words, so there is no second vocabulary to learn",
+      "says": {
+        "decision": "invariant-syntax",
+        "chose": "query-assert-option",
+        "over": ["new-keyword"],
+        "area": "logic",
+        "because": "an invariant reuses the query option assert, so there is no second vocabulary to learn"
+      }
+    },
+    {
+      "quote": "One form keeps the rule simple, lets facts that only make sense together go in a single `fact` form, and checks each later form against the result.",
+      "says": {
+        "decision": "database-change-unit",
+        "chose": "form",
+        "over": ["run"],
+        "area": "logic",
+        "because": "one form keeps the rule simple and lets facts that only make sense together go in one fact form"
+      }
+    },
+    {
+      "quote": "a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was, facts in the same order",
+      "says": {
+        "rule": "all-or-nothing-changes",
+        "holds": true,
+        "statement": "Every form that changes the logic database either makes all of its changes or none, whether it fails on a bad fact, a broken invariant, or an error while checking one",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "retract-with-invalid-fact",
+            "is": "no-change"
+          },
+          {
+            "behavior": "fact-breaking-invariant",
+            "is": "no-change"
+          },
+          {
+            "behavior": "invariant-check-error",
+            "is": "change-undone"
+          },
+          {
+            "behavior": "failed-change-fact-order",
+            "is": "preserved"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing, as adding a fact or declaring a relation the same way already did.",
+      "says": {
+        "rule": "idempotent-additions",
+        "holds": true,
+        "statement": "Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "re-add-rule",
+            "is": "no-change"
+          },
+          {
+            "behavior": "re-add-invariant",
+            "is": "no-change"
+          },
+          {
+            "behavior": "cli-database-rerun-setup",
+            "is": "one-copy"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the database",
+      "says": {
+        "feature": "invariant",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "the goal must have no answers, or with `\"some\"` at least one, when it is added and after every later change",
+      "says": {
+        "behavior": "invariant-not-holding-when-added",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes",
+      "says": {
+        "behavior": "invariant-checked-on-change",
+        "is": "every-fact-retract-rule-form",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes",
+      "says": {
+        "behavior": "invariant-check-timing",
+        "is": "after-whole-form",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was",
+      "says": {
+        "behavior": "retract-with-invalid-fact",
+        "is": "no-change",
+        "area": "logic",
+        "was": "partial-removal"
+      }
+    },
+    {
+      "quote": "a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was",
+      "says": {
+        "behavior": "fact-breaking-invariant",
+        "is": "no-change",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was",
+      "says": {
+        "behavior": "invariant-check-error",
+        "is": "change-undone",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "leaves the database exactly as it was, facts in the same order",
+      "says": {
+        "behavior": "failed-change-fact-order",
+        "is": "preserved",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing",
+      "says": {
+        "behavior": "re-add-rule",
+        "is": "no-change",
+        "area": "logic",
+        "was": "added-again"
+      }
+    },
+    {
+      "quote": "Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing",
+      "says": {
+        "behavior": "re-add-invariant",
+        "is": "no-change",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "one a snapshot would write the same way",
+      "says": {
+        "behavior": "rule-identity",
+        "is": "snapshot-form",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Several facts that only make sense together go in one `fact` form, and each later form is checked against the result.",
+      "says": {
+        "behavior": "begin-forms-invariant-check",
+        "is": "each-separately",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Invariants are answered the way queries are, with goal-directed rewriting, aggregates, and graph algorithms",
+      "says": {
+        "behavior": "invariant-evaluation",
+        "is": "like-queries",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "they are saved in snapshots after the rules and enforced by `lion --database`",
+      "says": {
+        "behavior": "snapshot-invariants-position",
+        "is": "after-rules",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "they are saved in snapshots after the rules and enforced by `lion --database`",
+      "says": {
+        "behavior": "cli-database-invariants",
+        "is": "enforced",
+        "area": "cli"
+      }
+    },
+    {
+      "quote": "Running a setup again, or loading a snapshot onto the database it came from, keeps one copy of each rule.",
+      "says": {
+        "behavior": "cli-database-rerun-setup",
+        "is": "one-copy",
+        "area": "cli"
+      }
+    },
+    {
+      "quote": "compiles its goal like a query, and fails in the same words",
+      "says": {
+        "behavior": "invariant-failure-message",
+        "is": "same-as-query-assertion",
+        "area": "errors"
+      }
+    }
+  ]
+}

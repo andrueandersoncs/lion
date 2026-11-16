@@ -68,16 +68,6 @@
   {
     "assumption": "rules-hold",
     "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "define-inside-lambda",
-      "predicted": "local",
-      "found": "global"
-    },
-    "note": "A define inside a lambda writes the global environment (README; probe gives global), where Scheme's internal define is local. No commit records a decision for it."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
       "rule": "api-credentials-server-side",
       "case": "editor-jev-api-key-storage",
       "predicted": "server-side",
@@ -281,5 +271,82 @@
       "found": "false"
     },
     "note": "An empty string counts as false in a cond (README, probe), where Scheme counts every string as true. Part of cond's JavaScript truthiness: see cond-zero-condition."
+  },
+  {
+    "assumption": "consistent-rules",
+    "witness": {
+      "rules": ["cond-truthiness", "scheme-racket-semantics"],
+      "case": "cond-zero-condition"
+    },
+    "note": "The changelog entry that corrected the README states cond's JavaScript truthiness as a rule, cond-truthiness: a condition of false, null, 0, or \"\" counts as false. scheme-racket-semantics predicts Scheme's, where only #f is false. Same question as the cond findings under rules-hold: no decision covers cond's truthiness yet."
+  },
+  {
+    "assumption": "consistent-rules",
+    "witness": {
+      "rules": ["cond-truthiness", "scheme-racket-semantics"],
+      "case": "cond-empty-string-condition"
+    },
+    "note": "The changelog entry that corrected the README states cond's JavaScript truthiness as a rule, cond-truthiness: a condition of false, null, 0, or \"\" counts as false. scheme-racket-semantics predicts Scheme's, where only #f is false. Same question as the cond findings under rules-hold: no decision covers cond's truthiness yet."
+  },
+  {
+    "assumption": "scheme-precedent",
+    "witness": "arity-rule-19",
+    "note": "The arity-rule decision record says a lambda ignores arguments past its parameters as JavaScript does, so host code can call it as a callback; a Scheme lambda refuses them. A decision that keeps this departure would settle it with an exception to scheme-racket-semantics."
+  },
+  {
+    "assumption": "removals-decided",
+    "witness": {
+      "feature": "editor-source-view",
+      "commit": "notes/research-model-32"
+    },
+    "note": "The changelog entry that corrected the README says the editor no longer has the outline, inspector, and source views it lost; no recorded decision removed them. A decision record about the editor's surface would settle it."
+  },
+  {
+    "assumption": "removals-decided",
+    "witness": {
+      "feature": "editor-inspector-pane",
+      "commit": "notes/research-model-31"
+    },
+    "note": "The changelog entry that corrected the README says the editor no longer has the outline, inspector, and source views it lost; no recorded decision removed them. A decision record about the editor's surface would settle it."
+  },
+  {
+    "assumption": "removals-decided",
+    "witness": {
+      "feature": "editor-outline-pane",
+      "commit": "notes/research-model-30"
+    },
+    "note": "The changelog entry that corrected the README says the editor no longer has the outline, inspector, and source views it lost; no recorded decision removed them. A decision record about the editor's surface would settle it."
+  },
+  {
+    "assumption": "rules-hold",
+    "witness": {
+      "rule": "score-improves-past-noise",
+      "case": "reasoning-improvement-after-better-earlier-run",
+      "predicted": "taken-back",
+      "found": "kept"
+    },
+    "note": "The record `score-improves-past-noise` and the lion-reasoning `SKILL.md` say that another run of an earlier version \"can only raise what came before, which takes an improvement back\". On the skill's own core, what a version is sure to give is its worst run, so another run of a version that already has one leaves a later improvement as it was, or makes it larger; a probe that adds a better run of the earlier version finds the improvement kept. The sentence holds only for the first run of an earlier version that had none. Found on 2026-11-16 by the probe of the case. Settle by rewording the record and `SKILL.md`, or by changing the rule."
+  },
+  {
+    "assumption": "docs-match-lion",
+    "witness": {
+      "question": {
+        "behavior": "reasoning-improvement-after-better-earlier-run"
+      },
+      "said": "taken-back",
+      "does": "kept"
+    },
+    "note": "Same sentence as the rule finding on `score-improves-past-noise`: the repository says a better run of an earlier version takes an improvement back, and the skill's core keeps it."
+  },
+  {
+    "assumption": "docs-match-lion",
+    "witness": {
+      "question": {
+        "behavior": "reasoning-non-explaining-belief-judged"
+      },
+      "said": "present",
+      "does": "from-formed-version"
+    },
+    "note": "4c8df1b made a belief that explains no problem be judged from the version it was formed in, and in the same commit added a comment in packages/metrics/src/tests/reasoning-skill.test.ts that still said such a belief is judged in the present. Fixed in the working tree: the comment now says what the model beside it does. It clears once the commit that fixes it is read into the notes."
   }
 ]

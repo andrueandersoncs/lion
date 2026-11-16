@@ -1,0 +1,201 @@
+{
+  "title": "Lion's features and semantics are designed by the principle of least astonishment",
+  "context": "Lion's value comes from features that compose, so one surprising interaction costs more than a missing feature. Surprises sat where features met: a failed `retract` left partial changes behind, and running a setup again against a saved database counted every aggregate match twice. Nothing written down told a contributor how a new feature should behave beside the others.",
+  "decision": "Before adding a feature or changing how something behaves, ask what someone who already knows Lion would expect it to do, on its own and combined with every existing feature, and make it do that. Reuse the vocabulary Lion has before inventing more. When a feature needs a rule, follow the rule a similar feature already has, and when that rule falls short, change it for every feature at once. Walk through the combinations, keep equivalent programs equivalent, such as a program and its snapshot or goal-directed and full evaluation, and point out surprising behavior and fix it instead of building on it. AGENTS.md and CLAUDE.md state the principle, and the docs explain the rules features share on a page of their own.",
+  "consequences": "Invariants reuse the query option `\"assert\"` and fail in the words of a failed query assertion. Every form that changes the database is all or nothing, and adding what the database already holds changes nothing. The waiting rule and the asking rule each replaced a list of special cases with one rule, and each added to AGENTS.md the pairs it keeps equivalent: an expression over a logic variable and the same expression with the value in its place, and a question asked in a rule and the same question asked in plain code with the rule's variables bound. Where results may differ, such as answer order without the `\"order\"` option, the docs say so.",
+  "commits": [
+    {
+      "commit": "47ea840",
+      "quote": "the principle of least astonishment when designing features and semantics"
+    },
+    "b5f87d4",
+    "aef67af",
+    "c380ce7"
+  ],
+  "claims": [
+    {
+      "quote": "Lion's features and semantics are designed by the principle of least astonishment",
+      "says": {
+        "decision": "feature-design-principle",
+        "chose": "least-astonishment",
+        "because": "one surprising interaction costs more than a missing feature",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "ask what someone who already knows Lion would expect it to do, on its own and combined with every existing feature, and make it do that",
+      "says": {
+        "rule": "least-astonishment",
+        "holds": true,
+        "statement": "Follow the principle of least astonishment: a feature does what someone who knows Lion expects, on its own and combined with every existing feature",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "Reuse the vocabulary Lion has before inventing more",
+      "says": {
+        "rule": "reuse-what-exists",
+        "holds": true,
+        "statement": "Build a new feature out of vocabulary Lion already has before inventing more",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "invariant-failure-message",
+            "is": "same-as-query-assertion"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "When a feature needs a rule, follow the rule a similar feature already has, and when that rule falls short, change it for every feature at once",
+      "says": {
+        "rule": "one-rule-everywhere",
+        "holds": true,
+        "statement": "When a feature needs a rule, follow the rule a similar feature already has; whatever needs a logic variable's value waits, and whatever needs a goal's value asks it, in every form and function",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "Walk through the combinations",
+      "says": {
+        "rule": "walk-through-combinations",
+        "holds": true,
+        "statement": "Before settling a behavior, trace how it meets each existing feature, now including schemas, patterns, and names",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "keep equivalent programs equivalent, such as a program and its snapshot or goal-directed and full evaluation",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same: a schema and its declared name, a goal binding through a pattern and the same goal with its variables bound first, a relation call with a schema argument and the same call followed by schema/fits?, a relation's row schema and its invariant, and an invariant asked about added rows and asked in full",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "program-vs-snapshot-answers",
+            "is": "same"
+          },
+          {
+            "behavior": "goal-directed-vs-full-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "point out surprising behavior and fix it instead of building on it",
+      "says": {
+        "rule": "dont-build-on-surprises",
+        "holds": true,
+        "statement": "When existing behavior would astonish a user, point it out and fix it, or propose a fix, instead of working around it",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "the docs explain the rules features share on a page of their own",
+      "says": {
+        "feature": "docs-consistent-semantics-page",
+        "kind": "page",
+        "present": true
+      }
+    },
+    {
+      "quote": "Invariants reuse the query option `\"assert\"` and fail in the words of a failed query assertion",
+      "says": {
+        "behavior": "invariant-failure-message",
+        "is": "same-as-query-assertion",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Invariants reuse the query option `\"assert\"` and fail in the words of a failed query assertion",
+      "says": {
+        "decision": "invariant-syntax",
+        "chose": "query-assert-option",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every form that changes the database is all or nothing",
+      "says": {
+        "rule": "all-or-nothing-changes",
+        "holds": true,
+        "statement": "A change to the logic database is all or nothing: an equality rule and its invariant are added as one change",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "retract-with-invalid-fact",
+            "is": "no-change"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "adding what the database already holds changes nothing",
+      "says": {
+        "rule": "idempotent-additions",
+        "holds": true,
+        "statement": "Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "re-add-rule",
+            "is": "no-change"
+          },
+          {
+            "behavior": "cli-database-rerun-setup",
+            "is": "one-copy"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The waiting rule and the asking rule each replaced a list of special cases with one rule",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs a logic variable's value waits until the variable is bound; a schema check is an ordinary call and waits too",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The waiting rule and the asking rule each replaced a list of special cases with one rule",
+      "says": {
+        "rule": "asking-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a goal asks it; a goal with a relation in it is a question",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "an expression over a logic variable and the same expression with the value in its place, and a question asked in a rule and the same question asked in plain code with the rule's variables bound",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same: a schema and its declared name, a goal binding through a pattern and the same goal with its variables bound first, a relation call with a schema argument and the same call followed by schema/fits?, a relation's row schema and its invariant, and an invariant asked about added rows and asked in full",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "expression-over-variable-vs-value",
+            "is": "same"
+          },
+          {
+            "behavior": "question-in-rule-vs-plain-code",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Where results may differ, such as answer order without the `\"order\"` option, the docs say so",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "Equivalent programs behave the same: a schema and its declared name, a goal binding through a pattern and the same goal with its variables bound first, a relation call with a schema argument and the same call followed by schema/fits?, a relation's row schema and its invariant, and an invariant asked about added rows and asked in full",
+        "area": "process",
+        "except": ["goal-directed-answer-order"]
+      }
+    }
+  ]
+}

@@ -190,10 +190,16 @@ const world: Arbitrary.Arbitrary<World> = Arbitrary.flatMap(
     )
 );
 
+/** The record's rules and the links, where what is decided is worked out. */
+const RECORD_CORE = join(REPOSITORY, "history/core.json");
+const LINKS = join(REPOSITORY, "history/research/steps/05-links.src.json");
+
 const programOf = (w: World, question: unknown) => [
   "begin",
   ...read(SKILL_CORE),
   ...read(FRAME),
+  ...read(RECORD_CORE),
+  ...read(LINKS),
   [
     "fact",
     ...w.sources.map((s) => [

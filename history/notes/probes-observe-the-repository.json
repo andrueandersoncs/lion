@@ -1,0 +1,172 @@
+{
+  "title": "A probe can read the repository, run a declared command, and answer for a feature",
+  "context": "A decision record's assertions are checked against Lion at HEAD where a probe runs the case, and are only stated otherwise. A probe was a Lion program run with the standard library alone, and Lion's library reads no file and runs no command, so a probe could show how Lion evaluates and nothing else. Most of what the project decides is not about evaluation: which version of Effect it uses, what the pre-commit hook and CI run, whether every library function has an example in the docs. Those assertions could never hold or be broken, however wrong they became.",
+  "decision": "The host that runs the probes gives each probe's program functions beside the standard library. `[\"repo/files\", path]` gives the paths of the files under a folder of the repository, `[\"repo/read\", path]` gives the text of a file of the repository, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command that `history/research/commands.json` declares and gives its exit code and what it wrote, as `{\"exit\", \"output\"}`. `[\"lion/special-form?\", name]` says whether Lion has a special form of that name, since a special form is not a value a program can ask about. A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail, and a probe that fails is the behavior `error`, as before; `repo/files` gives no paths for a path that names nothing, so a probe can say that a file is gone. A declared command is the words of one command line, with no shell between them, and it runs once in a build, however many probes ask for it. A command that needs more than a line is a script in `packages/history/commands/` that the line runs. A probe answers one question, as a claim does: a behavior's probe gives the word for its case, and a feature's probe gives true when the feature is there and false when it is not. A feature's probe that gives neither has answered nothing, and the build reports it, with any question two probes answer. What a probe sees is recorded as a claim of Lion at HEAD, like any other observation, so the rules that check an assertion did not change.",
+  "consequences": "A decision about how the project is set up is checked the way a decision about Lion's behavior is. With probes for three records, on Effect 4, on the quality gates, and on examples in the docs, thirteen assertions that were only stated held when the repository was read. With probes of features, 101 more hold in 34 records: that a library function, a special form, a module, a package, a command, an option, a file, a page, an error, or a tool is there, or is gone. With probes of behaviors, 183 more hold in 42 records, 153 behaviors and 30 rules, and every record has an assertion that is checked. The probes also showed where the record was wrong. A claim that a recursive rule's head variables come from facts had been replaced by weak acyclicity and now reads as replaced; a sentence about what another run of an earlier version does to an improvement is not what the reasoning skill's rules give, and waits for a decision among the known findings; and a comment that described how beliefs used to be judged was corrected. Lion still evaluates in memory: the functions belong to the host of the probes, not to the library, and a Lion program run anywhere else does not have them. Adding a command a probe may run is a change to one file that lists every such command. Many probes search a file's text for the words that declare a thing, so a thing declared in other words reads as missing, and a step of the hook or of CI moved into a script the file calls does too. A build runs each declared command, so a slow command makes every `bun run history check` slower; the one declared now, the check of the docs, takes under a second.",
+  "alternatives": [
+    {
+      "option": "Add functions that read files and run commands to the standard library",
+      "rejected": "A Lion program must be able to be evaluated entirely in memory, and a library function is in every program. A host function is in the programs of the host that gives it."
+    },
+    {
+      "option": "Let a probe run any shell command",
+      "rejected": "A record of decisions would then run whatever its newest entry says, on every check and in CI. Declared commands keep what may run in one file, as command lines no shell reads."
+    },
+    {
+      "option": "Call the functions inside the model's rules instead of recording what a probe saw",
+      "rejected": "A rule that reads a file gives a different answer when the file changes, so the saved model would no longer be what `bun run history ask` answers from, and `why` could not show what was seen."
+    },
+    {
+      "option": "Keep such assertions as stated",
+      "rejected": "That leaves most decisions unchecked: 526 of 707 assertions were only stated."
+    },
+    {
+      "option": "Give a failed probe of a feature the answer false",
+      "rejected": "A probe with a mistake in it would then say that the feature is gone, and a record that asserts it is gone would hold for the wrong reason. A probe of a behavior that fails gives `error`, a word no record asserts by accident."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The host that runs the probes gives each probe's program functions beside the standard library",
+      "says": {
+        "decision": "probe-reach",
+        "chose": "lion-and-repository",
+        "over": ["lion-only", "any-shell-command", "library-functions"],
+        "because": "most of what the project decides is not about evaluation, so those assertions could never hold or be broken",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "A decision about how the project is set up is checked the way a decision about Lion's behavior is",
+      "says": {
+        "rule": "probes-observe-repository",
+        "holds": true,
+        "statement": "A probe can read the repository's files and run a declared command, so a decision about how the project is set up is checked the way a decision about Lion's behavior is",
+        "area": "record",
+        "predicts": [
+          {
+            "behavior": "probe-reads-repository-file",
+            "is": "text"
+          },
+          {
+            "behavior": "probe-path-outside-repository",
+            "is": "error"
+          },
+          {
+            "behavior": "probe-runs-undeclared-command",
+            "is": "error"
+          },
+          {
+            "behavior": "probe-lists-repository-files",
+            "is": "paths"
+          },
+          {
+            "behavior": "probe-asks-special-form",
+            "is": "told"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"repo/read\", path]` gives the text of a file of the repository",
+      "says": {
+        "behavior": "probe-reads-repository-file",
+        "is": "text",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "`[\"repo/json\", path]` gives a JSON file as a value",
+      "says": {
+        "behavior": "probe-reads-json-file",
+        "is": "value",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "runs a command that `history/research/commands.json` declares and gives its exit code and what it wrote",
+      "says": {
+        "behavior": "probe-runs-declared-command",
+        "is": "exit-and-output",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail",
+      "says": {
+        "behavior": "probe-path-outside-repository",
+        "is": "error",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail",
+      "says": {
+        "behavior": "probe-runs-undeclared-command",
+        "is": "error",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "the functions belong to the host of the probes, not to the library",
+      "says": {
+        "rule": "in-memory-evaluation",
+        "holds": true,
+        "statement": "A Lion program can be evaluated entirely in memory: the library reads no file and runs no command",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "`[\"repo/files\", path]` gives the paths of the files under a folder of the repository",
+      "says": {
+        "behavior": "probe-lists-repository-files",
+        "is": "paths",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "`repo/files` gives no paths for a path that names nothing",
+      "says": {
+        "behavior": "probe-lists-missing-path",
+        "is": "none",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "`[\"lion/special-form?\", name]` says whether Lion has a special form of that name",
+      "says": {
+        "behavior": "probe-asks-special-form",
+        "is": "told",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "a feature's probe gives true when the feature is there and false when it is not",
+      "says": {
+        "decision": "probe-questions",
+        "chose": "behaviors-and-features",
+        "over": ["behaviors-only"],
+        "because": "most of what was only stated was that a named thing is there or gone",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "A feature's probe that gives neither has answered nothing, and the build reports it",
+      "says": {
+        "decision": "failed-feature-probe",
+        "chose": "reported",
+        "over": ["answers-false"],
+        "because": "a probe with a mistake in it would say the feature is gone, and a record that asserts it is gone would hold for the wrong reason",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "A command that needs more than a line is a script in `packages/history/commands/` that the line runs",
+      "says": {
+        "feature": "probe-command-scripts",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

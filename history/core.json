@@ -1,6 +1,5 @@
 [
   "begin",
-
   [
     "define",
     "nonEmpty?",
@@ -79,7 +78,6 @@
       ]
     ]
   ],
-
   [
     "schema",
     "Text",
@@ -137,35 +135,43 @@
     "References",
     [
       "schema/arrayOf",
-      ["schema/anyOf", "Hash", { "commit": "Hash", "quote": "Text" }]
+      [
+        "schema/anyOf",
+        "Hash",
+        {
+          "commit": "Hash",
+          "quote": "Text"
+        }
+      ]
     ],
-    "Decision",
+    "Claim",
     {
-      "id": "Id",
-      "title": "Text",
-      "context": "Text",
-      "decision": "Text",
-      "consequences": "Text",
+      "id": ["schema/optional", "Id"],
+      "source": ["schema/optional", "Text"],
+      "quote": "Text",
+      "says": "value/object?",
+      "commits": ["schema/optional", "References"],
+      "decisions": ["schema/optional", ["schema/arrayOf", "Id"]]
+    },
+    "Notes",
+    {
+      "claims": ["schema/arrayOf", "Claim"],
+      "title": ["schema/optional", "Text"],
+      "context": ["schema/optional", "Text"],
+      "decision": ["schema/optional", "Text"],
+      "consequences": ["schema/optional", "Text"],
       "alternatives": [
         "schema/optional",
-        ["schema/arrayOf", { "option": "Text", "rejected": "Text" }]
+        [
+          "schema/arrayOf",
+          {
+            "option": "Text",
+            "rejected": "Text"
+          }
+        ]
       ],
-      "supersedes": ["schema/optional", ["schema/arrayOf", "Id"]],
-      "commits": ["schema/optional", "References"],
-      "claims": [
-        "schema/optional",
-        ["schema/arrayOf", { "quote": "Text", "says": "value/any?" }]
-      ]
-    },
-    "Change",
-    {
-      "kind": "Text",
-      "text": "Text",
-      "decisions": ["schema/optional", ["schema/arrayOf", "Id"]],
       "commits": ["schema/optional", "References"]
     },
-    "Internal",
-    { "internal": "Text", "commits": "References" },
     "Release",
     {
       "ships": [
@@ -174,8 +180,13 @@
           "schema/arrayOf",
           [
             "schema/anyOf",
-            { "name": "Text", "version": "Version" },
-            { "name": "Text" }
+            {
+              "name": "Text",
+              "version": "Version"
+            },
+            {
+              "name": "Text"
+            }
           ]
         ],
         ["lambda", ["s"], ["number/greaterThan", ["array/length", "s"], 0]]
@@ -183,161 +194,169 @@
       "summary": ["schema/optional", "Text"],
       "notes": [
         "schema/optional",
-        ["schema/arrayOf", { "kind": "Text", "text": "Text" }]
+        [
+          "schema/arrayOf",
+          {
+            "kind": "Text",
+            "text": "Text"
+          }
+        ]
       ],
       "commit": ["schema/optional", "Hash"],
       "draft": ["schema/optional", true]
     },
-    "DecisionFile",
-    { "path": "Text", "data": "Decision" },
-    "ChangesFile",
+    "NotesFile",
     {
       "path": "Text",
-      "data": ["schema/arrayOf", ["schema/anyOf", "Change", "Internal"]]
+      "data": "Notes"
     },
     "ReleaseFile",
-    { "path": "Text", "data": "Release" }
+    {
+      "path": "Text",
+      "data": "Release"
+    }
   ],
-
   [
     "relation",
     "commit",
     ["hash", "time", "date", "message"],
-    { "key": "hash" }
+    {
+      "key": "hash"
+    }
   ],
   ["relation", "parent", ["child", "parent"]],
-  ["relation", "tag", ["name", "commit"], { "key": "name" }],
-  ["relation", "added", ["path", "commit"], { "key": "path" }],
   [
     "relation",
-    "decision",
-    ["path", "data"],
-    { "key": "path", "schema": "DecisionFile" }
+    "tag",
+    ["name", "commit"],
+    {
+      "key": "name"
+    }
   ],
   [
     "relation",
-    "changes",
+    "added",
+    ["path", "commit"],
+    {
+      "key": "path"
+    }
+  ],
+  [
+    "relation",
+    "notes",
     ["path", "data"],
-    { "key": "path", "schema": "ChangesFile" }
+    {
+      "key": "path",
+      "schema": "NotesFile"
+    }
   ],
   [
     "relation",
     "release",
     ["path", "data"],
-    { "key": "path", "schema": "ReleaseFile" }
+    {
+      "key": "path",
+      "schema": "ReleaseFile"
+    }
   ],
-
-  ["relation", "entry", ["id", "path", "index", "data"], { "key": "id" }],
-  ["relation", "change", ["entry", "kind", "text"], { "key": "entry" }],
-  ["relation", "internal", ["entry", "reason"], { "key": "entry" }],
-  ["relation", "decision_of", ["id", "entry", "title"], { "key": "id" }],
-  ["relation", "names", ["entry", "prefix"]],
-  ["relation", "quotes", ["entry", "prefix", "quote"]],
+  [
+    "relation",
+    "written_in",
+    ["claim", "path"],
+    {
+      "key": "claim"
+    }
+  ],
+  ["relation", "names", ["thing", "prefix"]],
+  ["relation", "quotes", ["thing", "prefix", "quote"]],
+  [
+    "relation",
+    "record",
+    ["id", "path", "title"],
+    {
+      "key": "id"
+    }
+  ],
   ["relation", "resolved", ["prefix", "commit"]],
-  ["relation", "made_by", ["entry", "commit"]],
-  ["relation", "position", ["entry", "position"], { "key": "entry" }],
-  ["relation", "first_time", ["entry", "time"]],
-  ["relation", "dated", ["entry", "date"]],
-  ["relation", "subject", ["commit", "text"], { "key": "commit" }],
-  ["relation", "typed", ["commit", "type"], { "key": "commit" }],
+  ["relation", "commit_of", ["source", "commit"]],
+  ["relation", "made_by", ["thing", "commit"]],
+  ["relation", "first_time", ["thing", "time"]],
+  ["relation", "dated", ["thing", "date"]],
+  [
+    "relation",
+    "subject",
+    ["commit", "text"],
+    {
+      "key": "commit"
+    }
+  ],
+  [
+    "relation",
+    "typed",
+    ["commit", "type"],
+    {
+      "key": "commit"
+    }
+  ],
   ["relation", "release_at", ["release", "commit"]],
   ["relation", "contains", ["release", "commit"]],
   ["relation", "before", ["earlier", "later"]],
-  ["relation", "covers", ["release", "entry"]],
-  ["relation", "shipped_in", ["entry", "release"]],
-  ["relation", "unreleased", ["entry"]],
+  ["relation", "covers", ["release", "claim"]],
+  ["relation", "shipped_in", ["claim", "release"]],
+  ["relation", "unreleased", ["claim"]],
   ["relation", "ships", ["release", "name", "version"]],
   ["relation", "draft", ["release"]],
-  ["relation", "supersedes", ["decision", "old"]],
-  ["relation", "standing", ["decision"]],
-  ["relation", "follows", ["entry", "decision"]],
-  ["relation", "in_effect_from", ["decision", "release"]],
-
+  ["relation", "first_shipped", ["question", "answer", "release"]],
+  ["relation", "waiting", ["question", "answer"]],
   ["relation", "unaccounted", ["commit", "subject"]],
-  ["relation", "unresolved", ["entry", "prefix"]],
+  ["relation", "unresolved", ["thing", "prefix"]],
   ["relation", "resolutions", ["prefix", "count"]],
-  ["relation", "ambiguous_ref", ["entry", "prefix", "count"]],
-  ["relation", "misquoted_ref", ["entry", "commit", "quote"]],
-  ["relation", "unknown_decision", ["entry", "decision"]],
-  ["relation", "unjustified", ["entry", "text"]],
-  ["relation", "misnamed", ["path", "id"]],
+  ["relation", "ambiguous_ref", ["thing", "prefix", "count"]],
+  ["relation", "misquoted_ref", ["thing", "commit", "quote"]],
+  ["relation", "unknown_decision", ["claim", "decision"]],
+  ["relation", "undecided_record", ["record"]],
   ["relation", "shared_commit", ["release", "other", "commit"]],
   ["relation", "repeated_version", ["name", "version", "release", "other"]],
   ["relation", "regressed", ["name", "earlier", "later"]],
-  ["relation", "backwards", ["decision", "old"]],
   ["relation", "untagged", ["release", "tag"]],
   ["relation", "mistagged", ["release", "tag", "commit"]],
-
-  [
-    "rule",
-    ["entry", "?path", "?path", 0, "?data"],
-    ["decision", "?path", "?data"]
-  ],
-  [
-    "rule",
-    ["entry", "?path", "?path", 0, "?data"],
-    ["release", "?path", "?data"]
-  ],
+  ["relation", "checked", ["claim", "verdict"]],
+  ["relation", "asserted", ["claim"]],
+  ["relation", "rule_claim", ["claim", "rule", "holds"]],
+  ["relation", "rule_tested", ["rule"]],
+  ["relation", "rule_broken", ["rule"]],
   [
     "rule",
     [
-      "entry",
-      ["string/concat", "?path", "#", ["number/toString", "?i"]],
+      "record",
+      ["string/slice", "?path", ["string/length", "history/notes/"], -5],
       "?path",
-      "?i",
-      "?item"
+      "?title"
     ],
-    ["changes", "?path", "?list"],
-    ["in", "?i", ["array/range", 0, ["array/length", "?list"]]],
-    ["=", "?item", ["object/get", "?list", "?i"]]
-  ],
-  [
-    "rule",
-    ["change", "?e", "?kind", "?text"],
-    ["changes", "?path", "?_"],
     [
-      "entry",
-      "?e",
+      "notes",
       "?path",
-      "?_",
-      ["schema/open", { "kind": "?kind", "text": "?text" }]
+      [
+        "schema/open",
+        {
+          "title": "?title"
+        }
+      ]
     ]
   ],
   [
     "rule",
-    ["internal", "?e", "?reason"],
-    ["changes", "?path", "?_"],
-    ["entry", "?e", "?path", "?_", { "internal": "?reason", "commits": "?_" }]
-  ],
-  [
-    "rule",
-    ["decision_of", "?id", "?path", "?title"],
-    ["decision", "?path", ["schema/open", { "id": "?id", "title": "?title" }]]
-  ],
-
-  [
-    "rule",
-    ["names", "?e", "?ref"],
-    ["entry", "?e", "?_", "?_", ["schema/open", { "commits": "?refs" }]],
-    ["in", "?ref", "?refs"],
-    ["value/string?", "?ref"]
-  ],
-  [
-    "rule",
-    ["names", "?e", "?prefix"],
-    ["entry", "?e", "?_", "?_", ["schema/open", { "commits": "?refs" }]],
-    ["in", { "commit": "?prefix", "quote": "?_" }, "?refs"]
-  ],
-  [
-    "rule",
-    ["names", "?e", "?prefix"],
-    ["release", "?e", ["schema/open", { "commit": "?prefix" }]]
-  ],
-  [
-    "rule",
-    ["quotes", "?e", "?prefix", "?quote"],
-    ["entry", "?e", "?_", "?_", ["schema/open", { "commits": "?refs" }]],
-    ["in", { "commit": "?prefix", "quote": "?quote" }, "?refs"]
+    ["names", "?r", "?prefix"],
+    [
+      "release",
+      "?r",
+      [
+        "schema/open",
+        {
+          "commit": "?prefix"
+        }
+      ]
+    ]
   ],
   [
     "rule",
@@ -348,38 +367,53 @@
   ],
   [
     "rule",
-    ["made_by", "?e", "?hash"],
-    ["names", "?e", "?prefix"],
+    ["commit_of", "?s", "?h"],
+    ["commit_source", "?s", "?_"],
+    ["commit", "?h", "?_", "?_", "?_"],
+    ["string/startsWith", "?h", "?s"]
+  ],
+  [
+    "rule",
+    ["made_by", "?x", "?hash"],
+    ["names", "?x", "?prefix"],
     ["resolved", "?prefix", "?hash"]
   ],
   [
     "rule",
-    ["made_by", "?e", "?hash"],
-    ["entry", "?e", "?path", "?_", "?_"],
-    ["not", ["names", "?e", "?_"]],
+    ["made_by", "?x", "?hash"],
+    ["claim", "?x", "?s", "?_", "?_"],
+    ["not", ["names", "?x", "?_"]],
+    ["commit_of", "?s", "?hash"]
+  ],
+  [
+    "rule",
+    ["made_by", "?x", "?hash"],
+    ["written_in", "?x", "?path"],
+    ["not", ["names", "?x", "?_"]],
+    ["claim", "?x", "?s", "?_", "?_"],
+    ["not", ["commit_of", "?s", "?_"]],
     ["added", "?path", "?hash"]
   ],
   [
     "rule",
-    ["position", "?e", ["array/make", "?time", "?path", "?i"]],
-    ["entry", "?e", "?path", "?i", "?_"],
-    ["added", "?path", "?hash"],
+    ["made_by", "?r", "?hash"],
+    ["release", "?r", "?_"],
+    ["not", ["names", "?r", "?_"]],
+    ["added", "?r", "?hash"]
+  ],
+  [
+    "rule",
+    ["first_time", "?x", ["aggregate/min", "?time"]],
+    ["made_by", "?x", "?hash"],
     ["commit", "?hash", "?time", "?_", "?_"]
   ],
   [
     "rule",
-    ["first_time", "?e", ["aggregate/min", "?time"]],
-    ["made_by", "?e", "?hash"],
-    ["commit", "?hash", "?time", "?_", "?_"]
-  ],
-  [
-    "rule",
-    ["dated", "?e", "?date"],
-    ["first_time", "?e", "?time"],
-    ["made_by", "?e", "?hash"],
+    ["dated", "?x", "?date"],
+    ["first_time", "?x", "?time"],
+    ["made_by", "?x", "?hash"],
     ["commit", "?hash", "?time", "?date", "?_"]
   ],
-
   [
     "rule",
     ["subject", "?hash", ["array/head", ["string/split", "?message", "\n"]]],
@@ -408,7 +442,6 @@
     ],
     ["subject", "?hash", "?subject"]
   ],
-
   [
     "rule",
     ["release_at", "?r", "?hash"],
@@ -419,7 +452,16 @@
   [
     "rule",
     ["draft", "?r"],
-    ["release", "?r", ["schema/open", { "draft": true }]]
+    [
+      "release",
+      "?r",
+      [
+        "schema/open",
+        {
+          "draft": true
+        }
+      ]
+    ]
   ],
   ["rule", ["contains", "?r", "?hash"], ["release_at", "?r", "?hash"]],
   [
@@ -438,26 +480,27 @@
   ],
   [
     "rule",
-    ["covers", "?r", "?e"],
+    ["covers", "?r", "?c"],
     ["release_at", "?r", "?_"],
-    ["entry", "?e", "?_", "?_", "?_"],
-    ["not", ["release", "?e", "?_"]],
+    ["claim", "?c", "?_", "?_", "?_"],
+    ["made_by", "?c", "?_"],
     [
       "not",
-      ["and", ["made_by", "?e", "?hash"], ["not", ["contains", "?r", "?hash"]]]
+      ["and", ["made_by", "?c", "?hash"], ["not", ["contains", "?r", "?hash"]]]
     ]
   ],
   [
     "rule",
-    ["shipped_in", "?e", "?r"],
-    ["covers", "?r", "?e"],
-    ["not", ["and", ["covers", "?earlier", "?e"], ["before", "?earlier", "?r"]]]
+    ["shipped_in", "?c", "?r"],
+    ["covers", "?r", "?c"],
+    ["not", ["and", ["covers", "?earlier", "?c"], ["before", "?earlier", "?r"]]]
   ],
   [
     "rule",
-    ["unreleased", "?e"],
-    ["change", "?e", "?_", "?_"],
-    ["not", ["covers", "?_", "?e"]]
+    ["unreleased", "?c"],
+    ["claim", "?c", "?_", "?_", "?_"],
+    ["made_by", "?c", "?_"],
+    ["not", ["covers", "?_", "?c"]]
   ],
   [
     "rule",
@@ -467,44 +510,41 @@
       ["object/get", "?item", "name"],
       ["object/get", "?item", "version"]
     ],
-    ["release", "?r", ["schema/open", { "ships": "?items" }]],
+    [
+      "release",
+      "?r",
+      [
+        "schema/open",
+        {
+          "ships": "?items"
+        }
+      ]
+    ],
     ["not", ["draft", "?r"]],
     ["in", "?item", "?items"]
   ],
-
   [
     "rule",
-    ["in_effect_from", "?id", "?r"],
-    ["decision_of", "?id", "?e", "?_"],
-    ["first_time", "?e", "?time"],
-    ["made_by", "?e", "?hash"],
-    ["commit", "?hash", "?time", "?_", "?_"],
-    ["contains", "?r", "?hash"],
+    ["first_shipped", "?q", "?v", "?r"],
+    ["answer", "?q", "?v", "?c"],
+    ["shipped_in", "?c", "?r"],
     [
       "not",
-      ["and", ["contains", "?earlier", "?hash"], ["before", "?earlier", "?r"]]
+      [
+        "and",
+        ["answer", "?q", "?v", "?c2"],
+        ["shipped_in", "?c2", "?earlier"],
+        ["before", "?earlier", "?r"]
+      ]
     ]
   ],
   [
     "rule",
-    ["supersedes", "?id", "?old"],
-    ["decision", "?_", ["schema/open", { "id": "?id", "supersedes": "?olds" }]],
-    ["in", "?old", "?olds"]
+    ["waiting", "?q", "?v"],
+    ["answer", "?q", "?v", "?c"],
+    ["unreleased", "?c"],
+    ["not", ["and", ["answer", "?q", "?v", "?c2"], ["shipped_in", "?c2", "?_"]]]
   ],
-  [
-    "rule",
-    ["standing", "?id"],
-    ["decision_of", "?id", "?_", "?_"],
-    ["not", ["supersedes", "?_", "?id"]]
-  ],
-  [
-    "rule",
-    ["follows", "?e", "?id"],
-    ["changes", "?path", "?_"],
-    ["entry", "?e", "?path", "?_", ["schema/open", { "decisions": "?ids" }]],
-    ["in", "?id", "?ids"]
-  ],
-
   [
     "rule",
     ["unaccounted", "?hash", "?subject"],
@@ -515,8 +555,8 @@
   ],
   [
     "rule",
-    ["unresolved", "?e", "?prefix"],
-    ["names", "?e", "?prefix"],
+    ["unresolved", "?x", "?prefix"],
+    ["names", "?x", "?prefix"],
     ["not", ["resolved", "?prefix", "?_"]]
   ],
   [
@@ -526,45 +566,47 @@
   ],
   [
     "rule",
-    ["ambiguous_ref", "?e", "?prefix", "?count"],
-    ["names", "?e", "?prefix"],
+    ["ambiguous_ref", "?x", "?prefix", "?count"],
+    ["names", "?x", "?prefix"],
     ["resolutions", "?prefix", "?count"],
     ["number/greaterThan", "?count", 1]
   ],
   [
     "rule",
-    ["misquoted_ref", "?e", "?hash", "?quote"],
-    ["quotes", "?e", "?prefix", "?quote"],
+    ["misquoted_ref", "?x", "?hash", "?quote"],
+    ["quotes", "?x", "?prefix", "?quote"],
     ["resolved", "?prefix", "?hash"],
     ["commit", "?hash", "?_", "?_", "?message"],
     ["not", ["string/includes", ["words", "?message"], ["words", "?quote"]]]
   ],
   [
     "rule",
-    ["unknown_decision", "?e", "?id"],
-    ["follows", "?e", "?id"],
-    ["not", ["decision_of", "?id", "?_", "?_"]]
+    ["unknown_decision", "?c", "?id"],
+    ["follows", "?c", "?id"],
+    ["not", ["record", "?id", "?_", "?_"]]
   ],
   [
     "rule",
-    ["unknown_decision", "?e", "?old"],
-    ["supersedes", "?id", "?old"],
-    ["decision_of", "?id", "?e", "?_"],
-    ["not", ["decision_of", "?old", "?_", "?_"]]
-  ],
-  [
-    "rule",
-    ["unjustified", "?e", "?text"],
-    ["change", "?e", "Breaking", "?text"],
-    ["not", ["follows", "?e", "?_"]]
-  ],
-  [
-    "rule",
-    ["misnamed", "?path", "?id"],
-    ["decision_of", "?id", "?path", "?_"],
+    ["undecided_record", "?id"],
+    ["record", "?id", "?path", "?_"],
     [
       "not",
-      ["=", "?path", ["string/concat", "history/decisions/", "?id", ".json"]]
+      [
+        "and",
+        ["written_in", "?c", "?path"],
+        [
+          "claim",
+          "?c",
+          "?_",
+          "?_",
+          [
+            "schema/open",
+            {
+              "decision": "?_"
+            }
+          ]
+        ]
+      ]
     ]
   ],
   [
@@ -598,16 +640,6 @@
   ],
   [
     "rule",
-    ["backwards", "?id", "?old"],
-    ["supersedes", "?id", "?old"],
-    ["decision_of", "?id", "?entry", "?_"],
-    ["decision_of", "?old", "?oldEntry", "?_"],
-    ["first_time", "?entry", "?time"],
-    ["first_time", "?oldEntry", "?oldTime"],
-    ["number/lessThan", "?time", "?oldTime"]
-  ],
-  [
-    "rule",
     ["untagged", "?r", ["string/concat", "?name", "@", "?version"]],
     ["ships", "?r", "?name", "?version"],
     ["value/string?", "?version"],
@@ -623,6 +655,146 @@
     ["release_at", "?r", "?hash"],
     ["not", ["=", "?tagged", "?hash"]]
   ],
-
+  [
+    "rule",
+    ["asserted", "?c"],
+    ["written_in", "?c", "?path"],
+    ["record", "?_", "?path", "?_"]
+  ],
+  [
+    "rule",
+    ["rule_claim", "?c", "?r", "?h"],
+    [
+      "claim",
+      "?c",
+      "?_",
+      "?_",
+      [
+        "schema/open",
+        {
+          "rule": "?r",
+          "holds": "?h"
+        }
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["rule_tested", "?r"],
+    ["in_force", "?r"],
+    ["predicted", "?r", "?case", "?_", "?_"],
+    [
+      "firsthand",
+      {
+        "behavior": "?case"
+      },
+      "?_",
+      "Lion at HEAD"
+    ]
+  ],
+  [
+    "rule",
+    ["rule_broken", "?r"],
+    ["contrary", "?r", "?_", "?_", "?_", "Lion at HEAD"]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "replaced"]],
+    ["asserted", "?c"],
+    ["not", ["rule_claim", "?c", "?_", "?_"]],
+    ["answer", "?q", "?v", "?c"],
+    ["not", ["firsthand", "?q", "?v", "Lion repository"]]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "broken"]],
+    ["asserted", "?c"],
+    ["not", ["rule_claim", "?c", "?_", "?_"]],
+    ["answer", "?q", "?v", "?c"],
+    ["firsthand", "?q", "?v", "Lion repository"],
+    ["firsthand", "?q", "?w", "Lion at HEAD"],
+    ["not", ["=", "?v", "?w"]]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "holds"]],
+    ["asserted", "?c"],
+    ["not", ["rule_claim", "?c", "?_", "?_"]],
+    ["answer", "?q", "?v", "?c"],
+    ["firsthand", "?q", "?v", "Lion repository"],
+    ["firsthand", "?q", "?v", "Lion at HEAD"]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "stated"]],
+    ["asserted", "?c"],
+    ["not", ["rule_claim", "?c", "?_", "?_"]],
+    ["answer", "?q", "?v", "?c"],
+    ["firsthand", "?q", "?v", "Lion repository"],
+    ["not", ["firsthand", "?q", "?_", "Lion at HEAD"]]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "replaced"]],
+    ["asserted", "?c"],
+    ["rule_claim", "?c", "?r", "?h"],
+    [
+      "not",
+      [
+        "firsthand",
+        {
+          "rule": "?r"
+        },
+        "?h",
+        "Lion repository"
+      ]
+    ]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "broken"]],
+    ["asserted", "?c"],
+    ["rule_claim", "?c", "?r", true],
+    [
+      "firsthand",
+      {
+        "rule": "?r"
+      },
+      true,
+      "Lion repository"
+    ],
+    ["rule_broken", "?r"]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "holds"]],
+    ["asserted", "?c"],
+    ["rule_claim", "?c", "?r", true],
+    [
+      "firsthand",
+      {
+        "rule": "?r"
+      },
+      true,
+      "Lion repository"
+    ],
+    ["rule_tested", "?r"],
+    ["not", ["rule_broken", "?r"]]
+  ],
+  [
+    "rule",
+    ["checked", "?c", ["quote", "stated"]],
+    ["asserted", "?c"],
+    ["rule_claim", "?c", "?r", "?h"],
+    [
+      "firsthand",
+      {
+        "rule": "?r"
+      },
+      "?h",
+      "Lion repository"
+    ],
+    ["not", ["and", ["=", "?h", true], ["rule_tested", "?r"]]]
+  ],
   "history"
 ]

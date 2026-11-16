@@ -1,0 +1,556 @@
+{
+  "claims": [
+    {
+      "quote": "The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.",
+      "says": {
+        "feature": "lion-reasoning",
+        "kind": "skill",
+        "present": true
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.",
+      "says": {
+        "behavior": "reasoning-observation",
+        "is": "question-value-and-quote",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.",
+      "says": {
+        "behavior": "reasoning-belief",
+        "is": "predicted-answers",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.",
+      "says": {
+        "behavior": "reasoning-problem",
+        "is": "question-and-showing-value",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.",
+      "says": {
+        "rule": "reasoning-rules-derive-checks",
+        "holds": true,
+        "statement": "The model's rules derive what the agent would otherwise have to remember to check",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-core-json",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "rule": "evidence-stale-after-file-change",
+        "holds": true,
+        "statement": "An observation speaks only for versions in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-observation-of-changed-file",
+            "is": "stale"
+          }
+        ]
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-changed",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "rule": "ran-or-read-overrules-told",
+        "holds": true,
+        "statement": "What the agent ran or read overrules what it was told or recalled, and the model lists each time",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-told-contradicted-by-ran",
+            "is": "overruled"
+          }
+        ]
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-overruled",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "rule": "beliefs-judged-from-their-version",
+        "holds": true,
+        "statement": "A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-belief-contradicted-in-earlier-version",
+            "is": "contradicted"
+          },
+          {
+            "behavior": "reasoning-explanation-after-fix",
+            "is": "not-contradicted"
+          },
+          {
+            "behavior": "reasoning-non-explaining-belief-judged",
+            "is": "from-formed-version"
+          }
+        ]
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "behavior": "reasoning-explanation-after-fix",
+        "is": "not-contradicted",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-decisive",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-remaining",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-settled",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-unexplained",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-needed",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe.",
+      "says": {
+        "feature": "reasoning-open",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "feature": "reasoning-start-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "feature": "reasoning-see-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "feature": "reasoning-record-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "feature": "reasoning-replay-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "feature": "reasoning-ask-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-see-evidence",
+        "is": "output-exit-status-and-hash",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-record-input",
+        "is": "plain-notes",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-record-quote-not-in-source",
+        "is": "refused",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-belief-version-stamp",
+        "is": "formed-version",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-version-storage",
+        "is": "changes-since-last",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "rule": "skills-use-published-cli",
+        "holds": true,
+        "statement": "The skills' scripts run the published @lionlang/cli, never the copy of Lion in the project",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "`scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model.",
+      "says": {
+        "behavior": "reasoning-question-model",
+        "is": "copy",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": [
+        "skills-use-published-cli",
+        "beliefs-judged-from-their-version"
+      ]
+    },
+    {
+      "quote": "References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if.",
+      "says": {
+        "feature": "reasoning-lion-reference",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if.",
+      "says": {
+        "feature": "reasoning-patterns-reference",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if.",
+      "says": {
+        "behavior": "reasoning-pattern-examples",
+        "is": "run",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "behavior": "reasoning-core-program-property",
+        "is": "checked-against-plain-model",
+        "area": "tests"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "rule": "answer-keeps-predicting-explanations",
+        "holds": true,
+        "statement": "An answer to a question keeps exactly the rival explanations that predicted it",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "behavior": "reasoning-rival-explanations-property",
+        "is": "checked-against-prediction-law",
+        "area": "tests"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "behavior": "reasoning-recorder-property",
+        "is": "checked",
+        "area": "tests"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "behavior": "reasoning-versions-property",
+        "is": "checked-against-source-files",
+        "area": "tests"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "behavior": "reasoning-staleness-chain-property",
+        "is": "checked",
+        "area": "tests"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "measured": "mutations-added",
+        "after": 15,
+        "area": "metrics"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.",
+      "says": {
+        "feature": "mutation-package-option",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "A belief it had disproved on the old code showed as holding again after the fix, because beliefs that explain no problem were judged only against the present. Beliefs are now judged from the version they were formed in on. Rebuilt with the new core, the trial's own model marks that belief as violated.",
+      "says": {
+        "behavior": "reasoning-non-explaining-belief-judged",
+        "is": "from-formed-version",
+        "area": "skills",
+        "was": "present"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "A belief it had disproved on the old code showed as holding again after the fix, because beliefs that explain no problem were judged only against the present. Beliefs are now judged from the version they were formed in on. Rebuilt with the new core, the trial's own model marks that belief as violated.",
+      "says": {
+        "rule": "beliefs-judged-in-present",
+        "holds": false,
+        "statement": "A belief that explains no problem is judged only against the present version",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-non-explaining-belief-judged",
+            "is": "present"
+          }
+        ],
+        "replaced_by": "beliefs-judged-from-their-version"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "A belief it had disproved on the old code showed as holding again after the fix, because beliefs that explain no problem were judged only against the present. Beliefs are now judged from the version they were formed in on. Rebuilt with the new core, the trial's own model marks that belief as violated.",
+      "says": {
+        "behavior": "reasoning-belief-contradicted-in-earlier-version",
+        "is": "contradicted",
+        "area": "skills",
+        "was": "holding"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "Its check that the test fails on the old code went stale for good, because it undid the fix in place to run it. The patterns now run such a check against a copy of the old code, depending only on the test.",
+      "says": {
+        "behavior": "reasoning-old-code-check",
+        "is": "copy-of-old-code",
+        "area": "skills",
+        "was": "in-place"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "Its check that the test fails on the old code went stale for good, because it undid the fix in place to run it. The patterns now run such a check against a copy of the old code, depending only on the test.",
+      "says": {
+        "behavior": "reasoning-old-code-check-depends-on",
+        "is": "test-only",
+        "area": "skills"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "A prediction about the fixed code inside the explanation of the bug could never be checked there, so the problem was never settled. The skill now says to make what a fix will do a belief of its own, recorded after the change.",
+      "says": {
+        "behavior": "reasoning-fix-prediction",
+        "is": "own-belief",
+        "area": "skills",
+        "was": "inside-explanation"
+      },
+      "commits": ["4c8df1b"],
+      "decisions": ["beliefs-judged-from-their-version"]
+    },
+    {
+      "quote": "Build output that git ignores was never hashed, so evidence about it could not go stale. Such paths are now hashed from disk.",
+      "says": {
+        "behavior": "reasoning-ignored-build-output",
+        "is": "hashed-from-disk",
+        "area": "skills",
+        "was": "never-hashed"
+      },
+      "commits": ["4c8df1b"]
+    },
+    {
+      "quote": "A list in the output could not be quoted as one observation. A quote can now be a list of quotes.",
+      "says": {
+        "behavior": "reasoning-list-quote",
+        "is": "list-of-quotes",
+        "area": "skills",
+        "was": "unquotable"
+      },
+      "commits": ["4c8df1b"]
+    }
+  ]
+}

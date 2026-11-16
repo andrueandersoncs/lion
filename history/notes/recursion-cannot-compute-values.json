@@ -1,0 +1,133 @@
+{
+  "title": "A recursive rule cannot compute new values for its head, so evaluation always ends",
+  "context": "Datalog evaluation ends because rules only combine values that already exist. A recursive rule that computes a value, as `[\"number/add\", \"?n\", 1]` does, can derive a new row every round forever. The logic layer rejected a recursive rule that computed a value in its head, but the same value could come in through `=` or `in`: `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]` invented values forever, and evaluation never finished despite the documented guarantee.",
+  "decision": "The head variables of a recursive rule must come from facts: bound by a relation goal, or by `=` or `in` from such variables or from plain values. A rule that breaks this is rejected when it is added, with an error that suggests computing the value in a non-recursive rule or aggregating it with a lattice aggregate, which may compute its value while recursing.",
+  "consequences": "Evaluation of rules always finishes. Values that come from facts are fine, so `[\"=\", \"?m\", \"?to\"]` with `?to` from a relation still works in a recursive rule. The price is expressiveness: a value that grows along a recursion, such as a distance, is computed with a lattice aggregate, and recursion through one stops when no value improves or fails with an error after 10,000 rounds.",
+  "alternatives": [
+    {
+      "option": "Check only the head of a recursive rule, as the logic layer first did",
+      "rejected": "`=` and `in` in the body let a recursive rule invent values anyway, and evaluation never finished."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "04632de",
+      "quote": "recursive rules cannot compute new head values, so evaluation always finishes"
+    },
+    {
+      "commit": "05f2834",
+      "quote": "head variables of a recursive rule must now come from facts"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The head variables of a recursive rule must come from facts: bound by a relation goal, or by `=` or `in` from such variables or from plain values.",
+      "says": {
+        "decision": "termination-check",
+        "chose": "no-computed-values-in-recursion",
+        "over": ["head-only-check"],
+        "because": "checking only the head let = and in in the body invent values anyway, and evaluation never finished",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A recursive rule cannot compute new values for its head, so evaluation always ends",
+      "says": {
+        "rule": "recursion-cannot-compute-values",
+        "holds": true,
+        "statement": "A recursive rule cannot compute new values for its head columns, in the head itself or through = or in, so evaluation always finishes",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-computed-head-value",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-computed-value-through-unify",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-computed-value-through-in",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-unify-from-fact-value",
+            "is": "allowed"
+          }
+        ],
+        "except": ["recursive-rule-lattice-aggregate-computed-value"]
+      }
+    },
+    {
+      "quote": "The head variables of a recursive rule must come from facts",
+      "says": {
+        "behavior": "recursive-rule-head-variable-source",
+        "is": "facts",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A rule that breaks this is rejected when it is added",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-unify",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A rule that breaks this is rejected when it is added",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-in",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "with an error that suggests computing the value in a non-recursive rule or aggregating it with a lattice aggregate",
+      "says": {
+        "behavior": "recursive-computed-value-error-hint",
+        "is": "non-recursive-rule-or-lattice-aggregate",
+        "area": "errors"
+      }
+    },
+    {
+      "quote": "aggregating it with a lattice aggregate, which may compute its value while recursing",
+      "says": {
+        "behavior": "recursive-rule-lattice-aggregate-computed-value",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Values that come from facts are fine, so `[\"=\", \"?m\", \"?to\"]` with `?to` from a relation still works in a recursive rule.",
+      "says": {
+        "behavior": "recursive-rule-unify-from-fact-value",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a value that grows along a recursion, such as a distance, is computed with a lattice aggregate",
+      "says": {
+        "rule": "lattice-recursion",
+        "holds": true,
+        "statement": "A value that grows along a recursion is computed with a lattice aggregate, which may compute its value while recursing",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-lattice-aggregate-computed-value",
+            "is": "allowed"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "recursion through one stops when no value improves or fails with an error after 10,000 rounds",
+      "says": {
+        "behavior": "lattice-recursion-still-improving",
+        "is": "error",
+        "area": "logic"
+      }
+    }
+  ]
+}

@@ -1,0 +1,471 @@
+{
+  "claims": [
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "rule": "datalog-logic-layer",
+        "holds": true,
+        "statement": "Lion includes a Datalog-style logic layer whose relations, goals, and logic variables are ordinary values, written in the same JSON as the rest of the language",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-call",
+            "is": "goal"
+          },
+          {
+            "behavior": "query-result-type",
+            "is": "plain-data"
+          }
+        ]
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "relation",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "fact",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "retract",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "rule",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "query",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "why",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "not",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "and",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "or",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "=",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "behavior": "unbound-question-mark-string",
+        "is": "logic-variable",
+        "area": "names"
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "rule": "pure-functions-wait",
+        "holds": true,
+        "statement": "Pure standard library functions (number, string, boolean, value, array) called on logic variables wait until the variables are bound",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "pure-function-logic-variable-argument",
+            "is": "waits"
+          }
+        ]
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "behavior": "pure-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "rule": "stratified-negation",
+        "holds": true,
+        "statement": "Negation cannot go through recursion, so every program has a single well-defined answer",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "negation-through-recursion",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "behavior": "logic-evaluation-strategy",
+        "is": "semi-naive",
+        "area": "logic"
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "behavior": "rule-safety-check-time",
+        "is": "when-added",
+        "area": "logic"
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "behavior": "why-derived-fact",
+        "is": "explanation-tree",
+        "area": "logic"
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `\"?name\"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`.",
+      "says": {
+        "feature": "examples-logic-program",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["04632de"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.",
+      "says": {
+        "feature": "site-logic-programming-section",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["6d1d662"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.",
+      "says": {
+        "measured": "site-logic-examples",
+        "after": 4,
+        "area": "site"
+      },
+      "commits": ["6d1d662"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.",
+      "says": {
+        "behavior": "site-highlight-logic-forms",
+        "is": "like-special-forms",
+        "area": "site"
+      },
+      "commits": ["6d1d662"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.",
+      "says": {
+        "behavior": "site-highlight-logic-variables",
+        "is": "own-color",
+        "area": "site"
+      },
+      "commits": ["6d1d662"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer.",
+      "says": {
+        "behavior": "site-worker-core",
+        "is": "rebuilt",
+        "area": "site"
+      },
+      "commits": ["6d1d662"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "The Fold Map graph editor recognizes the logic forms and gives them their own node color.",
+      "says": {
+        "behavior": "fold-map-logic-forms",
+        "is": "one-color",
+        "area": "editor"
+      },
+      "commits": ["04632de"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor.",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      },
+      "commits": ["235b0e0"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor.",
+      "says": {
+        "behavior": "cli-0-2-0-bundled-core",
+        "is": "core-0-3-0",
+        "area": "packages"
+      },
+      "commits": ["235b0e0"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor.",
+      "says": {
+        "behavior": "cli-logic-programs",
+        "is": "runs",
+        "area": "cli"
+      },
+      "commits": ["235b0e0"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "feature": "site-live-example-editors",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "feature": "@lionlang/site-runtime",
+        "kind": "package",
+        "present": true
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every example on lionlang.dev runs on the real @lionlang/core",
+        "area": "site",
+        "predicts": [
+          {
+            "behavior": "site-example-result-source",
+            "is": "evaluator"
+          }
+        ]
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "behavior": "site-example-rerun",
+        "is": "as-you-type",
+        "area": "site"
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "behavior": "site-example-output",
+        "is": "result-errors-and-logs",
+        "area": "site"
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "behavior": "site-example-runaway-program",
+        "is": "terminated",
+        "area": "site"
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds.",
+      "says": {
+        "measured": "site-example-timeout-seconds",
+        "after": 1.5,
+        "area": "site"
+      },
+      "commits": ["ab082c3"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "Long results in the lionlang.dev live examples keep short arrays and records on one line, and functions nested inside results print as `<function>`.",
+      "says": {
+        "behavior": "site-short-results",
+        "is": "one-line",
+        "area": "site"
+      },
+      "commits": ["6d1d662"]
+    },
+    {
+      "quote": "Long results in the lionlang.dev live examples keep short arrays and records on one line, and functions nested inside results print as `<function>`.",
+      "says": {
+        "behavior": "site-nested-function-result",
+        "is": "function-marker",
+        "area": "site",
+        "was": "escaped-marker"
+      },
+      "commits": ["6d1d662"]
+    },
+    {
+      "quote": "Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.",
+      "says": {
+        "feature": "site-expression-graph-background",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["b2855e0", "ab082c3"]
+    },
+    {
+      "quote": "Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.",
+      "says": {
+        "feature": "site-self-typing-hero",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["b2855e0", "ab082c3"]
+    },
+    {
+      "quote": "Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.",
+      "says": {
+        "feature": "site-graph-editor-section",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["b2855e0", "ab082c3"]
+    },
+    {
+      "quote": "Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.",
+      "says": {
+        "feature": "site-packages-section",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["b2855e0", "ab082c3"]
+    },
+    {
+      "quote": "Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.",
+      "says": {
+        "decision": "site-button-effect",
+        "chose": "still-buttons",
+        "area": "site",
+        "over": ["magnetic-buttons"],
+        "because": "buttons stay put under the cursor"
+      },
+      "commits": ["b2855e0", "ab082c3"]
+    },
+    {
+      "quote": "A fix to how the repository typechecks and builds; no package changed.",
+      "says": {
+        "behavior": "typecheck-includes-dist-output",
+        "is": "false",
+        "area": "build",
+        "was": "true",
+        "fixes": true
+      },
+      "commits": ["32e81b0"]
+    },
+    {
+      "quote": "A fix to how the repository typechecks and builds; no package changed.",
+      "says": {
+        "behavior": "typecheck-depends-on-build",
+        "is": "true",
+        "area": "build",
+        "was": "false",
+        "fixes": true
+      },
+      "commits": ["32e81b0"]
+    }
+  ]
+}

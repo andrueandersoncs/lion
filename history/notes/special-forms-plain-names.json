@@ -1,0 +1,97 @@
+{
+  "title": "Special forms keep plain names, such as `\"define\"`, with no prefix",
+  "context": "On March 30, 2026, special forms took a leading slash, as in `[\"/define\", \"x\", 1]`. The next day, while the tests were being fixed after list auto-quoting was removed, that spelling was reconsidered.",
+  "decision": "Special forms went back to plain names: `quote`, `eval`, `begin`, `define`, and `lambda`, and every form added since, such as `cond` and `match`, has a plain name too. A form is the array whose first element is its name, and `define` and `lambda` refuse a form's name as a name to bind.",
+  "consequences": "The forms read as their counterparts in Scheme and Racket do, and a slash is left to library names such as `number/add`. The tests written in the slash spelling were rewritten, and `@lionlang/core` 0.1.0 shipped with plain names.",
+  "alternatives": [
+    {
+      "option": "Keep the leading slash, as in `\"/define\"`",
+      "rejected": "The commit that reverted it says only that its author was not feeling it."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "c6c3859",
+      "quote": "revert keyword format back to no-prefix (not feeling it)"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Special forms went back to plain names",
+      "says": {
+        "decision": "special-form-prefix",
+        "chose": "plain",
+        "over": ["slash"],
+        "because": "the commit that reverted it says only that its author was not feeling it",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "Special forms keep plain names, such as `\"define\"`, with no prefix",
+      "says": {
+        "rule": "special-forms-plain-names",
+        "holds": true,
+        "statement": "Special forms keep plain names, such as \"define\", with no prefix",
+        "area": "forms",
+        "predicts": [
+          {
+            "behavior": "special-form-without-slash",
+            "is": "special-form"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Special forms went back to plain names",
+      "says": {
+        "rule": "special-forms-slash-prefix",
+        "holds": false,
+        "statement": "Special forms are written with a leading slash, such as \"/define\"",
+        "area": "forms",
+        "replaced_by": "special-forms-plain-names"
+      }
+    },
+    {
+      "quote": "Special forms went back to plain names: `quote`, `eval`, `begin`, `define`, and `lambda`, and every form added since, such as `cond` and `match`, has a plain name too.",
+      "says": {
+        "behavior": "special-form-without-slash",
+        "is": "special-form",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "The forms read as their counterparts in Scheme and Racket do",
+      "says": {
+        "behavior": "special-form-without-slash",
+        "is": "special-form",
+        "area": "forms",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "`define` and `lambda` refuse a form's name as a name to bind",
+      "says": {
+        "behavior": "define-special-form-name",
+        "is": "rejected",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "`define` and `lambda` refuse a form's name as a name to bind",
+      "says": {
+        "behavior": "lambda-special-form-name-parameter",
+        "is": "rejected",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "a slash is left to library names such as `number/add`",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name, and the slash is left to them",
+        "area": "library"
+      }
+    }
+  ]
+}

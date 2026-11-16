@@ -1,0 +1,139 @@
+{
+  "claims": [
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "behavior": "docs-toc-followed-link",
+        "is": "marks-linked-section",
+        "area": "site",
+        "was": "marks-previous-section",
+        "fixes": true
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-section-links",
+        "after": 273,
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-section-links-marking-own-section",
+        "after": 273,
+        "area": "site",
+        "before": 0
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-link-heading-offset-px",
+        "after": 168,
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-toc-old-threshold-px",
+        "after": 140,
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "decision": "toc-section-reached",
+        "chose": "where-link-puts-heading",
+        "area": "site",
+        "over": ["fixed-140-px"],
+        "because": "a link puts a heading 168 px below the top of the window, and a heading counted as reached only above a fixed 140 px"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "behavior": "docs-toc-end-of-page",
+        "is": "last-section",
+        "area": "site",
+        "fixes": true
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-documents-last-heading-unreachable-800px",
+        "after": 29,
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "measured": "docs-documents",
+        "after": 39,
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "\"On this page\" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.",
+      "says": {
+        "behavior": "docs-toc-followed-link-until-scrolled",
+        "is": "stays-marked",
+        "area": "site",
+        "fixes": true
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none.",
+      "says": {
+        "behavior": "example-run-measured-zero-ms",
+        "is": "shows-time",
+        "area": "site",
+        "was": "no-time",
+        "fixes": true
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none.",
+      "says": {
+        "behavior": "example-program-not-run",
+        "is": "no-time",
+        "area": "site"
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "Both rules are in `docs/pure.js`, and `@lionlang/site-runtime` now tests them with properties.",
+      "says": {
+        "feature": "docs-pure-js",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["faed4c4"]
+    },
+    {
+      "quote": "Both rules are in `docs/pure.js`, and `@lionlang/site-runtime` now tests them with properties.",
+      "says": {
+        "feature": "site-runtime-tests",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["faed4c4"]
+    }
+  ]
+}

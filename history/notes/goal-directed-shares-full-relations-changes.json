@@ -1,0 +1,147 @@
+{
+  "claims": [
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "rule": "goal-directed-shares-full-relations",
+        "holds": true,
+        "statement": "A goal-directed query derives a copy only of what it knows an argument of, and shares every relation derived in full with later queries",
+        "area": "logic"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "behavior": "goal-directed-large-model-many-questions-speed",
+        "is": "like-full-evaluation",
+        "area": "logic",
+        "was": "hundreds-of-times-slower",
+        "fixes": true
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "behavior": "goal-directed-goal-knowing-no-arguments",
+        "is": "reads-shared-relation",
+        "area": "logic",
+        "was": "derives-full-copy",
+        "fixes": true
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "behavior": "goal-directed-known-argument-relation-held-in-full",
+        "is": "looked-up-in-held-rows",
+        "area": "logic",
+        "fixes": true
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "behavior": "goal-directed-known-argument-in-pattern",
+        "is": "runs-as-written",
+        "area": "logic",
+        "was": "scans-per-value",
+        "fixes": true
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "measured": "research-page-questions",
+        "after": 37,
+        "area": "metrics"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "measured": "research-page-goal-directed-seconds",
+        "after": 0.11,
+        "area": "metrics",
+        "before": 36.6
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "measured": "research-page-full-seconds",
+        "after": 0.12,
+        "area": "metrics"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `[\"claim\", \"?c\", [\"schema/open\", {\"topic\": \"?t\"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model.",
+      "says": {
+        "behavior": "goal-directed-off-for-large-models",
+        "is": "not-needed",
+        "area": "host",
+        "was": "needed"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `[\"rule\", [\"report\", \"?t\"], [\"audit\", \"?t\"], [\"broken\", \"?t\"]]` and no `audit` rows, `[\"query\", [\"report\", \"?t\"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.",
+      "says": {
+        "rule": "relations-derived-when-read",
+        "holds": true,
+        "statement": "A relation is derived the first time a goal reads it with an answer to extend, so no query fails on a relation that no answer reaches",
+        "area": "logic"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `[\"rule\", [\"report\", \"?t\"], [\"audit\", \"?t\"], [\"broken\", \"?t\"]]` and no `audit` rows, `[\"query\", [\"report\", \"?t\"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.",
+      "says": {
+        "behavior": "relation-derivation-time",
+        "is": "first-read-with-answer",
+        "area": "logic",
+        "was": "before-rule-runs"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `[\"rule\", [\"report\", \"?t\"], [\"audit\", \"?t\"], [\"broken\", \"?t\"]]` and no `audit` rows, `[\"query\", [\"report\", \"?t\"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.",
+      "says": {
+        "behavior": "query-failing-relation-no-answer-reaches",
+        "is": "empty-list",
+        "area": "logic",
+        "was": "error"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    },
+    {
+      "quote": "A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `[\"rule\", [\"report\", \"?t\"], [\"audit\", \"?t\"], [\"broken\", \"?t\"]]` and no `audit` rows, `[\"query\", [\"report\", \"?t\"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail.",
+      "says": {
+        "behavior": "goal-directed-vs-full-failure-on-underived-row",
+        "is": "same",
+        "area": "logic"
+      },
+      "commits": ["330aec062e9f"],
+      "decisions": ["goal-directed-shares-full-relations"]
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "title": "A call gives a function as many arguments as it takes, and any other number fails with one form of message",
+  "context": "Library functions dropped arguments they did not take and passed `undefined` for ones left out: `[\"number/subtract\", 10, 3, 1]` was `7`, and `[\"object/get\", {\"a\": 1}]` was `null`. Relations, schemas, schema builders, `schema/fits?`, `schema/problems`, `schema/assert`, aggregates, and graph algorithms each checked their arguments on their own, with messages in several forms. It was one of three surprises found while writing Lion programs for the research skill.",
+  "decision": "Every function of the standard library takes a set number of arguments, and a call with any other number fails: `\"number/subtract\" takes 2 arguments but got 3.` One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms, and `over` builds a library function from a schema for each argument. `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do. A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback.",
+  "consequences": "A call with the wrong number of arguments fails where it runs, also where it waits for a logic variable in a rule, a query, or a `find`, and the failure is a `LogicError`. `func/bind` and `func/apply` need the function and its `this`, and a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails, so a lambda is the way to write a callback. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped. The code grew by 62 lines, since the rule and its two helpers cost more than the seven checks and module helpers they replaced. Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`.",
+  "alternatives": [
+    {
+      "option": "Drop extra arguments and pass `undefined` for missing ones, as library functions did before 0.8.0",
+      "rejected": "A wrong call gave a wrong answer instead of an error: `[\"number/subtract\", 10, 3, 1]` was `7`, with the `1` dropped."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "356e74a",
+      "quote": "A call gives a function as many arguments as it takes."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails",
+      "says": {
+        "decision": "library-function-arity",
+        "chose": "strict",
+        "over": ["lenient"],
+        "area": "library",
+        "because": "a wrong call gave a wrong answer instead of an error"
+      }
+    },
+    {
+      "quote": "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms",
+      "says": {
+        "decision": "arity-checks",
+        "chose": "one-takes-function",
+        "over": ["separate-checks"],
+        "area": "library"
+      }
+    },
+    {
+      "quote": "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback.",
+      "says": {
+        "decision": "lambda-arity",
+        "chose": "extra-arguments-ignored",
+        "area": "evaluation",
+        "because": "so host code can call a lambda as a callback"
+      }
+    },
+    {
+      "quote": "A call gives a function as many arguments as it takes, and any other number fails with one form of message",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "A call gives a function as many arguments as it takes, and one with any other number fails with one form of message: a library function, a relation, a schema, an aggregate, and a graph algorithm, also where the call waits for a logic variable",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-extra-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "library-function-missing-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "relation-call-wrong-arity",
+            "is": "error"
+          },
+          {
+            "behavior": "schema-call-wrong-arity",
+            "is": "error"
+          },
+          {
+            "behavior": "graph-algorithm-wrong-arity",
+            "is": "error"
+          },
+          {
+            "behavior": "arity-error-in-waiting-call",
+            "is": "error"
+          },
+          {
+            "behavior": "func-bind-missing-this",
+            "is": "error"
+          },
+          {
+            "behavior": "func-apply-missing-this",
+            "is": "error"
+          },
+          {
+            "behavior": "host-calls-library-function-extra-arguments",
+            "is": "error"
+          }
+        ],
+        "except": ["lambda-extra-arguments"]
+      }
+    },
+    {
+      "quote": "Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`.",
+      "says": {
+        "rule": "new-functions-declare-arity",
+        "holds": true,
+        "statement": "Declare what a new library function takes with takes, or build it with over, and add it to the arity test table",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails: `\"number/subtract\" takes 2 arguments but got 3.`",
+      "says": {
+        "behavior": "library-function-extra-arguments",
+        "is": "error",
+        "area": "library",
+        "was": "ignored"
+      }
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails",
+      "says": {
+        "behavior": "library-function-missing-arguments",
+        "is": "error",
+        "area": "library",
+        "was": "null"
+      }
+    },
+    {
+      "quote": "A call with the wrong number of arguments fails where it runs, also where it waits for a logic variable in a rule, a query, or a `find`",
+      "says": {
+        "behavior": "arity-error-in-waiting-call",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms",
+      "says": {
+        "behavior": "relation-call-wrong-arity",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms",
+      "says": {
+        "behavior": "schema-call-wrong-arity",
+        "is": "error",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms",
+      "says": {
+        "behavior": "graph-algorithm-wrong-arity",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "the failure is a `LogicError`",
+      "says": {
+        "behavior": "arity-error-kind",
+        "is": "logic-error",
+        "area": "errors"
+      }
+    },
+    {
+      "quote": "any other number fails with one form of message",
+      "says": {
+        "behavior": "arity-message-form",
+        "is": "one-form",
+        "area": "errors"
+      }
+    },
+    {
+      "quote": "`func/bind` and `func/apply` need the function and its `this`",
+      "says": {
+        "behavior": "func-bind-missing-this",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "`func/bind` and `func/apply` need the function and its `this`",
+      "says": {
+        "behavior": "func-apply-missing-this",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails",
+      "says": {
+        "behavior": "host-calls-library-function-extra-arguments",
+        "is": "error",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do",
+      "says": {
+        "behavior": "combining-functions-several-arguments",
+        "is": "combine-left-to-right",
+        "area": "library",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "`[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "sum",
+        "area": "library",
+        "was": "ignored"
+      }
+    },
+    {
+      "quote": "A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback.",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "ignored",
+        "area": "evaluation",
+        "follows": "javascript"
+      }
+    },
+    {
+      "quote": "One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms",
+      "says": {
+        "feature": "takes",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`over` builds a library function from a schema for each argument",
+      "says": {
+        "feature": "over",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "The code grew by 62 lines",
+      "says": {
+        "measured": "core-code-lines-added",
+        "after": 62,
+        "area": "metrics"
+      }
+    }
+  ]
+}

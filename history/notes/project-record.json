@@ -1,0 +1,357 @@
+{
+  "claims": [
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "feature": "string/slice",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "feature": "array/slice",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "string-slice-end",
+        "is": "exclusive",
+        "area": "library",
+        "follows": "javascript"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "string-slice-negative-position",
+        "is": "from-end",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "array-slice-negative-position",
+        "is": "from-end",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "slice-position-past-end",
+        "is": "stops-at-end",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "slice-without-end",
+        "is": "runs-to-end",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "string-slice-cut-then-join",
+        "is": "same-text",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "slice-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/slice\", text, start, end]` and `[\"array/slice\", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `[\"string/slice\", \"lionlang\", 0, 4]` is `\"lion\"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "behavior": "slice-wrong-arity",
+        "is": "error",
+        "area": "library"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "feature": "project-record",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "decision": "project-record-form",
+        "chose": "lion-model-of-git-history",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "project-record-entries",
+        "is": "plain-json-files",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "project-record-git-facts",
+        "is": "commits-parents-tags-added-files",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "change-shipped-in-release",
+        "is": "oldest-release-reaching-every-commit",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "feature": "decisions-md",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "changelog-md-written-by",
+        "is": "lion-expressions",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "decisions-md-written-by",
+        "is": "lion-expressions",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "feature": "bun-run-history-write",
+        "kind": "command",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "feature": "bun-run-history-check",
+        "kind": "command",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-unrecorded-feat-or-fix-commit",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-quote-not-in-cited-commit",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-breaking-change-without-decision",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-version-not-rising",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-tag-on-wrong-commit",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-page-out-of-date",
+        "is": "fails",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "behavior": "history-check-in-tests-and-ci",
+        "is": "runs",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything.",
+      "says": {
+        "feature": "bun-run-history-ask",
+        "kind": "command",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "project-record-backfilled",
+        "is": "from-git",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "backfilled-changelog-entry-release",
+        "is": "release-written-under",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "changelog-core-0-1-0-section",
+        "is": "present",
+        "area": "record",
+        "was": "absent"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "changelog-core-0-1-1-section",
+        "is": "present",
+        "area": "record",
+        "was": "absent"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "changelog-core-0-2-0-cli-package",
+        "is": "listed",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "decisions-cite-commit-messages",
+        "is": "quoted",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    },
+    {
+      "quote": "The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded.",
+      "says": {
+        "behavior": "feat-and-fix-commits-recorded",
+        "is": "all",
+        "area": "record"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion"]
+    }
+  ]
+}

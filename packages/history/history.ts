@@ -1,29 +1,19 @@
 /**
- * The project record's command line.
+ * The command line of the model of Lion's development.
  *
- *   bun run history write          write the pages history/outputs.json names
- *   bun run history check          fail when a check finds something, or a page is out of date
- *   bun run history ask <lion>     evaluate a Lion expression, or a file holding one, against the record
- *   bun run history sources        write the text of every commit for the research in history/research
- *   bun run history probe          run the probes in history/research/probes.json on Lion as it is now
- *   bun run history research       build the research model and its page, and say what it finds
- *   bun run history query <lion>   evaluate a Lion expression, or a file holding one, against the research model
+ *   bun run history write          build the model and write every page history/outputs.json names
+ *   bun run history check          build the model, and fail when a check finds something or a page is out of date
+ *   bun run history ask <lion>     evaluate a Lion expression, or a file holding one, against the model
  */
 import { existsSync, readFileSync } from "node:fs";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { stdlib } from "@lionlang/core/modules";
 import { Cause, Effect, Exit } from "effect";
-import {
-  buildResearch,
-  findingsOf,
-  queryResearch,
-} from "./src/build-research.ts";
-import { readHistory } from "./src/git.ts";
-import { checkRecord, writePages } from "./src/pages.ts";
-import { writeObservations } from "./src/probes.ts";
-import { ask, REPOSITORY, readSources, type Sources } from "./src/record.ts";
-import { publishedOf, RESEARCH, writeCommitSources } from "./src/research.ts";
+import { buildModel, savedModel } from "./src/model.ts";
+import { checkModel, pagesOf, writePages } from "./src/pages.ts";
+import { REPOSITORY } from "./src/record.ts";
 
-const USAGE =
-  "Usage: bun run history write | check | sources | probe | research | ask <expression or file> | query <expression or file>";
+const USAGE = "Usage: bun run history write | check | ask <expression or file>";
 
 /** What a command printed, and whether it succeeded. */
 interface Outcome {
@@ -38,83 +28,50 @@ const expressionOf = (argument: string): unknown =>
 
 const COMMANDS: Record<
   string,
-  (sources: Sources, argument?: string) => Effect.Effect<Outcome, unknown>
+  (argument?: string) => Effect.Effect<Outcome, unknown>
 > = {
-  ask: (sources, argument) =>
+  ask: (argument) =>
     argument === undefined
       ? Effect.succeed({ ok: false, text: USAGE })
-      : Effect.map(ask(sources, expressionOf(argument)), (value) => ({
-          ok: true,
-          text: JSON.stringify(value, null, 2),
-        })),
-  query: (_sources, argument) =>
-    argument === undefined
-      ? Effect.succeed({ ok: false, text: USAGE })
-      : Effect.map(
-          queryResearch(REPOSITORY, expressionOf(argument)),
-          (value) => ({ ok: true, text: JSON.stringify(value, null, 2) })
-        ),
-  check: (sources) =>
-    Effect.map(checkRecord(sources), ({ ok, text }) => ({ ok, text })),
-  probe: () => {
-    const [head] = readHistory(REPOSITORY, "history").commits;
-    return Effect.map(
-      writeObservations(REPOSITORY, head === undefined ? 0 : publishedOf(head)),
-      (observations) => ({
-        ok: true,
-        text: `ran ${observations.length} probes into ${RESEARCH}/notes/20-runs.json`,
-      })
-    );
-  },
-  research: () =>
+      : Effect.gen(function* () {
+          const database = yield* savedModel(REPOSITORY);
+          const value = yield* run(expressionOf(argument) as never, stdlib, {
+            database,
+          });
+          return { ok: true, text: JSON.stringify(value, null, 2) };
+        }),
+  check: () =>
     Effect.gen(function* () {
-      const built = yield* buildResearch(REPOSITORY);
-      const found = yield* findingsOf(built.database);
-      const line = (finding: { assumption: string; witness: unknown }) =>
-        `    ${finding.assumption}: ${JSON.stringify(finding.witness)}`;
-      const section = (
-        title: string,
-        findings: readonly { assumption: string; witness: unknown }[]
-      ) => (findings.length === 0 ? [] : [title, ...findings.map(line)]);
-      const lines = [
-        ...built.problems.map((problem) => `✗ ${problem}`),
-        ...section(
-          `✗ New findings: list each in ${RESEARCH}/known.json with a note, or settle it (${found.fresh.length})`,
-          found.fresh
-        ),
-        ...section(
-          `✗ Listed findings the model no longer finds: remove them from known.json or accepted.json (${found.stale.length})`,
-          found.stale
-        ),
-        `• ${found.known.length} known findings wait for a decision, ${found.accepted.length} are accepted, ${found.unread.length} commits are not read yet`,
-        `${built.steps.length} steps built ${RESEARCH}/model.json`,
-      ];
+      const built = yield* buildModel(REPOSITORY);
+      const { ok, text } = yield* checkModel(built, REPOSITORY);
+      return { ok, text };
+    }),
+  write: () =>
+    Effect.gen(function* () {
+      const built = yield* buildModel(REPOSITORY);
+      if (built.problems.length > 0) {
+        const { text } = yield* checkModel(built, REPOSITORY, {});
+        return {
+          ok: false,
+          text: `${text}\nNo page was written: the model is missing the notes above.`,
+        };
+      }
+      const pages = yield* pagesOf(built.database, REPOSITORY);
+      const written = writePages(pages, REPOSITORY);
+      const { ok, text } = yield* checkModel(built, REPOSITORY, pages);
       return {
-        ok:
-          built.problems.length === 0 &&
-          found.fresh.length === 0 &&
-          found.stale.length === 0,
-        text: lines.join("\n"),
+        ok,
+        text: [...written.map((page) => `wrote ${page}`), text].join("\n"),
       };
     }),
-  sources: () =>
-    Effect.sync(() => ({
-      ok: true,
-      text: `wrote ${writeCommitSources(REPOSITORY)} commits to ${RESEARCH}/sources and ${RESEARCH}/notes/02-commits.json`,
-    })),
-  write: (sources) =>
-    Effect.map(writePages(sources), (pages) => ({
-      ok: true,
-      text: pages.map((page) => `wrote ${page}`).join("\n"),
-    })),
 };
 
 const [command = "", argument] = process.argv.slice(2);
-const run = COMMANDS[command];
+const chosen = COMMANDS[command];
 const exit = await Effect.runPromiseExit(
-  run === undefined
+  chosen === undefined
     ? Effect.succeed({ ok: false, text: USAGE })
-    : run(readSources(REPOSITORY), argument)
+    : chosen(argument)
 );
 
 if (Exit.isSuccess(exit)) {

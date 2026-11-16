@@ -1,0 +1,156 @@
+{
+  "title": "Where the behavior of a base form is unclear, Lion does what Scheme does",
+  "context": "Lion is a Lisp, and some of its base forms left open what Scheme and Racket settle. `and` and `or` evaluated every argument, so `[\"and\", false, [\"number/divide\", 1, 0]]` was an error instead of `false`. Later, when every library function came to say how many arguments it takes, functions such as `number/add` needed an answer to how many that is.",
+  "decision": "Where a base form's behavior is unclear, Lion follows Scheme and Racket, and AGENTS.md states that Lion's semantics are approximately those of Scheme and Racket, plus the logic layer. `and` and `or` stop at the first argument that decides them, as in Scheme, so `[\"and\", false, [\"number/divide\", 1, 0]]` is `false`. `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do. `string/join` takes a string to put before the last item, as `#:before-last` does in Racket.",
+  "consequences": "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there. `[\"number/add\", 1, 2, 3]` is 6. The match is approximate: the logic layer comes on top, so once an argument of `and` or `or` is a goal, they combine goals.",
+  "alternatives": [
+    {
+      "option": "Evaluate every argument of `and` and `or`, as Lion did before 0.6.0",
+      "rejected": "An argument after the one that decides the result could still fail, so `[\"and\", false, [\"number/divide\", 1, 0]]` was an error instead of `false`."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "aef67af",
+      "quote": "and/or stop at the first argument that decides them, as in Scheme"
+    },
+    "500bac2",
+    {
+      "commit": "356e74a",
+      "quote": "combine one or more arguments from left to right, as their Scheme counterparts do"
+    },
+    {
+      "commit": "841b511",
+      "quote": "with a string before the last item, as #:before-last in Racket"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Where a base form's behavior is unclear, Lion follows Scheme and Racket",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Where a base form's behavior is unclear, Lion does what Scheme and Racket do",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "and-after-false",
+            "is": "not-evaluated"
+          },
+          {
+            "behavior": "add-more-than-two-arguments",
+            "is": "sum"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "forms",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "combine one or more arguments from left to right, as their Scheme counterparts do",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "sum",
+        "area": "library",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "Where a base form's behavior is unclear, Lion follows Scheme and Racket",
+      "says": {
+        "decision": "unclear-base-form-behavior",
+        "chose": "follow-scheme-racket",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme, so `[\"and\", false, [\"number/divide\", 1, 0]]` is `false`.",
+      "says": {
+        "decision": "and-or-evaluation",
+        "chose": "short-circuit",
+        "over": ["evaluate-all"],
+        "because": "as in Scheme; an argument after the one that decides the result could still fail",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "combine one or more arguments from left to right, as their Scheme counterparts do",
+      "says": {
+        "decision": "combining-function-arity",
+        "chose": "one-or-more",
+        "area": "library",
+        "because": "as their Scheme counterparts do"
+      }
+    },
+    {
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme",
+      "says": {
+        "behavior": "or-after-true",
+        "is": "not-evaluated",
+        "area": "forms",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there.",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "forms",
+        "breaking": true,
+        "was": "evaluated"
+      }
+    },
+    {
+      "quote": "`and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there.",
+      "says": {
+        "behavior": "or-after-true",
+        "is": "not-evaluated",
+        "area": "forms",
+        "breaking": true,
+        "was": "evaluated"
+      }
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do.",
+      "says": {
+        "behavior": "combining-functions-several-arguments",
+        "is": "combine-left-to-right",
+        "area": "library",
+        "follows": "scheme"
+      }
+    },
+    {
+      "quote": "`string/join` takes a string to put before the last item, as `#:before-last` does in Racket.",
+      "says": {
+        "behavior": "string-join-before-last",
+        "is": "before-last-string",
+        "area": "library",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "`string/join` takes a string to put before the last item",
+      "says": {
+        "feature": "string/join",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "once an argument of `and` or `or` is a goal, they combine goals",
+      "says": {
+        "behavior": "goal-in-and",
+        "is": "kept",
+        "area": "logic"
+      }
+    }
+  ]
+}

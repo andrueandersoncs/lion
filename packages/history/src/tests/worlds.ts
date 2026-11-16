@@ -1,18 +1,25 @@
 /**
  * Generated histories for the record's properties, and a plain TypeScript
- * model of what the rules in `history/core.json` derive from them.
+ * model of what the rules derive from them.
  *
- * A world is a graph of commits, merges among them, and the entry files of a
- * record: releases at commits, changes made by commits, and decisions that
- * cite commits, quote their messages, and supersede each other. The model
- * reads the same world with sets and loops.
+ * A world is a graph of commits, merges among them, releases at commits, and
+ * notes files of claims: some said by their own file, some quoting a commit,
+ * some naming the commits that made them, and some in a decision record. The
+ * model reads the same world with sets and loops.
  */
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Arbitrary, Schema } from "effect";
-import { type Commit, WORKING_TREE } from "../git.ts";
-import { formsOf, REPOSITORY, type Sources } from "../record.ts";
+import { type Commit, publishedOf, WORKING_TREE } from "../git.ts";
+import {
+  claimsOf,
+  formsOf,
+  type Notes,
+  programOf,
+  REPOSITORY,
+  type Sources,
+} from "../record.ts";
 
 export const RULES = formsOf(
   JSON.parse(
@@ -70,14 +77,8 @@ const SUBJECTS = [
   "refactor: move",
   "featured work on",
 ];
-export const KINDS = [
-  "Breaking",
-  "Added",
-  "Changed",
-  "Fixed",
-  "Documentation",
-  "Trial notes",
-];
+/** Headings a release's notes go under: some are sections, one is not. */
+export const NOTE_KINDS = ["Breaking", "Added", "Fixed", "Trial notes"];
 const NAMES = ["@lionlang/core", "@lionlang/cli", "a skill"];
 const VERSIONS = ["0.1.0", "0.2.0", "0.10.0"];
 
@@ -86,23 +87,35 @@ const sentence = Arbitrary.map(
   (words) => words.join(" ")
 );
 
+/**
+ * Words a claim says. There are few, so one file often says several things
+ * in the same words, and they hold what HTML gives a meaning to.
+ */
+const SAID_WORDS = [
+  "adds lists",
+  "drops <old> & keeps <new>",
+  "it does what Scheme does",
+  'a "quoted" rule',
+];
+
 export interface Ref {
   readonly commit: string;
   readonly quote?: string;
 }
 
-export interface ChangeItem {
+export interface NoteClaim {
   readonly commits?: readonly Ref[];
   readonly decisions?: readonly string[];
-  readonly internal?: string;
-  readonly kind?: string;
-  readonly text?: string;
+  readonly quote: string;
+  readonly says: Readonly<Record<string, unknown>>;
+  /** A commit's hash, when the claim quotes the commit. */
+  readonly source?: string;
 }
 
-export interface DecisionFile {
-  readonly commits?: readonly Ref[];
-  readonly id: string;
-  readonly supersedes?: readonly string[];
+export interface NotesFile {
+  readonly claims: readonly NoteClaim[];
+  /** A decision record has a title and its prose. */
+  readonly title?: string;
 }
 
 export interface ReleaseFile {
@@ -120,15 +133,14 @@ export interface ReleaseFile {
 export interface World {
   /** Each file's commit, as an index into `commits`, or -1 for the working tree. */
   readonly added: Readonly<Record<string, number>>;
-  readonly changes: Readonly<Record<string, readonly ChangeItem[]>>;
   readonly commits: readonly Commit[];
-  readonly decisions: Readonly<Record<string, DecisionFile>>;
+  readonly notes: Readonly<Record<string, NotesFile>>;
   readonly releases: Readonly<Record<string, ReleaseFile>>;
   readonly tags: readonly { readonly commit: string; readonly name: string }[];
 }
 
 interface Options {
-  /** Only references that name one commit, and decisions that exist. */
+  /** Only references that name one commit, and records that exist. */
   readonly clean: boolean;
 }
 
@@ -192,34 +204,123 @@ const ref = (commits: readonly Commit[], options: Options) =>
   );
 
 const refs = (commits: readonly Commit[], options: Options) =>
-  Arbitrary.array(ref(commits, options), { maxLength: 3 });
+  Arbitrary.array(ref(commits, options), { maxLength: 2, minLength: 1 });
 
-const DECISION_IDS = ["d0", "d1", "d2"];
+/** A statement of one of the five kinds, with values that make one question meet another. */
+const says: Arbitrary.Arbitrary<Record<string, unknown>> = Arbitrary.flatMap(
+  int(0, 4),
+  (kind): Arbitrary.Arbitrary<Record<string, unknown>> => {
+    if (kind === 0) {
+      return Arbitrary.map(
+        Arbitrary.all([pick(["f0", "f1"]), boolean, boolean]),
+        ([feature, present, page]) => ({
+          feature,
+          kind: page ? "page" : "function",
+          present,
+        })
+      );
+    }
+    if (kind === 1) {
+      return Arbitrary.map(
+        Arbitrary.all([
+          pick(["c0", "c1"]),
+          pick(["v0", "v1"]),
+          int(0, 3),
+          pick(["library", "docs"]),
+        ]),
+        ([behavior, is, flag, area]) => ({
+          area,
+          behavior,
+          is,
+          ...(flag === 0 ? { breaking: true, was: "v2" } : {}),
+          ...(flag === 1 ? { fixes: true } : {}),
+        })
+      );
+    }
+    if (kind === 2) {
+      return Arbitrary.map(
+        Arbitrary.all([pick(["r0", "r1"]), boolean, sentence]),
+        ([rule, holds, statement]) => ({
+          area: "logic",
+          holds,
+          rule,
+          statement,
+        })
+      );
+    }
+    if (kind === 3) {
+      return Arbitrary.map(
+        Arbitrary.all([pick(["t0", "t1", "t2"]), pick(["a", "b"])]),
+        ([decision, chose]) => ({
+          area: "logic",
+          chose,
+          decision,
+          over: [chose === "a" ? "b" : "a"],
+        })
+      );
+    }
+    return Arbitrary.map(int(0, 9), (after) => ({
+      after,
+      area: "metrics",
+      measured: "m0",
+    }));
+  }
+);
+
+const RECORD_IDS = ["d0", "d1", "d2"];
 
 export const world = (options: Options = { clean: false }) =>
   Arbitrary.flatMap(graph, (commits) => {
     const files = int(-1, commits.length - 1);
-    const decisionIds = options.clean
-      ? DECISION_IDS
-      : [...DECISION_IDS, "gone"];
-    const change = Arbitrary.map(
+    const recordIds = options.clean ? RECORD_IDS : [...RECORD_IDS, "gone"];
+    const claim = Arbitrary.map(
       Arbitrary.all([
-        pick(KINDS),
-        sentence,
+        pick(SAID_WORDS),
+        says,
+        option(pick(commits)),
         option(refs(commits, options)),
-        option(someOf(decisionIds)),
-        int(0, 4),
+        option(someOf(recordIds)),
       ]),
-      ([kind, text, commitRefs, decisions, form]): ChangeItem =>
-        form === 0
-          ? { commits: commitRefs ?? [], internal: text }
-          : {
-              kind,
-              text,
-              ...(commitRefs === undefined ? {} : { commits: commitRefs }),
-              ...(decisions === undefined ? {} : { decisions }),
-            }
+      ([quote, statement, quoted, named, follows]): NoteClaim => ({
+        quote,
+        says: statement,
+        ...(quoted === undefined ? {} : { source: quoted.hash }),
+        ...(named === undefined ? {} : { commits: named }),
+        ...(follows === undefined || follows.length === 0
+          ? {}
+          : { decisions: follows }),
+      })
     );
+    const notesFile = Arbitrary.map(
+      Arbitrary.array(claim, { maxLength: 4, minLength: 1 }),
+      (claims): NotesFile => ({ claims })
+    );
+    const record = (id: string) =>
+      Arbitrary.map(
+        Arbitrary.all([
+          Arbitrary.array(claim, { maxLength: 3, minLength: 1 }),
+          options.clean ? Arbitrary.Constant(true) : boolean,
+          pick(["t0", "t1", "t2"]),
+          pick(["a", "b"]),
+        ]),
+        ([claims, decides, topic, chose]): NotesFile => ({
+          claims: decides
+            ? [
+                {
+                  quote: `Decision ${id}`,
+                  says: {
+                    area: "logic",
+                    chose,
+                    decision: topic,
+                    over: [chose === "a" ? "b" : "a"],
+                  },
+                },
+                ...claims,
+              ]
+            : claims,
+          title: `Decision ${id}`,
+        })
+      );
     const release = Arbitrary.map(
       Arbitrary.all([
         Arbitrary.array(
@@ -235,13 +336,11 @@ export const world = (options: Options = { clean: false }) =>
         option(pick(commits)),
         option(sentence),
         option(
-          Arbitrary.array(Arbitrary.all([pick(KINDS), sentence]), {
+          Arbitrary.array(Arbitrary.all([pick(NOTE_KINDS), sentence]), {
             maxLength: 2,
           })
         ),
-        Arbitrary.schema(
-          Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 4 }))
-        ),
+        int(0, 4),
       ]),
       ([ships, at, summary, notes, draft]): ReleaseFile => ({
         ...(draft === 0 ? { draft: true as const } : {}),
@@ -255,69 +354,30 @@ export const world = (options: Options = { clean: false }) =>
           : { notes: notes.map(([kind, text]) => ({ kind, text })) }),
       })
     );
-    const decision = (id: string) =>
-      Arbitrary.map(
-        Arbitrary.all([option(refs(commits, options)), someOf(decisionIds)]),
-        ([commitRefs, supersedes]): DecisionFile => ({
-          id,
-          ...(commitRefs === undefined ? {} : { commits: commitRefs }),
-          ...(supersedes.filter((old) => old !== id).length === 0
-            ? {}
-            : { supersedes: supersedes.filter((old) => old !== id) }),
-        })
-      );
     return Arbitrary.map(
       Arbitrary.all([
-        Arbitrary.array(
-          Arbitrary.array(change, { maxLength: 3, minLength: 1 }),
-          { maxLength: 3 }
-        ),
+        Arbitrary.array(notesFile, { maxLength: 3 }),
+        Arbitrary.all(RECORD_IDS.map((id) => option(record(id)))),
         Arbitrary.array(release, { maxLength: 3 }),
-        Arbitrary.all(DECISION_IDS.map((id) => option(decision(id)))),
         Arbitrary.array(files, { maxLength: 12, minLength: 12 }),
         Arbitrary.array(
           Arbitrary.all([pick(NAMES), pick(VERSIONS), pick(commits)]),
           { maxLength: 3 }
         ),
       ]),
-      ([changeLists, releaseList, decisionList, addedAt, tagList]): World => {
-        const held = new Set(
-          decisionList.flatMap((d) => (d === undefined ? [] : [d.id]))
-        );
-        const known = (ids: readonly string[]) =>
-          options.clean ? ids.filter((id) => held.has(id)) : ids;
-        const changes = Object.fromEntries(
-          changeLists.map((list, at) => [
-            `history/changes/c${at}.json`,
-            list.map((item) =>
-              item.decisions === undefined
-                ? item
-                : { ...item, decisions: known(item.decisions) }
-            ),
-          ])
-        );
+      ([plain, records, releaseList, addedAt, tagList]): World => {
+        const notes: Record<string, NotesFile> = Object.fromEntries([
+          ...plain.map((file, at) => [`history/notes/n${at}.json`, file]),
+          ...records.flatMap((file, at) =>
+            file === undefined
+              ? []
+              : [[`history/notes/${RECORD_IDS[at]}.json`, file]]
+          ),
+        ]);
         const releases = Object.fromEntries(
           releaseList.map((data, at) => [`history/releases/r${at}.json`, data])
         );
-        const decisions = Object.fromEntries(
-          decisionList.flatMap((data) =>
-            data === undefined
-              ? []
-              : [
-                  [
-                    `history/decisions/${data.id}.json`,
-                    data.supersedes === undefined
-                      ? data
-                      : { ...data, supersedes: known(data.supersedes) },
-                  ],
-                ]
-          )
-        );
-        const paths = [
-          ...Object.keys(changes),
-          ...Object.keys(releases),
-          ...Object.keys(decisions),
-        ];
+        const paths = [...Object.keys(notes), ...Object.keys(releases)];
         const added = Object.fromEntries(
           paths.map((path, at) => [path, addedAt[at] ?? -1])
         );
@@ -329,12 +389,34 @@ export const world = (options: Options = { clean: false }) =>
             ])
           ).values(),
         ];
-        return { added, changes, commits, decisions, releases, tags };
+        return { added, commits, notes, releases, tags };
       }
     );
   });
 
 const day = "2026-02-01";
+
+const refData = (r: Ref) =>
+  r.quote === undefined ? r.commit : { commit: r.commit, quote: r.quote };
+
+/** A notes file as its JSON holds it. */
+export const notesData = (file: NotesFile): Notes => ({
+  ...(file.title === undefined
+    ? {}
+    : {
+        consequences: "What follows.",
+        context: "Why it came up.",
+        decision: "What it decides.",
+        title: file.title,
+      }),
+  claims: file.claims.map((c) => ({
+    quote: c.quote,
+    says: c.says,
+    ...(c.source === undefined ? {} : { source: c.source }),
+    ...(c.commits === undefined ? {} : { commits: c.commits.map(refData) }),
+    ...(c.decisions === undefined ? {} : { decisions: c.decisions }),
+  })),
+});
 
 /** The world as what the record is built from. */
 export const sourcesOf = (w: World): Sources => {
@@ -346,34 +428,14 @@ export const sourcesOf = (w: World): Sources => {
     parents: last === undefined ? [] : [last.hash],
     time: 5000,
   };
-  const decisionData = (d: DecisionFile) => ({
-    alternatives: [{ option: `not ${d.id}`, rejected: "it was not chosen" }],
-    consequences: `What follows from ${d.id}.`,
-    context: `Why ${d.id} came up.`,
-    decision: `What ${d.id} decides.`,
-    id: d.id,
-    title: `Decision ${d.id}`,
-    ...(d.commits === undefined ? {} : { commits: d.commits.map(refData) }),
-    ...(d.supersedes === undefined ? {} : { supersedes: d.supersedes }),
-  });
-  const entries = [
-    ...Object.entries(w.changes).map(([path, list]) => ({
-      data: list.map((item) => ({
-        ...item,
-        ...(item.commits === undefined
-          ? {}
-          : { commits: item.commits.map(refData) }),
-      })),
-      path,
-    })),
-    ...Object.entries(w.releases).map(([path, data]) => ({ data, path })),
-    ...Object.entries(w.decisions).map(([path, d]) => ({
-      data: decisionData(d),
-      path,
-    })),
-  ];
   return {
-    entries,
+    entries: [
+      ...Object.entries(w.notes).map(([path, file]) => ({
+        data: notesData(file),
+        path,
+      })),
+      ...Object.entries(w.releases).map(([path, data]) => ({ data, path })),
+    ].sort((a, b) => (a.path < b.path ? -1 : 1)),
     history: {
       added: new Map(
         Object.entries(w.added).map(([path, at]) => [
@@ -388,7 +450,48 @@ export const sourcesOf = (w: World): Sources => {
   };
 };
 
-const refData = (r: Ref) => (r.quote === undefined ? r.commit : r);
+const stepForms = (path: string) =>
+  formsOf(JSON.parse(readFileSync(join(REPOSITORY, path), "utf8")) as unknown);
+
+/** The research's rules: the skill's core, the frame, its links, and its findings. */
+const RESEARCH_RULES = {
+  core: stepForms("skills/lion-research/assets/core.json"),
+  findings: stepForms("history/research/steps/06-findings.src.json"),
+  frame: stepForms("history/research/steps/01-frame.src.json"),
+  links: stepForms("history/research/steps/05-links.src.json"),
+};
+
+/**
+ * The model of a world's development, as `bun run history write` builds it
+ * from the steps in order: the research's core and frame, every commit as a
+ * source, the record with every claim, the links and findings, and then
+ * `expression`.
+ */
+export const modelProgramOf = (w: World, expression: unknown): unknown => {
+  const record = (programOf(sourcesOf(w), null) as unknown[]).slice(1, -1);
+  const quoted = (value: unknown) => ["quote", value];
+  const sources = w.commits.map((c) => [
+    "source",
+    ...[
+      c.hash,
+      `https://example.com/commit/${c.hash}`,
+      c.message.split("\n")[0] ?? "",
+      "Lion repository",
+      "primary",
+      publishedOf(c),
+    ].map(quoted),
+  ]);
+  return [
+    "begin",
+    ...RESEARCH_RULES.core,
+    ...RESEARCH_RULES.frame,
+    ...(sources.length === 0 ? [] : [["fact", ...sources]]),
+    ...record,
+    ...RESEARCH_RULES.links,
+    ...RESEARCH_RULES.findings,
+    expression,
+  ];
+};
 
 // ------------------------------------------------------------------ the model
 
@@ -400,88 +503,60 @@ const words = (text: string) =>
     .filter((word) => word !== "")
     .join(" ");
 
-export interface Derived {
-  ambiguous: string[];
-  backwards: string[];
-  inEffectFrom: string[];
-  inForce: string[];
-  misquoted: string[];
-  mistagged: string[];
-  regressed: string[];
-  repeatedVersion: string[];
-  sharedCommit: string[];
-  shipped: string[];
-  unaccounted: string[];
-  unjustified: string[];
-  unknownDecision: string[];
-  unreleased: string[];
-  unresolved: string[];
-  untagged: string[];
-}
-
-interface Entry {
-  readonly data: ChangeItem | DecisionFile | ReleaseFile;
+/** A claim of the world, as the record holds it. */
+export interface Claimed {
+  readonly follows: readonly string[];
   readonly id: string;
-  readonly index: number;
-  readonly kind: "change" | "decision" | "internal" | "release";
+  readonly named: readonly Ref[];
   readonly path: string;
+  readonly quote: string;
+  readonly says: Readonly<Record<string, unknown>>;
+  readonly source: string;
 }
 
-export const entriesOf = (w: World): Entry[] => [
-  ...Object.entries(w.changes).flatMap(([path, list]) =>
-    list.map((data, index) => ({
-      data,
-      id: `${path}#${index}`,
-      index,
-      kind:
-        data.internal === undefined
-          ? ("change" as const)
-          : ("internal" as const),
+/** Every claim of the world, with its id and source filled in as the record fills them. */
+export const claimsOfWorld = (w: World): Claimed[] =>
+  Object.entries(w.notes).flatMap(([path, file]) =>
+    claimsOf(path, notesData(file)).map((c, at) => ({
+      follows: c.decisions ?? [],
+      id: c.id,
+      named: file.claims[at]?.commits ?? [],
       path,
+      quote: c.quote,
+      says: c.says as Record<string, unknown>,
+      source: c.source,
     }))
-  ),
-  ...Object.entries(w.releases).map(([path, data]) => ({
-    data,
-    id: path,
-    index: 0,
-    kind: "release" as const,
-    path,
-  })),
-  ...Object.entries(w.decisions).map(([path, data]) => ({
-    data,
-    id: path,
-    index: 0,
-    kind: "decision" as const,
-    path,
-  })),
-];
+  );
 
-/** What the rules derive, each row written as text so rows compare as sets. */
-export const model = (w: World): Derived => {
+/**
+ * The commit graph of a world as the model reads it: what made each claim,
+ * what each release contains, and which release comes before which.
+ */
+export const graphOf = (w: World) => {
   const all = [...sourcesOf(w).history.commits];
   const byHash = new Map(all.map((c) => [c.hash, c]));
   const resolve = (prefix: string) =>
     all
       .filter((c) => c.hash !== WORKING_TREE && c.hash.startsWith(prefix))
       .map((c) => c.hash);
-  const entries = entriesOf(w);
-  const namesOf = (e: Entry): Ref[] => {
-    if (e.kind !== "release") {
-      return [...((e.data as ChangeItem | DecisionFile).commits ?? [])];
-    }
-    const { commit } = e.data as ReleaseFile;
-    return commit === undefined ? [] : [{ commit }];
-  };
   const addedCommit = (path: string) => {
     const at = w.added[path] ?? -1;
     return at < 0 ? WORKING_TREE : (w.commits[at]?.hash ?? WORKING_TREE);
   };
-  const madeBy = (e: Entry) => {
-    const names = namesOf(e);
-    return names.length === 0
-      ? new Set([addedCommit(e.path)])
-      : new Set(names.flatMap((r) => resolve(r.commit)));
+  const claims = claimsOfWorld(w);
+  const commitHashes = new Set(w.commits.map((c) => c.hash));
+  /** What made a claim: the commits it names; else the commit it quotes; else the commit that added its file. */
+  const madeBy = (c: Claimed) => {
+    if (c.named.length > 0) {
+      return new Set(c.named.flatMap((r) => resolve(r.commit)));
+    }
+    if (commitHashes.has(c.source)) {
+      return new Set([c.source]);
+    }
+    return new Set([addedCommit(c.path)]);
   };
+  const releaseNames = (data: ReleaseFile) =>
+    data.commit === undefined ? [] : [data.commit];
   const ancestors = (hash: string) => {
     const seen = new Set<string>();
     const stack = [hash];
@@ -494,14 +569,24 @@ export const model = (w: World): Derived => {
     }
     return seen;
   };
-  const releases = entries.filter(
-    (e) => e.kind === "release" && (e.data as ReleaseFile).draft !== true
+  const releases = Object.entries(w.releases)
+    .filter(([, data]) => data.draft !== true)
+    .map(([path, data]) => ({ data, path }));
+  const at = new Map(
+    releases.map((r) => {
+      const names = releaseNames(r.data);
+      return [
+        r.path,
+        names.length === 0
+          ? [addedCommit(r.path)]
+          : names.flatMap((prefix) => resolve(prefix)),
+      ];
+    })
   );
-  const at = new Map(releases.map((r) => [r.id, [...madeBy(r)]]));
   const contains = new Map(
     releases.map((r) => [
-      r.id,
-      new Set((at.get(r.id) ?? []).flatMap((c) => [...ancestors(c)])),
+      r.path,
+      new Set((at.get(r.path) ?? []).flatMap((c) => [...ancestors(c)])),
     ])
   );
   const before = (r1: string, r2: string) =>
@@ -510,70 +595,301 @@ export const model = (w: World): Derived => {
         (c2) => c1 !== c2 && (contains.get(r2)?.has(c1) ?? false)
       )
     );
-  const covers = (r: string, e: Entry) =>
-    e.kind !== "release" &&
-    [...madeBy(e)].every((c) => contains.get(r)?.has(c) ?? false);
-  const shipped = entries.flatMap((e) =>
+  const covers = (r: string, c: Claimed) => {
+    const made = [...madeBy(c)];
+    return (
+      made.length > 0 && made.every((h) => contains.get(r)?.has(h) ?? false)
+    );
+  };
+  const shipped = (c: Claimed) =>
     releases
-      .filter((r) => covers(r.id, e))
+      .filter((r) => covers(r.path, c))
       .filter(
-        (r) => !releases.some((r0) => covers(r0.id, e) && before(r0.id, r.id))
+        (r) =>
+          !releases.some((r0) => covers(r0.path, c) && before(r0.path, r.path))
       )
-      .map((r) => `${e.id} ${r.id}`)
+      .map((r) => r.path);
+  const head = [...w.commits].sort((a, b) => b.time - a.time)[0];
+  /**
+   * When a claim was said: when its source commit was made; else, for a
+   * claim its file says, when the last commit it names was made, or the
+   * commit that added its file, just after the head for the working tree.
+   */
+  const published = (c: Claimed) => {
+    if (commitHashes.has(c.source)) {
+      const commit = byHash.get(c.source);
+      return commit === undefined ? 0 : publishedOf(commit);
+    }
+    const named = c.named.flatMap((r) => resolve(r.commit));
+    const made = named.length > 0 ? named : [addedCommit(c.path)];
+    return Math.max(
+      ...made.map((hash) => {
+        const commit = byHash.get(hash);
+        return hash === WORKING_TREE || commit === undefined
+          ? (head === undefined ? 0 : publishedOf(head)) + 1
+          : publishedOf(commit);
+      })
+    );
+  };
+  const firstTime = (c: Claimed) =>
+    Math.min(
+      ...[...madeBy(c)].map(
+        (h) => byHash.get(h)?.time ?? Number.POSITIVE_INFINITY
+      )
+    );
+  return {
+    all,
+    at,
+    before,
+    byHash,
+    claims,
+    contains,
+    covers,
+    firstTime,
+    madeBy,
+    published,
+    releases,
+    resolve,
+    shipped,
+  };
+};
+
+/** The question a claim answers, and its answer, as the frame's `answer` rules give them. */
+export const answerOf = (c: Claimed): [Record<string, unknown>, unknown] => {
+  const s = c.says;
+  if (typeof s.decision === "string") {
+    return [{ decision: s.decision }, s.chose];
+  }
+  if (typeof s.feature === "string") {
+    return [{ feature: s.feature }, s.present];
+  }
+  if (typeof s.behavior === "string") {
+    return [{ behavior: s.behavior }, s.is];
+  }
+  if (typeof s.rule === "string") {
+    return [{ rule: s.rule }, s.holds];
+  }
+  return [{ measured: s.measured, at: c.source }, s.after];
+};
+
+export const keyOf = (c: Claimed) => JSON.stringify(answerOf(c));
+
+/** Text in the order Lion sorts it. */
+export const textOrder = (a: string, b: string) =>
+  Number(a > b) - Number(a < b);
+
+/** The section an item goes under, as the pages give it. */
+export const sectionOf = (
+  question: Record<string, unknown>,
+  answer: unknown,
+  claims: readonly Claimed[]
+) => {
+  const any = (test: (s: Readonly<Record<string, unknown>>) => boolean) =>
+    claims.some((c) => test(c.says));
+  const docs = any(
+    (s) => s.area === "docs" || s.area === "site" || s.kind === "page"
   );
-  const changes = entries.filter((e) => e.kind === "change");
-  const unreleased = changes
-    .filter((e) => !releases.some((r) => covers(r.id, e)))
-    .map((e) => e.id);
+  if (typeof question.decision === "string") {
+    return "Decided";
+  }
+  if (typeof question.rule === "string") {
+    return "Rules";
+  }
+  if (typeof question.measured === "string") {
+    return "Figures";
+  }
+  if (typeof question.feature === "string") {
+    if (docs) {
+      return "Documentation";
+    }
+    return answer === true ? "Added" : "Removed";
+  }
+  if (any((s) => s.breaking === true)) {
+    return "Breaking";
+  }
+  if (any((s) => s.fixes === true)) {
+    return "Fixed";
+  }
+  return docs ? "Documentation" : "Changed";
+};
+
+export const SECTIONS = [
+  "Breaking",
+  "Added",
+  "Removed",
+  "Changed",
+  "Fixed",
+  "Documentation",
+  "Decided",
+  "Rules",
+  "Figures",
+];
+
+/** An item: a question with an answer, where it first shipped, and what the pages show of it. */
+export interface Item {
+  readonly key: string;
+  readonly releases: readonly string[];
+  readonly section: string;
+  readonly time: number;
+  readonly words: string;
+}
+
+/**
+ * Every item of a world: placed under the releases that first shipped a
+ * claim giving it, or under "next" when a commit or file made a claim of it
+ * that no release has shipped. Its words are those of the latest claim a note says itself, or else the latest claim made
+ * by a commit or file.
+ */
+export const itemsOf = (w: World): Item[] => {
+  const g = graphOf(w);
+  const groups = new Map<string, Claimed[]>();
+  for (const c of g.claims) {
+    groups.set(keyOf(c), [...(groups.get(keyOf(c)) ?? []), c]);
+  }
+  return [...groups].flatMap(([key, claims]) => {
+    const made = claims.filter((c) => g.madeBy(c).size > 0);
+    if (made.length === 0) {
+      return [];
+    }
+    const shippedIn = made.flatMap((c) => g.shipped(c));
+    const first = [...new Set(shippedIn)].filter(
+      (r) => !shippedIn.some((r0) => g.before(r0, r))
+    );
+    const own = made.filter((c) => c.source.startsWith("notes/"));
+    const latest = [...(own.length > 0 ? own : made)].sort(
+      (a, b) => g.published(a) - g.published(b) || textOrder(a.id, b.id)
+    );
+    const [question, answer] = answerOf(claims[0] as Claimed);
+    return [
+      {
+        key,
+        releases: first.length === 0 ? ["next"] : first,
+        section: sectionOf(question, answer, claims),
+        time: Math.min(...made.map(g.firstTime)),
+        words: (latest.at(-1) as Claimed).quote,
+      },
+    ];
+  });
+};
+
+/** The items under one release, as the pages order them in a section. */
+export const itemsUnder = (items: readonly Item[], release: string) =>
+  items
+    .filter((item) => item.releases.includes(release))
+    .sort((a, b) => a.time - b.time || textOrder(a.key, b.key));
+
+export interface Derived {
+  ambiguous: string[];
+  checked: string[];
+  misquoted: string[];
+  mistagged: string[];
+  regressed: string[];
+  repeatedVersion: string[];
+  sharedCommit: string[];
+  shipped: string[];
+  silent: string[];
+  unaccounted: string[];
+  undecidedRecord: string[];
+  unknownDecision: string[];
+  unreleased: string[];
+  unresolved: string[];
+  untagged: string[];
+}
+
+/**
+ * How a decision record's assertion stands. A world runs no probes of Lion,
+ * so an assertion is never checked by running it: it is stated while the
+ * repository's latest word on its question gives its answer, and replaced
+ * once a later word gives another.
+ */
+export const verdictOf = (g: ReturnType<typeof graphOf>, c: Claimed) => {
+  const question = JSON.stringify(answerOf(c)[0]);
+  const same = g.claims.filter(
+    (d) => JSON.stringify(answerOf(d)[0]) === question
+  );
+  const last = Math.max(...same.map(g.published));
+  return same.some((d) => g.published(d) === last && keyOf(d) === keyOf(c))
+    ? "stated"
+    : "replaced";
+};
+
+/** What the rules derive, each row written as text so rows compare as sets. */
+export const model = (w: World): Derived => {
+  const g = graphOf(w);
+  const records = Object.entries(w.notes)
+    .filter(([, file]) => file.title !== undefined)
+    .map(([path]) => path.slice("history/notes/".length, -".json".length));
+  const shipped = g.claims.flatMap((c) =>
+    g.shipped(c).map((r) => `${c.id} ${r}`)
+  );
+  const unreleased = g.claims
+    .filter((c) => g.madeBy(c).size > 0)
+    .filter((c) => !g.releases.some((r) => g.covers(r.path, c)))
+    .map((c) => c.id);
   const typeOf = (c: Commit) =>
     (
       ((c.message.split("\n")[0] ?? "").split(":")[0] ?? "").split("(")[0] ?? ""
     ).split("!")[0];
-  const made = new Set(entries.flatMap((e) => [...madeBy(e)]));
-  const unaccounted = all
+  const made = new Set([
+    ...g.claims.flatMap((c) => [...g.madeBy(c)]),
+    ...[...g.at.values()].flat(),
+    ...Object.entries(w.releases)
+      .filter(([, data]) => data.draft === true)
+      .flatMap(([path, data]) =>
+        data.commit === undefined
+          ? [
+              w.added[path] === undefined || (w.added[path] ?? -1) < 0
+                ? WORKING_TREE
+                : (w.commits[w.added[path] ?? -1]?.hash ?? WORKING_TREE),
+            ]
+          : g.resolve(data.commit)
+      ),
+  ]);
+  const unaccounted = g.all
     .filter(
       (c) => ["feat", "fix"].includes(typeOf(c) ?? "") && !made.has(c.hash)
     )
     .map((c) => c.hash);
-  const named = entries.flatMap((e) => namesOf(e).map((r) => ({ e, r })));
+  const named = [
+    ...g.claims.flatMap((c) => c.named.map((r) => ({ id: c.id, r }))),
+    ...Object.entries(w.releases).flatMap(([path, data]) =>
+      data.commit === undefined
+        ? []
+        : [{ id: path, r: { commit: data.commit } as Ref }]
+    ),
+  ];
   const unresolved = named
-    .filter(({ r }) => resolve(r.commit).length === 0)
-    .map(({ e, r }) => `${e.id} ${r.commit}`);
+    .filter(({ r }) => g.resolve(r.commit).length === 0)
+    .map(({ id, r }) => `${id} ${r.commit}`);
   const ambiguous = named
-    .filter(({ r }) => resolve(r.commit).length > 1)
-    .map(({ e, r }) => `${e.id} ${r.commit}`);
-  const misquoted = named.flatMap(({ e, r }) =>
+    .filter(({ r }) => g.resolve(r.commit).length > 1)
+    .map(({ id, r }) => `${id} ${r.commit}`);
+  const misquoted = named.flatMap(({ id, r }) =>
     r.quote === undefined
       ? []
-      : resolve(r.commit)
+      : g
+          .resolve(r.commit)
           .filter(
             (h) =>
-              !words(byHash.get(h)?.message ?? "").includes(
+              !words(g.byHash.get(h)?.message ?? "").includes(
                 words(r.quote as string)
               )
           )
-          .map((h) => `${e.id} ${h} ${r.quote}`)
+          .map((h) => `${id} ${h} ${r.quote}`)
   );
-  const decisions = Object.values(w.decisions);
-  const decidedIds = new Set(decisions.map((d) => d.id));
-  const supersededIds = new Set(decisions.flatMap((d) => d.supersedes ?? []));
-  const inForce = decisions
-    .map((d) => d.id)
-    .filter((id) => !supersededIds.has(id));
-  const unknownDecision = [
-    ...changes.flatMap((e) =>
-      ((e.data as ChangeItem).decisions ?? [])
-        .filter((id) => !decidedIds.has(id))
-        .map((id) => `${e.id} ${id}`)
-    ),
-    ...decisions.flatMap((d) =>
-      (d.supersedes ?? [])
-        .filter((id) => !decidedIds.has(id))
-        .map((id) => `history/decisions/${d.id}.json ${id}`)
-    ),
-  ];
-  const ships = releases.flatMap((r) =>
-    (r.data as ReleaseFile).ships.map((s) => ({ r: r.id, ...s }))
+  const unknownDecision = g.claims.flatMap((c) =>
+    c.follows.filter((id) => !records.includes(id)).map((id) => `${c.id} ${id}`)
+  );
+  const undecidedRecord = records.filter(
+    (id) =>
+      !g.claims.some(
+        (c) =>
+          c.path === `history/notes/${id}.json` &&
+          typeof c.says.decision === "string"
+      )
+  );
+  const ships = g.releases.flatMap((r) =>
+    r.data.ships.map((s) => ({ r: r.path, ...s }))
   );
   const rank = (v: string) =>
     v.split(".").reduce((total, part) => total * 1000 + Number(part), 0);
@@ -584,7 +900,7 @@ export const model = (w: World): Derived => {
           first.name === second.name &&
           first.version !== undefined &&
           second.version !== undefined &&
-          before(first.r, second.r) &&
+          g.before(first.r, second.r) &&
           rank(first.version) >= rank(second.version)
       )
       .map((second) => `${first.name} ${first.version} ${second.version}`)
@@ -598,16 +914,10 @@ export const model = (w: World): Derived => {
     const tagged = tagOf.get(`${s.name}@${s.version}`);
     return tagged === undefined
       ? []
-      : (at.get(s.r) ?? [])
+      : (g.at.get(s.r) ?? [])
           .filter((c) => c !== tagged)
           .map(() => `${s.r} ${s.name}@${s.version} ${tagged}`);
   });
-  const unjustified = changes
-    .filter((e) => {
-      const data = e.data as ChangeItem;
-      return data.kind === "Breaking" && (data.decisions ?? []).length === 0;
-    })
-    .map((e) => e.id);
   const repeatedVersion = versioned.flatMap((s) =>
     versioned
       .filter(
@@ -615,70 +925,43 @@ export const model = (w: World): Derived => {
       )
       .map((o) => `${s.name} ${s.version} ${s.r} ${o.r}`)
   );
-  const sharedCommit = releases.flatMap((r) =>
-    releases
-      .filter((o) => o.id !== r.id)
+  const sharedCommit = g.releases.flatMap((r) =>
+    g.releases
+      .filter((o) => o.path !== r.path)
       .flatMap((o) =>
-        (at.get(r.id) ?? [])
-          .filter((c) => (at.get(o.id) ?? []).includes(c))
-          .map((c) => `${r.id} ${o.id} ${c}`)
+        (g.at.get(r.path) ?? [])
+          .filter((c) => (g.at.get(o.path) ?? []).includes(c))
+          .map((c) => `${r.path} ${o.path} ${c}`)
       )
   );
-  const firstTime = (e: Entry) =>
-    Math.min(
-      ...[...madeBy(e)].map(
-        (h) => byHash.get(h)?.time ?? Number.POSITIVE_INFINITY
+  // A commit says nothing the model records when no claim quotes it and no
+  // claim or release was made by it. Each commit is a source under its full
+  // hash and its short one, and the short one may stand for several.
+  const silent = [
+    ...new Set(w.commits.flatMap((c) => [c.hash, c.hash.slice(0, 7)])),
+  ].filter(
+    (s) =>
+      !(
+        g.claims.some((c) => c.source === s) ||
+        g.all.some((c) => c.hash.startsWith(s) && made.has(c.hash))
       )
-    );
-  const decisionEntries = new Map(
-    entries
-      .filter((e) => e.kind === "decision")
-      .map((e) => [(e.data as DecisionFile).id, e])
   );
-  const backwards = decisions.flatMap((d) =>
-    (d.supersedes ?? []).flatMap((old) => {
-      const newer = decisionEntries.get(d.id);
-      const older = decisionEntries.get(old);
-      return newer !== undefined &&
-        older !== undefined &&
-        madeBy(newer).size > 0 &&
-        madeBy(older).size > 0 &&
-        firstTime(newer) < firstTime(older)
-        ? [`${d.id} ${old}`]
-        : [];
-    })
-  );
-  const inEffectFrom = [...decisionEntries].flatMap(([id, e]) => {
-    const first = firstTime(e);
-    return [...madeBy(e)]
-      .filter((h) => byHash.get(h)?.time === first)
-      .flatMap((h) =>
-        releases
-          .filter((r) => contains.get(r.id)?.has(h) ?? false)
-          .filter(
-            (r) =>
-              !releases.some(
-                (r0) =>
-                  (contains.get(r0.id)?.has(h) ?? false) && before(r0.id, r.id)
-              )
-          )
-          .map((r) => `${id} ${r.id}`)
-      );
-  });
+  const checked = g.claims
+    .filter((c) => w.notes[c.path]?.title !== undefined)
+    .map((c) => `${c.id} ${verdictOf(g, c)}`);
   const set = (rows: string[]) => [...new Set(rows)].sort();
   return {
     ambiguous: set(ambiguous),
-    inEffectFrom: set(inEffectFrom),
-    backwards: set(backwards),
-    repeatedVersion: set(repeatedVersion),
-    sharedCommit: set(sharedCommit),
-    unjustified: set(unjustified),
-    inForce: set(inForce),
+    checked: set(checked),
     misquoted: set(misquoted),
     mistagged: set(mistagged),
     regressed: set(regressed),
+    repeatedVersion: set(repeatedVersion),
+    sharedCommit: set(sharedCommit),
     shipped: set(shipped),
+    silent: set(silent),
     unaccounted: set(unaccounted),
+    undecidedRecord: set(undecidedRecord),
     unknownDecision: set(unknownDecision),
     unreleased: set(unreleased),
     unresolved: set(unresolved),
@@ -686,35 +969,18 @@ export const model = (w: World): Derived => {
   };
 };
 
-/** The same rows, asked of the record: each query's answers joined into text. */
+/** The same rows, asked of the model: each query's answers joined into text. */
 export const QUESTIONS = {
+  checked: [
+    "find",
+    ["string/concat", "?c", " ", "?v"],
+    ["checked", "?c", "?v"],
+  ],
   ambiguous: [
     "find",
     ["string/concat", "?e", " ", "?p"],
     ["ambiguous_ref", "?e", "?p", "?_"],
   ],
-  backwards: [
-    "find",
-    ["string/concat", "?d", " ", "?old"],
-    ["backwards", "?d", "?old"],
-  ],
-  repeatedVersion: [
-    "find",
-    ["string/concat", "?n", " ", "?v", " ", "?r", " ", "?o"],
-    ["repeated_version", "?n", "?v", "?r", "?o"],
-  ],
-  sharedCommit: [
-    "find",
-    ["string/concat", "?r", " ", "?o", " ", "?h"],
-    ["shared_commit", "?r", "?o", "?h"],
-  ],
-  unjustified: ["find", "?e", ["unjustified", "?e", "?_"]],
-  inEffectFrom: [
-    "find",
-    ["string/concat", "?d", " ", "?r"],
-    ["in_effect_from", "?d", "?r"],
-  ],
-  inForce: ["find", "?id", ["standing", "?id"]],
   misquoted: [
     "find",
     ["string/concat", "?e", " ", "?h", " ", "?q"],
@@ -730,18 +996,30 @@ export const QUESTIONS = {
     ["string/concat", "?n", " ", "?a", " ", "?b"],
     ["regressed", "?n", "?a", "?b"],
   ],
+  repeatedVersion: [
+    "find",
+    ["string/concat", "?n", " ", "?v", " ", "?r", " ", "?o"],
+    ["repeated_version", "?n", "?v", "?r", "?o"],
+  ],
+  sharedCommit: [
+    "find",
+    ["string/concat", "?r", " ", "?o", " ", "?h"],
+    ["shared_commit", "?r", "?o", "?h"],
+  ],
   shipped: [
     "find",
-    ["string/concat", "?e", " ", "?r"],
-    ["shipped_in", "?e", "?r"],
+    ["string/concat", "?c", " ", "?r"],
+    ["shipped_in", "?c", "?r"],
   ],
+  silent: ["find", "?s", ["silent", "?s"]],
   unaccounted: ["find", "?h", ["unaccounted", "?h", "?_"]],
+  undecidedRecord: ["find", "?id", ["undecided_record", "?id"]],
   unknownDecision: [
     "find",
-    ["string/concat", "?e", " ", "?d"],
-    ["unknown_decision", "?e", "?d"],
+    ["string/concat", "?c", " ", "?d"],
+    ["unknown_decision", "?c", "?d"],
   ],
-  unreleased: ["find", "?e", ["unreleased", "?e"]],
+  unreleased: ["find", "?c", ["unreleased", "?c"]],
   unresolved: [
     "find",
     ["string/concat", "?e", " ", "?p"],

@@ -1,0 +1,152 @@
+{
+  "title": "A record fits only a record with the same keys, and `schema/open` allows more",
+  "context": "Before 0.7.0 a record pattern in `match` fit any record that had its keys, whatever others it had. Schemas made one rule for every place that checks a value, and under it data is a schema for itself: a value with no function in it fits exactly the values equal to it. A record that fit every record with its keys would break that, in `match` and in every other place the rule reaches: a pattern, an argument of a relation call, and the schema of a relation's rows.",
+  "decision": "A record fits a record with the same keys, with values that fit, wherever a value is checked against a schema. `schema/open` makes a record schema fit a record whatever other keys it has, and `schema/optional` lets a key be left out. A branch of `match` that picks by one field of a larger record opens it: `[\"schema/open\", {\"type\": \"refund\"}]`.",
+  "consequences": "It is a breaking change for `match`: a branch whose pattern is the record `{\"type\": \"refund\"}` no longer takes a record that has other keys. A record in a pattern takes apart only a record with the same keys, so `[\"inbox\", {\"type\": \"refund\", \"id\": \"?id\"}]` asks for rows of exactly that shape, and `[\"inbox\", [\"schema/open\", {\"type\": \"order\", \"id\": \"?id\"}]]` also for rows with more keys. A relation's row schema names every column, or is a `schema/open` record that names some. `schema/problems` reports a key the schema does not name as a problem with only `found`.",
+  "alternatives": [
+    {
+      "option": "A record pattern fits any record that has its keys, as `match` did before 0.7.0",
+      "rejected": "Data would no longer fit exactly the values equal to it, which is what makes data a schema for itself; `schema/open` keeps that meaning for a pattern that wants it."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "fbc25a1",
+      "quote": "`match` fits a record against a record with the same keys; open the record with `schema/open` to match on some of its keys."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A record fits only a record with the same keys, and `schema/open` allows more",
+      "says": {
+        "decision": "record-pattern-keys",
+        "chose": "exact",
+        "over": ["pattern-keys-only"],
+        "because": "data is a schema for itself: a value with no function in it fits exactly the values equal to it",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "A record fits a record with the same keys, with values that fit, wherever a value is checked against a schema",
+      "says": {
+        "rule": "records-are-exact",
+        "holds": true,
+        "statement": "A record fits only a record with the same keys; schema/open allows more",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "match-record-pattern-extra-keys",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "schema-record-extra-keys",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "schema-open-record-extra-keys",
+            "is": "fit"
+          },
+          {
+            "behavior": "relation-call-record-pattern-extra-keys",
+            "is": "no-fit"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A record fits a record with the same keys, with values that fit, wherever a value is checked against a schema",
+      "says": {
+        "behavior": "schema-record-extra-keys",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "Before 0.7.0 a record pattern in `match` fit any record that had its keys, whatever others it had",
+      "says": {
+        "rule": "record-patterns-by-keys",
+        "holds": false,
+        "statement": "A record pattern in match fits any record that has the pattern's keys with values that fit",
+        "area": "schemas",
+        "replaced_by": "records-are-exact"
+      }
+    },
+    {
+      "quote": "Schemas made one rule for every place that checks a value, and under it data is a schema for itself: a value with no function in it fits exactly the values equal to it",
+      "says": {
+        "rule": "schemas-are-logic",
+        "holds": true,
+        "statement": "Whatever checks a value against a schema asks whether the value fits, by one rule",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "schema-plain-value-equal",
+            "is": "fit"
+          },
+          {
+            "behavior": "match-plain-value-pattern",
+            "is": "equals"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "It is a breaking change for `match`: a branch whose pattern is the record `{\"type\": \"refund\"}` no longer takes a record that has other keys",
+      "says": {
+        "behavior": "match-record-pattern-extra-keys",
+        "is": "no-fit",
+        "area": "schemas",
+        "breaking": true,
+        "was": "fit"
+      }
+    },
+    {
+      "quote": "`schema/open` makes a record schema fit a record whatever other keys it has",
+      "says": {
+        "behavior": "schema-open-record-extra-keys",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "`schema/optional` lets a key be left out",
+      "says": {
+        "behavior": "schema-optional-key-missing",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "`[\"inbox\", {\"type\": \"refund\", \"id\": \"?id\"}]` asks for rows of exactly that shape",
+      "says": {
+        "behavior": "relation-call-record-pattern-extra-keys",
+        "is": "no-fit",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`[\"inbox\", [\"schema/open\", {\"type\": \"order\", \"id\": \"?id\"}]]` also for rows with more keys",
+      "says": {
+        "behavior": "relation-call-open-record-pattern-extra-keys",
+        "is": "fit",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A relation's row schema names every column, or is a `schema/open` record that names some",
+      "says": {
+        "behavior": "relation-row-schema-names-some-columns",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "`schema/problems` reports a key the schema does not name as a problem with only `found`",
+      "says": {
+        "behavior": "schema-problems-extra-key",
+        "is": "found-only",
+        "area": "schemas"
+      }
+    }
+  ]
+}

@@ -1,42 +1,64 @@
 /**
  * The record's rules and pages, checked on generated histories against a
  * plain model of what they define. The model says which release shipped a
- * change by walking the commit graph, which commits no entry records, which
- * references and quotes fail, and which decisions are in force. The pages
- * are read back with the same reader that imported the hand-written
- * changelog, and must hold what the model says, in the order it says.
+ * claim by walking the commit graph, which commits no claim was made by,
+ * which references and quotes fail, and where each item, a question with an
+ * answer, first shipped and in whose words. The pages are written from the
+ * model of the world's development and read back, and must hold what the
+ * plain model says, in the order it says.
  */
 import { describe, expect, it } from "@effect/vitest";
+import { run } from "@lionlang/core/evaluation/evaluate";
+import { LogicDatabase } from "@lionlang/core/logic/database";
+import { stdlib } from "@lionlang/core/modules";
 import { Arbitrary, Effect, Schema } from "effect";
 import { parseChangelog } from "../changelog.ts";
-import { WORKING_TREE } from "../git.ts";
-import { ask } from "../record.ts";
 import {
-  type ChangeItem,
-  entriesOf,
+  claimsOfWorld,
+  graphOf,
+  itemsOf,
+  itemsUnder,
   model,
+  modelProgramOf,
   OUTPUTS,
   QUESTIONS,
   type ReleaseFile,
-  sourcesOf,
+  SECTIONS,
+  verdictOf,
   type World,
   world,
 } from "./worlds.ts";
 
-const OPTIONS = { arbitrary: { runs: 150 } };
+/**
+ * Pages are written from the whole model of a world's development, which
+ * takes a while to build for each world, so they are checked on fewer worlds
+ * than the rules; the timeline, which shows the most of the model, on the most.
+ */
+const OPTIONS = { arbitrary: { runs: 100 } };
+const PAGE_OPTIONS = { arbitrary: { runs: 50 } };
+const TIMELINE_OPTIONS = { arbitrary: { runs: 100 } };
 
-const asked = (w: World, question: unknown) =>
-  ask(sourcesOf(w), question) as Effect.Effect<unknown, unknown>;
+/** Evaluates `expression` against the model of the world's development. */
+const fromModel = (w: World, expression: unknown) =>
+  run(modelProgramOf(w, expression) as never, stdlib, {
+    database: new LogicDatabase(),
+  }) as Effect.Effect<unknown, unknown>;
 
 const setOf = (rows: unknown) => [...new Set(rows as string[])].sort();
 
+/** Text in the order Lion sorts it. */
+const textOrder = (a: string, b: string) => Number(a > b) - Number(a < b);
+
 describe("the record's rules", () => {
   it.effect.prop(
-    "derive what a plain model of the commit graph and the entries says",
+    "derive what a plain model of the commit graph, the releases, and the claims says",
     { w: world() },
     ({ w }) =>
       Effect.gen(function* () {
-        const answers = (yield* asked(w, QUESTIONS)) as Record<string, unknown>;
+        const answers = (yield* fromModel(w, QUESTIONS)) as Record<
+          string,
+          unknown
+        >;
         const expected = model(w);
         for (const [name, rows] of Object.entries(expected)) {
           expect(answers[name], name).toBeDefined();
@@ -47,135 +69,88 @@ describe("the record's rules", () => {
   );
 });
 
-/** What a page's change line says, without the decisions it links to. */
-const LINKS = / See (\[[^\]]*\]\(DECISIONS\.md#([a-z0-9-]+)\)(, | and )?)+\.$/;
-
-const linked = (text: string) => {
-  const found = LINKS.exec(text);
-  return {
-    decisions:
-      found === null
-        ? []
-        : [...found[0].matchAll(/DECISIONS\.md#([a-z0-9-]+)/g)].map(
-            (m) => m[1]
-          ),
-    text: found === null ? text : text.slice(0, found.index),
-  };
-};
-
-/** The comma before the last item of a list, where the page says "and". */
-const LAST_COMMA = /, ([^,]*)$/;
-
-const RANKS: Record<string, number> = {
-  Breaking: 0,
-  Added: 1,
-  Changed: 2,
-  Fixed: 3,
-  Documentation: 4,
-};
-
-/** The sections the model says a list of changes and notes make, in order. */
-const sectionsOf = (
-  w: World,
-  ids: readonly string[],
-  notes: readonly { readonly kind: string; readonly text: string }[]
-) => {
-  const entries = new Map(entriesOf(w).map((e) => [e.id, e]));
-  const timeOf = (path: string) => {
-    const at = w.added[path] ?? -1;
-    return at < 0 ? 5000 : (w.commits[at]?.time ?? 5000);
-  };
-  const changes = ids
-    .flatMap((id) => {
-      const entry = entries.get(id);
-      return entry?.kind === "change" ? [entry] : [];
-    })
-    .sort(
-      (a, b) =>
-        timeOf(a.path) - timeOf(b.path) ||
-        Number(a.path > b.path) - Number(a.path < b.path) ||
-        a.index - b.index
-    )
-    .map((e) => e.data as ChangeItem);
-  const kinds = [
-    ...new Set([
-      ...changes.map((c) => c.kind as string),
-      ...notes.map((n) => n.kind),
-    ]),
-  ];
-  return kinds
-    .map((kind, first) => ({ first, kind, rank: RANKS[kind] ?? 5 }))
-    .sort((a, b) => a.rank - b.rank || a.first - b.first)
-    .map(({ kind }) => ({
-      items: changes
-        .filter((c) => c.kind === kind)
-        .map((c) => ({ decisions: c.decisions ?? [], text: c.text })),
-      kind,
-      notes: notes.filter((n) => n.kind === kind).map((n) => n.text),
-    }));
-};
+/** The sections CHANGELOG.md lists: every one the timeline has but figures. */
+const IN_CHANGELOG = SECTIONS.filter((section) => section !== "Figures");
 
 /**
- * The model's releases, newest first, with the changes each shipped, and the
- * changes no release has shipped yet.
+ * The releases a world has, newest first, with the commit each is at, and
+ * the draft that names the next release.
  */
 const ordered = (w: World) => {
-  const expected = model(w);
-  const shippedIn = (release: string) =>
-    expected.shipped
-      .filter((row) => row.endsWith(` ${release}`))
-      .map((row) => row.slice(0, -release.length - 1));
-  const commitOf = (data: ReleaseFile, path: string) => {
-    const hash =
-      data.commit === undefined
-        ? w.commits[w.added[path] ?? -1]?.hash
-        : w.commits.find((c) => c.hash.startsWith(data.commit as string))?.hash;
-    return w.commits.find((c) => c.hash === hash);
-  };
-  const releases = Object.entries(w.releases)
-    .filter(([, data]) => data.draft !== true)
-    .map(([path, data]) => ({ at: commitOf(data, path), data, path }))
+  const g = graphOf(w);
+  const releases = g.releases
+    .map(({ data, path }) => {
+      const hash = (g.at.get(path) ?? [])[0];
+      return {
+        at: hash === undefined ? undefined : g.byHash.get(hash),
+        data,
+        path,
+      };
+    })
     .sort(
       (a, b) =>
         (b.at?.time ?? 5000) - (a.at?.time ?? 5000) ||
         Number(a.path > b.path) - Number(a.path < b.path)
     );
-  const unreleased = expected.unreleased.filter((id) => {
-    const data = entriesOf(w).find((e) => e.id === id)?.data as ChangeItem;
-    return data.internal === undefined;
-  });
   const [, draft] =
     Object.entries(w.releases)
       .filter(([, data]) => data.draft === true)
       .sort(([a], [b]) => Number(a > b) - Number(a < b))[0] ?? [];
-  return { draft, expected, releases, shippedIn, unreleased };
+  return { draft, releases };
 };
+
+const SAYS_AFTER = / \([^()]*\)$/;
+
+/** A bullet's words, without what it says after them. */
+const wordsOf = (bullet: string) => bullet.replace(SAYS_AFTER, "");
+
+const named = (ships: ReleaseFile["ships"]) =>
+  ships
+    .map((s) => (s.version === undefined ? s.name : `${s.name} ${s.version}`))
+    .join(", ");
 
 describe("CHANGELOG.md", () => {
   it.effect.prop(
-    "lists each release, newest first, with every change it shipped under its kind",
+    "lists each release, newest first, with each item it first shipped under its section, in the latest words",
     { w: world({ clean: true }) },
     ({ w }) =>
       Effect.gen(function* () {
-        const pages = (yield* asked(w, OUTPUTS)) as Record<string, string>;
+        const pages = (yield* fromModel(w, OUTPUTS)) as Record<string, string>;
         const read = parseChangelog(pages["CHANGELOG.md"] ?? "").map((r) => ({
           heading: r.heading,
           sections: r.sections.map((s) => ({
-            items: s.items.map((item) => linked(item.text)),
+            items: s.items.map((item) => wordsOf(item.text)),
             kind: s.kind,
             notes: s.notes,
           })),
           summary: r.summary,
         }));
-        const { draft, releases, shippedIn, unreleased } = ordered(w);
-        const named = (ships: ReleaseFile["ships"]) =>
-          ships
-            .map((s) =>
-              s.version === undefined ? s.name : `${s.name} ${s.version}`
-            )
-            .join(", ");
+        const items = itemsOf(w);
+        const { draft, releases } = ordered(w);
+        const sectionsOf = (
+          key: string,
+          notes: readonly { readonly kind: string; readonly text: string }[]
+        ) => {
+          const under = itemsUnder(items, key);
+          return [
+            ...IN_CHANGELOG.map((kind) => ({
+              // Items in the same words are one bullet.
+              items: [
+                ...new Set(
+                  under.filter((i) => i.section === kind).map((i) => i.words)
+                ),
+              ],
+              kind,
+              notes: notes.filter((n) => n.kind === kind).map((n) => n.text),
+            })).filter((s) => s.items.length + s.notes.length > 0),
+            ...notes
+              .filter((n) => !IN_CHANGELOG.includes(n.kind))
+              .map((n) => ({ items: [], kind: n.kind, notes: [n.text] })),
+          ];
+        };
+        const waiting = itemsUnder(items, "next");
         expect(read).toEqual([
-          ...(unreleased.length === 0
+          ...(waiting.length === 0
             ? []
             : [
                 {
@@ -183,33 +158,92 @@ describe("CHANGELOG.md", () => {
                     draft === undefined
                       ? "Unreleased"
                       : `Unreleased — ${named(draft.ships)}`,
-                  sections: sectionsOf(w, unreleased, draft?.notes ?? []),
+                  sections: sectionsOf("next", draft?.notes ?? []),
                   summary: draft?.summary === undefined ? [] : [draft.summary],
                 },
               ]),
           ...releases.map(({ at, data, path }) => ({
-            heading: `${at?.date ?? "2026-02-01"} — ${data.ships
-              .map((s) =>
-                s.version === undefined ? s.name : `${s.name} ${s.version}`
-              )
-              .join(", ")}`,
-            sections: sectionsOf(w, shippedIn(path), data.notes ?? []),
+            heading: `${at?.date ?? "2026-02-01"} — ${named(data.ships)}`,
+            sections: sectionsOf(path, data.notes ?? []),
             summary: data.summary === undefined ? [] : [data.summary],
           })),
         ]);
       }),
-    OPTIONS
+    PAGE_OPTIONS
   );
 });
 
+/** How DECISIONS.md says each assertion of a record stands. */
+const VERDICT_WORDS = {
+  replaced: "Replaced by a later word",
+  stated: "Stated, not checked by running Lion",
+} as const;
+
+const ASSERTS = "**What it asserts, checked.**";
+
+/** Where the next heading after `at` starts, or the end of the page. */
+const nextHeading = (page: string, at: number) => {
+  const next = [page.indexOf("\n### ", at + 1), page.indexOf("\n## ", at + 1)]
+    .filter((i) => i >= 0)
+    .sort((a, b) => a - b)[0];
+  return next ?? page.length;
+};
+
 describe("DECISIONS.md", () => {
   it.effect.prop(
-    "indexes every decision, oldest first, with whether it is in force",
+    "indexes every decided question by when it was first decided, and shows each record under the first question it decides with how each thing it asserts stands",
     { w: world({ clean: true }) },
     ({ w }) =>
       Effect.gen(function* () {
-        const pages = (yield* asked(w, OUTPUTS)) as Record<string, string>;
-        const rows = (pages["DECISIONS.md"] ?? "")
+        const pages = (yield* fromModel(w, OUTPUTS)) as Record<string, string>;
+        const page = pages["DECISIONS.md"] ?? "";
+        const g = graphOf(w);
+        const claims = claimsOfWorld(w);
+        const decided = claims.filter(
+          (c) => typeof c.says.decision === "string"
+        );
+        const firstOf = new Map<string, number>();
+        for (const c of decided) {
+          const topic = c.says.decision as string;
+          const choice = `${topic} ${String(c.says.chose)}`;
+          const times = decided
+            .filter(
+              (d) =>
+                `${d.says.decision as string} ${String(d.says.chose)}` ===
+                choice
+            )
+            .filter((d) => g.madeBy(d).size > 0)
+            .map(g.firstTime);
+          const time = Math.min(...times);
+          firstOf.set(
+            topic,
+            Math.min(firstOf.get(topic) ?? Number.POSITIVE_INFINITY, time)
+          );
+        }
+        const choiceTime = (topic: string, chose: unknown) =>
+          Math.min(
+            ...decided
+              .filter(
+                (d) => d.says.decision === topic && d.says.chose === chose
+              )
+              .filter((d) => g.madeBy(d).size > 0)
+              .map(g.firstTime)
+          );
+        const choices = [
+          ...new Map(
+            decided.map((d) => [
+              `${d.says.decision as string} ${String(d.says.chose)}`,
+              { chose: String(d.says.chose), topic: d.says.decision as string },
+            ])
+          ).values(),
+        ].sort(
+          (a, b) =>
+            choiceTime(a.topic, a.chose) - choiceTime(b.topic, b.chose) ||
+            textOrder(a.topic, b.topic) ||
+            textOrder(a.chose, b.chose)
+        );
+        const topics = [...new Set(choices.map((c) => c.topic))];
+        const rows = page
           .split("\n")
           .filter(
             (line) =>
@@ -217,54 +251,58 @@ describe("DECISIONS.md", () => {
               !line.startsWith("| Decided") &&
               !line.startsWith("| ---")
           );
-        const expected = model(w);
-        const timeOf = (hash: string) =>
-          hash === WORKING_TREE
-            ? 5000
-            : (w.commits.find((c) => c.hash === hash)?.time ?? 0);
-        const dated = Object.entries(w.decisions).map(([path, d]) => {
-          const made =
-            d.commits === undefined || d.commits.length === 0
-              ? [w.commits[w.added[path] ?? -1]?.hash ?? WORKING_TREE]
-              : d.commits.map(
-                  (r) =>
-                    w.commits.find((c) => c.hash.startsWith(r.commit))?.hash ??
-                    ""
-                );
-          const first = Math.min(...made.map(timeOf));
-          const date =
-            first === 5000
-              ? "2026-02-01"
-              : (w.commits.find((c) => c.time === first)?.date ?? "");
-          const by = Object.values(w.decisions)
-            .filter((other) => other.supersedes?.includes(d.id))
-            .map((other) => other.id)
-            .sort();
-          return { by, date, first, id: d.id };
-        });
-        expect(rows).toEqual(
-          dated
-            .sort((a, b) => a.first - b.first || (a.id < b.id ? -1 : 1))
-            .map(
-              ({ by, date, id }) =>
-                `| ${date} | [Decision ${id}](#${id}) | ${
-                  by.length === 0
-                    ? "In force"
-                    : `Superseded by ${by
-                        .map((other) => `[Decision ${other}](#${other})`)
-                        .join(", ")
-                        .replace(LAST_COMMA, " and $1")}`
-                } |`
+        const dateAt = (time: number) =>
+          g.all.find((c) => c.time === time)?.date ?? "not committed yet";
+        expect(
+          rows.map((row) => row.split(" | ").slice(0, 2).join(" | "))
+        ).toEqual(
+          topics.map(
+            (t) =>
+              `| ${dateAt(choiceTime(t, choices.find((c) => c.topic === t)?.chose))} | [\`${t}\`](#${t})`
+          )
+        );
+        const records = Object.entries(w.notes)
+          .filter(([, file]) => file.title !== undefined)
+          .map(([path, file]) => ({
+            id: path.slice("history/notes/".length, -".json".length),
+            title: file.title as string,
+            topics: decided
+              .filter((d) => d.path === path)
+              .map((d) => d.says.decision as string),
+          }))
+          .filter((r) => r.topics.length > 0);
+        for (const record of records) {
+          const home = topics.find((t) => record.topics.includes(t)) as string;
+          const at = page.indexOf(`### ${record.title}\n`);
+          expect(at, record.id).toBeGreaterThan(-1);
+          expect(page.indexOf(`### ${record.title}\n`, at + 1), record.id).toBe(
+            -1
+          );
+          const section = page.lastIndexOf("\n## ", at);
+          expect(
+            page.slice(section + 4, page.indexOf("\n", section + 4)),
+            record.id
+          ).toBe(home);
+          // Each thing the record asserts, with how it stands.
+          const block = page.slice(at, nextHeading(page, at));
+          const asserts = block
+            .slice(block.indexOf(ASSERTS))
+            .split("\n")
+            .filter((line) => line.startsWith("- "))
+            .map((line) => {
+              const verdict = line.slice(2, line.indexOf(": "));
+              return `${verdict} ${line.slice(line.indexOf('. "') + 3, -1)}`;
+            });
+          expect(setOf(asserts), record.id).toEqual(
+            setOf(
+              claims
+                .filter((c) => c.path === `history/notes/${record.id}.json`)
+                .map((c) => `${VERDICT_WORDS[verdictOf(g, c)]} ${c.quote}`)
             )
-        );
-        expect(expected.inForce).toEqual(
-          dated
-            .filter((d) => d.by.length === 0)
-            .map((d) => d.id)
-            .sort()
-        );
+          );
+        }
       }),
-    OPTIONS
+    PAGE_OPTIONS
   );
 });
 
@@ -287,91 +325,60 @@ const ITEM = /id="([^"]+)"/;
 const SECTION = /<section class="kind-section [^"]*" data-kind="([^"]*)">/g;
 const CHANGE =
   /<li class="change" data-kind="([^"]*)"><div class="change-text">(.*?)<\/div>/g;
-const DECISION = /<details class="decision" id="decision-([^"]+)">/g;
 
-/** Each item of the timeline: its id, kinds, changes, and decisions. */
+/** Each item of the timeline: its id, sections, and items with their words. */
 const readTimeline = (html: string) =>
   html
     .split('<li class="timeline-item')
     .slice(1)
     .map((item) => ({
-      changes: [...item.matchAll(CHANGE)].map((m) => ({
-        kind: textOf(m[1] ?? ""),
-        text: textOf(m[2] ?? ""),
-      })),
-      decisions: [...item.matchAll(DECISION)].map((m) => m[1]),
       id: ITEM.exec(item)?.[1],
-      kinds: [...item.matchAll(SECTION)].map((m) => textOf(m[1] ?? "")),
+      items: [...item.matchAll(CHANGE)].map((m) => ({
+        kind: textOf(m[1] ?? ""),
+        words: textOf(m[2] ?? ""),
+      })),
+      sections: [...item.matchAll(SECTION)].map((m) => textOf(m[1] ?? "")),
     }));
 
 describe("docs/changelog.html", () => {
   it.effect.prop(
-    "shows each release, newest first, with its changes under their kinds and the decisions it put in effect",
+    "shows each release, newest first, with each item it first shipped under its section, in the latest words",
     { w: world({ clean: true }) },
     ({ w }) =>
       Effect.gen(function* () {
-        const pages = (yield* asked(w, OUTPUTS)) as Record<string, string>;
-        const { expected, releases, shippedIn, unreleased } = ordered(w);
-        const firstTime = (id: string) => {
-          const path = `history/decisions/${id}.json`;
-          const d = w.decisions[path];
-          const times =
-            d?.commits === undefined || d.commits.length === 0
-              ? [w.commits[w.added[path] ?? -1]?.time ?? 5000]
-              : d.commits.map(
-                  (r) =>
-                    w.commits.find((c) => c.hash.startsWith(r.commit))?.time ??
-                    0
-                );
-          return Math.min(...times);
-        };
-        const decisionsIn = (release: string | undefined) =>
-          Object.values(w.decisions)
-            .map((d) => d.id)
-            .filter((id) => {
-              const rows = expected.inEffectFrom.filter((row) =>
-                row.startsWith(`${id} `)
-              );
-              return release === undefined
-                ? rows.length === 0
-                : rows.includes(`${id} ${release}`);
-            })
-            .sort(
-              (a, b) =>
-                firstTime(a) - firstTime(b) || Number(a > b) - Number(a < b)
-            );
-        const item = (
-          id: string,
-          changes: readonly string[],
-          notes: readonly { readonly kind: string; readonly text: string }[],
-          release: string | undefined
-        ) => {
-          const sections = sectionsOf(w, changes, notes);
+        const pages = (yield* fromModel(w, OUTPUTS)) as Record<string, string>;
+        const items = itemsOf(w);
+        const { releases } = ordered(w);
+        const shown = (id: string, key: string) => {
+          const under = itemsUnder(items, key);
+          const sections = SECTIONS.filter((s) =>
+            under.some((i) => i.section === s)
+          );
           return {
-            changes: sections.flatMap((s) =>
-              s.items.map((i) => ({ kind: s.kind, text: i.text }))
-            ),
-            decisions: decisionsIn(release),
             id,
-            kinds: sections.map((s) => s.kind),
+            // Items in the same words are one entry.
+            items: sections.flatMap((s) =>
+              [
+                ...new Set(
+                  under.filter((i) => i.section === s).map((i) => i.words)
+                ),
+              ].map((words) => ({ kind: s, words }))
+            ),
+            sections,
           };
         };
-        const waiting = item("unreleased", unreleased, [], undefined);
+        const waiting = shown("unreleased", "next");
         expect(readTimeline(pages["docs/changelog.html"] ?? "")).toEqual([
-          ...(waiting.changes.length + waiting.decisions.length === 0
-            ? []
-            : [waiting]),
-          ...releases.map(({ data, path }) =>
-            item(
+          ...(waiting.items.length === 0 ? [] : [waiting]),
+          ...releases.map(({ path }) =>
+            shown(
               `release-${path.slice("history/releases/".length, -".json".length)}`,
-              shippedIn(path),
-              data.notes ?? [],
               path
             )
           ),
         ]);
       }),
-    OPTIONS
+    TIMELINE_OPTIONS
   );
 });
 
@@ -449,13 +456,12 @@ describe("the timeline's inline Markdown", () => {
       Effect.gen(function* () {
         const empty: World = {
           added: {},
-          changes: {},
           commits: [],
-          decisions: {},
+          notes: {},
           releases: {},
           tags: [],
         };
-        const html = (yield* asked(empty, [
+        const html = (yield* fromModel(empty, [
           ...(OUTPUTS as unknown[]).slice(0, -1),
           [
             "array/map",

@@ -1,0 +1,299 @@
+{
+  "title": "Whatever needs the value of a goal asks it",
+  "context": "A goal was something a rule or query matched, and little else could use one. A function or record given a relation goal was handed the goal itself, `fact` refused it, and a `cond` whose condition was a relation goal took that case whether or not the goal had a match. A goal under `not` needed every variable bound first, and an aggregate combined a goal's matches only in a rule head, so a count was never 0.",
+  "decision": "A goal with a relation in it is a question, and any expression can ask it. As a goal of a rule or query it still matches rows and binds variables. Anywhere else it is asked: as a value it is `true` when it has a match and `false` when it has none, in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. `[\"find\", template, goal]` returns the template's value for every match of the goal as a sorted list. When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own.",
+  "consequences": "A question gives in a rule what it gives in plain code with the rule's variables in place: plain code asks right away, goal-directed, and a rule, query, invariant, or `find` asks for each answer when it runs. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. A goal under `not` can join on variables of its own, an aggregate of a `find` can count 0, and a relation is a predicate for `match` and for functions such as `array/map`. The rule against negation through recursion now covers every question. The core grew 4.7% in code lines, and list callbacks run about 10% slower, since they go through the one call rule.",
+  "alternatives": [
+    {
+      "option": "Hand a relation goal to a function or record as the goal itself, as before",
+      "rejected": "A `cond` whose condition was a relation goal took that case whether or not the goal had a match, and `fact` refused the goal."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "c380ce7",
+      "quote": "whatever needs the value of a goal asks it"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Anywhere else it is asked: as a value it is `true` when it has a match and `false` when it has none",
+      "says": {
+        "decision": "goal-as-value",
+        "chose": "asked",
+        "over": ["goal-itself"],
+        "area": "logic",
+        "because": "a cond whose condition was a relation goal took that case whether or not the goal had a match, and fact refused the goal"
+      }
+    },
+    {
+      "quote": "Whatever needs the value of a goal asks it",
+      "says": {
+        "rule": "asking-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a goal asks it; a goal with a relation in it is a question",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-goal-as-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "cond-relation-goal-condition",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-function-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-unify-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-in-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-record-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-fact-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-match-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-as-match-predicate",
+            "is": "predicate"
+          },
+          {
+            "behavior": "relation-as-function-argument",
+            "is": "predicate"
+          },
+          {
+            "behavior": "goal-in-define",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-and",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-lambda",
+            "is": "kept"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own.",
+      "says": {
+        "rule": "question-variables-scoped",
+        "holds": true,
+        "statement": "When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "not-goal-unbound-variable",
+            "is": "own-variable"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The rule against negation through recursion now covers every question.",
+      "says": {
+        "rule": "stratified-questions",
+        "holds": true,
+        "statement": "A rule cannot ask a question about a relation that depends on its own head",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "negation-through-recursion",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal as a sorted list.",
+      "says": {
+        "feature": "find",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal as a sorted list.",
+      "says": {
+        "behavior": "find-result-order",
+        "is": "sorted",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "as a value it is `true` when it has a match and `false` when it has none",
+      "says": {
+        "behavior": "relation-goal-as-value",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-function-argument",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-unify-operand",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-in-operand",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-record-value",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-fact-argument",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at",
+      "says": {
+        "behavior": "relation-goal-as-match-value",
+        "is": "asked",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A question gives in a rule what it gives in plain code with the rule's variables in place",
+      "says": {
+        "behavior": "question-in-rule-vs-plain-code",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "plain code asks right away, goal-directed",
+      "says": {
+        "behavior": "plain-code-question",
+        "is": "asked-immediately",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a rule, query, invariant, or `find` asks for each answer when it runs",
+      "says": {
+        "behavior": "question-in-rule",
+        "is": "asked-per-answer",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-define",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-and",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-lambda",
+        "is": "kept",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A goal under `not` can join on variables of its own",
+      "says": {
+        "behavior": "not-goal-unbound-variable",
+        "is": "own-variable",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "an aggregate of a `find` can count 0",
+      "says": {
+        "behavior": "aggregate-count-of-empty-find",
+        "is": "zero",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a relation is a predicate for `match` and for functions such as `array/map`",
+      "says": {
+        "behavior": "relation-as-match-predicate",
+        "is": "predicate",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a relation is a predicate for `match` and for functions such as `array/map`",
+      "says": {
+        "behavior": "relation-as-function-argument",
+        "is": "predicate",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The core grew 4.7% in code lines",
+      "says": {
+        "measured": "core-code-lines-increase-percent",
+        "after": 4.7,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "list callbacks run about 10% slower",
+      "says": {
+        "measured": "slowdown-list-callbacks-percent",
+        "after": 10,
+        "area": "metrics"
+      }
+    }
+  ]
+}

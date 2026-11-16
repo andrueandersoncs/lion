@@ -8,6 +8,10 @@ Follow the developer guidelines in AGENTS.md:
 
 Every change aims for the goals in "Goals for Every Change" in AGENTS.md. Integrate a new feature deeply, so it works with every existing feature in plain code and in the logic layer. Leave Lion simpler than you found it, in its code and in its semantics, without removing a feature. Give every new feature and every bug a property-based test. Be ambitious: prefer one rule that removes special cases to another special case, and do the deeper work that takes. Lion stays a JSON-based Lisp that evaluates entirely in memory, with semantics approximately those of Scheme and Racket.
 
+## First principles
+
+Reason about every task from what it is for, not from what exists: no format, file, kind, rule, or tool stays only because it is there. Before you undo something that looks intentional, such as a recorded decision, a documented rule, a schema, or a format others rely on, ask the user in a short question with your recommendation. Do not write long plans for approval.
+
 ## Complexity
 
 Measure before you call a change to `@lionlang/core` done: `bun run measure --against main` for the code and the semantics, and `bun run bench --against main` for speed. Aim for the numbers to go down, and report them as they are, including the ones that went up. Add a new kind of expression, or a new place one can stand, to the interop grid in `packages/metrics/src/grid-cases.ts`; a cell that does not give what plain code gives is an exception to remove. See "Measuring Complexity" in AGENTS.md.
@@ -22,7 +26,7 @@ Use every new feature in at least one example in the docs, with output that was 
 
 ## Changelog and decisions
 
-Record every change in `history/changes/` and every design decision in `history/decisions/` in the commit that makes it, then run `bun run history write`, which writes `CHANGELOG.md`, `DECISIONS.md`, and `docs/changelog.html`. Never edit those files by hand. A breaking change names the decision it follows from. See "Recording Changes and Decisions" in AGENTS.md.
+Record every change and every design decision as claims in `history/notes/`, in the commit that makes it: each claim is words and what they say. A decision is a notes file with a title, its context, and claims for what it decides and what it asserts, which the model checks against Lion. Then run `bun run history write`, which writes `CHANGELOG.md`, `DECISIONS.md`, and `docs/changelog.html` from the model. Never edit those files by hand. A breaking change follows a decision. See "Recording Changes and Decisions" in AGENTS.md.
 
 ## Testing
 

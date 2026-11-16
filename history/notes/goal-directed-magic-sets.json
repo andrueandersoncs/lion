@@ -1,0 +1,172 @@
+{
+  "title": "A query with a known argument runs a magic-sets rewrite and gives the answers full evaluation gives",
+  "context": "Bottom-up evaluation derives every fact a program implies, while a query usually needs far less: the paths from one node do not need the paths from every other node. A query for the paths from one node of a 3,000-node chain would derive about 4.5 million paths in full.",
+  "decision": "When a query gives a rule-defined relation a known argument, such as `\"a\"` in `[\"path\", \"a\", \"?to\"]`, Lion rewrites the rules with the magic-sets technique: each relation gets a copy for that pattern of known arguments, guarded by magic relations that pass the known values down through the rule bodies. Known arguments are values, variables that earlier goals bind, and values computed from them. Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end. Relations that are aggregated, computed by an algorithm, or negated, and what they depend on, are computed in full first. The rewrite changes how much is computed, never what the answers are, and `new LogicDatabase({ goalDirected: false })` turns it off.",
+  "consequences": "The query along the 3,000-node chain returns in milliseconds. Tests run a corpus of programs both ways and require the same answers. Comparing the two ways on 2,000 generated programs found a query whose argument was not JSON data failing where full evaluation found no answers; such an argument now counts as unknown. Answers can come in a different order, so the `\"order\"` query option is the way to fix one. How a recursive rule is written matters: with a known start, recursion on the left asks only about that start, while recursion on the right asks about every node the paths pass through.",
+  "alternatives": [
+    {
+      "option": "Let values that functions compute inside a rule drive the rewrite",
+      "rejected": "A rewritten rule could then ask about new values without end. Values computed by functions never drive the rewrite inside a rule, so it still finishes."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "f4c7c4c",
+      "quote": "answers match full evaluation"
+    },
+    {
+      "commit": "76d833f",
+      "quote": "such arguments now count as unknown and only filter the rewritten relation, so both evaluations agree"
+    },
+    {
+      "commit": "f617c07",
+      "quote": "with recursion on the left the rewrite asks only about the start"
+    },
+    {
+      "commit": "aef67af",
+      "quote": "Goal-directed queries count arguments bound by = or in, and values computed from bound variables, as known."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Lion rewrites the rules with the magic-sets technique",
+      "says": {
+        "decision": "query-evaluation",
+        "chose": "goal-directed-magic-sets",
+        "over": ["full-bottom-up"],
+        "area": "logic",
+        "because": "a query usually needs far less than every fact a program implies"
+      }
+    },
+    {
+      "quote": "Values computed by functions never drive the rewrite inside a rule, so it still finishes.",
+      "says": {
+        "decision": "rule-computed-values-in-rewrite",
+        "chose": "never-drive",
+        "over": ["drive-rewrite"],
+        "area": "logic",
+        "because": "a rewritten rule could then ask about new values without end"
+      }
+    },
+    {
+      "quote": "The rewrite changes how much is computed, never what the answers are",
+      "says": {
+        "rule": "goal-directed-magic-sets",
+        "holds": true,
+        "statement": "Goal-directed queries give the answers full evaluation gives",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "goal-directed-vs-full-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Tests run a corpus of programs both ways and require the same answers.",
+      "says": {
+        "rule": "goal-directed-full-equivalence-tested",
+        "holds": true,
+        "statement": "A corpus of programs run goal-directed and in full must agree",
+        "area": "tests"
+      }
+    },
+    {
+      "quote": "The rewrite changes how much is computed, never what the answers are",
+      "says": {
+        "behavior": "goal-directed-vs-full-answers",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Known arguments are values, variables that earlier goals bind, and values computed from them.",
+      "says": {
+        "behavior": "goal-directed-query-computed-argument",
+        "is": "known",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Known arguments are values, variables that earlier goals bind, and values computed from them.",
+      "says": {
+        "behavior": "goal-directed-query-argument-bound-by-unify",
+        "is": "known",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end.",
+      "says": {
+        "behavior": "goal-directed-rule-computed-argument",
+        "is": "unknown",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Relations that are aggregated, computed by an algorithm, or negated, and what they depend on, are computed in full first.",
+      "says": {
+        "behavior": "goal-directed-aggregated-relation",
+        "is": "computed-in-full",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`new LogicDatabase({ goalDirected: false })` turns it off",
+      "says": {
+        "feature": "goal-directed-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "such an argument now counts as unknown",
+      "says": {
+        "behavior": "goal-directed-non-json-argument-known",
+        "is": "unknown",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Answers can come in a different order, so the `\"order\"` query option is the way to fix one.",
+      "says": {
+        "behavior": "goal-directed-answer-order",
+        "is": "may-differ",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "with a known start, recursion on the left asks only about that start, while recursion on the right asks about every node the paths pass through",
+      "says": {
+        "behavior": "goal-directed-left-recursion-known-start",
+        "is": "asks-start-only",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "with a known start, recursion on the left asks only about that start, while recursion on the right asks about every node the paths pass through",
+      "says": {
+        "behavior": "goal-directed-right-recursion-known-start",
+        "is": "asks-every-node",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A query for the paths from one node of a 3,000-node chain would derive about 4.5 million paths in full.",
+      "says": {
+        "measured": "chain-3000-full-evaluation-paths-millions",
+        "after": 4.5,
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Comparing the two ways on 2,000 generated programs",
+      "says": {
+        "measured": "generated-programs-compared",
+        "after": 2000,
+        "area": "tests"
+      }
+    }
+  ]
+}

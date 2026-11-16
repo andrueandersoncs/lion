@@ -1,0 +1,451 @@
+{
+  "claims": [
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "A call gives a function as many arguments as it takes, and one with any other number fails with one form of message, in plain code and where the call waits for a logic variable",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-extra-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "library-function-missing-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "arity-error-in-waiting-call",
+            "is": "error"
+          },
+          {
+            "behavior": "host-calls-library-function-extra-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "relation-call-wrong-arity",
+            "is": "error"
+          },
+          {
+            "behavior": "schema-call-wrong-arity",
+            "is": "error"
+          }
+        ],
+        "except": ["lambda-extra-arguments"]
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "decision": "library-function-arity",
+        "chose": "strict",
+        "area": "library",
+        "over": ["lenient"],
+        "because": "three surprises found while writing Lion programs for the research skill, each removed by one rule"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "behavior": "library-function-extra-arguments",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "ignored"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "behavior": "library-function-missing-arguments",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "null"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "behavior": "arity-error-in-waiting-call",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `[\"number/subtract\", 10, 3, 1]` used to be `7`, with the `1` dropped, and `[\"object/get\", {\"a\": 1}]` used to be `null`, with no key given. They now fail with `\"number/subtract\" takes 2 arguments but got 3.` and `\"object/get\" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on.",
+      "says": {
+        "behavior": "arity-error-kind",
+        "is": "logic-error",
+        "area": "errors",
+        "was": "schema-error"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Host code that calls a library function gives it the arguments it takes too. `[\"func/callback\", \"value/number?\"]` handed to JavaScript's `Array.prototype.map` is called with three arguments, and fails. A lambda still ignores arguments past its parameters, so a lambda remains the way to write a callback.",
+      "says": {
+        "behavior": "host-calls-library-function-extra-arguments",
+        "is": "error",
+        "area": "host",
+        "breaking": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Host code that calls a library function gives it the arguments it takes too. `[\"func/callback\", \"value/number?\"]` handed to JavaScript's `Array.prototype.map` is called with three arguments, and fails. A lambda still ignores arguments past its parameters, so a lambda remains the way to write a callback.",
+      "says": {
+        "behavior": "lambda-extra-arguments",
+        "is": "ignored",
+        "area": "evaluation"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Host code that calls a library function gives it the arguments it takes too. `[\"func/callback\", \"value/number?\"]` handed to JavaScript's `Array.prototype.map` is called with three arguments, and fails. A lambda still ignores arguments past its parameters, so a lambda remains the way to write a callback.",
+      "says": {
+        "decision": "lambda-arity",
+        "chose": "extra-arguments-ignored",
+        "area": "evaluation",
+        "because": "so host code can call a lambda as a callback"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`func/bind` and `func/apply` take the function and its `this`, then any arguments. `[\"func/bind\", fn]` used to bind `undefined`.",
+      "says": {
+        "behavior": "func-bind-missing-this",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "binds-undefined"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`func/bind` and `func/apply` take the function and its `this`, then any arguments. `[\"func/bind\", fn]` used to bind `undefined`.",
+      "says": {
+        "behavior": "func-apply-missing-this",
+        "is": "error",
+        "area": "library",
+        "breaking": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`func/bind` and `func/apply` take the function and its `this`, then any arguments. `[\"func/bind\", fn]` used to bind `undefined`.",
+      "says": {
+        "behavior": "pass-on-functions-extra-arguments",
+        "is": "accepted",
+        "area": "library"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `[\"string/concat\", \"lion\", \"-\", \"ized\", \"!\"]` is `\"lion-ized!\"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back.",
+      "says": {
+        "behavior": "combining-functions-several-arguments",
+        "is": "combine-left-to-right",
+        "area": "library",
+        "follows": "scheme"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `[\"string/concat\", \"lion\", \"-\", \"ized\", \"!\"]` is `\"lion-ized!\"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back.",
+      "says": {
+        "behavior": "add-more-than-two-arguments",
+        "is": "sum",
+        "area": "library",
+        "was": "ignored"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `[\"string/concat\", \"lion\", \"-\", \"ized\", \"!\"]` is `\"lion-ized!\"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back.",
+      "says": {
+        "behavior": "combining-function-one-argument",
+        "is": "identity",
+        "area": "library"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `[\"number/add\", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `[\"string/concat\", \"lion\", \"-\", \"ized\", \"!\"]` is `\"lion-ized!\"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back.",
+      "says": {
+        "behavior": "add-no-arguments",
+        "is": "error",
+        "area": "library"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`[\"number/toString\", 42]` is `\"42\"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `[\"string/concat\", \"order \", [\"number/toString\", \"?id\"]]`. The only way used to be `[\"object/call-method\", 42, \"toString\"]`.",
+      "says": {
+        "feature": "number/toString",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`[\"number/toString\", 42]` is `\"42\"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `[\"string/concat\", \"order \", [\"number/toString\", \"?id\"]]`. The only way used to be `[\"object/call-method\", 42, \"toString\"]`.",
+      "says": {
+        "behavior": "number-to-string",
+        "is": "json-text",
+        "area": "library",
+        "follows": "json"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`[\"number/toString\", 42]` is `\"42\"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `[\"string/concat\", \"order \", [\"number/toString\", \"?id\"]]`. The only way used to be `[\"object/call-method\", 42, \"toString\"]`.",
+      "says": {
+        "behavior": "number-toString-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`[\"number/toString\", 42]` is `\"42\"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `[\"string/concat\", \"order \", [\"number/toString\", \"?id\"]]`. The only way used to be `[\"object/call-method\", 42, \"toString\"]`.",
+      "says": {
+        "behavior": "number-to-text-in-rule",
+        "is": "number-toString",
+        "area": "library",
+        "was": "object-call-method"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `[\"object/json-stringify\", 42]` is `\"42\"`, and `[\"object/json-stringify\", \"lion\"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `\"number/add\" has no JSON text.`",
+      "says": {
+        "behavior": "object-json-stringify-non-record",
+        "is": "json-text",
+        "area": "library",
+        "was": "error"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `[\"object/json-stringify\", 42]` is `\"42\"`, and `[\"object/json-stringify\", \"lion\"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `\"number/add\" has no JSON text.`",
+      "says": {
+        "behavior": "object-json-stringify-replacer-and-indent",
+        "is": "optional",
+        "area": "library"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "`object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `[\"object/json-stringify\", 42]` is `\"42\"`, and `[\"object/json-stringify\", \"lion\"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `\"number/add\" has no JSON text.`",
+      "says": {
+        "behavior": "object-json-stringify-function",
+        "is": "error",
+        "area": "library"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with.",
+      "says": {
+        "feature": "takes",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with.",
+      "says": {
+        "feature": "over",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with.",
+      "says": {
+        "feature": "combining",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with.",
+      "says": {
+        "feature": "nameOf",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "behavior": "fact-holding-name-message",
+        "is": "names-column-and-name",
+        "area": "errors",
+        "was": "shows-nothing-wrong"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "behavior": "retract-holding-name-message",
+        "is": "names-column-and-name",
+        "area": "errors"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "behavior": "why-holding-name-message",
+        "is": "names-column-and-name",
+        "area": "errors"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "behavior": "fact-holding-logic-variable-message",
+        "is": "names-column-and-name",
+        "area": "errors",
+        "was": "logic-variables-message"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "feature": "facts-cannot-contain-logic-variables-message",
+        "kind": "message",
+        "present": false,
+        "replaced_by": "facts-may-only-contain-data-message"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `[\"fact\", [\"note\", \"source\"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: [\"note\",\"source\"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the \"text\" of [\"note\",\"source\"] is the relation \"source\". To mean the string itself, write [\"quote\", \"source\"].` The same message covers the name of a schema or a function, and a logic variable such as `\"?why\"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.",
+      "says": {
+        "feature": "facts-may-only-contain-data-message",
+        "kind": "message",
+        "present": true
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `\"graph/pageRank\"`, `Schema \"Tree\" takes 1 argument, the value to check, but got 2.` is `\"Tree\" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `\"aggregate/sum\" takes 1 argument but got 2.` A relation's message is unchanged.",
+      "says": {
+        "behavior": "arity-message-form",
+        "is": "one-form",
+        "area": "errors"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `\"graph/pageRank\"`, `Schema \"Tree\" takes 1 argument, the value to check, but got 2.` is `\"Tree\" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `\"aggregate/sum\" takes 1 argument but got 2.` A relation's message is unchanged.",
+      "says": {
+        "behavior": "graph-algorithm-arity-message",
+        "is": "one-form",
+        "area": "errors",
+        "was": "own-form"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `\"graph/pageRank\"`, `Schema \"Tree\" takes 1 argument, the value to check, but got 2.` is `\"Tree\" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `\"aggregate/sum\" takes 1 argument but got 2.` A relation's message is unchanged.",
+      "says": {
+        "behavior": "schema-arity-message",
+        "is": "one-form",
+        "area": "errors",
+        "was": "own-form"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `\"graph/pageRank\"`, `Schema \"Tree\" takes 1 argument, the value to check, but got 2.` is `\"Tree\" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `\"aggregate/sum\" takes 1 argument but got 2.` A relation's message is unchanged.",
+      "says": {
+        "behavior": "aggregate-arity-message",
+        "is": "one-form",
+        "area": "errors",
+        "was": "own-form"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `\"graph/pageRank\"`, `Schema \"Tree\" takes 1 argument, the value to check, but got 2.` is `\"Tree\" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `\"aggregate/sum\" takes 1 argument but got 2.` A relation's message is unchanged.",
+      "says": {
+        "behavior": "relation-arity-message",
+        "is": "unchanged",
+        "area": "errors"
+      },
+      "commits": ["356e74a"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.7.0 bundles `@lionlang/core` 0.8.0.",
+      "says": {
+        "behavior": "cli-0-7-0-bundled-core",
+        "is": "core-0-8-0",
+        "area": "packages"
+      },
+      "commits": ["37f1451"]
+    },
+    {
+      "quote": "An `ArithmeticError` shows every number of the call: `number/add: 1e+308 + 1e+308 + 1 has no finite result.`",
+      "says": {
+        "behavior": "arithmetic-error-message",
+        "is": "shows-every-number",
+        "area": "errors"
+      },
+      "commits": ["356e74a"]
+    },
+    {
+      "quote": "A fact that holds a lambda fails with `... which is not JSON data.` It used to fail with `Facts cannot contain logic variables`, though it holds none.",
+      "says": {
+        "behavior": "fact-holding-lambda-message",
+        "is": "not-json-data",
+        "area": "errors",
+        "was": "logic-variables-message",
+        "fixes": true
+      },
+      "commits": ["356e74a"]
+    }
+  ]
+}

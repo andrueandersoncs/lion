@@ -1,0 +1,58 @@
+{
+  "title": "Special forms are written with a leading slash, such as `\"/define\"`",
+  "context": "Special forms and names share one space of strings: `[\"define\", \"x\", 1]` is a form because its first element is the string `\"define\"`, and `define` refused to bind the names `begin`, `define`, `eval`, and `quote`. Library functions already had names of the form `module/name`, such as `math/+`. On March 30, 2026, the commit that added `lambda` also changed how forms are spelled.",
+  "decision": "Every special form took a leading slash: `\"/quote\"`, `\"/eval\"`, `\"/begin\"`, `\"/define\"`, and the new `\"/lambda\"`. The names that `define` and `lambda` refused to bind became `/begin`, `/define`, `/eval`, and `/quote`.",
+  "consequences": "Every program and test that used a special form changed its spelling, the agent's program in `packages/agent/src/index.ts` among them, as in `[\"/define\", \"message-box\", ...]`. The prefix lasted one day, and no release used it.",
+  "commits": [
+    {
+      "commit": "b673d05",
+      "quote": "adds slash-prefix to special forms"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every special form took a leading slash",
+      "says": {
+        "decision": "special-form-prefix",
+        "chose": "slash",
+        "over": ["plain"],
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "The prefix lasted one day, and no release used it.",
+      "says": {
+        "rule": "special-forms-slash-prefix",
+        "holds": false,
+        "statement": "Special forms are written with a leading slash, such as \"/define\"",
+        "area": "forms",
+        "replaced_by": "special-forms-plain-names"
+      }
+    },
+    {
+      "quote": "and the new `\"/lambda\"`",
+      "says": {
+        "feature": "lambda",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`define` refused to bind the names `begin`, `define`, `eval`, and `quote`",
+      "says": {
+        "behavior": "define-special-form-name",
+        "is": "rejected",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "Library functions already had names of the form `module/name`",
+      "says": {
+        "rule": "library-names-module-slash-name",
+        "holds": true,
+        "statement": "Library functions are named module/name",
+        "area": "library"
+      }
+    }
+  ]
+}

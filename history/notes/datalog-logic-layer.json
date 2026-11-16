@@ -1,0 +1,236 @@
+{
+  "title": "Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values",
+  "context": "Lion was a Lisp whose programs are JSON, and a program had to spell out how to find each answer. Questions about connected data, such as where a path from one node leads, are easier to state as facts, rules that derive more facts, and queries over them. A logic layer had to fit the language: its rules and queries had to be JSON like the rest of Lion, and its answers had to be plain Lion data.",
+  "decision": "`@lionlang/core` gets a Datalog-style logic layer. `[\"relation\", \"edge\", [\"from\", \"to\"]]` binds `edge` to a relation, and calling it, as in `[\"edge\", \"a\", \"?b\"]`, builds a goal, which is a value like any other. `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms, and an unbound `\"?name\"` string evaluates to a logic variable, while a bound name still wins. Answers are computed bottom-up with semi-naive evaluation and kept until a fact or rule changes. Rules are checked for safety when they are added, negation is stratified, and `why` explains any derived fact as a tree of rules, facts, checks, and absences.",
+  "consequences": "Evaluation starts from the facts, and rules only combine values that already exist, so it always stops, and the answer does not depend on the order rules are written in. The price is expressiveness: a recursive rule cannot invent new values. A rule that negates its own head, directly or through others, has no stratum and is rejected when it is added. Each `run` gets its own database, and a host passes `{ database }` as the third argument of `run` to share one across runs. The logic features that came later, such as aggregates, keys, snapshots, invariants, and graph algorithms, are forms of the same database.",
+  "alternatives": [
+    {
+      "option": "Prolog, which answers a question by searching backward from it and trying rules in order",
+      "rejected": "A Prolog query can run forever, and its answer can depend on the order the rules were written in."
+    },
+    {
+      "option": "Rules and queries in a syntax of their own, as most logic languages have",
+      "rejected": "In Lion a goal is a value, so it can be stored, passed to a function, built by a lambda, and combined with `and`, `or`, and `not`, and answers come back as ordinary records. That keeps the logic layer inside the language."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "04632de",
+      "quote": "rules are checked for safety when added, negation is stratified"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`@lionlang/core` gets a Datalog-style logic layer.",
+      "says": {
+        "decision": "logic-paradigm",
+        "chose": "datalog",
+        "over": ["prolog"],
+        "area": "logic",
+        "because": "a Prolog query can run forever, and its answer can depend on the order the rules were written in"
+      }
+    },
+    {
+      "quote": "In Lion a goal is a value, so it can be stored, passed to a function, built by a lambda, and combined with `and`, `or`, and `not`, and answers come back as ordinary records.",
+      "says": {
+        "decision": "logic-syntax",
+        "chose": "ordinary-forms-and-values",
+        "over": ["own-syntax"],
+        "area": "logic",
+        "because": "it keeps the logic layer inside the language"
+      }
+    },
+    {
+      "quote": "an unbound `\"?name\"` string evaluates to a logic variable, while a bound name still wins",
+      "says": {
+        "decision": "question-mark-name-precedence",
+        "chose": "binding-wins",
+        "over": ["logic-variable"],
+        "area": "names"
+      }
+    },
+    {
+      "quote": "Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values",
+      "says": {
+        "rule": "datalog-logic-layer",
+        "holds": true,
+        "statement": "Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-call",
+            "is": "goal"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"relation\", \"edge\", [\"from\", \"to\"]]` binds `edge` to a relation",
+      "says": {
+        "feature": "relation",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "fact",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "retract",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "rule",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "query",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "why",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "not",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "and",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "or",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms",
+      "says": {
+        "feature": "=",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "calling it, as in `[\"edge\", \"a\", \"?b\"]`, builds a goal, which is a value like any other",
+      "says": {
+        "behavior": "relation-call",
+        "is": "goal",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "an unbound `\"?name\"` string evaluates to a logic variable, while a bound name still wins",
+      "says": {
+        "behavior": "unbound-question-mark-string",
+        "is": "logic-variable",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "an unbound `\"?name\"` string evaluates to a logic variable, while a bound name still wins",
+      "says": {
+        "behavior": "bound-question-mark-string",
+        "is": "bound-value",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "Answers are computed bottom-up with semi-naive evaluation and kept until a fact or rule changes.",
+      "says": {
+        "behavior": "logic-evaluation-strategy",
+        "is": "semi-naive",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Answers are computed bottom-up with semi-naive evaluation and kept until a fact or rule changes.",
+      "says": {
+        "behavior": "logic-answer-cache",
+        "is": "until-facts-or-rules-change",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Rules are checked for safety when they are added",
+      "says": {
+        "behavior": "rule-safety-check-time",
+        "is": "when-added",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`why` explains any derived fact as a tree of rules, facts, checks, and absences",
+      "says": {
+        "behavior": "why-derived-fact",
+        "is": "explanation-tree",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A rule that negates its own head, directly or through others, has no stratum and is rejected when it is added.",
+      "says": {
+        "behavior": "negation-through-recursion",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "the answer does not depend on the order rules are written in",
+      "says": {
+        "behavior": "rule-order-answers",
+        "is": "independent",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Each `run` gets its own database",
+      "says": {
+        "behavior": "run-logic-database",
+        "is": "fresh-per-run",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "a host passes `{ database }` as the third argument of `run` to share one across runs",
+      "says": {
+        "feature": "run-database-option",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}

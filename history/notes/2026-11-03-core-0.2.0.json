@@ -1,0 +1,632 @@
+{
+  "claims": [
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "graph-editor",
+        "kind": "page",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "behavior": "repl-root-route",
+        "is": "graph-editor",
+        "area": "editor"
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "rule": "graph-editor-is-the-repl",
+        "holds": true,
+        "statement": "`@lionlang/repl` is the Lion Fold Map, a local-first semantic graph editor over the program's JSON.",
+        "area": "editor",
+        "predicts": [
+          {
+            "behavior": "repl-root-route",
+            "is": "graph-editor"
+          }
+        ]
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "editor-source-view",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "editor-inspector-pane",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "editor-outline-pane",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "editor-search",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views.",
+      "says": {
+        "feature": "editor-result-pane",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": [
+        "bdc6d89",
+        "af779dc",
+        "e013ec1",
+        "3f3d293",
+        "4ef20fb",
+        "a564abc",
+        "5847eba",
+        "3567d25",
+        "5ec44b7",
+        "38d9144"
+      ],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "@lionlang/typesafe-ai",
+        "kind": "package",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "typesafe/noul",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "typesafe/choice",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "typesafe/score",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "typesafe/system-one",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.",
+      "says": {
+        "feature": "typesafe/models",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["fa4cab8", "4042de8"]
+    },
+    {
+      "quote": "The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command.",
+      "says": {
+        "feature": "@lionlang/cli",
+        "kind": "package",
+        "present": true
+      },
+      "commits": ["2753a40", "2ca94fd"],
+      "decisions": ["cli-bundles-editor"]
+    },
+    {
+      "quote": "The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command.",
+      "says": {
+        "feature": "lion",
+        "kind": "command",
+        "present": true
+      },
+      "commits": ["2753a40", "2ca94fd"],
+      "decisions": ["cli-bundles-editor"]
+    },
+    {
+      "quote": "The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command.",
+      "says": {
+        "feature": "lion-repl",
+        "kind": "command",
+        "present": true
+      },
+      "commits": ["2753a40", "2ca94fd"],
+      "decisions": ["cli-bundles-editor"]
+    },
+    {
+      "quote": "The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command.",
+      "says": {
+        "behavior": "cli-editor",
+        "is": "bundled",
+        "area": "cli"
+      },
+      "commits": ["2753a40", "2ca94fd"],
+      "decisions": ["cli-bundles-editor"]
+    },
+    {
+      "quote": "The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command.",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The published CLI includes the production editor and core, so a project needs neither the monorepo nor a separate REPL install.",
+        "area": "cli",
+        "predicts": [
+          {
+            "behavior": "cli-editor",
+            "is": "bundled"
+          },
+          {
+            "behavior": "cli-core-dependency",
+            "is": "bundled"
+          }
+        ]
+      },
+      "commits": ["2753a40", "2ca94fd"],
+      "decisions": ["cli-bundles-editor"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "editor-shared-transaction-history",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "behavior": "editor-stale-worker-response",
+        "is": "rejected",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "graph-elk-layout",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "graph-branch-folding",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "graph-bounded-rendering",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.",
+      "says": {
+        "feature": "editor-performance-fixtures",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["bdc6d89", "18e3ae1", "907cfd5", "c2360e9", "8f4eb60"]
+    },
+    {
+      "quote": "Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.",
+      "says": {
+        "feature": "editor-live-evaluation",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "5847eba"]
+    },
+    {
+      "quote": "Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.",
+      "says": {
+        "behavior": "editor-live-evaluation-timing",
+        "is": "debounced",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "5847eba"]
+    },
+    {
+      "quote": "Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.",
+      "says": {
+        "behavior": "editor-evaluation-environment",
+        "is": "stdlib-only",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "5847eba"]
+    },
+    {
+      "quote": "Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.",
+      "says": {
+        "behavior": "editor-evaluation-states",
+        "is": "result-console-error-canceled-stale",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "5847eba"]
+    },
+    {
+      "quote": "File System Access open/save workflows with permission and external-change handling, plus import/download fallback.",
+      "says": {
+        "feature": "editor-file-system-access",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89"]
+    },
+    {
+      "quote": "File System Access open/save workflows with permission and external-change handling, plus import/download fallback.",
+      "says": {
+        "feature": "editor-import-download-fallback",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89"]
+    },
+    {
+      "quote": "Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow.",
+      "says": {
+        "feature": "editor-keyboard-workflows",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["bdc6d89", "3cf2d0b", "cfd42a9", "db1f0f7", "a3b1db6"]
+    },
+    {
+      "quote": "Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow.",
+      "says": {
+        "behavior": "editor-reduced-motion",
+        "is": "respected",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "3cf2d0b", "cfd42a9", "db1f0f7", "a3b1db6"]
+    },
+    {
+      "quote": "Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow.",
+      "says": {
+        "behavior": "editor-forced-colors",
+        "is": "supported",
+        "area": "editor"
+      },
+      "commits": ["bdc6d89", "3cf2d0b", "cfd42a9", "db1f0f7", "a3b1db6"]
+    },
+    {
+      "quote": "Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow.",
+      "says": {
+        "feature": "editor-wcag-checks",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["bdc6d89", "3cf2d0b", "cfd42a9", "db1f0f7", "a3b1db6"]
+    },
+    {
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "feature": "stream-route",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "graph-editor"
+      },
+      "commits": ["bdc6d89", "f27e671"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "feature": "repl-route",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "graph-editor"
+      },
+      "commits": ["bdc6d89", "f27e671"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "decision": "repl-surface",
+        "chose": "graph-editor",
+        "area": "editor",
+        "over": ["terminal-repl", "stream-prototype"]
+      },
+      "commits": ["bdc6d89", "f27e671"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Replaced the former REPL and `/stream` prototype with the graph editor.",
+      "says": {
+        "behavior": "repl-root-route",
+        "is": "graph-editor",
+        "area": "editor",
+        "was": "terminal-repl"
+      },
+      "commits": ["bdc6d89", "f27e671"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies.",
+      "says": {
+        "behavior": "repl-operating-docs",
+        "is": "describe-graph-editor",
+        "area": "docs"
+      },
+      "commits": ["bdc6d89"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies.",
+      "says": {
+        "feature": "repl-demo-assets",
+        "kind": "file",
+        "present": false
+      },
+      "commits": ["bdc6d89"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies.",
+      "says": {
+        "feature": "repl-prototype-dependencies",
+        "kind": "package",
+        "present": false
+      },
+      "commits": ["bdc6d89"],
+      "decisions": ["graph-editor-is-the-repl"]
+    },
+    {
+      "quote": "Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.",
+      "says": {
+        "decision": "effect-version",
+        "chose": "effect-4",
+        "area": "build",
+        "over": ["effect-4-0-0-rc-115"]
+      },
+      "commits": ["cbb11e3", "1b380d9"],
+      "decisions": ["effect-v4"]
+    },
+    {
+      "quote": "Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.",
+      "says": {
+        "rule": "effect-v4",
+        "holds": true,
+        "statement": "Lion moves from Effect 3 to Effect 4.",
+        "area": "packages"
+      },
+      "commits": ["cbb11e3", "1b380d9"],
+      "decisions": ["effect-v4"]
+    },
+    {
+      "quote": "Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.",
+      "says": {
+        "decision": "cli-effect-cli-module",
+        "chose": "stable-effect-cli",
+        "area": "cli",
+        "over": ["unstable-effect-cli"]
+      },
+      "commits": ["cbb11e3", "1b380d9"],
+      "decisions": ["effect-v4"]
+    },
+    {
+      "quote": "Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.",
+      "says": {
+        "behavior": "effect-package-version",
+        "is": "effect-4-1-2",
+        "area": "build"
+      },
+      "commits": ["cbb11e3", "1b380d9"],
+      "decisions": ["effect-v4"]
+    },
+    {
+      "quote": "Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module.",
+      "says": {
+        "behavior": "effect-language-service-version",
+        "is": "0-87-5",
+        "area": "build"
+      },
+      "commits": ["cbb11e3", "1b380d9"],
+      "decisions": ["effect-v4"]
+    },
+    {
+      "quote": "A UI streaming prototype in the REPL, at `/stream`, which the graph editor replaced before any release.",
+      "says": {
+        "feature": "stream-route",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["9605505", "e16eb12"]
+    },
+    {
+      "quote": "A UI streaming prototype in the REPL, at `/stream`, which the graph editor replaced before any release.",
+      "says": {
+        "feature": "stream-route",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "graph-editor"
+      },
+      "commits": ["9605505", "e16eb12"]
+    },
+    {
+      "quote": "A UI streaming prototype in the REPL, at `/stream`, which the graph editor replaced before any release.",
+      "says": {
+        "behavior": "stream-prototype-release",
+        "is": "unreleased",
+        "area": "process"
+      },
+      "commits": ["9605505", "e16eb12"]
+    },
+    {
+      "quote": "Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page.",
+      "says": {
+        "behavior": "site-documentation",
+        "is": "matches-readme",
+        "area": "site",
+        "fixes": true
+      },
+      "commits": ["32b3996", "5271396", "799f6bf"]
+    },
+    {
+      "quote": "Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page.",
+      "says": {
+        "behavior": "site-layout-narrow",
+        "is": "responsive",
+        "area": "site",
+        "fixes": true
+      },
+      "commits": ["32b3996", "5271396", "799f6bf"]
+    },
+    {
+      "quote": "Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page.",
+      "says": {
+        "behavior": "site-deploy-branch",
+        "is": "main",
+        "area": "process"
+      },
+      "commits": ["32b3996", "5271396", "799f6bf"]
+    },
+    {
+      "quote": "Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page.",
+      "says": {
+        "feature": "first-site-page",
+        "kind": "page",
+        "present": false,
+        "replaced_by": "site-redesign"
+      },
+      "commits": ["32b3996", "5271396", "799f6bf"]
+    }
+  ]
+}

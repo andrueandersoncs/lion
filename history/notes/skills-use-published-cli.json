@@ -1,0 +1,94 @@
+{
+  "title": "The skills' scripts run the published `@lionlang/cli`, never the copy of Lion in the project",
+  "context": "The reasoning skill keeps an agent's checked working memory while it works on a project, and Lion itself is one such project: the skill's first trial fixed a bug in Lion's own loading order. A checker that ran the project's copy of Lion would change, or break, with the code under work. The research skill's script `replay.mjs` already ran `bunx @lionlang/cli`, with no way to name another command.",
+  "decision": "The scripts of both skills run the published Lion CLI through `bunx`, or `npx` without bun, and never a copy of Lion in the project, so changing Lion itself never changes the checker. `LION_CLI` names another command, such as `bun ~/lion/packages/cli/dist/bin.mjs`, for a run that needs a CLI not yet released. The research skill's `replay.mjs` and its eval's `grade.mjs` read `LION_CLI` as the reasoning skill's scripts do.",
+  "consequences": "A skill can use a library function only once a release has it: the release notes of core 0.9.0 and 0.10.0 say the research skill needs them, and the skill names the CLI version it needs. The first run needs network access, and `bunx` keeps running whatever version it fetched first, so the research skill asks for the newest once before anything else.",
+  "alternatives": [
+    {
+      "option": "Run the copy of Lion in the project being worked on",
+      "rejected": "A project's own copy of Lion, even a broken one, would change the checker, and Lion itself is a project the skills are used on."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "4c8df1b",
+      "quote": "They run the published @lionlang/cli, so changing Lion itself never changes the checker."
+    },
+    "41477b1"
+  ],
+  "claims": [
+    {
+      "quote": "The scripts of both skills run the published Lion CLI through `bunx`, or `npx` without bun, and never a copy of Lion in the project, so changing Lion itself never changes the checker.",
+      "says": {
+        "decision": "skill-lion-runtime",
+        "chose": "published-cli",
+        "over": ["project-copy"],
+        "because": "a project's own copy of Lion, even a broken one, would change the checker, and Lion itself is a project the skills are used on",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "The skills' scripts run the published `@lionlang/cli`, never the copy of Lion in the project",
+      "says": {
+        "rule": "skills-use-published-cli",
+        "holds": true,
+        "statement": "The skills' scripts run the published @lionlang/cli, never the copy of Lion in the project",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "skill-script-lion-command",
+            "is": "published-cli"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The scripts of both skills run the published Lion CLI through `bunx`, or `npx` without bun",
+      "says": {
+        "behavior": "skill-script-lion-command",
+        "is": "published-cli",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "`LION_CLI` names another command, such as `bun ~/lion/packages/cli/dist/bin.mjs`, for a run that needs a CLI not yet released.",
+      "says": {
+        "feature": "LION_CLI",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "The research skill's `replay.mjs` and its eval's `grade.mjs` read `LION_CLI` as the reasoning skill's scripts do.",
+      "says": {
+        "behavior": "research-replay-lion-command",
+        "is": "lion-cli-env",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "The research skill's `replay.mjs` and its eval's `grade.mjs` read `LION_CLI` as the reasoning skill's scripts do.",
+      "says": {
+        "behavior": "research-grade-lion-command",
+        "is": "lion-cli-env",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A skill can use a library function only once a release has it",
+      "says": {
+        "behavior": "skill-library-function-before-release",
+        "is": "unavailable",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "so the research skill asks for the newest once before anything else",
+      "says": {
+        "behavior": "research-skill-cli-version-first",
+        "is": "asks-newest",
+        "area": "skills"
+      }
+    }
+  ]
+}

@@ -6,57 +6,234 @@
 
 Rules that say something exists without saying what it is. A rule can give every person a mother nobody has named, and the value it invents is ordinary Lion data that a program can write, store, compare, and look up.
 
+### Breaking
+
+- `exists` and `some` are names of special forms, so a relation, a `define`, or a lambda parameter can no longer be named `"exists"` or `"some"`. (`name-exists-or-some` is `error`, was `allowed`)
+
 ### Added
 
-- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.`
-- A rule head can be an `and` of relation calls, which adds a row to each: `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]`. Under `exists`, one unknown is in every row: `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]`.
-- An invented value is an unknown, written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. The form is ordinary Lion, and evaluating it gives the same unknown, so a program can write one, put it in a fact (`["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`), compare it, or look it up. Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. With several variables in `exists`, each gets its own unknown, and its `some` mentions the others.
-- An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. A function that needs a number or a string fails on one, as it does on any value of the wrong kind. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother.
-- `["value/unknown?", x]` is true for an unknown, so `["not", ["value/unknown?", "?m"]]` keeps only known answers. `value/object?` is false for one.
-- `["exists", ["?m", ...], goal]` is also a goal: it holds when the goal holds for some value of each listed variable. The listed variables are its own wherever it stands, as a question's own variables are, and never appear in an answer. It is a question, so in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
-- A `fact` or `retract` can hold `exists`: `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. `why` takes one too.
-- A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. With `{"key": "child"}` on `mother`, "everyone has a mother" and "twins share a mother" give twins ben and cy the one unknown mother `["some", "?m", ["mother", "ben", "?m"]]`. Two different given values are still an error, with the key's message, and an unknown that a fact holds is given, so a key never changes it. An unknown never takes a value that describes it, so of two invented unknowns where one describes the other, the one that describes takes the other.
-- Equality rules: a rule's head can be `["=", a, b]`, which says the two are one value whenever the body holds. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, by the rule keys follow, so `["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]]` gives twins one mother. The rule holds as the invariant `["and", goal, ..., ["not", ["=", a, b]]]` too, so a rule that does not hold is not added and a change that leaves two different known values under it is refused, in an invariant's words. Lion follows each invented value through the columns of the rules, and the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, so the unknown can pass through any number of derived relations first: with `["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]]`, the rule `["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]` makes ben's unknown mother the one his birth record names. A question about those relations, such as a goal under `not`, would go through recursion, and is refused when the rule is added, whatever the facts, with the message any such question gets: `Rule [...] asks about "private", which depends on "listed". A question, such as a goal under "not", cannot go through recursion.` A question about columns no invented value reaches is allowed. A head can join relation calls and `=` with `and`.
-- `why` explains a row by an answer that gives it as it is, when one does, so after a key makes unknowns equal every row still rests only on rows explained before it. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with a new kind of premise, `{"same": [unknown, value]}`.
-- Snapshots write rules with `exists` heads as written, and unknowns in facts as their `some` forms, so the CLI's `--database` file keeps them.
-- A relation that rules invent rows of is derived in full, as an aggregated relation is, and so is a relation derived together with one because an equality rule reads it. A goal-directed query gives the same answers.
-- `["string/slice", text, start, end]` and `["array/slice", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `["string/slice", "lionlang", 0, 4]` is `"lion"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- A lookup on a research page can lead with an answer in words: `"answer"` is a `lambda` like its `query`, the page shows the sentence it gives for what the reader chose, and folds the rows under "Show the evidence". A lookup with more than twelve options is a box that finds them as the reader types, not a long list. `page-check.json` asks the answer with the example.
-- The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first. See [A version improves a score when its worst run beats the best that any earlier version was sure to give](DECISIONS.md#score-improves-past-noise) and [A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff](DECISIONS.md#patience-since-last-payoff).
-- A lion-reasoning score can list what it `requires`, such as `{"question": {"failing tests": "test.mjs"}, "value": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions. See [A version's runs of a score count only where what the score requires holds](DECISIONS.md#score-requirements).
-- The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for". See [A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff](DECISIONS.md#patience-since-last-payoff) and [A research lead is done when every question it pursues has an answer two publishers give first-hand](DECISIONS.md#lead-done-when-confirmed).
+- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.` (`existential-rules` added; `exists` added)
+- A rule head can be an `and` of relation calls, which adds a row to each: `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]`. Under `exists`, one unknown is in every row: `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]`. (`rule-head-and` added)
+- An invented value is an unknown, written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. The form is ordinary Lion, and evaluating it gives the same unknown, so a program can write one, put it in a fact (`["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`), compare it, or look it up. Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. With several variables in `exists`, each gets its own unknown, and its `some` mentions the others. (`some` added)
+- `["value/unknown?", x]` is true for an unknown, so `["not", ["value/unknown?", "?m"]]` keeps only known answers. `value/object?` is false for one. (`value/unknown?` added)
+- `why` explains a row by an answer that gives it as it is, when one does, so after a key makes unknowns equal every row still rests only on rows explained before it. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with a new kind of premise, `{"same": [unknown, value]}`. (`why-same-premise` added)
+- Equality rules: a rule's head can be `["=", a, b]`, which says the two are one value whenever the body holds. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, by the rule keys follow, so `["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]]` gives twins one mother. The rule holds as the invariant `["and", goal, ..., ["not", ["=", a, b]]]` too, so a rule that does not hold is not added and a change that leaves two different known values under it is refused, in an invariant's words. Lion follows each invented value through the columns of the rules, and the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, so the unknown can pass through any number of derived relations first: with `["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]]`, the rule `["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]` makes ben's unknown mother the one his birth record names. A question about those relations, such as a goal under `not`, would go through recursion, and is refused when the rule is added, whatever the facts, with the message any such question gets: `Rule [...] asks about "private", which depends on "listed". A question, such as a goal under "not", cannot go through recursion.` A question about columns no invented value reaches is allowed. A head can join relation calls and `=` with `and`. (`equality-rules` added; `invented-value-flow-tracking` added)
+- `["string/slice", text, start, end]` and `["array/slice", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `["string/slice", "lionlang", 0, 4]` is `"lion"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (`array/slice` added; `string/slice` added)
+- `bun run history check` fails on a finding of the model that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history ask` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. (`bun-run-history-ask` added; `history-research-reversed` added)
+- The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything. (`bun-run-history-check` added; `project-record` added)
+- a change is recorded in `history/changes/`, and `bun run history write` writes the page (`bun-run-history-write` added)
+- A decision can say in the research's terms what it settles, with `"claims"` quoted from its own words, so it is checked against every rule and behavior as soon as it is written. (`decision-claims` added)
+- Rules in `history/core.json` derive the rest (`history-core-json` added)
+- `CHANGELOG.md` and `DECISIONS.md` are computed by the Lion expressions in `history/outputs.json`, and the record's tests fail when either file is not what the record writes (`history-outputs-json` added)
+- `makeTypeSafeBindings` accepts the TypeSafe SDK client configuration and an optional namespace. (`makeTypeSafeBindings` added)
+- A lookup on a research page can lead with an answer in words: `"answer"` is a `lambda` like its `query`, the page shows the sentence it gives for what the reader chose, and folds the rows under "Show the evidence". A lookup with more than twelve options is a box that finds them as the reader types, not a long list. `page-check.json` asks the answer with the example. (`research-lookup-answer` added)
+- `bun run history research` builds the model and the page `docs/research.html`, and fails on a finding in neither list and on a listed finding the model no longer finds (`research-model` added)
+- probes that run a program on Lion at HEAD are sources too (`research-probes` added)
+- `researches-recent-outage` researches a live event on the web. (`researches-recent-outage` added)
+- The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first. (`reasoning-best` added; `reasoning-improved` added; `reasoning-notes-directions` added; `reasoning-notes-scores` added; `reasoning-observation-tries` added; `reasoning-regressed` added; `reasoning-score-in` added)
+- A lion-reasoning score can list what it `requires`, such as `{"question": {"failing tests": "test.mjs"}, "value": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions. (`reasoning-direction-needs` added; `reasoning-ruled-out` added; `reasoning-score-requires` added; `reasoning-unmet` added)
+- Both skills use the one rule and the same names: `paid_off`, `miss`, `exhausted`, `live`, `progress` (`reasoning-exhausted` added; `reasoning-live` added; `reasoning-miss` added; `reasoning-paid-off` added; `reasoning-progress` added; `research-exhausted` added; `research-live` added; `research-miss` added; `research-paid-off` added; `research-progress` added)
+- The reasoning skill now keeps the record of an experiment loop (`reasoning-experiment-loop` added)
+- The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for". (`research-lead-done` added; `research-leads` added; `research-source-for` added)
+- A probe can answer for a feature as well as a behavior: `{"feature": "math/+", "kind": "function", "program": ["value/function?", "math/+"]}` gives `false`, so the record that says `math/+` is gone holds. `["lion/special-form?", name]` tells a probe whether Lion has a special form of that name. `bun run history check` reports a feature's probe that gives neither `true` nor `false`, and a question two probes answer. (`feature-probes` added; `lion-special-form-question` added)
+- Every change and decision is recorded as claims in `history/notes/`, each a source's words and what they say, and `history/changes/` and `history/decisions/` are gone. `bun run history write` builds the model of Lion's development and writes every page from it, `bun run history check` fails on what the record's checks and the research find and on a page that is out of date, and `bun run history ask` asks the model. (`history-notes` added)
+- A command that needs more than a line is a script in `packages/history/commands/` that the line runs (`probe-command-scripts` added)
+- A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `["repo/files", path]` lists the files under a folder, `["repo/read", path]` gives a file's text, `["repo/json", path]` gives a JSON file as a value, and `["repo/run", name]` runs a command declared in `history/research/commands.json` and gives `{"exit", "output"}`. So a decision record can assert how the project is set up and be checked: `["cond", [["string/includes", ["repo/read", ".husky/pre-commit"], "bun run test"], ["quote", "runs-tests"]], ["else", ["quote", "other"]]]` gives `"runs-tests"`, which is what the record of the quality gates asserts of the pre-commit hook. (`probe-commands-file` added; `repo-files` added; `repo-json` added; `repo-read` added; `repo-run` added)
+
+### Removed
+
+- and so is `supersedes` (`decision-supersedes-field` removed)
+- `history/changes/` and `history/decisions/` are gone (`history-changes-and-decisions-folders` removed)
+- The research page and the commands `bun run history research`, `query`, `sources`, and `probe` are gone: the changelog shows what the page showed, and `write`, `check`, and `ask` do what the commands did. (`history-research-command` removed)
 
 ### Changed
 
-- A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `["query", ["report", "?t"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail. See [Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it](DECISIONS.md#goal-directed-shares-full-relations).
-- The check that evaluation finishes is weak acyclicity, one rule for computed and invented values. Values flow from the columns a rule's body reads to the columns of its head, and a rule may make a new value for a column, by computing it or inventing it, as long as that value never flows back, through the rules, into making another. `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` used to be refused, since any computed value in a recursive rule's head was, and is now accepted. Every program accepted before is still accepted. A computed value that flows back is refused with the same message as before. An invented one is refused with `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.`
-- `Facts may only contain JSON data, but ...` is now `Facts may only contain data, but ...`, since a fact can hold an unknown. The rest of the message is unchanged. The other messages about a value that cannot be a row or an answer, such as `The query produced an answer that is not data`, say "data" too.
-- `Unsafe rule head [...]: ?m never appears in a relation in the body.` goes on to say `To say the head holds for some value nobody has given, list it in "exists": ["exists", ["?m"], head].`
-- `exists` and `some` are names of special forms, so a relation, a `define`, or a lambda parameter can no longer be named `"exists"` or `"some"`.
-- The research skill's page shows how far it has got. While Lion opens the model, a line under the title says so, then "Working out the answers: 3 of 15" with a bar, and every view shows its questions at once, each with "Working this out from the model…" until it is worked out, the view the reader has open first. It used to stay empty until every view was done.
-- On a research page, "Query the model" is a link at the end of the last view instead of a tab, so the tabs hold only what the reader came for.
-- The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one.
-- The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`.
+- A relation that rules invent rows of is derived in full, as an aggregated relation is, and so is a relation derived together with one because an equality rule reads it. A goal-directed query gives the same answers. (`equality-group-relation-derivation` is `in-full`; `goal-directed-equality-group-relation` is `same-as-full`; `goal-directed-invented-relation` is `same-as-full`; `invented-relation-derivation` is `in-full`)
+- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.` (`existential-rule-aggregate` is `error`; `existential-rule-head-already-holds` is `invents-nothing`)
+- A rule head can be an `and` of relation calls, which adds a row to each: `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]`. Under `exists`, one unknown is in every row: `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]`. (`exists-and-head-unknown` is `one-unknown-in-every-row`; `rule-head-and-rows` is `row-in-each-relation`)
+- `["exists", ["?m", ...], goal]` is also a goal: it holds when the goal holds for some value of each listed variable. The listed variables are its own wherever it stands, as a question's own variables are, and never appear in an answer. It is a question, so in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant. (`exists-goal` is `holds-for-some-value`; `exists-goal-in-find` is `allowed`; `exists-goal-in-invariant` is `allowed`; `exists-goal-in-query` is `allowed`; `exists-goal-in-rule-body` is `allowed`; `exists-goal-plain-code` is `true`; `exists-goal-under-not` is `allowed`; `exists-listed-variables` is `own-variables`; `exists-variables-in-answer` is `never`)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`exists-goal-as-value` is `true`; `begin-result-goal` is `goal-as-written`; `cond-empty-string-condition` is `false`; `cond-null-condition` is `false`; `cond-zero-condition` is `false`; `program-result-goal` is `goal-as-written`)
+- An invented value is an unknown, written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. The form is ordinary Lion, and evaluating it gives the same unknown, so a program can write one, put it in a fact (`["fact", ["tall", ["some", "?m", ["mother", "ben", "?m"]]]]`), compare it, or look it up. Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. With several variables in `exists`, each gets its own unknown, and its `some` mentions the others. (`exists-several-variables` is `unknown-per-variable`; `fact-with-some` is `adds-row-with-unknown`; `some-form-evaluation` is `same-unknown`; `some-form-several-variables` is `mentions-other-unknowns`; `some-goal-other-variables` is `own-variable`; `some-in-rule-bound-variable` is `waits`)
+- `Facts may only contain JSON data, but ...` is now `Facts may only contain data, but ...`, since a fact can hold an unknown. The rest of the message is unchanged. The other messages about a value that cannot be a row or an answer, such as `The query produced an answer that is not data`, say "data" too. (`fact-not-data-message` is `says-data`, was `says-json-data`; `row-or-answer-not-data-messages` is `say-data`)
+- A `fact` or `retract` can hold `exists`: `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. `why` takes one too. (`fact-with-exists` is `adds-row-with-unknown`; `fact-with-exists-vs-invented-row` is `same-row`; `retract-with-exists` is `allowed`; `why-with-exists` is `allowed`)
+- A fact states rows, so it adds the row whether or not the head holds already. (`fact-with-exists-head-already-holds` is `adds-row`)
+- and an aggregate of a list in the head of a rule that invents, since a rule that invents cannot aggregate. (`grid-aggregate-list-in-existential-head` is `refused`)
+- A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. With `{"key": "child"}` on `mother`, "everyone has a mother" and "twins share a mother" give twins ben and cy the one unknown mother `["some", "?m", ["mother", "ben", "?m"]]`. Two different given values are still an error, with the key's message, and an unknown that a fact holds is given, so a key never changes it. An unknown never takes a value that describes it, so of two invented unknowns where one describes the other, the one that describes takes the other. (`keyed-rows-invented-unknown-vs-given` is `given-value`; `keyed-rows-two-given-values` is `error`; `keyed-rows-two-invented-unknowns` is `first-sorted`; `keyed-rows-unknown-describes-other` is `describing-one-takes-other`; `keyed-rows-unknown-held-by-fact` is `unchanged`)
+- An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. A function that needs a number or a string fails on one, as it does on any value of the wrong kind. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother. (`not-equal-unknown-given-value` is `holds`; `number-function-on-unknown` is `error`; `unknown-equals-itself` is `true`; `unknown-equals-other-value` is `false`; `unknown-held-as-data` is `in-rows-facts-answers-finds-aggregates`; `unknown-sort-among-unknowns` is `by-written-form`; `unknown-sort-position` is `after-records`; `unknowns-written-the-same` is `equal`)
+- The research and reasoning skills quote the new fact message, and the research skill's engine is rebuilt with this core. (`reasoning-skill-fact-message-quote` is `says-data`; `research-engine-core` is `rebuilt`; `research-skill-fact-message-quote` is `says-data`)
+- The check that evaluation finishes is weak acyclicity, one rule for computed and invented values. Values flow from the columns a rule's body reads to the columns of its head, and a rule may make a new value for a column, by computing it or inventing it, as long as that value never flows back, through the rules, into making another. `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` used to be refused, since any computed value in a recursive rule's head was, and is now accepted. Every program accepted before is still accepted. A computed value that flows back is refused with the same message as before. An invented one is refused with `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.` (`recursive-rule-computed-value-flowing-back` is `error`; `recursive-rule-computed-value-not-flowing-back` is `accepted`, was `error`; `recursive-rule-head-variable-source` is `facts-or-new-values-that-never-flow-back`, was `facts`; `recursive-rule-invented-value-flowing-back` is `error`)
+- Snapshots write rules with `exists` heads as written, and unknowns in facts as their `some` forms, so the CLI's `--database` file keeps them. (`snapshot-existential-rule` is `kept`; `snapshot-fact-with-unknown` is `kept`; `snapshot-unknown-form` is `some-form`)
+- a recursion bug the new properties found while writing (an unknown made equal to one describing it never finished) (`unknown-merged-with-describing-unknown` is `finishes`, was `never-finished`)
+- `Unsafe rule head [...]: ?m never appears in a relation in the body.` goes on to say `To say the head holds for some value nobody has given, list it in "exists": ["exists", ["?m"], head].` (`unsafe-rule-head-message` is `suggests-exists`)
+- `["value/unknown?", x]` is true for an unknown, so `["not", ["value/unknown?", "?m"]]` keeps only known answers. `value/object?` is false for one. (`value-object-unknown` is `false`; `value-unknown-on-unknown` is `true`)
+- `why` explains a row by an answer that gives it as it is, when one does, so after a key makes unknowns equal every row still rests only on rows explained before it. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with a new kind of premise, `{"same": [unknown, value]}`. (`why-after-key-merge` is `well-founded`; `why-key-merged-row` is `same-premise`; `why-equality-merged-row` is `same-premise`; `why-explanation-answer-choice` is `gives-row-as-is`)
+- Its body cannot ask a question, such as a goal under `not`, about the group it runs with. (`equality-rule-body-question-about-its-group` is `error`)
+- Equality rules: a rule's head can be `["=", a, b]`, which says the two are one value whenever the body holds. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, by the rule keys follow, so `["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]]` gives twins one mother. The rule holds as the invariant `["and", goal, ..., ["not", ["=", a, b]]]` too, so a rule that does not hold is not added and a change that leaves two different known values under it is refused, in an invariant's words. Lion follows each invented value through the columns of the rules, and the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, so the unknown can pass through any number of derived relations first: with `["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]]`, the rule `["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]` makes ben's unknown mother the one his birth record names. A question about those relations, such as a goal under `not`, would go through recursion, and is refused when the rule is added, whatever the facts, with the message any such question gets: `Rule [...] asks about "private", which depends on "listed". A question, such as a goal under "not", cannot go through recursion.` A question about columns no invented value reaches is allowed. A head can join relation calls and `=` with `and`. (`equality-rule-change-leaving-two-known-values` is `refused`; `equality-rule-not-holding-when-added` is `not-added`; `equality-rule-question-columns-unreached` is `allowed`; `equality-rule-question-on-invented-path` is `refused`; `equality-rule-unknown-from-lower-group` is `merged`, was `reported-by-invariant`; `equality-rule-unknown-through-derived-copy` is `merged`, was `refused`; `rule-head-and-with-equals` is `allowed`)
+- An unknown invented for a relation below that one cannot change any more, and the invariant reports it. (`equality-rule-unknown-from-lower-group` is `reported-by-invariant`)
+- `exists` goes over relation calls only. (`exists-over-equals` is `error`)
+- a new column, "equality rule", agrees with plain code in every cell; 3 exceptions, all documented, as before. (`grid-equality-rule-column` is `same-as-plain-code`)
+- An equality rule that no invented value can reach, such as one whose body reads only facts, has nothing to make one, and the invariant keeps it (`equality-rule-reached-by-no-invented-value` is `invariant-only`)
+- A query may now derive a whole relation where it used to derive a copy of it, when it knows nothing about it (`goal-directed-goal-without-known-argument` is `reads-full-relation`, was `copy`)
+- Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model. (`goal-directed-off-for-large-models` is `not-needed`, was `needed`)
+- A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `["query", ["report", "?t"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail. (`goal-directed-vs-full-failure-on-underived-row` is `same`; `query-failing-relation-no-answer-reaches` is `empty-list`, was `error`; `relation-derivation-time` is `first-read-with-answer`, was `before-rule-runs`)
+- Neither strategy fails on a relation that no answer reaches (`relation-no-answer-reaches` is `not-derived`, was `error`)
+- Every value, sorted, duplicates kept (`aggregate-collect-order` is `sorted`)
+- Called on anything else, it waits for the list its argument turns out to be; a `find` is the list of what it found. (`aggregate-on-non-list` is `waits`)
+- `["string/slice", text, start, end]` and `["array/slice", list, start, end]` cut a part out of text or a list, as JavaScript's `slice` does: a negative position counts from the end, a position past either end stops there, and without `end` the part runs to the end. `["string/slice", "lionlang", 0, 4]` is `"lion"`, and the two parts of a cut at any position join back into the whole. Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (`array-slice-negative-position` is `from-end`; `slice-logic-variable-argument` is `waits`; `slice-position-past-end` is `stops-at-end`; `slice-without-end` is `runs-to-end`; `slice-wrong-arity` is `error`; `string-slice-cut-then-join` is `same-text`; `string-slice-end` is `exclusive`; `string-slice-negative-position` is `from-end`)
+- The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded. (`backfilled-changelog-entry-release` is `release-written-under`; `changelog-core-0-1-0-section` is `present`, was `absent`; `changelog-core-0-1-1-section` is `present`, was `absent`; `changelog-core-0-2-0-cli-package` is `listed`; `decisions-cite-commit-messages` is `quoted`; `feat-and-fix-commits-recorded` is `all`; `project-record-backfilled` is `from-git`)
+- The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything. (`change-shipped-in-release` is `oldest-release-reaching-every-commit`; `changelog-md-written-by` is `lion-expressions`; `decisions-md-written-by` is `lion-expressions`; `history-check-breaking-change-without-decision` is `fails`; `history-check-in-tests-and-ci` is `runs`; `history-check-page-out-of-date` is `fails`; `history-check-quote-not-in-cited-commit` is `fails`; `history-check-tag-on-wrong-commit` is `fails`; `history-check-unrecorded-feat-or-fix-commit` is `fails`; `history-check-version-not-rising` is `fails`; `project-record-entries` is `plain-json-files`; `project-record-git-facts` is `commits-parents-tags-added-files`)
+- `CHANGELOG.md` and `DECISIONS.md` are computed by the Lion expressions in `history/outputs.json`, and the record's tests fail when either file is not what the record writes (`changelog-not-what-record-writes` is `tests-fail`)
+- A commit that adds a feature or a fix without an entry fails the check from the next commit on, and in CI, which now fetches the whole history (`ci-git-history-depth` is `full`; `feat-commit-without-entry` is `check-fails`)
+- The file is loaded before the program runs, so the program can use its relations without declaring them (`cli-database-relations-undeclared` is `usable`)
+- Provide the recording artifact with the final response. Do not claim completion without it. (`completion-without-recording` is `not-complete`)
+- `bun run history check` fails on a finding of the model that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history ask` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. (`decision-claims-checked-by-research-model` is `against-every-rule-and-behavior`; `history-check-in-ci` is `runs-in-record-tests`; `history-check-unlisted-finding` is `fails`)
+- an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that sorts first, unless it describes the other. (`equality-rule-invented-unknown-vs-given` is `given-value`)
+- So the result does not depend on the order rules or facts were added in. (`existential-result-rule-order` is `independent`)
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). (`filter-variable-unbound` is `error`; `rule-head-variable-unbound` is `error`)
+- So does a program, or a `begin`, whose value is a goal: it gives the goal as written. (`goal-as-program-result` is `as-written`)
+- Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on. (`goal-directed-asked-relation` is `computed-in-full`)
+- A relation that rules invent rows of is derived in full, as an aggregated relation is. (`goal-directed-invented-relation-derivation` is `computed-in-full`)
+- Which invariants are asked never changes whether a change is kept. (`invariant-incremental-vs-full` is `same-result`)
+- Invariants take only the `"assert"` option, read as written. (`invariant-options-evaluated` is `not-evaluated`)
+- Nor does a key change an unknown invented for a relation that the keyed relation only reads. (`keyed-rows-unknown-invented-for-read-relation` is `unchanged`)
+- A record or list with a logic variable in it. (`logic-variable-nested-in-array` is `waits`)
+- and so does a misspelled name inside a predicate, where any other failure means the value does not fit. (`misspelled-name-inside-predicate` is `error`)
+- It reads what JSON writes, and also zeros before the digits and `"−"` as the minus sign. (`number-fromString-leading-zeros` is `read`; `number-fromString-unicode-minus` is `read`)
+- A lookup on a research page can lead with an answer in words: `"answer"` is a `lambda` like its `query`, the page shows the sentence it gives for what the reader chose, and folds the rows under "Show the evidence". A lookup with more than twelve options is a box that finds them as the reader types, not a long list. `page-check.json` asks the answer with the example. (`page-check-lookup-answer` is `asked-with-example`; `research-lookup-answer-kind` is `lion-function`; `research-lookup-evidence-rows` is `folded`; `research-lookup-many-options` is `search-box`)
+- A goal that binds through a pattern gives what the same goal gives when another goal has bound its variables first. (`pattern-goal-before-binding-goal` is `same-answers`)
+- A checked model of Lion's development, in `history/research/`. Every statement each commit made, quoted from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each probed case are one Lion model, built with the lion-research skill, and the record is part of it. Rules over it find where the project disagrees with itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, removals and breaking changes in commits that record no decision, figures that do not chain, and docs that do not say what Lion does. (`project-record-in-research-model` is `included`; `research-model-built-with` is `lion-research-skill`; `research-model-finding-behavior-breaks-rule` is `reported`; `research-model-finding-breaking-change-without-decision` is `reported`; `research-model-finding-docs-disagree-with-lion` is `reported`; `research-model-finding-figures-not-chaining` is `reported`; `research-model-finding-removal-without-decision` is `reported`; `research-model-finding-rules-predict-differently` is `reported`; `research-model-sources` is `commits-docs-decisions-probes`)
+- Options are read as written, like a relation's column list. (`query-options-evaluated` is `not-evaluated`)
+- Relations, goals, and logic variables are ordinary values, so rules and queries use the same JSON syntax as the rest of the language and query results are plain Lion data. (`query-result-type` is `plain-data`)
+- Checks list every `feat` or `fix` commit that no entry records, every quote that is not in the commit message it cites, every breaking change that follows from no decision, and every release whose versions do not rise or whose tag points elsewhere (`record-breaking-change-without-decision` is `listed`; `record-quote-not-in-commit-message` is `listed`; `record-release-versions-not-rising` is `listed`)
+- The record runs on the workspace's own `@lionlang/core`, so a change to Lion that breaks the record's rules fails the tests (`record-core-version` is `workspace`)
+- A file renamed with nothing else changed keeps the commit that added it (`record-file-renamed-unchanged` is `keeps-adding-commit`)
+- git's renames by likeness are not followed (`record-rename-by-likeness` is `not-followed`)
+- and on a listed finding the model no longer finds (`research-listed-finding-no-longer-found` is `fails-check`)
+- a new one fails the record's tests until someone decides about it (`research-new-finding` is `fails-check`)
+- The research skill's page shows how far it has got. While Lion opens the model, a line under the title says so, then "Working out the answers: 3 of 15" with a bar, and every view shows its questions at once, each with "Working this out from the model…" until it is worked out, the view the reader has open first. It used to stay empty until every view was done. (`research-page-open-view` is `worked-out-first`; `research-page-progress` is `shown`, was `empty-until-every-view-done`; `research-page-questions-before-answers` is `shown-at-once`)
+- On a research page, "Query the model" is a link at the end of the last view instead of a tab, so the tabs hold only what the reader came for. (`research-page-query-the-model` is `link-after-last-view`, was `tab`)
+- A commit nobody has read yet is listed but does not fail the check. (`research-unread-commit` is `listed-without-failing`)
+- In the research model, what a rule predicts for a case is what its latest statement naming that case predicts, so a rule reworded to allow a case, as the editor's connector rule was, stops predicting the old behavior. (`reworded-rule-old-prediction` is `dropped`)
+- `schema/allOf` reports the problems of every schema the value does not fit. (`schema-allOf-problems` is `every-failed-schema`)
+- `schema/anyOf` reports one problem, at the value that fits none of its schemas. (`schema-anyOf-problems` is `one-problem`)
+- `["schema/assert", "?doc", "Order"]` as a value in a rule fails the query that runs the rule when a value does not fit. (`schema-assert-in-rule-misfit` is `error`)
+- A predicate that fails, or returns anything but `true`, does not fit. (`schema-predicate-error` is `no-fit`; `schema-predicate-returns-non-true` is `no-fit`)
+- A record fits a record with the same keys, with values that fit. (`schema-record-same-keys` is `fit`)
+- A shape cannot ask the database while it is declared, since a snapshot writes the shape and it has to mean the same when it is loaded. (`schema-shape-asking-database` is `refused`)
+- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. (`schema-shape-calling-own-form-schema` is `error`)
+- Evaluating the program into an empty database gives the same answers, so a snapshot is a save file that is also ordinary Lion you can read, edit, diff, and run. (`snapshot-reload-answers` is `same`)
+- Nothing may compute with one of its own variables; that is an error. (`some-computing-with-own-variable` is `error`)
+- They compare values, so a function in the record is a value there, and not a predicate. (`unify-record-pattern-function` is `compared-as-value`)
+- `why` explains facts with every relation computed in full. (`why-relation-derivation` is `computed-in-full`)
+- A payoff starts the count again, as patience does in early stopping (`direction-miss-count-after-payoff` is `reset`)
+- it stays in the model with why (`exhausted-direction-in-model` is `kept-with-why`)
+- The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`. (`page-check-last-entry` is `says-how-to-fix`; `research-build-explorer-page-check-reminder` is `when-plan-names-questions`)
+- a change is not kept until both have run on it (`reasoning-change-before-requirement-run` is `not-kept`)
+- The skill tells the agent to fix or drop such a change and never to relax the requirement to let a score count. (`reasoning-change-failing-requirement` is `fixed-or-dropped`)
+- The files as they are now have regressed when every run on them is worse than the best. (`reasoning-current-runs-all-worse-than-best` is `regressed`)
+- an answer otherwise rules a direction out (`reasoning-direction-answered-otherwise` is `ruled-out`)
+- A lion-reasoning score can list what it `requires`, such as `{"question": {"failing tests": "test.mjs"}, "value": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions. (`reasoning-direction-need-answered-otherwise` is `ruled-out`; `reasoning-direction-need-unanswered` is `waits`; `reasoning-version-failing-requirement` is `no-score`)
+- A direction or lead can also wait: on a question it `needs` that only the user may answer (reasoning), or on the reader's choice of a sense of a question it pursues (research) (`reasoning-direction-needing-user-answer` is `waits`; `research-lead-ambiguous-question` is `waits`)
+- The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first. (`reasoning-direction-payoff` is `experiment-improves-score`; `reasoning-next-experiment-question` is `live-directions-most-paid-off-first`; `reasoning-observation-trying-direction` is `experiment`; `reasoning-score-differing-runs` is `spread`; `reasoning-version-sure-to-give` is `worst-run`)
+- another run of an earlier version can only raise what came before, which takes an improvement back (`reasoning-improvement-after-better-earlier-run` is `taken-back`)
+- The list of where to try next puts the live directions that paid off most first, then those tried least (`reasoning-next-direction-order` is `most-paid-off-first`)
+- The skill asks for the same number of runs on each version (`reasoning-runs-per-version` is `same-number`)
+- The best a score has been is the best of those across versions. (`reasoning-score-best` is `best-sure-to-give-across-versions`)
+- With one run each this is beating the best so far. (`reasoning-score-one-run-each` is `beats-best-so-far`)
+- Where one is unanswered, or answered otherwise in any run, the version has no score: no range, no best, no improvement. (`reasoning-score-requirement-unmet` is `no-score`)
+- Runs of a score that differ are its spread, so `disputed` leaves scores out. (`reasoning-score-runs-differ` is `spread-not-dispute`)
+- what the version is sure to give is its worst run (`reasoning-score-sure-to-give` is `worst-run`)
+- `why` on an improvement ends in the runs it compared and a check such as `["number/lessThan", 62, 117]` (`reasoning-why-improvement` is `runs-and-check`)
+- The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one. (`research-answer-and-report` is `same-words`; `research-report-md` is `every-run`, was `only-when-asked`)
+- Disputes do not hold a lead open (`research-lead-disputed-answer` is `done`)
+- a record covers every answered question that has its keys and values (`research-lead-pattern-coverage` is `matching-keys-and-values`)
+- The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for". (`research-lead-sense-not-chosen` is `waits`; `research-page-what-was-looked-for` is `shown`; `research-source-lead-payoff` is `first-hand-covered-statement`; `research-standing-questions-leads` is `next-search-and-lead-outcomes`)
+- Senses the reader set aside are not covered (`research-lead-set-aside-sense` is `not-covered`)
+- A question only one publisher can answer never finishes its lead (`research-lead-single-publisher-question` is `never-done`)
+- The research recorder numbers the sources read for leads in the order their notes are recorded (`research-lead-source-order` is `recording-order`)
+- A goal-directed query that knows an argument a rule's head computes by asking a question of its own, such as `["query", ["meant", {"revenue": "t"}, "?q"]]` over `["rule", ["base", "?q", ["array/reduce", ["find", "?key", ["reading", "?key"]], "?q", ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]]], ["answer", "?q", "?_"]]` and `["rule", ["meant", "?base", "?q"], ["base", "?q", "?base"]]`, gives the answers of full evaluation again, instead of failing with an internal error, `undefined is not an object (evaluating 'literal.parts')`. The rewrite took the `find`'s own `?key` for a variable the rule had to bind first. This is the `meant` relation of the lion-research skill. The rewrite now follows the asking rule wherever it asks what a value needs: a query whose argument is computed by a question with variables of its own, such as `["path", ["array/reduce", ["find", "?a", ["start", "?a"]], 0, ["lambda", ["sum", "a"], ["number/add", "sum", "a"]]], "?to"]`, now derives only what it reaches, as one that writes the value does. (`goal-directed-query-argument-computed-by-question` is `known`, was `unknown`)
+- A commit counts as read when a claim was made by it, so a commit that records its change in `history/notes/` is not listed among the commits the model has nothing from. (`commit-read` is `claim-made-by-it`)
+- deciding a question again differently is a reversal the model derives (`decision-reversal` is `derived`)
+- `DECISIONS.md` lists every decided question, oldest first, with each answer it was given and the records that explain it, and for each thing a record asserts, whether it holds when Lion is run, is broken, is only stated, or was replaced by a later word. (`decisions-md-assertions` is `checked`)
+- A probe can answer for a feature as well as a behavior: `{"feature": "math/+", "kind": "function", "program": ["value/function?", "math/+"]}` gives `false`, so the record that says `math/+` is gone holds. `["lion/special-form?", name]` tells a probe whether Lion has a special form of that name. `bun run history check` reports a feature's probe that gives neither `true` nor `false`, and a question two probes answer. (`feature-probe-without-true-or-false` is `reported`)
+- `["lion/special-form?", name]` says whether Lion has a special form of that name (`probe-asks-special-form` is `told`)
+- `repo/files` gives no paths for a path that names nothing (`probe-lists-missing-path` is `none`)
+- `["repo/files", path]` gives the paths of the files under a folder of the repository (`probe-lists-repository-files` is `paths`)
+- A path that leads out of the repository, a path that names no file, and a command the file does not declare each fail (`probe-path-outside-repository` is `error`; `probe-runs-undeclared-command` is `error`)
+- `["repo/json", path]` gives a JSON file as a value (`probe-reads-json-file` is `value`)
+- `["repo/read", path]` gives the text of a file of the repository (`probe-reads-repository-file` is `text`)
+- runs a command that `history/research/commands.json` declares and gives its exit code and what it wrote (`probe-runs-declared-command` is `exit-and-output`)
 
 ### Fixed
 
-- Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model. See [Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it](DECISIONS.md#goal-directed-shares-full-relations).
-- The research skill's page reads a `published` date written to the minute or second, such as `20261114144313`, as its day, and its SKILL.md says to give the time when one publisher speaks several times a day, so its latest word is the one it said last.
-- A research page sends Lion one question at a time, so a question's time limit counts its own run and not its wait behind the others: on Lion's own research model two of the page's questions used to stop at the limit. `build-explorer.mjs` indexes each source's text once, not once per quote: building that page took 73 seconds and takes one.
-- A goal-directed query that knows an argument a rule's head computes by asking a question of its own, such as `["query", ["meant", {"revenue": "t"}, "?q"]]` over `["rule", ["base", "?q", ["array/reduce", ["find", "?key", ["reading", "?key"]], "?q", ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]]], ["answer", "?q", "?_"]]` and `["rule", ["meant", "?base", "?q"], ["base", "?q", "?base"]]`, gives the answers of full evaluation again, instead of failing with an internal error, `undefined is not an object (evaluating 'literal.parts')`. The rewrite took the `find`'s own `?key` for a variable the rule had to bind first. This is the `meant` relation of the lion-research skill. The rewrite now follows the asking rule wherever it asks what a value needs: a query whose argument is computed by a question with variables of its own, such as `["path", ["array/reduce", ["find", "?a", ["start", "?a"]], 0, ["lambda", ["sum", "a"], ["number/add", "sum", "a"]]], "?to"]`, now derives only what it reaches, as one that writes the value does. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule) and [Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it](DECISIONS.md#goal-directed-shares-full-relations).
+- Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model. (`goal-directed-goal-knowing-no-arguments` is `reads-shared-relation`, was `derives-full-copy`; `goal-directed-known-argument-in-pattern` is `runs-as-written`, was `scans-per-value`; `goal-directed-known-argument-relation-held-in-full` is `looked-up-in-held-rows`; `goal-directed-large-model-many-questions-speed` is `like-full-evaluation`, was `hundreds-of-times-slower`)
+- A research page sends Lion one question at a time, so a question's time limit counts its own run and not its wait behind the others: on Lion's own research model two of the page's questions used to stop at the limit. `build-explorer.mjs` indexes each source's text once, not once per quote: building that page took 73 seconds and takes one. (`research-build-explorer-source-index` is `once-per-source`, was `once-per-quote`; `research-page-question-time-limit` is `own-run`, was `includes-wait`; `research-page-questions-sent` is `one-at-a-time`)
+- The research skill's page reads a `published` date written to the minute or second, such as `20261114144313`, as its day, and its SKILL.md says to give the time when one publisher speaks several times a day, so its latest word is the one it said last. (`research-page-published-to-minute-or-second` is `read-as-day`)
+- A goal-directed query that knows an argument a rule's head computes by asking a question of its own, such as `["query", ["meant", {"revenue": "t"}, "?q"]]` over `["rule", ["base", "?q", ["array/reduce", ["find", "?key", ["reading", "?key"]], "?q", ["lambda", ["rest", "key"], ["object/remove", "rest", "key"]]]], ["answer", "?q", "?_"]]` and `["rule", ["meant", "?base", "?q"], ["base", "?q", "?base"]]`, gives the answers of full evaluation again, instead of failing with an internal error, `undefined is not an object (evaluating 'literal.parts')`. The rewrite took the `find`'s own `?key` for a variable the rule had to bind first. This is the `meant` relation of the lion-research skill. The rewrite now follows the asking rule wherever it asks what a value needs: a query whose argument is computed by a question with variables of its own, such as `["path", ["array/reduce", ["find", "?a", ["start", "?a"]], 0, ["lambda", ["sum", "a"], ["number/add", "sum", "a"]]], "?to"]`, now derives only what it reaches, as one that writes the value does. (`goal-directed-query-knows-value-head-asks-for` is `answered`, was `error`)
 
 ### Documentation
 
-- [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it. See [Keep the changelog and the decisions as a Lion model of the git history](DECISIONS.md#project-record-in-lion) and [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- A how-to guide, "Say that something exists", and reference entries for `exists`, `some`, and `value/unknown?` on [lionlang.dev](https://lionlang.dev/docs.html). The guarantees state the new check that evaluation finishes, and "How Lion answers logic questions" explains how rules that invent fit Datalog.
-- The research and reasoning skills quote the new fact message, and the research skill's engine is rebuilt with this core.
-- The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything. See [Keep the changelog and the decisions as a Lion model of the git history](DECISIONS.md#project-record-in-lion).
-- The record was backfilled from git. Every entry of the hand-written changelog is tied to the commits that made it, and lands, by ancestry alone, in the release it was written under. The releases of `@lionlang/core` 0.1.0 and 0.1.1, which had no changelog, have sections now, and 0.2.0 lists the `@lionlang/cli` package it introduced. The decisions behind Lion's design, from the first commit on, each quote the commit messages they rest on, and every `feat` and `fix` commit since the first is recorded. See [Keep the changelog and the decisions as a Lion model of the git history](DECISIONS.md#project-record-in-lion).
-- A checked model of Lion's development, at [lionlang.dev/research.html](https://lionlang.dev/research.html). Every statement each commit made, quoted from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each probed case are one Lion model, built with the lion-research skill. Rules over it find where the project disagrees with itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, removals and breaking changes in commits that record no decision, figures that do not chain, and docs that do not say what Lion does. The page answers what the project has said about any rule, decision, behavior, feature, or figure, and shows each statement where it stands in its commit. See [Keep a research model of Lion's development that checks the project against itself](DECISIONS.md#research-model-of-development).
-- `bun run history research` builds the model and the page and fails on a finding that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history query` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. See [Keep a research model of Lion's development that checks the project against itself](DECISIONS.md#research-model-of-development).
-- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does.
-- In the research model, what a rule predicts for a case is what its latest statement naming that case predicts, so a rule reworded to allow a case, as the editor's connector rule was, stops predicting the old behavior. See [Keep a research model of Lion's development that checks the project against itself](DECISIONS.md#research-model-of-development).
-- The research page at lionlang.dev/research.html is laid out for what its reader came to do: To decide, with each kind of inconsistency and what would settle it; Check a behavior, Check a rule, and Check a decision, each a box to type a name into and an answer in words; Look back; and Sources. Each screen stays within a reader's attention as the cognitive-load skill measures it: about 110 words, 12 things to click, and 7 text styles.
+- A how-to guide, "Say that something exists", and reference entries for `exists`, `some`, and `value/unknown?` on [lionlang.dev](https://lionlang.dev/docs.html). The guarantees state the new check that evaluation finishes, and "How Lion answers logic questions" explains how rules that invent fit Datalog. (`docs-existential-rules-in-datalog-explanation` is `explained`; `docs-guarantees-termination-check` is `weak-acyclicity`; `docs-reference-exists` is `documented`; `docs-reference-some` is `documented`; `docs-reference-value-unknown` is `documented`; `docs-guide-say-that-something-exists` added)
+- [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it. (`changelog-change-links` is `decisions-and-commits`; `changelog-filter-by-kind` is `available`; `changelog-page-markdown-to-html` is `in-lion`; `changelog-page-written-by` is `lion-project-record`; `changelog-pause-of-a-month` is `drawn`; `changelog-release-changes` is `by-kind`; `changelog-release-decisions` is `open-to-context-alternatives-and-commits`; `changelog-release-order` is `newest-first`; `changelog-search` is `changes-and-decisions`; `changelog-without-javascript` is `everything-shown`; `site-navigation-changelog-link` is `present`; `changelog-timeline` added)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`readme-agent-program-link` is `in-repository`, was `local-folder`; `readme-editor-command` is `turbo-dev-filter-lionlang-repl`; `readme-statements-research-model-found-untrue` is `corrected`)
+- The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything. (`decisions-md` added)
+- `bun run history research` builds the model and the page `docs/research.html` (`research-page` added)
+- The changelog at [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) lists each change and decision once, under the release that first shipped it, in the latest words said about it, with every commit and note that says it as a source. Its sections are Breaking, Added, Removed, Changed, Fixed, Documentation, Decided, Rules, and Figures, a filter shows one or more of them, and the findings that wait for a decision are listed above the timeline. (`changelog-item` is `once-with-sources`)
+- The research page and the commands `bun run history research`, `query`, `sources`, and `probe` are gone: the changelog shows what the page showed, and `write`, `check`, and `ask` do what the commands did. (`research-page` removed)
+
+### Decided
+
+- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.` (`chase-strategy`: `restricted-datalog-first-parallel`)
+- The check that evaluation finishes is weak acyclicity, one rule for computed and invented values. Values flow from the columns a rule's body reads to the columns of its head, and a rule may make a new value for a column, by computing it or inventing it, as long as that value never flows back, through the rules, into making another. `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` used to be refused, since any computed value in a recursive rule's head was, and is now accepted. Every program accepted before is still accepted. A computed value that flows back is refused with the same message as before. An invented one is refused with `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.` (`termination-check`: `weak-acyclicity` over `no-computed-values-in-recursion`, was `no-computed-values-in-recursion`)
+- the check now follows only rules that recurse, and isForm no longer allocates a list per call, which brought it back to main's time. (`termination-check-scope`: `recursive-rules-only` over `every-rule`)
+- A first version recomputed the dependency graph for every rule form, which made "300 rules added one form at a time" 0.86x; it now does so only when the program has an equality rule, and is at 1.01x. (`dependency-graph-recompute`: `only-with-equality-rule` over `every-rule-form`)
+- Keys were the only equality Lion had; this gives the general form, built from what Lion already has rather than beside it: (`equality-generating-dependencies`: `equality-rule-head` over `keys-only`)
+- It runs with a relation its body reads that rules derive, one no other of them depends on, preferring one whose rules invent, so everything else it reads is complete first; its body cannot ask a question about that group. (`equality-rule-placement`: `prefer-inventing-group`)
+- `equalityHome` loses its "prefer a group that invents" rule: an equality rule runs with the group that invents what it can meet, and with none it only holds as its invariant. (`equality-rule-placement`: `group-that-invents-what-it-meets` over `prefer-inventing-group`, was `prefer-inventing-group`)
+- any other goal reads the relation itself, which the database derives once and keeps for every later query (`goal-directed-sharing`: `share-full-relations` over `full-evaluation-workaround`, `growing-model`, `copy-for-lookup-arguments-only`)
+- A copy's guard leads only when a relation goal of the rule can look rows up by what it binds (`magic-guard-placement`: `lead-when-lookup` over `always-lead`)
+- so nobody writes down which release a change is in (`change-release-placement`: `ancestry` over `written-release`)
+- `history/research/` holds a model of Lion's development built with the lion-research skill. (`development-model`: `separate-research-model` over `review-by-hand`)
+- The project record. `history/` keeps Lion's changes, releases, and design decisions as a Lion model of the git history. Entries are plain JSON files; every commit, parent, and tag, and the commit that added each file, are facts; and rules derive the rest, such as the release that shipped each change, which is the oldest release whose commit reaches every commit that made it. `CHANGELOG.md` and the new `DECISIONS.md` are written from the record by Lion expressions, with `bun run history write`. `bun run history check` fails on a `feat` or `fix` commit that no entry records, a quote that is not in the commit message it cites, a breaking change that follows from no decision, a version that does not rise, a tag on the wrong commit, or a page that is not what the record writes, and the tests and CI run it. `bun run history ask` asks the record anything. (`project-record-form`: `lion-model-of-git-history`)
+- Keep the changelog and the decisions as a Lion model of the git history (`project-record-format`: `lion-model-of-git` over `markdown-records`, `changesets`, `saved-database`)
+- The model is rebuilt from git, the notes, the decisions, and Lion itself, so only the notes, the probes, the lists of findings, and the page are kept in git. (`research-model-storage`: `rebuilt-from-sources` over `model-in-git`)
+- A list of known findings, like the interop grid's, keeps them visible while it waits for a decision, and fails only on what is new. (`research-open-findings`: `known-findings-list` over `fail-on-every-finding`)
+- A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff (`direction-stopping`: `patience-since-last-payoff` over `every-miss`, `fixed-budget`)
+- it is advice, and the agent says why when it goes against it (`next-experiment-choice`: `agent-decides` over `model-chooses`)
+- A research lead is done when every question it pursues has an answer two publishers give first-hand (`research-lead-done`: `corroborated` over `undisputed`, `any-answer`)
+- one rule each for lower and higher, where negating lower-is-better scores would have saved three rules and shown `-62 > -117` (`score-direction`: `rule-per-direction` over `negate-lower-is-better`)
+- A version improves a score when its worst run beats the best that the versions which appeared before it were sure to give (`score-improvement`: `worst-run-beats-best-sure` over `every-run-beats-every-run`, `mean-of-runs`, `declared-margin`, `one-run-against-one-run`)
+- A score can list `requires`: questions and the answers a version must have, such as no failing tests. (`score-requirements`: `requires-list` over `requirement-as-belief`, `agent-discards-broken-versions`)
+- Every record of Lion's development is a claim, in `history/notes/` (`development-model`: `one-record-of-claims` over `separate-research-model`, was `separate-research-model`)
+- The website's changelog timeline is the one page that shows all of it (`development-page`: `changelog-timeline` over `research-explorer`)
+- A feature's probe that gives neither has answered nothing, and the build reports it (`failed-feature-probe`: `reported` over `answers-false`)
+- a feature's probe gives true when the feature is there and false when it is not (`probe-questions`: `behaviors-and-features` over `behaviors-only`)
+- The host that runs the probes gives each probe's program functions beside the standard library (`probe-reach`: `lion-and-repository` over `lion-only`, `any-shell-command`, `library-functions`)
+
+### Rules
+
+- An unknown is data, as a string is: rows, facts, answers, finds, and aggregates hold it. It equals itself and nothing else, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. A function that needs a number or a string fails on one, as it does on any value of the wrong kind. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother. (rule `closed-world`; rule `unknowns-are-data`)
+- `exists` in a rule head says the head holds for values nobody has given, and the rule invents them: `["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]]` gives every person a mother. A rule invents only for an answer whose head does not hold already, so with `["mother", "ada", "eve"]` it invents nothing for ada. Rules that invent wait until every rule that invents nothing has finished; then every rule that invents, and whose head does not hold, invents, all at once; the other rules run on what was invented; and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in. A rule that invents cannot aggregate: `... both aggregates and lists variables in "exists". A rule that invents values cannot aggregate.` (rule `datalog-first-parallel-chase`; rule `restricted-chase`)
+- A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. With `{"key": "child"}` on `mother`, "everyone has a mother" and "twins share a mother" give twins ben and cy the one unknown mother `["some", "?m", ["mother", "ben", "?m"]]`. Two different given values are still an error, with the key's message, and an unknown that a fact holds is given, so a key never changes it. An unknown never takes a value that describes it, so of two invented unknowns where one describes the other, the one that describes takes the other. (rule `keys-make-unknowns-equal`)
+- Negative constraints are invariants, as before. (rule `negative-constraints-are-invariants`)
+- The check that evaluation finishes is weak acyclicity, one rule for computed and invented values. Values flow from the columns a rule's body reads to the columns of its head, and a rule may make a new value for a column, by computing it or inventing it, as long as that value never flows back, through the rules, into making another. `["rule", ["b", "?x", ["number/add", "?x", 10]], ["a", "?x"]]` with `["rule", ["a", "?x"], ["b", "?x", "?y"]]` used to be refused, since any computed value in a recursive rule's head was, and is now accepted. Every program accepted before is still accepted. A computed value that flows back is refused with the same message as before. An invented one is refused with `Rule [...] invents a value for "?m" in its head while recursing, which may never finish. Invent the value in a rule that does not recurse.` (rule `recursion-cannot-compute-values` withdrawn; rule `weak-acyclicity`)
+- Equality rules: a rule's head can be `["=", a, b]`, which says the two are one value whenever the body holds. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, by the rule keys follow, so `["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]]` gives twins one mother. The rule holds as the invariant `["and", goal, ..., ["not", ["=", a, b]]]` too, so a rule that does not hold is not added and a change that leaves two different known values under it is refused, in an invariant's words. Lion follows each invented value through the columns of the rules, and the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, so the unknown can pass through any number of derived relations first: with `["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]]`, the rule `["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]` makes ben's unknown mother the one his birth record names. A question about those relations, such as a goal under `not`, would go through recursion, and is refused when the rule is added, whatever the facts, with the message any such question gets: `Rule [...] asks about "private", which depends on "listed". A question, such as a goal under "not", cannot go through recursion.` A question about columns no invented value reaches is allowed. A head can join relation calls and `=` with `and`. (rule `equality-merges-like-keys`; rule `equality-rule-is-invariant`)
+- Goal-directed queries are no longer hundreds of times slower than full evaluation on a large model asked many questions. A goal that knows none of its arguments now reads the relation itself, which the database derives once and keeps for every later query, instead of each query deriving a copy that holds every row anyway; a query that knows an argument of a relation the database already holds in full looks its rows up there; and a rule whose known argument sits inside a record pattern or a schema, such as `["claim", "?c", ["schema/open", {"topic": "?t"}]]`, runs as written and keeps the rows asked about, instead of scanning `claim` once for each value asked about. On the research model of Lion's own development, the 37 questions of its page took 36.6 seconds goal-directed and 0.12 seconds in full; they now take 0.11 seconds goal-directed. A host no longer needs `new LogicDatabase({ goalDirected: false })` for such a model. (rule `goal-directed-shares-full-relations`)
+- A relation is derived the first time a goal reads it with an answer to extend, in goal-directed and full evaluation alike, so a query never fails on a relation that no answer reaches. With `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `["query", ["report", "?t"]]` gives `[]` even when deriving `broken` would fail; it used to derive `broken` before running the rule, and fail. (rule `relations-derived-when-read`)
+- `CHANGELOG.md` is no longer edited by hand (rule `changelog-written-by-record`)
+- it shipped in the first release whose commit has all of those commits behind it (rule `changes-ship-by-ancestry`)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (rule `cond-truthiness`)
+- every finding is either listed in `known.json`, waiting for a decision, or accepted with a reason in `accepted.json` (rule `findings-wait-for-decision`)
+- The explorer page runs a bundle of `@lionlang/core`. After changing the core evaluator, rebuild it: (rule `rebuild-research-engine-after-core-change`)
+- The research skill's page reads a `published` date written to the minute or second, such as `20261114144313`, as its day, and its SKILL.md says to give the time when one publisher speaks several times a day, so its latest word is the one it said last. (rule `research-published-time-when-several-a-day`)
+- In the research model, what a rule predicts for a case is what its latest statement naming that case predicts, so a rule reworded to allow a case, as the editor's connector rule was, stops predicting the old behavior. (rule `rule-predicts-by-latest-statement`)
+- The lion-research skill records leads, the lines of inquiry a research run follows: `"leads": [{"id": "outside-warehouses", "statement": "…", "pursues": [{"warehouses": "tarnwell"}], "patience": 2}]`, and `"for": ["outside-warehouses"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's "How solid is it" shows the reader "What was looked for". (rule `lead-done-when-confirmed`; rule `patience-since-last-payoff`)
+- The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`. (rule `research-page-check-empty`)
+- The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{"question": {"comparisons": "bench.mjs"}, "better": "lower"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question "Where should the next experiment go?" lists the live directions, those that paid off most first. (rule `score-improves-past-noise`)
+- A lion-reasoning score can list what it `requires`, such as `{"question": {"failing tests": "test.mjs"}, "value": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions. (rule `score-requirements`)
+- What a decision record asserts is checked against Lion at HEAD where a probe runs the case, and otherwise against what the repository says now (rule `decision-assertions-checked`)
+- a question with an answer, shown once, under the release that first shipped a claim giving it, in the latest claim's words, with every claim that gives it as a source (rule `items-shown-once`)
+- A decision about how the project is set up is checked the way a decision about Lion's behavior is (rule `probes-observe-repository`)
 
 ## 2026-11-13 — @lionlang/core 0.10.0, @lionlang/cli 0.9.0
 
@@ -64,31 +241,92 @@ Figures that can be checked: numbers read from the text they came from, records 
 
 ### Added
 
-- `["number/fromString", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `["number/fromString", "1,234,567.5", ","]` is `1234567.5`. See [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](DECISIONS.md#engine-computes-model-interprets).
-- `["string/numbers", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `"fiscal 2023-24"` holds 2023 and 24. See [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](DECISIONS.md#engine-computes-model-interprets).
-- `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.
-- Like every library function, each waits for a logic variable and refuses a call with another number of arguments. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
+- The docs build fails when a special form or library function appears in no live example (`docs-coverage-check` added)
+- `LION_CLI` names another command, such as `bun ~/lion/packages/cli/dist/bin.mjs`, for a run that needs a CLI not yet released. (`LION_CLI` added)
+- Core 0.10.0 adds `number/fromString` and `string/numbers` for this. (`number/fromString` added; `string/numbers` added)
+- `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket. (`object/remove` added; `object/set` added)
+- notes list under `ask` the questions only the user, or the source `of` names, may settle (`reasoning-notes-ask` added)
+- in `presumed` every answer from anyone else (`reasoning-presumed` added)
+- the core lists in `undecided` those not yet answered (`reasoning-undecided` added)
+- The core lists in `ambiguous` the questions sources answer in more than one sense (`research-ambiguous` added)
+- records the answer in their words as `decided` (`research-decided` added)
+- A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays. (`research-grade-mjs` added)
+- The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`). (`research-located` added; `research-restated` added; `research-set-aside` added; `research-withdrawn` added)
+- rules that reach a question through `meant` follow it (`research-meant` added)
+- the frame declares as a `reading` each key of a question that picks one sense of a word (`research-reading` added)
+- `unquoted` lists every number at the top of a claim's `says` that its quote does not write (`research-unquoted` added)
+- A frozen-corpus eval, `verifies-company-figures`, grades a run by stage (`verifies-company-figures` added)
 
 ### Changed
 
-- `why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `["=", "?ratio", ["number/divide", "?a", "?b"]]`, shows as `{"check": ["=", 0.25, ["number/divide", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out. See [`why` shows every goal of a rule's body as it held, `=` and `in` among them](DECISIONS.md#why-shows-every-goal).
+- The research skill's `replay.mjs` and its eval's `grade.mjs` read `LION_CLI` as the reasoning skill's scripts do. (`research-grade-lion-command` is `lion-cli-env`; `research-replay-lion-command` is `lion-cli-env`)
+- so the research skill asks for the newest once before anything else (`research-skill-cli-version-first` is `asks-newest`)
+- A skill can use a library function only once a release has it (`skill-library-function-before-release` is `unavailable`)
+- The scripts of both skills run the published Lion CLI through `bunx`, or `npx` without bun (`skill-script-lion-command` is `published-cli`)
+- The research skill needs `@lionlang/cli` 0.9.0, the release that bundles core 0.10.0. (`cli-0-9-0-bundled-core` is `core-0-10-0`; `research-skill-core-requirement` is `core-0-10-0`)
+- `["number/fromString", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `["number/fromString", "1,234,567.5", ","]` is `1234567.5`. (`number-fromString-group-separator` is `grouped`; `number-fromString-not-a-number` is `null`; `number-fromString-number-text` is `number`; `number-fromString-reads-toString-grouped` is `round-trip`)
+- Adding zero turns -0 into 0, as JSON writes both. (`number-fromString-minus-zero` is `zero`)
+- and `"12,34"` is `null`. (`number-fromString-misgrouped` is `null`)
+- A number too large for JSON, such as `"1e999"`, is `null`. (`number-fromString-too-large` is `null`)
+- The record they are given is unchanged, removing a key it does not hold gives the same record, and a key is any string a record can hold, so `"__proto__"` is refused. (`object-remove-missing-key` is `same-record`; `object-set-input-record` is `unchanged`; `object-set-proto-key` is `error`)
+- `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket. (`object-remove-new-record` is `new-record`; `object-set-new-record` is `new-record`)
+- `page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both. (`page-check-questions-set-aside-or-undecided` is `listed`)
+- in `presumed` every answer from anyone else, such as the agent, a file, or a doc (`reasoning-asked-question-answered-by-other` is `presumed`)
+- the core lists in `undecided` those not yet answered (`reasoning-asked-question-unanswered` is `undecided`)
+- the reasoning skill's standing checks ask both `undecided` and `presumed` (`reasoning-standing-checks-ambiguity` is `ask-undecided-and-presumed`)
+- The user's decision holds in every version, since it is about what they want and not about the files. (`reasoning-user-decision-after-file-change` is `not-stale`)
+- If the agent cannot ask, it says that the answer depends on the choice and gives each sense. (`research-ambiguity-agent-cannot-ask` is `gives-each-sense`)
+- Until the reader chooses, research rules use every sense (`research-ambiguous-question-before-choice` is `every-sense`)
+- the agent asks the reader which they mean (`research-ambiguous-reading` is `asked`)
+- The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`). (`research-backing-disputed-secondhand-withdrawn` is `left-out`)
+- `unquoted` lists every number at the top of a claim's `says` that its quote does not write (`research-claim-number-not-in-quote` is `listed`)
+- the page shows a computed figure's evidence "Worked out as" its arithmetic (`research-computed-figure-evidence` is `worked-out-as`)
+- A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays. (`research-eval-reference-run` is `replayed-by-property`)
+- a number taken from where the quote stands, such as a year in a heading, goes in a field the frame declares as `context` (`research-number-in-context-field` is `not-listed`)
+- The research page shows a computed figure's evidence "Worked out as" its arithmetic (`research-page-computed-figure` is `worked-out-as-arithmetic`)
+- The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows "Worked out as" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose. (`research-page-computed-figure-evidence` is `worked-out-as-arithmetic`; `research-page-how-solid-needs-decision` is `shown`; `research-page-how-solid-reader-choices` is `shown`; `research-page-how-solid-restated-figures` is `shown`; `research-page-how-solid-unquoted-figures` is `shown`; `research-page-source-text` is `carried`; `research-page-statement-in-source` is `opens-in-place-with-quote-marked`)
+- The research page leads its trust view with what needs the reader's decision. (`research-page-trust-view-first` is `reader-decisions`)
+- A rounded figure, such as "near $0.41 billion", is a question of its own and never disputes the exact one. (`research-rounded-figure` is `own-question`)
+- Words for amounts, such as "million", are not read (`string-numbers-amount-words` is `not-read`)
+- `["string/numbers", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `"fiscal 2023-24"` holds 2023 and 24. (`string-numbers-each-number` is `read-as-number-fromString`; `string-numbers-hyphen-after-digit` is `not-minus`; `string-numbers-result` is `every-number-in-order`)
+- Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. (`why-check-evaluated` is `true`)
+- with the answer's values in place of its variables (`why-check-variables` is `answer-values`)
+- So `["=", "?ratio", ["number/divide", "?a", "?b"]]` shows as `{"check": ["=", 0.25, ["number/divide", 1, 4]]}`. (`why-equals-goal` is `shown`)
+- `why` shows every goal of a rule's body as it held, `=` and `in` among them (`why-in-goal` is `shown`)
+- a `not` as `absent` (`why-not-goal` is `absent`)
+- Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change. (`reasoning-standing-checks-undecided-presumed` is `asked`)
+- withdrawn in the research skill's Acme example, and undecided and presumed in the reasoning skill. (`skill-new-relations-shown` is `with-run-output`)
+
+### Fixed
+
+- `page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both. (`page-check-blocks-same-title` is `both-kept`, was `one-kept`)
 
 ### Documentation
 
-- Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and "Explain a result" shows how a computed figure was worked out. See [Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example](DECISIONS.md#every-feature-in-docs).
-- AGENTS.md and CLAUDE.md ask that every new feature be used in an example in the docs, with output that was run. See [Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example](DECISIONS.md#every-feature-in-docs).
+- A missing example fails the build instead of waiting for someone to notice (`docs-build-function-without-example` is `fails`)
+- The build checks only special forms and library functions; a skill's examples rest on the rule alone. (`docs-build-skill-example-check` is `none`)
+- The eight functions it found have examples in their modules' reference (`docs-functions-without-example` is `none`, was `eight`)
+- Where the playground cannot show it working, such as `object/new`, which needs a class from host code, show what it does without one, and the host case as a `<code-block>`. (`docs-example-object-new` is `error-example`)
+- Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and "Explain a result" shows how a computed figure was worked out. (`docs-explain-result-computed-figure` is `worked-out-shown`)
 
-### Research skill
+### Decided
 
-- The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`). See [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](DECISIONS.md#engine-computes-model-interprets) and [A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed](DECISIONS.md#user-decides-ambiguity).
-- The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows "Worked out as" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose. See [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](DECISIONS.md#engine-computes-model-interprets) and [`why` shows every goal of a rule's body as it held, `=` and `in` among them](DECISIONS.md#why-shows-every-goal).
-- `page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both. See [A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed](DECISIONS.md#user-decides-ambiguity).
-- A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays. See [The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote](DECISIONS.md#engine-computes-model-interprets).
-- `replay.mjs` runs the Lion command `LION_CLI` names, as the reasoning skill's scripts do. See [The skills' scripts run the published `@lionlang/cli`, never the copy of Lion in the project](DECISIONS.md#skills-use-published-cli).
+- The docs build fails when a special form or library function appears in no live example (`docs-example-coverage`: `build-checked` over `by-hand`)
+- The scripts of both skills run the published Lion CLI through `bunx`, or `npx` without bun, and never a copy of Lion in the project, so changing Lion itself never changes the checker. (`skill-lion-runtime`: `published-cli` over `project-copy`)
+- the agent asks the reader which they mean and records the answer in their words as `decided` (`reasoning-ambiguous-question`: `ask-user` over `pick-one`)
+- A figure is recorded as the source writes it, in a shape whose key names that unit (`research-figure-recording`: `as-written` over `converted-to-frame-unit`)
+- One rule replaces the case that left `=` and `in` out. (`why-premises`: `every-goal` over `relation-goals-and-filters`)
 
-### Reasoning skill
+### Rules
 
-- Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change. See [A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed](DECISIONS.md#user-decides-ambiguity).
+- A change also corrects every documented result it makes untrue. (rule `correct-untrue-docs`)
+- Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example (rule `every-feature-in-docs`)
+- a skill's new relation, note field, or script in its `SKILL.md` or `references/` (rule `skill-features-in-docs`)
+- The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote (rule `engine-computes-model-interprets`)
+- A publisher's latest word counts. (rule `research-later-word-replaces-earlier`)
+- A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed (rule `user-decides-ambiguity`)
+- `why` shows every goal of a rule's body as it held, `=` and `in` among them (rule `why-shows-every-goal`)
+- Show a function doing what it is for, combined with what a reader would combine it with, rather than called alone on a constant. (rule `examples-use-feature-for-real`)
 
 ## 2026-11-13 — lion-reasoning skill
 
@@ -96,21 +334,46 @@ No package changed. `skills/lion-reasoning` is a new agent skill that uses Lion 
 
 ### Added
 
-- The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check.
-- `assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe. See [A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows](DECISIONS.md#beliefs-judged-from-their-version).
-- `scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model. See [The skills' scripts run the published `@lionlang/cli`, never the copy of Lion in the project](DECISIONS.md#skills-use-published-cli) and [A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows](DECISIONS.md#beliefs-judged-from-their-version).
-- References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if.
-- Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`.
+- The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check. (`lion-reasoning` added)
+- Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`. (`mutation-package-option` added)
+- `scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model. (`reasoning-ask-mjs` added; `reasoning-replay-mjs` added; `reasoning-see-mjs` added; `reasoning-start-mjs` added)
+- `assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe. (`reasoning-changed` added; `reasoning-core-json` added; `reasoning-decisive` added; `reasoning-needed` added; `reasoning-open` added; `reasoning-overruled` added; `reasoning-remaining` added; `reasoning-unexplained` added)
+- References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if. (`reasoning-lion-reference` added; `reasoning-patterns-reference` added)
+- `record.mjs` stamps each belief with the version it was formed in. (`reasoning-record-mjs` added)
+- so `settled` can name the explanation left when all its predictions are borne out (`reasoning-settled` added)
+
+### Changed
+
+- The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check. (`reasoning-belief` is `predicted-answers`; `reasoning-observation` is `question-value-and-quote`; `reasoning-problem` is `question-and-showing-value`)
+- once contradicted it stays contradicted, even after the files change again (`reasoning-belief-contradicted-in-earlier-version` is `contradicted`)
+- `scripts/start.mjs`, `see.mjs`, `record.mjs`, `replay.mjs`, and `ask.mjs`. `see.mjs` runs a command and keeps its output and exit status as evidence, with the hash of what it depends on when it ran. `record.mjs` writes a step from plain notes, refuses a quote that is not in the text it came from, and stamps each belief with the version it was formed in. Every version of the project is kept as the changes since the last. The scripts run the published `@lionlang/cli`, so changing Lion itself never changes the checker, and a question runs on a copy of the model. (`reasoning-belief-version-stamp` is `formed-version`; `reasoning-question-model` is `copy`; `reasoning-record-input` is `plain-notes`; `reasoning-record-quote-not-in-source` is `refused`; `reasoning-see-evidence` is `output-exit-status-and-hash`; `reasoning-version-storage` is `changes-since-last`)
+- Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`. (`reasoning-core-program-property` is `checked-against-plain-model`; `reasoning-recorder-property` is `checked`; `reasoning-rival-explanations-property` is `checked-against-prediction-law`; `reasoning-staleness-chain-property` is `checked`; `reasoning-versions-property` is `checked-against-source-files`)
+- A belief that explains a problem is judged only in the versions where the problem shows. (`reasoning-explaining-belief-judged` is `where-problem-shows`)
+- A fix does not count against the explanation of its bug (`reasoning-explanation-after-fix` is `not-contradicted`)
+- What a fix will do is a belief of its own, recorded after the change. (`reasoning-fix-prediction` is `own-belief`, was `inside-explanation`)
+- Build output that git ignores was never hashed, so evidence about it could not go stale. Such paths are now hashed from disk. (`reasoning-ignored-build-output` is `hashed-from-disk`, was `never-hashed`)
+- A list in the output could not be quoted as one observation. A quote can now be a list of quotes. (`reasoning-list-quote` is `list-of-quotes`, was `unquotable`)
+- A belief is contradicted, borne out, or untested by the evidence of that version and every later one (`reasoning-non-explaining-belief-judged` is `from-formed-version`, was `present`)
+- versions where the problem shows, and any other belief in the present. (`reasoning-non-explaining-belief-judged` is `present`)
+- Its check that the test fails on the old code went stale for good, because it undid the fix in place to run it. The patterns now run such a check against a copy of the old code, depending only on the test. (`reasoning-old-code-check` is `copy-of-old-code`, was `in-place`; `reasoning-old-code-check-depends-on` is `test-only`)
+- References for the agent: the part of Lion it uses, and patterns, each example of which was run, for finding the cause of a bug, verifying a change, checking a test against the old code, checking what it was told, assumptions with rules of their own, a plan with dependencies, and asking what if. (`reasoning-pattern-examples` is `run`)
+
+### Decided
+
+- A belief is contradicted, borne out, or untested by the evidence of that version and every later one (`reasoning-belief-judging`: `from-formed-version` over `present-only`)
+
+### Rules
+
+- Properties in `packages/metrics` check the core program against a plain model of versions, evidence, and beliefs, rival explanations against the law that an answer keeps exactly those that predicted it, the recorder, the versions against the files they were taken from, and the chain from changing files to the present answer. Fifteen mutations break those behaviors, and `mutation.ts` takes a `package` so a mutation can run the tests of `metrics`. (rule `answer-keeps-predicting-explanations`)
+- a belief is judged from the version it was formed in on and stays contradicted once contradicted (rule `beliefs-judged-from-their-version`)
+- Judge a belief that explains no problem against the present only, as the skill's first version did (rule `beliefs-judged-in-present` withdrawn)
+- `assets/core.json`, the program every model starts from. Each observation speaks for the versions of the project in which the files it depends on hold what they held when it was seen, so evidence about a changed file is stale and `changed` lists what the work changed. What the agent ran or read overrules what it was told or recalled, and `overruled` lists each time. A belief is contradicted, borne out, or untested by the evidence of every version from the one it was formed in on, and a belief that explains a problem by the versions where the problem shows, so a fix does not count against the explanation of the bug it fixed. For rival explanations, `decisive` names the questions they answer differently, `remaining` the ones still standing, `settled` the one left when all its predictions are borne out, and `unexplained` a problem with none left. `needed` and `open` say what the task must still observe. (rule `evidence-stale-after-file-change`; rule `ran-or-read-overrules-told`)
+- The skill. An agent records what it observed, each observation a question and a value with the words of a command's output or a file that show it, and what it believes, each belief with the answers it predicts. A problem is a question with the value that shows it. Rules derive what the agent would otherwise have to remember to check. (rule `reasoning-rules-derive-checks`)
+- The skills' scripts run the published `@lionlang/cli`, never the copy of Lion in the project (rule `skills-use-published-cli`)
 
 ### Changed during the first trial
 
 Two agents fixed one real bug in history-free copies of Lion from before commit `28ae742`: loading `special-forms/lambda` first crashed with "Cannot access 'evaluateLambda' before initialization". One used the skill and one did not. Both found the same cause and the same 11 of 49 modules, and both fixes were verified independently: no module fails when loaded first, the core tests and typecheck pass, and each new test fails on the old code. The cost was the same within noise: 238,607 tokens, 81 tool calls, and 17.5 minutes with the skill; 235,018 tokens, 88 tool calls, and 18.3 minutes without. The skill's agent put 30 to 35% of its effort into the model. The model caught one thing that changed what it did: its "fails on the old code" evidence was stale after a later edit to the test, so it ran the check again. It reported five problems with the skill, each fixed above:
-
-- A belief it had disproved on the old code showed as holding again after the fix, because beliefs that explain no problem were judged only against the present. Beliefs are now judged from the version they were formed in on. Rebuilt with the new core, the trial's own model marks that belief as violated. See [A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows](DECISIONS.md#beliefs-judged-from-their-version).
-- Its check that the test fails on the old code went stale for good, because it undid the fix in place to run it. The patterns now run such a check against a copy of the old code, depending only on the test.
-- A prediction about the fixed code inside the explanation of the bug could never be checked there, so the problem was never settled. The skill now says to make what a fix will do a belief of its own, recorded after the change. See [A belief is judged by the evidence of every version from the one it was formed in on, and an explanation by the versions where its problem shows](DECISIONS.md#beliefs-judged-from-their-version).
-- Build output that git ignores was never hashed, so evidence about it could not go stale. Such paths are now hashed from disk.
-- A list in the output could not be quoted as one observation. A quote can now be a list of quotes.
 
 ## 2026-11-13 — @lionlang/core 0.9.0, @lionlang/cli 0.8.0
 
@@ -118,15 +381,54 @@ Text from lists and numbers, and a record that keeps its empty key. The research
 
 ### Added
 
-- `["string/join", list, separator]` is a list of strings with the separator between them. With a third string, that one stands before the last item, as `#:before-last` does in Racket: `["string/join", ["array/make", "a", "b", "c"], ", ", " and "]` is `"a, b and c"`. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- `["string/split", text, separator]` is the parts of the text between each separator, so joining them with the same separator gives the text back. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- `["string/padStart", text, length, fill]` and `["string/padEnd", text, length, fill]` make text as long as asked, as JavaScript does: `["string/padStart", "7", 2, "0"]` is `"07"`. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- `number/toString` takes a second argument, a string to write between groups of three digits of the whole part, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`. With one argument it is unchanged. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- Like every library function, each waits for a logic variable, so a rule, a query, or a `find` can build text with them, and a call with another number of arguments says how many the function takes. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text) and [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
+- `string/join` takes a string to put before the last item (`string/join` added)
+- `page-check.json` runs every text of the plan (`research-page-check-json` added)
+- Core 0.9.0 adds `string/join`, `string/split`, `string/padStart`, `string/padEnd`, and a separator for `number/toString` (`string/padEnd` added; `string/padStart` added; `string/split` added)
+
+### Removed
+
+- A lookup is a Lion function instead, called with each choice as data (`research-lookup-placeholder` removed)
+
+### Changed
+
+- `string/join` takes a string to put before the last item, as `#:before-last` does in Racket. (`string-join-before-last` is `before-last-string`)
+- A record keeps the key `""`, as JSON does. `{"": 1, "a": 2}` used to evaluate to `{"a": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `["object/keys", ["quote", {"": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{"": "?v"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty. (`editor-empty-property-name` is `refused`; `record-proto-key` is `dropped`)
+- a slowdown of a few percent, under 1 ms, not explained. (`graph-components-benchmark-slowdown` is `unexplained`)
+- Interop grid: a row for a record with the empty key, like plain code in every place. (`grid-record-with-empty-key` is `same-as-plain-code`)
+- It failed now and then on main too. (`record-waiting-property-on-main` is `flaky`)
+- The skill needs `@lionlang/cli` 0.8.0, the release that bundles core 0.9.0 (`cli-0-8-0-bundled-core` is `core-0-9-0`)
+- Core 0.9.0 adds `string/join`, `string/split`, `string/padStart`, `string/padEnd`, and a separator for `number/toString` (`number-to-string-group-separator` is `grouped`)
+- `number/toString` takes a second argument, a string to write between groups of three digits of the whole part, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`. With one argument it is unchanged. (`number-to-string-one-argument` is `unchanged`)
+- the build lists any figure typed into the plan and any typed text that holds a digit (`research-plan-typed-figure` is `listed`)
+- utc-text.json pads with string/padStart (`research-utc-text-padding` is `string-padStart`)
+- `["string/join", list, separator]` is a list of strings with the separator between them. With a third string, that one stands before the last item, as `#:before-last` does in Racket: `["string/join", ["array/make", "a", "b", "c"], ", ", " and "]` is `"a, b and c"`. (`string-join` is `separator-between-items`)
+- One item is itself, and an empty list is `""`. (`string-join-empty-list` is `empty-string`)
+- Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`. (`string-join-non-string-item` is `error`)
+- `["string/padStart", text, length, fill]` and `["string/padEnd", text, length, fill]` make text as long as asked, as JavaScript does: `["string/padStart", "7", 2, "0"]` is `"07"`. (`string-pad` is `padded`)
+- Text that is already that long is unchanged. (`string-pad-already-long` is `unchanged`)
+- `["string/split", text, separator]` is the parts of the text between each separator, so joining them with the same separator gives the text back. (`string-split` is `parts`; `string-split-then-join` is `same-text`)
+- The research skill writes its page's words with the new functions, so it needs this release. (`research-skill-core-requirement` is `core-0-9-0`)
 
 ### Fixed
 
-- A record keeps the key `""`, as JSON does. `{"": 1, "a": 2}` used to evaluate to `{"a": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `["object/keys", ["quote", {"": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{"": "?v"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.
+- A record keeps the key `""`, as JSON does. `{"": 1, "a": 2}` used to evaluate to `{"a": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `["object/keys", ["quote", {"": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{"": "?v"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty. (`editor-empty-property-name-message` is `asks-for-name`, was `keys-must-be-non-empty`; `fact-record-empty-key` is `kept`, was `dropped`; `object-keys-empty-key` is `includes-empty-key`, was `empty-list`; `pattern-record-empty-key` is `binds`, was `unbound`; `quoted-record-empty-key` is `kept`, was `dropped`; `record-empty-key` is `kept`, was `dropped`; `snapshot-fact-empty-key` is `kept`, was `dropped`)
+
+### Documentation
+
+- The parts of <code>text</code> between each <code>separator</code>; joining them with the same separator gives <code>text</code> back (`site-library-reference-text-functions` is `documented`)
+
+### Decided
+
+- combine one or more arguments from left to right, as their Scheme counterparts do (`combining-function-arity`: `one-or-more`)
+- Where a base form's behavior is unclear, Lion follows Scheme and Racket (`unclear-base-form-behavior`: `follow-scheme-racket`)
+- the record schema's key check required at least one character, and a key that fails it is left out. (`record-key-check`: `any-json-key-but-proto` over `non-empty-key`)
+- Text built on Lion is computed by Lion expressions, not filled into a template (`text-built-on-lion`: `lion-expressions` over `typed-text`, `placeholders`)
+
+### Rules
+
+- A record keeps the key `""`, as JSON does. `{"": 1, "a": 2}` used to evaluate to `{"a": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `["object/keys", ["quote", {"": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{"": "?v"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty. (rule `records-keep-every-key`)
+- a helper any Lion programmer would want goes into the standard library with its properties (rule `extend-stdlib`)
+- The length of Lion JSON is not counted as a cost (rule `json-length-not-a-cost`)
 
 ## 2026-11-13 — lion-research skill
 
@@ -134,14 +436,57 @@ No package changed. `skills/lion-research` is a new agent skill that uses Lion a
 
 ### Added
 
-- The skill. An agent records what each source says as facts, each with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research. Its assumptions are rules that the evidence can contradict. A run ends with the saved model and one page for the person who asked for the research.
-- `assets/core.json`, the program every research model starts from. It says who stands behind each answer: the publishers who give it first-hand, in a claim credited to nobody else. Sources with one publisher are one voice, and a source that relays another adds nothing, so an answer that three articles took from one press release rests on one publisher. It derives which answers independent publishers confirm, which rest on one publisher's word and how many on each, which are known only second-hand, which sources are credited with something they do not say, which questions sources dispute, which credited sources are unread, and which assumptions hold. Its invariants reject a claim without a known source. See [The research skill counts the publishers who give an answer first-hand, not the sources that state it](DECISIONS.md#research-counts-publishers).
-- `assets/utc-minutes.json` and `assets/utc-text.json`, Lion functions that turn a time in any zone into minutes since 1970 UTC and such a count into text, so a rule can order a timeline, measure the time between events, and show both.
-- `scripts/build-explorer.mjs`, which packs a model and the plan of its page into one HTML file with the evaluator inside it. The page is for a reader who does not know Lion, and it has no fixed form: the agent writes a plan, `page.json`, for what this reader wants to know. A plan names the views and fills each with blocks: an answer in plain words with its evidence under it, key figures, a table, a timeline, a comparison grid, a lookup whose answer changes as the reader chooses from lists, how solid the findings are, the sources, and text. The plan states no facts: its summary, answers, notes, and figures are Lion expressions that the page evaluates against the model each time it opens, so the wording follows the model and a `cond` on `disputed` or `corroborated` picks the sentence. A lookup's query is a Lion function, called with what the reader chose as data. `assets/words.json` gives the expressions functions for wording: a list as a sentence lists it, a number with separators, a count with its noun. The trust block is built from the core: what independent publishers confirm, where sources disagree, what rests on one publisher's word, what is second-hand, what was misquoted, and which assumptions held. The query editor and the model's tables are always the last view, for readers who know Lion, where a query can also add facts to ask what would follow. The script also writes every query the plan asks as one Lion record, so they can all be run before the page is opened. See [Text built on Lion is computed by Lion expressions, not filled into a template, and a helper any program would want goes into the standard library](DECISIONS.md#lion-computes-page-text).
-- `scripts/record.mjs`, which writes a step from plain notes on what sources said, with everything in it as data, and refuses a quote that is not in the saved text of its source. `scripts/replay.mjs`, which rebuilds the model from its steps and gives a frame the time functions it names.
-- `scripts/page-text.mjs`, which saves the text of a page a source was read from, and `scripts/check-quotes.mjs`, which checks that every claim's quote is in the saved text of its source, word for word.
-- Two references for the agent, each example of which was run: the part of Lion a research model uses, and rules for facts that hold or do not, disputes, timelines, statements that change, totals, networks, gaps, assumptions, and competing explanations.
-- Properties in `packages/metrics` check the core program against a plain model of provenance for any sources, publishers, claims, and attributions, the time functions against JavaScript's clock, and each script against what it is given: the page against its model and plan, and a reader's choice in a lookup against the data it stands for.
+- The skill. An agent records what each source says as facts, each with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research. Its assumptions are rules that the evidence can contradict. A run ends with the saved model and one page for the person who asked for the research. (`lion-research` added)
+- `backing` lists the publishers behind each answer (`research-backing` added)
+- `scripts/build-explorer.mjs`, which packs a model and the plan of its page into one HTML file with the evaluator inside it. The page is for a reader who does not know Lion, and it has no fixed form: the agent writes a plan, `page.json`, for what this reader wants to know. A plan names the views and fills each with blocks: an answer in plain words with its evidence under it, key figures, a table, a timeline, a comparison grid, a lookup whose answer changes as the reader chooses from lists, how solid the findings are, the sources, and text. The plan states no facts: its summary, answers, notes, and figures are Lion expressions that the page evaluates against the model each time it opens, so the wording follows the model and a `cond` on `disputed` or `corroborated` picks the sentence. A lookup's query is a Lion function, called with what the reader chose as data. `assets/words.json` gives the expressions functions for wording: a list as a sentence lists it, a number with separators, a count with its noun. The trust block is built from the core: what independent publishers confirm, where sources disagree, what rests on one publisher's word, what is second-hand, what was misquoted, and which assumptions held. The query editor and the model's tables are always the last view, for readers who know Lion, where a query can also add facts to ask what would follow. The script also writes every query the plan asks as one Lion record, so they can all be run before the page is opened. (`research-build-explorer-mjs` added; `research-page-json` added)
+- `scripts/page-text.mjs`, which saves the text of a page a source was read from, and `scripts/check-quotes.mjs`, which checks that every claim's quote is in the saved text of its source, word for word. (`research-check-quotes-mjs` added; `research-page-text-mjs` added)
+- `assets/core.json`, the program every research model starts from. It says who stands behind each answer: the publishers who give it first-hand, in a claim credited to nobody else. Sources with one publisher are one voice, and a source that relays another adds nothing, so an answer that three articles took from one press release rests on one publisher. It derives which answers independent publishers confirm, which rest on one publisher's word and how many on each, which are known only second-hand, which sources are credited with something they do not say, which questions sources dispute, which credited sources are unread, and which assumptions hold. Its invariants reject a claim without a known source. (`research-core-json` added)
+- `corroborated` the answers two or more publishers give first-hand (`research-corroborated` added)
+- `scripts/record.mjs`, which writes a step from plain notes on what sources said, with everything in it as data, and refuses a quote that is not in the saved text of its source. `scripts/replay.mjs`, which rebuilds the model from its steps and gives a frame the time functions it names. (`research-record-mjs` added; `research-replay-mjs` added)
+- Two references for the agent, each example of which was run: the part of Lion a research model uses, and rules for facts that hold or do not, disputes, timelines, statements that change, totals, networks, gaps, assumptions, and competing explanations. (`research-references-lion-md` added; `research-references-patterns-md` added)
+- `secondhand` those every source credits to someone else (`research-secondhand` added)
+- `single_origin` those that rest on one publisher's word (`research-single-origin` added)
+- Every source records its `publisher`, written the same way for each channel that publisher speaks through (`research-source-publisher` added)
+- `assets/utc-minutes.json` and `assets/utc-text.json`, Lion functions that turn a time in any zone into minutes since 1970 UTC and such a count into text, so a rule can order a timeline, measure the time between events, and show both. (`research-utc-minutes-json` added; `research-utc-text-json` added)
+- `assets/words.json` builds the skill's wording functions from them (`research-words-json` added)
+
+### Changed
+
+- `single_origin` those that rest on one publisher's word (`research-answer-one-first-hand-publisher` is `single-origin`)
+- `secondhand` those every source credits to someone else (`research-answer-only-credited-to-others` is `second-hand`)
+- a source that relays another adds nothing (`research-answer-relayed-from-one-press-release` is `one-publisher`)
+- `corroborated` the answers two or more publishers give first-hand (`research-answer-two-first-hand-publishers` is `corroborated`)
+- The skill. An agent records what each source says as facts, each with the quote that carries it, and writes rules that derive its conclusions, so the model is a materialized view of the research. Its assumptions are rules that the evidence can contradict. A run ends with the saved model and one page for the person who asked for the research. (`research-assumptions` is `rules-evidence-can-contradict`; `research-conclusions` is `derived-by-rules`; `research-fact-carries-quote` is `true`; `research-run-output` is `saved-model-and-page`)
+- `assets/core.json`, the program every research model starts from. It says who stands behind each answer: the publishers who give it first-hand, in a claim credited to nobody else. Sources with one publisher are one voice, and a source that relays another adds nothing, so an answer that three articles took from one press release rests on one publisher. It derives which answers independent publishers confirm, which rest on one publisher's word and how many on each, which are known only second-hand, which sources are credited with something they do not say, which questions sources dispute, which credited sources are unread, and which assumptions hold. Its invariants reject a claim without a known source. (`research-assumptions-held` is `derived`; `research-claim-without-known-source` is `rejected`; `research-disputed-questions` is `derived`; `research-source-credited-with-what-it-does-not-say` is `misquote`; `research-unread-credited-sources` is `derived`)
+- so a company's press release, status page, and filing are one voice (`research-channels-of-one-publisher` is `one-voice`)
+- `scripts/page-text.mjs`, which saves the text of a page a source was read from, and `scripts/check-quotes.mjs`, which checks that every claim's quote is in the saved text of its source, word for word. (`research-check-quotes` is `word-for-word`)
+- Properties check the core against a plain model of provenance for any sources, publishers, claims, and attributions. (`research-core-provenance-tested` is `by-property`)
+- Properties in `packages/metrics` check the core program against a plain model of provenance for any sources, publishers, claims, and attributions, the time functions against JavaScript's clock, and each script against what it is given: the page against its model and plan, and a reader's choice in a lookup against the data it stands for. (`research-core-tested-against` is `plain-provenance-model`; `research-lookup-choice-tested-against` is `data-it-stands-for`; `research-page-tested-against` is `model-and-plan`; `research-time-functions-tested-against` is `javascript-clock`)
+- the custom block was not exercised (`research-custom-block-exercised` is `untested`)
+- assets/lion-engine.js is @lionlang/core 0.8.0 for the browser, built from scripts/engine.ts. (`research-engine-core-version` is `core-0-8-0`)
+- `scripts/build-explorer.mjs`, which packs a model and the plan of its page into one HTML file with the evaluator inside it. The page is for a reader who does not know Lion, and it has no fixed form: the agent writes a plan, `page.json`, for what this reader wants to know. A plan names the views and fills each with blocks: an answer in plain words with its evidence under it, key figures, a table, a timeline, a comparison grid, a lookup whose answer changes as the reader chooses from lists, how solid the findings are, the sources, and text. The plan states no facts: its summary, answers, notes, and figures are Lion expressions that the page evaluates against the model each time it opens, so the wording follows the model and a `cond` on `disputed` or `corroborated` picks the sentence. A lookup's query is a Lion function, called with what the reader chose as data. `assets/words.json` gives the expressions functions for wording: a list as a sentence lists it, a number with separators, a count with its noun. The trust block is built from the core: what independent publishers confirm, where sources disagree, what rests on one publisher's word, what is second-hand, what was misquoted, and which assumptions held. The query editor and the model's tables are always the last view, for readers who know Lion, where a query can also add facts to ask what would follow. The script also writes every query the plan asks as one Lion record, so they can all be run before the page is opened. (`research-explorer-output` is `single-html-file-with-evaluator`; `research-page-form` is `agent-planned`; `research-plan-queries-export` is `one-lion-record`; `research-query-editor-add-facts` is `allowed`; `research-trust-block-source` is `core-derivations`)
+- a lookup is a Lion function called with what the reader chose (`research-lookup` is `lion-function`)
+- the lookup's fill-in logic is in both the page script and the build script, and only the build script's copy has a property (`research-lookup-fill-in-page-script-tested` is `untested`)
+- the page's display code is checked by use in a browser, not by a property (`research-page-display-code-tested` is `by-use`)
+- `scripts/record.mjs`, which writes a step from plain notes on what sources said, with everything in it as data, and refuses a quote that is not in the saved text of its source. `scripts/replay.mjs`, which rebuilds the model from its steps and gives a frame the time functions it names. (`research-record-quote-not-in-source` is `refused`; `research-record-step-content` is `data`; `research-replay-time-functions` is `given-by-name`)
+- record.mjs and replay.mjs were added after the second trial and no research agent has used them. (`research-record-replay-trialed` is `untested`)
+- Two references for the agent, each example of which was run: the part of Lion a research model uses, and rules for facts that hold or do not, disputes, timelines, statements that change, totals, networks, gaps, assumptions, and competing explanations. (`research-reference-examples` is `run`)
+- so a spokesperson quoted in three papers does not read as three voices (`research-spokesperson-quoted-in-several-papers` is `one-voice`)
+- a statement repeated by ten outlets is still one statement (`research-statement-repeated-by-outlets` is `one-statement`)
+- `assets/utc-minutes.json` and `assets/utc-text.json`, Lion functions that turn a time in any zone into minutes since 1970 UTC and such a count into text, so a rule can order a timeline, measure the time between events, and show both. (`research-utc-minutes` is `minutes-since-1970-utc`; `research-utc-text` is `minutes-as-text`)
+
+### Decided
+
+- @lionlang/core is unchanged, so measure and bench were not run. (`measure-unchanged-core`: `skip`)
+- Only a publisher who gives an answer first-hand, in a claim credited to nobody else, counts. (`research-corroboration-basis`: `first-hand-publishers` over `distinct-sources`)
+
+### Rules
+
+- When something built on Lion needs a value, a condition, or text, it is a Lion expression that is evaluated, never a second, smaller language such as a template with slots or a placeholder that gets substituted (rule `lion-computes-page-text`)
+- an answer two publishers give first-hand, with relays not counted (rule `research-counts-publishers`)
+- Its first version followed each claim to the source it was credited to and counted distinct sources. (rule `research-counts-sources` withdrawn)
+- `scripts/build-explorer.mjs`, which packs a model and the plan of its page into one HTML file with the evaluator inside it. The page is for a reader who does not know Lion, and it has no fixed form: the agent writes a plan, `page.json`, for what this reader wants to know. A plan names the views and fills each with blocks: an answer in plain words with its evidence under it, key figures, a table, a timeline, a comparison grid, a lookup whose answer changes as the reader chooses from lists, how solid the findings are, the sources, and text. The plan states no facts: its summary, answers, notes, and figures are Lion expressions that the page evaluates against the model each time it opens, so the wording follows the model and a `cond` on `disputed` or `corroborated` picks the sentence. A lookup's query is a Lion function, called with what the reader chose as data. `assets/words.json` gives the expressions functions for wording: a list as a sentence lists it, a number with separators, a count with its noun. The trust block is built from the core: what independent publishers confirm, where sources disagree, what rests on one publisher's word, what is second-hand, what was misquoted, and which assumptions held. The query editor and the model's tables are always the last view, for readers who know Lion, where a query can also add facts to ask what would follow. The script also writes every query the plan asks as one Lion record, so they can all be run before the page is opened. (rule `research-page-for-non-lion-reader`)
+- In the research skill, the plan's summary, answers, notes, and figures are Lion expressions evaluated against the model when the page opens (rule `research-plan-states-no-facts`)
 
 ### Changed during the first trial
 
@@ -153,37 +498,77 @@ Three surprises found while writing Lion programs for a research skill, each rem
 
 ### Breaking
 
-- Every function of the standard library takes a set number of arguments, and a call with any other number fails and says how many the function takes. `["number/subtract", 10, 3, 1]` used to be `7`, with the `1` dropped, and `["object/get", {"a": 1}]` used to be `null`, with no key given. They now fail with `"number/subtract" takes 2 arguments but got 3.` and `"object/get" takes 2 arguments but got 1.` The call fails the same way where it waits for a logic variable, in a rule, a query, or a `find`. The failure is a `LogicError`; a call with too few arguments used to fail with a `SchemaError`, or pass `undefined` on. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
-- Host code that calls a library function gives it the arguments it takes too. `["func/callback", "value/number?"]` handed to JavaScript's `Array.prototype.map` is called with three arguments, and fails. A lambda still ignores arguments past its parameters, so a lambda remains the way to write a callback. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
-- `func/bind` and `func/apply` take the function and its `this`, then any arguments. `["func/bind", fn]` used to bind `undefined`. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
+- `func/bind` and `func/apply` need the function and its `this` (`func-apply-missing-this` is `error`; `func-bind-missing-this` is `error`)
+- a library function handed to host code that passes extra arguments, as `Array.prototype.map` does through `func/callback`, fails (`host-calls-library-function-extra-arguments` is `error`)
 
 ### Added
 
-- `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `["number/add", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `["string/concat", "lion", "-", "ized", "!"]` is `"lion-ized!"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
-- `["number/toString", 42]` is `"42"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `["string/concat", "order ", ["number/toString", "?id"]]`. The only way used to be `["object/call-method", 42, "toString"]`.
-- `object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `["object/json-stringify", 42]` is `"42"`, and `["object/json-stringify", "lion"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `"number/add" has no JSON text.`
-- For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
+- For hosts: `takes` from `@lionlang/core/errors/evaluation` gives a function the same rule, as in `takes(2, fn)` or `takes(atLeast(1), fn)`, and `over` and `combining` from `@lionlang/core/modules/lib/shared` build a library function from schemas for its arguments. `nameOf` from `@lionlang/core/logic/terms` gives the name a function is written with. (`combining` added; `nameOf` added)
+- A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it. (`facts-may-only-contain-data-message` added)
+- `["number/toString", 42]` is `"42"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `["string/concat", "order ", ["number/toString", "?id"]]`. The only way used to be `["object/call-method", 42, "toString"]`. (`number/toString` added)
+- `over` builds a library function from a schema for each argument (`over` added)
+- One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`takes` added)
+
+### Removed
+
+- A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it. (`facts-cannot-contain-logic-variables-message` removed)
 
 ### Changed
 
-- A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it.
-- Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `"graph/pageRank"`, `Schema "Tree" takes 1 argument, the value to check, but got 2.` is `"Tree" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `"aggregate/sum" takes 1 argument but got 2.` A relation's message is unchanged. See [A call gives a function as many arguments as it takes, and any other number fails with one form of message](DECISIONS.md#arity-rule).
-- `@lionlang/cli` 0.7.0 bundles `@lionlang/core` 0.8.0.
-- An `ArithmeticError` shows every number of the call: `number/add: 1e+308 + 1e+308 + 1 has no finite result.`
+- `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments from left to right, as their Scheme counterparts do. (`combining-functions-several-arguments` is `combine-left-to-right`)
+- Every message about the number of arguments has one form, and names the function as it is written in Lion. `graph/pageRank takes 3 arguments (edges, node, rank) but got 1.` now starts with `"graph/pageRank"`, `Schema "Tree" takes 1 argument, the value to check, but got 2.` is `"Tree" takes 1 argument (the value to check) but got 2.`, and `aggregate/sum takes one argument but got 2.` is `"aggregate/sum" takes 1 argument but got 2.` A relation's message is unchanged. (`aggregate-arity-message` is `one-form`, was `own-form`; `graph-algorithm-arity-message` is `one-form`, was `own-form`; `relation-arity-message` is `unchanged`; `schema-arity-message` is `one-form`, was `own-form`)
+- An `ArithmeticError` shows every number of the call: `number/add: 1e+308 + 1e+308 + 1 has no finite result.` (`arithmetic-error-message` is `shows-every-number`)
+- A call with the wrong number of arguments fails where it runs, also where it waits for a logic variable in a rule, a query, or a `find` (`arity-error-in-waiting-call` is `error`)
+- the failure is a `LogicError` (`arity-error-kind` is `logic-error`)
+- any other number fails with one form of message (`arity-message-form` is `one-form`)
+- `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `["number/add", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `["string/concat", "lion", "-", "ized", "!"]` is `"lion-ized!"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back. (`combining-function-one-argument` is `identity`)
+- A fact that holds something other than JSON data says which column it is for, what it is, and, for a string that is a name, how to write the string. `["fact", ["note", "source"]]`, where `source` is a relation, used to fail with `Facts may only contain JSON data: ["note","source"].`, which shows nothing wrong. It now fails with `Facts may only contain JSON data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same message covers the name of a schema or a function, and a logic variable such as `"?why"`, which used to have a message of its own, `Facts cannot contain logic variables`. `fact`, `retract`, and `why` share it. (`fact-holding-logic-variable-message` is `names-column-and-name`, was `logic-variables-message`; `fact-holding-name-message` is `names-column-and-name`, was `shows-nothing-wrong`; `retract-holding-name-message` is `names-column-and-name`; `why-holding-name-message` is `names-column-and-name`)
+- One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`graph-algorithm-wrong-arity` is `error`)
+- `["number/toString", 42]` is `"42"`: the number as text, the way JSON writes it. Like every function it waits for a logic variable, so a rule can build text from a number: `["string/concat", "order ", ["number/toString", "?id"]]`. The only way used to be `["object/call-method", 42, "toString"]`. (`number-to-string` is `json-text`; `number-to-text-in-rule` is `number-toString`, was `object-call-method`; `number-toString-logic-variable-argument` is `waits`)
+- `object/json-stringify` writes any JSON value, where it used to refuse all but records and lists with `Expected an object`. `["object/json-stringify", 42]` is `"42"`, and `["object/json-stringify", "lion"]` is the string with its quotes. The replacer and the indent are optional. A value JSON cannot write fails with `"number/add" has no JSON text.` (`object-json-stringify-function` is `error`; `object-json-stringify-non-record` is `json-text`, was `error`; `object-json-stringify-replacer-and-indent` is `optional`)
+- `func/bind` and `func/apply` take the function and its `this`, then any arguments. `["func/bind", fn]` used to bind `undefined`. (`pass-on-functions-extra-arguments` is `accepted`)
+- `@lionlang/cli` 0.7.0 bundles `@lionlang/core` 0.8.0. (`cli-0-7-0-bundled-core` is `core-0-8-0`)
+- Functions check their arguments and fail with <code>SchemaError</code> when one has the wrong type. (`library-function-wrong-argument-type` is `schema-error`)
 
 ### Fixed
 
-- A fact that holds a lambda fails with `... which is not JSON data.` It used to fail with `Facts cannot contain logic variables`, though it holds none.
+- A fact that holds a lambda fails with `... which is not JSON data.` It used to fail with `Facts cannot contain logic variables`, though it holds none. (`fact-holding-lambda-message` is `not-json-data`, was `logic-variables-message`)
+
+### Documentation
+
+- docs/ and packages/site-runtime are untouched, so the website's library reference and its worker bundle do not have number/toString yet. (`site-library-reference-number-toString` is `missing`)
+- The website's library reference documents the rule and the new function, and its worker bundle is rebuilt. (`site-library-reference-number-toString` is `documented`, was `missing`)
+
+### Decided
+
+- One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`arity-checks`: `one-takes-function` over `separate-checks`)
+- Every function of the standard library takes a set number of arguments, and a call with any other number fails (`library-function-arity`: `strict` over `lenient`, was `variadic`)
+
+### Rules
+
+- Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (rule `arity-rule`)
+- Every new function declares what it takes, with `takes` or `over`, and has a row in the table of `arity.test.ts`. (rule `new-functions-declare-arity`)
 
 ## 2026-11-13 — lionlang.dev
 
 No package changed. These are fixes to the documentation page.
 
+### Added
+
+- Both rules are in `docs/pure.js`, and `@lionlang/site-runtime` now tests them with properties. (`docs-pure-js` added; `site-runtime-tests` added)
+
 ### Fixed
 
-- "On this page" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up.
-- An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none.
-- Both rules are in `docs/pure.js`, and `@lionlang/site-runtime` now tests them with properties.
+- "On this page" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up. (`docs-toc-end-of-page` is `last-section`; `docs-toc-followed-link` is `marks-linked-section`, was `marks-previous-section`; `docs-toc-followed-link-until-scrolled` is `stays-marked`)
+- An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none. (`example-run-measured-zero-ms` is `shows-time`, was `no-time`)
+
+### Documentation
+
+- An example shows how long its program ran whenever the program ran. A run that a coarse clock measured as 0 ms showed no time, beside others that showed `<1 ms`. A program that did not run, such as text that is not JSON, still shows none. (`example-program-not-run` is `no-time`)
+
+### Decided
+
+- "On this page" marks the section a link was followed to. For every one of the page's 273 section links it used to mark the section before, or none for a document's first section: a link puts a heading 168 pixels below the top of the window, the page's scroll padding and the heading's scroll margin together, and a heading counted as reached only above 140. A section now counts as reached where a link puts its heading, read from the stylesheet. At the end of a page the last section is the one being read, where its heading could never get high enough to be marked, as in 29 of the 39 documents in a window 800 pixels tall. A section a link was followed to stays marked for as long as the page stays where the link left it, also when the page is too short to bring its heading up. (`toc-section-reached`: `where-link-puts-heading` over `fixed-140-px`)
 
 ## 2026-11-12 — @lionlang/core 0.7.0, @lionlang/cli 0.6.0
 
@@ -191,183 +576,1292 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 
 ### Breaking
 
-- `match` fits a record against a record with the same keys. A record pattern used to fit any record that had its keys, so a branch that picks by one field of a larger record, such as `[{"type": "refund"}, handler]`, must open the record: `[["schema/open", {"type": "refund"}], handler]`. See [A record fits only a record with the same keys, and `schema/open` allows more](DECISIONS.md#records-are-exact).
-- An unbound string of the form `module/name` that reads as a misspelled name is an error, where it used to be the string: one whose module has other names bound, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`. The error is the new `UnboundNameError`, which suggests the name, and holds the string as `unbound` and the suggestion as `nearest`. Other strings with a slash, such as `"n/a"` or `"text/plain"`, are unchanged, and `["quote", "number/ad"]` is always the string. See [An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError`, and any other unbound string stays a string](DECISIONS.md#misspelled-names-are-errors).
-- A function among the arguments of a relation call is a schema for the column. `["reading", "?sensor", "value/number?"]` used to match nothing, since no row holds a function, and now asks for the readings that are numbers. A relation with more than one column is not the schema of one value, so `["path", "edge", "?to"]` is an error where it matched nothing. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
+- Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys (`match-record-pattern-extra-keys` is `no-fit`, was `fit`)
+- so `["reading", "?sensor", "value/number?"]` asks for the readings that are numbers (`relation-call-function-argument` is `schema`)
+- Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys, and a relation with several columns used as a schema is an error where it matched nothing. (`relation-multi-column-as-schema` is `error`, was `no-match`)
+- other names of its module are bound, as for `"number/ad"` (`unbound-misspelled-module-name` is `error`)
+- An unbound string of the form `module/name` that reads as a misspelled name is an error, where it used to be the string: one whose module has other names bound, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`. The error is the new `UnboundNameError`, which suggests the name, and holds the string as `unbound` and the suggestion as `nearest`. Other strings with a slash, such as `"n/a"` or `"text/plain"`, are unchanged, and `["quote", "number/ad"]` is always the string. (`unbound-name-in-module-with-bound-names` is `error`, was `string`; `unbound-name-near-bound-name` is `error`, was `string`)
 
 ### Added
 
-- Schemas. Anything is a schema. A function is a predicate, so `value/number?`, a lambda, a relation with one column, and a named schema all are. A record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it. So data is a schema for itself. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic) and [A record fits only a record with the same keys, and `schema/open` allows more](DECISIONS.md#records-are-exact).
-- `["schema/fits?", value, schema]` says whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, as records with a `path` and what was `expected` or `found` there. `["schema/assert", value, schema]` returns the value or fails and says where. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- `schema/anyOf`, `schema/allOf`, `schema/arrayOf`, `schema/recordOf`, `schema/optional`, and `schema/open` build schemas out of others. What they build is a function like any other. `schema/open` fits a record whatever other keys it has. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic) and [A record fits only a record with the same keys, and `schema/open` allows more](DECISIONS.md#records-are-exact).
-- `["schema", "Order", shape]` declares a named schema in the database and binds the name, as `relation` does for a relation. A shape can name its own schema, and one form can declare several, `["schema", name, shape, name, shape, ...]`, whose shapes name each other. Snapshots write the schemas of one form as one form, and a later run that shares the database finds them under their names. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- A schema check is an ordinary call, so it waits for logic variables and works as a filter in a rule or query, under `not`, in a `find`, in `cond`, and as a value in a rule head. `["in", "?p", ["schema/problems", "?doc", "Order"]]` turns the problems of a value into rows. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- An argument of a relation call is a schema for its column: a value, a variable, a pattern, a predicate, or a variable that holds one of those. A relation as the schema of a column is a foreign key. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- The relation option `{"schema": "Order"}` says that every row, as a record of its columns, must fit a declared schema. It stands for the invariant a program could write by hand, so a `fact`, `retract`, or `rule` form that would leave a row that does not fit fails and changes nothing. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- When the goal of an invariant or query assertion says an answer fails a schema, the message ends with where the answer does not fit: `{"id":2,"status":"opne"} does not fit "Order": "status" must fit ["schema/anyOf","open","shipped"] but is "opne".` See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- `value/integer?` and `value/any?`.
-- For hosts: `@lionlang/core/logic/fit` exports `fits`, `problemsOf`, `misfit`, and `matching`, and `@lionlang/core/modules/schema` holds the `schema` module. From `@lionlang/core/logic/terms`, `builtBy` records the call that built a function, so the function is written as that call, and `readsOnlyArguments` marks host functions that read nothing but their arguments. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
+- `@lionlang/metrics`, a private package, measures the working tree beside any earlier commit (`@lionlang/metrics` added)
+- `bun run bench` times a set of programs, each version in a process of its own (`bun-run-bench` added)
+- `bun run compare` runs the same programs on two commits (`bun-run-compare` added)
+- `bun run measure` counts the code of `@lionlang/core` without its tests (`bun-run-measure` added)
+- `bun run mutate` breaks the code in each listed place and checks that a property fails (`bun-run-mutate` added)
+- the exceptions of the interop grid, which runs every kind of expression in every place one can stand and compares each with plain code (`interop-grid` added)
+- the tool runs itself again with `--source` and reads the times it prints. (`bench-source-option` added)
+- `UnboundNameError` is a new kind of error (`UnboundNameError` added)
+- For hosts: `@lionlang/core/logic/fit` exports `fits`, `problemsOf`, `misfit`, and `matching`, and `@lionlang/core/modules/schema` holds the `schema` module. From `@lionlang/core/logic/terms`, `builtBy` records the call that built a function, so the function is written as that call, and `readsOnlyArguments` marks host functions that read nothing but their arguments. (`builtBy` added; `fits` added; `logic-fit-module` added; `matching` added; `misfit` added; `problemsOf` added; `readsOnlyArguments` added)
+- For hosts: `applyQueryOptions` from `@lionlang/core/logic/query-options` only sorts and pages; `checkAssertion` from `@lionlang/core/logic/database` checks a query's assertion. (`checkAssertion` added)
+- A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the rows the change added when that is enough. Which changes are kept does not change. An invariant that calls a function the host added is asked in full every time, unless the function is marked with `readsOnlyArguments`, since such a function can read the database on its own. (`incremental-invariant-checking` added)
+- the relation option `{"schema": "Order"}` (`relation-schema-option` added)
+- `["schema", "Tree", {"value": "value/number?", "children": ["schema/arrayOf", "Tree"]}]` declares a named schema (`schema` added)
+- `schema/anyOf`, `schema/allOf`, `schema/arrayOf`, `schema/recordOf`, `schema/optional`, and `schema/open` build schemas out of others. What they build is a function like any other. `schema/open` fits a record whatever other keys it has. (`schema/allOf` added; `schema/arrayOf` added; `schema/open` added; `schema/optional` added; `schema/recordOf` added)
+- the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf` (`schema/anyOf` added; `schema/fits?` added; `schema/problems` added)
+- `["schema/fits?", value, schema]` says whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, as records with a `path` and what was `expected` or `found` there. `["schema/assert", value, schema]` returns the value or fails and says where. (`schema/assert` added)
+- `value/integer?` and `value/any?`. (`value/any?` added; `value/integer?` added)
+- `packages/examples` gains `schemas.json`, a runnable inbox sorter. (`examples-schemas-json` added)
 
 ### Changed
 
-- `match` checks a value against schemas. Besides a predicate or a record of predicates, a pattern can now be a plain value, a list of schemas, or a schema built by the `schema` functions. A pattern that was neither a function nor a record of them used to fail; now it is a value to equal. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the rows the change added when that is enough. Which changes are kept does not change. An invariant that calls a function the host added is asked in full every time, unless the function is marked with `readsOnlyArguments`, since such a function can read the database on its own.
-- A record or list with a logic variable in it is held as a record or list of its parts, and written that way in snapshots and messages, where it was a call to a lambda that made it.
-- A function made by `func/partial` is written as the call that made it, so a rule or schema that holds one can be saved in a snapshot.
-- A lambda inside a list, a record, or a function that another function built is closed over the values its names have when a rule is written, like a lambda that is a direct argument, so a rule that holds one can be saved in a snapshot.
-- A list that holds a function or a logic value is shown as the `array/make` call that makes it, not as a bare list that reads like a call.
-- An unsafe goal's message names `"schema/fits?"` among the goals that bind a variable. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- An unknown relation option is reported with the relation's options, `"key"` and `"schema"`. See [Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern](DECISIONS.md#schemas-are-logic).
-- For hosts: `applyQueryOptions` from `@lionlang/core/logic/query-options` only sorts and pages; `checkAssertion` from `@lionlang/core/logic/database` checks a query's assertion.
-- `@lionlang/cli` 0.6.0 bundles `@lionlang/core` 0.7.0, so `lion --database` keeps a database's schemas with its data, and the graph editor reads the `schema` form.
+- `bun run bench` times a set of programs, each version in a process of its own (`bench-against-commit-process` is `own-process`)
+- `@lionlang/metrics` is a private package of tools for developing Lion, and is not released. (`metrics-package-release` is `not-released`; `metrics-package-visibility` is `private`)
+- a mutation no property catches is reported as `MISSED` (`mutation-not-caught` is `reported-missed`)
+- A new exception fails the tests of `packages/metrics` (`new-grid-exception` is `tests-fail`)
+- The error holds the string as `unbound` and the suggestion as `nearest` (`UnboundNameError-fields` is `unbound-and-nearest`)
+- the string moved to `unbound` the same day (`UnboundNameError-name-field` is `error-kind`, was `misspelled-string`)
+- For hosts: `applyQueryOptions` from `@lionlang/core/logic/query-options` only sorts and pages; `checkAssertion` from `@lionlang/core/logic/database` checks a query's assertion. (`applyQueryOptions-assertion` is `not-checked`)
+- Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order. (`equals-list-pattern-unbound-variables` is `binds`; `in-record-pattern-unbound-variables` is `binds`; `pattern-anonymous-variable` is `binds-nothing`; `relation-call-record-pattern-variables` is `binds`; `schema-fits-unbound-variable` is `binds`)
+- For hosts: `@lionlang/core/logic/fit` exports `fits`, `problemsOf`, `misfit`, and `matching`, and `@lionlang/core/modules/schema` holds the `schema` module. From `@lionlang/core/logic/terms`, `builtBy` records the call that built a function, so the function is written as that call, and `readsOnlyArguments` marks host functions that read nothing but their arguments. (`function-recorded-with-builtBy` is `written-as-call`)
+- A schema check is an ordinary call, so it waits for logic variables and works as a filter in a rule or query, under `not`, in a `find`, in `cond`, and as a value in a rule head. `["in", "?p", ["schema/problems", "?doc", "Order"]]` turns the problems of a value into rows. (`in-over-schema-problems` is `row-per-problem`; `schema-check-unbound-variable-in-rule` is `waits`)
+- A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the rows the change added when that is enough. Which changes are kept does not change. An invariant that calls a function the host added is asked in full every time, unless the function is marked with `readsOnlyArguments`, since such a function can read the database on its own. (`incremental-invariant-kept-changes` is `unchanged`; `invariant-calling-host-function` is `asked-in-full`; `invariant-expecting-no-answers-on-change` is `asked-about-added-rows`; `invariant-host-function-reads-only-arguments` is `asked-incrementally`)
+- When the goal of an invariant or query assertion says an answer fails a schema, the message ends with where the answer does not fit: `{"id":2,"status":"opne"} does not fit "Order": "status" must fit ["schema/anyOf","open","shipped"] but is "opne".` (`invariant-schema-failure-message` is `says-where`)
+- A lambda inside a list, a record, or a function that another function built is closed over the values its names have when a rule is written, like a lambda that is a direct argument, so a rule that holds one can be saved in a snapshot. (`lambda-nested-in-rule-value` is `closed-at-rule-time`; `snapshot-rule-holding-nested-lambda` is `written-as-form`)
+- A list that holds a function or a logic value is shown as the `array/make` call that makes it, not as a bare list that reads like a call. (`list-holding-function-shown` is `array-make-call`)
+- `match` checks a value against schemas. Besides a predicate or a record of predicates, a pattern can now be a plain value, a list of schemas, or a schema built by the `schema` functions. A pattern that was neither a function nor a record of them used to fail; now it is a value to equal. (`match-list-pattern` is `fits-item-by-item`, was `error`; `match-plain-value-pattern` is `equals`, was `error`)
+- The error is raised wherever the name is evaluated: in plain code, as a predicate, inside a lambda that a schema or `match` calls, and in a form a rule holds (`misspelled-name-as-schema` is `error`; `misspelled-name-in-match-lambda` is `error`; `misspelled-name-in-rule-form` is `error`)
+- A variable that occurs twice must take the same value: `{"a": "?x", "b": "?x"}` fits `{"a": 1, "b": 1}` and not `{"a": 1, "b": 2}`. (`pattern-repeated-variable-different-values` is `no-fit`)
+- `["quote", "number/ad"]` is always the string (`quoted-misspelled-name` is `string`)
+- A record or list with a logic variable in it is held as a record or list of its parts, and written that way in snapshots and messages, where it was a call to a lambda that made it. (`record-with-logic-variable-representation` is `record-of-parts`, was `lambda-call`)
+- a relation as the schema of a column is a foreign key (`relation-as-column-schema` is `foreign-key`)
+- An argument of a relation call is a schema for its column: a value, a variable, a pattern, a predicate, or a variable that holds one of those. A relation as the schema of a column is a foreign key. (`relation-call-argument` is `column-schema`)
+- `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]` also for rows with more keys (`relation-call-open-record-pattern-extra-keys` is `fit`)
+- `["inbox", {"type": "refund", "id": "?id"}]` asks for rows of exactly that shape (`relation-call-record-pattern-extra-keys` is `no-fit`)
+- A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call (`relation-call-variable-holding-schema` is `schema`)
+- Schemas. Anything is a schema. A function is a predicate, so `value/number?`, a lambda, a relation with one column, and a named schema all are. A record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it. So data is a schema for itself. (`relation-one-column-as-schema` is `predicate`; `schema-list-different-length` is `no-fit`; `schema-plain-value-equal` is `fit`)
+- A relation's row schema names every column, or is a `schema/open` record that names some (`relation-row-schema-names-some-columns` is `no-fit`)
+- The relation option `{"schema": "Order"}` says that every row, as a record of its columns, must fit a declared schema. It stands for the invariant a program could write by hand, so a `fact`, `retract`, or `rule` form that would leave a row that does not fit fails and changes nothing. (`relation-schema-violating-fact` is `rejected-unchanged`)
+- An unknown relation option is reported with the relation's options, `"key"` and `"schema"`. (`relation-unknown-option-message` is `lists-key-and-schema`)
+- `["schema", "Order", shape]` declares a named schema in the database and binds the name, as `relation` does for a relation. A shape can name its own schema, and one form can declare several, `["schema", name, shape, name, shape, ...]`, whose shapes name each other. Snapshots write the schemas of one form as one form, and a later run that shares the database finds them under their names. (`run-database-schemas-bound-by-name` is `bound`; `schema-form-binds-name` is `bound`; `schema-self-reference` is `allowed`; `snapshot-schema-group` is `one-form`)
+- `["schema/anyOf", a, b]` gives the answers of every schema that fits, each once (`schema-anyOf-pattern-several-fits` is `each-answer-once`)
+- `["schema/fits?", value, schema]` says whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, as records with a `path` and what was `expected` or `found` there. `["schema/assert", value, schema]` returns the value or fails and says where. (`schema-assert-fit` is `value`; `schema-assert-misfit` is `error-says-where`; `schema-fits-result` is `boolean`; `schema-problems-result` is `records-with-path`)
+- `schema/anyOf`, `schema/allOf`, `schema/arrayOf`, `schema/recordOf`, `schema/optional`, and `schema/open` build schemas out of others. What they build is a function like any other. `schema/open` fits a record whatever other keys it has. (`schema-builder-result` is `function`)
+- declaring `Line` after an `Order` whose shape says `"Line"` fails (`schema-declared-after-use` is `error`)
+- `["schema/fits?", 1, "?x"]` evaluates to the goal (`schema-fits-unbound-variable-plain-code` is `goal`)
+- one form can declare several that name each other (`schema-form-mutual-reference` is `allowed`)
+- A schema as a goal needs its value bound: `["query", ["Order", "?doc"]]` is an unsafe goal, since a schema cannot list the values that fit it. (`schema-goal-unbound-value` is `unsafe-error`)
+- Redefining a name afterwards does not change the schema, as it does not change a rule. (`schema-name-redefined-after-declaration` is `unchanged`)
+- `schema/open` makes a record schema fit a record whatever other keys it has (`schema-open-record-extra-keys` is `fit`)
+- `["schema/open", "?shape"]` does not bind `?shape`: it waits for another goal to bind it to a record of schemas. (`schema-open-unbound-shape` is `waits`)
+- `schema/optional` lets a key be left out (`schema-optional-key-missing` is `fit`)
+- `schema/problems` reports a key the schema does not name as a problem with only `found` (`schema-problems-extra-key` is `found-only`)
+- A record fits a record with the same keys, with values that fit, wherever a value is checked against a schema (`schema-record-extra-keys` is `no-fit`)
+- Declaring a schema again, for example in a later `run` that shares the database, must repeat the same shape, and changes nothing. (`schema-redeclared-same-shape` is `unchanged`)
+- A schema and a relation cannot share a name. (`schema-relation-same-name` is `error`)
+- a schema that comes back to itself without going into the value does not fit (`schema-self-reference-without-progress` is `no-fit`)
+- A function made by `func/partial` is written as the call that made it, so a rule or schema that holds one can be saved in a snapshot. (`snapshot-func-partial` is `written-as-call`)
+- and snapshots write them (`snapshot-named-schema` is `written`)
+- The schema of a relation's rows is written as the invariant it stands for. (`snapshot-relation-schema` is `invariant`)
+- a bound name is a letter or two away, as for `"numbr/add"` (`unbound-misspelled-module-prefix` is `error`)
+- Any other string with a slash, such as `"n/a"` or `"text/plain"`, is still itself (`unbound-slash-string-not-misspelled` is `string`)
+- An unsafe goal's message names `"schema/fits?"` among the goals that bind a variable. (`unsafe-goal-message` is `names-schema-fits`)
+- The option names a schema that is already declared, and is read as written, like the key. (`relation-schema-option-not-declared-schema` is `error`)
+- schema/assert gives each value when all fit, and fails the find when one does not (`schema-assert-in-find-misfit` is `error`)
+- One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`schema-call-wrong-arity` is `error`)
+- the schema form refuses what is not a name, and a name with no shape, and declares nothing (`schema-form-name-without-shape` is `error-declares-nothing`; `schema-form-not-a-name` is `error-declares-nothing`)
+- a shape that waits for a logic variable is refused, and nothing is declared (`schema-shape-waits-for-variable` is `error-declares-nothing`)
+- in a rule gives the same rows after a snapshot (`snapshot-rule-with-pattern` is `same-rows`)
+- `value/any?` fits every value. (`value-any-check` is `true`)
+- say what Number.isInteger says, and true (`value-integer-check` is `number-isinteger`)
+- `why` shows a check that held as (`why-schema-check` is `shown`)
+- The mutation run noticed: it missed "value/any? is false for null". (`mutation-value-any-false-for-null` is `caught`, was `missed`)
+- The pick now gives the value as it is (`value-predicate-property-null-pick` is `null`, was `number`)
+- `@lionlang/cli` 0.6.0 bundles `@lionlang/core` 0.7.0, so `lion --database` keeps a database's schemas with its data, and the graph editor reads the `schema` form. (`cli-0-6-0-bundled-core` is `core-0-7-0`; `cli-database-file-schemas` is `kept`; `fold-map-schema-form` is `recognized`)
 
 ### Fixed
 
-- A function made by `func/partial` from a logic variable waits for the variable when a rule or query holds it, as a lambda that mentions the variable does. Handed to `array/map` in a query, it used to fail with `has no value yet`.
-- A goal-directed query that hands a rule-derived relation a function, for example through a variable, is answered as in full evaluation. It used to fail with `Rule undefined produced a value that is not JSON data`.
-- A graph algorithm's input that a variable binds to something that is not data fails with the message an input written in place gets.
-- Any module of `@lionlang/core` can be the first one loaded. Importing the module of a special form before the evaluator failed with `Cannot access 'evaluateLambda' before initialization`, and whether the built package loaded at all depended on the order the bundler happened to choose.
+- A function made by `func/partial` from a logic variable waits for the variable when a rule or query holds it, as a lambda that mentions the variable does. Handed to `array/map` in a query, it used to fail with `has no value yet`. (`func-partial-from-logic-variable-in-query` is `waits`, was `error`)
+- A goal-directed query that hands a rule-derived relation a function, for example through a variable, is answered as in full evaluation. It used to fail with `Rule undefined produced a value that is not JSON data`. (`goal-directed-derived-relation-function-argument` is `same-as-full`, was `internal-error`)
+- A graph algorithm's input that a variable binds to something that is not data fails with the message an input written in place gets. (`graph-input-variable-not-data` is `same-error-as-literal`)
+- Any module of `@lionlang/core` can be the first one loaded. Importing the module of a special form before the evaluator failed with `Cannot access 'evaluateLambda' before initialization`, and whether the built package loaded at all depended on the order the bundler happened to choose. (`built-core-package-load` is `works`, was `bundler-order-dependent`; `core-module-loaded-first` is `works`, was `error`)
+
+### Documentation
+
+- the docs give it and `InvalidFunctionCallError` an example each (`docs-invalid-function-call-error-example` is `own-example`; `docs-unbound-name-error-example` is `own-example`)
+- The first version kept the string in the error's `name`, so code that shows `name: message`, as the docs site does, showed `number/plus: Nothing is bound to ...`; the string moved to `unbound` the same day (`docs-site-unbound-name-error-label` is `error-kind`, was `misspelled-string`)
+- Landing page: Schemas and Patterns cards beside the other logic (`landing-schemas-patterns-cards` added)
+- New tutorial, "Sort an inbox": describe an order, list what is wrong (`sort-an-inbox` added)
+
+### Decided
+
+- `bun run bench` times a set of programs, each version in a process of its own (`benchmark-process-isolation`: `process-per-version` over `one-process`)
+- Measure every change to core for its code, its semantics, its speed, and how well its tests catch broken code (`core-change-measurement`: `every-change` over `unmeasured`)
+- An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError`, and any other unbound string stays a string (`misspelled-module-names`: `error` over `string`)
+- a record in `match` fits only a record with the same keys (`record-pattern-keys`: `exact` over `by-keys`, was `pattern-keys-only`)
+- A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call (`relation-call-arguments`: `schemas` over `column-values`)
+- Anything is a schema, and one rule says what fits it (`schema-checking`: `one-fitting-rule` over `rule-per-place`)
+- The error holds the string as `unbound` and the suggestion as `nearest` (`unbound-name-error-string-field`: `unbound` over `name`)
+- No benchmark run, since no core code changed. (`measure-speed`: `skip`)
+- Each entry of the table now calls its form's evaluator when a form is evaluated, and holds nothing from another module at load time. (`special-form-table`: `entry-calls-evaluator` over `lazy-table`, `table-built-at-load`, was `shared-by-evaluator-and-analyzer`)
+
+### Rules
+
+- Add a new kind of expression, or a new place one can stand, to the interop grid in `packages/metrics/src/grid-cases.ts` (rule `add-to-interop-grid`)
+- Be ambitious: prefer one rule that removes special cases to another special case, and do the deeper work that takes. (rule `be-ambitious`)
+- Benchmark times move by a few percent between runs, so `bun run bench` is run twice (rule `bench-twice`)
+- Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`. (rule `compare-before-claiming`)
+- Cover every case of a new feature: each form it adds, each place the form can stand, and each existing feature it meets. (rule `cover-every-case`)
+- change the feature until the cell agrees, or, when the exception is the right design, document it and list it in `KNOWN`. (rule `grid-exceptions-documented`)
+- the functions belong to the host of the probes, not to the library (rule `in-memory-evaluation`)
+- Integrate a new feature deeply, so it works with every existing feature in plain code and in the logic layer. (rule `integrate-deeply`)
+- Before you finish a change to the evaluator or the logic engine, run its properties once with a few thousand runs each, by raising `runs`, and then put the number back. (rule `many-runs-before-finishing`)
+- AGENTS.md asks that every change to core be measured before it is done (rule `measure-every-change`)
+- that the numbers go in the commit message also when they went up (rule `measurements-in-commit-message`)
+- so a change brings a mutation and a property for each behavior it adds (rule `mutation-per-behavior`)
+- **Never buy a lower number with a worse Lion.** (rule `never-buy-lower-number`)
+- **Do not edit code while `bun run mutate` runs.** (rule `no-edits-during-mutate`)
+- that a new exception in the grid be fixed rather than added to `KNOWN` (rule `no-new-grid-exceptions`)
+- Pay for it in the same change: find the rule that makes special cases redundant, and delete them. (rule `pay-for-what-you-add`)
+- Leave Lion simpler than you found it, in its code and in its semantics, without removing a feature. (rule `reduce-complexity`)
+- Each core commit since states its numbers, including the ones that grew (rule `report-what-measured`)
+- an expression gives in a rule head, a filter, a `find`, or a reloaded snapshot what it gives in plain code (rule `same-as-plain-code`)
+- A generator can carry its own model (rule `generators-carry-models`)
+- Patterns. A logic variable in a schema is its value once it is bound, and until then takes the value it meets. `schema/fits?`, the arguments of a relation call, both sides of `=`, and the element of `in` bind the variables of a record, a list, or a schema built by the `schema` functions: `["inbox", ["schema/open", {"type": "order", "id": "?id"}]]`, `["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]`. `?_` fits any value and binds nothing. The goals of a rule give the same answers in any order. (rule `goal-order-independent`)
+- An unbound string of the form `module/name` is an `UnboundNameError` when it can only have been meant as a name (rule `misspelled-names-are-errors`)
+- Before 0.7.0 a record pattern in `match` fit any record that had its keys, whatever others it had (rule `record-patterns-by-keys` withdrawn)
+- A record fits a record with the same keys, with values that fit, wherever a value is checked against a schema (rule `records-are-exact`)
+- the schema of a relation's rows is the invariant a program could write by hand (rule `relation-schema-is-invariant`)
+- `match`, the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`, the arguments of a relation call, and the relation option `{"schema": "Order"}` all ask through that rule. (rule `schemas-are-logic`)
+- A logic variable in a schema is its value once bound and takes the value it meets until then, so `schema/fits?`, a relation call, `=`, and `in` bind the variables of a record, a list, or a built schema (rule `schemas-are-patterns`)
 
 ## 2026-11-12 — @lionlang/core 0.6.0, @lionlang/cli 0.5.0
 
 Two rules now cover how plain code and the logic layer meet: whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it.
 
+### Breaking
+
+- `and` and `or` no longer evaluate the arguments after the one that decides them, which changes a program that relied on an error or a side effect there. (`and-after-false` is `not-evaluated`, was `evaluated`; `or-after-true` is `not-evaluated`, was `evaluated`)
+- cond fails when it tests a relation goal. (`cond-relation-goal-condition` is `error`)
+- A filter must be `true` or `false`, where a value such as a number used to pass as true (`filter-non-boolean` is `error`, was `truthy`)
+- in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at (`cond-relation-goal-condition` is `asked`; `relation-goal-as-fact-argument` is `asked`; `relation-goal-as-function-argument` is `asked`; `relation-goal-as-in-operand` is `asked`; `relation-goal-as-match-value` is `asked`; `relation-goal-as-record-value` is `asked`; `relation-goal-as-unify-operand` is `asked`)
+- A goal under `not` can join on variables of its own (`not-goal-unbound-variable` is `own-variable`)
+
 ### Added
 
-- Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` or the record `{"id": "?x", "twice": ["number/multiply", "?x", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule).
-- Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `["array/map", ["array/make", "ada", "zed"], "person"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- `["find", template, goal]` returns the template's value for every match of the goal, as a sorted list: `["find", "?c", ["parent", "ada", "?c"]]` is `["ben", "cy"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `["=", "?total", ["aggregate/sum", "?items"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `["aggregate/count", ["find", "?c", ["parent", "?p", "?c"]]]` can be 0. An aggregate's argument can also be a constant, as in `["aggregate/sum", 1]`. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule) and [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- Questions have variables of their own. When a question is asked, the variables that the rule or query around it has bound are fixed, and every other variable belongs to the question. So a goal under `not` no longer needs every variable bound first: `["not", ["and", ["parent", "?p", "?c"], ["retired", "?c"]]]` asks whether `?p` has a retired child. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- An algorithm's value input can be a variable that another goal binds: `["and", ["depot", "?s"], ["graph/shortestPath", "road", "?s", "?to", "?km", "?_"]]` runs the algorithm once for each depot. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule).
-- `number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.
-- For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule) and [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
+- For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions. (`@lionlang/core/logic/model` added; `LionAskerService` added; `WaitingError` added; `call` added)
+- For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed. (`LogicForm` added; `isForm` added; `relationOf` added)
+- `logicFunction` marks a host function that takes logic values as they are. (`logicFunction` added)
+- `number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`. (`number/absolute` added; `number/ceiling` added; `number/floor` added; `number/max` added; `number/min` added; `number/power` added; `number/remainder` added; `number/round` added)
+- `["find", template, goal]` returns the template's value for every match of the goal as a sorted list. (`find` added)
+- The call in logic/terms is now invoke, and call in evaluation/special-forms/function calls a Lion function from host code. (`invoke` added)
+
+### Removed
+
+- For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed. (`Aggregate` removed; `Conjunction` removed; `Disjunction` removed; `Membership` removed; `Negation` removed; `RelationValue` removed; `Unification` removed; `isLogicTerm` removed; `isPureFunction` removed; `isRelationValue` removed; `markPure` removed; `relationInfo` removed)
+- For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported. (`CondCaseSchema` removed; `MatchPatternSchema` removed; `SnapshotFormSchema` removed; `literalGoal` removed)
+- isSymbolic, literalGoal, matchesAtom, queryOutputs, CondCaseSchema, MatchPatternSchema, and SnapshotFormSchema are removed. (`isSymbolic` removed; `matchesAtom` removed; `queryOutputs` removed)
 
 ### Changed
 
-- A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- A filter must be `true` or `false`. A goal such as `["number/add", "?x", 1]` used to pass as true; now the rule or query fails and shows the value. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule).
-- `and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false` instead of an error. See [Where the behavior of a base form is unclear, Lion does what Scheme does](DECISIONS.md#scheme-where-unclear).
-- Query answers must be JSON data. A variable bound to a function used to be left out of the answer; now the query fails and shows the answer. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
-- A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule) and [Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values](DECISIONS.md#datalog-logic-layer).
-- A query that is not goal-directed derives only the relations it reads, instead of every relation that rules define.
-- Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.
-- For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule) and [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.
-- `@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0.
+- Known arguments are values, variables that earlier goals bind, and values computed from them. (`goal-directed-query-argument-bound-by-unify` is `known`; `goal-directed-query-computed-argument` is `known`)
+- Inside a rule only values and variables bound from facts count, so a rewritten rule never asks about values without end. (`goal-directed-rule-computed-argument` is `unknown`)
+- a function is written under the name the environment gives it (`snapshot-rule-holding-function` is `written-by-environment-name`)
+- a waiting `cond`, record, or lambda is written as its form (`snapshot-rule-holding-lambda` is `written-as-form`)
+- Query answers and the rows rules derive must be JSON data (`derived-row-non-json` is `error`; `query-answer-non-json` is `error`)
+- a number that is not finite fails at the function that made it instead of where it is used later (`non-finite-number-failure-point` is `function-that-made-it`)
+- A query whose answer binds a variable to a function, which used to leave the variable out, now fails and shows the answer. (`query-answer-variable-bound-to-function` is `error`, was `variable-left-out`)
+- Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `["=", "?total", ["aggregate/sum", "?items"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `["aggregate/count", ["find", "?c", ["parent", "?p", "?c"]]]` can be 0. An aggregate's argument can also be a constant, as in `["aggregate/sum", 1]`. (`aggregate-call-elsewhere` is `combines-list`; `aggregate-call-whole-head-argument` is `combines-matches`; `aggregate-constant-argument` is `allowed`; `aggregate-of-find` is `combines-find-list`)
+- an aggregate of a `find` can count 0 (`aggregate-count-of-empty-find` is `zero`)
+- an algorithm's input can be a variable that another goal binds (`algorithm-input-variable` is `runs-per-binding`)
+- so `else`, an ordinary string, counts as true (`cond-else` is `ordinary-string`)
+- A condition counts as false when it is `false`, `null`, `0`, or the empty string `""`, and as true when it is anything else (`cond-string-condition` is `true`)
+- gives for each answer what plain code gives with the value in the variable's place (`expression-over-variable-vs-value` is `same`)
+- a call that fails in a rule or query names itself and its values (`failed-call-in-rule-message` is `names-call-and-values`)
+- A filter must be `true` or `false`. A goal such as `["number/add", "?x", 1]` used to pass as true; now the rule or query fails and shows the value. (`filter-non-boolean-message` is `shows-value`)
+- A filter runs as soon as its variables are bound, and filters that are ready together run in the order written. (`filter-run-order` is `as-written`)
+- Every function waits when it is called with a logic variable: the whole standard library, host functions as they are, and `func/partial` results. (`func-partial-logic-variable-argument` is `waits`; `host-function-logic-variable-argument` is `waits`)
+- calling it is calling that function with the first arguments filled in, so made from a relation, it builds goals. (`func-partial-of-relation` is `builds-goals`; `func-partial-call` is `call-to-wrapped-function`)
+- A goal-directed query also never fails on a row it does not derive, where full evaluation would. (`goal-directed-vs-full-failure-on-underived-row` is `differs`)
+- once an argument of `and` or `or` is a goal, they combine goals (`goal-in-and` is `kept`)
+- A goal is also a value: `["=", "?ok", ["and", ["number/greaterThan", "?x", 0], ["number/lessThan", "?x", 10]]]` binds `?ok` to true or false. (`goal-without-relation-as-value` is `boolean-value`)
+- For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions. (`host-call-returned-goal` is `asked`; `host-call-value-not-known` is `waiting-error`)
+- For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported. (`is-special-form-name-export-module` is `schemas-evaluation`, was `analysis-analyze`; `key-columns-export-module` is `logic-model`, was `logic-database`; `max-lattice-rounds-export-module` is `logic-model`, was `logic-database`; `special-form-name-export-module` is `schemas-evaluation`, was `analysis-analyze`)
+- `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. (`lambda-passed-to-waiting-call` is `waits`; `logic-variable-nested-in-record` is `waits`)
+- calls it with `call`, which gives the callback's value and lets the whole call wait when that value is not known yet (`list-function-host-callback` is `allowed`)
+- Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` or the record `{"id": "?x", "twice": ["number/multiply", "?x", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are. (`logic-function-logic-variable-argument` is `passed-as-is`)
+- Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. (`not-on-compound-goal` is `allowed`)
+- Query answers must be JSON data. A variable bound to a function used to be left out of the answer; now the query fails and shows the answer. (`query-answer-non-json-message` is `shows-answer`)
+- A lambda that calls itself by name is the exception: it looks its name up each time it runs, as it does outside of rules. (`recursive-lambda-name-in-rule` is `looked-up-each-run`)
+- A lambda that branches or calls itself now gives the right answers on a logic variable. (`recursive-lambda-on-logic-variable` is `right-answers`)
+- A relation goal has no value; it holds or not only as a goal of a rule or query. (`relation-goal-as-value` is `no-value`)
+- Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule. (`rule-name-redefined-later` is `unchanged`)
+- Functions run forward only: `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`. (`unify-function-call-with-value` is `no-solve`)
+- `"?_"` is anonymous: each occurrence is a separate variable, and it never appears in an answer. (`anonymous-variable-in-answer` is `never-appears`)
+- What the database has derived for earlier queries still never changes an answer. (`derived-rows-present-vs-absent-answers` is `same`)
+- It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values. (`find-duplicate-values` is `kept`)
+- `["find", template, goal]` returns the template's value for every match of the goal, as a sorted list: `["find", "?c", ["parent", "ada", "?c"]]` is `["ben", "cy"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form. (`find-in-rule` is `allowed`; `fold-map-find-form` is `recognized`)
+- `["find", template, goal]` returns the template's value for every match of the goal as a sorted list. (`find-result-order` is `sorted`)
+- A `find` must bind every variable of its template that the rule around it does not. (`find-template-unbound-variable` is `error`)
+- A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value. (`find-through-recursion` is `error`; `relation-goal-as-value-through-recursion` is `error`)
+- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. (`goal-in-define` is `kept`; `goal-in-lambda` is `kept`)
+- A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. (`goal-in-not` is `kept`; `goal-in-or` is `kept`)
+- Within a rule or query, a name is one variable, also inside the questions nested in it. (`nested-question-variable-name` is `same-variable`)
+- A query that is not goal-directed derives only the relations it reads, instead of every relation that rules define. (`non-goal-directed-query-derivation` is `relations-read-only`, was `all-rule-relations`)
+- plain code asks right away, goal-directed (`plain-code-question` is `asked-immediately`)
+- a rule, query, invariant, or `find` asks for each answer when it runs (`question-in-rule` is `asked-per-answer`)
+- A question gives in a rule what it gives in plain code with the rule's variables in place (`question-in-rule-vs-plain-code` is `same`)
+- a relation is a predicate for `match` and for functions such as `array/map` (`relation-as-function-argument` is `predicate`; `relation-as-match-predicate` is `predicate`)
+- A goal given to a host function is asked first, so the function receives `true` or `false`. (`relation-goal-as-host-function-argument` is `asked`)
+- As a value, a goal is true when it has a match and false when it has none: in a cond condition, as an argument of a function, as an operand of = or in, as a value of a record, as an argument of fact, retract, or why, and as the value match looks at. (`relation-goal-as-retract-argument` is `asked`; `relation-goal-as-why-argument` is `asked`)
+- as a value it is `true` when it has a match and `false` when it has none (`relation-goal-as-value` is `asked`)
+- A snapshot cannot write a lambda that calls itself, or a function that the environment does not name and that is not a lambda or built by a function it can write. (`snapshot-rule-holding-recursive-lambda` is `error`; `snapshot-rule-holding-unnamed-function` is `error`)
+- `@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0. (`cli-0-5-0-bundled-core` is `core-0-6-0`)
+- A program sees it when a <code>fact</code>, <code>retract</code>, or <code>why</code> written inside a rule, query, or <code>find</code> is given a question: those forms act right away, so they cannot wait. (`fact-in-rule-given-question` is `waiting-error`)
 
 ### Fixed
 
-- A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` in a rule head gave `"big"` for 1, and a snapshot saved the rule with `"big"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait. See [Whatever needs a logic variable's value waits until the variable is bound](DECISIONS.md#waiting-rule).
-- A `cond` whose condition was a relation goal took that case whether or not the goal had a match. See [Whatever needs the value of a goal asks it](DECISIONS.md#asking-rule).
-- A snapshot wrote a function under the name the program called it by, such as a name bound with `define`, which is not there when the snapshot loads. It now writes the name the environment gives the function. See [A logic database is saved as a Lion program of forms that rebuild it](DECISIONS.md#snapshots-are-programs).
-- A query that held `false` and the `"order"` option failed with "Cannot order by" instead of returning no answers.
-- `match` read a fallback written as a two-item call, such as `["mk", 10]`, as one more pattern.
-- `["=", 0, -0]` was `false`. JSON writes both as `0`, so they are the same number. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
+- `["=", 0, -0]` is `true`, since JSON writes both as `0` (`zero-equals-negative-zero` is `true`)
+- `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. (`cond-on-logic-variable` is `waits`; `eval-of-logic-variable` is `waits`; `match-on-logic-variable` is `waits`)
+- A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `["cond", [["number/greaterThan", "?x", 10], "big"], ["else", "small"]]` in a rule head gave `"big"` for 1, and a snapshot saved the rule with `"big"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait. (`lambda-branching-on-logic-variable` is `right-answers`, was `ran-early`; `snapshot-rule-holding-cond` is `written-as-form`, was `branch-value`)
+- `match` read a fallback written as a two-item call, such as `["mk", 10]`, as one more pattern. (`match-two-item-fallback` is `fallback`, was `pattern`)
+- A query that held `false` and the `"order"` option failed with "Cannot order by" instead of returning no answers. (`query-false-with-order-option` is `no-answers`, was `error`)
+- A snapshot wrote a function under the name the program called it by, such as a name bound with `define`, which is not there when the snapshot loads. It now writes the name the environment gives the function. (`snapshot-function-name` is `environment-name`, was `program-name`)
+
+### Documentation
+
+- the docs explain the rules features share on a page of their own (`docs-consistent-semantics-page` added)
+- `["find", template, goal]` returns the template's value for every match of the goal, as a sorted list: `["find", "?c", ["parent", "ada", "?c"]]` is `["ben", "cy"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form. (`site-highlight-find-form` is `recognized`)
+- The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking. (`docs-family-tree-find-step` added; `docs-guide-use-answers-as-values` added; `docs-reference-asking` added; `docs-reference-waiting` added)
+
+### Decided
+
+- Values computed by functions never drive the rewrite inside a rule, so it still finishes. (`rule-computed-values-in-rewrite`: `never-drive` over `drive-rewrite`)
+- Lion's features and semantics are designed by the principle of least astonishment (`feature-design-principle`: `least-astonishment`)
+- Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. (`javascript-json-disagreement`: `follow-json` over `follow-javascript`)
+- An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. (`object-get-missing-key`: `null` over `undefined`, was `undefined`)
+- For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed. (`aggregate-representation`: `waiting-call` over `aggregate-class`; `logic-form-classes`: `one-logic-form-class` over `class-per-form`; `which-functions-wait`: `every-function` over `pure-functions-only`)
+- `and` and `or` stop at the first argument that decides them, as in Scheme, so `["and", false, ["number/divide", 1, 0]]` is `false`. (`and-or-evaluation`: `short-circuit` over `evaluate-all`)
+- A filter that is not true or false is an error instead of being read as truthy. (`filter-truthiness`: `strict-boolean` over `truthy`)
+- the evaluator and the analyzer share one table of special forms (`special-form-table`: `shared-by-evaluator-and-analyzer`)
+- It derives a relation's rows the first time something reads them and keeps them until a fact or rule changes, so a query that is not goal-directed derives only the relations it reads. (`engine-derivation`: `on-demand-per-relation` over `all-relations`)
+- Anywhere else it is asked: as a value it is `true` when it has a match and `false` when it has none (`goal-as-value`: `asked` over `goal-itself`)
+
+### Rules
+
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (rule `asking-rule`)
+- Example-based unit tests with fixed inputs, as AGENTS.md showed before (rule `example-based-tests` withdrawn)
+- Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (rule `waiting-rule`)
+- Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be data, JSON values and [unknowns](#existential-rules). (rule `nothing-is-guessed`)
+- Only functions marked pure waited for a logic variable (rule `pure-functions-wait` withdrawn)
+- When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own. (rule `question-variables-scoped`)
+- A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value. (rule `stratified-negation` withdrawn)
+- The rule against negation through recursion now covers every question. (rule `stratified-questions`)
+- the changelog lists what changed since 0.5.0, each line checked by running the same program on both versions (rule `changelog-checked-by-running`)
 
 ## 2026-11-11 — @lionlang/core 0.5.0, @lionlang/cli 0.4.0
 
+### Breaking
+
+- An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. (`object-get-missing-key` is `null`)
+- Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently. (`value-object-list` is `false`, was `true`)
+
 ### Added
 
-- Invariants. `["invariant", goal, {"assert": "none"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `"some"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form. See [A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds](DECISIONS.md#all-or-nothing-changes).
-- [lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion. See [Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result](DECISIONS.md#live-examples-run-real-core).
-- `ArithmeticError`, raised when arithmetic has no finite result. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
+- The docs page is built from one fragment per document (`build-docs` added)
+- AGENTS.md and the new CLAUDE.md ask for property-based tests and for the principle of least astonishment when designing features and semantics. (`claude-md` added)
+- `["invariant", goal, {"assert": "none"}]` keeps a query assertion in the database (`invariant` added)
+- fails with the new `ArithmeticError` (`ArithmeticError` added)
 
 ### Changed
 
-- `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.
-- Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
-- `value/object?` is true for records and other objects, but no longer for lists. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
-- `object/get` returns `null` for a missing key instead of `undefined`. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
-- `object/get-method`, `object/get-method-path`, and `object/call-method-path` work on any value except `null`, as `object/call-method` does.
-- `in`, `snapshot`, and `invariant` are reserved names, like the other special forms.
-- `@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong. See [A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds](DECISIONS.md#all-or-nothing-changes).
+- A rule or invariant counts as one the database holds when a snapshot would write it the same way. (`rule-identity` is `snapshot-form`)
+- invariants are saved after the rules (`snapshot-invariants-position` is `after-rules`)
+- Several facts that only make sense together go in one `fact` form, and each later form is checked against the result. (`begin-forms-invariant-check` is `each-separately`)
+- A program that fails, such as one that would break an [invariant](#invariants) saved in the file, leaves the file as it was. (`cli-database-failed-program` is `file-unchanged`)
+- they are saved in snapshots after the rules and enforced by `lion --database` (`cli-database-invariants` is `enforced`)
+- `@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong. (`cli-database-rerun-setup` is `one-copy`; `cli-0-4-0-bundled-core` is `core-0-5-0`; `cli-database-file-invariants` is `kept`)
+- The core build now leaves tests/ folders out of the published package. (`core-package-tests-folders` is `excluded`)
+- a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was (`fact-breaking-invariant` is `no-change`; `invariant-check-error` is `change-undone`)
+- leaves the database exactly as it was, facts in the same order (`failed-change-fact-order` is `preserved`)
+- Invariants. `["invariant", goal, {"assert": "none"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `"some"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form. (`fold-map-invariant-form` is `recognized`)
+- Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes (`invariant-check-timing` is `after-whole-form`; `invariant-checked-on-change` is `every-fact-retract-rule-form`)
+- Invariants are answered the way queries are, with goal-directed rewriting, aggregates, and graph algorithms (`invariant-evaluation` is `like-queries`)
+- Invariants reuse the query option `"assert"` and fail in the words of a failed query assertion (`invariant-failure-message` is `same-as-query-assertion`)
+- the goal must have no answers, or with `"some"` at least one, when it is added and after every later change (`invariant-not-holding-when-added` is `error`)
+- Like rules, they cannot be removed. (`invariant-removal` is `impossible`; `rule-removal` is `impossible`)
+- Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing (`re-add-invariant` is `no-change`)
+- so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]` (`rule-name-vs-bound-value` is `same-rule`)
+- while the variable `"?x"` and the string `["quote", "?x"]` differ. (`rule-variable-vs-quoted-string` is `different-rules`)
+- `in`, `snapshot`, and `invariant` are reserved names, like the other special forms. (`special-form-name-as-identifier` is `reserved`)
+- Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list. (`aggregate-mean-non-finite` is `error`)
+- this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list (`aggregate-sum-non-finite` is `error`)
+- `object/get-method`, `object/get-method-path`, and `object/call-method-path` work on any value except `null`, as `object/call-method` does. (`method-function-on-non-object-value` is `works`)
+- Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError` (`number-overflow` is `error`)
+- `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`. (`string-endsWith-argument-order` is `text-first`, was `search-first`; `string-includes-argument-order` is `text-first`, was `search-first`; `string-indexOf-argument-order` is `text-first`, was `search-first`; `string-indexOf-missing` is `minus-one`; `string-startsWith-argument-order` is `text-first`, was `search-first`)
+- Biome leaves the content fragments and the generated page alone, so formatting never reflows example code. (`biome-docs-content` is `ignored`)
 
 ### Fixed
 
-- Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing. See [A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds](DECISIONS.md#all-or-nothing-changes).
-- A `retract` with one invalid fact still removed the facts listed before it. Every form that changes the database is now all or nothing. See [A change to the logic database is all or nothing, keeps every invariant, and adds nothing the database already holds](DECISIONS.md#all-or-nothing-changes).
-- `array/head` and `array/tail` crashed on an empty list; they return `null` and `[]`. See [Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`](DECISIONS.md#values-are-json).
-- `func/apply` returned an Effect that never ran instead of the function's result.
-- `string/indexOf` returned an Effect `Option` instead of a number.
-- `object/call-method` on `null` crashed with a `TypeError`; it fails with `NotAnObjectError`.
-- Errors from the `object` module had no message, so the CLI printed only "An error occurred". Each now says what went wrong, such as `There is no key "email".`
+- Adding a rule or invariant the database already holds, one a snapshot would write the same way, changes nothing (`re-add-rule` is `no-change`, was `added-again`)
+- a form that fails, whether on a bad fact, a broken invariant, or an error while checking one, leaves the database exactly as it was (`retract-with-invalid-fact` is `no-change`, was `partial-removal`)
+- An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. (`array-head-empty-list` is `null`)
+- `array/head` and `array/tail` crashed on an empty list; they return `null` and `[]`. (`array-tail-empty-list` is `empty-list`, was `crash`)
+- `func/apply` returned an Effect that never ran instead of the function's result. (`func-apply-result` is `function-result`, was `unrun-effect`)
+- `object/call-method` on `null` crashed with a `TypeError`; it fails with `NotAnObjectError`. (`method-function-on-null` is `error`, was `crash`)
+- `@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong. (`object-error-message` is `descriptive`, was `generic`)
+- `string/indexOf` returned an Effect `Option` instead of a number. (`string-indexOf-result` is `number`, was `effect-option`)
+
+### Documentation
+
+- the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id (`docs-example-too-slow` is `build-fails`; `docs-example-unexpected-error` is `build-fails`; `docs-link-to-missing-id` is `build-fails`)
+- The site-runtime tests fail when `docs.html` is not what its fragments build (`docs-page-out-of-date` is `tests-fail`)
+- Invariants. `["invariant", goal, {"assert": "none"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `"some"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form. (`site-highlight-invariant-form` is `recognized`)
+- [lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion. (`docs-page-coverage` is `every-feature`; `docs-page` added)
+- The worker's evaluation and formatting move to src/evaluate.ts, shared by the worker and the build, so published results match the page. (`docs-published-results` is `match-page`)
+- Without JavaScript every document shows. (`docs-without-javascript` is `every-document-shown`)
+
+### Decided
+
+- Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result (`docs-example-results`: `run-real-core` over `typed-results`)
+- A change to the logic database is all or nothing (`database-change-atomicity`: `all-or-nothing` over `partial`)
+- One form keeps the rule simple, lets facts that only make sense together go in a single `fact` form, and checks each later form against the result. (`database-change-unit`: `form` over `run`)
+- Invariants reuse the query option `"assert"` and fail in the words of a failed query assertion (`invariant-syntax`: `query-assert-option`)
+- Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError` (`non-finite-arithmetic`: `arithmetic-error` over `infinity-or-nan`)
+- `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`. (`string-argument-order`: `text-first` over `search-first`)
+- [lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion. (`docs-organization`: `diataxis`)
+
+### Rules
+
+- keep equivalent programs equivalent, such as a program and its snapshot or goal-directed and full evaluation (rule `equivalent-programs-equivalent`)
+- Every form that changes the database is all or nothing (rule `all-or-nothing-changes`)
+- The fixes that made the standard library follow JSON each have a property written first and confirmed to fail (rule `bugs-become-properties`)
+- Describe each feature's semantics in the README, including what it does alongside the features it touches, and use it in an example in the docs (rule `document-feature-combinations`)
+- point out surprising behavior and fix it instead of building on it (rule `dont-build-on-surprises`)
+- A property uses `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary` (rule `effect-vitest-properties`)
+- Shape generators so they reach the interesting cases, then confirm they do. (rule `generators-reach-interesting-cases`)
+- adding what the database already holds changes nothing (rule `idempotent-additions`)
+- ask what someone who already knows Lion would expect it to do, on its own and combined with every existing feature, and make it do that (rule `least-astonishment`)
+- When a feature needs a rule, follow the rule a similar feature already has, and when that rule falls short, change it for every feature at once (rule `one-rule-everywhere`)
+- State the behavior users expect as a property and test it (rule `pin-expectations-as-properties`)
+- each property must be shown to fail when the code it covers is broken (rule `properties-can-fail`)
+- When a property rarely reaches its interesting cases, raise its runs with the fourth argument (rule `raise-runs-for-rare-cases`)
+- Equality rules: a rule's head can be `["=", a, b]`, which says the two are one value whenever the body holds. While Lion derives the relations its body reads, an unknown a rule invented there takes the value on the other side, by the rule keys follow, so `["rule", ["=", "?m1", "?m2"], ["twin", "?a", "?b"], ["mother", "?a", "?m1"], ["mother", "?b", "?m2"]]` gives twins one mother. The rule holds as the invariant `["and", goal, ..., ["not", ["=", a, b]]]` too, so a rule that does not hold is not added and a change that leaves two different known values under it is refused, in an invariant's words. Lion follows each invented value through the columns of the rules, and the relations of a rule that invents an unknown an equality rule can meet are derived together with every relation the equality rule reads, so the unknown can pass through any number of derived relations first: with `["rule", ["listed", "?c", "?m"], ["mother", "?c", "?m"]]`, the rule `["rule", ["=", "?m", "?n"], ["listed", "?c", "?m"], ["birth", "?c", "?n"]]` makes ben's unknown mother the one his birth record names. A question about those relations, such as a goal under `not`, would go through recursion, and is refused when the rule is added, whatever the facts, with the message any such question gets: `Rule [...] asks about "private", which depends on "listed". A question, such as a goal under "not", cannot go through recursion.` A question about columns no invented value reaches is allowed. A head can join relation calls and `=` with `and`. (rule `reuse-what-exists`)
+- A domain's generators live in a module next to its tests (rule `shared-generators`)
+- checks behavior against something independent of the code under test: a simpler model, a round trip such as save, load, and save again, or an equivalence such as two ways of computing the same answer (rule `test-against-independent-model`)
+- Walk through the combinations (rule `walk-through-combinations`)
+- Standard library functions that mirror a JavaScript operation must agree (rule `stdlib-agrees-with-javascript`)
+- `string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`. (rule `subject-first`)
+- After editing a fragment, or the core evaluator, rebuild the page: (rule `rebuild-docs-after-change`)
 
 ## 2026-11-10 — @lionlang/core 0.4.0, @lionlang/cli 0.3.0
 
 ### Added
 
-- Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.
-- Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card. See [Recursion may aggregate only through lattice aggregates, whose values move one way](DECISIONS.md#lattice-recursion).
-- Query options. `["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.
-- `["in", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.
-- Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `["graph/pageRank", "edge", "?node", "?rank"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.
-- Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `["path", "a", "?to"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card. See [A query with a known argument runs a magic-sets rewrite and gives the answers full evaluation gives](DECISIONS.md#goal-directed-magic-sets).
-- Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order. See [Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values](DECISIONS.md#datalog-logic-layer).
-- Keyed relations. `["relation", "order", ["id", "status"], {"key": ["id"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card. See [A keyed relation holds one row per key, and a fact whose key is present replaces the row](DECISIONS.md#keyed-relations-upsert).
-- Snapshots. `["snapshot"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card. See [A logic database is saved as a Lion program of forms that rebuild it](DECISIONS.md#snapshots-are-programs).
-- `lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line. See [A logic database is saved as a Lion program of forms that rebuild it](DECISIONS.md#snapshots-are-programs).
+- lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it. (`site-runtime-stamp` added)
+- Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card. (`aggregate/collect` added; `aggregate/count` added; `aggregate/countUnique` added; `aggregate/max` added; `aggregate/mean` added; `aggregate/min` added; `aggregate/sum` added; `aggregate/unique` added; `site-card-aggregates` added)
+- `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive (`aggregate/shortest` added; `aggregate/union` added)
+- lionlang.dev has a live Shortest distances card (`site-card-shortest-distances` added)
+- Query options. `["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card. (`query-option-assert` added; `query-option-limit` added; `query-option-offset` added; `query-option-order` added; `site-card-order-and-limit` added)
+- `["in", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card. (`array/range` added; `in` added; `site-card-lists-with-in` added)
+- Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `["graph/pageRank", "edge", "?node", "?rank"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card. (`defineAlgorithm` added; `graph/components` added; `graph/pageRank` added; `graph/shortestPath` added; `graph/stronglyConnected` added; `graph/topologicalOrder` added; `site-card-graph-algorithms` added)
+- `new LogicDatabase({ goalDirected: false })` turns it off (`goal-directed-option` added)
+- Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `["path", "a", "?to"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card. (`site-card-goal-directed-queries` added)
+- A record after the columns gives a relation a key (`relation-option-key` added)
+- Keyed relations. `["relation", "order", ["id", "status"], {"key": ["id"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card. (`site-card-keys-and-upserts` added)
+- `lion program.json --database store.json` loads a snapshot file, runs the program, and saves it back (`cli-database-flag` added)
+- `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript (`loadDatabase` added; `saveDatabase` added)
+- Snapshots. `["snapshot"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card. (`site-card-snapshots` added)
+- `["snapshot"]` returns a Lion program (`snapshot` added)
+
+### Changed
+
+- recursion through one stops when no value improves or fails with an error after 10,000 rounds (`lattice-recursion-still-improving` is `error`)
+- with an error that suggests computing the value in a non-recursive rule or aggregating it with a lattice aggregate (`recursive-computed-value-error-hint` is `non-recursive-rule-or-lattice-aggregate`)
+- The head variables of a recursive rule must come from facts (`recursive-rule-head-variable-source` is `facts`)
+- aggregating it with a lattice aggregate, which may compute its value while recursing (`recursive-rule-lattice-aggregate-computed-value` is `allowed`)
+- Values that come from facts are fine, so `["=", "?m", "?to"]` with `?to` from a relation still works in a recursive rule. (`recursive-rule-unify-from-fact-value` is `allowed`)
+- lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it. (`site-runtime-build-runs-stamp` is `runs`)
+- A group exists only when something matches, so a count is never `0`. (`aggregate-count-empty-group` is `no-group`)
+- Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card. (`aggregate-in-rule-head` is `groups-by-other-columns`; `aggregate-on-plain-list` is `combines-list`; `why-aggregated-fact` is `lists-matches`)
+- A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. (`aggregate-match-found-by-several-or-alternatives` is `counts-once`; `aggregate-separate-rules-same-relation` is `add-up`)
+- Sum and mean of numbers (`mean` of nothing is `null`) (`aggregate-mean-empty` is `null`)
+- expects all numbers or all strings, but found (`aggregate-min-mixed-types` is `error`)
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
+- Logic variables must be direct arguments, not nested inside arrays or records (`logic-variable-nested-in-array` is `error`; `logic-variable-nested-in-record` is `error`)
+- For `min`, `max`, and `shortest`, it explains the one match that produced the value. (`why-aggregate-min-max-fact` is `producing-match`)
+- `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (`aggregate-shortest-tie` is `smaller-value`)
+- Every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it (`lattice-cycle-non-aggregating-relation` is `error`)
+- Each group keeps its best value, and rounds re-run the rules on rows that improved until nothing improves (`lattice-group-value` is `keeps-best`)
+- A recursive rule can aggregate with them and compute the aggregated value (`recursive-rule-aggregate-min` is `allowed`)
+- Other aggregates still cannot recurse (`recursive-rule-aggregate-sum` is `error`)
+- every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it; other aggregates still cannot recurse, and computed group columns still cannot recurse (`recursive-rule-computed-group-column` is `error`)
+- `why` explains a minimum with the chain that produced it (`why-lattice-minimum` is `producing-chain`)
+- Without `"order"`, answers come in the order they are found. (`query-answer-order-without-order-option` is `found-order`)
+- Query options. `["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card. (`query-assert-none-with-answers` is `error`; `query-assert-some-no-answers` is `error`; `query-order-leading-minus` is `descending`; `query-order-unknown-variable` is `error`; `query-unknown-option` is `error`)
+- The assertion sees every answer, before `offset` and `limit`. (`query-assert-scope` is `before-offset-and-limit`)
+- A leading `-` sorts that variable in descending order, and the `?` is optional. (`query-order-question-mark` is `optional`)
+- Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules). (`sort-order-across-types` is `null-booleans-numbers-strings-arrays-records`)
+- expect(yield* run(["array/range", 2, 5], stdlib)).toEqual([2, 3, 4]); (`array-range-end` is `exclusive`)
+- expect(yield* run(["array/range", 5, 2], stdlib)).toEqual([]); (`array-range-start-after-end` is `empty-list`)
+- at most 1000000 numbers (`array-range-too-long` is `error`)
+- `["in", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card. (`fold-map-in-form` is `recognized`; `in-bound-element` is `membership-test`; `in-unbound-element` is `binds-each-item`; `in-without-logic-variables` is `membership`)
+- A list that repeats an item binds it once. (`in-duplicate-items` is `binds-once`)
+- the list must be bound first; duplicate items bind once; a value that is not a list is reported (`in-non-list` is `error`)
+- The list must be bound before `in` runs. (`in-unbound-list` is `error`)
+- Inputs such as `start` must be values when the goal is built. (`algorithm-input-variable` is `error`)
+- A computed relation cannot have facts or rules of its own, and it cannot be part of a recursive cycle. (`computed-relation-facts` is `error`; `computed-relation-in-recursive-cycle` is `error`; `computed-relation-rules` is `error`)
+- Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `["graph/pageRank", "edge", "?node", "?rank"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card. (`graph-algorithm-call` is `goal`; `graph-algorithm-run-time` is `after-input-complete`; `why-computed-row` is `marked-computed`)
+- Components are named after their smallest node, and ties go to the smaller value, so results never depend on the order facts were added. (`graph-algorithm-tie` is `smaller-value`; `graph-components-naming` is `smallest-node`)
+- without one, every edge costs 1. (`graph-shortestPath-unweighted-edge-cost` is `one`)
+- Positions from 0 in a topological order, or an error that names a cycle. (`graph-topologicalOrder-cycle` is `error`)
+- Relations that are aggregated, computed by an algorithm, or negated, and what they depend on, are computed in full first. (`goal-directed-aggregated-relation` is `computed-in-full`)
+- Answers can come in a different order, so the `"order"` query option is the way to fix one. (`goal-directed-answer-order` is `may-differ`)
+- with a known start, recursion on the left asks only about that start, while recursion on the right asks about every node the paths pass through (`goal-directed-left-recursion-known-start` is `asks-start-only`; `goal-directed-right-recursion-known-start` is `asks-every-node`)
+- such an argument now counts as unknown (`goal-directed-non-json-argument-known` is `unknown`)
+- known arguments are values or variables bound by earlier relation goals; values computed by functions never drive the rewrite, so it still finishes (`goal-directed-query-computed-argument` is `unknown`)
+- rewritten models are cached per query until a fact or rule changes; new LogicDatabase({ goalDirected: false }) turns the rewrite off (`goal-directed-rewrite-cache` is `per-query-until-change`)
+- The rewrite changes how much is computed, never what the answers are (`goal-directed-vs-full-answers` is `same`)
+- Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order. (`in-membership-test-method` is `lookup`; `relation-index-new-tuple` is `updated-in-place`, was `rebuilt`; `semi-naive-round-join-start` is `new-tuples`; `why-premise-order` is `rule-order`)
+- Keyed relations. `["relation", "order", ["id", "status"], {"key": ["id"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card. (`fold-map-keyed-relation` is `labeled`)
+- A fact whose key is already present replaces the old row, like an upsert (`keyed-relation-fact-existing-key` is `replaces`)
+- when one `fact` form repeats a key the last row wins (`keyed-relation-repeated-key-in-one-fact-form` is `last-wins`)
+- `retract` still removes a row only when every column matches. (`keyed-relation-retract-partial-match` is `no-change`)
+- Rules may derive rows of a keyed relation, but two different rows with one key are an error that names both, in goal-directed queries too. (`keyed-relation-rules-derive-conflicting-rows` is `error`)
+- Relation indexes drop deleted rows in place instead of being rebuilt. (`relation-index-deletion` is `in-place`, was `rebuild`)
+- A key can span several columns, and a single column can be written without the list. (`relation-key-several-columns` is `allowed`; `relation-key-single-column-without-list` is `allowed`)
+- Declaring a relation again, for example in a later run that shares the database, must repeat its columns and key. (`relation-redeclared-differently` is `error`)
+- An unknown relation option is reported with the relation's options, `"key"` and `"schema"`. (`relation-unknown-option` is `error`)
+- `lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line. (`cli-database-file-after-run` is `saved-back`)
+- one form and one fact per line (`cli-database-file-format` is `one-form-and-fact-per-line`)
+- A file that does not exist yet starts empty. (`cli-database-missing-file` is `starts-empty`)
+- The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name. (`database-relation-name-vs-environment-binding` is `environment-wins`)
+- Snapshots. `["snapshot"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card. (`fold-map-snapshot-form` is `recognized`)
+- A database passed to `run` binds its relations by name, so later runs query them without declaring them again. (`run-database-relations-bound-by-name` is `bound`)
+- and so are lists and records (`snapshot-lists-and-records` is `quoted`)
+- rules are written from their evaluated goals, so aggregates, in, =, not, or, and algorithm goals round-trip; rules holding functions fail with an error (`snapshot-rule-holding-function` is `error`)
+- A name like `budget` in a rule appears as its value (`snapshot-rule-name` is `written-as-value`)
+- Rules are written from their evaluated goals, so aggregates, `in`, `=`, `not`, `or`, and algorithm goals round-trip. (`snapshot-rule-round-trip` is `round-trips`)
+- Strings that would load as something else, such as relation names, bound names, namespaced names, and `?names`, are written inside `quote` (`snapshot-string-that-loads-as-something-else` is `quoted`)
 
 ### Fixed
 
-- The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.
-- A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with "not JSON data" instead of finding no answers. Found by comparing goal-directed and full evaluation on 2,000 generated programs. See [A query with a known argument runs a magic-sets rewrite and gives the answers full evaluation gives](DECISIONS.md#goal-directed-magic-sets).
-- A recursive rule could compute a new head value through `=` or `in`, such as `["rule", ["c", "?m"], ["c", "?n"], ["=", "?m", ["number/add", "?n", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate. See [A recursive rule cannot compute new values for its head, so evaluation always ends](DECISIONS.md#recursion-cannot-compute-values).
-- lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it. See [Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result](DECISIONS.md#live-examples-run-real-core).
+- A visitor with the 0.2.0 worker cached saw the new logic examples fail with `InvalidFunctionCallError`, which is why the asset URLs carry a version (`site-cached-worker-with-new-page` is `never-paired`, was `invalid-function-call-error`)
+- A 3,000-answer query hit the 1.5 second limit until the worker stopped yielding to the scheduler (`site-worker-scheduler-yield` is `prevented`)
+- A rule that breaks this is rejected when it is added (`recursive-rule-computed-value-through-in` is `error`; `recursive-rule-computed-value-through-unify` is `error`)
+- A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with "not JSON data" instead of finding no answers. Found by comparing goal-directed and full evaluation on 2,000 generated programs. (`goal-directed-non-json-argument` is `no-answers`, was `error`)
+
+### Documentation
+
+- the pages load their assets with a `?v=` hash, so a cached worker never runs a new page's examples (`site-asset-urls` is `hash-versioned`)
+- the goal-directed card was rewritten with left recursion after its first version timed out (`site-goal-directed-example-right-recursive` is `timed-out`)
+- `["in", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card. (`site-highlighter-in-form` is `recognized`)
+- Snapshots. `["snapshot"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card. (`site-highlighter-snapshot-form` is `recognized`)
+
+### Decided
+
+- the goal-directed card was rewritten with left recursion after its first version timed out (`goal-directed-example-recursion`: `left-recursion` over `right-recursion`)
+- the pages load their assets with a `?v=` hash, so a cached worker never runs a new page's examples (`site-asset-caching`: `hash-versioned-urls` over `plain-urls`)
+- The head variables of a recursive rule must come from facts: bound by a relation goal, or by `=` or `in` from such variables or from plain values. (`termination-check`: `no-computed-values-in-recursion` over `head-only-check`)
+- aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts (`aggregation-through-recursion`: `never`)
+- Recursion may aggregate only through lattice aggregates, whose values move one way (`aggregation-through-recursion`: `lattice-aggregates-only` over `never`, `any-aggregate`, was `never`)
+- Lion rewrites the rules with the magic-sets technique (`query-evaluation`: `goal-directed-magic-sets` over `full-bottom-up`)
+- A fact whose key is already present replaces the old row, like an upsert (`keyed-relation-fact-semantics`: `upsert` over `add-row-beside`)
+- `["snapshot"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database. (`database-save-format`: `lion-program`)
+- The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms. (`site-worker-scheduler`: `prevent-scheduler-yield` over `yield-to-scheduler`)
+
+### Rules
+
+- a value that grows along a recursion, such as a distance, is computed with a lattice aggregate (rule `lattice-recursion`)
+- After editing only files in `docs/`, update it with: (rule `stamp-site-assets-after-docs-edit`)
+- `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (rule `order-independent-results`)
+- Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card. (rule `stratified-aggregation`)
+- Aggregates in rule heads were stratified like negation: a relation could aggregate only relations computed in full before it, never through recursion (rule `stratified-aggregation` withdrawn)
+- Options are read as written, like a relation's column list. (rule `options-read-as-written`)
+- Query options. `["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card. (rule `total-value-order`)
+- Tests run a corpus of programs both ways and require the same answers. (rule `goal-directed-full-equivalence-tested`)
+- goal-directed and full evaluation give the same answers (rule `goal-directed-magic-sets`)
+- A keyed relation holds one row per key, and a fact whose key is present replaces the row (rule `keyed-relations-upsert`)
+- a snapshot rebuilds its database (rule `snapshots-are-programs`)
 
 ## 2026-11-10 — @lionlang/core 0.3.0, @lionlang/cli 0.2.0
 
 ### Added
 
-- A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `"?name"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`. See [Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values](DECISIONS.md#datalog-logic-layer).
-- lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer. See [Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result](DECISIONS.md#live-examples-run-real-core).
-- The Fold Map graph editor recognizes the logic forms and gives them their own node color.
-- `@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor.
-- Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds. See [Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result](DECISIONS.md#live-examples-run-real-core).
+- Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor. (`site-expression-graph-background` added; `site-self-typing-hero` added)
+- card spotlight, magnetic buttons, tilt panels, stdlib marquee (`site-magnetic-buttons` added)
+- the private `@lionlang/site-runtime` package bundles into `docs/lion-worker.js` (`@lionlang/site-runtime` added)
+- Every example card is an editor (`site-live-example-editors` added)
+- Raised by relations, rules, facts, and queries. (`LogicError` added)
+- A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `"?name"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`. (`examples-logic-program` added)
+- `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms (`fact` added; `query` added; `retract` added; `rule` added; `why` added)
+- `["relation", "edge", ["from", "to"]]` binds `edge` to a relation (`relation` added)
+- a host passes `{ database }` as the third argument of `run` to share one across runs (`run-database-option` added)
+
+### Removed
+
+- remove the magnetic button effect so buttons stay put under the cursor (`site-magnetic-buttons` removed)
 
 ### Changed
 
-- Long results in the lionlang.dev live examples keep short arrays and records on one line, and functions nested inside results print as `<function>`.
-- Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor.
+- On booleans they are the boolean operators, and stop at the first argument that decides the result. (`and-on-booleans` is `boolean-operator`; `or-on-booleans` is `boolean-operator`)
+- `"?_"` is anonymous: each occurrence is a separate variable, and it never appears in an answer. (`anonymous-variable-occurrences` is `separate-variables`)
+- is anonymous: each occurrence is a separate variable, and inside `not` it matches anything. (`anonymous-variable-under-not` is `matches-anything`)
+- an unbound `"?name"` string evaluates to a logic variable, while a bound name still wins (`bound-question-mark-string` is `bound-value`; `unbound-question-mark-string` is `logic-variable`)
+- Adds ground facts. Returns the facts added. (`fact-form-result` is `facts-added`)
+- expects relation calls, but found (`fact-non-relation-call` is `error`)
+- The Fold Map graph editor recognizes the logic forms and gives them their own node color. (`fold-map-logic-forms` is `one-color`)
+- A lambda's body runs right away, so a lambda can build and return goals. (`lambda-called-with-logic-variable` is `runs`)
+- Answers are computed bottom-up with semi-naive evaluation and kept until a fact or rule changes. (`logic-answer-cache` is `until-facts-or-rules-change`; `logic-evaluation-strategy` is `semi-naive`)
+- A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value. (`negation-through-recursion` is `error`)
+- Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. (`not-on-boolean` is `negation`)
+- Every function waits when it is called with a logic variable: the whole standard library, host functions as they are, and `func/partial` results. (`pure-function-logic-variable-argument` is `waits`)
+- Returns one record per distinct answer, keyed by variable name without the `?`. (`query-answer-shape` is `record-per-distinct-answer`)
+- A goal with no variables returns `[{}]` when it holds and `[]` when it does not. (`query-ground-goal-fails` is `empty-list`; `query-ground-goal-holds` is `list-of-empty-record`)
+- calling it, as in `["edge", "a", "?b"]`, builds a goal, which is a value like any other (`relation-call` is `goal`)
+- One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`relation-call-wrong-arity` is `error`)
+- Removes facts. Derived answers update on the next query. (`retract-derived-answers` is `update-on-next-query`)
+- the answer does not depend on the order rules are written in (`rule-order-answers` is `independent`)
+- Rules are checked for safety when they are added (`rule-safety-check-time` is `when-added`)
+- Each `run` gets its own database (`run-logic-database` is `fresh-per-run`)
+- Without logic variables it is plain equality. (`unify-without-logic-variables` is `equality`)
+- Under `because`, `why` shows each row a relation goal matched, explained in turn (`why-derived-fact` is `explanation-tree`)
+- Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. (`why-goal-not-holding` is `null`)
+- `@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor. (`cli-logic-programs` is `runs`)
+
+### Fixed
+
+- A fix to how the repository typechecks and builds; no package changed. (`typecheck-depends-on-build` is `true`, was `false`; `typecheck-includes-dist-output` is `false`, was `true`)
+
+### Documentation
+
+- canvas background of Lion tokens that swirl around the cursor and ripple on clicks and on each hero evaluation; respects prefers-reduced-motion (`site-background-reduced-motion` is `respected`)
+- Every example on the page now shows the result the standard library returns. (`site-example-results` is `standard-library-results`)
+- Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor. (`site-graph-editor-section` added; `site-packages-section` added)
+- is served by GitHub Pages straight from `docs/`, with no build step. (`site-build-step` is `none`)
+- the card shows the result, a typed error, or `console/log` output (`site-example-output` is `result-errors-and-logs`)
+- Every example card on lionlang.dev is now a live editor. Programs run on the real `@lionlang/core` in a Web Worker (`@lionlang/site-runtime`, bundled into `docs/lion-worker.js`) and re-run as you type. Each card shows the result, error, and `console/log` output, and stops runaway programs after 1.5 seconds. (`site-example-rerun` is `as-you-type`)
+- stops a runaway program after 1.5 seconds (`site-example-runaway-program` is `terminated`)
+- lionlang.dev has a Logic programming section with four live examples (recursive rules, negation, filters and computed values, and `why` explanations). Code on the site highlights logic forms and `?variables`, and the live-editor worker is rebuilt with the logic layer. (`site-highlight-logic-forms` is `like-special-forms`; `site-highlight-logic-variables` is `own-color`; `site-worker-core` is `rebuilt`; `site-logic-programming-section` added)
+- Long results in the lionlang.dev live examples keep short arrays and records on one line, and functions nested inside results print as `<function>`. (`site-nested-function-result` is `function-marker`, was `escaped-marker`; `site-short-results` is `one-line`)
+
+### Decided
+
+- Redesigned lionlang.dev: an interactive expression-graph background that follows the cursor and ripples on clicks and evaluations, a self-typing hero that cycles through verified Lion programs, and new Graph Editor and Packages sections covering `@lionlang/cli`, `@lionlang/typesafe-ai`, and Effect 4.1. Buttons stay put under the cursor. (`site-button-effect`: `still-buttons` over `magnetic-buttons`)
+- typecheck sources only and after dependency builds (`typecheck-scope`: `sources-only` over `sources-and-dist`)
+- `@lionlang/core` gets a Datalog-style logic layer. (`logic-paradigm`: `datalog` over `prolog`)
+- In Lion a goal is a value, so it can be stored, passed to a function, built by a lambda, and combined with `and`, `or`, and `not`, and answers come back as ordinary records. (`logic-syntax`: `ordinary-forms-and-values` over `own-syntax`)
+- an unbound `"?name"` string evaluates to a logic variable, while a bound name still wins (`question-mark-name-precedence`: `binding-wins` over `logic-variable`)
+
+### Rules
+
+- the build runs each one with the real evaluator and writes its result (rule `live-examples-run-real-core`)
+- A change to the core rebuilds `docs/lion-worker.js` (rule `rebuild-site-worker-after-core-change`)
+- Logic programming in Lion is Datalog, built into the Lisp as ordinary forms and values (rule `datalog-logic-layer`)
+- A Datalog-style logic layer in `@lionlang/core`. New special forms `relation`, `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=`; unbound `"?name"` strings evaluate to logic variables; and pure stdlib functions called on logic variables become filters or computed values. Rules use stratified negation and semi-naive evaluation, are checked for safety when added, and every answer can be explained with `why`. See `packages/examples/logic.json`. (rule `pure-functions-wait`; rule `stratified-negation`)
+- A recursive rule cannot compute new values for its head, so evaluation always ends (rule `recursion-cannot-compute-values`)
+- Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). (rule `safe-rules`)
+- the site hero badge points to the new guide, and the package cards show the new versions (rule `releases-update-site-versions`)
 
 ## 2026-11-03 — @lionlang/core 0.2.0, @lionlang/cli 0.1.0, @lionlang/typesafe-ai 0.1.0
 
 ### Added
 
-- Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views. See [The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone](DECISIONS.md#graph-editor-is-the-repl).
-- Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions.
-- The `@lionlang/cli` package: `lion program.json` evaluates a Lion program and prints its value, and `lion repl` serves the graph editor, bundled with the command. See [`@lionlang/cli` carries its own copy of `@lionlang/core` and the built graph editor, so it is released with every core release](DECISIONS.md#cli-bundles-editor).
-- Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures.
-- Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states.
-- File System Access open/save workflows with permission and external-change handling, plus import/download fallback.
-- Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow.
+- `bun run typecheck` was added (`bun-run-typecheck` added)
+- a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build` (`ci-workflow` added)
+- # Dynamic UI Streaming Prototype — Implementation Plan (`dynamic-ui-streaming-plan` added)
+- same pattern as the existing `evm` module (`evm` added)
+- Core: $ui tagged record schemas (15 component types) and pure constructors (`ui` added)
+- REPL: React renderer mapping $ui nodes to shadcn components (`ui-renderer` added)
+- REPL: useUIStream hook for SSE and local push streaming (`ui-stream-hook` added)
+- Core: UIStreamMessage protocol (replace/append/update/clear) with path targeting (`ui-stream-message-protocol` added)
+- docs/plans/2026-04-18-lisp-powered-ui.md documents the design. (`lisp-powered-ui-plan` added)
+- ui-env.ts: environment factory. (`ui-env` added)
+- it opens and saves files through the File System Access API, and downloads the file where a browser lacks it (`editor-file-system-access` added)
+- docs/tickets/graph-editor/000-product-epic.md (`graph-editor-tickets` added)
+- packages/repl/PRODUCT.md (`repl-product-doc` added)
+- `@lionlang/core` gained a semantic-analysis API, which the editor runs in a worker beside the layout (`semantic-analysis` added)
+- # Changelog (`changelog` added)
+- File System Access open/save workflows with permission and external-change handling, plus import/download fallback. (`editor-import-download-fallback` added)
+- Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views. (`editor-inspector-pane` added; `editor-outline-pane` added; `editor-result-pane` added; `editor-search` added; `editor-source-view` added)
+- Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow. (`editor-keyboard-workflows` added; `editor-wcag-checks` added)
+- Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states. (`editor-live-evaluation` added)
+- Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures. (`editor-performance-fixtures` added; `editor-shared-transaction-history` added; `graph-bounded-rendering` added; `graph-branch-folding` added; `graph-elk-layout` added)
+- Added the `@lionlang/typesafe-ai` package, exposing Jev Noul, Choice, Score, System One evaluation, and model listing to Lion expressions. (`@lionlang/typesafe-ai` added; `typesafe/choice` added; `typesafe/models` added; `typesafe/noul` added; `typesafe/score` added; `typesafe/system-one` added)
+- TypeSafe AI Jev evaluation from a standalone Lion JSON program (`jev-example` added)
+- `@lionlang/typesafe-ai` exposes every Jev question primitive plus the System One and models APIs as Lion functions. (`typesafe-ai` added)
+- Use **Jev** to load a TypeSafe System One starter program. (`editor-jev-playground` added)
+- Jev support sends requests through the app's same-origin proxy (`typesafe-proxy` added)
+- feat(repl): add editable literal nodes (`graph-editable-literal-nodes` added)
+- Evaluation appears in a compact dock over the bottom edge of the canvas. (`editor-output-dock` added)
+- Expression-like nonprimitive nodes expose a small play action that evaluates only that subtree (`editor-scoped-evaluation` added)
+- feat(repl): add labeled per-edge graph ports (`graph-labeled-ports` added)
+- muted semantic inks distinguish node types (`graph-node-type-colors` added)
+- `@lionlang/cli`, built on Effect's CLI module, adds the `lion` command. (`@lionlang/cli` added; `lion` added)
+- `lion repl` serves the production graph editor on `127.0.0.1:3000`, with `--host` and `--port` to change it (`lion-repl` added; `lion-repl-host` added; `lion-repl-port` added)
+
+### Removed
+
+- Drop empty barrel (src/index.ts); consumers import from subpath exports. (`core-root-export` removed)
+- Remove experimental ui module (ui.ts, ui.test.ts, schemas/ui.ts) (`ui` removed)
+- Remove dead code from prior $ui approach: ui-renderer.tsx, use-ui-stream.ts. (`ui-renderer` removed; `ui-stream-hook` removed)
+- Delete: `packages/core/src/schemas/ui.ts` (both `UINodeSchema` and `UIStreamMessageSchema`; the latter is replaced by JSON Patch). (`ui-stream-message-protocol` removed)
+- use-ui-source.ts: drop Bindings document. (`ui-stream-bindings-document` removed)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`editor-source-view` removed; `editor-inspector-pane` removed; `editor-outline-pane` removed)
+- The old REPL route, `/stream`, and the UI-streaming code were removed in the same commit. (`ui-stream-simulator` removed)
+- Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies. (`repl-demo-assets` removed; `repl-prototype-dependencies` removed)
+- packages/repl/src/lib/ui-env.ts (`ui-env` removed)
+- The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar. (`editor-result-pane` removed)
+- feat(repl): keep graph editor always open (`graph-branch-folding` removed)
 
 ### Changed
 
-- Replaced the former REPL and `/stream` prototype with the graph editor. See [The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone](DECISIONS.md#graph-editor-is-the-repl).
-- Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies. See [The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone](DECISIONS.md#graph-editor-is-the-repl).
-- Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module. See [Lion moves from Effect 3 to Effect 4](DECISIONS.md#effect-v4).
+- a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build` (`ci-build` is `runs`; `ci-format-and-lint` is `runs`; `ci-install-lockfile` is `frozen`; `ci-pull-request` is `checked`; `ci-push-main` is `checked`; `ci-tests` is `runs`; `ci-typecheck` is `runs`)
+- A commit whose tests fail is refused unless the hook is skipped (`commit-with-failing-tests` is `refused`)
+- a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again (`pre-commit-hook` is `runs-tests`; `pre-commit-hook-staged-files` is `formatted`)
+- Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page. (`site-deploy-branch` is `main`)
+- A UI streaming prototype in the REPL, at `/stream`, which the graph editor replaced before any release. (`stream-prototype-release` is `unreleased`)
+- // If the first arg is a plain object without $ui, treat it as props (`ui-constructor-leading-record` is `props`)
+- Unknown UI component: {node.$ui} (`ui-renderer-unknown-component` is `error-message`)
+- language has no UI-specific primitives anymore; it's just Lion + a host (`core-ui-module` is `absent`)
+- Live values live at specific paths inside the source and update in place. (`ui-stream-live-value-update` is `source-patch`, was `bindings-patch`)
+- The editor keeps programs local, with no account or backend storage (`editor-program-storage` is `browser-local`)
+- there is no longer a text editor for a whole program (`editor-source-text-pane` is `absent`, was `present`)
+- a graph edit becomes a minimal text edit that keeps the bytes of everything it does not touch (`editor-untouched-text` is `byte-identical`)
+- on September 21 every semantic branch and the output dock stayed open instead of folding away (`graph-branch-expansion` is `always-expanded`)
+- Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views. (`repl-root-route` is `graph-editor`)
+- Upgraded Effect to 4.1.2 across all packages (`effect`, `@effect/platform-node`, `@effect/platform-node-shared`, `@effect/vitest`) and `@effect/language-service` to 0.87.5; the CLI now imports from the stable `effect/cli` module. (`effect-language-service-version` is `0-87-5`)
+- moved to the stable 4.1.2 (`effect-package-version` is `effect-4-1-2`)
+- const node = analyze(["define", "x"]); (`analyze-define-missing-value` is `invalid-call`)
+- expect(analyze([]).kind).toBe("empty-array"); (`analyze-empty-array` is `empty-array`)
+- returns an invalid node instead of throwing for malformed forms (`analyze-malformed-form` is `invalid-node`)
+- preserves record order, paths, and ambiguous string relationships (`analyze-record-key-order` is `preserved`)
+- { kind: "reference-candidate", name: "x" }, (`analyze-string` is `reference-candidate`)
+- Explicit and debounced live evaluation against the Lion standard library, including result, console transcript, error, canceled, and stale states. (`editor-evaluation-environment` is `stdlib-only`; `editor-evaluation-states` is `result-console-error-canceled-stale`; `editor-live-evaluation-timing` is `debounced`)
+- Desktop and narrow-screen keyboard workflows, reduced-motion and forced-colors support, and automated WCAG checks for the primary workflow. (`editor-forced-colors` is `supported`; `editor-reduced-motion` is `respected`)
+- Invalid JSON retains the last valid projection without accepting graph mutation or evaluation. (`editor-invalid-json-evaluation` is `refused`; `editor-invalid-json-projection` is `last-valid-kept`)
+- The deliberate limitation is strict JSON: comments and trailing commas are diagnostics, not silently normalized. (`editor-json-comments` is `diagnostic`)
+- the overview is intentionally hidden below 900 px where it would obstruct the canvas (`editor-overview-narrow` is `hidden`)
+- Shared source/graph transaction history, revision-safe worker analysis, ELK layout, folding, bounded graph rendering, and 100/1,000/5,000-node performance fixtures. (`editor-stale-worker-response` is `rejected`)
+- Undo and redo restore exact source snapshots regardless of edit origin. (`editor-undo` is `exact-source-restored`)
+- Network calls are represented as Effects so Lion waits for the TypeSafe API (`host-function-effect-return` is `awaited`)
+- instead of returning an unresolved promise. (`host-function-promise-return` is `unresolved-promise`)
+- Lion arrays are executable, so literal arrays in state, instructions, or score criteria must use `quote`. (`literal-array-unquoted` is `call`)
+- Set `TYPESAFE_API_KEY`, create the bindings once in the host, and spread them into the evaluation environment: (`typesafe-api-key-source-host` is `env-var`)
+- Creates ready-to-spread Lion environment bindings under `typesafe/*`. (`typesafe-bindings-namespace` is `typesafe`)
+- treats quoted form-shaped arrays as literal data (`analyze-quoted-form-shaped-array` is `literal-data`)
+- Jev support sends requests through the app's same-origin proxy with a user-provided, preferably scoped development key that remains in browser memory (`editor-evaluation-environment` is `stdlib-and-typesafe`, was `stdlib-only`)
+- Files above 10 MiB are rejected before parsing. (`editor-file-over-10-mib` is `rejected`)
+- keeps it only in tab memory (`editor-jev-api-key-storage` is `tab-memory`)
+- Jev programs are always explicit-run to prevent accidental network requests. (`editor-jev-live-evaluation` is `disabled`)
+- return jsonResponse(404, "Unknown TypeSafe API route."); (`typesafe-proxy-unlisted-route` is `not-found`)
+- places child values left of their consuming expression (`graph-argument-position` is `left-of-consumer`, was `right-of-consumer`)
+- Value-to-consumer edges use a two-pixel sumi stroke, matching closed arrowheads, and bold role labels so the graph shows evaluation flow at a glance (`graph-edge-direction` is `value-to-consumer`; `graph-edge-label-weight` is `bold`)
+- Graph, Source, Inspect, and Result become four mutually exclusive tabs (`editor-narrow-panes` is `four-tabs`)
+- The graph uses a 32px point rhythm over the continuous warm paper field. (`graph-background` is `paper-field`, was `diagonal-crease-field`)
+- {nodes.length > 12 ? ( (`graph-minimap-small-document` is `hidden`)
+- nodesDraggable={false} (`graph-node-free-drag` is `disabled`)
+- selection uses a clear vermilion border and soft ring without adding a second edge (`graph-node-selection-mark` is `border-and-ring`, was `left-edge-mark`)
+- Open and Save remain labeled outline commands at every width. (`editor-open-save-labels` is `always-labeled`)
+- Parent-to-child sumi edges carry role labels (`graph-edge-direction` is `parent-to-child`)
+- The graph centers the selected node at a readable scale instead of shrinking the full branch to fit. (`graph-narrow-selection-camera` is `centered`)
+- Selection and node hover expose Replace and Add child actions, with the same non-drag operations kept in the persistent selection toolbar. (`graph-node-actions` is `replace-and-add-child`)
+- invalid source keeps the graph blocked until a new document (`editor-invalid-source-graph` is `blocked-until-new-document`, was `stale-until-repair`)
+- Graph, Inspect, and Result become three mutually exclusive tabs (`editor-narrow-panes` is `three-tabs`, was `four-tabs`)
+- text and number changes commit on blur or Enter, while checkboxes commit immediately (`graph-literal-checkbox-commit` is `immediate`; `graph-literal-text-commit` is `blur-or-enter`)
+- Binary files /dev/null and b/packages/repl/artifacts/thicker-black-background-dots.webm differ (`completion-proof-location` is `committed`)
+- Desktop and narrow screens keep the graph as the only primary workspace (`editor-narrow-panes` is `graph-only`, was `three-tabs`)
+- fix(repl): make output drawer collapsible (`editor-output-dock` is `collapsible`, was `always-open`)
+- A run expands the dock without changing graph layout or moving the viewport (`editor-run-viewport` is `unchanged`)
+- Arrow keys traverse visible expressions, structural keys act on the selection (`graph-arrow-keys` is `traverse-visible`)
+- left and right move to parent and child (`graph-arrow-left` is `parent`)
+- **Crease:** Borders, separators, scrollbars, and graph-grid points. (`graph-grid-point-color` is `crease`)
+- and `/` focuses search (`graph-slash-key` is `focus-search`)
+- Evaluate explicitly at the document or expression level by default, with an optional whole-document live-evaluation mode. (`editor-live-evaluation-scope` is `whole-document`)
+- page.getByRole("button", { name: "Run number/add" }) (`graph-play-action-call` is `present`)
+- await expect(page.getByRole("button", { name: "Run define" })).toHaveCount(0); (`graph-play-action-define` is `absent`)
+- await expect(page.getByRole("button", { name: "Run quote" })).toBeVisible(); (`graph-play-action-quote-form` is `present`)
+- Evaluation appears in a compact, always-open dock over the bottom edge of the canvas after the first run. (`editor-output-dock` is `always-open`, was `collapsible`)
+- isConnectableStart={acceptsConnections} (`graph-handle-on-non-container` is `shown-not-connectable`)
+- Jev example renders every visible parent-child connection (`graph-parent-child-connections` is `all-rendered`)
+- left moves to the first child, right moves to the parent (`graph-arrow-left` is `first-child`, was `parent`; `graph-arrow-right` is `parent`, was `first-child`)
+- typeof segment === "number" ? `[${segment}]` : (segment ?? child.role); (`graph-input-port-label` is `path-segment`)
+- label: "value", (`graph-output-port-label` is `value`)
+- literal nodes fit their editors without empty body space (`graph-literal-node-height` is `fits-editor`)
+- places sibling nodes top-to-bottom in model order (`graph-sibling-order` is `model-order`)
+- expect(array?.kind).toBe("array"); (`analyze-quoted-array` is `array`, was `call`)
+- expect(flat.find(({ pointer }) => pointer === "/1/0")?.quoted).toBe(true); (`analyze-quoted-array-head` is `quoted`)
+- selecting a graph node preserves the camera (`graph-selection-camera` is `preserved`)
+- presentation?.mark !== "record" && (`graph-structured-node-header` is `omitted`)
+- The CLI has its own version numbers, starting at 0.1.0 with core 0.2.0. (`cli-0-1-0-bundled-core` is `core-0-2-0`)
+- `@lionlang/cli` 0.2.0 bundles `@lionlang/core` 0.3.0, so `lion program.json` runs logic programs, and `lion repl` serves the updated graph editor. (`cli-0-2-0-bundled-core` is `core-0-3-0`)
+- Its build bundles `@lionlang/core` into the command and copies the editor's build output into the package (`cli-core-dependency` is `bundled`; `cli-editor` is `bundled`)
+- `lion program.json` checks the file as a Lion expression, evaluates it with the standard library, and prints the result as JSON (`cli-evaluation-environment` is `stdlib`; `cli-input-validation` is `lion-expression-schema`)
+- standard library, and writes results as formatted JSON. (`cli-output-format` is `formatted-json`)
+- Every release of `@lionlang/core` since 0.2.0 ships a new `@lionlang/cli` beside it (`core-release-ships-cli` is `new-cli-release`)
+- edit through either synchronized view (`editor-source-text-pane` is `present`)
+- `lion repl` serves the production graph editor on `127.0.0.1:3000` (`lion-repl-default-host` is `loopback`)
+- cause: new Error("Port must be between 1 and 65535."), (`lion-repl-invalid-port` is `error`)
+- <Background color="#000" gap={32} size={2} /> (`graph-grid-point-color` is `black`, was `crease`)
+- Gives graph nodes, graph controls, and the document overview a compact, weighty lift with dark contact and cast shadows. (`graph-node-shadow` is `weighty`)
+- fix(repl): move graph input labels inside nodes (`graph-input-port-label-position` is `inside-consumer`, was `outside-consumer`)
+- core: define property test computes the expected value in an independent environment so generated values that reference the defined name no longer flake (`define-property-test-flake` is `fixed`, was `flaky`)
+- evaluates it before binding, so compute the expectation in a separate (`define-value-evaluation-order` is `before-binding`)
+
+### Fixed
+
+- Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page. (`site-documentation` is `matches-readme`; `site-layout-narrow` is `responsive`)
+
+### Documentation
+
+- Changes to the first lionlang.dev page: its documentation updated to match the README, and fixes for phones. The site deploys from `main`, and the redesign in 0.3.0 replaced that page. (`first-site-page` removed)
+- word-break: break-word; (`site-code-block-long-line-narrow` is `wraps`)
+- stack footer links (`site-footer-links-narrow` is `stacked`)
+- Reduce hero title size (`site-hero-title-narrow` is `reduced`)
+- hide horizontal scroll (`site-horizontal-scroll` is `hidden`)
+- overflow-x: auto; (`site-code-block-long-line-narrow` is `scrolls`)
+- The old REPL route, `/stream`, and the UI-streaming code were removed in the same commit. (`stream-route` removed; `repl-route` removed)
+- A UI streaming prototype in the REPL, at `/stream`, which the graph editor replaced before any release. (`stream-route` added)
+- Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views. (`graph-editor` added)
+- Updated the Lion and REPL operating documentation and removed superseded demo assets and dependencies. (`repl-operating-docs` is `describe-graph-editor`)
+
+### Decided
+
+- Every commit runs the tests and the formatter, and CI checks every pull request and push to `main` (`quality-gates`: `pre-commit-hook-and-ci` over `unchecked`)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`test-command`: `bun-run-test`)
+- Remove lambda example, add list operations (`site-examples`: `list-operations` over `lambda-example`)
+- Drop empty barrel (src/index.ts); consumers import from subpath exports. (`core-entry-point`: `subpath-exports` over `barrel`)
+- Bindings paths are flat (`/eth-price`), so they never shift (`ui-stream-documents`: `source-and-bindings` over `single-source`)
+- Streaming uses RFC 6902 JSON Patch against two documents: the source tree and a separate bindings document. No custom stream protocol. (`ui-stream-transport`: `json-patch` over `ui-stream-message-protocol`)
+- feat(repl): source-as-state UI streaming with direct React component env (`ui-streaming-architecture`: `source-as-state` over `ui-tagged-records`)
+- No language-level changes to Lion (no `ref`, no `call`, no change to string-lookup semantics). (`unbound-string-semantics`: `keep-string-fallback` over `ref-form`, `call-form`)
+- refactor(repl): collapse source+bindings into a single source document (`ui-stream-documents`: `single-source` over `source-and-bindings`, was `source-and-bindings`)
+- linker = "hoisted" (`bun-install-linker`: `hoisted`)
+- Two days later the CodeMirror source view was removed too, so a program is edited through the graph, its nodes, and the inspector (`editor-source-pane`: `no-persistent-text-pane` over `synchronized-source-pane`)
+- // Generated by TanStack Router and shadcn; validated by their upstream tooling. (`lint-generated-files`: `excluded` over `linted`)
+- The graph editor, Lion Fold Map, replaced the REPL at `/` on September 17, 2026. (`repl-surface`: `graph-editor` over `stream-prototype`, was `web-app`)
+- the CLI moved from `effect/unstable/cli` to `effect/cli` (`cli-effect-cli-module`: `stable-effect-cli` over `unstable-effect-cli`)
+- Lion moves from Effect 3 to Effect 4 (`effect-version`: `effect-4` over `effect-3`)
+- **Graph:** React Flow for interaction and bounded rendering, with ELK layered layout in a module worker. (`editor-graph-library`: `react-flow-elk`)
+- `jsonc-parser` configured for strict JSON (`editor-json-parser`: `jsonc-parser-strict`)
+- The deliberate limitation is strict JSON: comments and trailing commas are diagnostics, not silently normalized. (`editor-json-strictness`: `strict-json` over `normalize`)
+- **Editor:** CodeMirror 6 with the JSON language package. (`editor-text-component`: `codemirror-6`)
+- Jev programs are always explicit-run to prevent accidental network requests. (`jev-evaluation-trigger`: `explicit-run` over `live`)
+- fix(repl): lay out graph flow left to right (`graph-value-flow-direction`: `left-to-right` over `right-to-left`)
+- The semantic graph owns the full remaining width: there is no persistent inspector, outline, or result sidebar. (`editor-workspace-layout`: `full-width-graph` over `graph-and-inspector-panes`)
+- Semantic branches remain expanded. (`graph-branch-folding`: `always-expanded` over `collapsible-branches`)
+- The dock remains open and updates in place for subsequent runs. (`output-dock-collapsing`: `always-open` over `collapsible`)
+- Do not commit proof into git. (`completion-proof-storage`: `outside-git` over `committed`)
+- Value-to-consumer sumi edges carry role labels and arrowheads so the graph shows evaluation flow (`graph-edge-direction`: `value-to-consumer` over `parent-to-child`)
+- Its build bundles `@lionlang/core` into the command and copies the editor's build output into the package, so an installed CLI needs neither the monorepo nor a separate editor. (`cli-packaging`: `bundled-core-and-editor`)
+- Install `@lionlang/cli` in a project or globally: (`cli-install-scope`: `project-or-global` over `global-only`)
+- fix(repl): make output drawer collapsible (`output-dock-collapsing`: `collapsible` over `always-open`, was `always-open`)
+
+### Rules
+
+- `AGENTS.md` tells agents to run `bun run check`, the tests, and the build before committing (rule `check-test-build-before-commit`)
+- lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it. (rule `ci-checks-site-asset-versions`)
+- Otherwise, the expression evaluates each of its elements and returns the resulting array: (rule `arrays-are-never-data` withdrawn)
+- Lion core has no UI module, no `$ui` schema, no renderer-facing types. (rule `no-ui-primitives-in-core`)
+- `quote` and `eval` remain the escape hatches when literal-vs-reference disambiguation is needed at a specific site. (rule `quote-disambiguates-literals`)
+- Mental model is now: one JSON tree, one stream of JSON-Patch ops, that's (rule `ui-stream-one-document`)
+- The program's JSON is canonical, and the semantic graph, outline, inspector, and results are derived from it (rule `editor-source-canonical`)
+- Lion Fold Map local-first graph editor at `/` with synchronized semantic graph, exact JSON source, inspector, outline, search, and result views. (rule `graph-editor-is-the-repl`)
+- Lion moves from Effect 3 to Effect 4 (rule `effect-v4`)
+- classifies every supported special form from evaluator schemas (rule `analysis-uses-evaluator-schemas`)
+- Passing unit tests alone is not completion. (rule `completion-needs-browser-proof`)
+- Keep API credentials server-side in web apps. (rule `api-credentials-server-side`)
+- Every non-root node exposes its outgoing value handle, while connection targets appear only on ordered child containers so every completed connector represents a valid move. (rule `graph-connectors-valid-moves`)
+- collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views. (rule `graph-and-json-equally-authoritative` withdrawn)
+- reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression. (rule `no-persistent-text-editor-pane`)
+- Every accepted edit is one undoable document transaction. (rule `every-edit-one-transaction`)
+- **you MUST capture a screen recording** that demonstrates the delivered behavior working as intended. (rule `completion-proof-recording`)
+- The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy. (rule `crease-first-lightly-lifted`)
+- **The One Sheet Rule.** Editing, inspection, navigation, and evaluation remain within the canvas; do not reintroduce detached workbench panes. (rule `one-sheet-rule`)
+- Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. (rule `scoped-evaluation-expression-like-only`)
+- Do not commit proof into git. (rule `proof-not-in-git`)
+- Color supplements the existing icon silhouette, operation label, literal control, and invalid-state treatment; it never carries node identity alone. (rule `color-never-sole-cue`)
+- `@lionlang/cli` 0.6.0 bundles `@lionlang/core` 0.7.0, so `lion --database` keeps a database's schemas with its data, and the graph editor reads the `schema` form. (rule `cli-bundles-editor`)
 
 ## 2026-04-06 — @lionlang/core 0.1.1
 
 The same code as 0.1.0, published minutes later with the package's README and homepage, so that npm shows them.
 
-### Added
+### Documentation
 
-- The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev.
+- The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev. (`core-npm-readme-coverage` is `expression-model-special-forms-modules-host-interop`; `core-npm-readme` added)
+
+### Decided
+
+- The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev. (`core-homepage`: `lionlang-dev`)
 
 ## 2026-04-06 — @lionlang/core 0.1.0
 
 The first release of `@lionlang/core` on npm. There was no changelog yet: this section was written from the git history when the project record began.
 
+### Breaking
+
+- Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError` (`division-by-zero` is `error`)
+- Every function of the standard library takes a set number of arguments, and a call with any other number fails (`library-function-missing-arguments` is `error`, was `null`)
+- Every function of the standard library takes a set number of arguments, and a call with any other number fails: `"number/subtract" takes 2 arguments but got 3.` (`library-function-extra-arguments` is `error`, was `ignored`)
+
 ### Added
 
-- Lion, a Lisp whose programs are JSON. Numbers, booleans, and `null` are themselves; a string is the value its name is bound to, or else the string; an array is a special form or a call; and a record keeps its keys and evaluates its values. `run` from `@lionlang/core/evaluation/evaluate` evaluates a program in an environment, as an Effect. See [A Lion program is a JSON value, evaluated as it is, with no parser of its own](DECISIONS.md#json-programs), [An array is always a special form or a call, never a list that evaluates to itself](DECISIONS.md#arrays-are-never-data) and [The evaluator is written with Effect, and evaluating a program gives an Effect](DECISIONS.md#evaluate-with-effect).
-- The special forms `quote`, `eval`, `begin`, `define`, `lambda`, `cond`, and `match`. A lambda closes over the environment it is made in, and `match` takes a value apart with record patterns. See [Special forms keep plain names, such as `"define"`, with no prefix](DECISIONS.md#special-forms-plain-names), [Environments form a chain from local to global, and a lambda closes over the environment it is made in](DECISIONS.md#lexical-closures) and [A record pattern in `match` fits any record that has the pattern's keys with values that fit](DECISIONS.md#record-patterns-by-keys).
-- The standard library, named `module/function`: the `number`, `boolean`, `array`, `string`, `object`, `func`, `value`, and `console` modules. See [Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add`](DECISIONS.md#library-names-module-slash-name).
-- Host interop. An environment can bind any JavaScript value, object, class, or function, and `object/new`, `object/call-method`, `func/bind`, and `func/callback` work with them.
-- An interactive web REPL in `packages/repl`.
-- `packages/agent`, a coding agent written as a Lion program, `agent.json`, that drives a terminal interface and an AI model, with tools to read files and directories. See [The coding agent in `packages/agent` is a Lion program, `agent.json`, run by a small host file](DECISIONS.md#agent-as-lion-program).
-- lionlang.dev, a static site for Lion.
+- core/   evaluator, special forms, stdlib (`@lion/core` added)
+- "test": "bun test" (`bun-test` added)
+- export const evaluate = (environment: Record<string, LionValue>, expression: LionExpression): LionValue => { (`evaluate` added)
+- The special forms `quote`, `eval`, `begin`, `define`, `lambda`, `cond`, and `match`. A lambda closes over the environment it is made in, and `match` takes a value apart with record patterns. (`quote` added; `eval` added; `begin` added; `cond` added; `define` added; `match` added; `structural-record-patterns` added)
+- `run(program, environment)` checks any value against the schema of a Lion expression and then evaluates it. (`run` added)
+- Lion, a Lisp whose programs are JSON. Numbers, booleans, and `null` are themselves; a string is the value its name is bound to, or else the string; an array is a special form or a call; and a record keeps its keys and evaluates its values. `run` from `@lionlang/core/evaluation/evaluate` evaluates a program in an environment, as an Effect. (`@lionlang/core` added)
+- finished simple evaluation and evalation tests (`evaluate-tests` added)
+- every package moved to Effect `4.0.0-rc.115` (`effect` added)
+- export class LionEnvironment extends Context.Tag("LionEnvironment")< (`lion-environment-service` added)
+- repl/   interactive web REPL (`@lion/repl` added)
+- An interactive web REPL in `packages/repl`. (`@lionlang/repl` added; `repl-web-app` added)
+- "evaluate", (`repl-evaluate-command` added)
+- yield* terminal.display("Lion REPL v0.0.1\n"); (`terminal-repl` added)
+- "*": (...args: unknown[]) => (`*` added)
+- "+": (...args: unknown[]) => (`+` added)
+- "-": (...args: unknown[]) => (`-` added)
+- "/": (...args: unknown[]) => (`/` added)
+- "<": (a: unknown, b: unknown) => (`<` added)
+- "<=": (a: unknown, b: unknown) => (`<=` added)
+- `fact`, `retract`, `rule`, `query`, `why`, `not`, `and`, `or`, and `=` are special forms (`=` added; `and` added; `not` added; `or` added)
+- ">": (a: unknown, b: unknown) => (`>` added)
+- ">=": (a: unknown, b: unknown) => (`>=` added)
+- The standard library, named `module/function`: the `number`, `boolean`, `array`, `string`, `object`, `func`, `value`, and `console` modules. (`array` added; `boolean` added; `func` added; `number` added; `object` added)
+- `func/callback` and the `console` module with the input handler (`console` added; `func/callback` added)
+- ### `math` (`math` added)
+- new `string` and `value` modules joined `object`, `func`, and `console` (`string` added; `value` added)
+- if: (cond: unknown, then: unknown, else_: unknown) => (`if` added)
+- ### `logic` (`logic` added)
+- concat: (...args: unknown[]) => (`concat` added)
+- first: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.head)), (`first` added)
+- length: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.length)), (`length` added)
+- ### `list` (`list` added)
+- rest: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.tail)), (`rest` added)
+- describe("math", () => { (`math-module-tests` added)
+- added logic module tests (`logic-module-tests` added)
+- Tooling and tests for the repository: Effect's language service, the compiler settings, relative imports, and tests for the list module. (`effect-language-service` added; `list-module-tests` added; `root-tsconfig` added)
+- head: <T>(s: Schema.Schema<T>) => (`head` added)
+- tail: <T>(s: Schema.Schema<T>) => (`tail` added)
+- **Framework**: Vitest with @effect/vitest (`@effect/vitest` added)
+- get: (obj: unknown, key: unknown) => Effect.succeed((obj as Record<string, unknown>)[key as string]), (`get` added)
+- identity: (x: unknown) => Effect.succeed(x), (`identity` added)
+- keys: (obj: unknown) => Effect.succeed(Object.keys(obj as Record<string, unknown>)), (`keys` added)
+- values: (obj: unknown) => Effect.succeed(Object.values(obj as Record<string, unknown>)), (`values` added)
+- "test": "vitest run" (`vitest` added)
+- export class InvalidArgumentTypeError extends Data.TaggedError("InvalidArgumentTypeError")<{ (`InvalidArgumentTypeError` added)
+- export class TooFewArgumentsGivenError extends Data.TaggedError("TooFewArgumentsGivenError")<{ (`TooFewArgumentsGivenError` added)
+- export class TooFewArgumentsError extends Data.TaggedError("TooFewArgumentsError")<{ (`TooFewArgumentsError` added)
+- describe("evaluateFunctionCall", () => { (`form-tests` added)
+- "typecheck": "tsc --noEmit" (`typecheck` added)
+- added AGENTS.md (`agents-md` added)
+- export const ConsExprF = <A>() => Data.taggedEnum<ExpressionFunctor<A>>(); (`expression-functor` added)
+- Aggregates in rule heads. `["rule", ["spend", "?c", ["aggregate/sum", "?amount"]], ["order", "?_", "?c", "?amount"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card. (`aggregate` added)
+- `number/add` replaced `math/+`, `boolean/not` replaced `logic/not`, `array/make` replaced `list/list` (`array/make` added; `boolean/not` added; `number/add` added)
+- "command": "bun fix --skip=correctness/noUnusedImports", (`format-on-edit-hook` added)
+- Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `["graph/pageRank", "edge", "?node", "?rank"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card. (`graph` added)
+- a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again (`husky-pre-commit` added)
+- ### Resumable Evaluation (`resumable-evaluation-spec` added)
+- For hosts: `@lionlang/core/logic/fit` exports `fits`, `problemsOf`, `misfit`, and `matching`, and `@lionlang/core/modules/schema` holds the `schema` module. From `@lionlang/core/logic/terms`, `builtBy` records the call that built a function, so the function is written as that call, and `readsOnlyArguments` marks host functions that read nothing but their arguments. (`schema-module` added)
+- "test": "turbo test", (`turbo` added)
+- the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix` (`ultracite` added)
+- export class ContinuationNeededError extends Schema.TaggedError<ContinuationNeededError>( (`ContinuationNeededError` added)
+- export class OplogMismatchError extends Schema.TaggedError<OplogMismatchError>( (`OplogMismatchError` added)
+- continue fixing resumable evaluation (`resumable-evaluation` added)
+- primitive array expressions should evaluate to themselves (autoquote) (`list-auto-quote` added)
+- ["func/identity", 42]             // 42 (`func/identity` added)
+- ["list/concat", [1, 2], [3, 4]] (`list/concat` added)
+- <span class="code-string">"list/head"</span> (`list/head` added)
+- ["list/length", [1, 2, 3]] (`list/length` added)
+- ["list/list", 1, 2, 3]            // [1, 2, 3] (`list/list` added)
+- ["list/tail", [1, 2, 3]] (`list/tail` added)
+- ["logic/and", true, false] (`logic/and` added)
+- ["logic/if", true, "yes", "no"]    // "yes" (`logic/if` added)
+- ["logic/not", true] (`logic/not` added)
+- ["logic/or", false, true] (`logic/or` added)
+- ["math/*", 5, 4] (`math/*` added)
+- ["math/+", 1, 2]       // 3 (`math/+` added)
+- ["math/-", 10, 3] (`math/-` added)
+- ["math//", 20, 4] (`math//` added)
+- ["math/<", 3, 5] (`math/<` added)
+- ["math/<=", 3, 5] (`math/<=` added)
+- ["math/=", 5, 5] (`math/=` added)
+- <span class="code-string">"math/>"</span> (`math/>` added)
+- ["math/>=", 5, 5] (`math/>=` added)
+- ["object/get", {"a": 1}, "a"] (`object/get` added)
+- ["object/keys", {"a": 1, "b": 2}] (`object/keys` added)
+- ["object/values", {"a": 1, "b": 2}] (`object/values` added)
+- adds README.md, run() simplification (`readme` added)
+- "build": "tsdown" (`tsdown` added)
+- `packages/agent`, a coding agent written as a Lion program, `agent.json`, that drives a terminal interface and an AI model, with tools to read files and directories. (`@lionlang/agent` added; `agent-llm` added; `coding-agent` added)
+- "build": "turbo build" (`turbo-build` added)
+- On April 5, 2026, the agent could edit files, and its commit calls that dogfooding. (`agent-dogfooding` added)
+- Two days later it moved into its own file, `packages/agent/src/agent.json` (`agent-json` added)
+- the tools to read files, list directories, and edit files are Lion code (`edit-file` added; `read-directory` added; `read-file` added)
+- `lambda` and `object/new` came with the message box (`lambda` added; `object/new` added)
+- const program = [["object/access", "obj", "fn"], 1, 2]; (`object/access` added)
+- adds input handler to agent (`agent-input-handler` added)
+- ["console/log", "hello"] (`console/log` added)
+- Host interop. An environment can bind any JavaScript value, object, class, or function, and `object/new`, `object/call-method`, `func/bind`, and `func/callback` work with them. (`func/bind` added; `host-interop` added; `object/call-method` added)
+- describe("func/js-bind", () => { (`func/js-bind` added)
+- return yield* new ArgumentMismatchError(); (`ArgumentMismatchError` added)
+- implements functional message appending in messages box in agent (`agent-message-appending` added)
+- class EmptyPathError extends Schema.TaggedError<EmptyPathError>( (`EmptyPathError` added)
+- class KeyNotFoundError extends Schema.TaggedError<KeyNotFoundError>( (`KeyNotFoundError` added)
+- class MethodNotFoundError extends Schema.TaggedError<MethodNotFoundError>( (`MethodNotFoundError` added)
+- class NotAConstructorError extends Schema.TaggedError<NotAConstructorError>( (`NotAConstructorError` added)
+- class NotAFunctionError extends Schema.TaggedError<NotAFunctionError>( (`NotAFunctionError` added)
+- class NotAnObjectError extends Schema.TaggedError<NotAnObjectError>( (`NotAnObjectError` added)
+- class PathTraversalError extends Schema.TaggedError<PathTraversalError>( (`PathTraversalError` added)
+- ["object/call-method-path", "obj", "nested.methodName", 1, 2] (`object/call-method-path` added)
+- ["object/get-method", "obj", "methodName"] (`object/get-method` added)
+- ["object/get-method-path", "obj", "nested.methodName"] (`object/get-method-path` added)
+- ["object/get-path", {"a": {"b": {"c": 42}}}, "a.b.c"] (`object/get-path` added)
+- an array whose first value is not a function fails with `InvalidFunctionCallError` (`InvalidFunctionCallError` added)
+- "name": "@lionlang/examples", (`@lionlang/examples` added)
+- implements basic fizzbuzz example (`fizzbuzz-example` added)
+- class IndexOutOfBoundsError extends Schema.TaggedError<IndexOutOfBoundsError>( (`IndexOutOfBoundsError` added)
+- class NotAnArrayError extends Schema.TaggedError<NotAnArrayError>( (`NotAnArrayError` added)
+- finishes read-file tool in agent.json (`agent-read-file-tool` added)
+- ["console/log-json", {"hello": "world"}] (`console/log-json` added)
+- ["object/json-stringify", {"a": 1}, null, 2] (`object/json-stringify` added)
+- implements list/map function (`list/map` added)
+- implements list/reduce function (`list/reduce` added)
+- ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]] (`array/concat` added)
+- ["array/head", ["array/make", 1, 2, 3]] (`array/head` added)
+- ["array/includes?", ["array/make", 1, 2, 3], 2] (`array/includes?` added)
+- ["array/length", ["array/make", 1, 2, 3]] (`array/length` added)
+- ["array/map", ["array/make", 1, 2, 3], ["lambda", ["x"], ["number/add", "x", 1]]] (`array/map` added)
+- ["array/reduce", ["array/make", 1, 2, 3], 0, ["lambda", ["acc", "x"], ["number/add", "acc", "x"]]] (`array/reduce` added)
+- ["array/tail", ["array/make", 1, 2, 3]] (`array/tail` added)
+- ["boolean/and", true, false] (`boolean/and` added)
+- ["boolean/equals?", true, true] (`boolean/equals?` added)
+- ["boolean/nand", true, true] (`boolean/nand` added)
+- ["boolean/nor", false, false] (`boolean/nor` added)
+- ["boolean/or", false, true] (`boolean/or` added)
+- ["boolean/xor", true, false] (`boolean/xor` added)
+- `func/partial` was added to build such predicates (`func/partial` added)
+- ["number/equals?", 5, 5] (`number/equals?` added)
+- ["number/multiply", 5, 4] (`number/multiply` added)
+- ["number/subtract", 10, 3] (`number/subtract` added)
+- ["value/identity", 42] (`value/identity` added)
+- ["value/number?", 1] (`value/number?` added)
+- ["value/string?", "lion"] (`value/string?` added)
+- ["array/flat-map", ["array/make", 1, 2], ["lambda", ["x"], ["array/make", "x", "x"]]] (`array/flat-map` added)
+- name: debug-mode (`debug-mode` added)
+- .agents/skills/debug-mode/scripts/cli.js (`debug-mode-cli-bundle` added)
+- agent/  real-world Lion program driving an OpenTUI + AI agent (`@lion/agent` added)
+- return yield* new InvalidPathError({ path }); (`InvalidPathError` added)
+- ["func/apply", "fn", "obj", 1, 2] (`func/apply` added)
+- Runnable examples for the current Lion evaluator and stdlib. (`@lion/examples` added)
+- ["number/divide", 20, 4] (`number/divide` added)
+- ["number/greaterThan", 5, 3] (`number/greaterThan` added)
+- ["number/greaterThanOrEqualTo", 5, 5] (`number/greaterThanOrEqualTo` added)
+- ["number/lessThan", 3, 5] (`number/lessThan` added)
+- ["number/lessThanOrEqualTo", 3, 5] (`number/lessThanOrEqualTo` added)
+- ["string/concat", "lion", "ized"] (`string/concat` added)
+- ["string/endsWith", "lion", "on"] (`string/endsWith` added)
+- ["string/equals?", "a", "a"] (`string/equals?` added)
+- ["string/includes", "lion", "io"] (`string/includes` added)
+- ["string/indexOf", "lion", "o"] (`string/indexOf` added)
+- ["string/length", "lion"] (`string/length` added)
+- ["string/startsWith", "lion", "li"] (`string/startsWith` added)
+- ["value/array?", ["array/make", 1, 2]] (`value/array?` added)
+- ["value/boolean?", true] (`value/boolean?` added)
+- ["value/function?", "x"] (`value/function?` added)
+- ["value/null?", null] (`value/null?` added)
+- ["value/object?", {"a": 1}] (`value/object?` added)
+- `value/undefined?` and `value/symbol?` are mainly useful when Lion is evaluating host values supplied through the environment. (`value/symbol?` added; `value/undefined?` added)
+
+### Removed
+
+- const command = Command.make( (`repl-evaluate-command` removed)
+- first: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.head)), (`first` removed)
+- rest: flow(Schema.decodeUnknown(Schema.Array(Schema.Unknown)), Effect.map(Array.tail)), (`rest` removed)
+- "test": "bun test" (`bun-test` removed)
+- export class TooFewArgumentsGivenError extends Data.TaggedError("TooFewArgumentsGivenError")<{ (`TooFewArgumentsGivenError` removed)
+- export class InvalidArgumentTypeError extends Data.TaggedError("InvalidArgumentTypeError")<{ (`InvalidArgumentTypeError` removed)
+- export class TooFewArgumentsError extends Data.TaggedError("TooFewArgumentsError")<{ (`TooFewArgumentsError` removed)
+- describe("evaluate", () => { (`evaluate-tests` removed)
+- yield* terminal.display("Lion REPL v0.0.1\n"); (`terminal-repl` removed)
+- `number/add` replaced `math/+`, `boolean/not` replaced `logic/not`, `array/make` replaced `list/list` (`list/list` removed; `logic/not` removed; `math/+` removed)
+- `logic/if` was not carried over; the `cond` form, added the day before, chooses between branches (`logic/if` removed)
+- export type ExprF<A> = Data.TaggedEnum<{ (`expression-functor` removed)
+- The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted (`ContinuationNeededError` removed; `OplogMismatchError` removed)
+- Resumability was removed on March 27, 2026 (`resumable-evaluation` removed)
+- The spec was deleted the same day (`resumable-evaluation-spec` removed)
+- updates func/js-bind to func/bind (`func/js-bind` removed)
+- class ObjectError extends Schema.TaggedError<ObjectError>("ObjectError")( (`ObjectError` removed)
+- access: flow( (`object/access` removed)
+- The auto-quoting of lists was removed. (`list-auto-quote` removed)
+- const result = yield* run("func/identity", stdlib); (`func/identity` removed)
+- "./modules/list": "./dist/modules/list.mjs", (`list` removed; `list/reduce` removed)
+- "./modules/logic": "./dist/modules/logic.mjs", (`logic` removed)
+- "./modules/math": "./dist/modules/math.mjs", (`math` removed)
+- expect(yield* run(["math/*", a, b], stdlib)).toBe(a * b); (`math/*` removed)
+- expect(yield* run(["math/-", a, b], stdlib)).toBe(a - b); (`math/-` removed)
+- "name": "@lion/agent", (`@lion/agent` removed)
+- "name": "@lion/core", (`@lion/core` removed)
+- "name": "@lion/examples", (`@lion/examples` removed)
+- "name": "@lion/repl", (`@lion/repl` removed)
+
+### Changed
+
+- when the first value is a function it is called with the others (`array-first-element-function` is `function-call`)
+- Otherwise, the expression evaluates each of its elements and returns the resulting array: (`array-first-element-not-function` is `evaluated-elements`)
+- `"x"` is `10` where `x` is bound to `10` and the text `"x"` everywhere else (`bound-string` is `bound-value`; `unbound-string` is `itself`)
+- its elements are evaluated, and when the first value is a function it is called with the others (`call-argument-evaluation` is `before-call`)
+- Numbers, booleans, and `null` are themselves. (`non-string-primitive` is `itself`)
+- Lion has no reader and no syntax of its own: `JSON.parse` reads a program (`program-reader` is `json-parse`)
+- Returns its argument without evaluating it. (`quote-argument` is `not-evaluated`)
+- A record keeps its keys and evaluates each of its values. (`record-expression` is `values-evaluated`; `record-expression-keys` is `preserved`)
+- `run(program, environment)` checks any value against the schema of a Lion expression and then evaluates it. (`run-input-validation` is `lion-expression-schema`)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`empty-array` is `itself`)
+- Evaluates its argument, then evaluates the result. (`eval-argument` is `evaluated-twice`)
+- should return a curried function when called with no arguments (`eval-no-arguments` is `function`; `quote-no-arguments` is `function`)
+- expect(result).toBeInstanceOf(ParseError); (`eval-non-expression` is `error`)
+- `run` returns an Effect 4 `Effect` (`evaluate-result` is `effect`)
+- should support passing functions as arguments (`function-as-argument` is `allowed`)
+- // Functions are valid LionValues but not valid LionExpressions (`function-as-expression` is `invalid`)
+- const LionFunctionSchema = Schema.declare((input: unknown): input is (...args: unknown[]) => unknown => { (`function-as-value` is `valid`)
+- should support functions that return functions (`function-returning-function` is `allowed`)
+- should throw when function returns invalid value (`host-function-returns-undefined` is `error`)
+- expect(runEvaluate(stdlib, [1, ["+", 1, 2], 3])).toEqual([1, 3, 3]); (`non-call-array-elements` is `evaluated`, was `not-evaluated`)
+- The environment is a service the evaluation reads from its context, holding a `Ref` of the bindings. (`evaluate-environment` is `effect-service`)
+- A host function may return a plain value or an Effect, and a call wraps a plain value. (`host-function-non-effect-return` is `auto-wrapped`; `host-function-returns-plain-value` is `value`)
+- Match.when(String.isString, (a) => Effect.succeed(a)), (`bound-string` is `itself`)
+- expect(runEvaluate(stdlib, [1, ["+", 1, 2], 3])).toEqual([1, [["+", 1, 2], 3]]); (`non-call-array-elements` is `not-evaluated`, was `evaluated`)
+- expect(runEvaluate({}, [1, 2, 3])).toEqual([1, [2, 3]]); (`array-first-element-not-function` is `head-tail-pair`, was `evaluated-elements`)
+- expect(runEvaluate({}, ["a", "b", "c"])).toBe("a"); (`array-first-element-unbound-string` is `first-element`, was `evaluated-elements`)
+- Invalid eval expression: eval requires exactly one argument (`eval-no-arguments` is `error`)
+- "+": (...args: unknown[]) => succeed((args as number[]).reduce((a, b) => a + b, 0)), (`host-function-result` is `effect`)
+- expect(runEvaluate(env, ["badFn"])).toBeUndefined(); (`host-function-returns-undefined` is `undefined`, was `error`)
+- expect(result).toBeInstanceOf(TooFewArgumentsGivenError); (`quote-no-arguments` is `error`)
+- "type": "module", (`core-package-module-type` is `esm`)
+- expect(result).toEqual(["not-a-function", 2, 1, 2]); (`array-first-element-unbound-string` is `evaluated-elements`)
+- const result = yield* evaluate(JSON.parse(content)); (`repl-evaluate-command-input` is `json-file`)
+- Effect.provideServiceEffect(LionEnvironment, Ref.make({})), (`repl-initial-environment` is `empty`)
+- yield* terminal.display("Type 'exit' to exit\n"); (`repl-exit-input` is `exits`)
+- const result = yield* evaluate(JSON.parse(totalInput)); (`repl-input` is `json`)
+- yield* terminal.display(`=> ${JSON.stringify(result, null, 2)}\n`); (`repl-result-display` is `pretty-json`)
+- Match.when(Schema.is(Schema.Array(Schema.Number)), Effect.reduce(0, divide)), (`divide-result` is `zero`)
+- Equality comparison requires at least two arguments (`equals-fewer-than-two-arguments` is `error`)
+- Match.when(Schema.is(Schema.Array(Schema.Number)), Effect.reduce(0, multiply)), (`multiply-result` is `zero`)
+- const aNumber = yield* Schema.decodeUnknown(Schema.Number)(a); (`number-function-non-number-argument` is `error`)
+- Match.when(Schema.is(Schema.Array(Schema.Number)), Effect.reduce(0, subtract)), (`subtract-result` is `negated-sum`)
+- const booleans = yield* Schema.decodeUnknown(Schema.Array(Schema.Boolean))(args); (`and-non-boolean-argument` is `error`)
+- Schema.decodeUnknown(Schema.mutable(Schema.Tuple(Schema.Boolean, Schema.Any, Schema.Any))), (`if-non-boolean-condition` is `error`, was `truthy`)
+- const aBoolean = yield* Schema.decodeUnknown(Schema.Boolean)(a); (`not-non-boolean-argument` is `error`)
+- should divide two numbers (`divide-result` is `quotient`)
+- (a: unknown, b: unknown) => [a, b], (`library-function-extra-arguments` is `ignored`)
+- should multiply two numbers (`multiply-result` is `product`)
+- should subtract two numbers (`subtract-result` is `difference`)
+- if: (cond: unknown, then: unknown, else_: unknown) => Effect.succeed(cond ? then : else_), (`if-non-boolean-condition` is `truthy`, was `error`)
+- expect(Effect.runSync(list.head(Schema.Number)([12, 34, 56]))).toEqual(Option.some(12)); (`array-head-result` is `option`)
+- expect(Effect.runSync(list.tail(Schema.Number)([12, 34, 56]))).toEqual(Option.some([34, 56])); (`array-tail-result` is `option`)
+- head: <T>(s: Schema.Schema<T>) => (`list-function-element-schema-argument` is `required`)
+- Tooling and tests for the repository: Effect's language service, the compiler settings, relative imports, and tests for the list module. (`relative-import-extension` is `ts`)
+- Effect.map(Option.getOrThrow) (`array-head-empty-list` is `error`; `array-tail-empty-list` is `error`)
+- expect(Effect.runSync(list.head([12, 34, 56]))).toEqual(12); (`array-head-result` is `element`, was `option`)
+- expect(Effect.runSync(list.tail([12, 34, 56]))).toEqual([34, 56]); (`array-tail-result` is `list`, was `option`)
+- export type EvaluateResult = Effect.Effect<unknown, EvaluateError, LionEnvironment>; (`evaluate-result-type` is `unknown`)
+- converts LionFunctionValueType to ...args: unknown[] (`host-function-parameter-type` is `unknown`)
+- Schema.decodeUnknown(Schema.Array(Schema.Any)), (`list-function-element-schema-argument` is `not-required`, was `required`)
+- Match.orElse(flow(Array.map(evaluate), Effect.all)) (`array-first-element-not-string` is `evaluated-elements`)
+- "exactOptionalPropertyTypes": true, (`tsconfig-exact-optional-property-types` is `true`)
+- "module": "NodeNext", (`tsconfig-module` is `nodenext`)
+- combine one or more arguments from left to right, as their Scheme counterparts do (`add-more-than-two-arguments` is `sum`)
+- Effect.map(Array.reduce(0, add)) (`add-no-arguments` is `zero`)
+- export * from "./src/modules/math.ts"; (`core-exports-library-modules` is `exported`)
+- Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error("Key not found")))) (`object-get-missing-key` is `error`, was `undefined`)
+- Schema.decodeUnknown(Schema.Record({ key: Schema.String, value: Schema.Unknown })), (`object-keys-non-object` is `error`)
+- A program that wants shorter names binds them itself, as the agent does with `["define", "[]", "array/make"]` (`library-function-bound-to-short-name` is `allowed`)
+- "./modules": "./src/modules/index.ts", (`core-package-entry` is `subpath-exports`)
+- should continue evaluation, reusing the existing value from the operation_completed entry for impure functions that were already completed (`host-function-call-completed-in-oplog` is `result-from-oplog`)
+- should pause evaluation, inserting an operation_started entry for impure functions that haven't been started (`host-function-call-without-oplog-entry` is `paused`)
+- : new OplogMismatchError({ (`oplog-entry-mismatch` is `error`)
+- arguments: Arr.tailNonEmpty(impureFunctionCallExpression), // fixme: evaluate the arguments (`oplog-started-arguments` is `unevaluated`)
+- const pureFunctions = HashSet.make(); (`stdlib-function-call-oplog` is `logged`)
+- primitive array expressions should evaluate to themselves (autoquote) (`array-of-primitives` is `itself`)
+- an eval expression should evaluate to the same result as calling evaluate() on its argument (`eval-in-empty-environment` is `same-as-argument`)
+- expect(impureFunction).not.toHaveBeenCalled(); (`host-function-called-when-paused` is `not-called`)
+- expression: FunctionCallFormSchema, (`oplog-entry-content` is `call-expression`, was `operation-name-and-arguments`)
+- Data.array(opCompleted.expression), (`oplog-entry-match` is `structural-equality`, was `reference-equality`)
+- should evaluate pure function calls by applying the function to the arguments (`stdlib-function-call` is `applied`)
+- should ignore oplog for pure functions (`stdlib-function-call-oplog` is `ignored`, was `logged`)
+- Lion has no way to stop a program at a host call and continue it later (`host-call-pause-and-resume` is `unsupported`)
+- A host function is called once, when evaluation reaches it, and its result is not recorded anywhere (`host-function-call-count` is `once`; `host-function-result-recorded` is `never`)
+- a call to a host function calls it (`host-function-call-without-oplog-entry` is `called`, was `paused`)
+- Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number)) (`add-more-than-two-arguments` is `error`, was `sum`)
+- `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` combine one or more arguments, as `+`, `*`, `min`, `max`, `string-append`, and `append` do in Scheme. `["number/add", 1, 2, 3]` is `6`, where the `3` used to be dropped, and `["string/concat", "lion", "-", "ized", "!"]` is `"lion-ized!"`. They work from left to right, so three arguments give what two nested calls give. With one argument they give it back. (`add-no-arguments` is `error`)
+- Host interop. An environment can bind any JavaScript value, object, class, or function, and `object/new`, `object/call-method`, `func/bind`, and `func/callback` work with them. (`host-function-in-environment` is `callable`)
+- Effect.map(Option.getOrElse(() => [])) (`begin-empty` is `empty-array`)
+- should evaluate the arguments in order and return the last result (`begin-result` is `last-value`)
+- should return a function as a value (`library-function-name-alone` is `function-value`)
+- // should be stored in the environment (`define-binding` is `stored-in-environment`)
+- Schema.minLength(1) (`define-empty-name` is `rejected`; `record-empty-key` is `invalid`)
+- Evaluates a value, stores it in the global environment, and returns the stored value. (`define-result` is `value`)
+- `define` and `lambda` refuse a form's name as a name to bind (`define-special-form-name` is `rejected`; `lambda-special-form-name-parameter` is `rejected`)
+- the innermost body sees all three parameters (`lambda-free-variable` is `enclosing-scope`)
+- return Effect.runPromise( (`callback-effect-result` is `promise`)
+- Console.log(message).pipe(Effect.map(() => message)), (`console-log-result` is `message`)
+- if (typeof fn !== "function") { (`func-callback-non-function` is `returns-value`)
+- should evaluate to a function that can be called with the given arguments (`lambda-call` is `applied`)
+- const environment = yield* Ref.get(environmentRef); (`lambda-environment` is `copy-at-creation`)
+- should evaluate to a function, calling the function with incorrect arguments should produce an error (`lambda-extra-arguments` is `error`)
+- A call must give a lambda at least as many arguments as it has parameters. (`lambda-missing-arguments` is `error`)
+- if (typeof classRef !== "function") { (`object-new-non-function` is `error`)
+- Schema.Literal("/define"), (`special-form-without-slash` is `not-special-form`, was `special-form`)
+- return method.bind(obj); (`object-get-method-result` is `bound-method`)
+- should return undefined for missing keys (`object-get-missing-key` is `undefined`, was `error`)
+- should fail with NotAnObjectError when obj is not an object (`object-get-non-object` is `error`)
+- should fail with KeyNotFoundError when key does not exist (`object-get-path-missing-key` is `error`)
+- should fail with PathTraversalError when intermediate value is not an object (`object-get-path-through-non-object` is `error`)
+- an array whose first value is not a function fails with `InvalidFunctionCallError` (`array-first-element-not-function` is `error`, was `evaluated-elements`; `array-first-element-not-string` is `error`, was `evaluated-elements`)
+- A call of a misspelled or unbound name fails where it is written, instead of becoming a list that travels on through the program. (`array-first-element-unbound-string` is `error`, was `evaluated-elements`)
+- The property test that every array of primitives evaluates to itself was deleted (`array-of-primitives` is `error`, was `itself`)
+- // TODO: FIXME: lambda breaks global environment (code inside lambda does not have access to global environment) (`lambda-body-global-environment` is `inaccessible`)
+- const DISALLOWED_KEYS = ["__proto__"] as const; (`record-proto-key` is `invalid`)
+- The forms read as their counterparts in Scheme and Racket do (`special-form-without-slash` is `special-form`)
+- // - list/map or recursion utilities for iteration (`map-function` is `missing`)
+- // - math/% (modulo operator) for divisibility checks (`modulo-function` is `missing`)
+- // - list/range (to generate numbers 1-100) (`range-function` is `missing`)
+- .catch((e) => console.error(e)); (`callback-effect-failure` is `logged`)
+- should access array elements using numeric keys (`object-get-path-array-index` is `element`)
+- should fail with IndexOutOfBoundsError for out of bounds array index (`object-get-path-index-out-of-bounds` is `error`)
+- should handle negative array indices as object keys (not array access) (`object-get-path-negative-index` is `object-key`)
+- A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback. (`lambda-extra-arguments` is `ignored`)
+- should map a list (via run()) (`list-map` is `applies-function`)
+- implements list/map function (`map-function` is `present`, was `missing`)
+- ["lambda", ["acc", "x"], ["math/+", "acc", "x"]], (`reduce-callback-parameter-order` is `accumulator-then-item`)
+- list.reduce([1, 2, 3, 4], 0, (acc: number, x: number) => (`reduce-parameter-order` is `list-initial-function`)
+- should not continue evaluating the condition expressions after the first true case (`cond-conditions-after-first-true` is `not-evaluated`)
+- An `else` branch is optional. (`cond-else-clause` is `optional`)
+- should not evaluate the result body of false cases (`cond-false-clause-result` is `not-evaluated`)
+- Evaluates condition/result pairs in order and returns the first matching result. (`cond-first-true-clause` is `returned`)
+- should not evaluate the result body of more than one true case (`cond-later-true-clause-results` is `not-evaluated`)
+- If no branch matches and no `else` is provided, `cond` returns `null`. (`cond-no-match-no-else` is `null`)
+- "agent-response-log.json", (`agent-response-log` is `written-to-file`, was `logged-to-console`; `agent-response-log` is `not-written`, was `written-to-file`)
+- The last argument is a fallback function. (`match-fallback` is `required`)
+- called the function of the first predicate that returned `true` for the value (`match-first-matching-pattern` is `applied`)
+- should apply ONLY the first pattern that matches (`match-later-matching-patterns` is `not-applied`)
+- should apply the fallback function if no pattern matches (`match-no-pattern-matches` is `fallback-applied`)
+- should accept arbitrary predicates as pattern matchers (`match-pattern-predicate` is `any-function`)
+- A predicate that fails or does not return a boolean does not fit (`match-predicate-error` is `no-match`; `match-predicate-non-boolean-result` is `no-match`)
+- keys the pattern does not name are ignored (`match-record-pattern-extra-keys` is `fit`)
+- It fits a value that is a record, has every key of the pattern, and has at each of those keys a value that fits the pattern there (`match-record-pattern-missing-key` is `no-fit`; `match-record-pattern-non-record` is `no-fit`; `match-record-pattern-value-mismatch` is `no-fit`)
+- record patterns nest (`match-record-pattern-nested` is `fit`)
+- ["string/equals?", [".", "c", "type"], "text"] (`agent-response-step-rendering` is `by-content-type`)
+- should evaluate the value expression before applying the patterns (`match-value-expression` is `evaluated`, was `not-evaluated`)
+- "Tool Result", (`agent-tool-result-display` is `shown`)
+- calling it is calling that function with the first arguments filled in, so made from a relation, it builds goals. (`func-partial-argument-order` is `bound-arguments-first`)
+- `define` binds in the global environment, also inside a lambda (`define-inside-lambda` is `global`)
+- a callback that host code runs later can still set a global name (`host-callback-define` is `global`)
+- Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment (`lambda-body-global-environment` is `accessible`, was `inaccessible`)
+- A lambda sees a global defined after it was made (`lambda-global-defined-after-creation` is `visible`)
+- so it can call itself by the name it is defined under (`lambda-recursion-by-defined-name` is `allowed`)
+- A name is looked up from the innermost environment outward (`name-lookup-local-miss` is `parent-environment`)
+- Maintains conversation context for multi-turn interactions (`agent-conversation-history` is `kept`)
+- clears input after message sent (`agent-input-after-send` is `cleared`)
+- implements handling for non-string tool results (`agent-non-string-tool-result` is `json-stringified`)
+- "stopWhen": ["()", "AI", "stepCountIs", 8], (`agent-steps-per-message` is `at-most-8`)
+- ).catch((e) => console.error(e)); (`func-callback-effect-failure` is `rejects`, was `logged`)
+- The edit tool enforces exactly one match for replacements to prevent accidental changes (`agent-edit-file-match-count-not-one` is `error`)
+- throw e; (`func-callback-effect-failure` is `logged-and-rethrown`, was `rejects`)
+- // FIXME: technically any value can have a method through its prototype chain (`object-call-method-on-primitive` is `allowed`, was `not-an-object-error`)
+- return yield* new InvalidPathError({ path }); (`object-get-path-non-string-path` is `error`)
+- Objects preserve their keys and evaluate each value. (`record-expression-values` is `evaluated`)
+- Evaluates expressions in order and returns the last result. (`begin-result` is `last-expression`)
+- `func/callback` is especially useful for turning Lion lambdas into JavaScript callbacks while preserving access to the Lion environment. (`func-callback-environment` is `preserved`)
+- Lambdas close over surrounding scope, and they observe updated global bindings when invoked later. (`lambda-global-rebound-after-creation` is `updated-value`)
+- `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`. (`object-get-path-numeric-segment` is `array-index`)
+- should fail with NotAFunctionError when target is not a function (`object-call-method-primitive-missing-method` is `not-a-function-error`, was `not-an-object-error`)
+
+### Documentation
+
+- lionlang.dev, a static site for Lion. (`marketing-site` added)
+
+### Decided
+
+- A program is a JSON value, and the evaluator takes that value as it is. (`program-representation`: `json-value` over `own-reader`)
+- Errors are tagged values, such as `InvalidFunctionCallError`, that a host catches by tag. (`evaluation-error-representation`: `tagged-errors` over `thrown-exceptions`, was `parse-error`)
+- In December 2025 the evaluator was rewritten with Effect. (`evaluation-library`: `effect` over `plain-typescript`)
+- `Match` dispatches on the kind of expression (`evaluator-design`: `match-dispatch`)
+- `run(program, environment)` decodes the program, evaluates it, and provides the environment. (`host-entry-point`: `run`)
+- yield* terminal.display("Lion REPL v0.0.1\n"); (`repl-surface`: `terminal-repl` over `file-command`)
+- Schema.mutable(Schema.Tuple(Schema.Number, Schema.Number)) (`library-function-arity`: `two-arguments` over `variadic`)
+- introduces temporary solution to typing (via unknown) (`evaluate-result-type`: `unknown` over `lion-value-type`)
+- The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (`test-runner`: `vitest`)
+- breaks every form case out into its own testable unit (`evaluator-structure`: `unit-per-form` over `single-evaluate-module`)
+- export type EvaluateResult = Effect.Effect<unknown, ParseError, LionEnvironment>; (`evaluation-error-representation`: `parse-error` over `tagged-errors`)
+- export const EvalFormSchema = Schema.Tuple(Schema.Literal("eval"), LionExpressionSchema); (`special-form-dispatch`: `form-schemas` over `head-name-match`)
+- Schema.decodeUnknown(Schema.Array(Schema.Number)), (`library-function-arity`: `variadic` over `two-arguments`)
+- Effect.flatMap(Option.getOrElse(() => Effect.fail(new Error("Key not found")))) (`object-get-missing-key`: `error` over `undefined`)
+- fix: implements repl web app (`repl-surface`: `web-app` over `terminal`)
+- moved tests into dedicated folders (`test-location`: `tests-folder` over `colocated`)
+- Implement a function evaluate() which takes in an oplog (Operation Log). (`evaluation-runtime`: `resumable-oplog`)
+- All operations passed into the environment are considered effectful by default. (`host-operation-effectfulness`: `effectful-by-default`)
+- Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (`library-function-names`: `module-slash-name` over `bare-names`)
+- On April 2, 2026, the modules were renamed for the kind of value they work on, and their functions were named in words (`library-module-organization`: `value-kind-modules` over `math-logic-list-modules`)
+- the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix` (`lint-format-tool`: `ultracite` over `per-package-biome`)
+- "packageManager": "bun@1.3.11" (`package-manager`: `bun`)
+- export class EvaluationPaused extends Schema.TaggedClass<EvaluationPaused>( (`evaluation-pause-signal`: `error` over `result-value`)
+- Lion's tests are property-based, checked against a model, a round trip, or an equivalence (`test-style`: `property-based` over `example-based`)
+- more functionalization of environment.ts (`effect-code-style`: `pipe` over `effect-gen`)
+- Evaluation runs to its end in one pass, and does not pause at host calls to resume from a log (`evaluation-runtime`: `run-to-completion` over `resumable-oplog`, was `resumable-oplog`)
+- "license": "MIT", (`core-package-visibility`: `public` over `private`)
+- Two days later it moved into its own file, `packages/agent/src/agent.json` (`agent-program-format`: `json-file` over `inline-typescript`)
+- The program names its own shorthands with `define`, such as `["define", "()", "object/call-method"]` and `["define", "[]", "array/make"]`, rather than the language growing syntax for them (`agent-shorthand-syntax`: `define-in-program` over `language-syntax`)
+- updates func/js-bind to func/bind (`bind-function-name`: `func/bind` over `func/js-bind`)
+- Every special form took a leading slash (`special-form-prefix`: `slash` over `plain`)
+- should return undefined for missing keys (`object-get-missing-key`: `undefined` over `error`)
+- access: flow( (`property-access-function`: `object/get` over `object/access`)
+- an array whose first value is not a function fails with `InvalidFunctionCallError` (`array-without-function-head`: `error` over `list-of-evaluated-elements`)
+- Special forms went back to plain names (`special-form-prefix`: `plain` over `slash`, was `slash`)
+- A lambda still ignores arguments past its parameters, as in JavaScript, so host code can call it as a callback. (`lambda-arity`: `extra-arguments-ignored`)
+- A record pattern in `match` fits any record that has the pattern's keys with values that fit (`record-pattern-keys`: `pattern-keys-only`)
+- move shared lib into lib folder (`library-helpers-location`: `modules-lib-folder` over `modules-folder`)
+- the same morning, each environment's bindings moved into a `Ref` that every closure over it shares (`closure-environment-implementation`: `shared-mutable-frames` over `copy-and-sync-global`)
+- Environments form a chain from local to global, and a lambda closes over the environment it is made in (`lambda-closure-environment`: `enclosing-environment` over `copy-of-bindings`)
+- Released under the MIT License. (`license`: `mit`)
+- lionlang.dev (`site-domain`: `lionlang-dev`)
+- "access": "public" (`core-npm-access`: `public`)
+- "name": "@lionlang/core", (`package-scope`: `lionlang` over `lion`)
+- conflicts resolved (`docs-rebase-conflicts`: `resolved`)
+
+### Rules
+
+- // Array-based expressions are evaluated like function calls (rule `array-expressions-are-calls`)
+- A Lion program is a JSON value, evaluated as it is, with no parser of its own (rule `json-programs`)
+- In Lion a string is a name before it is a string: a bound name evaluates to its value, and an unbound one to itself (rule `strings-are-references`)
+- // The default is applicative-order evaluation: evaluate all arguments first before calling the function (rule `applicative-order`)
+- An array is always a special form or a call, never a list that evaluates to itself (rule `arrays-are-never-data`)
+- // Automatic currying (rule `automatic-currying`)
+- The evaluator is written with Effect, and evaluating a program gives an Effect (rule `evaluate-with-effect`)
+- Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity` (rule `values-are-json`)
+- Library functions are named `module/name`, with modules named for the kind of value they work on, such as `number/add` (rule `library-names-module-slash-name`)
+- breaks every form case out into its own testable unit (rule `unit-per-form`)
+- moved tests into dedicated folders (rule `tests-in-tests-folders`)
+- **Indentation**: Tabs (not spaces) (rule `biome-formatting`)
+- Use conventional commit format when possible (rule `conventional-commits`)
+- 1. **Before coding**: Run `npm install` and `npm run prepare` (rule `dev-commands-npm`)
+- it("should perform operation", () => { (rule `example-based-tests`)
+- Every commit runs the tests and the formatter, and CI checks every pull request and push to `main` (rule `quality-gates`)
+- **Framework**: Vitest with @effect/vitest (rule `tests-use-vitest-effect`)
+- Update this AGENTS.md if development practices change (rule `update-agents-md`)
+- Validate all inputs using Effect Schemas (rule `validate-inputs-with-schemas`)
+- There can only be EXACTLY one operation_completed entry for a given operation_started entry (rule `one-completion-per-operation`)
+- When continuing an evaluation, all non-effectful expressions are re-evaluated, all effectful operations are hydrated from the oplog. (rule `resumable-evaluation`)
+- New behavior gets property-based tests, not tests with fixed example inputs (rule `property-based-tests`)
+- a call to a host function calls it (rule `no-resumable-evaluation`)
+- The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted (rule `one-completion-per-operation` withdrawn)
+- Resumability was removed on March 27, 2026 (rule `resumable-evaluation` withdrawn)
+- Lion is a homoiconic programming language where all code is valid JSON, and all JSON is valid code. (rule `all-json-is-code`)
+- Otherwise, the expression evaluates each of its elements and returns the resulting array: (rule `non-call-arrays-are-lists`)
+- an array with a string as its first element is a function call (rule `string-head-is-call`)
+- if the first element of an array expression evaluates to a function, the array is treated as a function call. (rule `function-head-is-call`; rule `string-head-is-call` withdrawn)
+- NEVER use `npx` or `npm` commands. Use `bun` or `turbo` instead. (rule `use-bun-not-npm`)
+- Use `bun test` instead of `jest` or `vitest` (rule `use-bun-test-runner`)
+- The coding agent in `packages/agent` is a Lion program, `agent.json`, run by a small host file (rule `agent-as-lion-program`)
+- Calling a lambda makes a new environment of its parameters whose parent is the environment the lambda was made in, not a copy of it (rule `lexical-closures`)
+- Special forms went back to plain names (rule `special-forms-slash-prefix` withdrawn)
+- adds slash-prefix to special forms (rule `special-forms-slash-prefix`)
+- All commands should be run from the root directory using Turbo: (rule `commands-from-root-with-turbo`)
+- 1. **Before coding**: Run `bun install` and `bun run prepare` (rule `dev-commands-npm` withdrawn)
+- The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
+- Special forms keep plain names, such as `"define"`, with no prefix (rule `special-forms-plain-names`)
+- A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
+- Where a base form's behavior is unclear, Lion follows Scheme and Racket (rule `scheme-racket-semantics`)
+- All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

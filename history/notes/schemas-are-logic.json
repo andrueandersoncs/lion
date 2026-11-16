@@ -1,0 +1,281 @@
+{
+  "title": "Anything is a schema, one rule says what fits it, and a schema with logic variables in it is a pattern",
+  "context": "Lion had no way to say what a value must be. `match` took a predicate or a record of predicates and failed on any other pattern, a relation call compared each argument with its column, so `[\"reading\", \"?sensor\", \"value/number?\"]` matched nothing, and a check on the rows of a relation was an invariant written by hand. Schemas would touch all of these places, and the project's rule is to give such places one rule rather than one each.",
+  "decision": "Anything is a schema, and one rule says what fits it: a function is a predicate, a record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it, so data is a schema for itself. `match`, the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`, the arguments of a relation call, and the relation option `{\"schema\": \"Order\"}` all ask through that rule. A logic variable in a schema is its value once bound and takes the value it meets until then, so `schema/fits?`, a relation call, `=`, and `in` bind the variables of a record, a list, or a built schema: `[\"inbox\", [\"schema/open\", {\"type\": \"order\", \"id\": \"?id\"}]]`. A schema check is an ordinary call, so it waits for logic variables and works under `not` and in a `find` like any other, and the schema of a relation's rows is the invariant a program could write by hand.",
+  "consequences": "A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call, so `[\"reading\", \"?sensor\", \"value/number?\"]` asks for the readings that are numbers, and a relation as the schema of a column is a foreign key. `[\"schema\", \"Tree\", {\"value\": \"value/number?\", \"children\": [\"schema/arrayOf\", \"Tree\"]}]` declares a named schema, one form can declare several that name each other, and snapshots write them. Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys, and a relation with several columns used as a schema is an error where it matched nothing. The change was large: code lines went from 6,035 to 7,798 and messages from 95 to 123, while the grid's cells like plain code went from 336 to 487.",
+  "alternatives": [
+    {
+      "option": "Compare each argument of a relation call with the values in its column, as before 0.7.0",
+      "rejected": "A function there matched nothing, since no row holds a function, so a query such as `[\"reading\", \"?sensor\", \"value/number?\"]` had no answers."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "fbc25a1",
+      "quote": "Anything is a schema, and one rule says what fits it"
+    },
+    {
+      "commit": "ca92729",
+      "quote": "Also pins down schema behavior that no property covered"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Anything is a schema, and one rule says what fits it",
+      "says": {
+        "decision": "schema-checking",
+        "chose": "one-fitting-rule",
+        "over": ["rule-per-place"],
+        "because": "schemas touch match, relation calls, and checks on a relation's rows, and the project's rule is to give such places one rule rather than one each",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call",
+      "says": {
+        "decision": "relation-call-arguments",
+        "chose": "schemas",
+        "over": ["column-values"],
+        "because": "a function there matched nothing, since no row holds a function",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a record in `match` fits only a record with the same keys",
+      "says": {
+        "decision": "record-pattern-keys",
+        "chose": "exact",
+        "over": ["by-keys"],
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "Anything is a schema, and one rule says what fits it: a function is a predicate, a record fits a record with the same keys and values that fit, a list fits a list of the same length item by item, and any other value fits a value equal to it, so data is a schema for itself.",
+      "says": {
+        "rule": "schemas-are-logic",
+        "holds": true,
+        "statement": "Anything is a schema and one rule says what fits it: a function is a predicate, a record fits a record with the same keys, a list fits a list of the same length, and any other value fits a value equal to it",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "schema-record-same-keys",
+            "is": "fit"
+          },
+          {
+            "behavior": "schema-record-extra-keys",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "schema-list-different-length",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "schema-plain-value-equal",
+            "is": "fit"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`match`, the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`, the arguments of a relation call, and the relation option `{\"schema\": \"Order\"}` all ask through that rule.",
+      "says": {
+        "rule": "schemas-are-logic",
+        "holds": true,
+        "statement": "Whatever checks a value against a schema asks whether the value fits, by one rule: match, the schema functions, the arguments of a relation call, and the relation option schema",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "relation-call-function-argument",
+            "is": "schema"
+          },
+          {
+            "behavior": "match-plain-value-pattern",
+            "is": "equals"
+          },
+          {
+            "behavior": "match-record-pattern-extra-keys",
+            "is": "no-fit"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A logic variable in a schema is its value once bound and takes the value it meets until then, so `schema/fits?`, a relation call, `=`, and `in` bind the variables of a record, a list, or a built schema",
+      "says": {
+        "rule": "schemas-are-patterns",
+        "holds": true,
+        "statement": "A logic variable in a schema is its value once it is bound, and takes the value it meets until then, in every goal that can bind: schema/fits?, a relation call, =, and in",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "schema-fits-unbound-variable",
+            "is": "binds"
+          },
+          {
+            "behavior": "relation-call-record-pattern-variables",
+            "is": "binds"
+          },
+          {
+            "behavior": "in-record-pattern-unbound-variables",
+            "is": "binds"
+          },
+          {
+            "behavior": "equals-list-pattern-unbound-variables",
+            "is": "binds"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A schema check is an ordinary call, so it waits for logic variables and works under `not` and in a `find` like any other",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs a logic variable's value waits until the variable is bound; a schema check is an ordinary call and waits too",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "schema-check-unbound-variable-in-rule",
+            "is": "waits"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "the schema of a relation's rows is the invariant a program could write by hand",
+      "says": {
+        "rule": "relation-schema-is-invariant",
+        "holds": true,
+        "statement": "The relation option schema stands for the invariant a program could write by hand",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "so `[\"reading\", \"?sensor\", \"value/number?\"]` asks for the readings that are numbers",
+      "says": {
+        "behavior": "relation-call-function-argument",
+        "is": "schema",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A predicate, a relation with one column, a named schema, or a variable that holds one can stand as an argument of a relation call",
+      "says": {
+        "behavior": "relation-call-variable-holding-schema",
+        "is": "schema",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a relation as the schema of a column is a foreign key",
+      "says": {
+        "behavior": "relation-as-column-schema",
+        "is": "foreign-key",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "one form can declare several that name each other",
+      "says": {
+        "behavior": "schema-form-mutual-reference",
+        "is": "allowed",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "and snapshots write them",
+      "says": {
+        "behavior": "snapshot-named-schema",
+        "is": "written",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys",
+      "says": {
+        "behavior": "match-record-pattern-extra-keys",
+        "is": "no-fit",
+        "area": "schemas",
+        "breaking": true,
+        "was": "fit"
+      }
+    },
+    {
+      "quote": "Programs break where they relied on the old behavior: a record in `match` fits only a record with the same keys, and a relation with several columns used as a schema is an error where it matched nothing.",
+      "says": {
+        "behavior": "relation-multi-column-as-schema",
+        "is": "error",
+        "area": "schemas",
+        "breaking": true,
+        "was": "no-match"
+      }
+    },
+    {
+      "quote": "`[\"schema\", \"Tree\", {\"value\": \"value/number?\", \"children\": [\"schema/arrayOf\", \"Tree\"]}]` declares a named schema",
+      "says": {
+        "feature": "schema",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`",
+      "says": {
+        "feature": "schema/fits?",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`",
+      "says": {
+        "feature": "schema/problems",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "the `schema` functions such as `schema/fits?`, `schema/problems`, and `schema/anyOf`",
+      "says": {
+        "feature": "schema/anyOf",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "the relation option `{\"schema\": \"Order\"}`",
+      "says": {
+        "feature": "relation-schema-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "code lines went from 6,035 to 7,798",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 7798,
+        "before": 6035,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "messages from 95 to 123",
+      "says": {
+        "measured": "messages",
+        "after": 123,
+        "before": 95,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "the grid's cells like plain code went from 336 to 487",
+      "says": {
+        "measured": "grid-cells-like-plain-code",
+        "after": 487,
+        "before": 336,
+        "area": "metrics"
+      }
+    }
+  ]
+}

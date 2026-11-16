@@ -1,0 +1,673 @@
+{
+  "claims": [
+    {
+      "quote": "`[\"number/fromString\", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `[\"number/fromString\", \"1,234,567.5\", \",\"]` is `1234567.5`.",
+      "says": {
+        "feature": "number/fromString",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"number/fromString\", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `[\"number/fromString\", \"1,234,567.5\", \",\"]` is `1234567.5`.",
+      "says": {
+        "behavior": "number-fromString-number-text",
+        "is": "number",
+        "area": "library",
+        "follows": "scheme"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"number/fromString\", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `[\"number/fromString\", \"1,234,567.5\", \",\"]` is `1234567.5`.",
+      "says": {
+        "behavior": "number-fromString-not-a-number",
+        "is": "null",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"number/fromString\", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `[\"number/fromString\", \"1,234,567.5\", \",\"]` is `1234567.5`.",
+      "says": {
+        "behavior": "number-fromString-group-separator",
+        "is": "grouped",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"number/fromString\", text]` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same separator: `[\"number/fromString\", \"1,234,567.5\", \",\"]` is `1234567.5`.",
+      "says": {
+        "behavior": "number-fromString-reads-toString-grouped",
+        "is": "round-trip",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"string/numbers\", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `\"fiscal 2023-24\"` holds 2023 and 24.",
+      "says": {
+        "feature": "string/numbers",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"string/numbers\", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `\"fiscal 2023-24\"` holds 2023 and 24.",
+      "says": {
+        "behavior": "string-numbers-result",
+        "is": "every-number-in-order",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"string/numbers\", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `\"fiscal 2023-24\"` holds 2023 and 24.",
+      "says": {
+        "behavior": "string-numbers-each-number",
+        "is": "read-as-number-fromString",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"string/numbers\", text]` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator. A minus sign counts only where no letter, digit, or point stands before it, so `\"fiscal 2023-24\"` holds 2023 and 24.",
+      "says": {
+        "behavior": "string-numbers-hyphen-after-digit",
+        "is": "not-minus",
+        "area": "library"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`[\"object/set\", record, key, value]` and `[\"object/remove\", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.",
+      "says": {
+        "feature": "object/set",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["41477b1"]
+    },
+    {
+      "quote": "`[\"object/set\", record, key, value]` and `[\"object/remove\", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.",
+      "says": {
+        "feature": "object/remove",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["41477b1"]
+    },
+    {
+      "quote": "`[\"object/set\", record, key, value]` and `[\"object/remove\", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.",
+      "says": {
+        "behavior": "object-set-new-record",
+        "is": "new-record",
+        "area": "library",
+        "follows": "racket"
+      },
+      "commits": ["41477b1"]
+    },
+    {
+      "quote": "`[\"object/set\", record, key, value]` and `[\"object/remove\", record, key]` give a new record with the key set or gone, as `hash-set` and `hash-remove` do in Racket.",
+      "says": {
+        "behavior": "object-remove-new-record",
+        "is": "new-record",
+        "area": "library",
+        "follows": "racket"
+      },
+      "commits": ["41477b1"]
+    },
+    {
+      "quote": "Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs a logic variable's value waits until the variable is bound, every library function among them",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "pure-function-logic-variable-argument",
+            "is": "waits"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "Like every library function, each waits for a logic variable and refuses a call with another number of arguments.",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "Every library function refuses a call with another number of arguments",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-extra-arguments",
+            "is": "error"
+          },
+          {
+            "behavior": "library-function-missing-arguments",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": ["arity-rule"]
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]`, shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.",
+      "says": {
+        "rule": "why-shows-every-goal",
+        "holds": true,
+        "statement": "why shows every goal of a rule's body as it held, = and in among them, with the answer's values in place of its variables",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "why-equals-goal",
+            "is": "shown"
+          },
+          {
+            "behavior": "why-in-goal",
+            "is": "shown"
+          },
+          {
+            "behavior": "why-not-goal",
+            "is": "absent"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": ["why-shows-every-goal"]
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]`, shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.",
+      "says": {
+        "behavior": "why-equals-goal",
+        "is": "shown",
+        "area": "logic",
+        "was": "left-out"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["why-shows-every-goal"]
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]`, shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.",
+      "says": {
+        "behavior": "why-in-goal",
+        "is": "shown",
+        "area": "logic",
+        "was": "left-out"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["why-shows-every-goal"]
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, with the answer's values in place of its variables. A goal that computed a value, such as `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]`, shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`, so a figure's explanation shows its arithmetic. `=` and `in` used to be left out.",
+      "says": {
+        "decision": "why-premises",
+        "chose": "every-goal",
+        "area": "logic",
+        "over": ["relation-goals-and-filters"],
+        "because": "so a computed figure shows its arithmetic on the values it used"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["why-shows-every-goal"]
+    },
+    {
+      "quote": "Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and \"Explain a result\" shows how a computed figure was worked out.",
+      "says": {
+        "rule": "every-feature-in-docs",
+        "holds": true,
+        "statement": "Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "docs-build-function-without-example",
+            "is": "fails"
+          }
+        ]
+      },
+      "commits": ["b903a8a"],
+      "decisions": ["every-feature-in-docs"]
+    },
+    {
+      "quote": "Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and \"Explain a result\" shows how a computed figure was worked out.",
+      "says": {
+        "feature": "docs-coverage-check",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["b903a8a"],
+      "decisions": ["every-feature-in-docs"]
+    },
+    {
+      "quote": "Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and \"Explain a result\" shows how a computed figure was worked out.",
+      "says": {
+        "behavior": "docs-functions-without-example",
+        "is": "none",
+        "area": "docs",
+        "was": "eight"
+      },
+      "commits": ["b903a8a"],
+      "decisions": ["every-feature-in-docs"]
+    },
+    {
+      "quote": "Every special form and library function is used in a live example on [lionlang.dev](https://lionlang.dev/docs.html), and the docs build fails when one is not. The new functions are in their modules' examples, `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?` now have examples too, and \"Explain a result\" shows how a computed figure was worked out.",
+      "says": {
+        "behavior": "docs-explain-result-computed-figure",
+        "is": "worked-out-shown",
+        "area": "docs"
+      },
+      "commits": ["b903a8a"],
+      "decisions": ["every-feature-in-docs"]
+    },
+    {
+      "quote": "AGENTS.md and CLAUDE.md ask that every new feature be used in an example in the docs, with output that was run.",
+      "says": {
+        "rule": "every-feature-in-docs",
+        "holds": true,
+        "statement": "Every feature a change adds is used in at least one example in the docs, with output that was run; a feature with no example is not finished",
+        "area": "process"
+      },
+      "commits": ["b903a8a"],
+      "decisions": ["every-feature-in-docs"]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "rule": "engine-computes-model-interprets",
+        "holds": true,
+        "statement": "The agent copies a figure as its source writes it and the model computes the rest, so every number in a claim must be written in its quote",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "research-claim-number-not-in-quote",
+            "is": "listed"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-unquoted",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "rule": "research-later-word-replaces-earlier",
+        "holds": true,
+        "statement": "A publisher's later word replaces its earlier one, so a corrected figure is a restatement and not a dispute",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "research-publisher-corrected-figure",
+            "is": "restatement"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-restated",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-withdrawn",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "behavior": "research-backing-disputed-secondhand-withdrawn",
+        "is": "left-out",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-ambiguous",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "rule": "user-decides-ambiguity",
+        "holds": true,
+        "statement": "A question only the reader may settle is asked, not answered by the agent",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "research-ambiguous-reading",
+            "is": "asked"
+          }
+        ]
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-decided",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-meant",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-set-aside",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The core program checks that every number in a claim is written in its quote (`unquoted`), takes a publisher's later word over its earlier one (`restated`, `withdrawn`, and `backing`, `disputed`, and `secondhand` without what was withdrawn), lists the questions sources answer in more than one sense of a word the frame declares as a reading (`ambiguous`), records the reader's choice (`decided`), and gives the questions the reader means (`meant`, `set_aside`). A claim can say where in its source it stands (`located`).",
+      "says": {
+        "feature": "research-located",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": [
+        "engine-computes-model-interprets",
+        "user-decides-ambiguity"
+      ]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-source-text",
+        "is": "carried",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-statement-in-source",
+        "is": "opens-in-place-with-quote-marked",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-computed-figure-evidence",
+        "is": "worked-out-as-arithmetic",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-how-solid-needs-decision",
+        "is": "shown",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-how-solid-restated-figures",
+        "is": "shown",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-how-solid-unquoted-figures",
+        "is": "shown",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "The page carries the saved text of each source a claim quotes, and each statement opens in its place there, with the quote marked. A computed figure's evidence shows \"Worked out as\" its arithmetic. How solid is it gains what needs the reader's decision, figures their publisher changed, figures not written in their quote, and what the reader chose.",
+      "says": {
+        "behavior": "research-page-how-solid-reader-choices",
+        "is": "shown",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets", "why-shows-every-goal"]
+    },
+    {
+      "quote": "`page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both.",
+      "says": {
+        "behavior": "page-check-questions-set-aside-or-undecided",
+        "is": "listed",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "`page-check.json` also lists questions the plan names that a choice set aside or that have senses nobody chose between. It used to keep only one entry of two blocks with one title; it now keeps both.",
+      "says": {
+        "behavior": "page-check-blocks-same-title",
+        "is": "both-kept",
+        "area": "skills",
+        "was": "one-kept",
+        "fixes": true
+      },
+      "commits": ["41477b1"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays.",
+      "says": {
+        "feature": "verifies-company-figures",
+        "kind": "file",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays.",
+      "says": {
+        "feature": "research-grade-mjs",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "A frozen-corpus eval, `verifies-company-figures`, with known answers checked stage by stage by `grade.mjs`, and a reference run that a property replays.",
+      "says": {
+        "behavior": "research-eval-reference-run",
+        "is": "replayed-by-property",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["engine-computes-model-interprets"]
+    },
+    {
+      "quote": "`replay.mjs` runs the Lion command `LION_CLI` names, as the reasoning skill's scripts do.",
+      "says": {
+        "behavior": "research-replay-lion-command",
+        "is": "lion-cli-env",
+        "area": "skills"
+      },
+      "commits": ["41477b1"],
+      "decisions": ["skills-use-published-cli"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "feature": "reasoning-notes-ask",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "feature": "reasoning-undecided",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "feature": "reasoning-presumed",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "rule": "user-decides-ambiguity",
+        "holds": true,
+        "statement": "A question only the user may settle is asked, not answered by the agent, and an answer from anyone else is listed as presumed",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-asked-question-unanswered",
+            "is": "undecided"
+          },
+          {
+            "behavior": "reasoning-asked-question-answered-by-other",
+            "is": "presumed"
+          },
+          {
+            "behavior": "reasoning-user-decision-after-file-change",
+            "is": "not-stale"
+          }
+        ]
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "behavior": "reasoning-standing-checks-undecided-presumed",
+        "is": "asked",
+        "area": "skills"
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    },
+    {
+      "quote": "Notes can list questions only the user may settle, under `ask`. The core lists the ones the user has not answered (`undecided`) and every answer to them from anyone else (`presumed`), and the standing checks ask both. A decision is the user's word in any version, so it does not go out of date when files change.",
+      "says": {
+        "behavior": "reasoning-user-decision-after-file-change",
+        "is": "not-stale",
+        "area": "skills"
+      },
+      "commits": ["52600b2"],
+      "decisions": ["user-decides-ambiguity"]
+    }
+  ]
+}

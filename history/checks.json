@@ -1,6 +1,6 @@
 {
   "fail": {
-    "Feature and fix commits that no entry records": [
+    "Feature and fix commits that no claim is made by": [
       "query",
       ["unaccounted", "?commit", "?subject"],
       {
@@ -9,51 +9,37 @@
     ],
     "Commits named that no commit starts with": [
       "query",
-      ["unresolved", "?entry", "?commit"],
+      ["unresolved", "?claim", "?commit"],
       {
-        "order": "entry"
+        "order": "claim"
       }
     ],
     "Commits named that more than one commit starts with": [
       "query",
-      ["ambiguous_ref", "?entry", "?commit", "?count"],
+      ["ambiguous_ref", "?claim", "?commit", "?count"],
       {
-        "order": "entry"
+        "order": "claim"
       }
     ],
     "Quotes that are not in the commit message they cite": [
       "query",
-      ["misquoted_ref", "?entry", "?commit", "?quote"],
+      ["misquoted_ref", "?claim", "?commit", "?quote"],
       {
-        "order": "entry"
+        "order": "claim"
       }
     ],
-    "Decisions named that the record does not hold": [
+    "Decisions followed that no record holds": [
       "query",
-      ["unknown_decision", "?entry", "?decision"],
+      ["unknown_decision", "?claim", "?decision"],
       {
-        "order": "entry"
+        "order": "claim"
       }
     ],
-    "Breaking changes that follow from no decision": [
+    "Decision records with no decision claim": [
       "query",
-      ["unjustified", "?entry", "?text"],
+      ["undecided_record", "?record"],
       {
-        "order": "entry"
-      }
-    ],
-    "Decisions whose file is not named for their id": [
-      "query",
-      ["misnamed", "?path", "?id"],
-      {
-        "order": "path"
-      }
-    ],
-    "Decisions that supersede a later one": [
-      "query",
-      ["backwards", "?decision", "?old"],
-      {
-        "order": "decision"
+        "order": "record"
       }
     ],
     "Releases at the same commit": [
@@ -92,23 +78,39 @@
       {
         "order": "tag"
       }
-    ],
-    "Changes no release has shipped yet": [
-      "query",
-      ["and", ["unreleased", "?entry"], ["change", "?entry", "?kind", "?_"]],
-      {
-        "order": "entry"
-      }
     ]
   },
   "holds": {
-    "decisions": [
-      "aggregate/count",
-      ["find", "?id", ["decision_of", "?id", "?_", "?_"]]
+    "claims": [
+      "aggregate/countUnique",
+      [
+        "find",
+        "?c",
+        ["and", ["claim", "?c", "?_", "?_", "?_"], ["made_by", "?c", "?_"]]
+      ]
     ],
-    "changes": [
+    "decided questions": [
+      "aggregate/countUnique",
+      [
+        "find",
+        "?t",
+        [
+          "answer",
+          {
+            "decision": "?t"
+          },
+          "?_",
+          "?_"
+        ]
+      ]
+    ],
+    "decision records": [
       "aggregate/count",
-      ["find", "?e", ["change", "?e", "?_", "?_"]]
+      ["find", "?id", ["record", "?id", "?_", "?_"]]
+    ],
+    "items waiting for a release": [
+      "aggregate/count",
+      ["find", ["array/make", "?q", "?v"], ["waiting", "?q", "?v"]]
     ],
     "releases": [
       "aggregate/count",

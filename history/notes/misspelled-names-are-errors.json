@@ -1,0 +1,227 @@
+{
+  "title": "An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError`, and any other unbound string stays a string",
+  "context": "In Lion a string is a name before it is a string: a bound name evaluates to its value, and an unbound one to itself. So a misspelled function quietly became a string. Called, as in `[\"number/ad\", 1, 2]`, it failed as a call of something that is not a function, and in a schema a misspelled predicate such as `\"value/intger?\"` would be a plain value to equal.",
+  "decision": "An unbound string of the form `module/name` is an `UnboundNameError` when it can only have been meant as a name: other names of its module are bound, as for `\"number/ad\"`, or a bound name is a letter or two away, as for `\"numbr/add\"`. The message suggests the name and says how to write the string: `Nothing is bound to \"number/ad\". Did you mean \"number/add\"? To mean the string itself, write [\"quote\", \"number/ad\"].` Any other string with a slash, such as `\"n/a\"` or `\"text/plain\"`, is still itself, and `[\"quote\", \"number/ad\"]` is always the string. The error holds the string as `unbound` and the suggestion as `nearest`.",
+  "consequences": "A program that used such a string as data breaks and must quote it. The error is raised wherever the name is evaluated: in plain code, as a predicate, inside a lambda that a schema or `match` calls, and in a form a rule holds. `UnboundNameError` is a new kind of error, and the docs give it and `InvalidFunctionCallError` an example each. The first version kept the string in the error's `name`, so code that shows `name: message`, as the docs site does, showed `number/plus: Nothing is bound to ...`; the string moved to `unbound` the same day.",
+  "alternatives": [
+    {
+      "option": "Let every unbound string evaluate to itself, as before 0.7.0",
+      "rejected": "A misspelled function would quietly become a string."
+    },
+    {
+      "option": "Keep the misspelled string in the error's `name` field",
+      "rejected": "`name` is where every Error says what kind it is, so code that shows `name: message` showed the string in place of the kind."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "fbc25a1",
+      "quote": "An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError` that suggests the name."
+    },
+    {
+      "commit": "ca92729",
+      "quote": "The string is now in `unbound`, and `name` is \"UnboundNameError\" again."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError`, and any other unbound string stays a string",
+      "says": {
+        "decision": "misspelled-module-names",
+        "chose": "error",
+        "over": ["string"],
+        "because": "a misspelled function would quietly become a string",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "An unbound `module/name` string that reads as a misspelled name is an `UnboundNameError`, and any other unbound string stays a string",
+      "says": {
+        "rule": "strings-are-references",
+        "holds": true,
+        "statement": "A string is looked up in the environment, and evaluates to itself when nothing is bound to it",
+        "area": "names",
+        "except": [
+          "unbound-misspelled-module-name",
+          "unbound-misspelled-module-prefix"
+        ]
+      }
+    },
+    {
+      "quote": "In Lion a string is a name before it is a string: a bound name evaluates to its value, and an unbound one to itself",
+      "says": {
+        "rule": "strings-are-references",
+        "holds": true,
+        "statement": "A string is looked up in the environment, and evaluates to itself when nothing is bound to it",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "bound-string",
+            "is": "bound-value"
+          },
+          {
+            "behavior": "unbound-string",
+            "is": "itself"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "An unbound string of the form `module/name` is an `UnboundNameError` when it can only have been meant as a name",
+      "says": {
+        "rule": "misspelled-names-are-errors",
+        "holds": true,
+        "statement": "An unbound module/name string that reads as a misspelled name is an UnboundNameError that suggests the name; any other unbound string stays a string",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "unbound-misspelled-module-name",
+            "is": "error"
+          },
+          {
+            "behavior": "unbound-misspelled-module-prefix",
+            "is": "error"
+          },
+          {
+            "behavior": "unbound-slash-string-not-misspelled",
+            "is": "string"
+          },
+          {
+            "behavior": "quoted-misspelled-name",
+            "is": "string"
+          },
+          {
+            "behavior": "misspelled-name-as-schema",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "other names of its module are bound, as for `\"number/ad\"`",
+      "says": {
+        "behavior": "unbound-misspelled-module-name",
+        "is": "error",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "a bound name is a letter or two away, as for `\"numbr/add\"`",
+      "says": {
+        "behavior": "unbound-misspelled-module-prefix",
+        "is": "error",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "Any other string with a slash, such as `\"n/a\"` or `\"text/plain\"`, is still itself",
+      "says": {
+        "behavior": "unbound-slash-string-not-misspelled",
+        "is": "string",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "`[\"quote\", \"number/ad\"]` is always the string",
+      "says": {
+        "behavior": "quoted-misspelled-name",
+        "is": "string",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "The error holds the string as `unbound` and the suggestion as `nearest`",
+      "says": {
+        "behavior": "UnboundNameError-fields",
+        "is": "unbound-and-nearest",
+        "area": "errors"
+      }
+    },
+    {
+      "quote": "The error holds the string as `unbound` and the suggestion as `nearest`",
+      "says": {
+        "decision": "unbound-name-error-string-field",
+        "chose": "unbound",
+        "over": ["name"],
+        "because": "name is where every Error says what kind it is",
+        "area": "errors"
+      }
+    },
+    {
+      "quote": "A program that used such a string as data breaks and must quote it",
+      "says": {
+        "behavior": "unbound-misspelled-module-name",
+        "is": "error",
+        "area": "names",
+        "breaking": true,
+        "was": "string"
+      }
+    },
+    {
+      "quote": "The error is raised wherever the name is evaluated: in plain code, as a predicate, inside a lambda that a schema or `match` calls, and in a form a rule holds",
+      "says": {
+        "behavior": "misspelled-name-as-schema",
+        "is": "error",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "The error is raised wherever the name is evaluated: in plain code, as a predicate, inside a lambda that a schema or `match` calls, and in a form a rule holds",
+      "says": {
+        "behavior": "misspelled-name-in-match-lambda",
+        "is": "error",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "The error is raised wherever the name is evaluated: in plain code, as a predicate, inside a lambda that a schema or `match` calls, and in a form a rule holds",
+      "says": {
+        "behavior": "misspelled-name-in-rule-form",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`UnboundNameError` is a new kind of error",
+      "says": {
+        "feature": "UnboundNameError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "quote": "the docs give it and `InvalidFunctionCallError` an example each",
+      "says": {
+        "behavior": "docs-invalid-function-call-error-example",
+        "is": "own-example",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the docs give it and `InvalidFunctionCallError` an example each",
+      "says": {
+        "behavior": "docs-unbound-name-error-example",
+        "is": "own-example",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the string moved to `unbound` the same day",
+      "says": {
+        "behavior": "UnboundNameError-name-field",
+        "is": "error-kind",
+        "area": "errors",
+        "was": "misspelled-string"
+      }
+    },
+    {
+      "quote": "The first version kept the string in the error's `name`, so code that shows `name: message`, as the docs site does, showed `number/plus: Nothing is bound to ...`; the string moved to `unbound` the same day",
+      "says": {
+        "behavior": "docs-site-unbound-name-error-label",
+        "is": "error-kind",
+        "area": "site",
+        "was": "misspelled-string"
+      }
+    }
+  ]
+}

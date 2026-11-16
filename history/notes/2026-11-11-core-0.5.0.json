@@ -1,0 +1,623 @@
+{
+  "claims": [
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "feature": "invariant",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "invariant-not-holding-when-added",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "invariant-checked-on-change",
+        "is": "every-fact-retract-rule-form",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "invariant-check-timing",
+        "is": "after-whole-form",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "fact-breaking-invariant",
+        "is": "no-change",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "failed-change-fact-order",
+        "is": "preserved",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "invariant-evaluation",
+        "is": "like-queries",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "snapshot-invariants-position",
+        "is": "after-rules",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "cli-database-invariants",
+        "is": "enforced",
+        "area": "cli"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "fold-map-invariant-form",
+        "is": "recognized",
+        "area": "editor"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Invariants. `[\"invariant\", goal, {\"assert\": \"none\"}]` keeps a query assertion in the logic database: the goal must have no answers, or with `\"some\"` at least one, now and after every later change. Every `fact`, `retract`, and `rule` form is checked against every invariant once it has made all of its changes, and a form that breaks one fails and leaves the database exactly as it was, facts in the same order. Invariants are answered the way queries are, saved in snapshots after the rules, and enforced by `lion --database`. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "site-highlight-invariant-form",
+        "is": "recognized",
+        "area": "site"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "feature": "docs-page",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "decision": "docs-organization",
+        "chose": "diataxis",
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "measured": "docs-documents",
+        "after": 35,
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "measured": "docs-live-examples",
+        "after": 110,
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every docs example runs with the evaluator the page uses, and the build writes its real result",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "docs-example-unexpected-error",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-example-too-slow",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-link-to-missing-id",
+            "is": "build-fails"
+          }
+        ]
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "behavior": "docs-page-coverage",
+        "is": "every-feature",
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "behavior": "docs-example-unexpected-error",
+        "is": "build-fails",
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "[lionlang.dev/docs.html](https://lionlang.dev/docs.html): 35 documents organized by the Diátaxis framework into tutorials, how-to guides, reference, and explanation, covering every form, function, command, and semantic of Lion. Its 110 live examples run on the evaluator, and the page's build writes each example's real result and fails on an unexpected error or a broken link, so the docs cannot drift from Lion.",
+      "says": {
+        "behavior": "docs-link-to-missing-id",
+        "is": "build-fails",
+        "area": "docs"
+      },
+      "commits": ["b5f87d4"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "`ArithmeticError`, raised when arithmetic has no finite result.",
+      "says": {
+        "feature": "ArithmeticError",
+        "kind": "error",
+        "present": true
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-startsWith-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-endsWith-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-includes-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-indexOf-argument-order",
+        "is": "text-first",
+        "area": "library",
+        "was": "search-first"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "decision": "string-argument-order",
+        "chose": "text-first",
+        "area": "library",
+        "over": ["search-first"],
+        "because": "as documented and as the rest of the library does"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "rule": "subject-first",
+        "holds": true,
+        "statement": "Standard library functions take their subject first",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "string-startsWith-argument-order",
+            "is": "text-first"
+          },
+          {
+            "behavior": "string-indexOf-argument-order",
+            "is": "text-first"
+          }
+        ]
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-indexOf-result",
+        "is": "number",
+        "area": "library",
+        "was": "effect-option"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/startsWith`, `string/endsWith`, `string/includes`, and `string/indexOf` take the text first, as the README documented and as the rest of the library does; they read their arguments the other way around before. `string/indexOf` returns a number, or `-1`.",
+      "says": {
+        "behavior": "string-indexOf-missing",
+        "is": "minus-one",
+        "area": "library",
+        "follows": "javascript"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.",
+      "says": {
+        "behavior": "division-by-zero",
+        "is": "error",
+        "area": "library",
+        "follows": "json",
+        "was": "infinity-or-nan"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.",
+      "says": {
+        "behavior": "number-overflow",
+        "is": "error",
+        "area": "library",
+        "follows": "json",
+        "was": "infinity-or-nan"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.",
+      "says": {
+        "decision": "non-finite-arithmetic",
+        "chose": "arithmetic-error",
+        "area": "library",
+        "over": ["infinity-or-nan"],
+        "because": "JSON cannot hold Infinity or NaN"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.",
+      "says": {
+        "behavior": "aggregate-sum-non-finite",
+        "is": "error",
+        "area": "library"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with `ArithmeticError` instead of returning `Infinity` or `NaN`, which JSON cannot hold. This covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list.",
+      "says": {
+        "behavior": "aggregate-mean-non-finite",
+        "is": "error",
+        "area": "library"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`value/object?` is true for records and other objects, but no longer for lists.",
+      "says": {
+        "behavior": "value-object-list",
+        "is": "false",
+        "area": "library",
+        "was": "true"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`object/get` returns `null` for a missing key instead of `undefined`.",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "null",
+        "area": "library",
+        "was": "undefined"
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`object/get-method`, `object/get-method-path`, and `object/call-method-path` work on any value except `null`, as `object/call-method` does.",
+      "says": {
+        "behavior": "method-function-on-non-object-value",
+        "is": "works",
+        "area": "library"
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`in`, `snapshot`, and `invariant` are reserved names, like the other special forms.",
+      "says": {
+        "behavior": "special-form-name-as-identifier",
+        "is": "reserved",
+        "area": "names"
+      },
+      "commits": ["47ea840"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      },
+      "commits": ["e443b58"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "behavior": "cli-0-4-0-bundled-core",
+        "is": "core-0-5-0",
+        "area": "packages"
+      },
+      "commits": ["e443b58"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "behavior": "cli-database-file-invariants",
+        "is": "kept",
+        "area": "cli"
+      },
+      "commits": ["e443b58"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "behavior": "cli-database-rerun-setup",
+        "is": "one-copy",
+        "area": "cli"
+      },
+      "commits": ["e443b58"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.4.0 bundles `@lionlang/core` 0.5.0, so `lion --database` keeps invariants and one copy of each rule, and its errors say what went wrong.",
+      "says": {
+        "behavior": "object-error-message",
+        "is": "descriptive",
+        "area": "errors",
+        "was": "generic"
+      },
+      "commits": ["e443b58"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing.",
+      "says": {
+        "behavior": "re-add-rule",
+        "is": "no-change",
+        "area": "logic",
+        "was": "added-again",
+        "fixes": true
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing.",
+      "says": {
+        "behavior": "re-add-invariant",
+        "is": "no-change",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing.",
+      "says": {
+        "behavior": "rule-identity",
+        "is": "snapshot-form",
+        "area": "logic"
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "Running a setup again against a saved database added each rule a second time, so aggregates counted every match twice. Adding a rule or invariant the database already holds, one a snapshot would write the same way, now changes nothing.",
+      "says": {
+        "rule": "idempotent-additions",
+        "holds": true,
+        "statement": "Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "re-add-rule",
+            "is": "no-change"
+          },
+          {
+            "behavior": "re-add-invariant",
+            "is": "no-change"
+          }
+        ]
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "A `retract` with one invalid fact still removed the facts listed before it. Every form that changes the database is now all or nothing.",
+      "says": {
+        "behavior": "retract-with-invalid-fact",
+        "is": "no-change",
+        "area": "logic",
+        "was": "partial-removal",
+        "fixes": true
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "A `retract` with one invalid fact still removed the facts listed before it. Every form that changes the database is now all or nothing.",
+      "says": {
+        "rule": "all-or-nothing-changes",
+        "holds": true,
+        "statement": "Every form that changes the logic database either makes all of its changes or none",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "retract-with-invalid-fact",
+            "is": "no-change"
+          },
+          {
+            "behavior": "fact-breaking-invariant",
+            "is": "no-change"
+          }
+        ]
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "A `retract` with one invalid fact still removed the facts listed before it. Every form that changes the database is now all or nothing.",
+      "says": {
+        "decision": "database-change-atomicity",
+        "chose": "all-or-nothing",
+        "area": "logic",
+        "over": ["partial"]
+      },
+      "commits": ["47ea840"],
+      "decisions": ["all-or-nothing-changes"]
+    },
+    {
+      "quote": "`array/head` and `array/tail` crashed on an empty list; they return `null` and `[]`.",
+      "says": {
+        "behavior": "array-head-empty-list",
+        "is": "null",
+        "area": "library",
+        "was": "crash",
+        "fixes": true
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`array/head` and `array/tail` crashed on an empty list; they return `null` and `[]`.",
+      "says": {
+        "behavior": "array-tail-empty-list",
+        "is": "empty-list",
+        "area": "library",
+        "was": "crash",
+        "fixes": true
+      },
+      "commits": ["4efc928"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "`func/apply` returned an Effect that never ran instead of the function's result.",
+      "says": {
+        "behavior": "func-apply-result",
+        "is": "function-result",
+        "area": "library",
+        "was": "unrun-effect",
+        "fixes": true
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`string/indexOf` returned an Effect `Option` instead of a number.",
+      "says": {
+        "behavior": "string-indexOf-result",
+        "is": "number",
+        "area": "library",
+        "was": "effect-option",
+        "fixes": true
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "`object/call-method` on `null` crashed with a `TypeError`; it fails with `NotAnObjectError`.",
+      "says": {
+        "behavior": "method-function-on-null",
+        "is": "error",
+        "area": "library",
+        "was": "crash",
+        "fixes": true
+      },
+      "commits": ["4efc928"]
+    },
+    {
+      "quote": "Errors from the `object` module had no message, so the CLI printed only \"An error occurred\". Each now says what went wrong, such as `There is no key \"email\".`",
+      "says": {
+        "behavior": "object-error-message",
+        "is": "descriptive",
+        "area": "errors",
+        "was": "generic",
+        "fixes": true
+      },
+      "commits": ["4efc928"]
+    }
+  ]
+}

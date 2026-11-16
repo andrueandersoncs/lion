@@ -1,0 +1,1341 @@
+{
+  "claims": [
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Whatever needs a logic variable's value waits until the variable is bound, then computes what it would with the value in its place",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "host-function-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "pure-function-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "func-partial-logic-variable-argument",
+            "is": "waits"
+          },
+          {
+            "behavior": "cond-on-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "match-on-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "eval-of-logic-variable",
+            "is": "waits"
+          },
+          {
+            "behavior": "logic-variable-nested-in-record",
+            "is": "waits"
+          },
+          {
+            "behavior": "lambda-passed-to-waiting-call",
+            "is": "waits"
+          },
+          {
+            "behavior": "expression-over-variable-vs-value",
+            "is": "same"
+          }
+        ]
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "pure-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "host-function-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "func-partial-logic-variable-argument",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "cond-on-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "match-on-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "eval-of-logic-variable",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "logic-variable-nested-in-record",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "lambda-passed-to-waiting-call",
+        "is": "waits",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "expression-over-variable-vs-value",
+        "is": "same",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "feature": "logicFunction",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Waiting. Every function waits when it is called with a logic variable and runs once the variable is bound: the whole standard library, host functions as they are, and `func/partial` results. `cond`, `match`, `eval`, and records wait the same way, and so do lambdas passed to a waiting call. A rule can hold `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` or the record `{\"id\": \"?x\", \"twice\": [\"number/multiply\", \"?x\", 2]}`, and gives for each answer what plain code gives with the value in the variable's place. `logicFunction` from `@lionlang/core/logic/terms` marks a host function that takes logic values as they are.",
+      "says": {
+        "behavior": "logic-function-logic-variable-argument",
+        "is": "passed-as-is",
+        "area": "host"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "rule": "asking-rule",
+        "holds": true,
+        "statement": "Whatever needs the value of a goal asks it; a goal with a relation in it is a question",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "cond-relation-goal-condition",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-function-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-record-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-unify-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-in-operand",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-fact-argument",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-match-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-goal-as-value",
+            "is": "asked"
+          },
+          {
+            "behavior": "relation-as-match-predicate",
+            "is": "predicate"
+          },
+          {
+            "behavior": "goal-in-define",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-lambda",
+            "is": "kept"
+          },
+          {
+            "behavior": "goal-in-and",
+            "is": "kept"
+          }
+        ]
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-value",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-function-argument",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-unify-operand",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-in-operand",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-record-value",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-fact-argument",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-goal-as-match-value",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-as-match-predicate",
+        "is": "predicate",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "relation-as-function-argument",
+        "is": "predicate",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "plain-code-question",
+        "is": "asked-immediately",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Asking. A goal with a relation in it is a question that any expression can ask. As a goal of a rule or query it still matches rows and binds variables. As a value it is `true` when it has a match and `false` when it has none: in a `cond` condition, as an argument of a function, as an operand of `=` or `in`, as a value of a record, as an argument of `fact`, and as the value `match` looks at. A relation is a predicate for `match` and for functions that are given it, so `[\"array/map\", [\"array/make\", \"ada\", \"zed\"], \"person\"]` is `[true, false]`. Plain code asks right away, and goal-directed. A rule, query, invariant, or `find` holds its questions and asks them for each answer when it runs.",
+      "says": {
+        "behavior": "question-in-rule",
+        "is": "asked-per-answer",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal, as a sorted list: `[\"find\", \"?c\", [\"parent\", \"ada\", \"?c\"]]` is `[\"ben\", \"cy\"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "feature": "find",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal, as a sorted list: `[\"find\", \"?c\", [\"parent\", \"ada\", \"?c\"]]` is `[\"ben\", \"cy\"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "find-result-order",
+        "is": "sorted",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal, as a sorted list: `[\"find\", \"?c\", [\"parent\", \"ada\", \"?c\"]]` is `[\"ben\", \"cy\"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "find-in-rule",
+        "is": "allowed",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal, as a sorted list: `[\"find\", \"?c\", [\"parent\", \"ada\", \"?c\"]]` is `[\"ben\", \"cy\"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "fold-map-find-form",
+        "is": "recognized",
+        "area": "editor"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "`[\"find\", template, goal]` returns the template's value for every match of the goal, as a sorted list: `[\"find\", \"?c\", [\"parent\", \"ada\", \"?c\"]]` is `[\"ben\", \"cy\"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form.",
+      "says": {
+        "behavior": "site-highlight-find-form",
+        "is": "recognized",
+        "area": "site"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `[\"=\", \"?total\", [\"aggregate/sum\", \"?items\"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `[\"aggregate/count\", [\"find\", \"?c\", [\"parent\", \"?p\", \"?c\"]]]` can be 0. An aggregate's argument can also be a constant, as in `[\"aggregate/sum\", 1]`.",
+      "says": {
+        "behavior": "aggregate-call-whole-head-argument",
+        "is": "combines-matches",
+        "area": "logic"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `[\"=\", \"?total\", [\"aggregate/sum\", \"?items\"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `[\"aggregate/count\", [\"find\", \"?c\", [\"parent\", \"?p\", \"?c\"]]]` can be 0. An aggregate's argument can also be a constant, as in `[\"aggregate/sum\", 1]`.",
+      "says": {
+        "behavior": "aggregate-call-elsewhere",
+        "is": "combines-list",
+        "area": "logic"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `[\"=\", \"?total\", [\"aggregate/sum\", \"?items\"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `[\"aggregate/count\", [\"find\", \"?c\", [\"parent\", \"?p\", \"?c\"]]]` can be 0. An aggregate's argument can also be a constant, as in `[\"aggregate/sum\", 1]`.",
+      "says": {
+        "behavior": "aggregate-of-find",
+        "is": "combines-find-list",
+        "area": "logic"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `[\"=\", \"?total\", [\"aggregate/sum\", \"?items\"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `[\"aggregate/count\", [\"find\", \"?c\", [\"parent\", \"?p\", \"?c\"]]]` can be 0. An aggregate's argument can also be a constant, as in `[\"aggregate/sum\", 1]`.",
+      "says": {
+        "behavior": "aggregate-count-of-empty-find",
+        "is": "zero",
+        "area": "logic"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `[\"=\", \"?total\", [\"aggregate/sum\", \"?items\"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `[\"aggregate/count\", [\"find\", \"?c\", [\"parent\", \"?p\", \"?c\"]]]` can be 0. An aggregate's argument can also be a constant, as in `[\"aggregate/sum\", 1]`.",
+      "says": {
+        "behavior": "aggregate-constant-argument",
+        "is": "allowed",
+        "area": "logic"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "Questions have variables of their own. When a question is asked, the variables that the rule or query around it has bound are fixed, and every other variable belongs to the question. So a goal under `not` no longer needs every variable bound first: `[\"not\", [\"and\", [\"parent\", \"?p\", \"?c\"], [\"retired\", \"?c\"]]]` asks whether `?p` has a retired child.",
+      "says": {
+        "rule": "question-variables-scoped",
+        "holds": true,
+        "statement": "When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "not-goal-unbound-variable",
+            "is": "own-variable"
+          }
+        ]
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "Questions have variables of their own. When a question is asked, the variables that the rule or query around it has bound are fixed, and every other variable belongs to the question. So a goal under `not` no longer needs every variable bound first: `[\"not\", [\"and\", [\"parent\", \"?p\", \"?c\"], [\"retired\", \"?c\"]]]` asks whether `?p` has a retired child.",
+      "says": {
+        "behavior": "not-goal-unbound-variable",
+        "is": "own-variable",
+        "area": "logic",
+        "was": "error"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "An algorithm's value input can be a variable that another goal binds: `[\"and\", [\"depot\", \"?s\"], [\"graph/shortestPath\", \"road\", \"?s\", \"?to\", \"?km\", \"?_\"]]` runs the algorithm once for each depot.",
+      "says": {
+        "behavior": "algorithm-input-variable",
+        "is": "runs-per-binding",
+        "area": "logic"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/remainder",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/power",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/min",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/max",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/absolute",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/floor",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/ceiling",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`number/remainder`, `number/power`, `number/min`, `number/max`, `number/absolute`, `number/floor`, `number/ceiling`, and `number/round`.",
+      "says": {
+        "feature": "number/round",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "feature": "call",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "behavior": "host-call-returned-goal",
+        "is": "asked",
+        "area": "host"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "feature": "WaitingError",
+        "kind": "error",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "behavior": "host-call-value-not-known",
+        "is": "waiting-error",
+        "area": "host"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "feature": "@lionlang/core/logic/model",
+        "kind": "module",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts: `call` from `@lionlang/core/evaluation/special-forms/function` calls a Lion function from host code and gives its value, asking a goal the function returns. `WaitingError` is what it fails with when the value is not known yet. `@lionlang/core/logic/model` holds the engine, and `LionAskerService` from `@lionlang/core/services/asker` says who answers questions.",
+      "says": {
+        "feature": "LionAskerService",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking.",
+      "says": {
+        "feature": "docs-guide-use-answers-as-values",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking.",
+      "says": {
+        "feature": "docs-family-tree-find-step",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking.",
+      "says": {
+        "feature": "docs-reference-waiting",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "The docs have a new guide, [Use answers as values](https://lionlang.dev/docs.html#ask-questions), a step in the family tree tutorial that collects answers with `find`, and reference sections for waiting and asking.",
+      "says": {
+        "feature": "docs-reference-asking",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "relation-goal-as-function-argument",
+        "is": "asked",
+        "area": "logic",
+        "was": "goal-itself"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "relation-goal-as-record-value",
+        "is": "asked",
+        "area": "logic",
+        "was": "goal-itself"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "relation-goal-as-unify-operand",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "relation-goal-as-in-operand",
+        "is": "asked",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "relation-goal-as-fact-argument",
+        "is": "asked",
+        "area": "logic",
+        "was": "error"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-define",
+        "is": "kept",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-and",
+        "is": "kept",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-or",
+        "is": "kept",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-not",
+        "is": "kept",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A relation goal given to a plain function, a record, `=`, `in`, or `fact` is asked. Before, a function or record was handed the goal itself, and `fact` refused it. `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around.",
+      "says": {
+        "behavior": "goal-in-lambda",
+        "is": "kept",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A filter must be `true` or `false`. A goal such as `[\"number/add\", \"?x\", 1]` used to pass as true; now the rule or query fails and shows the value.",
+      "says": {
+        "behavior": "filter-non-boolean",
+        "is": "error",
+        "area": "logic",
+        "was": "truthy"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A filter must be `true` or `false`. A goal such as `[\"number/add\", \"?x\", 1]` used to pass as true; now the rule or query fails and shows the value.",
+      "says": {
+        "behavior": "filter-non-boolean-message",
+        "is": "shows-value",
+        "area": "errors"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme, so `[\"and\", false, [\"number/divide\", 1, 0]]` is `false` instead of an error.",
+      "says": {
+        "behavior": "and-after-false",
+        "is": "not-evaluated",
+        "area": "logic",
+        "follows": "scheme",
+        "was": "evaluated"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["scheme-where-unclear"]
+    },
+    {
+      "quote": "`and` and `or` stop at the first argument that decides them, as in Scheme, so `[\"and\", false, [\"number/divide\", 1, 0]]` is `false` instead of an error.",
+      "says": {
+        "behavior": "or-after-true",
+        "is": "not-evaluated",
+        "area": "logic",
+        "follows": "scheme",
+        "was": "evaluated"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["scheme-where-unclear"]
+    },
+    {
+      "quote": "Query answers must be JSON data. A variable bound to a function used to be left out of the answer; now the query fails and shows the answer.",
+      "says": {
+        "behavior": "query-answer-non-json",
+        "is": "error",
+        "area": "logic",
+        "was": "omitted"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "Query answers must be JSON data. A variable bound to a function used to be left out of the answer; now the query fails and shows the answer.",
+      "says": {
+        "behavior": "query-answer-non-json-message",
+        "is": "shows-answer",
+        "area": "errors"
+      },
+      "commits": ["aef67af"],
+      "decisions": ["values-are-json"]
+    },
+    {
+      "quote": "A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.",
+      "says": {
+        "rule": "stratified-questions",
+        "holds": true,
+        "statement": "A rule cannot ask a question about a relation that depends on its own head",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "negation-through-recursion",
+            "is": "error"
+          },
+          {
+            "behavior": "find-through-recursion",
+            "is": "error"
+          },
+          {
+            "behavior": "relation-goal-as-value-through-recursion",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule", "datalog-logic-layer"]
+    },
+    {
+      "quote": "A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.",
+      "says": {
+        "rule": "stratified-negation",
+        "holds": false,
+        "statement": "Negation cannot go through recursion",
+        "area": "logic",
+        "replaced_by": "stratified-questions"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule", "datalog-logic-layer"]
+    },
+    {
+      "quote": "A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.",
+      "says": {
+        "behavior": "negation-through-recursion",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule", "datalog-logic-layer"]
+    },
+    {
+      "quote": "A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.",
+      "says": {
+        "behavior": "find-through-recursion",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule", "datalog-logic-layer"]
+    },
+    {
+      "quote": "A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value.",
+      "says": {
+        "behavior": "relation-goal-as-value-through-recursion",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule", "datalog-logic-layer"]
+    },
+    {
+      "quote": "A query that is not goal-directed derives only the relations it reads, instead of every relation that rules define.",
+      "says": {
+        "behavior": "non-goal-directed-query-derivation",
+        "is": "relations-read-only",
+        "area": "logic",
+        "was": "all-rule-relations"
+      },
+      "commits": ["c380ce7"]
+    },
+    {
+      "quote": "Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "speedup-benchmarks-count",
+        "after": 10,
+        "area": "metrics"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "speedup-benchmarks-min",
+        "after": 1.5,
+        "area": "metrics"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "speedup-benchmarks-max",
+        "after": 3.5,
+        "area": "metrics"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "Lion is faster. Ten benchmarks, from a recursive lambda to negation over 20,000 facts, run 1.5 to 3.5 times as fast as on 0.5.0.",
+      "says": {
+        "measured": "benchmark-negation-facts",
+        "after": 20000,
+        "area": "metrics"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "markPure",
+        "kind": "function",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isPureFunction",
+        "kind": "function",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "decision": "which-functions-wait",
+        "chose": "every-function",
+        "area": "logic",
+        "over": ["pure-functions-only"],
+        "because": "every function waits"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Negation",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Conjunction",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Disjunction",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Unification",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Membership",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "LogicForm"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "LogicForm",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isForm",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "decision": "logic-form-classes",
+        "chose": "one-logic-form-class",
+        "area": "host",
+        "over": ["class-per-form"]
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "Aggregate",
+        "kind": "capability",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "decision": "aggregate-representation",
+        "chose": "waiting-call",
+        "area": "host",
+        "over": ["aggregate-class"],
+        "because": "an aggregate is a waiting call"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "relationInfo",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "relationOf"
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "relationOf",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "RelationValue",
+        "kind": "capability",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isRelationValue",
+        "kind": "function",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, `@lionlang/core/logic/terms` changed. `markPure` and `isPureFunction` are removed, since every function waits. The `Negation`, `Conjunction`, `Disjunction`, `Unification`, and `Membership` classes are one `LogicForm` class, tested with `isForm`. The `Aggregate` class is removed: an aggregate is a waiting call. `relationInfo` is now `relationOf`, and `RelationValue`, `isRelationValue`, and `isLogicTerm` are removed.",
+      "says": {
+        "feature": "isLogicTerm",
+        "kind": "function",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"],
+      "decisions": ["waiting-rule", "asking-rule"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "behavior": "key-columns-export-module",
+        "is": "logic-model",
+        "area": "host",
+        "was": "logic-database"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "behavior": "max-lattice-rounds-export-module",
+        "is": "logic-model",
+        "area": "host",
+        "was": "logic-database"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "behavior": "special-form-name-export-module",
+        "is": "schemas-evaluation",
+        "area": "host",
+        "was": "analysis-analyze"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "behavior": "is-special-form-name-export-module",
+        "is": "schemas-evaluation",
+        "area": "host",
+        "was": "analysis-analyze"
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "feature": "literalGoal",
+        "kind": "function",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "feature": "CondCaseSchema",
+        "kind": "capability",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "feature": "MatchPatternSchema",
+        "kind": "capability",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "For hosts, in other modules: `keyColumns` and `MAX_LATTICE_ROUNDS` moved from `logic/database` to `logic/model`. `SpecialFormName` and `isSpecialFormName` moved from `analysis/analyze` to `schemas/evaluation`. `literalGoal` and the schemas for the cases of `cond`, the patterns of `match`, and the `snapshot` form are no longer exported.",
+      "says": {
+        "feature": "SnapshotFormSchema",
+        "kind": "capability",
+        "present": false
+      },
+      "commits": ["aef67af", "c380ce7"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0.",
+      "says": {
+        "rule": "cli-bundles-editor",
+        "holds": true,
+        "statement": "The CLI carries its own copy of core and the built graph editor, so it is released with every core release",
+        "area": "cli"
+      },
+      "commits": ["1b2d50b"]
+    },
+    {
+      "quote": "`@lionlang/cli` 0.5.0 bundles `@lionlang/core` 0.6.0.",
+      "says": {
+        "behavior": "cli-0-5-0-bundled-core",
+        "is": "core-0-6-0",
+        "area": "cli"
+      },
+      "commits": ["1b2d50b"]
+    },
+    {
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "cond-on-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "ran-early",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "match-on-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "ran-early",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "lambda-branching-on-logic-variable",
+        "is": "right-answers",
+        "area": "logic",
+        "was": "ran-early",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "snapshot-rule-holding-cond",
+        "is": "written-as-form",
+        "area": "logic",
+        "was": "branch-value",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A `cond`, `match`, or lambda that branched on a logic variable ran before the variable had a value, so it took the same branch for every answer: `[\"cond\", [[\"number/greaterThan\", \"?x\", 10], \"big\"], [\"else\", \"small\"]]` in a rule head gave `\"big\"` for 1, and a snapshot saved the rule with `\"big\"` in place of the `cond`. `eval` of a logic variable returned the variable. These forms now wait.",
+      "says": {
+        "behavior": "eval-of-logic-variable",
+        "is": "waits",
+        "area": "logic",
+        "was": "returns-variable",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["waiting-rule"]
+    },
+    {
+      "quote": "A `cond` whose condition was a relation goal took that case whether or not the goal had a match.",
+      "says": {
+        "behavior": "cond-relation-goal-condition",
+        "is": "asked",
+        "area": "logic",
+        "was": "always-taken",
+        "fixes": true
+      },
+      "commits": ["c380ce7"],
+      "decisions": ["asking-rule"]
+    },
+    {
+      "quote": "A snapshot wrote a function under the name the program called it by, such as a name bound with `define`, which is not there when the snapshot loads. It now writes the name the environment gives the function.",
+      "says": {
+        "behavior": "snapshot-function-name",
+        "is": "environment-name",
+        "area": "logic",
+        "was": "program-name",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "A query that held `false` and the `\"order\"` option failed with \"Cannot order by\" instead of returning no answers.",
+      "says": {
+        "behavior": "query-false-with-order-option",
+        "is": "no-answers",
+        "area": "logic",
+        "was": "error",
+        "fixes": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`match` read a fallback written as a two-item call, such as `[\"mk\", 10]`, as one more pattern.",
+      "says": {
+        "behavior": "match-two-item-fallback",
+        "is": "fallback",
+        "area": "forms",
+        "was": "pattern",
+        "fixes": true
+      },
+      "commits": ["aef67af"]
+    },
+    {
+      "quote": "`[\"=\", 0, -0]` was `false`. JSON writes both as `0`, so they are the same number.",
+      "says": {
+        "behavior": "zero-equals-negative-zero",
+        "is": "true",
+        "area": "logic",
+        "follows": "json",
+        "was": "false",
+        "fixes": true
+      },
+      "commits": ["aef67af"],
+      "decisions": ["values-are-json"]
+    }
+  ]
+}

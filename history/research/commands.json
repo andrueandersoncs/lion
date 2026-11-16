@@ -1,0 +1,30 @@
+{
+  "docs-check": {
+    "cwd": "packages/site-runtime",
+    "command": ["bun", "run", "build-docs.ts", "--check"]
+  },
+  "cli-database": {
+    "cwd": "packages/cli",
+    "command": ["bun", "../history/commands/cli-database.mjs"]
+  },
+  "host-run": {
+    "cwd": "packages/history",
+    "command": ["bun", "commands/host-run.mjs"]
+  },
+  "site-evaluator": {
+    "cwd": "packages/site-runtime",
+    "command": ["bun", "../history/commands/site-evaluator.mjs"]
+  },
+  "editor-edit": {
+    "cwd": "packages/repl",
+    "command": ["bun", "../history/commands/editor-edit.mjs"]
+  },
+  "record-git": {
+    "cwd": "packages/history",
+    "command": ["bun", "commands/record-git.mjs"]
+  },
+  "stamp-check": {
+    "cwd": "packages/site-runtime",
+    "command": ["bun", "run", "stamp-assets.ts", "--check"]
+  }
+}

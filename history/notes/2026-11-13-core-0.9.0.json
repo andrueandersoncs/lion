@@ -1,0 +1,275 @@
+{
+  "claims": [
+    {
+      "quote": "`[\"string/join\", list, separator]` is a list of strings with the separator between them. With a third string, that one stands before the last item, as `#:before-last` does in Racket: `[\"string/join\", [\"array/make\", \"a\", \"b\", \"c\"], \", \", \" and \"]` is `\"a, b and c\"`.",
+      "says": {
+        "feature": "string/join",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/join\", list, separator]` is a list of strings with the separator between them. With a third string, that one stands before the last item, as `#:before-last` does in Racket: `[\"string/join\", [\"array/make\", \"a\", \"b\", \"c\"], \", \", \" and \"]` is `\"a, b and c\"`.",
+      "says": {
+        "behavior": "string-join",
+        "is": "separator-between-items",
+        "area": "library"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/join\", list, separator]` is a list of strings with the separator between them. With a third string, that one stands before the last item, as `#:before-last` does in Racket: `[\"string/join\", [\"array/make\", \"a\", \"b\", \"c\"], \", \", \" and \"]` is `\"a, b and c\"`.",
+      "says": {
+        "behavior": "string-join-before-last",
+        "is": "before-last-string",
+        "area": "library",
+        "follows": "racket"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/split\", text, separator]` is the parts of the text between each separator, so joining them with the same separator gives the text back.",
+      "says": {
+        "feature": "string/split",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/split\", text, separator]` is the parts of the text between each separator, so joining them with the same separator gives the text back.",
+      "says": {
+        "behavior": "string-split",
+        "is": "parts",
+        "area": "library"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/split\", text, separator]` is the parts of the text between each separator, so joining them with the same separator gives the text back.",
+      "says": {
+        "behavior": "string-split-then-join",
+        "is": "same-text",
+        "area": "library"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/padStart\", text, length, fill]` and `[\"string/padEnd\", text, length, fill]` make text as long as asked, as JavaScript does: `[\"string/padStart\", \"7\", 2, \"0\"]` is `\"07\"`.",
+      "says": {
+        "feature": "string/padStart",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/padStart\", text, length, fill]` and `[\"string/padEnd\", text, length, fill]` make text as long as asked, as JavaScript does: `[\"string/padStart\", \"7\", 2, \"0\"]` is `\"07\"`.",
+      "says": {
+        "feature": "string/padEnd",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`[\"string/padStart\", text, length, fill]` and `[\"string/padEnd\", text, length, fill]` make text as long as asked, as JavaScript does: `[\"string/padStart\", \"7\", 2, \"0\"]` is `\"07\"`.",
+      "says": {
+        "behavior": "string-pad",
+        "is": "padded",
+        "area": "library",
+        "follows": "javascript"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`number/toString` takes a second argument, a string to write between groups of three digits of the whole part, as `#:group-sep` does in Racket: `[\"number/toString\", 1234567.5, \",\"]` is `\"1,234,567.5\"`. With one argument it is unchanged.",
+      "says": {
+        "behavior": "number-to-string-group-separator",
+        "is": "grouped",
+        "area": "library",
+        "follows": "racket"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "`number/toString` takes a second argument, a string to write between groups of three digits of the whole part, as `#:group-sep` does in Racket: `[\"number/toString\", 1234567.5, \",\"]` is `\"1,234,567.5\"`. With one argument it is unchanged.",
+      "says": {
+        "behavior": "number-to-string-one-argument",
+        "is": "unchanged",
+        "area": "library"
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text"]
+    },
+    {
+      "quote": "Like every library function, each waits for a logic variable, so a rule, a query, or a `find` can build text with them, and a call with another number of arguments says how many the function takes.",
+      "says": {
+        "rule": "waiting-rule",
+        "holds": true,
+        "statement": "Every library function waits for a logic variable",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "library-function-unbound-variable-argument",
+            "is": "waits"
+          }
+        ]
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text", "arity-rule"]
+    },
+    {
+      "quote": "Like every library function, each waits for a logic variable, so a rule, a query, or a `find` can build text with them, and a call with another number of arguments says how many the function takes.",
+      "says": {
+        "rule": "arity-rule",
+        "holds": true,
+        "statement": "Every library function refuses a call with another number of arguments",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-extra-arguments",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["841b511"],
+      "decisions": ["lion-computes-page-text", "arity-rule"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "record-empty-key",
+        "is": "kept",
+        "area": "evaluation",
+        "follows": "json",
+        "was": "dropped",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "quoted-record-empty-key",
+        "is": "kept",
+        "area": "evaluation",
+        "was": "dropped",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "fact-record-empty-key",
+        "is": "kept",
+        "area": "logic",
+        "was": "dropped",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "pattern-record-empty-key",
+        "is": "binds",
+        "area": "schemas",
+        "was": "unbound",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "snapshot-fact-empty-key",
+        "is": "kept",
+        "area": "logic",
+        "was": "dropped",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "object-keys-empty-key",
+        "is": "includes-empty-key",
+        "area": "library",
+        "was": "empty-list",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "rule": "records-keep-every-key",
+        "holds": true,
+        "statement": "Every record keeps every key JSON allows except __proto__, which is left out",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "record-empty-key",
+            "is": "kept"
+          },
+          {
+            "behavior": "record-proto-key",
+            "is": "dropped"
+          },
+          {
+            "behavior": "pattern-record-empty-key",
+            "is": "binds"
+          },
+          {
+            "behavior": "snapshot-fact-empty-key",
+            "is": "kept"
+          }
+        ]
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "record-proto-key",
+        "is": "dropped",
+        "area": "evaluation"
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "editor-empty-property-name",
+        "is": "refused",
+        "area": "editor"
+      },
+      "commits": ["a923daf"]
+    },
+    {
+      "quote": "A record keeps the key `\"\"`, as JSON does. `{\"\": 1, \"a\": 2}` used to evaluate to `{\"a\": 2}`, and so did the same record inside `quote`, in a fact, in a pattern, and in a snapshot; `[\"object/keys\", [\"quote\", {\"\": 1}]]` was `[]`. Every record now keeps every key JSON allows except `__proto__`, so a pattern such as `{\"\": \"?v\"}` takes the value apart, and a snapshot writes it back. The graph editor's dialog still asks for a property name, and now says so instead of saying keys must be non-empty.",
+      "says": {
+        "behavior": "editor-empty-property-name-message",
+        "is": "asks-for-name",
+        "area": "editor",
+        "was": "keys-must-be-non-empty",
+        "fixes": true
+      },
+      "commits": ["a923daf"]
+    }
+  ]
+}

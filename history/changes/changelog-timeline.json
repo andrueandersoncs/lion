@@ -1,7 +1,0 @@
-[
-  {
-    "kind": "Documentation",
-    "text": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
-    "decisions": ["project-record-in-lion", "lion-computes-page-text"]
-  }
-]

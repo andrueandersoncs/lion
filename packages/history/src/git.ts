@@ -178,3 +178,12 @@ export const readHistory = (
     ),
   };
 };
+
+/** The commit's time as the integer the research sources date by: YYYYMMDDHHMMSS, in UTC. */
+export const publishedOf = (commit: Commit) => {
+  const at = new Date(commit.time * 1000);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return Number(
+    `${at.getUTCFullYear()}${two(at.getUTCMonth() + 1)}${two(at.getUTCDate())}${two(at.getUTCHours())}${two(at.getUTCMinutes())}${two(at.getUTCSeconds())}`
+  );
+};

@@ -1,0 +1,395 @@
+{
+  "claims": [
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-notes-scores",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-notes-directions",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-observation-tries",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "behavior": "reasoning-observation-trying-direction",
+        "is": "experiment",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "rule": "score-improves-past-noise",
+        "holds": true,
+        "statement": "A version improves a score when its worst run beats the best that any earlier version was sure to give",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "behavior": "reasoning-version-sure-to-give",
+        "is": "worst-run",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-improved",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-best",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-score-in",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "feature": "reasoning-regressed",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "behavior": "reasoning-score-differing-runs",
+        "is": "spread",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "behavior": "reasoning-direction-payoff",
+        "is": "experiment-improves-score",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "rule": "patience-since-last-payoff",
+        "holds": true,
+        "statement": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "measured": "reasoning-direction-default-patience",
+        "after": 3,
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "The lion-reasoning skill keeps the record of an experiment loop, in the manner of autoresearch. Notes declare `scores`, numbers to make better, such as `{\"question\": {\"comparisons\": \"bench.mjs\"}, \"better\": \"lower\"}`, and `directions`, the ideas to try; an observation that `tries` a direction is an experiment of it. What a version is sure to give is its worst run: the `best` is the best of those, and a version has `improved` a score when its worst run beats the best that any earlier version was sure to give, so `improved`, `best`, `score_in`, and `regressed` follow the evidence and not one lucky run; runs of a score that differ are its spread rather than a dispute. A direction pays off when its experiment improves a score, and is set aside after as many misses in a row as its `patience`, 3 unless it says. The standing question \"Where should the next experiment go?\" lists the live directions, those that paid off most first.",
+      "says": {
+        "behavior": "reasoning-next-experiment-question",
+        "is": "live-directions-most-paid-off-first",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-improves-past-noise", "patience-since-last-payoff"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "feature": "reasoning-score-requires",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "rule": "score-requirements",
+        "holds": true,
+        "statement": "A version's runs of a score count only where what the score requires holds",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "behavior": "reasoning-version-failing-requirement",
+        "is": "no-score",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "feature": "reasoning-unmet",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "feature": "reasoning-direction-needs",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "behavior": "reasoning-direction-need-unanswered",
+        "is": "waits",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "behavior": "reasoning-direction-need-answered-otherwise",
+        "is": "ruled-out",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "A lion-reasoning score can list what it `requires`, such as `{\"question\": {\"failing tests\": \"test.mjs\"}, \"value\": 0}`: a version where that is unanswered or answered otherwise has no score, and `unmet` lists it, so a change that breaks the tests never becomes the best. A direction can list what it `needs`; it waits while that is unanswered or not yet decided by whoever `ask` names, and is `ruled_out` once it is answered otherwise, so the user's answer prunes the directions.",
+      "says": {
+        "feature": "reasoning-ruled-out",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["score-requirements"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "feature": "research-leads",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "feature": "research-source-for",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "behavior": "research-source-lead-payoff",
+        "is": "first-hand-covered-statement",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "rule": "lead-done-when-confirmed",
+        "holds": true,
+        "statement": "A research lead is done when every question it pursues has an answer two publishers give first-hand",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "feature": "research-lead-done",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "behavior": "research-lead-sense-not-chosen",
+        "is": "waits",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "rule": "patience-since-last-payoff",
+        "holds": true,
+        "statement": "A direction or a lead is set aside after as many misses in a row as its patience, counted since its last payoff",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "behavior": "research-standing-questions-leads",
+        "is": "next-search-and-lead-outcomes",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill records leads, the lines of inquiry a research run follows: `\"leads\": [{\"id\": \"outside-warehouses\", \"statement\": \"…\", \"pursues\": [{\"warehouses\": \"tarnwell\"}], \"patience\": 2}]`, and `\"for\": [\"outside-warehouses\"]` on each source read to follow one. A source pays off for a lead when it says something first-hand the lead covers; a lead is `done` when every question it pursues has an answer two publishers give first-hand, waits while the reader has not chosen a sense of one, and is set aside after as many sources in a row as its patience gave it nothing. The standing questions ask where the next search should go and how each lead ended, and the page's \"How solid is it\" shows the reader \"What was looked for\".",
+      "says": {
+        "behavior": "research-page-what-was-looked-for",
+        "is": "shown",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"],
+      "decisions": ["patience-since-last-payoff", "lead-done-when-confirmed"]
+    },
+    {
+      "quote": "The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one.",
+      "says": {
+        "behavior": "research-report-md",
+        "is": "every-run",
+        "area": "skills",
+        "was": "only-when-asked"
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one.",
+      "says": {
+        "behavior": "research-answer-and-report",
+        "is": "same-words",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one.",
+      "says": {
+        "measured": "research-eval-runs-without-report",
+        "after": 0,
+        "area": "skills",
+        "before": 1
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The lion-research skill saves its written answer as `report.md` in the research folder on every run, not only when the user asks for a file, and gives the user the same words. In the skill's eval, one of two runs before the change wrote no report and failed the five checks that read it; both runs after it wrote one.",
+      "says": {
+        "measured": "research-eval-checks-reading-report",
+        "after": 5,
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`.",
+      "says": {
+        "behavior": "page-check-last-entry",
+        "is": "says-how-to-fix",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`.",
+      "says": {
+        "behavior": "research-build-explorer-page-check-reminder",
+        "is": "when-plan-names-questions",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"]
+    },
+    {
+      "quote": "The research page check's last entry says how to fix what it lists: `Questions the plan names that a choice set aside, or that have readings nobody chose between. This must be empty: reach each through meant, or ask the reader which sense they mean`. `build-explorer.mjs` reminds the agent to run it whenever the plan names questions as records, and the skill says the check must give `[]`.",
+      "says": {
+        "rule": "research-page-check-empty",
+        "holds": true,
+        "statement": "The research page check must give []",
+        "area": "skills"
+      },
+      "commits": ["2b711ade78fe"]
+    }
+  ]
+}

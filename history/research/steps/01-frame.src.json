@@ -111,6 +111,7 @@
         "area": "Area",
         "follows": ["schema/optional", "Precedent"],
         "breaking": ["schema/optional", true],
+        "fixes": ["schema/optional", true],
         "was": ["schema/optional", "word?"]
       },
       {
@@ -295,9 +296,23 @@
       "?c",
       "?s",
       "?_",
-      ["schema/open", { "rule": "?r", "holds": true, "predicts": "?ps" }]
+      [
+        "schema/open",
+        {
+          "rule": "?r",
+          "holds": true,
+          "predicts": "?ps"
+        }
+      ]
     ],
-    ["in", { "behavior": "?case", "is": "?v" }, "?ps"],
+    [
+      "in",
+      {
+        "behavior": "?case",
+        "is": "?v"
+      },
+      "?ps"
+    ],
     ["source", "?s", "?_", "?_", "?_", "?_", "?t"],
     [
       "not",
@@ -308,9 +323,23 @@
           "?_",
           "?later",
           "?_",
-          ["schema/open", { "rule": "?r", "holds": true, "predicts": "?others" }]
+          [
+            "schema/open",
+            {
+              "rule": "?r",
+              "holds": true,
+              "predicts": "?others"
+            }
+          ]
         ],
-        ["in", { "behavior": "?case", "is": "?w" }, "?others"],
+        [
+          "in",
+          {
+            "behavior": "?case",
+            "is": "?w"
+          },
+          "?others"
+        ],
         ["not", ["=", "?w", "?v"]],
         ["source", "?later", "?_", "?_", "?_", "?_", "?t2"],
         ["number/lessThan", "?t", "?t2"]
@@ -395,6 +424,7 @@
       "?_"
     ]
   ],
+  ["relation", "follows", ["claim", "decision"]],
   ["relation", "decided_in", ["source"]],
   [
     "rule",
@@ -444,31 +474,7 @@
     ["source", "?s", "?_", "?_", "?_", "?_", "?last"]
   ],
   ["relation", "undecided_removal", ["feature", "source"]],
-  [
-    "rule",
-    ["undecided_removal", "?f", "?s"],
-    ["removed", "?f", "?_", "?s"],
-    ["not", ["decided_in", "?s"]]
-  ],
   ["relation", "undecided_breaking", ["case", "source"]],
-  [
-    "rule",
-    ["undecided_breaking", "?case", "?s"],
-    [
-      "claim",
-      "?_",
-      "?s",
-      "?_",
-      [
-        "schema/open",
-        {
-          "behavior": "?case",
-          "breaking": true
-        }
-      ]
-    ],
-    ["not", ["decided_in", "?s"]]
-  ],
   [
     "relation",
     "measure_at",
@@ -513,12 +519,6 @@
     ]
   ],
   ["relation", "silent", ["source"]],
-  [
-    "rule",
-    ["silent", "?s"],
-    ["commit_source", "?s", "?_"],
-    ["not", ["claim", "?_", "?s", "?_", "?_"]]
-  ],
   ["relation", "drift", ["question", "said", "does"]],
   [
     "rule",
@@ -638,7 +638,18 @@
       [
         "and",
         ["=", "?follows", "javascript"],
-        ["claim", "?c", "?_", "?_", ["schema/open", { "area": "library" }]]
+        [
+          "claim",
+          "?c",
+          "?_",
+          "?_",
+          [
+            "schema/open",
+            {
+              "area": "library"
+            }
+          ]
+        ]
       ]
     ]
   ],

@@ -1,0 +1,1118 @@
+{
+  "claims": [
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "behavior": "aggregate-in-rule-head",
+        "is": "groups-by-other-columns",
+        "area": "logic"
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate",
+        "kind": "module",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/count",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/countUnique",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/sum",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/mean",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/min",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/max",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/collect",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "aggregate/unique",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "behavior": "aggregate-on-plain-list",
+        "is": "combines-list",
+        "area": "library"
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "rule": "stratified-aggregation",
+        "holds": true,
+        "statement": "Aggregation is stratified like negation: it cannot go through recursion",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-aggregate-sum",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-aggregate-min",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "behavior": "why-aggregated-fact",
+        "is": "lists-matches",
+        "area": "logic"
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Aggregates in rule heads. `[\"rule\", [\"spend\", \"?c\", [\"aggregate/sum\", \"?amount\"]], [\"order\", \"?_\", \"?c\", \"?amount\"]]` groups matches by the head's other columns and combines each group. The new `aggregate` module has `count`, `countUnique`, `sum`, `mean`, `min`, `max`, `collect`, and `unique`; called on a plain list, each combines the list right away. Aggregation is stratified like negation, and `why` lists the matches behind an aggregated fact. lionlang.dev has a live Aggregates card.",
+      "says": {
+        "feature": "site-card-aggregates",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["beddbed"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "feature": "aggregate/shortest",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "feature": "aggregate/union",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "rule": "lattice-recursion",
+        "holds": true,
+        "statement": "aggregate/min, aggregate/max, aggregate/shortest, and aggregate/union are lattice aggregates whose value only moves one way, so a recursive rule can aggregate with them and compute the value",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-aggregate-min",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-lattice-aggregate-computed-value",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-aggregate-sum",
+            "is": "error"
+          },
+          {
+            "behavior": "lattice-cycle-non-aggregating-relation",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "decision": "aggregation-through-recursion",
+        "chose": "lattice-aggregates-only",
+        "area": "logic",
+        "over": ["never"],
+        "because": "a group's value only moves one way"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "behavior": "recursive-rule-aggregate-min",
+        "is": "allowed",
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "behavior": "recursive-rule-lattice-aggregate-computed-value",
+        "is": "allowed",
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "behavior": "lattice-group-value",
+        "is": "keeps-best",
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "behavior": "lattice-cycle-non-aggregating-relation",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "behavior": "lattice-recursion-still-improving",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "measured": "lattice-max-rounds",
+        "after": 10000,
+        "area": "logic"
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Recursion through lattice aggregates. `aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` only move one way, so a recursive rule can aggregate with them and compute the aggregated value, which makes minimum distances and shortest paths expressible. Each group keeps its best value until none improves, every relation in such a cycle must aggregate, and a cycle still improving after 10,000 rounds (such as a negative-weight cycle) fails with an error. lionlang.dev has a live Shortest distances card.",
+      "says": {
+        "feature": "site-card-shortest-distances",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["000fa16"],
+      "decisions": ["lattice-recursion"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "feature": "query-option-order",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "feature": "query-option-offset",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "feature": "query-option-limit",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "feature": "query-option-assert",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "behavior": "query-order-leading-minus",
+        "is": "descending",
+        "area": "logic"
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "behavior": "query-assert-some-no-answers",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "behavior": "query-assert-none-with-answers",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "rule": "total-value-order",
+        "holds": true,
+        "statement": "Values sort in a fixed order across types: null, booleans, numbers, strings, arrays, then records",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "sort-order-across-types",
+            "is": "null-booleans-numbers-strings-arrays-records"
+          }
+        ]
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "behavior": "query-unknown-option",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "behavior": "query-order-unknown-variable",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "Query options. `[\"query\", goal, {\"order\": [\"-points\", \"player\"], \"offset\": 10, \"limit\": 5, \"assert\": \"some\"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card.",
+      "says": {
+        "feature": "site-card-order-and-limit",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["f7183b0"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "feature": "in",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "behavior": "in-unbound-element",
+        "is": "binds-each-item",
+        "area": "logic"
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "behavior": "in-bound-element",
+        "is": "membership-test",
+        "area": "logic"
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "behavior": "in-without-logic-variables",
+        "is": "membership",
+        "area": "logic"
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "feature": "array/range",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "behavior": "fold-map-in-form",
+        "is": "recognized",
+        "area": "editor"
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "behavior": "site-highlighter-in-form",
+        "is": "recognized",
+        "area": "site"
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "`[\"in\", element, list]` binds a variable to each item of a list, or tests membership once the element is bound, so rules can use list values stored in facts or computed from other variables. Without logic variables it is plain membership. New `array/range` makes a list of whole numbers. The Fold Map editor and the site highlighter recognize `in`. lionlang.dev has a live Lists with in card.",
+      "says": {
+        "feature": "site-card-lists-with-in",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["af7f8fd"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph",
+        "kind": "module",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph/shortestPath",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph/pageRank",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph/components",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph/stronglyConnected",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "graph/topologicalOrder",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "behavior": "graph-algorithm-call",
+        "is": "goal",
+        "area": "logic"
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "behavior": "graph-algorithm-run-time",
+        "is": "after-input-complete",
+        "area": "logic"
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "behavior": "why-computed-row",
+        "is": "marked-computed",
+        "area": "logic"
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "defineAlgorithm",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Graph algorithms as goals. The new `graph` module has `shortestPath` (Dijkstra, with optional weights), `pageRank`, `components`, `stronglyConnected`, and `topologicalOrder`. `[\"graph/pageRank\", \"edge\", \"?node\", \"?rank\"]` builds a goal over a computed relation that runs once its input relation is complete, so its rows work in queries, rules, `not`, and aggregates, and `why` marks them as computed. Hosts can add their own with `defineAlgorithm` from `@lionlang/core/logic/algorithms`. lionlang.dev has a live Graph algorithms card.",
+      "says": {
+        "feature": "site-card-graph-algorithms",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["0781dfb"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "rule": "goal-directed-magic-sets",
+        "holds": true,
+        "statement": "A query that gives a rule-defined relation a known argument runs a magic-sets rewrite, so evaluation derives only the facts the query can reach",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "decision": "query-evaluation",
+        "chose": "goal-directed-magic-sets",
+        "area": "logic",
+        "over": ["full-bottom-up"],
+        "because": "evaluation derives only the facts the query can reach"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "measured": "chain-3000-full-evaluation-paths-millions",
+        "after": 4.5,
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "behavior": "goal-directed-aggregated-relation",
+        "is": "computed-in-full",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "rule": "goal-directed-magic-sets",
+        "holds": true,
+        "statement": "Goal-directed queries give the answers full evaluation gives",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "goal-directed-vs-full-answers",
+            "is": "same"
+          }
+        ]
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "behavior": "goal-directed-vs-full-answers",
+        "is": "same",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "feature": "goal-directed-option",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Goal-directed queries. A query that gives a rule-defined relation a known argument, such as `[\"path\", \"a\", \"?to\"]`, now runs a magic-sets rewrite of the rules, so evaluation derives only the facts the query can reach instead of every fact the program implies. A query along a 3,000-node chain that would otherwise derive about 4.5 million paths returns in milliseconds. Aggregated, computed, and negated relations are still computed in full, answers match full evaluation, and `new LogicDatabase({ goalDirected: false })` turns the rewrite off. lionlang.dev has a live Goal-directed queries card.",
+      "says": {
+        "feature": "site-card-goal-directed-queries",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+      "says": {
+        "behavior": "semi-naive-round-join-start",
+        "is": "new-tuples",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+      "says": {
+        "behavior": "relation-index-new-tuple",
+        "is": "updated-in-place",
+        "area": "logic",
+        "was": "rebuilt"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+      "says": {
+        "behavior": "in-membership-test-method",
+        "is": "lookup",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+      "says": {
+        "measured": "chain-3000-query-ms",
+        "after": 100,
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "Recursive rules run faster: each semi-naive round starts its join from the tuples that are new, relation indexes are kept up to date instead of rebuilt after every new tuple, and `in` tests membership with a lookup. A 3,000-step chain query went from about 9 seconds to about 100 ms. `why` explanations keep their premises in rule order.",
+      "says": {
+        "behavior": "why-premise-order",
+        "is": "rule-order",
+        "area": "logic"
+      },
+      "commits": ["f4c7c4c"],
+      "decisions": ["datalog-logic-layer"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "feature": "relation-option-key",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "rule": "keyed-relations-upsert",
+        "holds": true,
+        "statement": "A keyed relation holds at most one row per key, and a fact whose key is already present replaces the old row",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "keyed-relation-fact-existing-key",
+            "is": "replaces"
+          },
+          {
+            "behavior": "keyed-relation-repeated-key-in-one-fact-form",
+            "is": "last-wins"
+          },
+          {
+            "behavior": "keyed-relation-rules-derive-conflicting-rows",
+            "is": "error"
+          }
+        ]
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "decision": "keyed-relation-fact-semantics",
+        "chose": "upsert",
+        "area": "logic"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "behavior": "keyed-relation-fact-existing-key",
+        "is": "replaces",
+        "area": "logic"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "behavior": "relation-key-several-columns",
+        "is": "allowed",
+        "area": "logic"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "behavior": "keyed-relation-rules-derive-conflicting-rows",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "behavior": "relation-redeclared-differently",
+        "is": "error",
+        "area": "logic"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "behavior": "fold-map-keyed-relation",
+        "is": "labeled",
+        "area": "editor"
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Keyed relations. `[\"relation\", \"order\", [\"id\", \"status\"], {\"key\": [\"id\"]}]` holds at most one row per key: a fact whose key is already present replaces the old row, keys can span several columns, and rules that derive two rows for one key fail with an error that names both rows. Redeclaring a relation must repeat its key. The Fold Map editor labels keyed relations. lionlang.dev has a live Keys and upserts card.",
+      "says": {
+        "feature": "site-card-keys-and-upserts",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["2b64585"],
+      "decisions": ["keyed-relations-upsert"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "feature": "snapshot",
+        "kind": "special-form",
+        "present": true
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "rule": "snapshots-are-programs",
+        "holds": true,
+        "statement": "A logic database is saved as a Lion program of forms that rebuild it, and evaluating the program into an empty database gives the same answers",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "snapshot-reload-answers",
+            "is": "same"
+          }
+        ]
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "behavior": "snapshot-string-that-loads-as-something-else",
+        "is": "quoted",
+        "area": "logic"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "feature": "saveDatabase",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "feature": "loadDatabase",
+        "kind": "function",
+        "present": true
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "behavior": "run-database-relations-bound-by-name",
+        "is": "bound",
+        "area": "host"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "behavior": "fold-map-snapshot-form",
+        "is": "recognized",
+        "area": "editor"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "behavior": "site-highlighter-snapshot-form",
+        "is": "recognized",
+        "area": "site"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "Snapshots. `[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database, quoting strings that would load as something else. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and a database passed to `run` now binds its relations by name, so later runs can query them without declaring them again. The Fold Map editor and the site highlighter recognize `snapshot`. lionlang.dev has a live Snapshots card.",
+      "says": {
+        "feature": "site-card-snapshots",
+        "kind": "capability",
+        "present": true
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "`lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line.",
+      "says": {
+        "feature": "cli-database-flag",
+        "kind": "option",
+        "present": true
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "`lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line.",
+      "says": {
+        "behavior": "cli-database-file-after-run",
+        "is": "saved-back",
+        "area": "cli"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "`lion program.json --database store.json` loads a logic database from a snapshot file, runs the program against it, and saves it back, one form and one fact per line.",
+      "says": {
+        "behavior": "cli-database-file-format",
+        "is": "one-form-and-fact-per-line",
+        "area": "cli"
+      },
+      "commits": ["56af8ed"],
+      "decisions": ["snapshots-are-programs"]
+    },
+    {
+      "quote": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+      "says": {
+        "behavior": "site-worker-scheduler-yield",
+        "is": "prevented",
+        "area": "site",
+        "was": "yields",
+        "fixes": true
+      },
+      "commits": ["59f142e"]
+    },
+    {
+      "quote": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+      "says": {
+        "decision": "site-worker-scheduler",
+        "chose": "prevent-scheduler-yield",
+        "area": "site",
+        "over": ["yield-to-scheduler"],
+        "because": "the page already terminates runaway programs"
+      },
+      "commits": ["59f142e"]
+    },
+    {
+      "quote": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+      "says": {
+        "measured": "site-3000-answer-query-seconds-before-fix",
+        "after": 1.8,
+        "area": "site"
+      },
+      "commits": ["59f142e"]
+    },
+    {
+      "quote": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+      "says": {
+        "measured": "site-3000-answer-query-ms",
+        "after": 150,
+        "area": "site"
+      },
+      "commits": ["59f142e"]
+    },
+    {
+      "quote": "The live examples on lionlang.dev spent most of a long evaluation idle: the evaluator yielded to the browser scheduler every few thousand steps, and each yield waited on a clamped `setTimeout`. The site worker no longer yields, since the page already stops runaway programs, so a 3,000-answer logic query in the browser went from about 1.8 s (past the 1.5 s limit) to about 150 ms.",
+      "says": {
+        "measured": "site-example-time-limit-seconds",
+        "after": 1.5,
+        "area": "site"
+      },
+      "commits": ["59f142e"]
+    },
+    {
+      "quote": "A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with \"not JSON data\" instead of finding no answers. Found by comparing goal-directed and full evaluation on 2,000 generated programs.",
+      "says": {
+        "behavior": "goal-directed-non-json-argument",
+        "is": "no-answers",
+        "area": "logic",
+        "was": "error",
+        "fixes": true
+      },
+      "commits": ["76d833f"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "A goal-directed query whose argument was not JSON data, such as a relation name that evaluates to the relation itself, failed with \"not JSON data\" instead of finding no answers. Found by comparing goal-directed and full evaluation on 2,000 generated programs.",
+      "says": {
+        "measured": "generated-programs-compared",
+        "after": 2000,
+        "area": "tests"
+      },
+      "commits": ["76d833f"],
+      "decisions": ["goal-directed-magic-sets"]
+    },
+    {
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-unify",
+        "is": "error",
+        "area": "logic",
+        "was": "non-terminating",
+        "fixes": true
+      },
+      "commits": ["05f2834"],
+      "decisions": ["recursion-cannot-compute-values"]
+    },
+    {
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.",
+      "says": {
+        "behavior": "recursive-rule-computed-value-through-in",
+        "is": "error",
+        "area": "logic",
+        "was": "non-terminating",
+        "fixes": true
+      },
+      "commits": ["05f2834"],
+      "decisions": ["recursion-cannot-compute-values"]
+    },
+    {
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.",
+      "says": {
+        "rule": "recursion-cannot-compute-values",
+        "holds": true,
+        "statement": "A recursive rule cannot compute new values for its head columns, in the head itself or through = or in, so evaluation always finishes",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-computed-value-through-unify",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-computed-value-through-in",
+            "is": "error"
+          },
+          {
+            "behavior": "recursive-rule-unify-from-fact-value",
+            "is": "allowed"
+          }
+        ],
+        "except": ["recursive-rule-lattice-aggregate-computed-value"]
+      },
+      "commits": ["05f2834"],
+      "decisions": ["recursion-cannot-compute-values"]
+    },
+    {
+      "quote": "A recursive rule could compute a new head value through `=` or `in`, such as `[\"rule\", [\"c\", \"?m\"], [\"c\", \"?n\"], [\"=\", \"?m\", [\"number/add\", \"?n\", 1]]]`, and evaluation never finished despite the documented guarantee. Such rules are now rejected when added, with a hint to compute the value in a non-recursive rule or aggregate it with a lattice aggregate.",
+      "says": {
+        "behavior": "recursive-computed-value-error-hint",
+        "is": "non-recursive-rule-or-lattice-aggregate",
+        "area": "errors"
+      },
+      "commits": ["05f2834"],
+      "decisions": ["recursion-cannot-compute-values"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "behavior": "site-asset-urls",
+        "is": "hash-versioned",
+        "area": "site"
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "behavior": "site-cached-worker-with-new-page",
+        "is": "never-paired",
+        "area": "site",
+        "was": "invalid-function-call-error",
+        "fixes": true
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "decision": "site-asset-caching",
+        "chose": "hash-versioned-urls",
+        "area": "site",
+        "over": ["plain-urls"],
+        "because": "cached workers never pair with new pages"
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "feature": "site-runtime-stamp",
+        "kind": "tool",
+        "present": true
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "behavior": "site-runtime-build-runs-stamp",
+        "is": "runs",
+        "area": "build"
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    },
+    {
+      "quote": "lionlang.dev loads its scripts, stylesheet, highlighter, and evaluator worker with a `?v=` hash of the site's assets. Before, a visitor whose browser had cached the previous release's worker saw the new logic examples fail with `InvalidFunctionCallError`. `bun run --cwd packages/site-runtime stamp` updates the hash (the site-runtime build runs it), and CI checks it.",
+      "says": {
+        "rule": "ci-checks-site-asset-versions",
+        "holds": true,
+        "statement": "CI fails when the site's asset version hash is out of date",
+        "area": "process"
+      },
+      "commits": ["65ae02d"],
+      "decisions": ["live-examples-run-real-core"]
+    }
+  ]
+}

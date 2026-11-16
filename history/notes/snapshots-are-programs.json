@@ -1,0 +1,165 @@
+{
+  "title": "A logic database is saved as a Lion program of forms that rebuild it",
+  "context": "A logic database lived only in memory. Each `run` got its own, and a host could pass `{ database }` to share one across runs, but Lion had no way to save one, so the `lion` command line could not keep facts and rules from one run to the next.",
+  "decision": "`[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database. Strings that would load as something else, such as relation names, bound names, namespaced names, and `?names`, are written inside `quote`, and so are lists and records. Rules are written from their evaluated goals, so aggregates, `in`, `=`, `not`, `or`, and algorithm goals round-trip. `saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript, and `lion program.json --database store.json` loads a snapshot file, runs the program, and saves it back, one form and one fact per line.",
+  "consequences": "A saved database is ordinary Lion that can be read, edited, diffed, and run, and evaluating it into an empty database gives the same answers. A database passed to `run` binds its relations by name, so later runs query them without declaring them again. A program and its snapshot must behave the same, and later changes kept them so: invariants are saved after the rules, a function is written under the name the environment gives it, and a waiting `cond`, record, or lambda is written as its form. A rule or invariant counts as one the database holds when a snapshot would write it the same way.",
+  "commits": [
+    {
+      "commit": "56af8ed",
+      "quote": "returns a Lion program of relation, fact, and rule forms that rebuilds the current database"
+    },
+    {
+      "commit": "47ea840",
+      "quote": "Snapshots save them after the rules"
+    },
+    {
+      "commit": "aef67af",
+      "quote": "Snapshots write a function by the name the environment gives it"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`[\"snapshot\"]` returns a Lion program of `relation`, `fact`, and `rule` forms that rebuilds the current database.",
+      "says": {
+        "decision": "database-save-format",
+        "chose": "lion-program",
+        "because": "a saved database is ordinary Lion that can be read, edited, diffed, and run",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A saved database is ordinary Lion that can be read, edited, diffed, and run, and evaluating it into an empty database gives the same answers.",
+      "says": {
+        "rule": "snapshots-are-programs",
+        "holds": true,
+        "statement": "A logic database is saved as a Lion program of forms that rebuild it, and evaluating the program into an empty database gives the same answers",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "snapshot-reload-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A program and its snapshot must behave the same",
+      "says": {
+        "rule": "equivalent-programs-equivalent",
+        "holds": true,
+        "statement": "A program and its snapshot behave the same",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "program-vs-snapshot-answers",
+            "is": "same"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"snapshot\"]` returns a Lion program",
+      "says": {
+        "feature": "snapshot",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "`saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript",
+      "says": {
+        "feature": "saveDatabase",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`saveDatabase` and `loadDatabase` in `@lionlang/core/logic/snapshot` do the same from TypeScript",
+      "says": {
+        "feature": "loadDatabase",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`lion program.json --database store.json` loads a snapshot file, runs the program, and saves it back",
+      "says": {
+        "feature": "cli-database-flag",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "Strings that would load as something else, such as relation names, bound names, namespaced names, and `?names`, are written inside `quote`",
+      "says": {
+        "behavior": "snapshot-string-that-loads-as-something-else",
+        "is": "quoted",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "and so are lists and records",
+      "says": {
+        "behavior": "snapshot-lists-and-records",
+        "is": "quoted",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Rules are written from their evaluated goals, so aggregates, `in`, `=`, `not`, `or`, and algorithm goals round-trip.",
+      "says": {
+        "behavior": "snapshot-rule-round-trip",
+        "is": "round-trips",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "one form and one fact per line",
+      "says": {
+        "behavior": "cli-database-file-format",
+        "is": "one-form-and-fact-per-line",
+        "area": "cli"
+      }
+    },
+    {
+      "quote": "A database passed to `run` binds its relations by name, so later runs query them without declaring them again.",
+      "says": {
+        "behavior": "run-database-relations-bound-by-name",
+        "is": "bound",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "invariants are saved after the rules",
+      "says": {
+        "behavior": "snapshot-invariants-position",
+        "is": "after-rules",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a function is written under the name the environment gives it",
+      "says": {
+        "behavior": "snapshot-rule-holding-function",
+        "is": "written-by-environment-name",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a waiting `cond`, record, or lambda is written as its form",
+      "says": {
+        "behavior": "snapshot-rule-holding-lambda",
+        "is": "written-as-form",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A rule or invariant counts as one the database holds when a snapshot would write it the same way.",
+      "says": {
+        "behavior": "rule-identity",
+        "is": "snapshot-form",
+        "area": "logic"
+      }
+    }
+  ]
+}

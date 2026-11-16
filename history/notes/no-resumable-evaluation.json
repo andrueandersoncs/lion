@@ -1,0 +1,123 @@
+{
+  "title": "Evaluation runs to its end in one pass, and does not pause at host calls to resume from a log",
+  "context": "In March 2026 a spec, `packages/core/specs/resumable-evaluation.md`, asked for resumable evaluation, and the evaluator was built to it. Evaluation took an operation log. A call to an effectful function, which meant any function outside the standard library, was looked up in the log: with no entry, evaluation added an `operation_started` entry and stopped with `ContinuationNeededError`; with a matching `operation_completed` entry, it used the stored result and did not call the function. To continue, the host passed back a log with the completed entry, and the program was evaluated again from the start, every pure expression again and every effectful one from the log.",
+  "decision": "Resumability was removed on March 27, 2026. The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted, and a call to a host function calls it. The spec was deleted the same day.",
+  "consequences": "An evaluation needs only its environment: the evaluator's type lost the log service and the two errors, and tests no longer provide an empty log. A host function is called once, when evaluation reaches it, and its result is not recorded anywhere. Lion has no way to stop a program at a host call and continue it later.",
+  "commits": [
+    {
+      "commit": "2ebcfac",
+      "quote": "remove resumability"
+    },
+    "00f403c"
+  ],
+  "claims": [
+    {
+      "quote": "Evaluation runs to its end in one pass, and does not pause at host calls to resume from a log",
+      "says": {
+        "decision": "evaluation-runtime",
+        "chose": "run-to-completion",
+        "over": ["resumable-oplog"],
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "a call to a host function calls it",
+      "says": {
+        "rule": "no-resumable-evaluation",
+        "holds": true,
+        "statement": "Evaluation runs to its end in one pass and calls host functions directly, with no oplog",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "host-function-call-without-oplog-entry",
+            "is": "called"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "a call to a host function calls it",
+      "says": {
+        "behavior": "host-function-call-without-oplog-entry",
+        "is": "called",
+        "area": "evaluation",
+        "was": "paused"
+      }
+    },
+    {
+      "quote": "Resumability was removed on March 27, 2026",
+      "says": {
+        "rule": "resumable-evaluation",
+        "holds": false,
+        "statement": "Evaluation pauses at effectful operations and resumes from an oplog",
+        "area": "evaluation",
+        "replaced_by": "no-resumable-evaluation"
+      }
+    },
+    {
+      "quote": "Resumability was removed on March 27, 2026",
+      "says": {
+        "feature": "resumable-evaluation",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "quote": "The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted",
+      "says": {
+        "feature": "ContinuationNeededError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "quote": "The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted",
+      "says": {
+        "feature": "OplogMismatchError",
+        "kind": "error",
+        "present": false
+      }
+    },
+    {
+      "quote": "The operation log, its service and schemas, and the errors `ContinuationNeededError` and `OplogMismatchError` were deleted",
+      "says": {
+        "rule": "one-completion-per-operation",
+        "holds": false,
+        "statement": "An operation_started entry has exactly one operation_completed entry",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "The spec was deleted the same day",
+      "says": {
+        "feature": "resumable-evaluation-spec",
+        "kind": "file",
+        "present": false
+      }
+    },
+    {
+      "quote": "A host function is called once, when evaluation reaches it, and its result is not recorded anywhere",
+      "says": {
+        "behavior": "host-function-call-count",
+        "is": "once",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "A host function is called once, when evaluation reaches it, and its result is not recorded anywhere",
+      "says": {
+        "behavior": "host-function-result-recorded",
+        "is": "never",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "Lion has no way to stop a program at a host call and continue it later",
+      "says": {
+        "behavior": "host-call-pause-and-resume",
+        "is": "unsupported",
+        "area": "evaluation"
+      }
+    }
+  ]
+}

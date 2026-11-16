@@ -1,0 +1,140 @@
+{
+  "title": "An array is always a special form or a call, never a list that evaluates to itself",
+  "context": "Until March 31, 2026, an array that was not a special form and whose first value was not a function evaluated to the array of its evaluated elements, so `[1, [\"math/+\", 2, 3], true]` gave `[1, 5, true]`. The same rule applied to a call of a name bound to nothing: `[\"math/sum\", 1, 2]` gave back `[\"math/sum\", 1, 2]` instead of failing.",
+  "decision": "The auto-quoting of lists was removed. An array is a special form or a call, and an array whose first value is not a function fails with `InvalidFunctionCallError`. A list that is data is built by a function, `[\"list/list\", 1, 2]` at the time and `[\"array/make\", 1, 2]` since April 2026, or written inside `quote`.",
+  "consequences": "A call of a misspelled or unbound name fails where it is written, instead of becoming a list that travels on through the program. The property test that every array of primitives evaluates to itself was deleted, and the tests of `begin`, `define`, `eval`, and `lambda` were rewritten to expect the new error. The README at the time said that all JSON is valid Lion code; the README written for 0.1.0 says that arrays are always treated as executable expressions.",
+  "alternatives": [
+    {
+      "option": "Keep auto-quoting: an array whose first value is not a function evaluates to the array of its evaluated elements",
+      "rejected": "The commit that removed it calls it too magical."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "1d1dacf",
+      "quote": "remove list auto-quote functionality, too magical"
+    },
+    {
+      "commit": "c6c3859",
+      "quote": "finish fixing tests after removing autoquote"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "an array whose first value is not a function fails with `InvalidFunctionCallError`",
+      "says": {
+        "decision": "array-without-function-head",
+        "chose": "error",
+        "over": ["list-of-evaluated-elements"],
+        "area": "evaluation",
+        "because": "too magical"
+      }
+    },
+    {
+      "quote": "The auto-quoting of lists was removed.",
+      "says": {
+        "feature": "list-auto-quote",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "quote": "The auto-quoting of lists was removed.",
+      "says": {
+        "rule": "non-call-arrays-are-lists",
+        "holds": false,
+        "statement": "An array whose first element does not evaluate to a function evaluates each of its elements and returns the resulting array",
+        "area": "evaluation",
+        "replaced_by": "arrays-are-never-data"
+      }
+    },
+    {
+      "quote": "An array is always a special form or a call, never a list that evaluates to itself",
+      "says": {
+        "rule": "arrays-are-never-data",
+        "holds": true,
+        "statement": "An array is always a special form or a call, never a list that evaluates to itself, so a list that is data is built by a function or written inside quote",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "array-first-element-not-function",
+            "is": "error"
+          },
+          {
+            "behavior": "array-first-element-not-string",
+            "is": "error"
+          },
+          {
+            "behavior": "array-of-primitives",
+            "is": "error"
+          },
+          {
+            "behavior": "array-first-element-unbound-string",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "an array whose first value is not a function fails with `InvalidFunctionCallError`",
+      "says": {
+        "behavior": "array-first-element-not-function",
+        "is": "error",
+        "area": "evaluation",
+        "was": "evaluated-elements"
+      }
+    },
+    {
+      "quote": "an array whose first value is not a function fails with `InvalidFunctionCallError`",
+      "says": {
+        "behavior": "array-first-element-not-string",
+        "is": "error",
+        "area": "evaluation",
+        "was": "evaluated-elements"
+      }
+    },
+    {
+      "quote": "A call of a misspelled or unbound name fails where it is written, instead of becoming a list that travels on through the program.",
+      "says": {
+        "behavior": "array-first-element-unbound-string",
+        "is": "error",
+        "area": "evaluation",
+        "was": "evaluated-elements"
+      }
+    },
+    {
+      "quote": "The property test that every array of primitives evaluates to itself was deleted",
+      "says": {
+        "behavior": "array-of-primitives",
+        "is": "error",
+        "area": "evaluation",
+        "was": "itself"
+      }
+    },
+    {
+      "quote": "an array whose first value is not a function fails with `InvalidFunctionCallError`",
+      "says": {
+        "feature": "InvalidFunctionCallError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "quote": "A list that is data is built by a function, `[\"list/list\", 1, 2]` at the time and `[\"array/make\", 1, 2]` since April 2026, or written inside `quote`.",
+      "says": {
+        "feature": "list/list",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "array/make"
+      }
+    },
+    {
+      "quote": "A list that is data is built by a function, `[\"list/list\", 1, 2]` at the time and `[\"array/make\", 1, 2]` since April 2026, or written inside `quote`.",
+      "says": {
+        "feature": "array/make",
+        "kind": "function",
+        "present": true
+      }
+    }
+  ]
+}

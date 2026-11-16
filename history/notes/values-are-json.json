@@ -1,0 +1,226 @@
+{
+  "title": "Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`",
+  "context": "Lion runs on JavaScript, but its values are JSON, and the two disagree in a few places. The standard library followed JavaScript in some of them: division by zero gave `Infinity`, `object/get` gave `undefined` for a missing key, `array/head` crashed on an empty list, and `value/object?` was true for lists. Such values cannot be printed as JSON, stored as a fact, or saved in a snapshot, and facts and rule results already refused numbers that are not finite.",
+  "decision": "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`; this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list. An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list. `value/object?` is true for records and not for lists. Query answers and the rows rules derive must be JSON data, and `[\"=\", 0, -0]` is `true`, since JSON writes both as `0`.",
+  "consequences": "A Lion value can always be printed, stored as a fact, and saved, and a number that is not finite fails at the function that made it instead of where it is used later. Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently. A query whose answer binds a variable to a function, which used to leave the variable out, now fails and shows the answer.",
+  "alternatives": [
+    {
+      "option": "Return what JavaScript returns, such as `Infinity`, `NaN`, and `undefined`",
+      "rejected": "JSON cannot hold them, so such a value cannot be printed, stored as a fact, or saved in a snapshot."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "4efc928",
+      "quote": "Lion's values are JSON, and the standard library now agrees everywhere JavaScript and JSON differ"
+    },
+    {
+      "commit": "aef67af",
+      "quote": "Query answers and derived rows must be JSON data."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up.",
+      "says": {
+        "decision": "javascript-json-disagreement",
+        "chose": "follow-json",
+        "over": ["follow-javascript"],
+        "because": "JSON cannot hold Infinity, NaN, or undefined, so such a value cannot be printed, stored as a fact, or saved in a snapshot",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`",
+      "says": {
+        "decision": "non-finite-arithmetic",
+        "chose": "arithmetic-error",
+        "over": ["infinity-or-nan"],
+        "because": "JSON cannot hold Infinity or NaN",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list.",
+      "says": {
+        "decision": "object-get-missing-key",
+        "chose": "null",
+        "over": ["undefined"],
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Lion's values are JSON, so the standard library never gives `undefined`, `NaN`, or `Infinity`",
+      "says": {
+        "rule": "values-are-json",
+        "holds": true,
+        "statement": "Lion's values are JSON, so the standard library never gives undefined, NaN, or Infinity",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "division-by-zero",
+            "is": "error"
+          },
+          {
+            "behavior": "number-overflow",
+            "is": "error"
+          },
+          {
+            "behavior": "object-get-missing-key",
+            "is": "null"
+          },
+          {
+            "behavior": "array-head-empty-list",
+            "is": "null"
+          },
+          {
+            "behavior": "value-object-list",
+            "is": "false"
+          },
+          {
+            "behavior": "zero-equals-negative-zero",
+            "is": "true"
+          },
+          {
+            "behavior": "query-answer-non-json",
+            "is": "error"
+          },
+          {
+            "behavior": "derived-row-non-json",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`",
+      "says": {
+        "behavior": "division-by-zero",
+        "is": "error",
+        "area": "library",
+        "follows": "json"
+      }
+    },
+    {
+      "quote": "Where JavaScript and JSON disagree, Lion follows JSON, everywhere the case comes up. Arithmetic whose result is not a finite number, such as division by zero or an overflow, fails with the new `ArithmeticError`",
+      "says": {
+        "behavior": "number-overflow",
+        "is": "error",
+        "area": "library",
+        "follows": "json"
+      }
+    },
+    {
+      "quote": "fails with the new `ArithmeticError`",
+      "says": {
+        "feature": "ArithmeticError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "quote": "this covers `number/add`, `number/subtract`, `number/multiply`, and `number/divide`, and `aggregate/sum` and `aggregate/mean` on a list",
+      "says": {
+        "behavior": "aggregate-sum-non-finite",
+        "is": "error",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list.",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "null",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "An answer that means nothing is here is `null`, such as a missing key from `object/get` or the first item of an empty list.",
+      "says": {
+        "behavior": "array-head-empty-list",
+        "is": "null",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "`value/object?` is true for records and not for lists.",
+      "says": {
+        "behavior": "value-object-list",
+        "is": "false",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Query answers and the rows rules derive must be JSON data",
+      "says": {
+        "behavior": "query-answer-non-json",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Query answers and the rows rules derive must be JSON data",
+      "says": {
+        "behavior": "derived-row-non-json",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`[\"=\", 0, -0]` is `true`, since JSON writes both as `0`",
+      "says": {
+        "behavior": "zero-equals-negative-zero",
+        "is": "true",
+        "area": "logic",
+        "follows": "json"
+      }
+    },
+    {
+      "quote": "a number that is not finite fails at the function that made it instead of where it is used later",
+      "says": {
+        "behavior": "non-finite-number-failure-point",
+        "is": "function-that-made-it",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently.",
+      "says": {
+        "behavior": "division-by-zero",
+        "is": "error",
+        "area": "library",
+        "breaking": true,
+        "was": "infinity-or-nan"
+      }
+    },
+    {
+      "quote": "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently.",
+      "says": {
+        "behavior": "object-get-missing-key",
+        "is": "null",
+        "area": "library",
+        "breaking": true,
+        "was": "undefined"
+      }
+    },
+    {
+      "quote": "Programs that relied on `Infinity`, `undefined`, or `value/object?` of a list behave differently.",
+      "says": {
+        "behavior": "value-object-list",
+        "is": "false",
+        "area": "library",
+        "breaking": true,
+        "was": "true"
+      }
+    },
+    {
+      "quote": "A query whose answer binds a variable to a function, which used to leave the variable out, now fails and shows the answer.",
+      "says": {
+        "behavior": "query-answer-variable-bound-to-function",
+        "is": "error",
+        "area": "logic",
+        "was": "variable-left-out"
+      }
+    }
+  ]
+}

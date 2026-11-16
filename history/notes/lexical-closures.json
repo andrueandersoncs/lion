@@ -1,0 +1,139 @@
+{
+  "title": "Environments form a chain from local to global, and a lambda closes over the environment it is made in",
+  "context": "The first `lambda`, added on March 30, 2026, copied the bindings of the environment it was made in and ran its body in a new copy with its parameters added. A `define` in the body changed only that copy, so a lambda passed to `func/callback` could not set a global name, and a lambda never saw a name defined after it was made, its own among them. A comment in the code recorded that code inside a lambda had no access to the global environment.",
+  "decision": "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment. A name is looked up from the innermost environment outward. Calling a lambda makes a new environment of its parameters whose parent is the environment the lambda was made in, not a copy of it. `define` binds in the global environment, also inside a lambda. A first fix copied the environment at each call and wrote the global bindings back when the call ended; the same morning, each environment's bindings moved into a `Ref` that every closure over it shares.",
+  "consequences": "Closures nest: in `[\"lambda\", [\"x\"], [[\"lambda\", [\"y\"], [[\"lambda\", [\"z\"], {\"x\": \"x\", \"y\": \"y\", \"z\": \"z\"}], 3]], 2]]` the innermost body sees all three parameters. A lambda sees a global defined after it was made, so it can call itself by the name it is defined under, and a callback that host code runs later can still set a global name. A `define` inside a lambda's body does not make a local name, as it would in Scheme: the README says `define` stores its value in the global environment.",
+  "alternatives": [
+    {
+      "option": "A lambda that runs in a copy of the bindings it was made with, as the first `lambda` did",
+      "rejected": "Code in its body could not reach the global environment: a `define` changed only the copy, and names defined later were missing."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "98ce5dd",
+      "quote": "implements proper global/local environment distinctions, fixes lambda bug"
+    },
+    {
+      "commit": "a51324b",
+      "quote": "fixes define/lambda closure issue"
+    },
+    {
+      "commit": "c63b79d",
+      "quote": "better solution to lambda/closure issue"
+    },
+    "35446bc",
+    "861278b"
+  ],
+  "claims": [
+    {
+      "quote": "Environments form a chain from local to global, and a lambda closes over the environment it is made in",
+      "says": {
+        "decision": "lambda-closure-environment",
+        "chose": "enclosing-environment",
+        "over": ["copy-of-bindings"],
+        "because": "in a copy of its bindings a lambda could not reach the global environment, and names defined later were missing",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "the same morning, each environment's bindings moved into a `Ref` that every closure over it shares",
+      "says": {
+        "decision": "closure-environment-implementation",
+        "chose": "shared-mutable-frames",
+        "over": ["copy-and-sync-global"],
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "Calling a lambda makes a new environment of its parameters whose parent is the environment the lambda was made in, not a copy of it",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "Environments chain from local to global, and a lambda closes over the scope it is made in and sees later changes to global bindings",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          },
+          {
+            "behavior": "lambda-global-defined-after-creation",
+            "is": "visible"
+          },
+          {
+            "behavior": "define-inside-lambda",
+            "is": "global"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A name is looked up from the innermost environment outward",
+      "says": {
+        "behavior": "name-lookup-local-miss",
+        "is": "parent-environment",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment",
+      "says": {
+        "behavior": "lambda-body-global-environment",
+        "is": "accessible",
+        "area": "names",
+        "was": "inaccessible"
+      }
+    },
+    {
+      "quote": "`define` binds in the global environment, also inside a lambda",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "global",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "A `define` inside a lambda's body does not make a local name, as it would in Scheme",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Where a base form's behavior is unclear, Lion does what Scheme and Racket do",
+        "area": "evaluation",
+        "except": ["define-inside-lambda"]
+      }
+    },
+    {
+      "quote": "the innermost body sees all three parameters",
+      "says": {
+        "behavior": "lambda-free-variable",
+        "is": "enclosing-scope",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "A lambda sees a global defined after it was made",
+      "says": {
+        "behavior": "lambda-global-defined-after-creation",
+        "is": "visible",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "so it can call itself by the name it is defined under",
+      "says": {
+        "behavior": "lambda-recursion-by-defined-name",
+        "is": "allowed",
+        "area": "names"
+      }
+    },
+    {
+      "quote": "a callback that host code runs later can still set a global name",
+      "says": {
+        "behavior": "host-callback-define",
+        "is": "global",
+        "area": "host"
+      }
+    }
+  ]
+}

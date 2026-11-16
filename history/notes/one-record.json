@@ -1,0 +1,67 @@
+{
+  "claims": [
+    {
+      "quote": "The changelog at [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) lists each change and decision once, under the release that first shipped it, in the latest words said about it, with every commit and note that says it as a source. Its sections are Breaking, Added, Removed, Changed, Fixed, Documentation, Decided, Rules, and Figures, a filter shows one or more of them, and the findings that wait for a decision are listed above the timeline.",
+      "says": {
+        "behavior": "changelog-item",
+        "is": "once-with-sources",
+        "area": "site"
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "`DECISIONS.md` lists every decided question, oldest first, with each answer it was given and the records that explain it, and for each thing a record asserts, whether it holds when Lion is run, is broken, is only stated, or was replaced by a later word.",
+      "says": {
+        "behavior": "decisions-md-assertions",
+        "is": "checked",
+        "area": "record"
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "Every change and decision is recorded as claims in `history/notes/`, each a source's words and what they say, and `history/changes/` and `history/decisions/` are gone. `bun run history write` builds the model of Lion's development and writes every page from it, `bun run history check` fails on what the record's checks and the research find and on a page that is out of date, and `bun run history ask` asks the model.",
+      "says": {
+        "feature": "history-notes",
+        "kind": "file",
+        "present": true
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "Every change and decision is recorded as claims in `history/notes/`, each a source's words and what they say, and `history/changes/` and `history/decisions/` are gone. `bun run history write` builds the model of Lion's development and writes every page from it, `bun run history check` fails on what the record's checks and the research find and on a page that is out of date, and `bun run history ask` asks the model.",
+      "says": {
+        "feature": "history-changes-and-decisions-folders",
+        "kind": "file",
+        "present": false
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "The research page and the commands `bun run history research`, `query`, `sources`, and `probe` are gone: the changelog shows what the page showed, and `write`, `check`, and `ask` do what the commands did.",
+      "says": {
+        "feature": "research-page",
+        "kind": "page",
+        "present": false
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "The research page and the commands `bun run history research`, `query`, `sources`, and `probe` are gone: the changelog shows what the page showed, and `write`, `check`, and `ask` do what the commands did.",
+      "says": {
+        "feature": "history-research-command",
+        "kind": "command",
+        "present": false
+      },
+      "decisions": ["one-record-of-claims"]
+    },
+    {
+      "quote": "A commit counts as read when a claim was made by it, so a commit that records its change in `history/notes/` is not listed among the commits the model has nothing from.",
+      "says": {
+        "behavior": "commit-read",
+        "is": "claim-made-by-it",
+        "area": "record"
+      },
+      "decisions": ["one-record-of-claims"]
+    }
+  ]
+}

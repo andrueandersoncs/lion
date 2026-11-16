@@ -1,0 +1,182 @@
+{
+  "title": "Recursion may aggregate only through lattice aggregates, whose values move one way",
+  "context": "Aggregates in rule heads were stratified like negation: a relation could aggregate only relations computed in full before it, never through recursion. So a recursive rule could not keep the smallest distance to each node, and minimum distances and shortest paths could not be written as rules. A sum or a count of a partial result is wrong, but a minimum of one is only not yet final.",
+  "decision": "`aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive. A recursive rule can aggregate with them and compute the aggregated value, as in `[\"rule\", [\"dist\", \"?to\", [\"aggregate/min\", [\"number/add\", \"?d\", \"?km\"]]], [\"dist\", \"?via\", \"?d\"], [\"road\", \"?via\", \"?to\", \"?km\"]]`. Each group keeps its best value, and rounds re-run the rules on rows that improved until nothing improves. Every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it. Other aggregates still cannot recurse.",
+  "consequences": "Minimum distances and shortest paths are rules, and `why` explains a minimum with the chain that produced it. A cycle that would improve forever, such as a negative-weight cycle under `min`, fails with an error after 10,000 rounds instead of running forever. `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order. lionlang.dev has a live Shortest distances card.",
+  "alternatives": [
+    {
+      "option": "Keep every aggregate out of recursion, as aggregates in rule heads first shipped",
+      "rejected": "Minimum distances and shortest paths could not be expressed."
+    },
+    {
+      "option": "Let any aggregate recurse",
+      "rejected": "A sum or a count over a partial result is wrong, not just unfinished. Only an aggregate whose value moves one way gives a partial result that is never wrong."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "000fa16",
+      "quote": "a group's value only moves one way, so a recursive rule can aggregate with them and compute the value, which makes minimum distances and shortest paths expressible"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Recursion may aggregate only through lattice aggregates, whose values move one way",
+      "says": {
+        "decision": "aggregation-through-recursion",
+        "chose": "lattice-aggregates-only",
+        "over": ["never", "any-aggregate"],
+        "because": "a sum or a count of a partial result is wrong, but a minimum of one is only not yet final",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive",
+      "says": {
+        "rule": "lattice-recursion",
+        "holds": true,
+        "statement": "aggregate/min, aggregate/max, aggregate/shortest, and aggregate/union are lattice aggregates whose value only moves one way, so a recursive rule can aggregate with them and compute the value",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "recursive-rule-aggregate-min",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-lattice-aggregate-computed-value",
+            "is": "allowed"
+          },
+          {
+            "behavior": "recursive-rule-aggregate-sum",
+            "is": "error"
+          },
+          {
+            "behavior": "lattice-cycle-non-aggregating-relation",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive",
+      "says": {
+        "feature": "aggregate/shortest",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`aggregate/min`, `aggregate/max`, and the new `aggregate/shortest` and `aggregate/union` are lattice aggregates: a group's value only moves one way as matches arrive",
+      "says": {
+        "feature": "aggregate/union",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "A recursive rule can aggregate with them and compute the aggregated value",
+      "says": {
+        "behavior": "recursive-rule-aggregate-min",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A recursive rule can aggregate with them and compute the aggregated value",
+      "says": {
+        "behavior": "recursive-rule-lattice-aggregate-computed-value",
+        "is": "allowed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Each group keeps its best value, and rounds re-run the rules on rows that improved until nothing improves",
+      "says": {
+        "behavior": "lattice-group-value",
+        "is": "keeps-best",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it",
+      "says": {
+        "behavior": "lattice-cycle-non-aggregating-relation",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Other aggregates still cannot recurse",
+      "says": {
+        "behavior": "recursive-rule-aggregate-sum",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Aggregates in rule heads were stratified like negation: a relation could aggregate only relations computed in full before it, never through recursion",
+      "says": {
+        "rule": "stratified-aggregation",
+        "holds": false,
+        "statement": "Aggregation is stratified like negation: it cannot go through recursion",
+        "area": "logic",
+        "replaced_by": "lattice-recursion"
+      }
+    },
+    {
+      "quote": "`why` explains a minimum with the chain that produced it",
+      "says": {
+        "behavior": "why-lattice-minimum",
+        "is": "producing-chain",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A cycle that would improve forever, such as a negative-weight cycle under `min`, fails with an error after 10,000 rounds instead of running forever",
+      "says": {
+        "behavior": "lattice-recursion-still-improving",
+        "is": "error",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A cycle that would improve forever, such as a negative-weight cycle under `min`, fails with an error after 10,000 rounds instead of running forever",
+      "says": {
+        "measured": "lattice-max-rounds",
+        "after": 10000,
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`aggregate/shortest` breaks ties by the smaller value, so results never depend on match order",
+      "says": {
+        "behavior": "aggregate-shortest-tie",
+        "is": "smaller-value",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "`aggregate/shortest` breaks ties by the smaller value, so results never depend on match order",
+      "says": {
+        "rule": "order-independent-results",
+        "holds": true,
+        "statement": "Results never depend on how answers were found or on the order facts were added",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "aggregate-shortest-tie",
+            "is": "smaller-value"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "lionlang.dev has a live Shortest distances card",
+      "says": {
+        "feature": "site-card-shortest-distances",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

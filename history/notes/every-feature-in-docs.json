@@ -1,0 +1,111 @@
+{
+  "title": "Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example",
+  "context": "The docs site's examples are live: the build runs each one with the real evaluator and writes its result. Nothing made a feature have one, so the docs lagged the code. After schemas, a pass by hand gave each of their features a live example, 26 new ones, and `number/toString` was committed with no docs and reached the website's reference only at its release. When the build first checked, it found eight functions in no example: the four the branch had just added and `func/callback`, `object/get-method-path`, `object/new`, and `value/symbol?`.",
+  "decision": "Every feature a change adds is used in at least one example in the docs, with output that was run, not typed: a core feature in a live `<lion-example>` of `packages/site-runtime/content/` where a reader would look for it, and a skill's new relation, note field, or script in its `SKILL.md` or `references/`. The docs build fails when a special form or library function appears in no live example, beside its checks for failing examples and broken links. A change also corrects every documented result it makes untrue. AGENTS.md has a section on it and CLAUDE.md a summary.",
+  "consequences": "A missing example fails the build instead of waiting for someone to notice, so `bun run --cwd packages/site-runtime docs` lists what a change still has to document, and `docs/docs.html` is rebuilt and committed with the change. The eight functions it found have examples in their modules' reference, and \"Explain a result\" shows how a computed figure was worked out. The build checks only special forms and library functions; a skill's examples rest on the rule alone.",
+  "commits": [
+    {
+      "commit": "230ba1c",
+      "quote": "Every feature now has a live example, which the docs build runs with the real evaluator"
+    },
+    {
+      "commit": "b903a8a",
+      "quote": "The docs build now fails when a special form or library function appears in no live example"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The docs build fails when a special form or library function appears in no live example",
+      "says": {
+        "decision": "docs-example-coverage",
+        "chose": "build-checked",
+        "over": ["by-hand"],
+        "area": "docs",
+        "because": "a missing example fails the build instead of waiting for someone to notice"
+      }
+    },
+    {
+      "quote": "Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example",
+      "says": {
+        "rule": "every-feature-in-docs",
+        "holds": true,
+        "statement": "Every feature is used in a docs example with output that was run, and the docs build fails when a special form or library function is in no example",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "docs-build-function-without-example",
+            "is": "fails"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "the build runs each one with the real evaluator and writes its result",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every docs example runs with the evaluator the page uses, and the build writes its real result",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "A change also corrects every documented result it makes untrue.",
+      "says": {
+        "rule": "correct-untrue-docs",
+        "holds": true,
+        "statement": "When a change alters what an existing example gives, run it again and correct its stated output",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "a skill's new relation, note field, or script in its `SKILL.md` or `references/`",
+      "says": {
+        "rule": "skill-features-in-docs",
+        "holds": true,
+        "statement": "A skill's new relation, note field, script, or option is shown in its SKILL.md or references with the result Lion gave",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "The docs build fails when a special form or library function appears in no live example",
+      "says": {
+        "feature": "docs-coverage-check",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A missing example fails the build instead of waiting for someone to notice",
+      "says": {
+        "behavior": "docs-build-function-without-example",
+        "is": "fails",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "The eight functions it found have examples in their modules' reference",
+      "says": {
+        "behavior": "docs-functions-without-example",
+        "is": "none",
+        "area": "docs",
+        "was": "eight"
+      }
+    },
+    {
+      "quote": "The build checks only special forms and library functions; a skill's examples rest on the rule alone.",
+      "says": {
+        "behavior": "docs-build-skill-example-check",
+        "is": "none",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "a pass by hand gave each of their features a live example, 26 new ones",
+      "says": {
+        "measured": "docs-examples-added",
+        "after": 26,
+        "area": "docs"
+      }
+    }
+  ]
+}

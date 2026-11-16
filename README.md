@@ -1348,48 +1348,47 @@ The properties in `packages/metrics/src/tests/reasoning-skill.test.ts` check the
 
 ## Project Record
 
-Lion keeps its own changelog and design decisions as a Lion model of its git history, in [`history/`](history/). [`CHANGELOG.md`](CHANGELOG.md), [`DECISIONS.md`](DECISIONS.md), and the timeline at [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) are written from it, so change the record, not those files.
+Lion keeps its own changelog and design decisions as a Lion model of its development, in [`history/`](history/): the record of changes, releases, and decisions that people write, the git history, and what each commit said. [`CHANGELOG.md`](CHANGELOG.md), [`DECISIONS.md`](DECISIONS.md), and the timeline at [lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) are written from it, so change the record, not those files.
 
 What people write are plain JSON files, one piece of work per file:
 
-- `history/changes/<topic>.json` is a list of changes, each `{"kind", "text"}`, with optional `"decisions"` it follows from and `"commits"` that made it. The kind is the heading the change appears under, such as `Breaking`, `Added`, `Changed`, `Fixed`, or `Documentation`. An entry `{"internal", "commits"}` records commits that need no line in the changelog, and says why.
-- `history/decisions/<id>.json` is one decision: `{"id", "title", "context", "decision", "consequences"}`, with optional `"alternatives"` (each an `"option"` and why it was `"rejected"`), `"supersedes"`, and `"commits"`.
-- `history/releases/<date>-<name>.json` is one release: `{"ships": [{"name", "version"}]}`, with an optional `"summary"`, `"notes"` under a section, and `"commit"`.
+- `history/notes/<topic>.json` holds claims: `{"claims": [{"quote", "says"}]}`. The quote is a source's words and `says` is what they say, in one of five kinds: a feature that exists or was removed, a behavior and what Lion does in it, a rule with the behavior it predicts, a decision with what it chose over what and why, and a figure. A claim names the `"commits"` that made it, the `"decisions"` it follows, and the `"source"` it quotes, such as a commit; a claim with no source is said by its own file, in the words the changelog shows. A notes file with a `"title"`, `"context"`, `"decision"`, `"consequences"`, and `"alternatives"` is a decision record, and its claims quote that text: what it decides and what it asserts about Lion.
+- `history/releases/<date>-<name>.json` is one release: `{"ships": [{"name", "version"}]}`, with an optional `"summary"`, `"notes"` under a heading, and `"commit"`.
 
-A commit is named by the start of its hash, or as `{"commit", "quote"}` with words from its message, which must be there. An entry that names no commits is made by the commit that added its file. A file renamed with nothing else changed keeps that commit; a renamed and edited file counts as added anew, since git's renames by likeness would pair two different entries that share most of their lines. Everything else is derived by the rules in [`history/core.json`](history/core.json) from those files and from git, which is read in as facts: every commit with its parents, time, and message, every tag, and the commit that added each file of the record.
+A commit is named by the start of its hash, or as `{"commit", "quote"}` with words from its message, which must be there. A file renamed with nothing else changed keeps the commit that added it; a renamed and edited file counts as added anew, since git's renames by likeness would pair two different files that share most of their lines. Everything else is derived by the rules in [`history/core.json`](history/core.json) from those files and from git, which is read in as facts: every commit with its parents, time, and message, every tag, and the commit that added each file.
 
-- A change shipped in the oldest release whose commit reaches every commit that made it, so no file says which release a change is in, and a change waits in "Unreleased" until a release is made after it.
-- A decision is in force until another supersedes it, and in effect from the first release after its earliest commit.
-- `bun run history check` fails on a `feat` or `fix` commit that no entry records, a commit named that no commit or more than one starts with, a quote that is not in its commit's message, a decision named that does not exist, a breaking change that follows from no decision, a version that does not rise from one release to the next, a tag on another commit than its release, and a page that is not what the record writes. It lists releases that have no tag yet. The record's tests run it, so the pre-commit hook and CI do too.
+- A claim is made by the commits it names, else by the commit it quotes, else by the commit that added its file. It shipped in the oldest release whose commit reaches every one of those commits, so no file says which release a change is in.
+- An item is a question with an answer, such as a behavior and what Lion does in it. It appears once, under the release that first shipped a claim giving that answer, in the words of the latest claim, with every claim that gives it as a source. A feature removed and added again, or a decision made one way and later another, is two items.
+- What a decision record asserts is checked: against Lion at HEAD where a probe runs the case, and otherwise against what the repository says now. A probe is a Lion program that can also read the repository's files and run a declared command, so a record can assert what the pre-commit hook runs or which version of a package is installed. Each assertion holds, is broken, is stated but not run, or was replaced by a later word.
+- `bun run history check` builds the model and fails on a `feat` or `fix` commit that no claim is made by, a commit named that no commit or more than one starts with, a quote that is not in its source, a decision followed that no record holds, a decision record with no decision claim, a version that does not rise from one release to the next, a tag on another commit than its release, a finding of the research that no list holds (see below), and a page that is not what the model writes. It lists releases that have no tag yet. The record's tests run it, so the pre-commit hook and CI do too.
 
-The pages are Lion expressions in [`history/outputs.json`](history/outputs.json), evaluated against the record, so every heading, date, and link in them comes from the model. The timeline, `docs/changelog.html`, is HTML that Lion writes the same way: each release on a line through time, newest first, with what it shipped by kind, the decisions it put into effect, and a link from each change to the decisions it follows and the commits that made it. Lion turns the record's Markdown into HTML itself, code spans and links included. `docs/changelog.css` and `docs/changelog.js` only style it and let a reader filter by kind and search; without the script the page shows everything.
+The pages are Lion expressions in [`history/outputs.json`](history/outputs.json), evaluated against the model, so every heading, date, link, and quote in them comes from it. `CHANGELOG.md` lists each release's items by section: Breaking, Added, Removed, Changed, Fixed, Documentation, Decided, and Rules. `DECISIONS.md` lists every decided question, oldest first, with each answer it was given and every record that explains it, with what the record asserts and how each assertion checked. The timeline, `docs/changelog.html`, is HTML that Lion writes the same way: each release on a line through time, newest first, with its items by section, figures among them, and each item's sources, the records it follows, and the findings that wait for a decision above it. Lion turns Markdown in the claims into HTML itself, code spans and links included. `docs/changelog.css` and `docs/changelog.js` only style it and let a reader filter by section and search; without the script the page shows everything.
 
 ```bash
-bun run history write    # write CHANGELOG.md, DECISIONS.md, and docs/changelog.html
-bun run history check    # what in the record needs fixing
-bun run history ask '["query", ["and", ["supersedes", "?decision", "?old"], ["in_effect_from", "?decision", "?release"]], {"order": "old"}]'
+bun run history write    # build the model, and write CHANGELOG.md, DECISIONS.md, and docs/changelog.html
+bun run history check    # what in the record or the research needs fixing
+bun run history ask '["query", ["first_shipped", {"decision": "record-pattern-keys"}, "?chose", "?release"], {"order": "release"}]'
 ```
 
-The last asks which decisions replaced another, and from which release:
+The last asks which release first shipped each answer to one question, a decision made one way and later another:
 
 ```json
 [
-  {"decision": "records-are-exact", "old": "record-patterns-by-keys", "release": "history/releases/2026-11-12-core-0.7.0.json"},
-  {"decision": "special-forms-plain-names", "old": "special-forms-slash-prefix", "release": "history/releases/2026-04-06-core-0.1.0.json"}
+  {"chose": "pattern-keys-only", "release": "history/releases/2026-04-06-core-0.1.0.json"},
+  {"chose": "exact", "release": "history/releases/2026-11-12-core-0.7.0.json"}
 ]
 ```
 
-The record was backfilled from the git history: every entry of the hand-written changelog, tied to the commits that made it, lands by ancestry alone in the release it was written under, and every decision quotes the commit messages it rests on. The tooling lives in `packages/history`, and runs on the workspace's own `@lionlang/core`. Its properties check the rules against a plain model of generated commit graphs, merges, releases, tags, and entries, the pages against that model by reading them back, the facts from git against real repositories built step by step, and the repository's own record against `git rev-list`.
+The record was backfilled from the git history: every entry of the hand-written changelog, tied to the commits that made it, lands by ancestry alone in the release it was written under, and every decision quotes the commit messages it rests on. Those entries and decisions were later turned into claims, each keeping its words and the commits that made it, beside the claims readers took from every commit, so one change said in a commit and in the changelog is one item. The tooling lives in `packages/history`, and runs on the workspace's own `@lionlang/core`. Its properties check the rules against a plain model of generated commit graphs, merges, releases, tags, and notes of claims, the pages against that model by reading them back, the facts from git against real repositories built step by step, and the repository's own record against `git rev-list`.
 
-### The research model
+### What every commit said
 
-The record says what changed and why. [`history/research/`](history/research/) holds a deeper model of the same history, built with the [lion-research skill](skills/lion-research/): every statement each commit made, quoted word for word from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each case a probe runs. Rules over those statements check the project against itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, a base form that follows a precedent other than Scheme, Racket, or JSON, a removal or breaking change in a commit that records no decision, a figure that does not start where the one before it ended, and documentation that says something other than what Lion does.
+The record says what changed and why. The rest of the model, in [`history/research/`](history/research/), is built with the [lion-research skill](skills/lion-research/): every statement each commit made, quoted word for word from its message and diff, what the README, AGENTS.md, and CLAUDE.md say now, the claims of each recorded decision, and what Lion at HEAD does in each case a probe runs. Rules over those statements check the project against itself: rules in force that predict different behavior for one case, behavior that breaks a rule in force, a base form that follows a precedent other than Scheme, Racket, or JSON, a removal or breaking change in a commit that records no decision, a figure that does not start where the one before it ended, and documentation that says something other than what Lion does.
 
-A publisher's latest word counts, so a rule is in force while the repository's latest word on it says it holds, it predicts for a case what its latest statement naming the case predicts, and a decision decided again differently is reversed. A decision in `history/decisions/` can carry `"claims"`, each a quote from its own words and what it says, so a new decision is checked against everything else as soon as it is written. Every finding waits in `history/research/known.json` for a decision, or is accepted with a reason in `accepted.json`; `bun run history research` fails on a finding in neither, and the record's tests run it.
+A publisher's latest word counts, so a rule is in force while the repository's latest word on it says it holds, it predicts for a case what its latest statement naming the case predicts, and a decision decided again differently is reversed. A decision in `history/decisions/` can carry `"claims"`, each a quote from its own words and what it says, so a new decision is checked against everything else as soon as it is written. Every finding waits in `history/research/known.json` for a decision, or is accepted with a reason in `accepted.json`; `bun run history check` fails on a finding in neither.
 
 ```bash
-bun run history research    # build the model and docs/research.html, and list what it finds
-bun run history query '["query", ["reversed", "?topic", "?before", "?after"], {"limit": 3}]'
+bun run history ask '["query", ["reversed", "?topic", "?before", "?after"], {"limit": 3}]'
 ```
 
 The query asks which decisions the project made one way and later another:
@@ -1402,7 +1401,7 @@ The query asks which decisions the project made one way and later another:
 ]
 ```
 
-The page, [lionlang.dev/research.html](https://lionlang.dev/research.html), is for a reader who will not write a query: what needs attention first, then what the project has said about any rule, decision, behavior, feature, or figure, with each statement shown where it stands in its commit. `history/research/README.md` says how to read new commits into the model and how to settle a finding.
+The timeline shows all of it to a reader who will not write a query: what waits for a decision first, then each release with what its commits decided and said, each statement linked to its commit, with filters and a search. `history/research/README.md` says how to read new commits into the model and how to settle a finding.
 
 ## Development
 

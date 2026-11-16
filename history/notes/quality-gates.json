@@ -1,0 +1,199 @@
+{
+  "title": "Every commit runs the tests and the formatter, and CI checks every pull request and push to `main`",
+  "context": "Until March 2026 only the REPL package had a formatter configuration, and nothing ran the tests or a formatter before a commit or after a push.",
+  "decision": "In March 2026 the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix`, and a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again. In September 2026 the hook moved from `bun test` to `bun run test`, which runs every workspace's tests through Turbo after the builds they depend on, `bun run typecheck` was added, and a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`.",
+  "consequences": "A commit whose tests fail is refused unless the hook is skipped, and every commit's files are formatted by the same rules. A pull request shows whether it lints, typechecks, passes its tests, and builds before it is merged. Later checks join the same workflow, such as the check of the site's asset versions, and `AGENTS.md` tells agents to run `bun run check`, the tests, and the build before committing.",
+  "commits": [
+    {
+      "commit": "0529eec",
+      "quote": "adds ultracite"
+    },
+    {
+      "commit": "b60f4a1",
+      "quote": "harden project quality gates"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every commit runs the tests and the formatter, and CI checks every pull request and push to `main`",
+      "says": {
+        "decision": "quality-gates",
+        "chose": "pre-commit-hook-and-ci",
+        "over": ["unchecked"],
+        "because": "nothing ran the tests or a formatter before a commit or after a push",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "Every commit runs the tests and the formatter, and CI checks every pull request and push to `main`",
+      "says": {
+        "rule": "quality-gates",
+        "holds": true,
+        "statement": "Every commit runs the tests, and CI checks formatting, types, tests, and the build on every pull request and push to main.",
+        "area": "build",
+        "predicts": [
+          {
+            "behavior": "ci-pull-request",
+            "is": "checked"
+          },
+          {
+            "behavior": "ci-push-main",
+            "is": "checked"
+          },
+          {
+            "behavior": "pre-commit-hook",
+            "is": "runs-tests"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix`",
+      "says": {
+        "decision": "lint-format-tool",
+        "chose": "ultracite",
+        "over": ["per-package-biome"],
+        "area": "build"
+      }
+    },
+    {
+      "quote": "the repository adopted Ultracite, a preset of Biome lint and format rules, as `bun run check` and `bun run fix`",
+      "says": {
+        "feature": "ultracite",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again",
+      "says": {
+        "feature": "husky-pre-commit",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again",
+      "says": {
+        "behavior": "pre-commit-hook",
+        "is": "runs-tests",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a Husky pre-commit hook that runs the tests and then formats the staged files and stages them again",
+      "says": {
+        "behavior": "pre-commit-hook-staged-files",
+        "is": "formatted",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "the hook moved from `bun test` to `bun run test`",
+      "says": {
+        "decision": "test-command",
+        "chose": "bun-run-test",
+        "over": ["bun-test"],
+        "area": "build"
+      }
+    },
+    {
+      "quote": "`bun run typecheck` was added",
+      "says": {
+        "feature": "bun-run-typecheck",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "feature": "ci-workflow",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-pull-request",
+        "is": "checked",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-push-main",
+        "is": "checked",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-format-and-lint",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-typecheck",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-tests",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-build",
+        "is": "runs",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "a GitHub Actions workflow on every pull request and every push to `main` installs with the frozen lockfile and runs `check`, `typecheck`, `test`, and `build`",
+      "says": {
+        "behavior": "ci-install-lockfile",
+        "is": "frozen",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "A commit whose tests fail is refused unless the hook is skipped",
+      "says": {
+        "behavior": "commit-with-failing-tests",
+        "is": "refused",
+        "area": "build"
+      }
+    },
+    {
+      "quote": "Later checks join the same workflow, such as the check of the site's asset versions",
+      "says": {
+        "rule": "ci-checks-site-asset-versions",
+        "holds": true,
+        "statement": "CI fails when the site's asset version hash is out of date",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "`AGENTS.md` tells agents to run `bun run check`, the tests, and the build before committing",
+      "says": {
+        "rule": "check-test-build-before-commit",
+        "holds": true,
+        "statement": "Run bun run check, the tests, and the build before committing",
+        "area": "process"
+      }
+    }
+  ]
+}

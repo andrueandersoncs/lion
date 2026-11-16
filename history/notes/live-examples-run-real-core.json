@@ -1,0 +1,203 @@
+{
+  "title": "Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result",
+  "context": "The example cards on lionlang.dev showed code with its result typed in beside it as a `// =>` comment, under a line saying that every snippet runs against the standard library. Nothing ran those results, so a change to Lion could leave a card showing a result Lion no longer gives.",
+  "decision": "Every example card is an editor. Its program runs on `@lionlang/core` in a Web Worker, which the private `@lionlang/site-runtime` package bundles into `docs/lion-worker.js`, and runs again as the reader types; the card shows the result, a typed error, or `console/log` output, and stops a runaway program after 1.5 seconds. The docs page is built from one fragment per document, and the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id. The site-runtime tests fail when `docs.html` is not what its fragments build, and the pages load their assets with a `?v=` hash, so a cached worker never runs a new page's examples.",
+  "consequences": "The docs cannot drift from Lion: an example's result on the page is what Lion gave when the page was built. A change to the core rebuilds `docs/lion-worker.js`, and each logic feature of 0.4.0 shipped with its own live card. The browser's limits became Lion's to meet. A 3,000-answer query hit the 1.5 second limit until the worker stopped yielding to the scheduler, and the goal-directed card was rewritten with left recursion after its first version timed out. A visitor with the 0.2.0 worker cached saw the new logic examples fail with `InvalidFunctionCallError`, which is why the asset URLs carry a version.",
+  "alternatives": [
+    {
+      "option": "Code with its result typed in beside it, as the cards showed before",
+      "rejected": "Nothing checked a typed result against Lion. The docs build writes each result from a run, so the docs cannot drift from Lion."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "ab082c3",
+      "quote": "programs run on @lionlang/core in a Web Worker"
+    },
+    "6d1d662",
+    {
+      "commit": "65ae02d",
+      "quote": "version asset URLs so cached workers never pair with new pages"
+    },
+    {
+      "commit": "b5f87d4",
+      "quote": "The build runs every example with the evaluator the page uses and writes its real result"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every example on lionlang.dev runs on the real `@lionlang/core`, and the docs build writes each example's real result",
+      "says": {
+        "decision": "docs-example-results",
+        "chose": "run-real-core",
+        "over": ["typed-results"],
+        "because": "nothing checked a typed result against Lion",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id",
+      "says": {
+        "rule": "live-examples-run-real-core",
+        "holds": true,
+        "statement": "Every docs example runs with the evaluator the page uses, and the build writes its real result",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "docs-example-unexpected-error",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-example-too-slow",
+            "is": "build-fails"
+          },
+          {
+            "behavior": "docs-link-to-missing-id",
+            "is": "build-fails"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id",
+      "says": {
+        "behavior": "docs-example-unexpected-error",
+        "is": "build-fails",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id",
+      "says": {
+        "behavior": "docs-example-too-slow",
+        "is": "build-fails",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the build runs every example with the evaluator the page uses, writes its real result, and fails on an unexpected error, an example too slow for the browser, or a link to a missing id",
+      "says": {
+        "behavior": "docs-link-to-missing-id",
+        "is": "build-fails",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "Every example card is an editor",
+      "says": {
+        "feature": "site-live-example-editors",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "the private `@lionlang/site-runtime` package bundles into `docs/lion-worker.js`",
+      "says": {
+        "feature": "@lionlang/site-runtime",
+        "kind": "package",
+        "present": true
+      }
+    },
+    {
+      "quote": "The docs page is built from one fragment per document",
+      "says": {
+        "feature": "build-docs",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "the card shows the result, a typed error, or `console/log` output",
+      "says": {
+        "behavior": "site-example-output",
+        "is": "result-errors-and-logs",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "stops a runaway program after 1.5 seconds",
+      "says": {
+        "behavior": "site-example-runaway-program",
+        "is": "terminated",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "stops a runaway program after 1.5 seconds",
+      "says": {
+        "measured": "site-example-time-limit-seconds",
+        "after": 1.5,
+        "area": "site"
+      }
+    },
+    {
+      "quote": "The site-runtime tests fail when `docs.html` is not what its fragments build",
+      "says": {
+        "behavior": "docs-page-out-of-date",
+        "is": "tests-fail",
+        "area": "docs"
+      }
+    },
+    {
+      "quote": "the pages load their assets with a `?v=` hash, so a cached worker never runs a new page's examples",
+      "says": {
+        "behavior": "site-asset-urls",
+        "is": "hash-versioned",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "the pages load their assets with a `?v=` hash, so a cached worker never runs a new page's examples",
+      "says": {
+        "decision": "site-asset-caching",
+        "chose": "hash-versioned-urls",
+        "over": ["plain-urls"],
+        "because": "a cached worker never runs a new page's examples",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "A visitor with the 0.2.0 worker cached saw the new logic examples fail with `InvalidFunctionCallError`, which is why the asset URLs carry a version",
+      "says": {
+        "behavior": "site-cached-worker-with-new-page",
+        "is": "never-paired",
+        "area": "site",
+        "was": "invalid-function-call-error"
+      }
+    },
+    {
+      "quote": "A change to the core rebuilds `docs/lion-worker.js`",
+      "says": {
+        "rule": "rebuild-site-worker-after-core-change",
+        "holds": true,
+        "statement": "After changing the core evaluator, rebuild and commit the site's worker bundle",
+        "area": "process"
+      }
+    },
+    {
+      "quote": "A 3,000-answer query hit the 1.5 second limit until the worker stopped yielding to the scheduler",
+      "says": {
+        "behavior": "site-worker-scheduler-yield",
+        "is": "prevented",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "the goal-directed card was rewritten with left recursion after its first version timed out",
+      "says": {
+        "behavior": "site-goal-directed-example-right-recursive",
+        "is": "timed-out",
+        "area": "site"
+      }
+    },
+    {
+      "quote": "the goal-directed card was rewritten with left recursion after its first version timed out",
+      "says": {
+        "decision": "goal-directed-example-recursion",
+        "chose": "left-recursion",
+        "over": ["right-recursion"],
+        "area": "site"
+      }
+    }
+  ]
+}

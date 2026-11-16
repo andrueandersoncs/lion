@@ -1,0 +1,146 @@
+{
+  "title": "A record pattern in `match` fits any record that has the pattern's keys with values that fit",
+  "context": "`match`, added on April 2, 2026, took a value, pairs of a predicate and a function, and a fallback function, and called the function of the first predicate that returned `true` for the value. The agent told the parts of an AI model's response apart by their `type`, with a lambda for each, such as `[\"lambda\", [\"c\"], [\"string/equals?\", [\".\", \"c\", \"type\"], \"text\"]]`.",
+  "decision": "A pattern can also be a record whose values are patterns. It fits a value that is a record, has every key of the pattern, and has at each of those keys a value that fits the pattern there; keys the pattern does not name are ignored, and record patterns nest. A predicate that fails or does not return a boolean does not fit. The agent's patterns became records such as `{\"type\": [\"func/partial\", \"string/equals?\", \"text\"]}`, and `func/partial` was added to build such predicates.",
+  "consequences": "A pattern names only the keys it cares about, so one pattern fits records of many shapes, such as response parts that carry `text` or `output` beside `type`. A pattern cannot say that a key is absent or that a record has no other keys. `@lionlang/core` 0.1.0 shipped `match` with these record patterns.",
+  "commits": [
+    {
+      "commit": "df689c0",
+      "quote": "adds pattern matching"
+    },
+    {
+      "commit": "96eed18",
+      "quote": "implement structural record pattern matching"
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A record pattern in `match` fits any record that has the pattern's keys with values that fit",
+      "says": {
+        "decision": "record-pattern-keys",
+        "chose": "pattern-keys-only",
+        "because": "a pattern names only the keys it cares about, so one pattern fits records of many shapes",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "A record pattern in `match` fits any record that has the pattern's keys with values that fit",
+      "says": {
+        "rule": "record-patterns-by-keys",
+        "holds": true,
+        "statement": "A record pattern in match fits any record that has the pattern's keys with values that fit",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "match-record-pattern-extra-keys",
+            "is": "fit"
+          },
+          {
+            "behavior": "match-record-pattern-missing-key",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "match-record-pattern-value-mismatch",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "match-record-pattern-nested",
+            "is": "fit"
+          },
+          {
+            "behavior": "match-record-pattern-non-record",
+            "is": "no-fit"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A pattern can also be a record whose values are patterns",
+      "says": {
+        "feature": "structural-record-patterns",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "keys the pattern does not name are ignored",
+      "says": {
+        "behavior": "match-record-pattern-extra-keys",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "It fits a value that is a record, has every key of the pattern, and has at each of those keys a value that fits the pattern there",
+      "says": {
+        "behavior": "match-record-pattern-non-record",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "It fits a value that is a record, has every key of the pattern, and has at each of those keys a value that fits the pattern there",
+      "says": {
+        "behavior": "match-record-pattern-missing-key",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "It fits a value that is a record, has every key of the pattern, and has at each of those keys a value that fits the pattern there",
+      "says": {
+        "behavior": "match-record-pattern-value-mismatch",
+        "is": "no-fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "record patterns nest",
+      "says": {
+        "behavior": "match-record-pattern-nested",
+        "is": "fit",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "A predicate that fails or does not return a boolean does not fit",
+      "says": {
+        "behavior": "match-predicate-error",
+        "is": "no-match",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "A predicate that fails or does not return a boolean does not fit",
+      "says": {
+        "behavior": "match-predicate-non-boolean-result",
+        "is": "no-match",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "`func/partial` was added to build such predicates",
+      "says": {
+        "feature": "func/partial",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "`match`, added on April 2, 2026, took a value, pairs of a predicate and a function, and a fallback function",
+      "says": {
+        "feature": "match",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "called the function of the first predicate that returned `true` for the value",
+      "says": {
+        "behavior": "match-first-matching-pattern",
+        "is": "applied",
+        "area": "forms"
+      }
+    }
+  ]
+}

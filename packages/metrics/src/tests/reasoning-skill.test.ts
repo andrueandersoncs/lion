@@ -332,7 +332,8 @@ const programOf = (given: World) => [
  * holds there what it held when the source was seen. What was told or
  * recalled gives way, in each version, to what was run or read that answers
  * the question otherwise. A belief that explains a problem is judged in the
- * versions where the problem shows, and any other belief in the present.
+ * versions where the problem shows, and any other belief in the version it
+ * was formed in and every later one.
  */
 const expected = (given: World) => {
   const sourceOf = (id: string) =>

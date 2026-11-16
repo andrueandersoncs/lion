@@ -1,0 +1,125 @@
+{
+  "title": "Goal-directed queries share what is derived in full, and a relation is derived when a goal first reads it",
+  "context": "A goal-directed query rewrote the rules with magic sets into a model of its own, and every rule-defined goal it reached became a copy for the arguments it knew, even a goal that knew none, whose copy holds every row of the relation. Nothing was shared between queries, so a page that asks a model many different questions derived the same relations once per question. A copy also always led with the guard that holds the values asked about, so when a rule could only test a known value, inside a record pattern or a `schema/open`, it scanned its relation once for each value asked about: on the research model of Lion's own development, one copy took 2 seconds where deriving the whole relation took 15 milliseconds. The page's 37 questions took 36.6 seconds goal-directed and 0.12 seconds in full, so the page and the research build switched to full evaluation, and every host with such a model would have had to know to do the same.",
+  "decision": "A relation goal gets a copy only when it knows an argument and the database has not derived the relation in full; any other goal reads the relation itself, which the database derives once and keeps for every later query. A copy's guard leads only when a relation goal of the rule can look rows up by what it binds, a variable that stands whole as an argument or a record or list made of such; otherwise the guard is a test where the rule's own plan has bound what it holds, so a copy never does more than the rule. In both strategies a relation is derived the first time a goal reads it with an answer to extend, rather than before the rules that read it run, and a goal-directed query's rewritten bodies are kept with the model they run on.",
+  "consequences": "Goal-directed evaluation is the default that works on large, rule-heavy models: the research page's questions take 0.11 seconds, as full evaluation takes, and a question asked on a database that has derived nothing yet costs at most about what full evaluation costs, and often far less, since it derives only what its answers reach. A query may now derive a whole relation where it used to derive a copy of it, when it knows nothing about it; the database keeps that relation, so the cost is paid once. Neither strategy fails on a relation that no answer reaches, as goal-directed queries already did not fail on rows they never derive; a program that failed on such a relation now answers. What the database has derived for earlier queries still never changes an answer.",
+  "alternatives": [
+    {
+      "option": "Keep full evaluation in the research page and build, as a workaround",
+      "rejected": "Every host would have to learn that the default is unusable on its model, and a single question on a model nobody has asked yet is faster goal-directed, since it derives only what it reaches."
+    },
+    {
+      "option": "One goal-directed model per database that grows as queries add demand",
+      "rejected": "It needs groups of relations that already finished to run again when new demand arrives, which is more machinery than sharing what is derived in full, and on these workloads sharing already makes goal-directed as fast as full evaluation."
+    },
+    {
+      "option": "Give a relation a copy only for arguments its rules can look rows up by, and derive it in full otherwise",
+      "rejected": "A known argument that a rule can only test still keeps a join from being built in full: with `[\"pair\", \"?x\", \"?y\"]` defined by `in` over two ranges, asking about one `?x` gives one row per `?y`, where deriving `pair` in full gives the whole cross product."
+    },
+    {
+      "option": "Always lead a copy with its guard, as the textbook rewrite does",
+      "rejected": "It assumes every known value narrows a lookup. In Lion a known value can sit inside a pattern or a schema, where it only tests rows, and then leading scans the relation once per value asked about, without bound."
+    }
+  ],
+  "commits": ["330aec062e9f"],
+  "claims": [
+    {
+      "quote": "A relation goal gets a copy only when it knows an argument and the database has not derived the relation in full; any other goal reads the relation itself, which the database derives once and keeps for every later query",
+      "says": {
+        "rule": "goal-directed-shares-full-relations",
+        "holds": true,
+        "statement": "A goal-directed query derives a copy only of what it knows an argument of, and shares every relation derived in full with later queries",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "In both strategies a relation is derived the first time a goal reads it with an answer to extend",
+      "says": {
+        "rule": "relations-derived-when-read",
+        "holds": true,
+        "statement": "A relation is derived the first time a goal reads it with an answer to extend, so no query fails on a relation that no answer reaches",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "relation-no-answer-reaches",
+            "is": "not-derived"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "any other goal reads the relation itself, which the database derives once and keeps for every later query",
+      "says": {
+        "decision": "goal-directed-sharing",
+        "chose": "share-full-relations",
+        "over": [
+          "full-evaluation-workaround",
+          "growing-model",
+          "copy-for-lookup-arguments-only"
+        ],
+        "area": "logic",
+        "because": "a page that asks a model many different questions derived the same relations once per question"
+      }
+    },
+    {
+      "quote": "A copy's guard leads only when a relation goal of the rule can look rows up by what it binds",
+      "says": {
+        "decision": "magic-guard-placement",
+        "chose": "lead-when-lookup",
+        "over": ["always-lead"],
+        "area": "logic",
+        "because": "so a copy never does more than the rule"
+      }
+    },
+    {
+      "quote": "Neither strategy fails on a relation that no answer reaches",
+      "says": {
+        "behavior": "relation-no-answer-reaches",
+        "is": "not-derived",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A query may now derive a whole relation where it used to derive a copy of it, when it knows nothing about it",
+      "says": {
+        "behavior": "goal-directed-goal-without-known-argument",
+        "is": "reads-full-relation",
+        "area": "logic",
+        "was": "copy"
+      }
+    },
+    {
+      "quote": "What the database has derived for earlier queries still never changes an answer.",
+      "says": {
+        "behavior": "derived-rows-present-vs-absent-answers",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The page's 37 questions took 36.6 seconds goal-directed and 0.12 seconds in full",
+      "says": {
+        "measured": "research-page-goal-directed-seconds-before-fix",
+        "after": 36.6,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The page's 37 questions took 36.6 seconds goal-directed and 0.12 seconds in full",
+      "says": {
+        "measured": "research-page-full-evaluation-seconds",
+        "after": 0.12,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "the research page's questions take 0.11 seconds, as full evaluation takes",
+      "says": {
+        "measured": "research-page-goal-directed-seconds",
+        "after": 0.11,
+        "area": "metrics"
+      }
+    }
+  ]
+}

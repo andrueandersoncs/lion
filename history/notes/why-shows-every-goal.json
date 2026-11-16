@@ -1,0 +1,109 @@
+{
+  "title": "`why` shows every goal of a rule's body as it held, `=` and `in` among them",
+  "context": "`why` explained a derived fact by the rows its relation goals matched and the tests that held, but it left out `=` and `in`. A goal that computed a value, such as `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]`, did not show, so a figure a rule worked out had no arithmetic in its explanation. The research skill needed every computed figure to trace to the line items it came from.",
+  "decision": "Under `because`, `why` shows each row a relation goal matched, explained in turn, a `not` as `absent`, and every other goal as `check`, with the answer's values in place of its variables. So `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]` shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`. One rule replaces the case that left `=` and `in` out.",
+  "consequences": "Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. The research page shows a computed figure's evidence \"Worked out as\" its arithmetic, and the docs' \"Explain a result\" shows how a computed figure was worked out.",
+  "alternatives": [
+    {
+      "option": "Leave `=` and `in` out of `why`, as before 0.10.0",
+      "rejected": "A figure a rule computed showed the rows it rested on but not the arithmetic that made it."
+    }
+  ],
+  "commits": [
+    {
+      "commit": "41477b1",
+      "quote": "why now shows every goal of a rule body as it held, = and in among them, so a computed figure shows its arithmetic on the values it used; one rule replaces the case that left them out."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "One rule replaces the case that left `=` and `in` out.",
+      "says": {
+        "decision": "why-premises",
+        "chose": "every-goal",
+        "over": ["relation-goals-and-filters"],
+        "because": "a figure a rule computed showed the rows it rested on but not the arithmetic that made it",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, `=` and `in` among them",
+      "says": {
+        "rule": "why-shows-every-goal",
+        "holds": true,
+        "statement": "why shows every goal of a rule's body as it held, = and in among them, with the answer's values in place of its variables",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "why-equals-goal",
+            "is": "shown"
+          },
+          {
+            "behavior": "why-in-goal",
+            "is": "shown"
+          },
+          {
+            "behavior": "why-not-goal",
+            "is": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`why` shows every goal of a rule's body as it held, `=` and `in` among them",
+      "says": {
+        "behavior": "why-in-goal",
+        "is": "shown",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "So `[\"=\", \"?ratio\", [\"number/divide\", \"?a\", \"?b\"]]` shows as `{\"check\": [\"=\", 0.25, [\"number/divide\", 1, 4]]}`.",
+      "says": {
+        "behavior": "why-equals-goal",
+        "is": "shown",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a `not` as `absent`",
+      "says": {
+        "behavior": "why-not-goal",
+        "is": "absent",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Under `because`, `why` shows each row a relation goal matched, explained in turn",
+      "says": {
+        "behavior": "why-derived-fact",
+        "is": "explanation-tree",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "with the answer's values in place of its variables",
+      "says": {
+        "behavior": "why-check-variables",
+        "is": "answer-values",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again.",
+      "says": {
+        "behavior": "why-check-evaluated",
+        "is": "true",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "The research page shows a computed figure's evidence \"Worked out as\" its arithmetic",
+      "says": {
+        "behavior": "research-page-computed-figure",
+        "is": "worked-out-as-arithmetic",
+        "area": "skills"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "claims": [
+    {
+      "quote": "The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev.",
+      "says": {
+        "feature": "core-npm-readme",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["ca42dc0"]
+    },
+    {
+      "quote": "The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev.",
+      "says": {
+        "decision": "core-homepage",
+        "chose": "lionlang-dev",
+        "area": "packages"
+      },
+      "commits": ["ca42dc0"]
+    },
+    {
+      "quote": "The package's README, which documents the expression model, every special form and module, and host interop, and its homepage, lionlang.dev.",
+      "says": {
+        "behavior": "core-npm-readme-coverage",
+        "is": "expression-model-special-forms-modules-host-interop",
+        "area": "docs"
+      },
+      "commits": ["ca42dc0"]
+    }
+  ]
+}

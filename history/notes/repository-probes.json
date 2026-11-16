@@ -1,0 +1,76 @@
+{
+  "claims": [
+    {
+      "quote": "A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `[\"repo/files\", path]` lists the files under a folder, `[\"repo/read\", path]` gives a file's text, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command declared in `history/research/commands.json` and gives `{\"exit\", \"output\"}`. So a decision record can assert how the project is set up and be checked: `[\"cond\", [[\"string/includes\", [\"repo/read\", \".husky/pre-commit\"], \"bun run test\"], [\"quote\", \"runs-tests\"]], [\"else\", [\"quote\", \"other\"]]]` gives `\"runs-tests\"`, which is what the record of the quality gates asserts of the pre-commit hook.",
+      "says": {
+        "feature": "repo-files",
+        "kind": "function",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `[\"repo/files\", path]` lists the files under a folder, `[\"repo/read\", path]` gives a file's text, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command declared in `history/research/commands.json` and gives `{\"exit\", \"output\"}`. So a decision record can assert how the project is set up and be checked: `[\"cond\", [[\"string/includes\", [\"repo/read\", \".husky/pre-commit\"], \"bun run test\"], [\"quote\", \"runs-tests\"]], [\"else\", [\"quote\", \"other\"]]]` gives `\"runs-tests\"`, which is what the record of the quality gates asserts of the pre-commit hook.",
+      "says": {
+        "feature": "repo-read",
+        "kind": "function",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `[\"repo/files\", path]` lists the files under a folder, `[\"repo/read\", path]` gives a file's text, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command declared in `history/research/commands.json` and gives `{\"exit\", \"output\"}`. So a decision record can assert how the project is set up and be checked: `[\"cond\", [[\"string/includes\", [\"repo/read\", \".husky/pre-commit\"], \"bun run test\"], [\"quote\", \"runs-tests\"]], [\"else\", [\"quote\", \"other\"]]]` gives `\"runs-tests\"`, which is what the record of the quality gates asserts of the pre-commit hook.",
+      "says": {
+        "feature": "repo-json",
+        "kind": "function",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `[\"repo/files\", path]` lists the files under a folder, `[\"repo/read\", path]` gives a file's text, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command declared in `history/research/commands.json` and gives `{\"exit\", \"output\"}`. So a decision record can assert how the project is set up and be checked: `[\"cond\", [[\"string/includes\", [\"repo/read\", \".husky/pre-commit\"], \"bun run test\"], [\"quote\", \"runs-tests\"]], [\"else\", [\"quote\", \"other\"]]]` gives `\"runs-tests\"`, which is what the record of the quality gates asserts of the pre-commit hook.",
+      "says": {
+        "feature": "repo-run",
+        "kind": "function",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe in `history/research/probes.json` can now say what the repository holds, not only what Lion does: `[\"repo/files\", path]` lists the files under a folder, `[\"repo/read\", path]` gives a file's text, `[\"repo/json\", path]` gives a JSON file as a value, and `[\"repo/run\", name]` runs a command declared in `history/research/commands.json` and gives `{\"exit\", \"output\"}`. So a decision record can assert how the project is set up and be checked: `[\"cond\", [[\"string/includes\", [\"repo/read\", \".husky/pre-commit\"], \"bun run test\"], [\"quote\", \"runs-tests\"]], [\"else\", [\"quote\", \"other\"]]]` gives `\"runs-tests\"`, which is what the record of the quality gates asserts of the pre-commit hook.",
+      "says": {
+        "feature": "probe-commands-file",
+        "kind": "file",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe can answer for a feature as well as a behavior: `{\"feature\": \"math/+\", \"kind\": \"function\", \"program\": [\"value/function?\", \"math/+\"]}` gives `false`, so the record that says `math/+` is gone holds. `[\"lion/special-form?\", name]` tells a probe whether Lion has a special form of that name. `bun run history check` reports a feature's probe that gives neither `true` nor `false`, and a question two probes answer.",
+      "says": {
+        "feature": "feature-probes",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe can answer for a feature as well as a behavior: `{\"feature\": \"math/+\", \"kind\": \"function\", \"program\": [\"value/function?\", \"math/+\"]}` gives `false`, so the record that says `math/+` is gone holds. `[\"lion/special-form?\", name]` tells a probe whether Lion has a special form of that name. `bun run history check` reports a feature's probe that gives neither `true` nor `false`, and a question two probes answer.",
+      "says": {
+        "feature": "lion-special-form-question",
+        "kind": "function",
+        "present": true
+      },
+      "decisions": ["probes-observe-the-repository"]
+    },
+    {
+      "quote": "A probe can answer for a feature as well as a behavior: `{\"feature\": \"math/+\", \"kind\": \"function\", \"program\": [\"value/function?\", \"math/+\"]}` gives `false`, so the record that says `math/+` is gone holds. `[\"lion/special-form?\", name]` tells a probe whether Lion has a special form of that name. `bun run history check` reports a feature's probe that gives neither `true` nor `false`, and a question two probes answer.",
+      "says": {
+        "behavior": "feature-probe-without-true-or-false",
+        "is": "reported",
+        "area": "record"
+      },
+      "decisions": ["probes-observe-the-repository"]
+    }
+  ]
+}

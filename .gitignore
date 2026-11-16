@@ -34,13 +34,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 .turbo
-# Commit texts, written from git by bun run history sources.
+# Commit texts, written from git by bun run history write.
 history/research/sources/
-# Written again from the notes, git, and Lion by `bun run history research`.
+# Written again from the notes, git, and Lion by `bun run history write` and `check`.
 history/research/model.json
-history/research/page-check.json
 history/research/steps/*.json
 !history/research/steps/*.src.json
-history/research/notes/02-commits.json
-history/research/notes/04-decisions.json
 history/research/notes/20-runs.json

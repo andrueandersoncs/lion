@@ -1734,19 +1734,62 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/modules/tests/models.test.ts"],
   },
   record(
-    "a change ships in every release that has its commits, not the oldest",
-    '    ["not", ["and", ["covers", "?earlier", "?e"], ["before", "?earlier", "?r"]]]',
-    '    ["value/string?", "?r"]'
-  ),
-  record(
     "a release reaches its commit's parents but not theirs",
     '    ["parent", "?hash", "?older"]',
     '    ["parent", "?hash", "?older"],\n    ["release_at", "?r", "?hash"]'
   ),
   record(
-    "an entry that names its commits is also made by the commit that added it",
-    '    ["not", ["names", "?e", "?_"]],\n',
-    ""
+    "a claim ships in every release that has its commits, not the oldest",
+    '    ["not", ["and", ["covers", "?earlier", "?c"], ["before", "?earlier", "?r"]]]',
+    '    ["value/string?", "?r"]'
+  ),
+  record(
+    "a claim that names its commits is also made by the commit that added its file",
+    '    ["written_in", "?x", "?path"],\n    ["not", ["names", "?x", "?_"]],',
+    '    ["written_in", "?x", "?path"],'
+  ),
+  record(
+    "a claim that quotes a commit is made by the commit that added its file",
+    '    ["not", ["names", "?x", "?_"]],\n    ["commit_of", "?s", "?hash"]',
+    '    ["not", ["names", "?x", "?_"]],\n    ["commit_of", "?s", "?_"],\n    ["written_in", "?x", "?path"],\n    ["added", "?path", "?hash"]'
+  ),
+  record(
+    "an answer appears in every release that shipped a claim of it",
+    '        ["shipped_in", "?c2", "?earlier"],\n        ["before", "?earlier", "?r"]',
+    '        ["shipped_in", "?c2", "?earlier"],\n        ["before", "?earlier", "?earlier"]'
+  ),
+  record(
+    "a decision record with no decision claim passes",
+    '    ["undecided_record", "?id"],\n    ["record", "?id", "?path", "?_"],',
+    '    ["undecided_record", "?id"],\n    ["record", "?id", "?path", "?_"],\n    ["=", "?id", "never"],'
+  ),
+  record(
+    "the pages order sections as they come, not breaking first",
+    '    "SECTIONS",\n    [\n      "quote",\n      [\n        "Breaking",\n        "Added",',
+    '    "SECTIONS",\n    [\n      "quote",\n      [\n        "Added",\n        "Breaking",',
+    "outputs.json"
+  ),
+  record(
+    "an item shows the words of its earliest claim",
+    '["at", "rows", ["number/subtract", ["array/length", "rows"], 1]]',
+    '["at", "rows", 0]',
+    "outputs.json"
+  ),
+  record(
+    "the timeline lists every item of a release under every section",
+    '      ["items", "section"],\n      [\n        "sorted",\n        [\n          "array/flat-map",\n          "items",\n          [\n            "lambda",\n            ["item"],\n            [\n              "cond",\n              [\n                ["string/equals?", ["at", "item", 1], "section"],',
+    '      ["items", "section"],\n      [\n        "sorted",\n        [\n          "array/flat-map",\n          "items",\n          [\n            "lambda",\n            ["item"],\n            [\n              "cond",\n              [\n                true,',
+    "outputs.json"
+  ),
+  record(
+    "an assertion no later word replaced still counts as replaced",
+    '    ["answer", "?q", "?v", "?c"],\n    ["not", ["firsthand", "?q", "?v", "Lion repository"]]',
+    '    ["answer", "?q", "?v", "?c"],\n    ["not", ["firsthand", "?q", "?_", "Lion repository"]]'
+  ),
+  record(
+    "a replaced assertion still counts as stated",
+    '    ["firsthand", "?q", "?v", "Lion repository"],\n    ["not", ["firsthand", "?q", "?_", "Lion at HEAD"]]',
+    '    ["not", ["firsthand", "?q", "?_", "Lion at HEAD"]]'
   ),
   record(
     "a fix commit needs no entry",
@@ -1759,41 +1802,14 @@ export const MUTATIONS: readonly Mutation[] = [
     '"?message"'
   ),
   record(
-    "a superseded decision stays in force",
-    '    ["not", ["supersedes", "?_", "?id"]]',
-    '    ["value/string?", "?id"]'
-  ),
-  record(
-    "a breaking change needs no decision",
-    '["change", "?e", "Breaking", "?text"]',
-    '["change", "?e", "Broken", "?text"]'
-  ),
-  record(
     "a release that repeats the last version counts as a rise",
     '      "number/greaterThanOrEqualTo",\n      ["versionRank", "?earlier"],',
     '      "number/greaterThan",\n      ["versionRank", "?earlier"],'
   ),
   record(
-    "a decision is in effect from every release that has its first commit",
-    '["and", ["contains", "?earlier", "?hash"], ["before", "?earlier", "?r"]]',
-    '["before", "?r", "?r"]'
-  ),
-  record(
-    "the changelog orders sections as their kinds appear, not breaking first",
-    '"Breaking": 0,',
-    '"Breaking": 9,',
-    "outputs.json"
-  ),
-  record(
     "the changelog lists releases oldest first",
     '["number/subtract", 0, "?time"]',
     '"?time"',
-    "outputs.json"
-  ),
-  record(
-    "the changelog lists a change under every kind its release has",
-    '["string/equals?", ["at", "f", 1], "kind"],\n                    ["array/make", ["bulletOf"',
-    'true,\n                    ["array/make", ["bulletOf"',
     "outputs.json"
   ),
   record(
@@ -1817,12 +1833,6 @@ export const MUTATIONS: readonly Mutation[] = [
     "the timeline writes a link's text as markup",
     '["escape", "label"]',
     '"label"',
-    "outputs.json"
-  ),
-  record(
-    "the timeline lists every decision under every release",
-    '["in_effect_from", "?id", "r"]',
-    '["in_effect_from", "?id", "?_"]',
     "outputs.json"
   ),
   {
@@ -1870,10 +1880,20 @@ export const MUTATIONS: readonly Mutation[] = [
     '    ["value/string?", "?r"],\n    ["value/string?", "?o"]'
   ),
   researchStep(
-    "a removal counts as decided by a decision in any commit",
-    '    ["removed", "?f", "?_", "?s"],\n    ["not", ["decided_in", "?s"]]',
-    '    ["removed", "?f", "?_", "?s"],\n    ["not", ["decided_in", "?_"]]'
+    "a removal counts as decided by any decided claim",
+    '    ["removed", "?f", "?c", "?s"],\n    ["not", ["decided_claim", "?c"]]',
+    '    ["removed", "?f", "?c", "?s"],\n    ["not", ["decided_claim", "?_"]]',
+    "05-links.src.json"
   ),
+  {
+    file: "history/research/steps/05-links.src.json",
+    find: '["not", ["and", ["commit_of", "?s", "?h"], ["made_by", "?_", "?h"]]]',
+    name: "a commit a claim was made by still counts as unread",
+    package: "history",
+    replace:
+      '["not", ["and", ["commit_of", "?s", "?h"], ["made_by", "?_", "none"]]]',
+    tests: ["src/tests/record.test.ts"],
+  },
   researchStep(
     "a broken chain of figures ignores the measurements between",
     '        ["number/lessThan", "?t1", "?t3"],\n        ["number/lessThan", "?t3", "?t2"]',
@@ -1886,8 +1906,9 @@ export const MUTATIONS: readonly Mutation[] = [
   ),
   researchStep(
     "a commit is read when any commit has a claim",
-    '    ["not", ["claim", "?_", "?s", "?_", "?_"]]',
-    '    ["not", ["claim", "?_", "?_", "?_", "?_"]]'
+    '    ["not", ["claim", "?_", "?s", "?_", "?_"]],',
+    '    ["not", ["claim", "?_", "?_", "?_", "?_"]],',
+    "05-links.src.json"
   ),
   researchStep(
     "an accepted finding is still open",
@@ -1919,4 +1940,77 @@ export const MUTATIONS: readonly Mutation[] = [
     "        isRecord(block.example) && block.answer !== undefined",
     "        false"
   ),
+  {
+    name: "a probe reads a file outside the repository",
+    file: "packages/history/src/repo.ts",
+    find: '  return from.startsWith("..") || isAbsolute(from) ? undefined : full;',
+    replace: "  return from === undefined ? undefined : full;",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a probe's command runs again each time a probe asks for it",
+    file: "packages/history/src/repo.ts",
+    find: "    ran.set(name, gave);",
+    replace: "",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a probe's command that fails is given as one that passed",
+    file: "packages/history/src/repo.ts",
+    find: "      exit: result.status,",
+    replace: "      exit: 0,",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a build runs its probes without the repository's functions",
+    file: "packages/history/src/probes.ts",
+    find: "      observe(probe, environment)",
+    replace: "      observe(probe)",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a build's probes cannot run the commands its folder declares",
+    file: "packages/history/src/probes.ts",
+    find: "  ...repositoryFunctions(repository, readCommands(repository, folder)),",
+    replace: "  ...repositoryFunctions(repository),",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a probe lists the files git and installed packages keep",
+    file: "packages/history/src/repo.ts",
+    find: "    .filter((entry) => !SKIPPED.has(entry.name))",
+    replace: "    .filter((entry) => entry.name !== undefined)",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a feature's probe that gives no true or false still says something",
+    file: "packages/history/src/probes.ts",
+    find: '  return typeof value === "boolean"',
+    replace: "  return value !== null",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a second probe of one question answers it again",
+    file: "packages/history/src/probes.ts",
+    find: "      return fresh;",
+    replace: "      return true;",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
+  {
+    name: "a probe is told every name is a special form",
+    file: "packages/history/src/probes.ts",
+    find: "    (SPECIAL_FORM_NAMES as readonly string[]).includes(name)",
+    replace:
+      "    (SPECIAL_FORM_NAMES as readonly string[]).includes(name) || true",
+    package: "history",
+    tests: ["src/tests/probes.test.ts"],
+  },
 ];

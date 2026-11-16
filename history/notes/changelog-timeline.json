@@ -1,0 +1,124 @@
+{
+  "claims": [
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "feature": "changelog-timeline",
+        "kind": "page",
+        "present": true
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-release-order",
+        "is": "newest-first",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-pause-of-a-month",
+        "is": "drawn",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-release-changes",
+        "is": "by-kind",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-release-decisions",
+        "is": "open-to-context-alternatives-and-commits",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-change-links",
+        "is": "decisions-and-commits",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-filter-by-kind",
+        "is": "available",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-search",
+        "is": "changes-and-decisions",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-without-javascript",
+        "is": "everything-shown",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-page-written-by",
+        "is": "lion-project-record",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "changelog-page-markdown-to-html",
+        "is": "in-lion",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    },
+    {
+      "quote": "[lionlang.dev/changelog.html](https://lionlang.dev/changelog.html) shows the changelog as a timeline: every release on a line through time, newest first, with a pause of a month or more drawn as one, what each release shipped by kind, and the decisions it put into effect, each opening to its context, alternatives, and commits. Every change links to the decisions it follows and the commits that made it. A reader can filter by kind and search changes and decisions, and without JavaScript the page shows everything. The project record writes the page with Lion, as it writes `CHANGELOG.md` and `DECISIONS.md`, turning the record's Markdown into HTML itself, and the site's navigation links to it.",
+      "says": {
+        "behavior": "site-navigation-changelog-link",
+        "is": "present",
+        "area": "site"
+      },
+      "commits": ["44e509dc41b5"],
+      "decisions": ["project-record-in-lion", "lion-computes-page-text"]
+    }
+  ]
+}

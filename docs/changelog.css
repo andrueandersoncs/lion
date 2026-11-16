@@ -2,7 +2,6 @@
  * The changelog timeline. changelog.html is written by the project record
  * (history/outputs.json); this file only styles it, on top of styles.css.
  */
-
 .changelog {
   --when: 8.5rem;
   --rail: 2.5rem;
@@ -37,6 +36,31 @@
 
 .kind-other {
   --kind: #a1a1aa;
+}
+
+/* What the commits said, by the kind of statement the model records. */
+.says-decision {
+  --kind: #f59e0b;
+}
+
+.says-feature {
+  --kind: #56d4dd;
+}
+
+.says-behavior {
+  --kind: #a5b4fc;
+}
+
+.says-rule {
+  --kind: #f0abfc;
+}
+
+.says-figure {
+  --kind: #bef264;
+}
+
+.kind-removed {
+  --kind: #f778ba;
 }
 
 .kind-dot {
@@ -115,8 +139,8 @@
 
 .changelog-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  max-width: 40rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  max-width: 48rem;
   margin-top: 2rem;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -169,8 +193,95 @@ html:not(.js) .changelog-controls {
 
 .changelog-filters {
   display: flex;
+  flex-basis: 100%;
   flex-wrap: wrap;
   gap: 0.4rem;
+  align-items: center;
+}
+
+/* Findings that wait for a decision */
+.changelog-findings {
+  padding: 1.1rem 1.3rem 1.2rem;
+  margin: 2.5rem 0 0 calc(var(--when) + var(--rail));
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid #ff7b72;
+  border-radius: var(--radius-sm);
+}
+
+.findings-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.findings-lead {
+  max-width: 70ch;
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.findings-lead code {
+  font-size: 0.85em;
+}
+
+.finding-group {
+  margin-top: 0.75rem;
+}
+
+.finding-group > summary {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  cursor: pointer;
+  list-style: none;
+}
+
+.finding-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.finding-count {
+  flex: none;
+  min-width: 1.8rem;
+  padding: 0.05rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #ff7b72;
+  text-align: center;
+  border: 1px solid rgba(255, 123, 114, 0.35);
+  border-radius: 999px;
+}
+
+.finding-assumed {
+  color: #d4d4d8;
+}
+
+.finding-group > summary:hover .finding-assumed {
+  color: var(--foreground);
+}
+
+.finding-label {
+  margin-right: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.findings {
+  padding-left: 1rem;
+  margin: 0.5rem 0 0.25rem 2.5rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: #d4d4d8;
+}
+
+.finding + .finding {
+  margin-top: 0.45rem;
 }
 
 .filter {
@@ -455,14 +566,12 @@ html:not(.js) .changelog-controls {
   margin-top: 1rem;
 }
 
-.release-changes > summary,
-.decision > summary {
+.release-changes > summary {
   cursor: pointer;
   list-style: none;
 }
 
-.release-changes > summary::-webkit-details-marker,
-.decision > summary::-webkit-details-marker {
+.release-changes > summary::-webkit-details-marker {
   display: none;
 }
 
@@ -492,6 +601,49 @@ html:not(.js) .changelog-controls {
 
 .release-changes > summary:hover {
   color: var(--accent-bright);
+}
+
+.says-label {
+  margin-right: 0.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--kind);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.says-detail {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted-foreground);
+}
+
+.says-badge {
+  padding: 0.02rem 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+
+.says-badge.is-held {
+  color: #7ee787;
+  background: rgba(126, 231, 135, 0.07);
+  border-color: rgba(126, 231, 135, 0.25);
+}
+
+.says-badge.is-reversed {
+  color: #ffa657;
+  border-color: rgba(255, 166, 87, 0.3);
+}
+
+.says-badge.is-undecided {
+  color: #ff7b72;
+  background: rgba(255, 123, 114, 0.07);
+  border-color: rgba(255, 123, 114, 0.35);
 }
 
 .kind-sections {
@@ -551,8 +703,7 @@ html:not(.js) .changelog-controls {
   border-radius: 50%;
 }
 
-.change-text a,
-.decision-text a {
+.change-text a {
   color: var(--foreground);
   text-decoration: underline;
   text-decoration-color: var(--border-strong);
@@ -575,14 +726,6 @@ html:not(.js) .changelog-controls {
   align-items: baseline;
 }
 
-.change-why-label {
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .decision-link {
   color: var(--accent-bright);
   text-decoration: none;
@@ -593,8 +736,15 @@ html:not(.js) .changelog-controls {
   text-underline-offset: 3px;
 }
 
-.commits,
-.decision-commits {
+.change-why-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.commits {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.3rem;
@@ -615,109 +765,24 @@ html:not(.js) .changelog-controls {
   border-color: var(--muted-foreground);
 }
 
-/* The decisions a release put into effect */
-.release-decisions {
-  padding-top: 1rem;
-  margin-top: 1.2rem;
-  border-top: 1px dashed var(--border);
-}
-
-.decisions-title {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.decision {
-  margin-top: 0.5rem;
-  scroll-margin-top: 9rem;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.decision:target,
-.decision.is-target {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-muted);
-}
-
-.decision > summary {
-  display: flex;
-  gap: 0.7rem;
-  align-items: center;
-  padding: 0.6rem 0.85rem;
-}
-
-.decision-mark {
-  flex: none;
-  width: 0.5rem;
-  height: 0.5rem;
-  background: var(--accent);
-  transform: rotate(45deg);
-}
-
-.decision-title {
-  flex: 1;
-  font-size: 0.92rem;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.decision-status {
-  flex: none;
-  padding: 0.1rem 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  color: #7ee787;
-  background: rgba(126, 231, 135, 0.07);
-  border: 1px solid rgba(126, 231, 135, 0.25);
-  border-radius: 999px;
-}
-
-.decision-status.is-superseded {
-  color: var(--muted-foreground);
-  background: transparent;
-  border-color: var(--border-strong);
-}
-
-.decision-body {
-  padding: 0 1rem 1rem 2.05rem;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  color: #d4d4d8;
-}
-
-.decision-body h4 {
-  margin-top: 0.95rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.decision-meta {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
+/* What an item says, beside its words */
+.item-says {
+  display: inline;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
-.alternatives {
-  padding-left: 1.1rem;
-  margin-top: 0.25rem;
+.item-says .says-label {
+  color: var(--kind);
 }
 
-.alternatives li + li {
-  margin-top: 0.35rem;
+.commit.is-probe {
+  color: #7ee787;
+  border-color: rgba(126, 231, 135, 0.3);
 }
 
-.decision-commits {
-  margin-top: 0.9rem;
+.release-notes {
+  margin-top: 1.1rem;
 }
 
 [hidden] {
@@ -734,16 +799,34 @@ html:not(.js) .changelog-controls {
   }
 
   .changelog-hero,
+  .changelog-findings,
+  .changelog-controls {
+    margin-left: 0;
+  }
+
+  .changelog-hero,
   .changelog-controls {
     padding-left: 0;
-    margin-left: 0;
+  }
+
+  .changelog-findings {
+    padding: 1rem;
+  }
+
+  .findings {
+    margin-left: 0.5rem;
+  }
+
+  .filter-group-label {
+    flex-basis: 100%;
+    min-width: 0;
   }
 
   .changelog-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .changelog-stat:nth-child(3) {
+  .changelog-stat:nth-child(odd) {
     border-left: 0;
   }
 

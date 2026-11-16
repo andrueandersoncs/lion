@@ -1,0 +1,83 @@
+{
+  "title": "Lion's development is one record of claims, and what a decision asserts is checked against Lion",
+  "context": "The project kept its history twice. Hand-written change entries and decision files said what changed and why, and a research model read every commit into claims: a source's words and what they say. The two overlapped almost entirely, since most entries and decisions came from commits the research had read, yet the pages showed them side by side, the website's changelog listed changes beside what its commits said, and decision files were prose that nothing checked. What the record is for is a mechanically verifiable alternative to architectural decision records.",
+  "decision": "Every record of Lion's development is a claim, in `history/notes/`. A change is claims in the words the changelog shows; a decision is a notes file with its context, its alternatives, and claims for what it decides and what it asserts; the readers' notes on older commits are claims of the same kind. A claim is made by the commits it names, else by the commit it quotes, else by the commit that added its file, and ships in the oldest release that has all of them. Every page is written from items: a question with an answer, shown once, under the release that first shipped a claim giving it, in the latest claim's words, with every claim that gives it as a source. What a decision record asserts is checked against Lion at HEAD where a probe runs the case, and otherwise against what the repository says now. The website's changelog timeline is the one page that shows all of it. `history/changes/` and `history/decisions/` are gone, and so is `supersedes`: deciding a question again differently is a reversal the model derives.",
+  "consequences": "A change, the decision behind it, and every commit that says the same are one item with several sources, so nothing is listed twice. A decision says what it commits Lion to, and DECISIONS.md shows for each assertion whether it holds when Lion is run, is broken, is only stated, or was replaced by a later word. The old entries and decision files became claims written by agents from their own words, reusing the ids the commits' claims use, so a converted statement that disagrees with the commits or with Lion is a finding like any other. CHANGELOG.md lists every item but figures, so it is longer, and its bullets are claims' words.",
+  "alternatives": [
+    {
+      "option": "Keep change entries and decision files beside the research's claims, and link them",
+      "rejected": "That is what this replaces: one history kept twice, and a decision's prose that nothing checks."
+    },
+    {
+      "option": "Give every claim one shape, a question and an answer, with alternatives making it a decision",
+      "rejected": "The kinds of claim already say what each one answers, and a decision is clearer as a claim of its own beside the behavior it asserts."
+    },
+    {
+      "option": "Make commit messages the only record",
+      "rejected": "A commit message cannot be corrected later, and a decision's context and alternatives do not fit in one."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every record of Lion's development is a claim, in `history/notes/`",
+      "says": {
+        "decision": "development-model",
+        "chose": "one-record-of-claims",
+        "over": ["separate-research-model"],
+        "because": "one history kept twice and decisions nothing checks",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "The website's changelog timeline is the one page that shows all of it",
+      "says": {
+        "decision": "development-page",
+        "chose": "changelog-timeline",
+        "over": ["research-explorer"],
+        "area": "site"
+      }
+    },
+    {
+      "quote": "a question with an answer, shown once, under the release that first shipped a claim giving it, in the latest claim's words, with every claim that gives it as a source",
+      "says": {
+        "rule": "items-shown-once",
+        "holds": true,
+        "statement": "Each answer to a question is shown once, under the release that first shipped a claim giving it, in the latest claim's words, with every claim that gives it as a source",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "What a decision record asserts is checked against Lion at HEAD where a probe runs the case, and otherwise against what the repository says now",
+      "says": {
+        "rule": "decision-assertions-checked",
+        "holds": true,
+        "statement": "What a decision record asserts is checked against Lion at HEAD where a probe runs the case, and otherwise against what the repository says now",
+        "area": "record"
+      }
+    },
+    {
+      "quote": "`history/changes/` and `history/decisions/` are gone",
+      "says": {
+        "feature": "history-changes-and-decisions-folders",
+        "kind": "file",
+        "present": false
+      }
+    },
+    {
+      "quote": "and so is `supersedes`",
+      "says": {
+        "feature": "decision-supersedes-field",
+        "kind": "option",
+        "present": false
+      }
+    },
+    {
+      "quote": "deciding a question again differently is a reversal the model derives",
+      "says": {
+        "behavior": "decision-reversal",
+        "is": "derived",
+        "area": "record"
+      }
+    }
+  ]
+}
