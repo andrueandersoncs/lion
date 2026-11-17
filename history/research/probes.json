@@ -19673,5 +19673,21 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "keyed-fact-form-last-row-holds",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "order", ["id", "status"], { "key": "id" }],
+      ["fact", ["order", 1, "shipped"], ["order", 2, "open"]],
+      ["define", "before", ["snapshot"]],
+      ["fact", ["order", 1, "open"], ["order", 1, "shipped"]],
+      [
+        "cond",
+        [["=", "before", ["snapshot"]], ["quote", "changes-nothing"]],
+        ["else", ["quote", "moves-row"]]
+      ]
+    ]
   }
 ]

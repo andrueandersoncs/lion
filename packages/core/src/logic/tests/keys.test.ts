@@ -1,9 +1,11 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect } from "effect";
 import { analyze } from "@/analysis/analyze";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
+import { saveDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
+import { element } from "./programs";
 
 const orders = [
   ["relation", "order", ["id", "status", "total"], { key: ["id"] }],
@@ -204,4 +206,66 @@ describe("relation options", () => {
       "options",
     ]);
   });
+});
+
+type Order = readonly [id: number, status: string];
+
+const order = Arbitrary.all([
+  element([1, 2, 3]),
+  element(["open", "shipped", "paid"]),
+]);
+
+/**
+ * The rows of a keyed relation, in the order a snapshot keeps them, after a
+ * fact form. A row other than the last the form gives its key is not
+ * written, so the form says what that row says. The rows that are written
+ * go in turn: a row that holds changes nothing, a row with a new key comes
+ * last, and a row with another row's key takes that row's place at the end.
+ */
+const afterForm = (held: readonly Order[], form: readonly Order[]) => {
+  const rows = [...held];
+  const last = new Map(form.map(([id, status]) => [id, status]));
+  const written = form.filter(([id, status]) => last.get(id) === status);
+  for (const [id, status] of written) {
+    const at = rows.findIndex(([other]) => other === id);
+    if (rows[at]?.[1] !== status) {
+      rows.splice(at < 0 ? rows.length : at, at < 0 ? 0 : 1);
+      rows.push([id, status]);
+    }
+  }
+  return rows;
+};
+
+describe("a fact form on a keyed relation", () => {
+  it.effect.prop(
+    "says what its last row for each key says, and changes nothing that row holds already",
+    {
+      start: Arbitrary.array(order, { maxLength: 4 }),
+      form: Arbitrary.array(order, { minLength: 1, maxLength: 4 }),
+    },
+    ({ form, start }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        const written = (rows: readonly Order[]) =>
+          rows.length === 0
+            ? []
+            : [["fact", ...rows.map((row) => ["order", ...row])]];
+        yield* run(
+          [
+            "begin",
+            ["relation", "order", ["id", "status"], { key: "id" }],
+            ...written(start),
+            ...written(form),
+            true,
+          ],
+          stdlib,
+          { database }
+        );
+        const saved = (yield* saveDatabase(database)) as unknown[][];
+        expect(saved.filter(([kind]) => kind === "fact")).toEqual(
+          written(afterForm(afterForm([], start), form))
+        );
+      }),
+    { arbitrary: { runs: 1000 } }
+  );
 });

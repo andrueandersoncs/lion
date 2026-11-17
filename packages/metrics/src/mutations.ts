@@ -2375,6 +2375,23 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/tests/package-readme.test.ts"],
   },
   {
+    name: "a fact form that repeats a key writes every row it gives the key",
+    file: core("logic/database.ts"),
+    find: "    return kept === undefined || valueKey(kept) === valueKey(tuple);",
+    replace: "    return true;",
+    tests: [
+      "src/logic/tests/keys.test.ts",
+      "src/logic/tests/maintained.test.ts",
+    ],
+  },
+  {
+    name: "a fact form that repeats a key writes only the first row it gives the key",
+    file: core("logic/database.ts"),
+    find: "      last.set(id, tuple);",
+    replace: "      last.set(id, last.get(id) ?? tuple);",
+    tests: ["src/logic/tests/keys.test.ts"],
+  },
+  {
     name: "why explains a row by the first answer found, not the least",
     file: core("logic/model.ts"),
     find: "          if (other === undefined || compareAnswers(rule, vars, other) < 0) {",

@@ -2266,7 +2266,7 @@
     {
       "id": "doc-readme-201",
       "source": "doc-readme",
-      "quote": "When one `fact` form repeats a key, the last row wins.",
+      "quote": "When one `fact` form repeats a key, the last row wins, and the form writes no other row for that key.",
       "says": {
         "behavior": "keyed-relation-repeated-key-in-one-fact-form",
         "is": "last-wins",

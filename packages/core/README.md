@@ -380,7 +380,7 @@ A record after the columns gives a relation a key. A keyed relation holds at mos
 Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`.
 
 - A key can span several columns, as in `{"key": ["warehouse", "sku"]}`, and a single column can be written without the list, as in `{"key": "id"}`.
-- When one `fact` form repeats a key, the last row wins.
+- When one `fact` form repeats a key, the last row wins, and the form writes no other row for that key. So a form whose last row for each key holds already changes nothing, not even the order a snapshot writes the rows in.
 - `retract` removes a row only when every column matches.
 - Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error, unless they differ only in values that rules invented: then the key makes them one. See [Existential rules](#existential-rules).
 - Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.

@@ -21,6 +21,7 @@
 - The matches of an aggregated row are listed in the order of their answers, not the order they were found in. (`why-aggregated-matches-order` is `answer-order`, was `found-order`)
 - A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `["edge", "a", "c"]` is added, `["why", ["path", "a", "c"]]` rests on that edge. (`why-row-after-shorter-way` is `shorter-way`, was `derived-before`)
 - Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. (`why-row-of-tied-answers` is `least-answer`, was `added-first`)
+- A `fact` form that repeats a key of a keyed relation writes only its last row for that key, so a form whose last rows hold already changes nothing: `["fact", ["order", 1, "open"], ["order", 1, "shipped"]]` leaves a database that holds `["order", 1, "shipped"]` exactly as it was. It used to replace that row and put it back at the end, which moved it in the snapshot and in the order unordered answers come in. (`keyed-fact-form-last-row-holds` is `changes-nothing`, was `moves-row`)
 
 ### Decided
 

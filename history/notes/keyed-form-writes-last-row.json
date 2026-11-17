@@ -1,0 +1,13 @@
+{
+  "claims": [
+    {
+      "quote": "A `fact` form that repeats a key of a keyed relation writes only its last row for that key, so a form whose last rows hold already changes nothing: `[\"fact\", [\"order\", 1, \"open\"], [\"order\", 1, \"shipped\"]]` leaves a database that holds `[\"order\", 1, \"shipped\"]` exactly as it was. It used to replace that row and put it back at the end, which moved it in the snapshot and in the order unordered answers come in.",
+      "says": {
+        "behavior": "keyed-fact-form-last-row-holds",
+        "is": "changes-nothing",
+        "area": "logic",
+        "was": "moves-row"
+      }
+    }
+  ]
+}

@@ -692,6 +692,40 @@ const addFact = (
   return facts.add(tuple, log) || changed;
 };
 
+/**
+ * The rows a fact form writes: of the rows it gives one key of a keyed
+ * relation, only the last, and the same row again. So a form that repeats
+ * a key says what its last row for the key says, and changes nothing that
+ * row holds already.
+ */
+const stated = (
+  database: LogicDatabase,
+  tuples: readonly (readonly [Atom, Tuple])[]
+) => {
+  // The last row each key of a keyed relation gets, by relation and key.
+  const last = new Map<string, Tuple>();
+  const ids: (string | undefined)[] = [];
+  let keyed = 0;
+  for (const [atom, tuple] of tuples.length < 2 ? [] : tuples) {
+    const { key, name } =
+      database.relations.get(atom.relation.name) ?? atom.relation;
+    const id =
+      key && valueKey([name, ...key.map((position) => tuple[position])]);
+    ids.push(id);
+    if (id !== undefined) {
+      keyed += 1;
+      last.set(id, tuple);
+    }
+  }
+  if (last.size === keyed) {
+    return tuples;
+  }
+  return tuples.filter(([, tuple], at) => {
+    const kept = last.get(ids[at] ?? "");
+    return kept === undefined || valueKey(kept) === valueKey(tuple);
+  });
+};
+
 export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
@@ -708,7 +742,7 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       log: Change[] | undefined
     ) => {
       let changed = false;
-      for (const [{ relation }, tuple] of tuples) {
+      for (const [{ relation }, tuple] of stated(database, tuples)) {
         const set = facts(relation.name);
         // The declared relation decides the key, as when the fact was checked.
         const declared = database.relations.get(relation.name) ?? relation;

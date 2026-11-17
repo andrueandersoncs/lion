@@ -257,7 +257,7 @@
   <li>Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and <a href="#form-some">unknowns</a>. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
   <li>A fact can be <a href="#form-exists"><code>exists</code></a> over a relation call or an <code>and</code> of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
-  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins.</li>
+  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing.</li>
   <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
   <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
 </ul>
