@@ -19223,5 +19223,52 @@
       ],
       1
     ]
+  },
+  {
+    "case": "ci-test-concurrency",
+    "area": "build",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", ".github/workflows/ci.yml"],
+          "run: bun run test --concurrency=1"
+        ],
+        ["quote", "one-package"]
+      ],
+      ["else", ["quote", "every-package"]]
+    ]
+  },
+  {
+    "case": "test-time-limit",
+    "area": "tests",
+    "program": [
+      "cond",
+      [
+        [
+          "array/includes?",
+          [
+            "array/map",
+            [
+              "array/make",
+              "packages/core/vitest.config.ts",
+              "packages/history/vitest.config.ts",
+              "packages/metrics/vitest.config.ts",
+              "packages/repl/vitest.config.ts",
+              "packages/site-runtime/vitest.config.ts"
+            ],
+            [
+              "lambda",
+              ["file"],
+              ["string/includes", ["repo/read", "file"], "testTimeout: 120_000"]
+            ]
+          ],
+          false
+        ],
+        ["quote", "not-everywhere"]
+      ],
+      ["else", ["quote", "120-seconds-everywhere"]]
+    ]
   }
 ]

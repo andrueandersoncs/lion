@@ -2,6 +2,17 @@
 
 # Changelog
 
+## Unreleased
+
+### Decided
+
+- CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself. (`ci-test-concurrency`: `one-package-at-a-time` over `every-package-at-once`)
+
+### Rules
+
+- CI runs the tests with `bun run test --concurrency=1`, one package at a time (rule `ci-tests-one-package-at-a-time`)
+- Every package's `vitest.config.ts` gives a test 120 seconds (rule `test-time-limit-two-minutes`)
+
 ## 2026-11-17 — @lionlang/core 0.12.0, @lionlang/cli 0.11.0
 
 The logic layer grows with its facts. What rules derive is kept and follows every change to the facts and the rules, in a full database and in a goal-directed query, instead of being derived again from nothing. A join runs in batches and keeps far less in memory, and a load under invariants or schemas no longer reads every row again for each form.

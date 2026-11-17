@@ -39,7 +39,9 @@ jobs:
         run: bun run typecheck
 
       - name: Run tests
-        run: bun run test
+        # One package at a time: each suite already uses every core, and all
+        # of them at once made tests that take half a second time out.
+        run: bun run test --concurrency=1
 
       - name: Build workspaces
         run: bun run build
