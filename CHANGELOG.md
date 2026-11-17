@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
+
+`why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.
 
 ### Added
 
