@@ -7051,10 +7051,10 @@
     {
       "id": "doc-agents-59",
       "source": "doc-agents",
-      "quote": "**Do not edit code while `bun run mutate` runs.**",
+      "quote": "**Go on working while `bun run mutate` runs.**",
       "says": {
         "rule": "no-edits-during-mutate",
-        "holds": true,
+        "holds": false,
         "statement": "Do not edit code, or write any file, while bun run mutate runs.",
         "area": "tests"
       }

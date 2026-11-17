@@ -79,7 +79,7 @@ const measureHere = (source: string, workload: Workload, n: number) =>
     const started = performance.now();
     for (const program of timed) {
       const outcome = yield* evaluate(lion, program, { database });
-      if (!outcome.ok) {
+      if (!(outcome.ok || workload.refuses)) {
         return outcome.error;
       }
     }

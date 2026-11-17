@@ -147,7 +147,7 @@ How to use the numbers:
 - **Check the speed.** Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.
 - **Check the growth.** Run `bun run scale --against main`. A benchmark times one size, so it cannot show a step that reads everything again for each row. A workload should grow as its facts do, `n^1.0`; report any that grows faster, or that keeps more memory. Add a workload to `packages/metrics/src/workloads.ts` for a way of growing the list does not cover.
 - **Check what you say about behavior.** Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`.
-- **Do not edit code while `bun run mutate` runs.** It rewrites source files while their tests run, then puts them back.
+- **Go on working while `bun run mutate` runs.** It breaks copies of the working tree under `out/metrics/`, never the tree itself, so run it in the background. It checks the tree as it stood when the run began.
 
 ## Build, Lint, and Test Commands
 
@@ -480,7 +480,6 @@ packages/repl/
    - For a change to `@lionlang/core`, run `bun run measure --against main`, `bun run bench --against main`, and `bun run scale --against main`, and `bun run mutate --in <the files you changed>` when you added behavior
    - Run `bun run --cwd packages/site-runtime docs`, and give each new feature an example in the docs (see [Documenting Every Feature](#documenting-every-feature))
    - Record the change, and any design decision, as claims in `history/notes/`, then run `bun run history write` and `bun run history check`, and list or settle any new finding it reports (see [Recording Changes and Decisions](#recording-changes-and-decisions))
-   - Do not write any file while `bun run mutate` runs, not even one outside the code: the repository's write hook formats files, and a mutation it reformats is left in place
 4. **After changes**: Update this AGENTS.md if development practices change
 
 ### Completion Proof

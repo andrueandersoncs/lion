@@ -1,0 +1,53 @@
+{
+  "claims": [
+    {
+      "quote": "A change is followed through every relation goal of a rule, wherever it stands: in a `find`, in a goal used as a value, and in a rule's head, as well as in its body and under `not`. Counting with zeros, `[\"aggregate/count\", [\"find\", \"?id\", [\"order\", \"?id\", \"?c\", \"?_\"]]]` in a head, no longer starts over at each change: with a million facts, adding a fact and asking every count takes 13 milliseconds, where it took 0.26 seconds.",
+      "says": {
+        "behavior": "find-over-changed-relation-after-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["every-change-is-followed"]
+    },
+    {
+      "quote": "An aggregate that recurses, such as shortest distances by `aggregate/min`, goes on from the rows it has when facts change. With 100,000 roads, adding a road and asking every distance takes 15 milliseconds, where it took 0.7 seconds.",
+      "says": {
+        "behavior": "recursive-aggregate-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["every-change-is-followed"]
+    },
+    {
+      "quote": "A rule that invents is followed through a change where it invents alone into a relation with no key: with 100,000 facts, adding a fact and asking its rows takes 70 milliseconds, where it took a second. A relation that cannot be followed, one that rules invent rows of into a keyed relation or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed instead of forgotten.",
+      "says": {
+        "rule": "unfollowed-relations-derived-again",
+        "holds": true,
+        "statement": "A relation that cannot be followed through a change is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed",
+        "area": "logic"
+      },
+      "decisions": ["every-change-is-followed"]
+    },
+    {
+      "quote": "A `rule` form keeps the rows of the relations whose rules did not change, a change an invariant refuses leaves what was derived in place, and a goal-directed query keeps what it derived and follows changes. With a million facts, asking every row of a rule after a fact was refused takes 0.23 seconds, where it took 2.7, and after a rule was added to another relation 0.24 seconds, where it took 1.9.",
+      "says": {
+        "behavior": "derived-rows-after-refused-change",
+        "is": "kept",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["every-change-is-followed"]
+    },
+    {
+      "quote": "`bun run mutate` breaks copies of the working tree under `out/metrics/`, as it stood when the run began, four at a time, so the code can be edited while it runs. `--jobs` says how many run at once.",
+      "says": {
+        "feature": "mutate-in-copies",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": ["every-change-is-followed"]
+    }
+  ]
+}

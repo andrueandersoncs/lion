@@ -140,8 +140,8 @@ const SCALING: readonly Mutation[] = [
   ),
   maintained(
     "what a change reached is not derived again",
-    "    yield* deriveAgain(model, rules, reached.names, added);\n",
-    ""
+    "        : deriveHeads(model, rule, (sink) => each(model, body, sink), added);",
+    "        : Effect.void;"
   ),
   maintained(
     "lost rows are not put back for the search",
@@ -150,8 +150,8 @@ const SCALING: readonly Mutation[] = [
   ),
   maintained(
     "a change reaches a row that is a fact",
-    "  return held?.has(row) && !model.facts.get(name)?.has(row) ? [row] : [];",
-    "  return held?.has(row) ? [row] : [];"
+    "    : rows.filter((row) => !facts?.has(row));",
+    "    : rows;"
   ),
   maintained(
     "a row that becomes a fact keeps its derivation",
@@ -159,24 +159,34 @@ const SCALING: readonly Mutation[] = [
     ""
   ),
   maintained(
-    "a question about a changed relation is followed",
-    "!(untracked(pass, relation) || changed(pass, relation.name))",
-    "!untracked(pass, relation)"
+    "a rule that invents into a relation with a key is followed",
+    "(rule.invents === undefined || inventsAlone(stratum)) &&",
+    "true &&"
   ),
   maintained(
-    "an aggregate that recurses is followed",
-    "        !(recursive && rule.aggregates.length > 0) &&\n",
-    ""
+    "a fact does not reach the row a rule invented in its place",
+    "    uses.push(use(goal, skeleton, true));\n  }\n",
+    "  }\n"
   ),
   maintained(
-    "a rule that invents is followed",
-    "        rule.invents === undefined &&\n",
-    ""
+    "nothing is invented again for what a change reached",
+    "        : inventFor(model, rule, (sink) => each(model, body, sink), added);",
+    "        : Effect.void;"
   ),
+  {
+    name: "a refused change's message shows one of its new answers",
+    file: core("logic/database.ts"),
+    find: "        const answers = [...found.values()];",
+    replace: "        const answers = [...found.values()].slice(0, 1);",
+    tests: [
+      "src/logic/tests/invariants.test.ts",
+      "src/logic/tests/incremental.test.ts",
+    ],
+  },
   {
     ...maintained(
       "a function from the host reads nothing",
-      "    blind ||\n",
+      "  isBlind(stratum) ||\n",
       ""
     ),
     tests: ["src/logic/tests/incremental.test.ts"],
@@ -187,19 +197,29 @@ const SCALING: readonly Mutation[] = [
     ""
   ),
   maintained(
+    "an algorithm's rows survive for the rule that reads them",
+    "      model.relations.delete(relation.name);\n",
+    ""
+  ),
+  maintained(
     "new rows do not go through the rules",
     "    yield* rounds(model, rules, derive, start, (more) =>",
     "    yield* rounds(model, rules, derive, new Map(), (more) =>"
   ),
   maintained(
     "what a group gained is not passed on",
-    "    gained.set(name, plus);\n",
-    "    gained.set(name, new TupleSet());\n"
+    "minus.add(row);\n      }\n    }\n    gained.set(name, plus);",
+    "minus.add(row);\n      }\n    }\n    gained.set(name, new TupleSet());"
   ),
   maintained(
     "what a group lost is not passed on",
-    "    lost.set(name, minus);\n",
-    "    lost.set(name, new TupleSet());\n"
+    "    lost.set(name, minus);\n  }\n};",
+    "    lost.set(name, new TupleSet());\n  }\n};"
+  ),
+  maintained(
+    "a group derived again says nothing changed",
+    "      gained.set(name, plus);\n      lost.set(name, minus);\n    }\n  });",
+    "    }\n  });"
   ),
   maintained(
     "a forgotten group counts as unchanged",
@@ -208,34 +228,126 @@ const SCALING: readonly Mutation[] = [
   ),
   maintained(
     "a row a change reached does not reach the rows it gave",
-    "          rowsIn(next, name).add(each);\n",
+    "          rowsIn(next, relation).add(row);\n",
     ""
   ),
   maintained(
-    "a goal under not is not followed",
-    "    const under = refused(rule, literal);\n    const bodies",
-    "    const under = undefined as ReturnType<typeof refused>;\n    const bodies"
+    "a goal that stands in a question is not followed",
+    "      uses.push(use(goal, skeleton, true));\n",
+    ""
   ),
   maintained(
-    "a row an aggregate's relation gains does not reach its group",
-    "                gains: under !== undefined || rule.aggregates.length > 0,",
-    "                gains: under !== undefined,"
+    "a row the relation of a question gains reaches nothing",
+    "(use.asked || gains)",
+    "gains"
   ),
   maintained(
-    "other goals under not stay in the search",
-    "under?.map((goals) => [...goals, ...matched])",
-    "under?.map((goals) => [...goals, ...rule.body.filter((each) => each !== literal)])"
+    "a variable an exists keeps to itself is the body's",
+    "arg.anonymous || own.has(arg.name) ? anything() : arg",
+    "arg.anonymous ? anything() : arg"
   ),
   maintained(
-    "an aggregated row is not reached through its group",
-    "    return [...(held?.lookup(named(rule), row) ?? [])];",
-    "    return [];"
+    "a relation read through a schema is taken for unread",
+    "        ![...loose].some(moves) &&\n",
+    ""
+  ),
+  maintained(
+    "a row another rule gave is not derived again",
+    "    names.add(positions.map((position) => row[position]));\n",
+    ""
+  ),
+  maintained(
+    "a head value a find gave names its row",
+    'rule.aggregates.includes(position) || asks(arg) || isForm(arg, "some")',
+    'rule.aggregates.includes(position) || isForm(arg, "some")'
+  ),
+  maintained(
+    "an aggregate that recurses starts every group over",
+    "      ...(recursive ? { start } : {}),\n",
+    ""
+  ),
+  maintained(
+    "what an aggregate that recurses gained does not join it",
+    "          ? changedEach(model, rule.body, news, sink)\n",
+    "          ? Effect.void\n"
   ),
   maintained(
     "a group a change reached is not combined again",
-    "    addAll(into, yield* settle(model, groups));",
-    "    yield* settle(model, groups);"
+    "    addAll(added, yield* combined(model, rules, groups, first));",
+    "    yield* Effect.void;"
   ),
+  maintained(
+    "a group nobody has read is derived again",
+    "  return !adrift && names.some((name) => model.read.has(name))",
+    "  return !adrift"
+  ),
+  maintained(
+    "a group that cannot be followed is always forgotten",
+    "  return !adrift && names.some((name) => model.read.has(name))",
+    "  return false"
+  ),
+  {
+    ...maintained(
+      "a blind group is derived again before what it may read",
+      "      ...strata.filter((stratum) => !late(stratum)),\n      ...strata.filter(late),",
+      "      ...strata,"
+    ),
+    tests: MAINTAINED_TESTS,
+  },
+  maintained(
+    "what the upkeep read counts as read",
+    "    model.read.clear();\n",
+    ""
+  ),
+  {
+    name: "nothing a model derives counts as read",
+    file: core("logic/model.ts"),
+    find: "  model.read.add(name);\n",
+    replace: "",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a goal-directed query's rows are forgotten on every change",
+    file: core("logic/database.ts"),
+    find: "    if (goals.size > MOST_GOALS) {",
+    replace: "    if (goals.size > -1) {",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a goal-directed query is not told what the facts it reads gained",
+    file: core("logic/database.ts"),
+    find: "    gained.set(factsName(name), net.gained.get(name) ?? new TupleSet());\n",
+    replace: "",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a relation's first facts reach a query whose rules do not read them",
+    file: core("logic/database.ts"),
+    find: "  if (unread) {\n    return Effect.succeed(false);\n  }\n",
+    replace: "",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a refused change is not followed back",
+    file: core("logic/database.ts"),
+    find: "    undone: Effect.suspend(() => follow(database, back(), touched)),",
+    replace: "    undone: Effect.void,",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a new rule forgets everything derived",
+    file: core("logic/database.ts"),
+    find: "    if (before === undefined || running) {\n      return Effect.void;",
+    replace: "    if (true) {\n      return Effect.void;",
+    tests: MAINTAINED_TESTS,
+  },
+  {
+    name: "a relation whose rules changed keeps the rows it had",
+    file: core("logic/database.ts"),
+    find: "        stale.add(name);\n",
+    replace: "",
+    tests: MAINTAINED_TESTS,
+  },
 ];
 
 export const MUTATIONS: readonly Mutation[] = [
@@ -511,8 +623,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "derived rows stay as they were through a change to the facts",
     file: core("logic/database.ts"),
-    find: "    if (model === undefined || facts === undefined || running) {\n      database.model = undefined;",
-    replace: "    if (true) {",
+    find: "    if (model === undefined || running) {\n      touch(database);\n      return Effect.void;\n    }\n    if (goals.size",
+    replace:
+      "    if (true) {\n      return Effect.void;\n    }\n    if (goals.size",
   },
   {
     name: "a question may go through recursion when it runs",

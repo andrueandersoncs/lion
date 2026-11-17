@@ -281,6 +281,61 @@ describe("invariants", () => {
   );
 });
 
+describe("the message of a refused change", () => {
+  // Edges among two nodes, so one form often adds several from a node to
+  // itself, each an answer the invariant must count.
+  const loops = Arbitrary.array(
+    Arbitrary.map(
+      Arbitrary.all([element(["a", "b"]), element(["a", "b"])]),
+      ([from, to]): Form => ["edge", from, to]
+    ),
+    { minLength: 1, maxLength: 5 }
+  );
+
+  it.effect.prop(
+    "counts every answer the change gave, as the goal asked in full does",
+    { added: loops, given: loops },
+    ({ added, given }) =>
+      Effect.gen(function* () {
+        const goal = ["edge", "?x", "?x"];
+        const relation = ["relation", "edge", ["from", "to"]];
+        // What is there before holds the invariant: no edge to itself.
+        const before = given.filter(([, from, to]) => from !== to);
+        const kept = new LogicDatabase();
+        yield* attempt(
+          [
+            "begin",
+            relation,
+            ...(before.length > 0 ? [["fact", ...before]] : []),
+            ["invariant", goal, { assert: "none" }],
+          ],
+          kept
+        );
+        const asked = yield* attempt(
+          [
+            "begin",
+            relation,
+            ["fact", ...before, ...added],
+            ["query", goal, { assert: "none" }],
+          ],
+          new LogicDatabase()
+        );
+        const outcome = yield* attempt(["fact", ...added], kept);
+        expect(outcome).toEqual(
+          asked.ok
+            ? { ok: true, value: added }
+            : {
+                ok: false,
+                message: invariantMessage(
+                  `Adding ${added.length === 1 ? "this fact" : "these facts"} breaks an invariant, so nothing changed.`,
+                  asked.message
+                ),
+              }
+        );
+      })
+  );
+});
+
 describe("changes to the database", () => {
   const edges = Arbitrary.array(edgeFact, { minLength: 1, maxLength: 5 });
 

@@ -352,6 +352,14 @@ export class Model {
   readonly strata: ReadonlyMap<string, Stratum>;
   /** The relations each computed relation here was computed from. */
   readonly computed = new Map<string, readonly string[]>();
+  /** The derived relations something has read since facts last changed. */
+  readonly read = new Set<string>();
+  /**
+   * What the last change to facts did with each derived relation it
+   * touched: its rows were followed through the change, derived again and
+   * compared, or forgotten until something reads them.
+   */
+  readonly last = new Map<string, "followed" | "derived" | "forgotten">();
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -414,6 +422,18 @@ const derivationOf = (
   return "matches" in found
     ? { rule: found.rule, matches: found.matches.map(unpacked) }
     : unpacked(found);
+};
+
+/**
+ * The answers a model keeps for a derived row: the one that gave it, or for
+ * an aggregated row, the ones it combines. None for a row that is given.
+ */
+export const answersFor = (model: Model, relation: string, tuple: Tuple) => {
+  const kept = derivationOf(model.derivations.get(relation), valueKey(tuple));
+  if (kept === undefined) {
+    return [];
+  }
+  return "vars" in kept ? [kept] : kept.matches;
 };
 
 /**
@@ -1847,7 +1867,7 @@ export const aggregateKind = (rule: CompiledRule, position: number) =>
   (rule.head.args[position] as DeferredCall).aggregate as string;
 
 /** The matches of an aggregate rule that share their other head values. */
-interface Group {
+export interface Group {
   /** Head values, with null where the head aggregates. */
   readonly key: Tuple;
   /** Each match, or the one a selecting aggregate kept. */
@@ -1945,6 +1965,11 @@ export interface Groups {
    * once. Separate rules add up, and so do the relation calls of one head.
    */
   readonly seen: Map<unknown, Set<string>>;
+  /**
+   * What a group starts from, when it does not start empty: the row the
+   * relation already holds for it, which new matches then join.
+   */
+  readonly start?: (rule: CompiledRule, key: Tuple) => Group | undefined;
 }
 
 /** Gives each new match of a rule to the group its head values name. */
@@ -1966,12 +1991,13 @@ export const addMatches = (
       const group = getOrCreate(
         groups.byKey,
         `${rule.head.relation.name}\u0000${valueKey(key)}`,
-        (): Group => ({
-          key,
-          rule,
-          matches: [],
-          values: rule.aggregates.map(() => []),
-        })
+        (): Group =>
+          groups.start?.(rule, key) ?? {
+            key,
+            rule,
+            matches: [],
+            values: rule.aggregates.map(() => []),
+          }
       );
       for (const [index, value] of values.entries()) {
         group.values[index]?.push(value);
@@ -2024,24 +2050,33 @@ export const settle = (model: Model, groups: Groups) =>
 export const MAX_LATTICE_ROUNDS = 10_000;
 
 /**
- * Evaluates the rules of aggregated relations. Every match joins a group,
- * and a group that got matches is combined again. Rules that do not recurse
- * are done after one round. Recursion goes only through lattice aggregates,
- * whose results move one way, so it ends once no group's row changes.
+ * Runs aggregate rules to their end: `first` gives each rule its first
+ * answers, every match joins a group, and a group that got matches is
+ * combined again. Rules that do not recurse are done after one round.
+ * Recursion goes only through lattice aggregates, whose results move one
+ * way, so it ends once no group's row changes. Returns the rows it added.
  */
-const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
+export const combined = (
+  model: Model,
+  rules: readonly CompiledRule[],
+  groups: Groups,
+  first: (rule: CompiledRule, sink: Sink) => LogicEffect<void>
+) =>
   Effect.gen(function* () {
-    const groups: Groups = {
-      byKey: new Map(),
-      changed: new Set(),
-      seen: new Map(),
+    const added = new Map<string, TupleSet>();
+    const note = (delta: ReadonlyMap<string, TupleSet>) => {
+      for (const [name, rows] of delta) {
+        const all = getOrCreate(added, name, () => new TupleSet());
+        for (const row of rows.values()) {
+          all.add(row);
+        }
+      }
+      return delta;
     };
     for (const rule of rules) {
-      yield* each(model, rule.body, (answers) =>
-        addMatches(model, groups, rule, answers)
-      );
+      yield* first(rule, (answers) => addMatches(model, groups, rule, answers));
     }
-    let delta = yield* settle(model, groups);
+    let delta = note(yield* settle(model, groups));
     for (let round = 1; hasChanges(delta); round += 1) {
       if (round > MAX_LATTICE_ROUNDS) {
         const names = [
@@ -2057,9 +2092,19 @@ const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
           addMatches(model, groups, rule, answers)
         );
       }
-      delta = yield* settle(model, groups);
+      delta = note(yield* settle(model, groups));
     }
+    return added;
   });
+
+/** Evaluates the rules of aggregated relations from nothing. */
+const evaluateAggregates = (model: Model, rules: readonly CompiledRule[]) =>
+  combined(
+    model,
+    rules,
+    { byKey: new Map(), changed: new Set(), seen: new Map() },
+    (rule, sink) => each(model, rule.body, sink)
+  );
 
 /** An answer of the body of a rule that invents, waiting to be looked at. */
 type Trigger = readonly [rule: CompiledRule, vars: Vars];
@@ -2135,6 +2180,35 @@ const active = (
       }
     }
     return ready;
+  });
+
+/**
+ * Invents what the answers of a rule that invents say exists, where its
+ * head does not hold: all at once, as the rule does when its relation is
+ * derived.
+ */
+export const inventFor = (
+  model: Model,
+  rule: CompiledRule,
+  feed: Feed,
+  into: Map<string, TupleSet>
+) =>
+  Effect.gen(function* () {
+    const answers = yield* gathered(feed);
+    const ready = yield* active(
+      model,
+      answers.map((vars): Trigger => [rule, vars]),
+      new Set()
+    );
+    const inventions: Inventions = {
+      equal: new Map(),
+      given: undefined,
+      invented: new Set(),
+      pending: false,
+    };
+    for (const trigger of ready) {
+      yield* invent(model, trigger, into, inventions);
+    }
   });
 
 /**
@@ -2300,7 +2374,7 @@ export const forget = (model: Model, members: ReadonlySet<string>) => {
  * rules on top of their facts. A relation the rules read is derived when a
  * goal first reads it.
  */
-const derive = (model: Model, stratum: Stratum) =>
+export const derive = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
     const { members } = stratum;
     for (const name of members) {
@@ -2333,6 +2407,7 @@ const deriving = (
   if (stratum === undefined) {
     return model.base && deriving(model.base, name, reading);
   }
+  model.read.add(name);
   const state = model.state.get(name);
   if (state === "done" || (reading && state === "running")) {
     return;

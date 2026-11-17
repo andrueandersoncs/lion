@@ -26,7 +26,8 @@ describe("a workload", () => {
         let last: unknown;
         for (const program of programs) {
           const outcome = yield* evaluate(core, program, { database });
-          expect(outcome).toMatchObject({ ok: true });
+          // Only a workload that says so has programs that fail.
+          expect(outcome.ok || workload.refuses === true).toBe(true);
           last = outcome.ok ? outcome.value : undefined;
         }
         if (workload.gives !== undefined) {

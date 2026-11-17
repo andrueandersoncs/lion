@@ -15,8 +15,8 @@ import {
   questionPlans,
 } from "@/logic/compile";
 import { checkOf, misfit } from "@/logic/fit";
-import { factsName, rewriteQueries } from "@/logic/magic";
-import { maintain, type Rows } from "@/logic/maintain";
+import { factsName, originalName, rewriteQueries } from "@/logic/magic";
+import { maintain, type Pass, type Rows } from "@/logic/maintain";
 import {
   aggregateKind,
   answer,
@@ -77,6 +77,7 @@ import {
   valueKey,
 } from "@/logic/terms";
 import { LionAskerService } from "@/services/asker";
+import type { LionEnvironmentService } from "@/services/evaluation";
 
 export interface LogicDatabaseOptions {
   /**
@@ -88,9 +89,15 @@ export interface LogicDatabaseOptions {
 }
 
 /** Bodies to answer a query with, and the model to run them on. */
-export interface GoalModel {
+interface Asked {
   readonly bodies: readonly (readonly Literal[])[];
   readonly model: Model;
+}
+
+/** A goal-directed query's rewritten bodies, and the model they run on. */
+export interface GoalModel extends Asked {
+  /** The relations whose facts the model's rules read, under other names. */
+  readonly facts: ReadonlySet<string>;
 }
 
 /**
@@ -428,31 +435,154 @@ const netOf = (
   return { gained, lost };
 };
 
+/** What a change to facts did to the rows of the relations it wrote to. */
+type Net = ReturnType<FactChange["net"]>;
+
 /**
- * Brings what was derived up to date with a change. A change to facts is
- * followed through the rows the rules derived. After any other change, and
- * when a rule fails on the new facts, what was derived is forgotten: the
- * next reader derives it again, and is the one a failing rule fails.
+ * How many goal-directed queries a database follows through a change. With
+ * more, following them all costs more than answering one again does.
  */
-const keep = (database: LogicDatabase, facts: FactChange | undefined) =>
+const MOST_GOALS = 32;
+
+/**
+ * Follows a change through the rows a goal-directed query derived, and says
+ * whether it could. The query's rules read facts under names of their own,
+ * and read what the database's model derived in full, which the change was
+ * followed through first.
+ */
+const followGoal = (
+  { facts, model }: GoalModel,
+  pass: Pass,
+  net: Net,
+  touched: ReadonlySet<string>
+) => {
+  // A relation that got its first facts since the query's rules were made
+  // has no rule here that reads them.
+  const unread = [...touched].some(
+    (name) =>
+      !facts.has(name) &&
+      [...model.strata.keys()].some((copy) => originalName(copy) === name)
+  );
+  if (unread) {
+    return Effect.succeed(false);
+  }
+  const gained = new Map(pass.gained);
+  const lost = new Map(pass.lost);
+  for (const name of touched) {
+    gained.set(factsName(name), net.gained.get(name) ?? new TupleSet());
+    lost.set(factsName(name), net.lost.get(name) ?? new TupleSet());
+  }
+  return maintain(model, gained, lost, new Set(), pass.unknown).pipe(
+    Effect.as(true),
+    Effect.catch(() => Effect.succeed(false))
+  );
+};
+
+/**
+ * Brings what was derived up to date with a change to facts: the database's
+ * model, and then each goal-directed query's. When a rule fails on the new
+ * facts, what was derived is forgotten: the next reader derives it again,
+ * and is the one a failing rule fails.
+ */
+const follow = (
+  database: LogicDatabase,
+  net: Net,
+  touched: ReadonlySet<string>
+) =>
   Effect.suspend(() => {
-    database.goals.clear();
-    const { model } = database;
+    const { goals, model } = database;
     // A change made while rules run finds their rows half derived.
     const running = [...(model?.state.values() ?? [])].includes("running");
-    if (model === undefined || facts === undefined || running) {
-      database.model = undefined;
+    if (model === undefined || running) {
+      touch(database);
       return Effect.void;
     }
-    const { gained, lost } = facts.net();
-    return maintain(model, new Map(gained), new Map(lost)).pipe(
-      Effect.catch(() =>
-        Effect.sync(() => {
-          database.model = undefined;
-        })
-      )
+    if (goals.size > MOST_GOALS) {
+      goals.clear();
+    }
+    return Effect.gen(function* () {
+      const pass = yield* maintain(
+        model,
+        new Map(net.gained),
+        new Map(net.lost)
+      );
+      for (const [key, goal] of [...goals]) {
+        if (!(yield* followGoal(goal, pass, net, touched))) {
+          goals.delete(key);
+        }
+      }
+    }).pipe(Effect.catch(() => Effect.sync(() => touch(database))));
+  });
+
+/**
+ * Takes what a model derived over to a model of new rules, and returns the
+ * relations whose rules are not what they were. A group of relations with
+ * the rules it had keeps its rows. A group whose rules changed takes its
+ * rows along to be compared with what the new rules give.
+ */
+const carry = (before: Model, next: Model) => {
+  const stale = new Set<string>();
+  for (const { members, rules } of new Set(next.strata.values())) {
+    const names = [...members];
+    const old = before.strata.get(names[0] ?? "");
+    const same =
+      old !== undefined &&
+      old.members.size === members.size &&
+      names.every((name) => old.members.has(name)) &&
+      old.rules.length === rules.length &&
+      old.rules.every((rule, at) => rule === rules[at]);
+    // A relation that had no rules held its facts, which it still has.
+    const held = names.every(
+      (name) => before.state.get(name) === "done" || !before.strata.has(name)
+    );
+    for (const name of names) {
+      if (!same) {
+        stale.add(name);
+      }
+      const rows = before.relations.get(name) ?? before.facts.get(name);
+      if (held && rows !== undefined) {
+        next.state.set(name, "done");
+        next.relations.set(name, rows);
+        next.derivations.set(name, before.derivations.get(name) ?? new Map());
+      }
+      if (before.read.has(name)) {
+        next.read.add(name);
+      }
+    }
+  }
+  for (const [name, inputs] of before.computed) {
+    next.computed.set(name, inputs);
+    next.relations.set(name, before.relations.get(name) ?? EMPTY);
+  }
+  return stale;
+};
+
+/**
+ * Brings what was derived up to date with a change to rules: a relation
+ * whose rules changed is derived again and compared with what it was, and
+ * what it gained and lost is followed through the relations that read it.
+ */
+const renew = (database: LogicDatabase, before: Model | undefined) =>
+  Effect.suspend(() => {
+    const running = [...(before?.state.values() ?? [])].includes("running");
+    touch(database);
+    if (before === undefined || running) {
+      return Effect.void;
+    }
+    const next = new Model(database.facts, database.rules);
+    const stale = carry(before, next);
+    database.model = next;
+    return maintain(next, new Map(), new Map(), stale).pipe(
+      Effect.asVoid,
+      Effect.catch(() => Effect.sync(() => touch(database)))
     );
   });
+
+/** How what was derived keeps up with a change, and with its undoing. */
+interface Upkeep {
+  readonly after: Effect.Effect<void, never, LionEnvironmentService>;
+  readonly undone: Effect.Effect<void, never, LionEnvironmentService>;
+}
 
 /**
  * Makes a change, then checks the invariants it can break: all of them, or
@@ -466,6 +596,7 @@ const commit = (
   database: LogicDatabase,
   describe: string,
   change: () => Undo,
+  upkeep: Upkeep,
   facts?: FactChange
 ) =>
   Effect.suspend(() => {
@@ -473,7 +604,7 @@ const commit = (
     if (undo === undefined) {
       return Effect.void;
     }
-    return keep(database, facts).pipe(
+    return upkeep.after.pipe(
       Effect.andThen(
         checkInvariants(
           database,
@@ -483,9 +614,9 @@ const commit = (
         )
       ),
       Effect.onError(() =>
-        Effect.sync(() => {
+        Effect.suspend(() => {
           undo();
-          touch(database);
+          return upkeep.undone;
         })
       )
     );
@@ -509,7 +640,7 @@ const changeFacts = (
 ) => {
   const touched = new Set<string>();
   let log: Change[] | undefined;
-  let net: ReturnType<FactChange["net"]> | undefined;
+  let net: Net | undefined;
   const change = () => {
     log =
       database.invariants.length === 0 && database.model === undefined
@@ -525,13 +656,20 @@ const changeFacts = (
     }, log);
     return changed ? () => undo(log ?? []) : undefined;
   };
-  return commit(database, describe, change, {
+  const facts = {
     net: () => {
       net ??= netOf(database, touched, log ?? []);
       return net;
     },
     touched,
-  });
+  };
+  // What the change gained is what undoing it loses.
+  const back = () => ({ gained: facts.net().lost, lost: facts.net().gained });
+  const upkeep = {
+    after: Effect.suspend(() => follow(database, facts.net(), touched)),
+    undone: Effect.suspend(() => follow(database, back(), touched)),
+  };
+  return commit(database, describe, change, upkeep, facts);
 };
 
 const these = (atoms: readonly Atom[]) =>
@@ -875,14 +1013,20 @@ export const addRules = (
       ? []
       : [{ ...invariant, ...(key === undefined ? {} : { key }) }];
   });
-  return commit(database, "Adding this rule", () => {
+  const before = database.model;
+  const upkeep = {
+    after: Effect.suspend(() => renew(database, before)),
+    undone: Effect.sync(() => touch(database)),
+  };
+  const change = () => {
     database.rules = next;
     database.invariants = [...invariants, ...keyed];
     return () => {
       database.rules = previous;
       database.invariants = invariants;
     };
-  });
+  };
+  return commit(database, "Adding this rule", change, upkeep);
 };
 
 /**
@@ -913,7 +1057,7 @@ const answering = (
   database: LogicDatabase,
   model: Model,
   bodies: readonly (readonly Literal[])[]
-): GoalModel => {
+): Asked => {
   if (!database.goalDirected) {
     return { bodies, model };
   }
@@ -940,7 +1084,11 @@ const answering = (
       database.facts.get(relation) ?? EMPTY
     );
   }
-  const answered = { bodies: program.bodies, model: directed };
+  const answered = {
+    bodies: program.bodies,
+    facts: program.facts,
+    model: directed,
+  };
   if (key !== undefined) {
     database.goals.set(key, answered);
   }
@@ -960,7 +1108,7 @@ const solve = <A>(
   taking: () => readonly [A, Sink]
 ) =>
   Effect.suspend(() => {
-    const run = ({ bodies, model }: GoalModel) =>
+    const run = ({ bodies, model }: Asked) =>
       Effect.gen(function* () {
         const [taken, sink] = taking();
         for (const body of bodies) {
@@ -1196,7 +1344,9 @@ const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
  * - For an invariant that expects no answers: when the change touched only
  *   relations whose rows a goal of the invariant matches, removing rows
  *   cannot give it an answer, and an answer that is new uses a row that is
- *   new. So it is enough to run the goal on the new rows.
+ *   new. So it is enough to run the goal on the new rows. When they give
+ *   answers, those are all the invariant has, and they are returned for
+ *   its message instead of true or false.
  */
 const unaffected = (
   database: LogicDatabase,
@@ -1217,14 +1367,26 @@ const unaffected = (
       return Effect.succeed(false);
     }
     const rows = net().gained;
+    const { bodies, outputs } = invariant.query;
     return reading(database, (model) =>
       Effect.gen(function* () {
-        for (const body of invariant.query.bodies) {
-          if ((yield* changedAnswers(model, body, rows)).length > 0) {
-            return false;
+        // The invariant had no answers, so the ones that use a new row are
+        // all it has now.
+        const found = new Map<string, Record<string, unknown>>();
+        for (const body of bodies) {
+          for (const vars of yield* changedAnswers(model, body, rows)) {
+            const row = Object.fromEntries(
+              outputs.flatMap((name) =>
+                vars.has(name) ? [[name, vars.get(name)]] : []
+              )
+            );
+            found.set(valueKey(row), row);
           }
         }
-        return true;
+        const answers = [...found.values()];
+        return (
+          answers.length === 0 || (answers.every(isGroundValue) && answers)
+        );
       })
     ).pipe(
       // Whatever went wrong, asking the invariant in full says it best.
@@ -1247,13 +1409,13 @@ const checkInvariants = (
   Effect.gen(function* () {
     for (const invariant of invariants) {
       const { assert, goal, query } = invariant;
-      if (
+      const found =
         change !== undefined &&
-        (yield* unaffected(database, invariant, change))
-      ) {
+        (yield* unaffected(database, invariant, change));
+      if (found === true) {
         continue;
       }
-      const rows = yield* queryDatabase(database, query);
+      const rows = found || (yield* queryDatabase(database, query));
       yield* checkAssertion(
         database,
         "invariant",

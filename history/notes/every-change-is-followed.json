@@ -1,0 +1,166 @@
+{
+  "title": "Every change is followed, and a relation that cannot be followed is derived again on its own",
+  "context": "A change to facts was followed through relation goals, goals under `not`, and aggregates. Everything else fell back to forgetting. A relation whose rule asked about a changed relation in a `find` or as a value, a relation that rules invent rows of, an aggregate that recurses, and a relation whose rule holds a function from the host were forgotten with every relation that read them. So was everything the database had derived after a `rule` form, after a change an invariant refused, and for every goal-directed query. With one million facts, adding a fact and asking a count that can be zero, the documented way to count with a `find`, took 0.26 seconds each time, and a fact an invariant refused cost 2.7 seconds, to derive again what the refusal had not changed; with 100,000 roads, adding a road and asking every shortest distance took 0.7 seconds. The mutation check rewrote the working tree while its tests ran, so nothing could be edited during it.",
+  "decision": "A relation goal is followed wherever it stands in a rule: in its body, under `not`, in a `find`, in a goal used as a value, or in its head. A changed row is matched against the goal with the rest of the rule's body beside it, without the tests that ask a question, so every answer the row is part of is found. A row is named by the head values that ask nothing, so a row whose other values a `find` or an aggregate gave is reached through those. An aggregate that recurses goes on from the row a group has, since its value moves one way, and only a group a lost row reached starts over. A rule that invents is followed where it invents alone, into a relation with no key: a fact of its relation is then a row its answers use. A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed. One nobody has read since is forgotten until something reads it. A `rule` form derives again the relations whose rules changed and keeps the rows of every other. A change an invariant refuses is followed back. A goal-directed query keeps what it derived and follows changes, for up to 32 queries. The mutation check breaks copies of the working tree, four at a time.",
+  "consequences": "At one million facts, adding a fact and asking a count that can be zero takes 13 milliseconds instead of 0.26 seconds, and a fact an invariant refused costs 0.23 seconds instead of 2.7, which is the time to give the 490,000 answers asked for afterwards. With 100,000 roads, adding a road and asking every shortest distance takes 15 milliseconds instead of 0.7 seconds, and with 100,000 facts, adding a fact and asking a rule that invents takes 70 milliseconds instead of a second. A relation that cannot be followed is one that rules invent rows of into a relation with a key or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema; it costs its own derivation at each change that touches it, once it was read, and nothing when nobody reads between changes. The message of a refused change is made from the answers that use a new row, which are all the invariant has. Deriving again happens when the change is made, so a rule that fails on the new facts fails then; what was derived is then forgotten, and the next reader is the one it fails, as before. The engine is 706 lines larger: 11,178 lines of code where it had 10,472.",
+  "alternatives": [
+    {
+      "option": "Forget what cannot be followed, with everything that reads it",
+      "rejected": "It is what the database did. One rule with a `find` or a host function made every relation that read it start over at each change."
+    },
+    {
+      "option": "Always derive again what cannot be followed",
+      "rejected": "Loading facts one form at a time would derive such a relation again for each form, though nobody reads it between them. Deriving it again only once it was read costs at most one derivation nobody asked for."
+    },
+    {
+      "option": "Follow a rule that invents in every case",
+      "rejected": "What a rule invents depends on what holds when it runs: rules invent all at once, round by round, and a key can make an unknown one with a value. Where a rule invents beside other rules or into a keyed relation, the rows a change would give depend on the order things were invented in, and only deriving again gives the rows a database that derived nothing would give."
+    },
+    {
+      "option": "Run mutations in the working tree, and stop editing while they run",
+      "rejected": "A change to the engine has a hundred mutations to run, and nothing could be done meanwhile. A copy for each job also lets several run at once."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A relation goal is followed wherever it stands in a rule: in its body, under `not`, in a `find`, in a goal used as a value, or in its head",
+      "says": {
+        "behavior": "find-over-changed-relation-after-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "An aggregate that recurses goes on from the row a group has",
+      "says": {
+        "behavior": "recursive-aggregate-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A rule that invents is followed where it invents alone, into a relation with no key",
+      "says": {
+        "decision": "rule-that-invents-on-change",
+        "chose": "follow-where-it-invents-alone",
+        "over": ["follow-every-case", "derive-again-every-case"],
+        "area": "logic",
+        "because": "where a rule invents beside other rules or into a keyed relation, the rows a change would give depend on the order things were invented in"
+      }
+    },
+    {
+      "quote": "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed",
+      "says": {
+        "rule": "unfollowed-relations-derived-again",
+        "holds": true,
+        "statement": "A relation that cannot be followed through a change is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed",
+      "says": {
+        "decision": "unfollowable-relation-on-change",
+        "chose": "derive-again-and-compare-once-read",
+        "over": ["forget-with-readers", "always-derive-again"],
+        "area": "logic",
+        "because": "one rule with a `find` or a host function made every relation that read it start over at each change"
+      }
+    },
+    {
+      "quote": "A `rule` form derives again the relations whose rules changed and keeps the rows of every other",
+      "says": {
+        "decision": "derived-rows-on-rule-change",
+        "chose": "derive-again-what-changed",
+        "over": ["forget-everything"],
+        "area": "logic",
+        "because": "a rule added to one relation made every other relation start over"
+      }
+    },
+    {
+      "quote": "A `rule` form derives again the relations whose rules changed and keeps the rows of every other",
+      "says": {
+        "behavior": "derived-rows-after-rule-change",
+        "is": "kept-where-rules-did-not-change",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A change an invariant refuses is followed back",
+      "says": {
+        "decision": "derived-rows-on-refused-change",
+        "chose": "follow-back",
+        "over": ["forget-everything", "log-the-upkeep"],
+        "area": "logic",
+        "because": "a refusal changes nothing, so it should not cost deriving everything again"
+      }
+    },
+    {
+      "quote": "A change an invariant refuses is followed back",
+      "says": {
+        "behavior": "derived-rows-after-refused-change",
+        "is": "kept",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A goal-directed query keeps what it derived and follows changes, for up to 32 queries",
+      "says": {
+        "behavior": "goal-directed-rows-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "The mutation check breaks copies of the working tree, four at a time",
+      "says": {
+        "decision": "where-mutations-run",
+        "chose": "copies-of-the-working-tree",
+        "over": ["the-working-tree"],
+        "area": "tests",
+        "because": "nothing could be edited while mutations ran in the working tree"
+      }
+    },
+    {
+      "quote": "The engine is 706 lines larger: 11,178 lines of code where it had 10,472",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 11178,
+        "before": 10472,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "adding a fact and asking a count that can be zero takes 13 milliseconds instead of 0.26 seconds",
+      "says": {
+        "measured": "million-facts-change-then-count-with-zeros-ms",
+        "after": 13,
+        "before": 260,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "adding a road and asking every shortest distance takes 15 milliseconds instead of 0.7 seconds",
+      "says": {
+        "measured": "hundred-thousand-roads-change-then-distances-ms",
+        "after": 15,
+        "before": 700,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a fact an invariant refused costs 0.23 seconds instead of 2.7",
+      "says": {
+        "measured": "million-facts-refused-change-then-every-row-ms",
+        "after": 230,
+        "before": 2700,
+        "area": "metrics"
+      }
+    }
+  ]
+}

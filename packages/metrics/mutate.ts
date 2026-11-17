@@ -6,22 +6,24 @@
 //   bun run mutate find recursion    only those whose names hold a word
 //   bun run mutate --in logic/model.ts,logic/database.ts
 //                                    only those in files whose paths hold a word
+//   bun run mutate --jobs 2          how many run at once; 4 unless given
 //   bun run mutate --list            the names, and whether each still applies
 //   bun run mutate --file packages/core/src/logic/model.ts \
 //     --find "values.sort(compareValues)" --replace "values" \
 //     --tests src/logic/tests/asking.test.ts
 //                                    one mutation of your own
 //
-// Each mutation rewrites a source file while its tests run and then puts it
-// back, so do not edit the code while this runs.
+// The mutations are made in copies of the working tree under `out/`, as it
+// stood when the run began, uncommitted changes included. So the code can
+// be edited while this runs; what is edited meanwhile is not checked.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { copyWorkingTree, removeCheckout } from "./src/checkout.ts";
 import {
-  check,
+  checkAll,
   DEFAULT_TESTS,
   type Mutation,
   mutated,
-  restore,
   type Verdict,
 } from "./src/mutation.ts";
 import { MUTATIONS } from "./src/mutations.ts";
@@ -32,6 +34,7 @@ const args = readArguments(process.argv.slice(2), [
   "file",
   "find",
   "in",
+  "jobs",
   "replace",
   "tests",
 ]);
@@ -72,13 +75,55 @@ const HINTS: Readonly<Record<Verdict, string>> = {
   stale: "its text is not in the file exactly once: point it at the new code",
 };
 
-// A stopped run must not leave the code broken.
-for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  process.on(signal, () => {
-    restore();
-    process.exit(1);
-  });
-}
+const report = (mutation: Mutation, verdict: Verdict) => {
+  const hint = HINTS[verdict];
+  console.log(
+    `${verdict.toUpperCase().padEnd(6)}  ${mutation.name}${hint === "" ? "" : `\n        ${hint}`}`
+  );
+};
+
+/** Checks the chosen mutations in copies of the working tree, some at once. */
+const run = async () => {
+  const jobs = Math.max(
+    1,
+    Math.min(Number(args.option("jobs") ?? "4"), chosen.length)
+  );
+  // The record's tests read the built language, so their copy builds it.
+  const build = chosen.some((mutation) => mutation.package === "history")
+    ? ["@lionlang/core"]
+    : [];
+  const copies: string[] = [];
+  const clear = () => {
+    for (const copy of copies.splice(0)) {
+      removeCheckout(copy);
+    }
+  };
+  // A stopped run must not leave its copies behind.
+  for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.on(signal, () => {
+      clear();
+      process.exit(1);
+    });
+  }
+  try {
+    for (let job = 0; job < jobs; job += 1) {
+      copies.push(copyWorkingTree(`mutate-${process.pid}-${job}`, build));
+    }
+    const verdicts = await checkAll(chosen, copies, report);
+    const caught = verdicts.filter((verdict) => verdict === "caught").length;
+    console.log(`\n${caught} of ${chosen.length} mutations caught.`);
+    for (const [at, verdict] of verdicts.entries()) {
+      if (verdict !== "caught") {
+        console.log(`  ${verdict}: ${chosen[at]?.name}`);
+      }
+    }
+    if (caught < chosen.length) {
+      process.exitCode = 1;
+    }
+  } finally {
+    clear();
+  }
+};
 
 if (args.flag("list")) {
   for (const mutation of chosen) {
@@ -87,18 +132,5 @@ if (args.flag("list")) {
     );
   }
 } else {
-  const verdicts = new Map<Verdict, number>();
-  for (const mutation of chosen) {
-    const verdict = check(mutation);
-    verdicts.set(verdict, (verdicts.get(verdict) ?? 0) + 1);
-    const hint = HINTS[verdict];
-    console.log(
-      `${verdict.toUpperCase().padEnd(6)}  ${mutation.name}${hint === "" ? "" : `\n        ${hint}`}`
-    );
-  }
-  const caught = verdicts.get("caught") ?? 0;
-  console.log(`\n${caught} of ${chosen.length} mutations caught.`);
-  if (caught < chosen.length) {
-    process.exitCode = 1;
-  }
+  await run();
 }

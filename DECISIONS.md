@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 145 questions have been decided, 51 records explain them, and of what the records assert, 478 hold when Lion is run, 4 are broken, 242 are stated but not checked by running Lion, and 11 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 150 questions have been decided, 52 records explain them, and of what the records assert, 478 hold when Lion is run, 4 are broken, 256 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -151,6 +151,11 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-16 | [`assertion-example-answer`](#assertion-example-answer) | `first-in-sort-order` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
 | 2026-11-16 | [`derived-rows-on-fact-change`](#derived-rows-on-fact-change) | `follow-the-change` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
 | 2026-11-16 | [`undoing-a-change-to-facts`](#undoing-a-change-to-facts) | `take-back-each-row` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
+| 2026-11-17 | [`derived-rows-on-refused-change`](#derived-rows-on-refused-change) | `follow-back` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`derived-rows-on-rule-change`](#derived-rows-on-rule-change) | `derive-again-what-changed` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `follow-where-it-invents-alone` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`unfollowable-relation-on-change`](#unfollowable-relation-on-change) | `derive-again-and-compare-once-read` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 
 <a id="program-representation"></a>
 
@@ -2971,7 +2976,7 @@ Recorded 2026-11-16 in `history/notes/derived-rows-follow-changes.json`.
 **What it asserts, checked.**
 
 - Holds when Lion is run: rule `derived-rows-follow-fact-changes` holds. "A database keeps what it derived when facts change, and follows the change through it"
-- Stated, not checked by running Lion: `derived-rows-after-refused-change` is `derived-again`. "A change an invariant refuses forgets what was derived"
+- Replaced by a later word: `derived-rows-after-refused-change` is `derived-again`. "A change an invariant refuses forgets what was derived"
 - Stated, not checked by running Lion: `million-facts-change-then-every-group-total-ms` is 23. "adding a fact and asking every group's total again takes 23 milliseconds instead of 1.6 seconds"
 - Stated, not checked by running Lion: `million-nodes-every-path-peak-mb` is 2146. "Deriving 4.5 million paths holds 2.1 gigabytes at its peak instead of 9.2"
 - Stated, not checked by running Lion: `core-code-lines` is 10472. "The engine is 832 lines larger, 8.6 percent: 10,472 lines of code where it had 9,640"
@@ -3007,3 +3012,80 @@ Now: `follow-the-change`.
 Now: `take-back-each-row`.
 
 - 2026-11-16 `undoing-a-change-to-facts`: `take-back-each-row` over `copy-the-relation`: "A change is undone by taking back each row it added or removed, in place, instead of copying the relation first" (`derived-rows-follow-changes.json`)
+
+<a id="derived-rows-on-refused-change"></a>
+
+## derived-rows-on-refused-change
+
+Now: `follow-back`.
+
+- 2026-11-17 `derived-rows-on-refused-change`: `follow-back` over `forget-everything`, `log-the-upkeep`: "A change an invariant refuses is followed back" (`every-change-is-followed.json`)
+
+<a id="every-change-is-followed"></a>
+
+### Every change is followed, and a relation that cannot be followed is derived again on its own
+
+Recorded 2026-11-17 in `history/notes/every-change-is-followed.json`.
+
+**Context.** A change to facts was followed through relation goals, goals under `not`, and aggregates. Everything else fell back to forgetting. A relation whose rule asked about a changed relation in a `find` or as a value, a relation that rules invent rows of, an aggregate that recurses, and a relation whose rule holds a function from the host were forgotten with every relation that read them. So was everything the database had derived after a `rule` form, after a change an invariant refused, and for every goal-directed query. With one million facts, adding a fact and asking a count that can be zero, the documented way to count with a `find`, took 0.26 seconds each time, and a fact an invariant refused cost 2.7 seconds, to derive again what the refusal had not changed; with 100,000 roads, adding a road and asking every shortest distance took 0.7 seconds. The mutation check rewrote the working tree while its tests ran, so nothing could be edited during it.
+
+**Decision.** A relation goal is followed wherever it stands in a rule: in its body, under `not`, in a `find`, in a goal used as a value, or in its head. A changed row is matched against the goal with the rest of the rule's body beside it, without the tests that ask a question, so every answer the row is part of is found. A row is named by the head values that ask nothing, so a row whose other values a `find` or an aggregate gave is reached through those. An aggregate that recurses goes on from the row a group has, since its value moves one way, and only a group a lost row reached starts over. A rule that invents is followed where it invents alone, into a relation with no key: a fact of its relation is then a row its answers use. A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed. One nobody has read since is forgotten until something reads it. A `rule` form derives again the relations whose rules changed and keeps the rows of every other. A change an invariant refuses is followed back. A goal-directed query keeps what it derived and follows changes, for up to 32 queries. The mutation check breaks copies of the working tree, four at a time.
+
+**Consequences.** At one million facts, adding a fact and asking a count that can be zero takes 13 milliseconds instead of 0.26 seconds, and a fact an invariant refused costs 0.23 seconds instead of 2.7, which is the time to give the 490,000 answers asked for afterwards. With 100,000 roads, adding a road and asking every shortest distance takes 15 milliseconds instead of 0.7 seconds, and with 100,000 facts, adding a fact and asking a rule that invents takes 70 milliseconds instead of a second. A relation that cannot be followed is one that rules invent rows of into a relation with a key or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema; it costs its own derivation at each change that touches it, once it was read, and nothing when nobody reads between changes. The message of a refused change is made from the answers that use a new row, which are all the invariant has. Deriving again happens when the change is made, so a rule that fails on the new facts fails then; what was derived is then forgotten, and the next reader is the one it fails, as before. The engine is 706 lines larger: 11,178 lines of code where it had 10,472.
+
+**Alternatives considered.**
+
+- Forget what cannot be followed, with everything that reads it. It is what the database did. One rule with a `find` or a host function made every relation that read it start over at each change.
+- Always derive again what cannot be followed. Loading facts one form at a time would derive such a relation again for each form, though nobody reads it between them. Deriving it again only once it was read costs at most one derivation nobody asked for.
+- Follow a rule that invents in every case. What a rule invents depends on what holds when it runs: rules invent all at once, round by round, and a key can make an unknown one with a value. Where a rule invents beside other rules or into a keyed relation, the rows a change would give depend on the order things were invented in, and only deriving again gives the rows a database that derived nothing would give.
+- Run mutations in the working tree, and stop editing while they run. A change to the engine has a hundred mutations to run, and nothing could be done meanwhile. A copy for each job also lets several run at once.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: `find-over-changed-relation-after-change` is `followed`. "A relation goal is followed wherever it stands in a rule: in its body, under `not`, in a `find`, in a goal used as a value, or in its head"
+- Stated, not checked by running Lion: `goal-directed-rows-after-fact-change` is `followed`. "A goal-directed query keeps what it derived and follows changes, for up to 32 queries"
+- Stated, not checked by running Lion: decided `where-mutations-run`: `copies-of-the-working-tree`. "The mutation check breaks copies of the working tree, four at a time"
+- Stated, not checked by running Lion: `core-code-lines` is 11178. "The engine is 706 lines larger: 11,178 lines of code where it had 10,472"
+- Stated, not checked by running Lion: `million-facts-change-then-count-with-zeros-ms` is 13. "adding a fact and asking a count that can be zero takes 13 milliseconds instead of 0.26 seconds"
+- Stated, not checked by running Lion: `hundred-thousand-roads-change-then-distances-ms` is 15. "adding a road and asking every shortest distance takes 15 milliseconds instead of 0.7 seconds"
+- Stated, not checked by running Lion: `million-facts-refused-change-then-every-row-ms` is 230. "a fact an invariant refused costs 0.23 seconds instead of 2.7"
+- Stated, not checked by running Lion: `recursive-aggregate-after-fact-change` is `followed`. "An aggregate that recurses goes on from the row a group has"
+- Stated, not checked by running Lion: decided `rule-that-invents-on-change`: `follow-where-it-invents-alone`. "A rule that invents is followed where it invents alone, into a relation with no key"
+- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
+- Stated, not checked by running Lion: decided `unfollowable-relation-on-change`: `derive-again-and-compare-once-read`. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
+- Stated, not checked by running Lion: decided `derived-rows-on-rule-change`: `derive-again-what-changed`. "A `rule` form derives again the relations whose rules changed and keeps the rows of every other"
+- Stated, not checked by running Lion: `derived-rows-after-rule-change` is `kept-where-rules-did-not-change`. "A `rule` form derives again the relations whose rules changed and keeps the rows of every other"
+- Stated, not checked by running Lion: decided `derived-rows-on-refused-change`: `follow-back`. "A change an invariant refuses is followed back"
+- Stated, not checked by running Lion: `derived-rows-after-refused-change` is `kept`. "A change an invariant refuses is followed back"
+
+<a id="derived-rows-on-rule-change"></a>
+
+## derived-rows-on-rule-change
+
+Now: `derive-again-what-changed`.
+
+- 2026-11-17 `derived-rows-on-rule-change`: `derive-again-what-changed` over `forget-everything`: "A `rule` form derives again the relations whose rules changed and keeps the rows of every other" (`every-change-is-followed.json`)
+
+<a id="rule-that-invents-on-change"></a>
+
+## rule-that-invents-on-change
+
+Now: `follow-where-it-invents-alone`.
+
+- 2026-11-17 `rule-that-invents-on-change`: `follow-where-it-invents-alone` over `follow-every-case`, `derive-again-every-case`: "A rule that invents is followed where it invents alone, into a relation with no key" (`every-change-is-followed.json`)
+
+<a id="unfollowable-relation-on-change"></a>
+
+## unfollowable-relation-on-change
+
+Now: `derive-again-and-compare-once-read`.
+
+- 2026-11-17 `unfollowable-relation-on-change`: `derive-again-and-compare-once-read` over `forget-with-readers`, `always-derive-again`: "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed" (`every-change-is-followed.json`)
+
+<a id="where-mutations-run"></a>
+
+## where-mutations-run
+
+Now: `copies-of-the-working-tree`.
+
+- 2026-11-17 `where-mutations-run`: `copies-of-the-working-tree` over `the-working-tree`: "The mutation check breaks copies of the working tree, four at a time" (`every-change-is-followed.json`)

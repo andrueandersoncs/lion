@@ -17291,18 +17291,12 @@
           [
             "string/includes",
             ["repo/read", "packages/metrics/src/mutation.ts"],
-            [
-              "quote",
-              "    return passes(mutation.tests ?? DEFAULT_TESTS, mutation.package)\n      ? \"missed\"\n      : \"caught\";"
-            ]
+            ["quote", "      ? \"missed\"\n      : \"caught\";"]
           ],
           [
             "string/includes",
             ["repo/read", "packages/metrics/mutate.ts"],
-            [
-              "quote",
-              "      `${verdict.toUpperCase().padEnd(6)}  ${mutation.name}"
-            ]
+            ["quote", "`${verdict.toUpperCase().padEnd(6)}  ${mutation.name}"]
           ]
         ],
         ["quote", "reported-missed"]

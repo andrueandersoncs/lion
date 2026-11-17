@@ -16,6 +16,11 @@ export interface Workload {
   /** False to time full evaluation instead of goal-directed queries. */
   readonly goalDirected?: false;
   readonly name: string;
+  /**
+   * True when some timed programs are meant to fail, such as a fact an
+   * invariant refuses: a failure then does not end the run.
+   */
+  readonly refuses?: true;
   /** Sets the database up for `n` facts. It is not timed. */
   readonly setup: (n: number) => unknown;
   /** The programs that are timed, one after another, in that database. */
@@ -96,6 +101,59 @@ const SPEND = [
     "rule",
     ["spend", "?c", ["aggregate/sum", "?a"]],
     ["order", "?_", "?c", "?a"],
+  ],
+];
+
+/** How many orders each customer has, zero among them. */
+const ACTIVITY = [
+  ["relation", "activity", ["customer", "orders"]],
+  [
+    "rule",
+    [
+      "activity",
+      "?c",
+      ["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]],
+    ],
+    ["customer", "?c", "?_"],
+  ],
+];
+
+/** A shipment nobody has named yet, for every order. */
+const SHIPMENT = [
+  ["relation", "shipment", ["order", "shipment"]],
+  [
+    "rule",
+    ["exists", ["?s"], ["shipment", "?id", "?s"]],
+    ["order", "?id", "?_", "?_"],
+  ],
+];
+
+/** `n` roads between scattered pairs of n/3 towns, each a few km long. */
+const ROADS = (n: number) => {
+  const next = scattered(11);
+  const towns = Math.max(3, Math.floor(n / 3));
+  return [
+    ["relation", "road", ["from", "to", "km"]],
+    [
+      "fact",
+      ...range(n).map(() => ["road", next(towns), next(towns), 1 + next(9)]),
+    ],
+  ];
+};
+
+/** The shortest distance from town 0 to every town, by recursion. */
+const DISTANCE = [
+  ["relation", "dist", ["to", "km"]],
+  [
+    "rule",
+    ["dist", "?to", ["aggregate/min", "?km"]],
+    ["road", 0, "?to", "?km"],
+  ],
+  [
+    "rule",
+    ["dist", "?to", ["aggregate/min", ["number/add", "?d", "?km"]]],
+    ["dist", "?via", "?d"],
+    ["road", "?via", "?to", "?km"],
   ],
 ];
 
@@ -412,6 +470,104 @@ export const WORKLOADS: readonly Workload[] = [
         true,
       ],
     ],
+  },
+  {
+    name: "change: add a fact, ask a count that can be zero, 20 times",
+    gives: (n) => customersOf(n),
+    setup: (n) => [
+      "begin",
+      ...loaded(n).slice(1),
+      ...customers(n),
+      ...ACTIVITY,
+      size(["query", ["activity", "?c", "?k"]]),
+    ],
+    timed: (n) =>
+      changing(n, 20, () => size(["query", ["activity", "?c", "?k"]])),
+  },
+  {
+    name: "change: add a road, ask every shortest distance, 20 times",
+    setup: (n) => [
+      "begin",
+      ...ROADS(n),
+      ...DISTANCE,
+      size(["query", ["dist", "?to", "?km"]]),
+    ],
+    timed: (n) =>
+      range(20).map((index) => [
+        "begin",
+        ["fact", ["road", index, n + index, 1]],
+        size(["query", ["dist", "?to", "?km"]]),
+      ]),
+  },
+  {
+    name: "change: add a fact, ask a rule that invents, 20 times",
+    gives: (n) => n + 20,
+    setup: (n) => [
+      "begin",
+      ...loaded(n).slice(1),
+      ...SHIPMENT,
+      size(["query", ["shipment", "?id", "?s"]]),
+    ],
+    timed: (n) =>
+      changing(n, 20, () => size(["query", ["shipment", "?id", "?s"]])),
+  },
+  {
+    name: "change: add a rule elsewhere, ask every row of a rule, 20 times",
+    gives: bigOrders,
+    setup: (n) => [
+      "begin",
+      ...loaded(n).slice(1),
+      ...customers(n),
+      ...BIG,
+      ["relation", "flag", ["x"]],
+      ["relation", "seen", ["x"]],
+      ["fact", ["flag", 0]],
+      size(["query", ["big", "?id", "?t"]]),
+    ],
+    timed: () =>
+      range(20).map((index) => [
+        "begin",
+        ["rule", ["seen", index], ["flag", 0]],
+        size(["query", ["big", "?id", "?t"]]),
+      ]),
+  },
+  {
+    name: "change: a fact an invariant refuses, ask every row of a rule, 20 times",
+    gives: bigOrders,
+    refuses: true,
+    setup: (n) => [
+      "begin",
+      ...loaded(n).slice(1),
+      ...customers(n),
+      ...BIG,
+      [
+        "invariant",
+        ["and", ["order", "?id", "?c", "?a"], ["number/lessThan", "?a", 0]],
+        { assert: "none" },
+      ],
+      size(["query", ["big", "?id", "?t"]]),
+    ],
+    timed: (n) =>
+      range(20).flatMap((index) => [
+        ["fact", ["order", n + index, "c1", -1]],
+        size(["query", ["big", "?id", "?t"]]),
+      ]),
+  },
+  {
+    name: "change: add an edge, ask what one node reaches, 20 times",
+    setup: (n) => [
+      "begin",
+      EDGE,
+      ["fact", ...scatteredEdges(n, n / 2)],
+      ...PATH,
+      size(["query", ["path", 1, "?to"]]),
+    ],
+    timed: (n) =>
+      range(20).map((index) => [
+        "begin",
+        ["fact", ["edge", n + index, n + index + 1]],
+        size(["query", ["path", 1, "?to"]]),
+      ]),
   },
   {
     name: "why: one derived row among n",

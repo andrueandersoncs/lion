@@ -122,10 +122,11 @@ A workload whose answer is a number of rows says what that number is, counted wi
 bun run mutate
 bun run mutate find recursion
 bun run mutate --in logic/model.ts,logic/database.ts
+bun run mutate --jobs 2
 bun run mutate --list
 ```
 
-A property test that passes on broken code proves nothing about that code. `mutate` breaks the code in one place, runs the property tests of the logic layer, and puts the code back, for each mutation in [`src/mutations.ts`](src/mutations.ts).
+A property test that passes on broken code proves nothing about that code. `mutate` breaks the code in one place and runs the property tests that should notice, for each mutation in [`src/mutations.ts`](src/mutations.ts). It works in copies of the working tree under `out/metrics/`, as the tree stood when the run began, with what is not committed yet, so you can go on editing while it runs; what you edit meanwhile is not checked. Four mutations run at once, each in a copy of its own, or as many as `--jobs` says.
 
 - `CAUGHT`: the tests failed, as they should.
 - `MISSED`: the tests passed on broken code. Add a property that fails on it.
@@ -139,7 +140,7 @@ To try a break of your own without adding it to the list:
 bun run mutate --file packages/core/src/logic/model.ts --find "values.sort(compareValues)" --replace "values" --tests src/logic/tests/asking.test.ts
 ```
 
-Each mutation rewrites a source file while its tests run, so do not edit the code, and do not run two of these at once. A file that changed during the run is left as it is, with a message that names it.
+The copies are removed when the run ends, also when it is stopped.
 
 When you add behavior, add a mutation that breaks it, and see it caught.
 

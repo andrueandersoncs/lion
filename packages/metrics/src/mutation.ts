@@ -2,11 +2,13 @@
  * Mutation checks: break the code in one place, run the tests, and see
  * whether they notice. A property that still passes on broken code proves
  * nothing about that code.
+ *
+ * A mutation is made in a copy of the working tree, never in the working
+ * tree itself, so the code can be edited while its mutations run.
  */
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { REPOSITORY } from "./sources.ts";
 
 export interface Mutation {
   /** The file to break, from the repository root. */
@@ -55,52 +57,76 @@ export const DEFAULT_TESTS = [
   "src/logic/tests/connectives.test.ts",
 ];
 
-/** Runs test files of a package, core by default, and says whether they all passed. */
-export const testsPass = (tests: readonly string[], where = "core"): boolean =>
-  spawnSync("bunx", ["vitest", "run", ...tests], {
-    cwd: join(REPOSITORY, "packages", where),
-    stdio: "ignore",
-  }).status === 0;
+/** Says whether some test files of a package all pass, in a tree at `root`. */
+export type Passes = (
+  root: string,
+  tests: readonly string[],
+  where?: string
+) => Promise<boolean>;
 
-/** Undoes the mutation that is applied right now, if one is. */
-let undo: (() => void) | undefined;
-
-/** Puts back the file a stopped run left broken. */
-export const restore = (): void => {
-  undo?.();
-  undo = undefined;
-};
+/** Runs test files of a package, core by default, in the tree at `root`. */
+export const testsPass: Passes = (root, tests, where = "core") =>
+  new Promise((resolve) => {
+    const run = spawn("bunx", ["vitest", "run", ...tests], {
+      cwd: join(root, "packages", where),
+      stdio: "ignore",
+    });
+    run.on("error", () => resolve(false));
+    run.on("exit", (status) => resolve(status === 0));
+  });
 
 /**
- * Applies a mutation, runs the tests, and puts the file back. The file is
- * put back only if it still holds the mutation: one that changed while the
- * tests ran belongs to someone else, and is left as it is.
+ * Applies a mutation to the tree at `root`, runs the tests there, and puts
+ * the file back, so the tree can take the next mutation.
  */
-export const check = (
+export const check = async (
   mutation: Mutation,
-  passes: (tests: readonly string[], where?: string) => boolean = testsPass
-): Verdict => {
-  const path = join(REPOSITORY, mutation.file);
+  root: string,
+  passes: Passes = testsPass
+): Promise<Verdict> => {
+  const path = join(root, mutation.file);
   const original = readFileSync(path, "utf8");
   const broken = mutated(original, mutation);
   if (broken === undefined) {
     return "stale";
   }
-  undo = () => {
-    if (readFileSync(path, "utf8") === broken) {
-      writeFileSync(path, original);
-    } else {
-      console.error(
-        `${mutation.file} changed while its tests ran, so it was left as it is. Check it for: ${mutation.replace}`
-      );
-    }
-  };
   writeFileSync(path, broken);
   try {
-    return passes(mutation.tests ?? DEFAULT_TESTS, mutation.package)
+    return (await passes(
+      root,
+      mutation.tests ?? DEFAULT_TESTS,
+      mutation.package
+    ))
       ? "missed"
       : "caught";
   } finally {
-    restore();
+    writeFileSync(path, original);
   }
+};
+
+/**
+ * Checks mutations in several trees at once: each tree takes the next
+ * mutation nobody has taken, until none is left. `done` hears of each
+ * verdict as it comes. The verdicts are in the order of the mutations.
+ */
+export const checkAll = async (
+  mutations: readonly Mutation[],
+  roots: readonly string[],
+  done: (mutation: Mutation, verdict: Verdict) => void = () => undefined,
+  passes: Passes = testsPass
+): Promise<Verdict[]> => {
+  const verdicts: Verdict[] = [];
+  let next = 0;
+  const work = async (root: string) => {
+    while (next < mutations.length) {
+      const at = next;
+      next += 1;
+      const mutation = mutations[at] as Mutation;
+      const verdict = await check(mutation, root, passes);
+      verdicts[at] = verdict;
+      done(mutation, verdict);
+    }
+  };
+  await Promise.all(roots.map(work));
+  return verdicts;
 };

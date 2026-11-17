@@ -8,6 +8,7 @@
 
 - `bun run scale` times workloads at growing sizes, 1,000 to 100,000 facts and more, on the working tree or beside a commit with `--against main`, and says how each time grows: `n^1.0` grows as the facts do, and `n^2.0` as their square. It covers loading facts one form at a time and many, with invariants, schemas, and keys; asking every row and one; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, and reports the memory it added at its peak and what the database keeps. (`bun-run-scale` added)
 - `bun run mutate --in logic/model.ts,logic/database.ts` runs only the mutations in files whose paths hold one of the words, so a change can run the mutations of the files it touched instead of the whole list. (`mutate-in-option` added)
+- `bun run mutate` breaks copies of the working tree under `out/metrics/`, as it stood when the run began, four at a time, so the code can be edited while it runs. `--jobs` says how many run at once. (`mutate-in-copies` added)
 
 ### Changed
 
@@ -15,6 +16,11 @@
 - A failed assertion or invariant shows as its example the first answer in sort order, not the first one found, so the message does not depend on the order the answers were found in. (`assertion-example-answer` is `first-in-sort-order`, was `first-found`)
 - A change an invariant refuses forgets what was derived (`derived-rows-after-refused-change` is `derived-again`)
 - A `fact` or `retract` form no longer copies the relations it writes to when the database holds an invariant, a relation's `schema` among them: when the change is refused it takes back each row it added or removed, and every fact is where it was. Loading 100,000 facts one form at a time into a relation with a schema takes 1.5 seconds; before, it did not finish in a minute, and the time grew with the square of the facts. (`fact-form-cost-under-invariants` is `grows-with-the-change`, was `grows-with-the-relation`)
+- A `rule` form keeps the rows of the relations whose rules did not change, a change an invariant refuses leaves what was derived in place, and a goal-directed query keeps what it derived and follows changes. With a million facts, asking every row of a rule after a fact was refused takes 0.23 seconds, where it took 2.7, and after a rule was added to another relation 0.24 seconds, where it took 1.9. (`derived-rows-after-refused-change` is `kept`, was `derived-again`)
+- A `rule` form derives again the relations whose rules changed and keeps the rows of every other (`derived-rows-after-rule-change` is `kept-where-rules-did-not-change`, was `derived-again`)
+- A change is followed through every relation goal of a rule, wherever it stands: in a `find`, in a goal used as a value, and in a rule's head, as well as in its body and under `not`. Counting with zeros, `["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]]` in a head, no longer starts over at each change: with a million facts, adding a fact and asking every count takes 13 milliseconds, where it took 0.26 seconds. (`find-over-changed-relation-after-change` is `followed`, was `derived-again`)
+- A goal-directed query keeps what it derived and follows changes, for up to 32 queries (`goal-directed-rows-after-fact-change` is `followed`, was `derived-again`)
+- An aggregate that recurses, such as shortest distances by `aggregate/min`, goes on from the rows it has when facts change. With 100,000 roads, adding a road and asking every distance takes 15 milliseconds, where it took 0.7 seconds. (`recursive-aggregate-after-fact-change` is `followed`, was `derived-again`)
 
 ### Decided
 
@@ -22,10 +28,16 @@
 - A failed assertion shows as its example the first answer in sort order (`assertion-example-answer`: `first-in-sort-order` over `first-found`)
 - A database keeps what it derived when facts change, and follows the change through it (`derived-rows-on-fact-change`: `follow-the-change` over `forget-everything`, `forget-readers-of-what-changed`, `count-answers-per-row`)
 - A change is undone by taking back each row it added or removed, in place, instead of copying the relation first (`undoing-a-change-to-facts`: `take-back-each-row` over `copy-the-relation`)
+- A change an invariant refuses is followed back (`derived-rows-on-refused-change`: `follow-back` over `forget-everything`, `log-the-upkeep`)
+- A `rule` form derives again the relations whose rules changed and keeps the rows of every other (`derived-rows-on-rule-change`: `derive-again-what-changed` over `forget-everything`)
+- A rule that invents is followed where it invents alone, into a relation with no key (`rule-that-invents-on-change`: `follow-where-it-invents-alone` over `follow-every-case`, `derive-again-every-case`)
+- A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed (`unfollowable-relation-on-change`: `derive-again-and-compare-once-read` over `forget-with-readers`, `always-derive-again`)
+- The mutation check breaks copies of the working tree, four at a time (`where-mutations-run`: `copies-of-the-working-tree` over `the-working-tree`)
 
 ### Rules
 
 - A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
+- A rule that invents is followed through a change where it invents alone into a relation with no key: with 100,000 facts, adding a fact and asking its rows takes 70 milliseconds, where it took a second. A relation that cannot be followed, one that rules invent rows of into a keyed relation or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed instead of forgotten. (rule `unfollowed-relations-derived-again`)
 
 ## 2026-11-16 — @lionlang/core 0.11.0, @lionlang/cli 0.10.0
 
@@ -251,6 +263,7 @@ Rules that say something exists without saying what it is. A rule can give every
 - it shipped in the first release whose commit has all of those commits behind it (rule `changes-ship-by-ancestry`)
 - The README says what Lion does where the research model found it said otherwise. A `cond` condition counts as false when it is `false`, `null`, `0`, or `""`, as the reference's truthiness rule already said, where the README said every string counts as true. A question in plain code is asked as soon as something needs its value, and a program or `begin` whose value is a goal gives the goal as written, so `["exists", ["?y"], ["=", "?y", 1]]` is `true` as a value, as in `["value/identity", …]`, and not as a program; the reference says the same. The empty array `[]` evaluates to itself. The editor section no longer describes the outline, inspector, and source views it lost, its command is `turbo dev --filter=@lionlang/repl`, and the link to the agent's program no longer points into a local folder. AGENTS.md says `bun run test`, and `packages/examples/CLAUDE.md` says the tests use Vitest, as AGENTS.md does. (rule `cond-truthiness`)
 - every finding is either listed in `known.json`, waiting for a decision, or accepted with a reason in `accepted.json` (rule `findings-wait-for-decision`)
+- **Go on working while `bun run mutate` runs.** (rule `no-edits-during-mutate` withdrawn)
 - The explorer page runs a bundle of `@lionlang/core`. After changing the core evaluator, rebuild it: (rule `rebuild-research-engine-after-core-change`)
 - The research skill's page reads a `published` date written to the minute or second, such as `20261114144313`, as its day, and its SKILL.md says to give the time when one publisher speaks several times a day, so its latest word is the one it said last. (rule `research-published-time-when-several-a-day`)
 - In the research model, what a rule predicts for a case is what its latest statement naming that case predicts, so a rule reworded to allow a case, as the editor's connector rule was, stops predicting the old behavior. (rule `rule-predicts-by-latest-statement`)
@@ -737,7 +750,7 @@ Schemas say what a value must be, and one rule says what fits: whatever checks a
 - that the numbers go in the commit message also when they went up (rule `measurements-in-commit-message`)
 - so a change brings a mutation and a property for each behavior it adds (rule `mutation-per-behavior`)
 - **Never buy a lower number with a worse Lion.** (rule `never-buy-lower-number`)
-- **Do not edit code while `bun run mutate` runs.** (rule `no-edits-during-mutate`)
+- Do not write any file while `bun run mutate` runs, not even one outside the code (rule `no-edits-during-mutate`)
 - that a new exception in the grid be fixed rather than added to `KNOWN` (rule `no-new-grid-exceptions`)
 - Pay for it in the same change: find the rule that makes special cases redundant, and delete them. (rule `pay-for-what-you-add`)
 - Leave Lion simpler than you found it, in its code and in its semantics, without removing a feature. (rule `reduce-complexity`)
