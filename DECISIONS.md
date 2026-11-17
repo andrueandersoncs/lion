@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 154 questions have been decided, 56 records explain them, and of what the records assert, 498 hold when Lion is run, 4 are broken, 262 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 155 questions have been decided, 57 records explain them, and of what the records assert, 500 hold when Lion is run, 4 are broken, 263 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -158,6 +158,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
 | 2026-11-17 | [`package-readme-source`](#package-readme-source) | `written-from-readme` | [The README of `@lionlang/core` is written from the repository's README](#package-readme) |
+| 2026-11-17 | [`ci-test-concurrency`](#ci-test-concurrency) | `one-package-at-a-time` | [CI runs one package's tests at a time, and a test has two minutes in every package](#ci-test-concurrency) |
 | 2026-11-17 | [`why-fact-not-holding`](#why-fact-not-holding) | `absent-tree` | [`why` tells why a fact does not hold, and marks what is only assumed](#why-tells-absence) |
 | 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
 
@@ -3158,6 +3159,37 @@ Recorded 2026-11-17 in `history/notes/package-readme.json`.
 - Holds when Lion is run: rule `package-readme-written-from-readme` holds. "The site-runtime tests fail when the file is not what the README gives."
 - Holds when Lion is run: `package-readme-writer` exists. "its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word"
 - Stated, not checked by running Lion: rule `edit-both-readmes` is withdrawn. "The documentation procedure no longer asks for every edit to be made in both files."
+
+<a id="ci-test-concurrency"></a>
+
+## ci-test-concurrency
+
+Now: `one-package-at-a-time`.
+
+- 2026-11-17 `ci-test-concurrency`: `one-package-at-a-time` over `every-package-at-once`: "CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself." (`ci-test-concurrency.json`)
+
+<a id="ci-test-concurrency"></a>
+
+### CI runs one package's tests at a time, and a test has two minutes in every package
+
+Recorded 2026-11-17 in `history/notes/ci-test-concurrency.json`.
+
+**Context.** Every CI run on `main` from the release of core 0.9.0 on 2026-11-13 to the release of core 0.12.0 on 2026-11-17 failed, five in a row, each on tests that timed out and none on a wrong result: properties of the skills in `packages/metrics`, then `why` on a computed figure and lattice aggregates in core, then existential rules, and two properties of the record at their own limit of 120 seconds. CI ran `turbo test`, which runs every package's suite at once, on a runner with four cores, and each suite starts a worker for every core. Core's suite, which takes 22 seconds on a developer's machine, took 315 seconds there, and a test that takes half a second passed its limit of five.
+
+**Decision.** CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself. Every package's `vitest.config.ts` gives a test 120 seconds, as the record's already did: a property runs generated inputs, so how long it takes depends on the machine, and a limit a slower machine passes says nothing about Lion.
+
+**Consequences.** A test fails in CI for what it checks, not for how busy the runner is. A test that hangs is stopped after two minutes instead of five seconds. On a developer's machine `bun run test` still runs every package at once.
+
+**Alternatives considered.**
+
+- Give each test that timed out a longer limit of its own. A different test timed out on each run, so the next one would be a test nobody had raised yet.
+- Run fewer inputs for each property in CI. The runs are what make a property catch the breaks `bun run mutate` lists, and CI is where a missed one is found.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `ci-test-concurrency`: `one-package-at-a-time`. "CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself."
+- Holds when Lion is run: rule `ci-tests-one-package-at-a-time` holds. "CI runs the tests with `bun run test --concurrency=1`, one package at a time"
+- Holds when Lion is run: rule `test-time-limit-two-minutes` holds. "Every package's `vitest.config.ts` gives a test 120 seconds"
 
 <a id="why-fact-not-holding"></a>
 

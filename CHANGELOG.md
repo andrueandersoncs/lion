@@ -25,11 +25,14 @@
 
 ### Decided
 
+- CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself. (`ci-test-concurrency`: `one-package-at-a-time` over `every-package-at-once`)
 - `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (`why-fact-not-holding`: `absent-tree` over `null`)
 - A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. (`why-derivation-shown`: `found-first-by-new-derivation` over `first-kept`)
 
 ### Rules
 
+- CI runs the tests with `bun run test --concurrency=1`, one package at a time (rule `ci-tests-one-package-at-a-time`)
+- Every package's `vitest.config.ts` gives a test 120 seconds (rule `test-time-limit-two-minutes`)
 - `"assumed": true` marks what could change once an unknown is known (rule `why-marks-assumptions`)
 - `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (rule `why-tells-both-sides`)
 - A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. (rule `why-tells-derivation-found-first`)

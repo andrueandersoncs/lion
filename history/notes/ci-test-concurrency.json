@@ -1,0 +1,58 @@
+{
+  "title": "CI runs one package's tests at a time, and a test has two minutes in every package",
+  "context": "Every CI run on `main` from the release of core 0.9.0 on 2026-11-13 to the release of core 0.12.0 on 2026-11-17 failed, five in a row, each on tests that timed out and none on a wrong result: properties of the skills in `packages/metrics`, then `why` on a computed figure and lattice aggregates in core, then existential rules, and two properties of the record at their own limit of 120 seconds. CI ran `turbo test`, which runs every package's suite at once, on a runner with four cores, and each suite starts a worker for every core. Core's suite, which takes 22 seconds on a developer's machine, took 315 seconds there, and a test that takes half a second passed its limit of five.",
+  "decision": "CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself. Every package's `vitest.config.ts` gives a test 120 seconds, as the record's already did: a property runs generated inputs, so how long it takes depends on the machine, and a limit a slower machine passes says nothing about Lion.",
+  "consequences": "A test fails in CI for what it checks, not for how busy the runner is. A test that hangs is stopped after two minutes instead of five seconds. On a developer's machine `bun run test` still runs every package at once.",
+  "alternatives": [
+    {
+      "option": "Give each test that timed out a longer limit of its own",
+      "rejected": "A different test timed out on each run, so the next one would be a test nobody had raised yet."
+    },
+    {
+      "option": "Run fewer inputs for each property in CI",
+      "rejected": "The runs are what make a property catch the breaks `bun run mutate` lists, and CI is where a missed one is found."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "CI runs the tests with `bun run test --concurrency=1`, one package at a time, so a suite has the runner's cores to itself.",
+      "says": {
+        "decision": "ci-test-concurrency",
+        "chose": "one-package-at-a-time",
+        "over": ["every-package-at-once"],
+        "area": "build",
+        "because": "every suite at once on four cores made tests time out that take half a second alone"
+      }
+    },
+    {
+      "quote": "CI runs the tests with `bun run test --concurrency=1`, one package at a time",
+      "says": {
+        "rule": "ci-tests-one-package-at-a-time",
+        "holds": true,
+        "statement": "CI runs one package's tests at a time",
+        "area": "build",
+        "predicts": [
+          {
+            "behavior": "ci-test-concurrency",
+            "is": "one-package"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Every package's `vitest.config.ts` gives a test 120 seconds",
+      "says": {
+        "rule": "test-time-limit-two-minutes",
+        "holds": true,
+        "statement": "Every package's vitest.config.ts gives a test 120 seconds",
+        "area": "tests",
+        "predicts": [
+          {
+            "behavior": "test-time-limit",
+            "is": "120-seconds-everywhere"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@ Part of Lion's developer guidelines, which start in [AGENTS.md](../AGENTS.md).
 - **Framework**: Vitest with @effect/vitest
 - **Test files**: `src/**/*.test.ts` pattern
 - **Test runner**: `vitest run` for CI, `vitest` for watch mode
+- **Time limit**: 120 seconds a test, set as `testTimeout` in each package's `vitest.config.ts`. A property's time depends on the machine, so do not rely on the default of five seconds. CI runs one package's suite at a time, with `bun run test --concurrency=1`, so that a suite has the runner's cores to itself.
 
 ## Write Property-Based Tests
 
