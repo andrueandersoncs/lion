@@ -309,6 +309,26 @@ export const BENCHMARKS: readonly Benchmark[] = [
     ],
   },
   {
+    name: "explaining: why 200 rows hold or do not, over 20,000 facts",
+    program: [
+      "begin",
+      ...ORDERS,
+      ["relation", "vip", ["customer"]],
+      ["relation", "plain", ["id"]],
+      ["fact", ...range(50).map((index) => ["vip", `c${index}`])],
+      [
+        "rule",
+        ["plain", "?id"],
+        ["order", "?id", "?c", "?_"],
+        ["not", ["vip", "?c"]],
+      ],
+      [
+        "array/make",
+        ...range(200).map((index) => ["why", ["plain", index * 97]]),
+      ],
+    ],
+  },
+  {
     name: "asking: one find over 20,000 facts",
     program: [
       "begin",

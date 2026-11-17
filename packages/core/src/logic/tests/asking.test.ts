@@ -11,6 +11,7 @@ import { LogicDatabase } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
 import { element, oneOf } from "./programs";
+import { outlineOf, type Told, toldIn } from "./trees";
 import {
   DOMAIN,
   everyone,
@@ -312,21 +313,33 @@ describe("a goal with a relation in it", () => {
         ])) as { x: number; v: string }[];
         expect(rows).toHaveLength(DOMAIN.length);
         for (const { v, x } of rows) {
-          const { because } = (yield* program([["why", ["out", x, v]]])) as {
-            because: Record<string, Form>[];
-          };
+          const tree = (yield* program([["why", ["out", x, v]]])) as Told;
           // A row that a goal matched is a premise too, explained in turn.
-          const tests = because.flatMap((premise) =>
-            "fact" in premise ? [] : Object.entries(premise)
+          const tests = (tree.because as Told[]).flatMap(
+            ({ absent, check }): [string, unknown][] => {
+              if (absent !== undefined) {
+                return [["absent", absent]];
+              }
+              return check === undefined ? [] : [["check", check]];
+            }
           );
-          for (const [kind, premise] of tests) {
-            expect(yield* program([["value/identity", premise]])).toBe(
-              kind === "check"
-            );
-          }
           if (v === "held") {
             // The `in` that chose x held too, so it is a check like the goal.
             expect(tests.map(([kind]) => kind)).toEqual(["check", "check"]);
+          }
+          // The other row is absent: its rule stopped where this one went on.
+          const other = (yield* program([
+            ["why", ["out", x, v === "held" ? "absent" : "held"]],
+          ])) as Told;
+          expect(other.absent).toBeDefined();
+          // Whatever either tree says, however deep, is so when asked again.
+          for (const { absent, check } of [tree, other].flatMap(toldIn)) {
+            const premise = absent ?? check;
+            if (premise !== undefined) {
+              expect(yield* program([["value/identity", premise]])).toBe(
+                absent === undefined
+              );
+            }
           }
         }
       }),
@@ -961,7 +974,10 @@ const step = oneOf<Form>(
     "aggregate/count",
     ["find", "?y", ["and", ["path", x, "?y"], ["q", "?y"]]],
   ]),
-  Arbitrary.map(member, (x) => ["why", ["path", x, x]]),
+  Arbitrary.map(Arbitrary.all([member, member]), ([x, y]) => [
+    "why",
+    ["path", x, y],
+  ]),
   Arbitrary.map(Arbitrary.all([member, member]), ([a, b]) => [
     "fact",
     ["link", a, b],
@@ -987,11 +1003,18 @@ describe("what a database has derived so far", () => {
         yield* run(["begin", ...setup(facts)], stdlib, { database });
         const changes: Form[] = [];
         for (const form of steps) {
+          // A row that several answers give is explained by one of them,
+          // whichever the facts gave first, so `why` is compared without
+          // what its goals rest on.
+          const read = (value: unknown) =>
+            (form as readonly unknown[])[0] === "why"
+              ? outlineOf(value as Told)
+              : value;
           const actual = yield* run(form, stdlib, { database });
           // The changes so far and this step alone, on a new database, which
           // has derived nothing when the step runs.
-          expect(actual).toEqual(
-            yield* evaluate(facts, [...changes, form], goalDirected)
+          expect(read(actual)).toEqual(
+            read(yield* evaluate(facts, [...changes, form], goalDirected))
           );
           if (["fact", "retract"].includes((form as string[])[0] ?? "")) {
             changes.push(form);

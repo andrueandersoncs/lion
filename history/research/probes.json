@@ -2856,6 +2856,320 @@
     ]
   },
   {
+    "case": "why-goal-not-holding",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      ["relation", "blocked", ["x"]],
+      ["relation", "big", ["x"]],
+      ["relation", "ok", ["x"]],
+      ["fact", ["n", 5], ["n", 1]],
+      ["rule", ["big", "?x"], ["n", "?x"], ["number/greaterThan", "?x", 2]],
+      ["rule", ["ok", "?x"], ["big", "?x"], ["not", ["blocked", "?x"]]],
+      ["define", "tree", ["why", ["ok", 1]]],
+      [
+        "cond",
+        [["value/null?", "tree"], ["quote", "null"]],
+        [
+          [
+            "=",
+            ["object/get", "tree", ["quote", "absent"]],
+            ["quote", ["ok", 1]]
+          ],
+          ["quote", "absent-tree"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-absent-evaluated",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      ["relation", "blocked", ["x"]],
+      ["relation", "big", ["x"]],
+      ["relation", "ok", ["x"]],
+      ["fact", ["n", 5], ["n", 1]],
+      ["rule", ["big", "?x"], ["n", "?x"], ["number/greaterThan", "?x", 2]],
+      ["rule", ["ok", "?x"], ["big", "?x"], ["not", ["blocked", "?x"]]],
+      [
+        "define",
+        "way",
+        ["array/head", ["object/get", ["why", ["ok", 1]], ["quote", "because"]]]
+      ],
+      [
+        "define",
+        "absent",
+        [
+          "object/get",
+          ["object/get", "way", ["quote", "but"]],
+          ["quote", "absent"]
+        ]
+      ],
+      [
+        "cond",
+        [["value/null?", "absent"], ["quote", "other"]],
+        [["eval", "absent"], ["quote", "true"]],
+        ["else", ["quote", "false"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-stopped-by-not",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      ["relation", "blocked", ["x"]],
+      ["relation", "ok", ["x"]],
+      ["fact", ["n", 5], ["blocked", 5]],
+      ["rule", ["ok", "?x"], ["n", "?x"], ["not", ["blocked", "?x"]]],
+      [
+        "define",
+        "way",
+        ["array/head", ["object/get", ["why", ["ok", 5]], ["quote", "because"]]]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["object/get", "way", ["quote", "but"]],
+            [
+              "quote",
+              {
+                "fact": ["blocked", 5],
+                "given": true
+              }
+            ]
+          ],
+          ["quote", "what-it-denies"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-rule-gave-another-row",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "order", ["id", "customer", "amount"]],
+      ["relation", "spend", ["customer", "total"]],
+      ["fact", ["order", 1, "ana", 30], ["order", 2, "ana", 20]],
+      [
+        "rule",
+        ["spend", "?c", ["aggregate/sum", "?a"]],
+        ["order", "?_", "?c", "?a"]
+      ],
+      [
+        "define",
+        "way",
+        [
+          "array/head",
+          ["object/get", ["why", ["spend", "ana", 60]], ["quote", "because"]]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "object/get",
+              ["object/get", "way", ["quote", "but"]],
+              ["quote", "fact"]
+            ],
+            ["quote", ["spend", "ana", 50]]
+          ],
+          ["quote", "row-explained"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-absent-goal-repeated",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "path", ["from", "to"]],
+      ["fact", ["edge", "a", "b"], ["edge", "b", "a"]],
+      ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+      [
+        "rule",
+        ["path", "?x", "?z"],
+        ["edge", "?x", "?y"],
+        ["path", "?y", "?z"]
+      ],
+      [
+        "define",
+        "second",
+        [
+          "lambda",
+          ["tree"],
+          [
+            "object/get",
+            [
+              "array/head",
+              ["array/tail", ["object/get", "tree", ["quote", "because"]]]
+            ],
+            ["quote", "but"]
+          ]
+        ]
+      ],
+      ["define", "again", ["second", ["second", ["why", ["path", "a", "d"]]]]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              ["object/get", "again", ["quote", "absent"]],
+              ["quote", ["path", "a", "d"]]
+            ],
+            ["value/null?", ["object/get", "again", ["quote", "because"]]]
+          ],
+          ["quote", "told-once"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-absence-reads-unknown",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["fact", ["person", "ada"], ["person", "ben"], ["mother", "ada", "eve"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "object/get",
+              ["why", ["mother", "ben", "eve"]],
+              ["quote", "assumed"]
+            ],
+            true
+          ],
+          ["quote", "assumed"]
+        ],
+        ["else", ["quote", "not-assumed"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-absence-reads-no-unknown",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["fact", ["person", "ada"], ["person", "ben"], ["mother", "ada", "eve"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "object/get",
+              ["why", ["mother", "ada", "fay"]],
+              ["quote", "assumed"]
+            ],
+            true
+          ],
+          ["quote", "assumed"]
+        ],
+        ["else", ["quote", "not-assumed"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-check-with-unknown-evaluated",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["relation", "hidden", ["name"]],
+      ["fact", ["person", "ben"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["hidden", "?c"],
+        ["mother", "?c", "?m"],
+        ["value/unknown?", "?m"]
+      ],
+      [
+        "define",
+        "check",
+        [
+          "object/get",
+          [
+            "array/head",
+            [
+              "array/tail",
+              ["object/get", ["why", ["hidden", "ben"]], ["quote", "because"]]
+            ]
+          ],
+          ["quote", "check"]
+        ]
+      ],
+      [
+        "cond",
+        [["value/null?", "check"], ["quote", "other"]],
+        [["eval", "check"], ["quote", "true"]],
+        ["else", ["quote", "false"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-matched-row-of-several",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "node", ["x"]],
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "leaf", ["x"]],
+      ["fact", ["node", "a"], ["edge", "a", "z"], ["edge", "a", "b"]],
+      ["rule", ["leaf", "?x"], ["node", "?x"], ["not", ["edge", "?x", "?y"]]],
+      [
+        "define",
+        "way",
+        [
+          "array/head",
+          ["object/get", ["why", ["leaf", "a"]], ["quote", "because"]]
+        ]
+      ],
+      [
+        "define",
+        "row",
+        [
+          "object/get",
+          ["object/get", "way", ["quote", "but"]],
+          ["quote", "fact"]
+        ]
+      ],
+      [
+        "cond",
+        [["=", "row", ["quote", ["edge", "a", "b"]]], ["quote", "sorts-first"]],
+        [["=", "row", ["quote", ["edge", "a", "z"]]], ["quote", "added-first"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
     "case": "schema-plain-value-equal",
     "area": "schemas",
     "program": [
@@ -5223,7 +5537,8 @@
                     ]
                   },
                   {
-                    "absent": ["blocked", 5]
+                    "absent": ["blocked", 5],
+                    "because": []
                   }
                 ]
               }
@@ -5231,7 +5546,6 @@
           ],
           ["quote", "explanation-tree"]
         ],
-        [["value/null?", ["why", ["ok", 5]]], ["quote", "nothing"]],
         ["else", ["quote", "other"]]
       ]
     ]

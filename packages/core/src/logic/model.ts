@@ -122,8 +122,25 @@ export class TupleSet {
    */
   demand: ((inputs: Tuple) => string | undefined) | undefined;
 
+  /** The tuples a test keeps, by the test's name, until the set changes. */
+  private kept: Map<string, readonly Tuple[]> | undefined;
+
   get size(): number {
     return this.slots.size;
+  }
+
+  /**
+   * The tuples a test keeps, worked out once and kept under the test's
+   * name until the set changes.
+   */
+  keeping(name: string, test: (tuple: Tuple) => boolean): readonly Tuple[] {
+    this.kept ??= new Map();
+    let found = this.kept.get(name);
+    if (found === undefined) {
+      found = [...this.values()].filter(test);
+      this.kept.set(name, found);
+    }
+    return found;
   }
 
   /** The tuples in the order they were added, also ones added meanwhile. */
@@ -155,6 +172,7 @@ export class TupleSet {
       return false;
     }
     const slot = this.rows.length;
+    this.kept = undefined;
     this.slots.set(key, slot);
     this.rows.push(tuple);
     this.keys.push(key);
@@ -172,6 +190,7 @@ export class TupleSet {
     if (slot === undefined || stored === undefined) {
       return false;
     }
+    this.kept = undefined;
     this.slots.delete(this.keys[slot] as string);
     this.rows[slot] = undefined;
     for (const { buckets, positions } of this.indexes.values()) {
@@ -193,6 +212,7 @@ export class TupleSet {
    * is still a gap.
    */
   revert(tuple: Tuple, slot: number, added: boolean) {
+    this.kept = undefined;
     if (added) {
       this.rows.pop();
       this.slots.delete(this.keys.pop() as string);
@@ -322,7 +342,7 @@ type Kept =
     };
 
 /** An answer of a rule's body. */
-interface Match {
+export interface Match {
   readonly rule: CompiledRule;
   /**
    * For a row a rule that invents gives only once a key or an equality
@@ -411,7 +431,7 @@ const unpacked = (kept: Match | readonly unknown[]): Match => {
 };
 
 /** The derivation a model keeps for a row, by the row's key. */
-const derivationOf = (
+export const derivationOf = (
   kept: ReadonlyMap<string, Kept> | undefined,
   key: string
 ): Derivation | undefined => {
@@ -628,7 +648,11 @@ const unknownOf = (model: Model, form: LogicForm, vars: Vars) =>
  * True when a term still has a variable to bind for an answer: a variable
  * with no value, or a pattern that holds one.
  */
-const hasFree = (value: unknown, vars: Vars, asSchema = false): boolean =>
+export const hasFree = (
+  value: unknown,
+  vars: Vars,
+  asSchema = false
+): boolean =>
   value instanceof LogicVariable
     ? !vars.has(value.name)
     : (patternParts(value, asSchema)?.some((part) =>
@@ -640,7 +664,7 @@ const hasFree = (value: unknown, vars: Vars, asSchema = false): boolean =>
  * with the variables the match bound. `equal` asks for the same value, as
  * "=" does, and otherwise the pattern is a schema.
  */
-const match = (
+export const match = (
   model: Model,
   pattern: unknown,
   value: unknown,
@@ -714,7 +738,12 @@ const candidates = (
  * argument that still has a variable to bind is a pattern, and is left for
  * the rows to be matched against.
  */
-const lookup = (model: Model, atom: Atom, vars: Vars, tuples: TupleSet) =>
+export const lookup = (
+  model: Model,
+  atom: Atom,
+  vars: Vars,
+  tuples: TupleSet
+) =>
   Effect.gen(function* () {
     const values: unknown[] = [];
     for (const arg of atom.args) {
@@ -992,7 +1021,7 @@ const bound = (
  * among its arguments: the row's values there must fit them. None when the
  * row does not match, and more than one when a pattern fits in several ways.
  */
-const matchRow = (
+export const matchRow = (
   model: Model,
   found: Exclude<ReturnType<typeof candidates>, string>,
   tuple: Tuple,
@@ -2419,6 +2448,10 @@ const deriving = (
     : derive(model, stratum);
 };
 
+/** Makes a declared relation's rows complete, by its name. */
+export const complete = (model: Model, name: string): LogicEffect<void> =>
+  Effect.suspend(() => deriving(model, name, false) ?? Effect.void);
+
 /** What must run before a relation's rows can be read, as `deriving` says. */
 const toRead = (model: Model, relation: RelationInfo, reading = false) =>
   relation.computed === undefined
@@ -2444,84 +2477,6 @@ export const answer = (model: Model, question: unknown): LogicEffect<unknown> =>
       yield* ensure(home, relation);
     }
     return yield* term(home, question, NO_VARS);
-  });
-
-/**
- * The row a relation goal matched for an answer. The answer says what the
- * goal's variables are, and the row is the first that fits its arguments
- * with them: a schema among the arguments does not say which row that is.
- */
-const matchedRow = (model: Model, atom: Atom, vars: Vars) =>
-  Effect.gen(function* () {
-    const found = yield* lookup(
-      model,
-      atom,
-      vars,
-      rowsOf(model, atom.relation.name)
-    );
-    for (const tuple of found.tuples) {
-      if ((yield* matchRow(model, found, tuple, vars)).length > 0) {
-        return tuple;
-      }
-    }
-    return yield* tupleOf(model, atom.args, vars);
-  });
-
-/**
- * What a rule's body rested on for one answer: the rows its relation goals
- * matched, each explained in turn, and every other goal as it held, with the
- * answer's values in place of its variables. A goal that computed a value,
- * such as `["=", "?ratio", ["number/divide", "?a", "?b"]]`, shows the
- * arithmetic on the values it was given.
- */
-const premises = (
-  model: Model,
-  { rule, same, vars }: Match
-): LogicEffect<unknown[]> =>
-  Effect.gen(function* () {
-    const out: unknown[] = [];
-    for (const literal of rule.body) {
-      if (literal instanceof Atom) {
-        const tuple = yield* matchedRow(model, literal, vars);
-        out.push(yield* explain(model, literal.relation, tuple));
-      } else if (isForm(literal, "not")) {
-        out.push({ absent: instantiate(literal.parts[0], vars) });
-      } else {
-        out.push({ check: instantiate(literal, vars) });
-      }
-    }
-    for (const [unknown, value] of same ?? []) {
-      out.push({ same: [unknown, value] });
-    }
-    return out;
-  });
-
-/** Explains a row that holds: a fact, a computed row, or what derived it. */
-export const explain = (
-  model: Model,
-  { computed, name }: RelationInfo,
-  tuple: Tuple
-): LogicEffect<unknown> =>
-  Effect.gen(function* () {
-    if (computed !== undefined) {
-      return { fact: computed.form(tuple), computed: true };
-    }
-    const fact = [name, ...tuple];
-    const derivation = derivationOf(
-      model.derivations.get(name),
-      valueKey(tuple)
-    );
-    if (derivation === undefined) {
-      return { fact, given: true };
-    }
-    const rule = derivation.rule.source;
-    if ("vars" in derivation) {
-      return { fact, rule, because: yield* premises(model, derivation) };
-    }
-    const matches = yield* Effect.forEach(derivation.matches, (match) =>
-      premises(model, match)
-    );
-    return { fact, rule, matches };
   });
 
 export { EMPTY, NO_VARS };

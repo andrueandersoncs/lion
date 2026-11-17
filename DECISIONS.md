@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 152 questions have been decided, 54 records explain them, and of what the records assert, 483 hold when Lion is run, 4 are broken, 259 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 153 questions have been decided, 55 records explain them, and of what the records assert, 494 hold when Lion is run, 4 are broken, 260 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -158,6 +158,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
 | 2026-11-17 | [`package-readme-source`](#package-readme-source) | `written-from-readme` | [The README of `@lionlang/core` is written from the repository's README](#package-readme) |
+| 2026-11-17 | [`why-fact-not-holding`](#why-fact-not-holding) | `absent-tree` | [`why` tells why a fact does not hold, and marks what is only assumed](#why-tells-absence) |
 
 <a id="program-representation"></a>
 
@@ -3156,3 +3157,44 @@ Recorded 2026-11-17 in `history/notes/package-readme.json`.
 - Holds when Lion is run: rule `package-readme-written-from-readme` holds. "The site-runtime tests fail when the file is not what the README gives."
 - Holds when Lion is run: `package-readme-writer` exists. "its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word"
 - Stated, not checked by running Lion: rule `edit-both-readmes` is withdrawn. "The documentation procedure no longer asks for every edit to be made in both files."
+
+<a id="why-fact-not-holding"></a>
+
+## why-fact-not-holding
+
+Now: `absent-tree`.
+
+- 2026-11-17 `why-fact-not-holding`: `absent-tree` over `null`: "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides." (`why-tells-absence.json`)
+
+<a id="why-tells-absence"></a>
+
+### `why` tells why a fact does not hold, and marks what is only assumed
+
+Recorded 2026-11-17 in `history/notes/why-tells-absence.json`.
+
+**Context.** `why` explained a fact that holds and returned `null` for one that does not, so the question asked most often of a rule, why a row is missing, had no answer. A goal under `not` showed as `absent` with nothing under it. Lion is closed-world, so a `not` over an unknown holds: ben's unknown mother is not known to be eve, and a rule that asks so derives a row from a guess. Nothing told such a row from one that holds whatever the unknown is. Independence-friendly logic gives one account of both: a proof is the verifier's strategy, a refutation is the falsifier's, `not` swaps the two, and a sentence neither player can win is not determined.
+
+**Decision.** `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. A fact that does not hold is `{"absent": fact, "because": [way, ...]}`. A way is a rule whose head can give the fact, told once for each answer of its first goals that the next goal stops: the goals that held under `because`, and under `but` the goal that did not. A `not` stops a rule because what it denies holds, so its `but` is that fact or check. When a rule's whole body holds, its `but` is the row the rule gave instead. An absent relation call is explained in turn, once in a tree, and an `absent` premise of a fact that holds is explained the same way. `"assumed": true` marks what could change once an unknown is known: an absent goal that could come to hold, a check that computes with an unknown, and a row that combines matches when its rule's body reads one.
+
+**Consequences.** It is a breaking change: `why` no longer returns `null` for a fact that does not hold, so a program that tested the result for `null` reads `absent` instead. Every `absent`, asked as it stands, is `false`, as every `check` is `true`. `["why", ["mother", "ben", "eve"]]` is marked `assumed` when ben's mother is unknown, and `["why", ["mother", "ada", "fay"]]` is not when ada's mother is eve. The mark is safe, not exact: a goal that is not marked cannot change, and one that is marked may still not. Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first, and the answers a goal stops are sorted, so the ways of an absent fact do not depend on the order facts were added in. An unknown in a premise is written as its `some` form, which evaluates to the unknown; it was written as a quoted list. Known answers of rules that ask no question stay answers once the unknowns are known, which a property now tests.
+
+**Alternatives considered.**
+
+- Keep `null`, and add a second form for facts that do not hold. Two forms would split one question, and neither would explain the `absent` premise of a fact that holds.
+- Refuse or warn about a `not` that reads a column an unknown can reach, when the rule is added. Most such rules give answers that hold whatever the unknown is. The mark says which answers do not, one at a time.
+- A third truth value, so that a goal over an unknown is neither true nor false. It would undo the closed world a `not` rests on everywhere else, and every form that takes a boolean would need a third case.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `why-fact-not-holding`: `absent-tree`. "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides."
+- Holds when Lion is run: `why-absence-reads-no-unknown` is `not-assumed`. "`["why", ["mother", "ada", "fay"]]` is not when ada's mother is eve"
+- Holds when Lion is run: `why-matched-row-of-several` is `sorts-first`. "Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first"
+- Holds when Lion is run: `why-check-with-unknown-evaluated` is `true`. "An unknown in a premise is written as its `some` form, which evaluates to the unknown; it was written as a quoted list."
+- Holds when Lion is run: rule `why-tells-both-sides` holds. "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides."
+- Holds when Lion is run: `why-goal-not-holding` is `absent-tree`. "It is a breaking change: `why` no longer returns `null` for a fact that does not hold"
+- Holds when Lion is run: `why-absent-evaluated` is `false`. "Every `absent`, asked as it stands, is `false`, as every `check` is `true`."
+- Holds when Lion is run: `why-stopped-by-not` is `what-it-denies`. "A `not` stops a rule because what it denies holds, so its `but` is that fact or check."
+- Holds when Lion is run: `why-rule-gave-another-row` is `row-explained`. "When a rule's whole body holds, its `but` is the row the rule gave instead."
+- Holds when Lion is run: `why-absent-goal-repeated` is `told-once`. "An absent relation call is explained in turn, once in a tree"
+- Holds when Lion is run: rule `why-marks-assumptions` holds. "`"assumed": true` marks what could change once an unknown is known"
+- Holds when Lion is run: `why-absence-reads-unknown` is `assumed`. "`["why", ["mother", "ben", "eve"]]` is marked `assumed` when ben's mother is unknown"

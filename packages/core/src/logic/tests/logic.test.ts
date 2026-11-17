@@ -442,11 +442,11 @@ describe("why", () => {
     })
   );
 
-  it.effect("returns null when the fact does not hold", () =>
+  it.effect("tells a fact that does not hold as absent", () =>
     Effect.gen(function* () {
       expect(
         yield* run(program(["why", ["dep", "vault_a", "oracle_9"]]), stdlib)
-      ).toBeNull();
+      ).toMatchObject({ absent: ["dep", "vault_a", "oracle_9"] });
     })
   );
 });

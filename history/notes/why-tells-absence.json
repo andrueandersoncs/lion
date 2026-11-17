@@ -1,0 +1,162 @@
+{
+  "title": "`why` tells why a fact does not hold, and marks what is only assumed",
+  "context": "`why` explained a fact that holds and returned `null` for one that does not, so the question asked most often of a rule, why a row is missing, had no answer. A goal under `not` showed as `absent` with nothing under it. Lion is closed-world, so a `not` over an unknown holds: ben's unknown mother is not known to be eve, and a rule that asks so derives a row from a guess. Nothing told such a row from one that holds whatever the unknown is. Independence-friendly logic gives one account of both: a proof is the verifier's strategy, a refutation is the falsifier's, `not` swaps the two, and a sentence neither player can win is not determined.",
+  "decision": "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. A fact that does not hold is `{\"absent\": fact, \"because\": [way, ...]}`. A way is a rule whose head can give the fact, told once for each answer of its first goals that the next goal stops: the goals that held under `because`, and under `but` the goal that did not. A `not` stops a rule because what it denies holds, so its `but` is that fact or check. When a rule's whole body holds, its `but` is the row the rule gave instead. An absent relation call is explained in turn, once in a tree, and an `absent` premise of a fact that holds is explained the same way. `\"assumed\": true` marks what could change once an unknown is known: an absent goal that could come to hold, a check that computes with an unknown, and a row that combines matches when its rule's body reads one.",
+  "consequences": "It is a breaking change: `why` no longer returns `null` for a fact that does not hold, so a program that tested the result for `null` reads `absent` instead. Every `absent`, asked as it stands, is `false`, as every `check` is `true`. `[\"why\", [\"mother\", \"ben\", \"eve\"]]` is marked `assumed` when ben's mother is unknown, and `[\"why\", [\"mother\", \"ada\", \"fay\"]]` is not when ada's mother is eve. The mark is safe, not exact: a goal that is not marked cannot change, and one that is marked may still not. Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first, and the answers a goal stops are sorted, so the ways of an absent fact do not depend on the order facts were added in. An unknown in a premise is written as its `some` form, which evaluates to the unknown; it was written as a quoted list. Known answers of rules that ask no question stay answers once the unknowns are known, which a property now tests.",
+  "alternatives": [
+    {
+      "option": "Keep `null`, and add a second form for facts that do not hold",
+      "rejected": "Two forms would split one question, and neither would explain the `absent` premise of a fact that holds."
+    },
+    {
+      "option": "Refuse or warn about a `not` that reads a column an unknown can reach, when the rule is added",
+      "rejected": "Most such rules give answers that hold whatever the unknown is. The mark says which answers do not, one at a time."
+    },
+    {
+      "option": "A third truth value, so that a goal over an unknown is neither true nor false",
+      "rejected": "It would undo the closed world a `not` rests on everywhere else, and every form that takes a boolean would need a third case."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides.",
+      "says": {
+        "decision": "why-fact-not-holding",
+        "chose": "absent-tree",
+        "over": ["null"],
+        "because": "why a row is missing had no answer, and nothing told a row that rests on a guess about an unknown from one that holds whatever the unknown is",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`why` tells how a goal holds or why it does not, by one rule in which `not` changes sides.",
+      "says": {
+        "rule": "why-tells-both-sides",
+        "holds": true,
+        "statement": "why tells how a goal holds or why it does not, by one rule in which not changes sides: a goal that holds by what it rested on, and an absent goal by every way it could have held and what stood in the way",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "why-goal-not-holding",
+            "is": "absent-tree"
+          },
+          {
+            "behavior": "why-absent-evaluated",
+            "is": "false"
+          },
+          {
+            "behavior": "why-stopped-by-not",
+            "is": "what-it-denies"
+          },
+          {
+            "behavior": "why-rule-gave-another-row",
+            "is": "row-explained"
+          },
+          {
+            "behavior": "why-absent-goal-repeated",
+            "is": "told-once"
+          },
+          {
+            "behavior": "why-not-goal",
+            "is": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "It is a breaking change: `why` no longer returns `null` for a fact that does not hold",
+      "says": {
+        "behavior": "why-goal-not-holding",
+        "is": "absent-tree",
+        "area": "logic",
+        "breaking": true,
+        "was": "null"
+      }
+    },
+    {
+      "quote": "Every `absent`, asked as it stands, is `false`, as every `check` is `true`.",
+      "says": {
+        "behavior": "why-absent-evaluated",
+        "is": "false",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A `not` stops a rule because what it denies holds, so its `but` is that fact or check.",
+      "says": {
+        "behavior": "why-stopped-by-not",
+        "is": "what-it-denies",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "When a rule's whole body holds, its `but` is the row the rule gave instead.",
+      "says": {
+        "behavior": "why-rule-gave-another-row",
+        "is": "row-explained",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "An absent relation call is explained in turn, once in a tree",
+      "says": {
+        "behavior": "why-absent-goal-repeated",
+        "is": "told-once",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`\"assumed\": true` marks what could change once an unknown is known",
+      "says": {
+        "rule": "why-marks-assumptions",
+        "holds": true,
+        "statement": "why marks with assumed what could change once an unknown is known; an absent goal that is not marked stays absent, and a fact holds whatever the unknowns are when nothing it rests on is marked",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "why-absence-reads-unknown",
+            "is": "assumed"
+          },
+          {
+            "behavior": "why-absence-reads-no-unknown",
+            "is": "not-assumed"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"why\", [\"mother\", \"ben\", \"eve\"]]` is marked `assumed` when ben's mother is unknown",
+      "says": {
+        "behavior": "why-absence-reads-unknown",
+        "is": "assumed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "`[\"why\", [\"mother\", \"ada\", \"fay\"]]` is not when ada's mother is eve",
+      "says": {
+        "behavior": "why-absence-reads-no-unknown",
+        "is": "not-assumed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first",
+      "says": {
+        "behavior": "why-matched-row-of-several",
+        "is": "sorts-first",
+        "area": "logic",
+        "was": "added-first"
+      }
+    },
+    {
+      "quote": "An unknown in a premise is written as its `some` form, which evaluates to the unknown; it was written as a quoted list.",
+      "says": {
+        "behavior": "why-check-with-unknown-evaluated",
+        "is": "true",
+        "area": "logic",
+        "was": "false"
+      }
+    }
+  ]
+}

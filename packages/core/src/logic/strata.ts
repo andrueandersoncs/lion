@@ -284,6 +284,12 @@ const addEqualityEdges = (
   }
 };
 
+// A set of rules never changes, so what its relations read is worked out once.
+const EDGES = new WeakMap<
+  readonly CompiledRule[],
+  ReadonlyMap<string, ReadonlySet<string>>
+>();
+
 /**
  * Which relations each relation reads, through rules and computations. A
  * rule that invents reads every relation of its head, to see whether the
@@ -294,7 +300,13 @@ const addEqualityEdges = (
  * are derived together with the relations between them, and the equality
  * rule runs with them.
  */
-export const dependencyEdges = (rules: readonly CompiledRule[]) => {
+export const dependencyEdges = (
+  rules: readonly CompiledRule[]
+): ReadonlyMap<string, ReadonlySet<string>> => {
+  const known = EDGES.get(rules);
+  if (known !== undefined) {
+    return known;
+  }
   const edges = new Map<string, Set<string>>();
   const add = (
     head: Atom,
@@ -328,6 +340,7 @@ export const dependencyEdges = (rules: readonly CompiledRule[]) => {
     }
   }
   addEqualityEdges(rules, edges);
+  EDGES.set(rules, edges);
   return edges;
 };
 

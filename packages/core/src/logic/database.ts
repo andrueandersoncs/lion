@@ -14,6 +14,7 @@ import {
   type Literal,
   questionPlans,
 } from "@/logic/compile";
+import { why } from "@/logic/explain";
 import { checkOf, misfit } from "@/logic/fit";
 import { factsName, originalName, rewriteQueries } from "@/logic/magic";
 import { maintain, type Pass, type Rows } from "@/logic/maintain";
@@ -25,13 +26,10 @@ import {
   changedAnswers,
   EMPTY,
   each,
-  explain,
   found,
-  holds,
   keyColumns,
   type LogicEffect,
   Model,
-  NO_VARS,
   type Sink,
   type Tuple,
   TupleSet,
@@ -1452,7 +1450,7 @@ export const addInvariant = (database: LogicDatabase, invariant: Invariant) =>
     ];
   });
 
-/** Explains how a fact was derived, or returns null when it does not hold. */
+/** Explains how a fact holds, or why it does not. */
 export const explainFact = (database: LogicDatabase, atom: Atom) =>
   reading(database, (model) =>
     Effect.gen(function* () {
@@ -1463,8 +1461,6 @@ export const explainFact = (database: LogicDatabase, atom: Atom) =>
           `why expects a fact without variables: ${show(atom)}.`
         );
       }
-      return (yield* holds(model, atom, NO_VARS))
-        ? yield* explain(model, atom.relation, atom.args)
-        : null;
+      return yield* why(model, atom);
     })
   );

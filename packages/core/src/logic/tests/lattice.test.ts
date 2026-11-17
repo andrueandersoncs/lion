@@ -163,9 +163,10 @@ describe("lattice aggregates in recursion", () => {
           { fact: ["road", "c", "b", 2], given: true },
         ],
       });
+      // A longer distance is absent: each rule gave the minimum instead.
       expect(
         yield* run(["begin", ...roads, ["why", ["dist", "b", 4]]], stdlib)
-      ).toBeNull();
+      ).toMatchObject({ absent: ["dist", "b", 4] });
     })
   );
 

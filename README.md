@@ -349,7 +349,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
-| `["why", goal]` | Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold. |
+| `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
 | `["=", term, term]` | Binds a variable to a value, or compares two values. Either side can be a record or list with variables in it, which takes the other side apart. Without logic variables it is plain equality. |
@@ -385,6 +385,31 @@ Fails with `Facts may only contain data, but the "text" of ["note","source"] is 
 ```
 
 Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with `{ "same": [unknown, value] }`: the unknown the rule named, and the value it was made. See [Existential rules](#existential-rules).
+
+A fact that does not hold is explained the other way round. `why` returns it as `absent`, and under `because` every way it could have held: each rule whose head can give it, with the goals of its body that held under `because`, and under `but` the goal that stopped it.
+
+```json
+["begin",
+  ["relation", "user", ["name", "age"]],
+  ["relation", "banned", ["name"]],
+  ["relation", "eligible", ["name"]],
+  ["fact", ["user", "bo", 16], ["user", "cy", 40], ["banned", "cy"]],
+  ["rule", ["eligible", "?n"],
+    ["user", "?n", "?age"],
+    ["number/greaterThan", "?age", 18],
+    ["not", ["banned", "?n"]]],
+  ["why", ["eligible", "bo"]]]
+```
+
+Evaluates to `{ "absent": ["eligible", "bo"], "because": [{ "rule": [...], "because": [{ "absent": ["banned", "bo"], "because": [] }, { "fact": ["user", "bo", 16], "given": true }], "but": { "absent": ["number/greaterThan", 16, 18] } }] }`: bo is not banned and is a user, but 16 is not greater than 18.
+
+- `but` is the other side of the goal that stopped the rule. A filter that was false and a relation call with no match are `absent`, and an absent relation call is explained in turn, down to the facts that are missing. A `not` stops a rule because what it denies holds, so its `but` is that fact or `check`: for `["why", ["eligible", "cy"]]` it is `{ "fact": ["banned", "cy"], "given": true }`.
+- Every `absent`, asked as it stands, is `false`, as every `check` is `true`. A variable the rule had not bound when it stopped keeps its name.
+- A rule's body runs from the values the fact gives its head, so the goals those values reach come first. A rule is told once for every answer of its first goals that the next goal stops, in an order that does not depend on the order facts were added in.
+- When a rule's whole body holds, it gave another row than the one asked about, since its head computes, combines, or invents a value. That way has no `because`, and its `but` explains the row the rule gave, such as the total a rule summed when another total was asked about.
+- A goal under `not` that is made of several goals lists its alternatives the same way, without a `rule`. So an `absent` premise of a fact that holds says why it had no match.
+- An absent goal is explained once in a tree. Where the tree comes to it again, as recursion does, it is written without `because`. A fact that no rule could give has an empty `because`.
+- `"assumed": true` marks what could change once an unknown is known. See [Existential rules](#existential-rules).
 
 ### Waiting for values
 
@@ -626,6 +651,7 @@ Evaluates to `{ "mothers": [{ "child": "ada", "mother": "eve" }, { "child": "ben
 - An unknown is written `["some", "?m", ["mother", "ben", "?m"]]`: the value `?m` stands for in a row `["mother", "ben", ?m]`. That form is ordinary Lion. Evaluating it gives the same unknown, so a program can write one, put it in a fact, as the fact about `tall` above does, compare it, or look it up.
 - An unknown is data, as a string is: rows, facts, answers, `find`, and aggregates hold it. It equals itself and nothing else, as a constant does, and two unknowns are the same when they are written the same way. It sorts after every record, and unknowns sort by how they are written. `value/unknown?` is true for an unknown, and `value/object?` is false for one. A function that needs a number or a string fails on one, as it does on any value of the wrong kind.
 - `["not", ["value/unknown?", "?m"]]` keeps only known answers. Lion stays closed-world: `["not", ["=", "?m", "eve"]]` holds for ben's unknown mother, as `not` holds for anything that is not known.
+- That ben's mother is not eve is an assumption: she may be. `why` marks what could change once an unknown is known with `"assumed": true`. `["why", ["mother", "ben", "eve"]]` is `{ "absent": ["mother", "ben", "eve"], "assumed": true, ... }`, and `["why", ["mother", "ada", "fay"]]` has no mark: ada's mother is eve whatever ben's turns out to be. An absent goal that is not marked stays absent whatever the unknowns are, and a fact holds whatever they are when nothing it rests on is marked. A `check` is marked when it computes with an unknown, and a row that combines matches when a match holds one or its rule's body could gain one. The mark is safe, not exact: Lion follows each rule that could give the goal, and marks it when a row that holds an unknown could match a goal on the way, so a goal that is marked may still not change. Saying what an unknown is means adding the fact its `some` form describes, with a value in place of its variable.
 - A head can be a relation call, `=`, an `and` of those, or `exists` over relation calls. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
 - With several variables, `exists` invents an unknown for each, and the goal of each `some` mentions the others, which are its own too: `["some", "?f", ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of some pair the goal describes.
 - Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in.

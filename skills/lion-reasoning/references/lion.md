@@ -103,7 +103,7 @@ takes a template and one goal, joining several with `["and", …]`, and gives th
 ["why", ["settled", "lambda-first", "cycle"]]
 ```
 
-explains one row: the rule that derived it, and under `because` the rows that rule matched, each explained in turn, down to recorded facts marked `"given": true`. It gives `null` when the row does not hold. Give it a complete row with every column a value, and quote records and text in it: `["why", ["answer", ["quote", {"failing tests": "core"}], 2, "o1"]]`. To see only the recorded facts it rests on:
+explains one row: the rule that derived it, and under `because` the rows that rule matched, each explained in turn, down to recorded facts marked `"given": true`. For a row that does not hold it gives `{"absent": row, "because": […]}`: each rule that could have given the row, the goals of its body that held, and under `but` the goal that stopped it. `"assumed": true` marks what could change once an unknown is known. Give it a complete row with every column a value, and quote records and text in it: `["why", ["answer", ["quote", {"failing tests": "core"}], 2, "o1"]]`. To see only the recorded facts it rests on:
 
 ```bash
 node <skill>/scripts/ask.mjs '["why", …]' | jq -c '.. | objects | select(.given) | .fact'

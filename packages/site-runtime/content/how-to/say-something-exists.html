@@ -58,6 +58,18 @@
    "not eve": ["find", "?child", ["and", ["mother", "?child", "?m"], ["not", ["=", "?m", "eve"]]]]}]
 </lion-example>
 
+<p>That ben's unknown mother is not eve is an assumption: she may be. <a href="#form-why"><code>why</code></a> marks what rests on one with <code>"assumed": true</code>, so it tells an answer that holds whatever an unknown is from one that only holds as far as is known. See <a href="#explain-results">Explain a result</a>.</p>
+<lion-example name="What is assumed">
+["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["fact", ["person", "ada"], ["person", "ben"]],
+  ["fact", ["mother", "ada", "eve"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  {"is ben's mother eve": ["why", ["mother", "ben", "eve"]],
+   "is ada's mother fay": ["why", ["mother", "ada", "fay"]]}]
+</lion-example>
+
 <h2>Ask whether something exists</h2>
 <p><code>exists</code> is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, so they never appear in an answer. It is a <a href="#logic-asking">question</a>, so it works in plain code, in a query or rule, under <code>not</code>, and in a <code>find</code>:</p>
 <lion-example name="exists as a goal">

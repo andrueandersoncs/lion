@@ -1400,7 +1400,7 @@
     {
       "id": "doc-readme-124",
       "source": "doc-readme",
-      "quote": "Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold.",
+      "quote": "Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it.",
       "says": {
         "feature": "why",
         "kind": "special-form",
@@ -1410,7 +1410,7 @@
     {
       "id": "doc-readme-125",
       "source": "doc-readme",
-      "quote": "Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold.",
+      "quote": "Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it.",
       "says": {
         "behavior": "why-derived-fact",
         "is": "explanation-tree",
@@ -1420,10 +1420,10 @@
     {
       "id": "doc-readme-126",
       "source": "doc-readme",
-      "quote": "Explains a fact as a tree of the rules and facts that derived it, or returns `null` when it does not hold.",
+      "quote": "Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it.",
       "says": {
         "behavior": "why-goal-not-holding",
-        "is": "null",
+        "is": "absent-tree",
         "area": "logic"
       }
     },

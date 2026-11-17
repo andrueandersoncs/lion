@@ -10,6 +10,7 @@ import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
+const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
 const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
 const REASONING_TESTS = {
   package: "metrics",
@@ -1272,9 +1273,10 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "why names a row that a relation goal did not match",
-    file: core("logic/model.ts"),
-    find: "        const tuple = yield* matchedRow(model, literal, vars);",
-    replace: "        const tuple = yield* tupleOf(model, literal.args, vars);",
+    file: core("logic/explain.ts"),
+    find: "    const tuple = yield* matchedRow(telling.model, goal, vars);",
+    replace:
+      "    const tuple = yield* tupleOf(telling.model, goal.args, vars);",
     tests: ["src/logic/tests/patterns.test.ts"],
   },
   {
@@ -1820,17 +1822,17 @@ export const MUTATIONS: readonly Mutation[] = [
   },
   {
     name: "why leaves out the arithmetic a rule did",
-    file: core("logic/model.ts"),
-    find: "        out.push({ check: instantiate(literal, vars) });",
+    file: core("logic/explain.ts"),
+    find: "        { check: instantiate(goal, vars) },",
     replace:
-      '        if (!isForm(literal, "=", "in")) out.push({ check: instantiate(literal, vars) });',
+      '        isForm(goal, "=", "in") ? {} : { check: instantiate(goal, vars) },',
     tests: ["src/logic/tests/explain.test.ts"],
   },
   {
     name: "why shows a check without the answer's values in it",
-    file: core("logic/model.ts"),
-    find: "        out.push({ check: instantiate(literal, vars) });",
-    replace: "        out.push({ check: instantiate(literal, NO_VARS) });",
+    file: core("logic/explain.ts"),
+    find: "        { check: instantiate(goal, vars) },",
+    replace: "        { check: instantiate(goal, NO_VARS) },",
     tests: ["src/logic/tests/explain.test.ts"],
   },
   {
@@ -2362,5 +2364,103 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "",
     package: "site-runtime",
     tests: ["src/tests/package-readme.test.ts"],
+  },
+  {
+    name: "why tells a fact that does not hold as nothing",
+    file: core("logic/explain.ts"),
+    find: "      : yield* missing(telling, atom, NO_VARS);",
+    replace: "      : null;",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why leaves out what stopped a rule",
+    file: core("logic/explain.ts"),
+    find: "      const but = yield* missing(telling, body[at], vars);",
+    replace: "      const but = { absent: instantiate(body[at], NO_VARS) };",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why leaves out a rule that gave another row",
+    file: core("logic/explain.ts"),
+    find: "        out.push(...(yield* gave(telling, route.rule, route.head, full)));",
+    replace: "",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why tries a rule whose head cannot give the fact",
+    file: core("logic/explain.ts"),
+    find: "      if (next === undefined) {\n        return undefined;\n      }\n      start = next;",
+    replace: "      start = next ?? start;",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why explains an absent goal each time the tree comes to it",
+    file: core("logic/explain.ts"),
+    find: "    if (!hasRoutes(goal) || telling.told.has(key)) {",
+    replace: "    if (!hasRoutes(goal) || telling.looking.has(key)) {",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why tells the ways of an absent fact in the order rows were added",
+    file: core("logic/explain.ts"),
+    find: "      stopped.sort(([a], [b]) => (a < b ? -1 : Number(a > b)));",
+    replace: "",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why names the row that was added first, of those a goal matched",
+    file: core("logic/explain.ts"),
+    find: "      if (first === undefined || compareValues(tuple, first) < 0) {",
+    replace: "      if (first === undefined) {",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why writes an unknown in a premise as a quoted list",
+    file: core("logic/terms.ts"),
+    find: "        ? write(vars.get(variable.name), DISPLAY)",
+    replace: "        ? DISPLAY.data(vars.get(variable.name))",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "why never says that a goal is assumed",
+    file: core("logic/explain.ts"),
+    find: "  assumed ? { ...node, assumed: true } : node;",
+    replace: "  node;",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a goal is not assumed when a row that holds an unknown could match it",
+    file: core("logic/explain.ts"),
+    find: "    return calls.some((call) => couldMatch(telling, call, vars));",
+    replace: "    return false;",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a goal is not assumed when only a rule could come to give it",
+    file: core("logic/explain.ts"),
+    find: "    for (const route of open ? [] : yield* routes(telling.model, goal, vars)) {",
+    replace: "    for (const route of [] as Route[]) {",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a row with an unknown where a goal asks for a value cannot match it",
+    file: core("logic/explain.ts"),
+    find: "!isData(value) || isOpen(tuple[at]) || sameValue(tuple[at], value)",
+    replace: "!isData(value) || sameValue(tuple[at], value)",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a check that computes with an unknown is not assumed",
+    file: core("logic/explain.ts"),
+    find: "        !comparesValues(goal) &&",
+    replace: "        false &&",
+    tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a count of matches that hold an unknown is not assumed",
+    file: core("logic/explain.ts"),
+    find: '  return opens(telling, new LogicForm("and", rule.body), group);',
+    replace: "  return Effect.succeed(group.size < 0);",
+    tests: WHY_NOT_TESTS,
   },
 ];

@@ -853,7 +853,7 @@ export const instantiate = (
     ...DISPLAY,
     variable: (variable) =>
       vars.has(variable.name)
-        ? DISPLAY.data(vars.get(variable.name))
+        ? write(vars.get(variable.name), DISPLAY)
         : shownName(variable),
   });
 

@@ -2,6 +2,28 @@
 
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `["why", ["mother", "ada", "fay"]]` is not when ada's mother is eve (`why-absence-reads-no-unknown` is `not-assumed`)
+- `["why", ["mother", "ben", "eve"]]` is marked `assumed` when ben's mother is unknown (`why-absence-reads-unknown` is `assumed`)
+- Every `absent`, asked as it stands, is `false`, as every `check` is `true`. (`why-absent-evaluated` is `false`)
+- An absent relation call is explained in turn, once in a tree (`why-absent-goal-repeated` is `told-once`)
+- An unknown in a premise is written as its `some` form, which evaluates to the unknown; it was written as a quoted list. (`why-check-with-unknown-evaluated` is `true`, was `false`)
+- Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first (`why-matched-row-of-several` is `sorts-first`, was `added-first`)
+- When a rule's whole body holds, its `but` is the row the rule gave instead. (`why-rule-gave-another-row` is `row-explained`)
+- A `not` stops a rule because what it denies holds, so its `but` is that fact or check. (`why-stopped-by-not` is `what-it-denies`)
+
+### Decided
+
+- `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (`why-fact-not-holding`: `absent-tree` over `null`)
+
+### Rules
+
+- `"assumed": true` marks what could change once an unknown is known (rule `why-marks-assumptions`)
+- `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (rule `why-tells-both-sides`)
+
 ## 2026-11-17 — @lionlang/core 0.12.0, @lionlang/cli 0.11.0
 
 The logic layer grows with its facts. What rules derive is kept and follows every change to the facts and the rules, in a full database and in a goal-directed query, instead of being derived again from nothing. A join runs in batches and keeps far less in memory, and a load under invariants or schemas no longer reads every row again for each form.
@@ -58,6 +80,7 @@ Rules that say something exists without saying what it is. A rule can give every
 ### Breaking
 
 - `exists` and `some` are names of special forms, so a relation, a `define`, or a lambda parameter can no longer be named `"exists"` or `"some"`. (`name-exists-or-some` is `error`, was `allowed`)
+- It is a breaking change: `why` no longer returns `null` for a fact that does not hold (`why-goal-not-holding` is `absent-tree`, was `null`)
 
 ### Added
 

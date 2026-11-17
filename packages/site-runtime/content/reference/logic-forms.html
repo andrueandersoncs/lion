@@ -343,12 +343,17 @@
 ["why", fact]
 </code-block>
 <ul>
-  <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables or <code>exists</code> over one, holds, or <code>null</code> when it does not.</li>
-  <li>Each node has a <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
+  <li>Returns a tree that explains how <code>fact</code>, a relation call with no variables or <code>exists</code> over one, holds, or why it does not.</li>
+  <li>A node for a fact that holds has the <code>fact</code>, and either <code>"given": true</code>, <code>"computed": true</code> for a graph algorithm's row, or the <code>rule</code> that derived it with the premises it used under <code>because</code>.</li>
   <li>A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with <code>{"same": [unknown, value]}</code>: the unknown the rule named, and the value it was made. See <a href="#say-something-exists">Say that something exists</a>.</li>
-  <li>Premises are facts, <code>{"absent": goal}</code> for a goal under <code>not</code>, and <code>{"check": goal}</code> for every other goal that held: a filter, a schema, an <code>in</code>, and an <code>=</code>, which shows a computed value with the arithmetic that made it, as <code>["=", 26.4, ["number/divide", …]]</code>. Each is written with the answer's values in place of its variables, so a <code>check</code>, evaluated as it stands, is <code>true</code>. A variable that a question binds for itself keeps its name. See <a href="#explain-results">Explain a result</a>.</li>
+  <li>Premises are facts, <code>{"absent": goal}</code> for a goal under <code>not</code>, and <code>{"check": goal}</code> for every other goal that held: a filter, a schema, an <code>in</code>, and an <code>=</code>, which shows a computed value with the arithmetic that made it, as <code>["=", 26.4, ["number/divide", …]]</code>. Each is written with the answer's values in place of its variables, so a <code>check</code>, asked as it stands, is <code>true</code>, and an <code>absent</code> is <code>false</code>. A variable that a question binds for itself keeps its name. See <a href="#explain-results">Explain a result</a>.</li>
+  <li>A goal that does not hold is <code>{"absent": goal, "because": [way, ...]}</code>, whether it is the fact asked about or a goal under <code>not</code>. A way is something that could have made the goal hold. For a relation call, each rule whose head can give a row it matches is a way, and for a goal made of others, each of its alternatives. A fact no rule could give has an empty <code>because</code>.</li>
+  <li>A way is told once for each answer of its first goals that its next goal stops: <code>{"rule": rule, "because": [premise, ...], "but": node}</code>, without <code>rule</code> for an alternative of a goal. <code>because</code> holds the goals that held, and <code>but</code> the other side of the goal that did not: an <code>absent</code> goal, or for a <code>not</code>, what it denies as it holds, a fact or a <code>check</code>. A rule's body runs from the values the goal gives its head, in the order that reaches them first.</li>
+  <li>When a rule's whole body holds, the rule gave another row than the one asked about: its head computes, combines, or invents a value. That way is <code>{"rule": rule, "but": node}</code>, where the node explains the row the rule gave.</li>
+  <li>An absent goal is explained once in a tree. Where the tree comes to it again, as recursion does, it is written without <code>because</code>. So is a filter, and a goal over a computed relation, which have no ways.</li>
+  <li><code>"assumed": true</code> marks what could change once an <a href="#form-some">unknown</a> is known: an absent goal that could come to hold, a <code>check</code> that computes with an unknown, and a row that combines matches when one holds an unknown or its rule's body could gain one. An absent goal that is not marked stays absent whatever the unknowns are, and a fact holds whatever they are when nothing it rests on is marked. The mark is safe, not exact: a goal that is marked may still not change. See <a href="#explain-results">Explain a result</a>.</li>
   <li>An aggregated fact lists every match it combines under <code>matches</code>; for <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the match that produced the value.</li>
-  <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. A schema check that held is a <code>check</code>.</li>
+  <li>A relation goal's premise is the row it matched, also when the goal says which rows with a <a href="#logic-patterns">pattern</a> or a predicate. When several rows fit, since a variable of the goal is its own, it is the row that sorts first. A schema check that held is a <code>check</code>.</li>
   <li>Explanations use every relation computed in full.</li>
 </ul>
 <lion-example name="why">
@@ -361,6 +366,18 @@
     ["inbox", "?doc"], ["Order", "?doc"],
     ["inbox", ["schema/open", {"id": "?id"}]]],
   ["why", ["order", 1]]]
+</lion-example>
+<p>No document has the id 3, and <code>why</code> says where the rule stopped: at the goal that looks for one.</p>
+<lion-example name="why, for a fact that does not hold">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "order", ["id"]],
+  ["schema", "Order", {"id": "value/integer?", "status": ["schema/anyOf", "open", "shipped"]}],
+  ["fact", ["inbox", {"id": 1, "status": "open"}], ["inbox", {"id": 2, "status": "opne"}]],
+  ["rule", ["order", "?id"],
+    ["inbox", "?doc"], ["Order", "?doc"],
+    ["inbox", ["schema/open", {"id": "?id"}]]],
+  ["why", ["order", 3]]]
 </lion-example>
 
 <h2 id="form-not"><code>not</code></h2>

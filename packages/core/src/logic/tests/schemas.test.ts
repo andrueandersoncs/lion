@@ -1002,11 +1002,14 @@ describe("a schema in a rule", () => {
               ...values.map((value) => ["why", ["wanted", quote(value)]]),
             ],
           ])
-        ) as ({ because: { check?: unknown[]; fact?: unknown }[] } | null)[];
+        ) as {
+          absent?: unknown;
+          because: { check?: unknown[]; fact?: unknown }[];
+        }[];
         for (const [at, value] of values.entries()) {
           const reason = explained[at];
           if (!fits(schema, value)) {
-            expect(reason).toBeNull();
+            expect(reason?.absent).toBeDefined();
             continue;
           }
           const [row, check] = reason?.because ?? [];

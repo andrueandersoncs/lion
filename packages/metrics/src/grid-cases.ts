@@ -632,7 +632,7 @@ export const POSITIONS: readonly Position[] = [
       "array/make",
       ...model.map(([x, v]) => ["why", ["out", x, literal(v)]]),
     ],
-    read: (value) => (value as readonly unknown[]).map((item) => item !== null),
+    read: (value) => (value as readonly object[]).map((item) => "fact" in item),
     expected: (model) => model.map(() => true),
   },
 ];

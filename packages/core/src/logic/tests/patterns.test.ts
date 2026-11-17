@@ -594,10 +594,10 @@ describe("a relation call", () => {
             ],
             new LogicDatabase()
           )
-        ) as ({ because?: unknown[] } | null)[];
+        ) as { absent?: unknown; because?: unknown[] }[];
         expect(
           result.map((reason) =>
-            reason === null ? null : keyOf(reason.because)
+            reason.absent === undefined ? keyOf(reason.because) : null
           )
         ).toEqual(
           values.map((value, n) =>
