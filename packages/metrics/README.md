@@ -1,6 +1,6 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer six questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer seven questions:
 
 | Question | Command |
 | --- | --- |
@@ -9,6 +9,7 @@ Tools that measure Lion, so a change can be judged by numbers and not by feel. T
 | Does its time grow as the facts do, or faster? | `bun run scale --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
 | What does the change do to a program's result? | `bun run compare main programs.json` |
+| Which documented results did the change make untrue? | `bun run compare main --docs` |
 | How well does an agent do a skill's eval case? | `bun run skill-eval lion-research verifies-company-figures` |
 
 Run them from the repository root. Each one measures the working tree. `--against <commit>` also measures an earlier commit, such as `main`, a tag, or a hash, and shows the two side by side. The earlier commit is checked out under `out/metrics/`, which git ignores, and removed when the command ends.
@@ -148,6 +149,7 @@ When you add behavior, add a mutation that breaks it, and see it caught.
 
 ```bash
 bun run compare main programs.json
+bun run compare main --docs
 ```
 
 Runs each program of a file on an earlier commit and on the working tree, and shows where the results differ. The file holds a record of programs by name, and its path is read from the repository root:
@@ -160,6 +162,8 @@ Runs each program of a file on an earlier commit and on the working tree, and sh
 ```
 
 Use it before you write that a change fixes, breaks, or keeps something: a changelog line about behavior should be a program that gives one thing before and another after.
+
+With `--docs` in place of a file, the programs are the ones the docs show: every fenced `json` block that is a program, in the README files, `AGENTS.md`, the guidelines in `guidelines/`, and each skill's `SKILL.md` and `references/`. Only the programs whose results differ are listed, so the run says which documented results a change made untrue. It is the first step of the documentation procedure in `guidelines/documentation.md`. The website's live examples are not among them: the docs build runs those and writes what they give.
 
 ## Skills: `bun run skill-eval`
 

@@ -28,6 +28,17 @@ export const KINDS = {
 /** Who stands behind what the repository says. */
 export const PUBLISHER = "Lion repository";
 
+/** The guidelines `AGENTS.md` points to, each a file of `guidelines/`. */
+const GUIDELINES = [
+  "designing-features",
+  "documentation",
+  "recording-changes",
+  "measuring",
+  "testing",
+  "code-style",
+  "patterns",
+] as const;
+
 /**
  * The documents whose present text is the repository's current word, saved
  * as sources dated by HEAD.
@@ -36,7 +47,11 @@ export const DOCS = [
   { id: "doc-readme", path: "README.md" },
   { id: "doc-agents", path: "AGENTS.md" },
   { id: "doc-claude", path: "CLAUDE.md" },
-] as const;
+  ...GUIDELINES.map((name) => ({
+    id: `doc-${name}`,
+    path: `guidelines/${name}.md`,
+  })),
+];
 
 /** Where the repository's files are read on the web. */
 export const REPOSITORY_URL = "https://github.com/andrueandersoncs/lion";

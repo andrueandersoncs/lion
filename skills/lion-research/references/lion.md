@@ -110,7 +110,7 @@ Other goals:
 ["rule", head, goal, goal, …]
 ```
 
-The head holds whenever every goal holds. The rows a rule derives are never stored: they are recomputed from the facts, so they are always current.
+The head holds whenever every goal holds. The rows a rule derives are never saved with the model: Lion works them out from the facts, and brings them up to date when facts change, so they are always current.
 
 ```json
 ["rule", ["controls", "?owner", "?company"], ["owns", "?owner", "?company"]],

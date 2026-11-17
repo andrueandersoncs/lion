@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 150 questions have been decided, 52 records explain them, and of what the records assert, 478 hold when Lion is run, 4 are broken, 256 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 152 questions have been decided, 54 records explain them, and of what the records assert, 483 hold when Lion is run, 4 are broken, 259 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -156,6 +156,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `follow-where-it-invents-alone` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`unfollowable-relation-on-change`](#unfollowable-relation-on-change) | `derive-again-and-compare-once-read` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
+| 2026-11-17 | [`package-readme-source`](#package-readme-source) | `written-from-readme` | [The README of `@lionlang/core` is written from the repository's README](#package-readme) |
 
 <a id="program-representation"></a>
 
@@ -1740,7 +1742,7 @@ Recorded 2026-11-11 in `history/notes/least-astonishment.json`.
 
 Now: `query-assert-option`.
 
-- 2026-11-11 `invariant-syntax`: `query-assert-option`: "Invariants reuse the query option `"assert"` and fail in the words of a failed query assertion" (`47ea840`, `all-or-nothing-changes.json`, `least-astonishment.json`, `AGENTS.md`)
+- 2026-11-11 `invariant-syntax`: `query-assert-option`: "Invariants reuse the query option `"assert"` and fail in the words of a failed query assertion" (`47ea840`, `all-or-nothing-changes.json`, `least-astonishment.json`, `designing-features.md`)
 
 <a id="javascript-json-disagreement"></a>
 
@@ -3089,3 +3091,68 @@ Now: `derive-again-and-compare-once-read`.
 Now: `copies-of-the-working-tree`.
 
 - 2026-11-17 `where-mutations-run`: `copies-of-the-working-tree` over `the-working-tree`: "The mutation check breaks copies of the working tree, four at a time" (`every-change-is-followed.json`)
+
+<a id="agent-instructions-layout"></a>
+
+## agent-instructions-layout
+
+Now: `index-with-guidelines`.
+
+- 2026-11-17 `agent-instructions-layout`: `index-with-guidelines` over `one-file`, `imported-guidelines`: "`AGENTS.md` names every one with its main rule and when to read it" (`guidelines-folder.json`)
+
+<a id="guidelines-folder"></a>
+
+### AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`
+
+Recorded 2026-11-17 in `history/notes/guidelines-folder.json`.
+
+**Context.** `AGENTS.md` had grown to 533 lines, 510 of them before the documentation procedure was written into it: the goals, how to design a feature, the documentation procedure, the project record, the measuring tools, the testing rules, and code style with its Effect and React patterns. `CLAUDE.md` imports it, so an agent read all of it at the start of every task, whatever the task was, and a rule that mattered for the work at hand stood among hundreds of lines that did not.
+
+**Decision.** `AGENTS.md` and `CLAUDE.md` stay under 200 lines each. `AGENTS.md` holds what every task needs: what Lion is, the goals of every change, the commands, the steps before a commit, and the completion proof. Each practice has a guideline in `guidelines/`, and `AGENTS.md` names every one with its main rule and when to read it. An agent reads a guideline in full before the work it covers.
+
+**Consequences.** `AGENTS.md` went from 533 lines to 127. Its sections moved word for word into `guidelines/designing-features.md`, `documentation.md`, `recording-changes.md`, `measuring.md`, `testing.md`, `code-style.md`, and `patterns.md`, and `CLAUDE.md` names those files where it named sections of `AGENTS.md`. Each guideline is a source of the project record, so the 85 claims that quoted `AGENTS.md` quote the file their sentence is in now, and `bun run compare main --docs` runs the programs the guidelines show. A new practice gets a guideline and a line in `AGENTS.md`.
+
+**Alternatives considered.**
+
+- Keep every guideline in `AGENTS.md`. Every task pays for reading all of it, and a file that long is read less closely the longer it gets.
+- Import each guideline into `CLAUDE.md` with `@`. An imported file is loaded with `CLAUDE.md`, so the agent would read as much as before.
+- Put the guidelines under `docs/`. `docs/` is the published website, and the guidelines are for whoever works on Lion, not for its users.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `agent-instructions-layout`: `index-with-guidelines`. "`AGENTS.md` names every one with its main rule and when to read it"
+- Holds when Lion is run: rule `agent-instructions-under-200-lines` holds. "`AGENTS.md` and `CLAUDE.md` stay under 200 lines each."
+- Holds when Lion is run: rule `every-guideline-named-in-agents-md` holds. "Each practice has a guideline in `guidelines/`, and `AGENTS.md` names every one with its main rule and when to read it."
+- Holds when Lion is run: `guidelines-folder` exists. "Each guideline is a source of the project record, so the 85 claims that quoted `AGENTS.md` quote the file their sentence is in now"
+
+<a id="package-readme-source"></a>
+
+## package-readme-source
+
+Now: `written-from-readme`.
+
+- 2026-11-17 `package-readme-source`: `written-from-readme` over `kept-by-hand`, `pointer-to-repository`: "The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md`" (`package-readme.json`)
+
+<a id="package-readme"></a>
+
+### The README of `@lionlang/core` is written from the repository's README
+
+Recorded 2026-11-17 in `history/notes/package-readme.json`.
+
+**Context.** `packages/core/README.md` is the page npm shows for `@lionlang/core`. It was a copy of the repository's README kept by hand, and it had drifted: 78 lines of the sections the two share differed. It still said that every array is an expression and that every function takes a set number of arguments, it had no word of `number/fromString`, `string/join`, `string/split`, `string/slice`, `string/numbers`, `object/set`, `object/remove`, or of what `why` shows for a computed value, its list of packages named three of nine, and one of its links led to a folder on the author's machine.
+
+**Decision.** The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md`: its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word. A link to a file of the repository, or to a section the page leaves out, is written as a full address, and what a fenced block or a code span holds is not touched. The page ends with a list of the sections it leaves out, each a link into the repository. The site-runtime tests fail when the file is not what the README gives.
+
+**Consequences.** The package's page says what the README says, and a change to a language section is made once. The page no longer has its own Packages and Development sections, which were about the repository and out of date: it links to the repository's. The documentation procedure no longer asks for every edit to be made in both files. A property checks the page against a model of a README whose parts are known, and seven mutations of the writer are caught.
+
+**Alternatives considered.**
+
+- Keep the copy by hand and correct it now. It drifted while the procedure said to edit both files, so it would drift again.
+- Make the package's page a short pointer to the repository's README. The page npm shows is where someone deciding whether to install the package reads what the language is.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `package-readme-source`: `written-from-readme`. "The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md`"
+- Holds when Lion is run: rule `package-readme-written-from-readme` holds. "The site-runtime tests fail when the file is not what the README gives."
+- Holds when Lion is run: `package-readme-writer` exists. "its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word"
+- Stated, not checked by running Lion: rule `edit-both-readmes` is withdrawn. "The documentation procedure no longer asks for every edit to be made in both files."

@@ -17,7 +17,7 @@ Every source has a publisher: who stands behind what it says.
 | Source | Publisher | Where its claims come from |
 |---|---|---|
 | Each commit HEAD reaches: its message, the files it changed, and up to 700 lines of its diff | Lion repository | `notes/10-era-a.json` to `notes/15-era-e.json`, written by readers |
-| `README.md`, `AGENTS.md`, and `CLAUDE.md` as they stand | Lion repository | `notes/16-docs-head.json` |
+| `README.md`, `AGENTS.md`, each guideline in `guidelines/`, and `CLAUDE.md` as they stand | Lion repository | `notes/16-docs-head.json` |
 | Each notes file in `history/notes/`, decision records among them | Lion repository | the file's own claims, in its words or quoting its prose |
 | Each program in `probes.json`, run on Lion as it is now | Lion at HEAD | the value the program gives |
 

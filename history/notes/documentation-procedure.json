@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "quote": "`bun run compare main --docs` runs every program the docs show, the fenced `json` blocks of the README files, `AGENTS.md`, the guidelines in `guidelines/`, and each skill's `SKILL.md` and `references/`, on a commit and on the working tree, and lists the ones that give something else: the documented results a change made untrue.",
+      "says": {
+        "feature": "compare-docs-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "`guidelines/documentation.md` and `CLAUDE.md` state the documentation procedure to run after every change, in order: run the docs' programs, search every place that describes Lion for sentences the change made untrue, give each new feature its example, rebuild the website's docs, record the change with the claims that quote reworded sentences, and say what the first two steps found. The package README, both skills' references, and the website's guarantees still described derived rows as recomputed or kept only until a change, and now say that they follow changes.",
+      "says": {
+        "rule": "documentation-procedure",
+        "holds": true,
+        "statement": "After every change to what Lion does, run the documentation procedure in guidelines/documentation.md in order: run the docs' programs, search for sentences the change made untrue, add examples, rebuild the docs, record the change, and report what was found",
+        "area": "docs"
+      }
+    }
+  ]
+}

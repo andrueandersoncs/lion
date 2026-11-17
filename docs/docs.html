@@ -6582,7 +6582,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>What the database has derived for earlier queries never changes an answer: a query gives what it would give on a database that has derived nothing yet.</li>
   <li>A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.</li>
   <li>The relation option <code>"schema"</code> and the invariant it stands for keep the same changes, with the same messages, and are saved as the same snapshot.</li>
-  <li>Answers are cached until a fact, rule, or invariant changes; a cached answer is the answer evaluation would give.</li>
+  <li>What rules derive is kept, and brought up to date when facts or rules change; what is kept is what evaluation from nothing would give.</li>
 </ul>
 
 <h2 id="guarantee-order">Answer order</h2>

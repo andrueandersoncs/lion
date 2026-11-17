@@ -6402,7 +6402,7 @@
     },
     {
       "id": "doc-agents-13",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Follow the principle of least astonishment.",
       "says": {
         "rule": "least-astonishment",
@@ -6413,7 +6413,7 @@
     },
     {
       "id": "doc-agents-14",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "When something built on Lion needs a value, a condition, or text, write it as a Lion expression and evaluate it.",
       "says": {
         "rule": "lion-computes-page-text",
@@ -6424,7 +6424,7 @@
     },
     {
       "id": "doc-agents-15",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "**Do not count the length of Lion JSON as a cost.**",
       "says": {
         "rule": "json-length-not-a-cost",
@@ -6435,7 +6435,7 @@
     },
     {
       "id": "doc-agents-16",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "**When the standard library lacks something, add it.**",
       "says": {
         "rule": "extend-stdlib",
@@ -6446,7 +6446,7 @@
     },
     {
       "id": "doc-agents-17",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Build a new feature out of vocabulary Lion already has before inventing more.",
       "says": {
         "rule": "reuse-what-exists",
@@ -6457,7 +6457,7 @@
     },
     {
       "id": "doc-agents-18",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Invariants take the query option `\"assert\"` instead of a new keyword, and report failures in the same words as a failed query assertion.",
       "says": {
         "decision": "invariant-syntax",
@@ -6468,7 +6468,7 @@
     },
     {
       "id": "doc-agents-19",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Invariants take the query option `\"assert\"` instead of a new keyword, and report failures in the same words as a failed query assertion.",
       "says": {
         "behavior": "invariant-failure-message",
@@ -6478,7 +6478,7 @@
     },
     {
       "id": "doc-agents-20",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "The schema of a relation's rows is the invariant a program could write by hand, so it is kept, reported, and saved like any other.",
       "says": {
         "rule": "relation-schema-is-invariant",
@@ -6495,7 +6495,7 @@
     },
     {
       "id": "doc-agents-21",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "A pattern is a schema with logic variables in it, so what takes data apart is what checks it: a record, a list, and every `schema` function.",
       "says": {
         "rule": "schemas-are-patterns",
@@ -6516,7 +6516,7 @@
     },
     {
       "id": "doc-agents-22",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "When a feature needs a rule, look for a similar feature that already has one and follow it.",
       "says": {
         "rule": "one-rule-everywhere",
@@ -6527,7 +6527,7 @@
     },
     {
       "id": "doc-agents-23",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Every form that changes the logic database either makes all of its changes or none.",
       "says": {
         "rule": "all-or-nothing-changes",
@@ -6544,7 +6544,7 @@
     },
     {
       "id": "doc-agents-24",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Adding something the database already holds changes nothing, whether it is a fact, a relation, a rule, or an invariant.",
       "says": {
         "rule": "idempotent-additions",
@@ -6565,7 +6565,7 @@
     },
     {
       "id": "doc-agents-25",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.",
       "says": {
         "rule": "waiting-rule",
@@ -6586,7 +6586,7 @@
     },
     {
       "id": "doc-agents-26",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Whatever needs the value of a logic variable waits for it, and whatever needs the value of a goal asks it, in every form and function.",
       "says": {
         "rule": "asking-rule",
@@ -6607,7 +6607,7 @@
     },
     {
       "id": "doc-agents-27",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Whatever checks a value against a schema asks whether the value fits, by one rule:",
       "says": {
         "rule": "schemas-are-logic",
@@ -6628,7 +6628,7 @@
     },
     {
       "id": "doc-agents-28",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "A logic variable in a schema is its value once it is bound, and takes the value it meets until then, in every goal that can bind",
       "says": {
         "rule": "schemas-are-patterns",
@@ -6653,7 +6653,7 @@
     },
     {
       "id": "doc-agents-29",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "A call gives a function as many arguments as it takes, and one with any other number fails in one form of message: a library function, a relation, a schema, and a graph algorithm.",
       "says": {
         "rule": "arity-rule",
@@ -6690,7 +6690,7 @@
     },
     {
       "id": "doc-agents-30",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Declare what a new function takes with `takes`, or build it with `over`, and add it to the table in `packages/core/src/modules/tests/arity.test.ts`.",
       "says": {
         "rule": "new-functions-declare-arity",
@@ -6701,7 +6701,7 @@
     },
     {
       "id": "doc-agents-31",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Declare what a new function takes with `takes`, or build it with `over`, and add it to the table in `packages/core/src/modules/tests/arity.test.ts`.",
       "says": {
         "feature": "takes",
@@ -6711,7 +6711,7 @@
     },
     {
       "id": "doc-agents-32",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Declare what a new function takes with `takes`, or build it with `over`, and add it to the table in `packages/core/src/modules/tests/arity.test.ts`.",
       "says": {
         "feature": "over",
@@ -6721,7 +6721,7 @@
     },
     {
       "id": "doc-agents-33",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Before settling a behavior, trace how it interacts with each existing one.",
       "says": {
         "rule": "walk-through-combinations",
@@ -6732,7 +6732,7 @@
     },
     {
       "id": "doc-agents-34",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "The grid in `packages/metrics/src/grid-cases.ts` runs every kind of expression in every place an expression can stand, and compares each with plain code.",
       "says": {
         "feature": "interop-grid",
@@ -6742,7 +6742,7 @@
     },
     {
       "id": "doc-agents-35",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Add a row for a new kind of expression and a column for a new place, then run `bun run measure --grid`.",
       "says": {
         "rule": "add-to-interop-grid",
@@ -6753,7 +6753,7 @@
     },
     {
       "id": "doc-agents-36",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "change the feature until the cell agrees, or, when the exception is the right design, document it and list it in `KNOWN`.",
       "says": {
         "rule": "grid-exceptions-documented",
@@ -6764,7 +6764,7 @@
     },
     {
       "id": "doc-agents-37",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "**Keep equivalent programs equivalent.** These pairs should behave the same:",
       "says": {
         "rule": "equivalent-programs-equivalent",
@@ -6814,7 +6814,7 @@
     },
     {
       "id": "doc-agents-38",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Where results may differ, such as answer order without the `\"order\"` query option, say so in the docs.",
       "says": {
         "behavior": "goal-directed-answer-order",
@@ -6824,7 +6824,7 @@
     },
     {
       "id": "doc-agents-39",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "When existing behavior would astonish a user, such as a failed form leaving partial changes behind, point it out and fix it, or propose a fix, instead of working around it.",
       "says": {
         "rule": "dont-build-on-surprises",
@@ -6835,7 +6835,7 @@
     },
     {
       "id": "doc-agents-40",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "State the behavior users expect as a property and test it",
       "says": {
         "rule": "pin-expectations-as-properties",
@@ -6846,7 +6846,7 @@
     },
     {
       "id": "doc-agents-41",
-      "source": "doc-agents",
+      "source": "doc-designing-features",
       "quote": "Describe each feature's semantics in the README, including what it does alongside the features it touches, and use it in an example in the docs",
       "says": {
         "rule": "document-feature-combinations",
@@ -6857,7 +6857,7 @@
     },
     {
       "id": "doc-agents-42",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "Every feature a change adds is used in at least one example in the docs, with output that was run, not typed.",
       "says": {
         "rule": "every-feature-in-docs",
@@ -6874,7 +6874,7 @@
     },
     {
       "id": "doc-agents-43",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "It fails when a special form or library function appears in no example",
       "says": {
         "behavior": "docs-build-function-without-example",
@@ -6884,7 +6884,7 @@
     },
     {
       "id": "doc-agents-44",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "A new relation of a skill's core program, a new field of its notes, and a new script or option is shown in the skill's `SKILL.md` or its `references/`, as the program or notes with the result Lion gave.",
       "says": {
         "rule": "skill-features-in-docs",
@@ -6901,7 +6901,7 @@
     },
     {
       "id": "doc-agents-45",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "When a change alters what an existing example gives, run the example again and correct its stated output; never leave a documented result that Lion would no longer produce.",
       "says": {
         "rule": "correct-untrue-docs",
@@ -6912,7 +6912,7 @@
     },
     {
       "id": "doc-agents-46",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "Show a function doing what it is for, combined with what a reader would combine it with, rather than called alone on a constant.",
       "says": {
         "rule": "examples-use-feature-for-real",
@@ -6923,7 +6923,7 @@
     },
     {
       "id": "doc-agents-47",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "Where the playground cannot show it working, such as `object/new`, which needs a class from host code, show what it does without one, and the host case as a `<code-block>`.",
       "says": {
         "behavior": "docs-example-object-new",
@@ -6933,7 +6933,7 @@
     },
     {
       "id": "doc-agents-48",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "Measure every change to `@lionlang/core` before you call it done, in the code and in the semantics, and aim for both to go down.",
       "says": {
         "rule": "measure-every-change",
@@ -6944,7 +6944,7 @@
     },
     {
       "id": "doc-agents-49",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "Put the numbers in your final report and in the commit message, also when they went up.",
       "says": {
         "rule": "measurements-in-commit-message",
@@ -6985,7 +6985,7 @@
     },
     {
       "id": "doc-agents-53",
-      "source": "doc-agents",
+      "source": "doc-documentation",
       "quote": "bun run compare main programs.json",
       "says": {
         "feature": "bun-run-compare",
@@ -6995,7 +6995,7 @@
     },
     {
       "id": "doc-agents-54",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "Pay for it in the same change: find the rule that makes special cases redundant, and delete them.",
       "says": {
         "rule": "pay-for-what-you-add",
@@ -7006,7 +7006,7 @@
     },
     {
       "id": "doc-agents-55",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "A new exception fails the tests of `packages/metrics`.",
       "says": {
         "rule": "no-new-grid-exceptions",
@@ -7017,7 +7017,7 @@
     },
     {
       "id": "doc-agents-56",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "**Never buy a lower number with a worse Lion.**",
       "says": {
         "rule": "never-buy-lower-number",
@@ -7028,7 +7028,7 @@
     },
     {
       "id": "doc-agents-57",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.",
       "says": {
         "rule": "bench-twice",
@@ -7039,7 +7039,7 @@
     },
     {
       "id": "doc-agents-58",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`.",
       "says": {
         "rule": "compare-before-claiming",
@@ -7050,7 +7050,7 @@
     },
     {
       "id": "doc-agents-59",
-      "source": "doc-agents",
+      "source": "doc-measuring",
       "quote": "**Go on working while `bun run mutate` runs.**",
       "says": {
         "rule": "no-edits-during-mutate",
@@ -7103,7 +7103,7 @@
     },
     {
       "id": "doc-agents-64",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "**Framework**: Vitest with @effect/vitest",
       "says": {
         "rule": "tests-use-vitest-effect",
@@ -7114,7 +7114,7 @@
     },
     {
       "id": "doc-agents-65",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "**Framework**: Vitest with @effect/vitest",
       "says": {
         "feature": "@effect/vitest",
@@ -7124,7 +7124,7 @@
     },
     {
       "id": "doc-agents-66",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Use `it.prop` for synchronous properties and `it.effect.prop` for Effect properties, both from `@effect/vitest`.",
       "says": {
         "rule": "effect-vitest-properties",
@@ -7135,7 +7135,7 @@
     },
     {
       "id": "doc-agents-67",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "The runner checks it against many generated inputs (100 by default), and shrinks any failing input to a small counterexample.",
       "says": {
         "measured": "property-default-runs",
@@ -7145,7 +7145,7 @@
     },
     {
       "id": "doc-agents-68",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Check behavior against something independent of the code under test:",
       "says": {
         "rule": "test-against-independent-model",
@@ -7156,7 +7156,7 @@
     },
     {
       "id": "doc-agents-69",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Shape generators so they reach the interesting cases, then confirm they do.",
       "says": {
         "rule": "generators-reach-interesting-cases",
@@ -7167,7 +7167,7 @@
     },
     {
       "id": "doc-agents-70",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Cover every case of a new feature: each form it adds, each place the form can stand, and each existing feature it meets.",
       "says": {
         "rule": "cover-every-case",
@@ -7178,7 +7178,7 @@
     },
     {
       "id": "doc-agents-71",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Turn every bug into a property.",
       "says": {
         "rule": "bugs-become-properties",
@@ -7189,7 +7189,7 @@
     },
     {
       "id": "doc-agents-72",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Make sure each property can fail: break the code it covers on purpose, and confirm the property catches it.",
       "says": {
         "rule": "properties-can-fail",
@@ -7200,7 +7200,7 @@
     },
     {
       "id": "doc-agents-73",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Add a mutation for each behavior you add, and add a property for any mutation it reports as `MISSED`.",
       "says": {
         "rule": "mutation-per-behavior",
@@ -7211,7 +7211,7 @@
     },
     {
       "id": "doc-agents-74",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Before you finish a change to the evaluator or the logic engine, run its properties once with a few thousand runs each, by raising `runs`, and then put the number back.",
       "says": {
         "rule": "many-runs-before-finishing",
@@ -7222,7 +7222,7 @@
     },
     {
       "id": "doc-agents-75",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "Keep a domain's generators in a module next to its tests and reuse them across files",
       "says": {
         "rule": "shared-generators",
@@ -7233,7 +7233,7 @@
     },
     {
       "id": "doc-agents-76",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "A generator can carry its own model",
       "says": {
         "rule": "generators-carry-models",
@@ -7244,7 +7244,7 @@
     },
     {
       "id": "doc-agents-77",
-      "source": "doc-agents",
+      "source": "doc-testing",
       "quote": "When a property rarely reaches its interesting cases, raise its runs with the fourth argument",
       "says": {
         "rule": "raise-runs-for-rare-cases",
@@ -7255,7 +7255,7 @@
     },
     {
       "id": "doc-agents-78",
-      "source": "doc-agents",
+      "source": "doc-code-style",
       "quote": "**Indentation**: Tabs (not spaces)",
       "says": {
         "rule": "biome-formatting",
@@ -7343,7 +7343,7 @@
     },
     {
       "id": "doc-agents-85",
-      "source": "doc-agents",
+      "source": "doc-patterns",
       "quote": "Validate all inputs using Effect Schemas",
       "says": {
         "rule": "validate-inputs-with-schemas",

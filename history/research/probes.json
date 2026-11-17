@@ -19124,5 +19124,104 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "agent-instructions-length",
+    "area": "docs",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          [
+            "number/lessThan",
+            [
+              "array/length",
+              ["string/split", ["repo/read", "AGENTS.md"], "\n"]
+            ],
+            202
+          ],
+          [
+            "number/lessThan",
+            [
+              "array/length",
+              ["string/split", ["repo/read", "CLAUDE.md"], "\n"]
+            ],
+            202
+          ]
+        ],
+        ["quote", "under-200-lines"]
+      ],
+      ["else", ["quote", "longer"]]
+    ]
+  },
+  {
+    "case": "guidelines-named-in-agents-md",
+    "area": "docs",
+    "program": [
+      "cond",
+      [
+        [
+          "array/includes?",
+          [
+            "array/map",
+            ["repo/files", "guidelines"],
+            [
+              "lambda",
+              ["file"],
+              ["string/includes", ["repo/read", "AGENTS.md"], "file"]
+            ]
+          ],
+          false
+        ],
+        ["quote", "one-missing"]
+      ],
+      ["else", ["quote", "every-one"]]
+    ]
+  },
+  {
+    "feature": "guidelines-folder",
+    "kind": "file",
+    "program": [
+      "number/greaterThan",
+      ["array/length", ["repo/files", "guidelines"]],
+      0
+    ]
+  },
+  {
+    "case": "package-readme-against-readme",
+    "area": "docs",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "docs-check"], "output"],
+          ["quote", "packages/core/README.md is current."]
+        ],
+        ["quote", "current"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "docs-check"], "output"],
+          ["quote", "packages/core/README.md is out of date."]
+        ],
+        ["quote", "out-of-date"]
+      ],
+      ["else", ["quote", "unknown"]]
+    ]
+  },
+  {
+    "feature": "package-readme-writer",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      [
+        "array/length",
+        ["repo/files", "packages/site-runtime/src/package-readme.ts"]
+      ],
+      1
+    ]
   }
 ]

@@ -9,6 +9,9 @@
 - `bun run scale` times workloads at growing sizes, 1,000 to 100,000 facts and more, on the working tree or beside a commit with `--against main`, and says how each time grows: `n^1.0` grows as the facts do, and `n^2.0` as their square. It covers loading facts one form at a time and many, with invariants, schemas, and keys; asking every row and one; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, and reports the memory it added at its peak and what the database keeps. (`bun-run-scale` added)
 - `bun run mutate --in logic/model.ts,logic/database.ts` runs only the mutations in files whose paths hold one of the words, so a change can run the mutations of the files it touched instead of the whole list. (`mutate-in-option` added)
 - `bun run mutate` breaks copies of the working tree under `out/metrics/`, as it stood when the run began, four at a time, so the code can be edited while it runs. `--jobs` says how many run at once. (`mutate-in-copies` added)
+- `bun run compare main --docs` runs every program the docs show, the fenced `json` blocks of the README files, `AGENTS.md`, the guidelines in `guidelines/`, and each skill's `SKILL.md` and `references/`, on a commit and on the working tree, and lists the ones that give something else: the documented results a change made untrue. (`compare-docs-option` added)
+- Each guideline is a source of the project record, so the 85 claims that quoted `AGENTS.md` quote the file their sentence is in now (`guidelines-folder` added)
+- its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word (`package-readme-writer` added)
 
 ### Changed
 
@@ -33,11 +36,18 @@
 - A rule that invents is followed where it invents alone, into a relation with no key (`rule-that-invents-on-change`: `follow-where-it-invents-alone` over `follow-every-case`, `derive-again-every-case`)
 - A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed (`unfollowable-relation-on-change`: `derive-again-and-compare-once-read` over `forget-with-readers`, `always-derive-again`)
 - The mutation check breaks copies of the working tree, four at a time (`where-mutations-run`: `copies-of-the-working-tree` over `the-working-tree`)
+- `AGENTS.md` names every one with its main rule and when to read it (`agent-instructions-layout`: `index-with-guidelines` over `one-file`, `imported-guidelines`)
+- The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md` (`package-readme-source`: `written-from-readme` over `kept-by-hand`, `pointer-to-repository`)
 
 ### Rules
 
 - A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
 - A rule that invents is followed through a change where it invents alone into a relation with no key: with 100,000 facts, adding a fact and asking its rows takes 70 milliseconds, where it took a second. A relation that cannot be followed, one that rules invent rows of into a keyed relation or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed instead of forgotten. (rule `unfollowed-relations-derived-again`)
+- `AGENTS.md` and `CLAUDE.md` stay under 200 lines each. (rule `agent-instructions-under-200-lines`)
+- `guidelines/documentation.md` and `CLAUDE.md` state the documentation procedure to run after every change, in order: run the docs' programs, search every place that describes Lion for sentences the change made untrue, give each new feature its example, rebuild the website's docs, record the change with the claims that quote reworded sentences, and say what the first two steps found. The package README, both skills' references, and the website's guarantees still described derived rows as recomputed or kept only until a change, and now say that they follow changes. (rule `documentation-procedure`)
+- The documentation procedure no longer asks for every edit to be made in both files. (rule `edit-both-readmes` withdrawn)
+- Each practice has a guideline in `guidelines/`, and `AGENTS.md` names every one with its main rule and when to read it. (rule `every-guideline-named-in-agents-md`)
+- The site-runtime tests fail when the file is not what the README gives. (rule `package-readme-written-from-readme`)
 
 ## 2026-11-16 — @lionlang/core 0.11.0, @lionlang/cli 0.10.0
 

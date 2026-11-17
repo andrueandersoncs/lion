@@ -21,17 +21,21 @@
 // special form and library function must appear in some example, and the
 // sidebar, contents, pager, and search index are generated.
 //
-//   bun run docs            write docs/docs.html
-//   bun run docs --check    fail when docs/docs.html is out of date
+// The build also writes packages/core/README.md, the page npm shows, from the
+// repository's README: see src/package-readme.ts.
+//
+//   bun run docs            write docs/docs.html and packages/core/README.md
+//   bun run docs --check    fail when either is out of date
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { stdlib } from "@lionlang/core/modules";
 import { SPECIAL_FORM_NAMES } from "@lionlang/core/schemas/evaluation";
-import { assetVersion, DOCS, stampPage } from "./site.ts";
+import { assetVersion, stampPage } from "./site.ts";
 import { evaluateSource } from "./src/evaluate.ts";
+import { packageReadme } from "./src/package-readme.ts";
 
 const CONTENT = join(import.meta.dirname, "content");
-const PAGE = join(DOCS, "docs.html");
+const REPOSITORY = join(import.meta.dirname, "../..");
 
 /** Examples slower than this in Bun risk the page's 1.5 s browser timeout. */
 const SLOW_EXAMPLE_MS = 400;
@@ -649,27 +653,38 @@ const build = async () => {
   return html;
 };
 
-const html = await build();
-const current = (() => {
+/** What the build writes: each file by its path in the repository. */
+const written: readonly (readonly [path: string, text: string])[] = [
+  ["docs/docs.html", await build()],
+  [
+    "packages/core/README.md",
+    packageReadme(readFileSync(join(REPOSITORY, "README.md"), "utf8")),
+  ],
+];
+
+const currentOf = (path: string) => {
   try {
-    return readFileSync(PAGE, "utf8");
+    return readFileSync(join(REPOSITORY, path), "utf8");
   } catch {
     return "";
   }
-})();
+};
 
-if (process.argv.includes("--check")) {
-  if (html === current) {
-    console.log("docs/docs.html is current.");
+for (const [path, text] of written) {
+  const current = currentOf(path) === text;
+  if (process.argv.includes("--check")) {
+    if (current) {
+      console.log(`${path} is current.`);
+    } else {
+      console.error(
+        `${path} is out of date. Run \`bun run --cwd packages/site-runtime docs\` and commit the result.`
+      );
+      process.exitCode = 1;
+    }
+  } else if (current) {
+    console.log(`${path} is already current.`);
   } else {
-    console.error(
-      "docs/docs.html is out of date. Run `bun run --cwd packages/site-runtime docs` and commit the result."
-    );
-    process.exitCode = 1;
+    writeFileSync(join(REPOSITORY, path), text);
+    console.log(`Wrote ${path}.`);
   }
-} else if (html === current) {
-  console.log("docs/docs.html is already current.");
-} else {
-  writeFileSync(PAGE, html);
-  console.log("Wrote docs/docs.html.");
 }

@@ -1,0 +1,70 @@
+{
+  "title": "AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`",
+  "context": "`AGENTS.md` had grown to 533 lines, 510 of them before the documentation procedure was written into it: the goals, how to design a feature, the documentation procedure, the project record, the measuring tools, the testing rules, and code style with its Effect and React patterns. `CLAUDE.md` imports it, so an agent read all of it at the start of every task, whatever the task was, and a rule that mattered for the work at hand stood among hundreds of lines that did not.",
+  "decision": "`AGENTS.md` and `CLAUDE.md` stay under 200 lines each. `AGENTS.md` holds what every task needs: what Lion is, the goals of every change, the commands, the steps before a commit, and the completion proof. Each practice has a guideline in `guidelines/`, and `AGENTS.md` names every one with its main rule and when to read it. An agent reads a guideline in full before the work it covers.",
+  "consequences": "`AGENTS.md` went from 533 lines to 127. Its sections moved word for word into `guidelines/designing-features.md`, `documentation.md`, `recording-changes.md`, `measuring.md`, `testing.md`, `code-style.md`, and `patterns.md`, and `CLAUDE.md` names those files where it named sections of `AGENTS.md`. Each guideline is a source of the project record, so the 85 claims that quoted `AGENTS.md` quote the file their sentence is in now, and `bun run compare main --docs` runs the programs the guidelines show. A new practice gets a guideline and a line in `AGENTS.md`.",
+  "alternatives": [
+    {
+      "option": "Keep every guideline in `AGENTS.md`",
+      "rejected": "Every task pays for reading all of it, and a file that long is read less closely the longer it gets."
+    },
+    {
+      "option": "Import each guideline into `CLAUDE.md` with `@`",
+      "rejected": "An imported file is loaded with `CLAUDE.md`, so the agent would read as much as before."
+    },
+    {
+      "option": "Put the guidelines under `docs/`",
+      "rejected": "`docs/` is the published website, and the guidelines are for whoever works on Lion, not for its users."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`AGENTS.md` names every one with its main rule and when to read it",
+      "says": {
+        "decision": "agent-instructions-layout",
+        "chose": "index-with-guidelines",
+        "over": ["one-file", "imported-guidelines"],
+        "area": "docs",
+        "because": "an agent reads at the start of every task only what every task needs, and reads a practice's detail before the work it covers"
+      }
+    },
+    {
+      "quote": "`AGENTS.md` and `CLAUDE.md` stay under 200 lines each.",
+      "says": {
+        "rule": "agent-instructions-under-200-lines",
+        "holds": true,
+        "statement": "AGENTS.md and CLAUDE.md are each under 200 lines; what a practice needs beyond its main rule is in its guideline",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "agent-instructions-length",
+            "is": "under-200-lines"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Each practice has a guideline in `guidelines/`, and `AGENTS.md` names every one with its main rule and when to read it.",
+      "says": {
+        "rule": "every-guideline-named-in-agents-md",
+        "holds": true,
+        "statement": "Every guideline in guidelines/ is named in AGENTS.md, with its main rule and when to read it",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "guidelines-named-in-agents-md",
+            "is": "every-one"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Each guideline is a source of the project record, so the 85 claims that quoted `AGENTS.md` quote the file their sentence is in now",
+      "says": {
+        "feature": "guidelines-folder",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

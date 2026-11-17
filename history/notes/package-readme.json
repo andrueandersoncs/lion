@@ -1,0 +1,60 @@
+{
+  "title": "The README of `@lionlang/core` is written from the repository's README",
+  "context": "`packages/core/README.md` is the page npm shows for `@lionlang/core`. It was a copy of the repository's README kept by hand, and it had drifted: 78 lines of the sections the two share differed. It still said that every array is an expression and that every function takes a set number of arguments, it had no word of `number/fromString`, `string/join`, `string/split`, `string/slice`, `string/numbers`, `object/set`, `object/remove`, or of what `why` shows for a computed value, its list of packages named three of nine, and one of its links led to a folder on the author's machine.",
+  "decision": "The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md`: its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word. A link to a file of the repository, or to a section the page leaves out, is written as a full address, and what a fenced block or a code span holds is not touched. The page ends with a list of the sections it leaves out, each a link into the repository. The site-runtime tests fail when the file is not what the README gives.",
+  "consequences": "The package's page says what the README says, and a change to a language section is made once. The page no longer has its own Packages and Development sections, which were about the repository and out of date: it links to the repository's. The documentation procedure no longer asks for every edit to be made in both files. A property checks the page against a model of a README whose parts are known, and seven mutations of the writer are caught.",
+  "alternatives": [
+    {
+      "option": "Keep the copy by hand and correct it now",
+      "rejected": "It drifted while the procedure said to edit both files, so it would drift again."
+    },
+    {
+      "option": "Make the package's page a short pointer to the repository's README",
+      "rejected": "The page npm shows is where someone deciding whether to install the package reads what the language is."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The docs build, `bun run --cwd packages/site-runtime docs`, writes `packages/core/README.md` from `README.md`",
+      "says": {
+        "decision": "package-readme-source",
+        "chose": "written-from-readme",
+        "over": ["kept-by-hand", "pointer-to-repository"],
+        "area": "docs",
+        "because": "a copy kept by hand drifted, and a page written from the README cannot say something else"
+      }
+    },
+    {
+      "quote": "The site-runtime tests fail when the file is not what the README gives.",
+      "says": {
+        "rule": "package-readme-written-from-readme",
+        "holds": true,
+        "statement": "packages/core/README.md is what the docs build writes from README.md, and is never edited by hand",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "package-readme-against-readme",
+            "is": "current"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "its opening and the sections that describe the language, from Basic Usage to Host Interop, word for word",
+      "says": {
+        "feature": "package-readme-writer",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "The documentation procedure no longer asks for every edit to be made in both files.",
+      "says": {
+        "rule": "edit-both-readmes",
+        "holds": false,
+        "statement": "Every edit to a language section of README.md is also made in packages/core/README.md",
+        "area": "docs"
+      }
+    }
+  ]
+}

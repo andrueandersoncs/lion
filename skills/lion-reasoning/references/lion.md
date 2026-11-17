@@ -68,7 +68,7 @@ Other goals:
 ["rule", head, goal, goal, …]
 ```
 
-The head holds whenever every goal holds. Derived rows are never stored: they are worked out from the facts each time, so they are always current. Put your rules in a step of your own, such as `steps/02-rules.json`, as one program, and run `replay.mjs`:
+The head holds whenever every goal holds. Derived rows are never saved with the model: Lion works them out from the facts, and brings them up to date when facts change, so they are always current. Put your rules in a step of your own, such as `steps/02-rules.json`, as one program, and run `replay.mjs`:
 
 ```json
 ["begin",

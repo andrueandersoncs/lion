@@ -3,16 +3,21 @@
 // changelog line, says about behavior.
 //
 //   bun run compare main programs.json
+//   bun run compare main --docs
 //
 // The file holds a record of programs by name:
 //
 //   { "zero equals minus zero": ["=", 0, ["number/multiply", 0, -1]] }
 //
-// Its path is read from the repository root.
+// Its path is read from the repository root. With `--docs` the programs are
+// the ones the docs show in fenced json blocks, so the run says which
+// documented results a change made untrue. Only the programs that differ
+// are listed then.
 import { existsSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { Effect } from "effect";
 import { withCheckout } from "./src/checkout.ts";
+import { docPrograms } from "./src/doc-programs.ts";
 import { canonical, evaluate, load, type Outcome } from "./src/lion.ts";
 import { CORE, commitOf, REPOSITORY } from "./src/sources.ts";
 
@@ -41,7 +46,7 @@ const outcomes = (source: string, programs: readonly unknown[]) =>
 
 const main = Effect.gen(function* () {
   if (ref === undefined || file === undefined) {
-    console.error("Usage: bun run compare <commit> <programs.json>");
+    console.error("Usage: bun run compare <commit> <programs.json | --docs>");
     process.exitCode = 1;
     return;
   }
@@ -50,10 +55,13 @@ const main = Effect.gen(function* () {
     process.exitCode = 1;
     return;
   }
-  const programs = JSON.parse(readFileSync(locate(file), "utf8")) as Record<
-    string,
-    unknown
-  >;
+  const docs = file === "--docs";
+  const programs = docs
+    ? docPrograms(REPOSITORY)
+    : (JSON.parse(readFileSync(locate(file), "utf8")) as Record<
+        string,
+        unknown
+      >);
   const names = Object.keys(programs);
   const given = Object.values(programs);
   const before = yield* withCheckout(commit, (directory) =>
@@ -64,6 +72,10 @@ const main = Effect.gen(function* () {
   for (const [index, name] of names.entries()) {
     const was = show(before[index] as Outcome);
     const is = show(now[index] as Outcome);
+    if (was === is && docs) {
+      // Among the docs' many programs, only what changed is worth reading.
+      continue;
+    }
     if (was === is) {
       console.log(`same       ${name}\n           ${is}`);
     } else {

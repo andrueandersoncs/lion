@@ -1,3 +1,5 @@
+<!-- Written from the repository's README.md by `bun run --cwd packages/site-runtime docs`. Edit README.md, not this file. -->
+
 # Lion
 
 Lion is a JSON-based Lisp. Every Lion program is valid JSON, which makes it easy to serialize, store, inspect, and generate from other systems.
@@ -13,15 +15,6 @@ Lion evaluates:
 - objects by recursively evaluating their values
 
 The result is a small homoiconic language that can describe both computation and data interchange without a separate parser.
-
-## Packages
-
-```text
-packages/
-  core/   evaluator, special forms, stdlib
-  repl/   interactive web REPL
-  agent/  real-world Lion program driving an OpenTUI + AI agent
-```
 
 ## Basic Usage
 
@@ -67,7 +60,7 @@ await Effect.runPromise(run(["clamp", 0, 100, 150], env));
 
 ### Primitives
 
-Numbers, booleans, and `null` evaluate to themselves. Strings are treated as references first; if no binding exists, the original string is returned.
+Numbers, booleans, and `null` evaluate to themselves. Strings are treated as references first; if no binding exists, the original string is returned, except for the two kinds of string below.
 
 ```json
 42
@@ -90,7 +83,7 @@ Fails with `Nothing is bound to "number/ad". Did you mean "number/add"? To mean 
 
 ### Arrays
 
-Arrays are always treated as executable expressions:
+The empty array `[]` evaluates to itself. Every other array is treated as an executable expression:
 
 1. special forms such as `["define", "x", 1]`
 2. function calls when the first element evaluates to a function
@@ -103,7 +96,7 @@ Evaluates to `3`.
 
 ### Objects
 
-Objects preserve their keys and evaluate each value.
+Objects preserve their keys and evaluate each value. A key can be any string JSON allows, the empty string among them, except `__proto__`, which is left out.
 
 ```json
 {
@@ -173,7 +166,7 @@ Evaluates condition/result pairs in order and returns the first matching result.
   ["else", "retry"]]
 ```
 
-If no branch matches and no `else` is provided, `cond` returns `null`. `else` is an ordinary string, and a string counts as true. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
+If no branch matches and no `else` is provided, `cond` returns `null`. A condition counts as false when it is `false`, `null`, `0`, or the empty string `""`, and as true when it is anything else, so `else`, an ordinary string, counts as true. A filter in a rule or query is stricter: it must be `true` or `false`. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
 
 ### `match`
 
@@ -235,7 +228,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | Form | Meaning |
 |---|---|
 | `["fact", goal, ...]` | Adds ground facts. Returns the facts added. |
-| `["retract", goal, ...]` | Removes facts. Derived answers update on the next query. |
+| `["retract", goal, ...]` | Removes facts. What rules derived from them changes with them. |
 | `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. A head is a relation call, `=` between two values, an `and` of those, or `exists` over relation calls. See [Existential rules](#existential-rules). |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
@@ -260,6 +253,22 @@ A fact holds data: JSON values, and the [unknowns](#existential-rules) that rule
 ```
 
 Fails with `Facts may only contain data, but the "text" of ["note","source"] is the relation "source". To mean the string itself, write ["quote", "source"].` The same goes for the name of a schema or a function, and for a string such as `"?why"`, which is a logic variable: `... is the logic variable "?why". To mean the string itself, write ["quote", "?why"].` An argument that is not data for another reason is shown with the reason: `... is ["number/add","?x",1], which waits for a logic variable.`
+
+`why` explains a derived fact by the rule that derived it and what its body rested on, under `because`: each row a relation goal matched, explained in turn down to the facts that were given, and every other goal as it held, with the answer's values in place of its variables. A `not` shows as `absent`, and every other goal, `=` and `in` among them, as `check`. A figure a rule computes therefore shows its arithmetic on the values it was given:
+
+```json
+["begin",
+  ["relation", "line", ["item", "usd_m"]],
+  ["relation", "days_held", ["days"]],
+  ["fact", ["line", "inventory", 4946], ["line", "cost of sales", 210352]],
+  ["rule", ["days_held", "?days"],
+    ["line", "inventory", "?stock"],
+    ["line", "cost of sales", "?cost"],
+    ["=", "?days", ["number/round", ["number/multiply", 365, ["number/divide", "?stock", "?cost"]]]]],
+  ["why", ["days_held", 9]]]
+```
+
+Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with `{ "same": [unknown, value] }`: the unknown the rule named, and the value it was made. See [Existential rules](#existential-rules).
 
 ### Waiting for values
 
@@ -322,12 +331,12 @@ A goal with a relation in it is a question, and any expression can ask it. As a 
 Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind": "has children" }, { "name": "ben", "children": [], "kind": "no children" }, { "name": "cy", "children": [], "kind": "no children" }], "in plain code": ["ben", "cy"], "as a value": false, "as a predicate": [true, false] }`.
 
 - When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. So `["not", ["and", ["parent", "?p", "?c"], ["retired", "?c"]]]` asks whether `?p` has a retired child, for the `?p` the rule has bound.
-- In plain code a question is asked right away, and every variable in it is its own. In a rule, query, invariant, or `find`, a question is part of what is written, and is asked for each answer when that runs. A question gives in a rule what it gives in plain code with the rule's variables in place.
+- In plain code a question is asked as soon as something needs its value, and every variable in it is its own. In a rule, query, invariant, or `find`, a question is part of what is written, and is asked for each answer when that runs. A question gives in a rule what it gives in plain code with the rule's variables in place.
 - `find` gives one value for every match, sorted in the fixed order values sort in, so its list never depends on how the matches were found. It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values. A `find` must bind every variable of its template that the rule around it does not.
-- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
+- `define`, `and`, `or`, `not`, and lambdas keep a goal as it is, so goals can still be named, combined, and passed around. So does a program, or a `begin`, whose value is a goal: it gives the goal as written. To get a goal's truth on its own, give it to a function: `["value/identity", goal]`.
 - A question sees every row of the relations it asks about, so those are derived in full first. A rule cannot ask about a relation that depends on the rule's own head.
 - Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
-- `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: in plain code `["exists", ["?y"], ["=", "?y", 1]]` is `true`. See [Existential rules](#existential-rules).
+- `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: as a value, `["value/identity", ["exists", ["?y"], ["=", "?y", 1]]]` is `true`. See [Existential rules](#existential-rules).
 
 ### Keys
 
@@ -368,11 +377,11 @@ Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 
 | `"offset"`, `"limit"` | Skip `offset` answers, then return at most `limit`. |
 | `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
 
-Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules).
+Without `"order"`, answers come in the order they are found, which can differ with what the database had derived before and with the changes it has seen. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules).
 
 ### Invariants
 
-An invariant is a query assertion the database keeps. `["invariant", goal, {"assert": "none"}]` says the goal never has answers, and `{"assert": "some"}` says it always has at least one. The invariant must hold when it is added, and from then on every `fact`, `retract`, and `rule` form is checked against it. A form that would break an invariant fails and changes nothing.
+An invariant is a query assertion the database keeps. `["invariant", goal, {"assert": "none"}]` says the goal never has answers, and `{"assert": "some"}` says it always has at least one. The invariant must hold when it is added, and from then on every `fact`, `retract`, and `rule` form is checked against it. A form that would break an invariant fails and changes nothing. The message counts the answers and shows one as an example: the first in [sort order](#query-options), whatever order they were found in.
 
 ```json
 ["begin",
@@ -504,7 +513,7 @@ Evaluates to `{ "mothers": [{ "child": "ada", "mother": "eve" }, { "child": "ben
 - A head can be a relation call, `=`, an `and` of those, or `exists` over relation calls. `["rule", ["and", ["p", "?x"], ["q", "?x"]], ["r", "?x"]]` adds rows to both `p` and `q`. `["exists", ["?m"], ["and", ["mother", "?c", "?m"], ["female", "?m"]]]` invents one unknown that is in both rows, and the goal of its `some` is the whole `and`.
 - With several variables, `exists` invents an unknown for each, and the goal of each `some` mentions the others, which are its own too: `["some", "?f", ["and", ["father", "ann", "?f"], ["mother", "ann", "?m"]]]` is the `?f` of some pair the goal describes.
 - Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. So the result does not depend on the order rules or facts were added in.
-- `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so in plain code `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
+- `exists` is also a goal: it holds when its goal holds for some value of each variable it lists. Those variables are its own wherever it stands, as a question's own variables are: they never bind or meet a variable of the same name outside it, and they never appear in an answer. It is a [question](#asking), so as a value `["exists", ["?y"], ["link", 3, "?y"]]` is `true` or `false`, and it works in a query, a rule body, under `not`, in `find`, as a value, and in an invariant.
 - The variables of `exists` must be named logic variables, each listed once, and its goal must mention each. In a rule head, it cannot list a variable the body binds.
 - A `fact` or `retract` can hold `exists`. `["fact", ["exists", ["?m"], ["mother", "ben", "?m"]]]` adds the row with ben's unknown mother in it, the very row the rule above would invent. A fact states rows, so it adds the row whether or not the head holds already. `why` takes `exists` too.
 - Inside a rule, query, or `find`, `some` waits for the variables the rule binds, and every other variable of its goal is its own. Its goal is a relation call or an `and` of them, and an argument can be a value, one of its variables, or a record or list of those. A question among the arguments is asked. Nothing may compute with one of its own variables; that is an error.
@@ -607,7 +616,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 - A known argument narrows a rule when the rule can look rows up by it: when it stands whole in one of the rule's relation goals, as `?x` in `["edge", "?x", "?y"]`. Where the rule can only test it, inside a record pattern, a schema such as `["schema/open", {"topic": "?t"}]`, or an `in`, the rule runs as written and keeps the rows asked about, so it never does more than the rule itself.
 - Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on. So is a relation that rules [invent](#existential-rules) rows of, since what such a rule adds depends on every row, and so is a relation that a goal asks with no argument known, since a copy for it would hold every row.
 - What is derived in full is derived once, in the database, and every later query reads it there; a query that knows an argument of a relation the database already holds in full looks its rows up rather than deriving a copy. A model asked many different questions derives each relation about once, as full evaluation would.
-- A relation is derived the first time a goal reads it, and kept until a fact or rule changes, so a query never pays for relations it does not reach, and never fails on one: with `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `broken` is never derived.
+- A relation is derived the first time a goal reads it, and kept, also [when facts change](#guarantees), so a query never pays for relations it does not reach, and never fails on one: with `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `broken` is never derived.
 - The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters. A goal-directed query also never fails on a row it does not derive, where full evaluation would.
 - `why` explains facts with every relation computed in full.
 - Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to derive every row of the relations a query reads instead.
@@ -671,7 +680,15 @@ Nothing is guessed at: a filter must be true or false, and the rows a rule deriv
 
 Adding what the database already holds changes nothing: a fact that is already there, a relation or schema declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
 
-Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept until a fact or rule changes. What the database has already derived never changes an answer. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
+Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept. What the database has already derived never changes an answer, only the order answers come in.
+
+A change to facts is followed through what was derived, so it costs what it reaches and not what the database holds. A changed row reaches every row that an answer using it gave or would give; those rows are taken out and derived again from the facts as they now are. An answer uses a row that a relation goal matched, wherever the goal stands in the rule: in its body, under `not`, in a `find`, in a goal used as a value, or in its head. A row whose head holds a `find` or an aggregate is reached through its other values, and is combined again from its matches; an aggregate that recurses goes on from the rows it has. A rule that [invents](#existential-rules) gives a row where no fact holds its head, so a fact of its relation is a row its answers use too. Recursion is followed round by round.
+
+Three kinds of relation cannot be followed row by row: one that rules invent rows of when it has a [key](#keys) or other rules beside them, since what is invented then depends on what was invented before, one whose rule holds a [function from the host](#host-functions-in-rules) that does not say it reads only its arguments, and one whose rule reads a changed relation through a schema instead of a relation goal. Such a relation is derived again and compared with what it was, so the relations that read it are still followed. That happens when something has read it since the last change. Otherwise nobody is waiting for it, and it is forgotten, with the relations that read it, until something reads it.
+
+A `rule` form is followed the same way: the relations whose rules changed are derived again and compared, and every other relation keeps its rows. A change an invariant refuses is followed back, so what was derived before it is still there. A [goal-directed query](#goal-directed-queries) keeps what it derived and follows changes too, for up to 32 different queries; past that they are answered again when asked.
+
+Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
 
 ## Schemas
 
@@ -838,7 +855,7 @@ The relation option `{"schema": "Order"}` says that every row must fit a declare
 Fails with `Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":2,"status":"opne"}: ["and",["order","?id","?status"],["not",["Order",{"id":"?id","status":"?status"}]]]. {"id":2,"status":"opne"} does not fit "Order": "status" must fit ["schema/anyOf","open","shipped"] but is "opne".` Order 1 is still there, and order 2 was not added.
 
 - The option stands for the [invariant](#invariants) the message shows, and is nothing more: `["invariant", ["and", ["order", "?id", "?status"], ["not", ["Order", {"id": "?id", "status": "?status"}]]], {"assert": "none"}]`. So it is kept like every invariant: a `fact`, `retract`, or `rule` form that would leave a row that does not fit fails and changes nothing, rows that rules derive are checked too, and a snapshot writes it as that invariant.
-- Any invariant or query assertion whose goal says an answer fails a schema, with `["not", [schema, value]]` or `["not", ["schema/fits?", value, schema]]`, ends its message with where the first answer does not fit.
+- Any invariant or query assertion whose goal says an answer fails a schema, with `["not", [schema, value]]` or `["not", ["schema/fits?", value, schema]]`, ends its message with where the answer it shows as an example does not fit.
 - A relation as the schema of a column is a foreign key. With `["schema", "Kin", {"parent": "person", "child": "person"}]` and `["relation", "parent", ["parent", "child"], {"schema": "Kin"}]`, a `parent` fact needs both people to be there, and retracting a person who is still a parent fails with `"child" must fit "person" but is "ben"`. One `fact` form can add a person and their parent together.
 - The option names a schema that is already declared, and is read as written, like the key. A row is a record of every column, so the schema names every column, or is a `schema/open` record that names some. Declaring the relation again with the option adds the invariant if the database does not hold it, and it must hold for the rows that are there.
 - Checking a write costs what its new rows cost. An invariant is asked again only after a change to a relation it reads, and one that says no row of a relation fails a test, as a relation's schema does, is asked about the new rows alone.
@@ -862,7 +879,7 @@ An empty list means `incoming` fits. Schemas are data like the rest of a Lion pr
 
 The default environment exported as `stdlib` namespaces entries as `<module>/<name>`.
 
-Every function takes a set number of arguments. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
+Every function says how many arguments it takes: most take a set number, and the ones at the end of this section take one or more, or any number after the ones they need. A call with any other number fails and says how many the function takes, so no argument is dropped and none is missing:
 
 ```json
 ["number/subtract", 10, 3, 1]
@@ -894,16 +911,20 @@ Six functions combine one or more arguments, as `+`, `*`, `min`, `max`, `string-
 ["number/ceiling", 2.1]
 ["number/round", 2.5]
 ["number/toString", 42]
+["number/toString", 1234567.5, ","]
+["number/fromString", "1,234,567.5", ","]
 ```
 
 Arithmetic whose result is not a finite number, such as division by zero, fails with `ArithmeticError`.
 
-`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With `string/concat` it builds text from a number, also from one a rule has bound:
+`number/toString` is the number as text, the way JSON writes it: `"42"`, `"-0.5"`, `"1e+21"`. With a second argument, a string, the whole part is written in groups of three digits with that string between them, as `#:group-sep` does in Racket: `["number/toString", 1234567.5, ","]` is `"1,234,567.5"`, and `["number/toString", -1234, " "]` is `"-1 234"`. The digits after the point and a number written with an exponent stay as they are. With `string/concat` it builds text from a number, also from one a rule has bound:
 
 ```json
 ["rule", ["label", "?id", ["string/concat", "order ", ["number/toString", "?id"]]],
   ["order", "?id", "?_"]]
 ```
+
+`number/fromString` reads text as a number, as `string->number` does in Scheme, and is `null` when the text is not one number: `["number/fromString", "-0.5"]` is `-0.5`, and `["number/fromString", "12 apples"]` is `null`. It reads what JSON writes, and also zeros before the digits and `"−"` as the minus sign. With a second argument, the whole part may be in groups of three digits with that string between them, so it reads back what `number/toString` writes with the same string: `["number/fromString", "1,234,567.5", ","]` is `1234567.5`, `"1234"` is still `1234`, and `"12,34"` is `null`. A number too large for JSON, such as `"1e999"`, is `null`.
 
 ### `boolean`
 
@@ -940,6 +961,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["array/make", 1, 2, 3]
 ["array/head", ["array/make", 1, 2, 3]]
 ["array/tail", ["array/make", 1, 2, 3]]
+["array/slice", ["array/make", 1, 2, 3, 4], 1, 3]
+["array/slice", ["array/make", 1, 2, 3, 4], -2]
 ["array/length", ["array/make", 1, 2, 3]]
 ["array/concat", ["array/make", 1, 2], ["array/make", 3, 4]]
 ["array/concat", ["array/make", 1], ["array/make", 2], ["array/make", 3]]
@@ -961,7 +984,21 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["string/endsWith", "lion", "on"]
 ["string/includes", "lion", "io"]
 ["string/indexOf", "lion", "o"]
+["string/join", ["array/make", "a", "b", "c"], ", "]
+["string/join", ["array/make", "a", "b", "c"], ", ", " and "]
+["string/split", "a,b,c", ","]
+["string/slice", "lionlang", 0, 4]
+["string/slice", "lionlang", -4]
+["string/padStart", "7", 2, "0"]
+["string/padEnd", "7", 3, "."]
+["string/numbers", "$1,250.5M in fiscal 2023-24, down -3%", ","]
 ```
+
+`string/join` is a list of strings with the separator between them: `"a, b, c"`. With a third string, that one stands before the last item in place of the separator, as `#:before-last` does in Racket: `"a, b and c"`, and `"a and b"` for two items. One item is itself, and an empty list is `""`. Every item must be a string, so a list of numbers is joined after `["array/map", numbers, "number/toString"]`.
+
+`string/split` is the parts of the text between each separator, as JavaScript splits: `["a", "b", "c"]`. Joining the parts with the same separator gives the text back. `string/slice` is the text from one position up to, but not including, another, as JavaScript's `slice` cuts it: `"lion"`. A negative position counts from the end, a position past either end stops there, and without the second position the part runs to the end: `"lang"`. `array/slice` cuts a list the same way, `[2, 3]` and `[3, 4]` above, so the two parts of a cut at any position join back into the whole. `string/padStart` and `string/padEnd` make the text as long as the number says by putting copies of the last argument before it or after it, as JavaScript does: `"07"` and `"7.."`. Text that is already that long is unchanged.
+
+`string/numbers` is every number written in the text, in order, each read as `number/fromString` reads it, with the same optional separator: the example is `[1250.5, 2023, 24, -3]`. A minus sign counts only where no letter, digit, or point stands right before it, so the range `2023-24` holds 2023 and 24, and `COVID-19` holds 19. Words for amounts, such as "million", are not read: `"$1.2 billion"` holds `1.2`. It is how a program can check that a figure was copied from the words it is said to come from, rather than worked out by whoever copied it.
 
 ### `object`
 
@@ -970,6 +1007,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ["object/get-path", {"a": {"b": {"c": 42}}}, "a.b.c"]
 ["object/keys", {"a": 1, "b": 2}]
 ["object/values", {"a": 1, "b": 2}]
+["object/set", {"a": 1}, "b", 2]
+["object/remove", {"a": 1, "b": 2}, "b"]
 ["object/json-stringify", {"a": 1}, null, 2]
 ["object/get-method", "obj", "methodName"]
 ["object/call-method", "obj", "methodName", 1, 2]
@@ -979,6 +1018,8 @@ Called on a list, each function combines it. Called on anything else, it waits f
 ```
 
 `object/get-path` understands dot paths and numeric array segments such as `"users.1.name"`.
+
+`object/set` and `object/remove` give a new record, as `hash-set` and `hash-remove` do in Racket: `{"a": 1, "b": 2}` with the key set to the value, and `{"a": 1}` without the key. The record they are given is unchanged, removing a key it does not hold gives the same record, and a key is any string a record can hold, so `"__proto__"` is refused.
 
 `object/json-stringify` writes any JSON value: a record, a list, a string, a number, a boolean, or `null`. The text of a string has its quotes, so `["object/json-stringify", "lion"]` is `"\"lion\""`, and the text of a number is the number, as `number/toString` gives it. The replacer and the indent are optional. A value JSON cannot write, such as a function, fails with `"number/add" has no JSON text.`
 
@@ -1063,7 +1104,7 @@ The `packages/agent` package is the clearest example. It injects:
 - Zod constructors
 - a renderer instance
 
-Then Lion code in [`packages/agent/src/agent.json`](/Users/andrueanderson/Workspace/TypeScript/lion/packages/agent/src/agent.json) uses:
+Then Lion code in [`packages/agent/src/agent.json`](https://github.com/andrueandersoncs/lion/blob/main/packages/agent/src/agent.json) uses:
 
 - `object/get-path` to traverse host APIs
 - `object/new` to construct classes
@@ -1144,20 +1185,16 @@ run(program, { ...stdlib, "my/outDegree": outDegree });
 
 In the program, `["my/outDegree", "edge", "?node", "?degree"]` is then a goal.
 
-## Development
+## More
 
-From the repo root:
+This page is the language part of [the README of Lion's repository](https://github.com/andrueandersoncs/lion#readme). That README goes on to:
 
-```bash
-bun install
-bun run prepare
-bun test
-bun run build
-```
-
-To work on a specific package:
-
-```bash
-turbo test --filter=@lionlang/core
-turbo dev --filter=@lionlang/repl
-```
+- [Packages](https://github.com/andrueandersoncs/lion#packages)
+- [Graph Editor](https://github.com/andrueandersoncs/lion#graph-editor)
+- [Command Line](https://github.com/andrueandersoncs/lion#command-line)
+- [TypeSafe AI and Jev](https://github.com/andrueandersoncs/lion#typesafe-ai-and-jev)
+- [Research Skill](https://github.com/andrueandersoncs/lion#research-skill)
+- [Reasoning Skill](https://github.com/andrueandersoncs/lion#reasoning-skill)
+- [Project Record](https://github.com/andrueandersoncs/lion#project-record)
+- [Development](https://github.com/andrueandersoncs/lion#development)
+- [Website](https://github.com/andrueandersoncs/lion#website)
