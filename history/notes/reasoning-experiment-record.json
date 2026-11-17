@@ -1,0 +1,137 @@
+{
+  "claims": [
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-belief-tries",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-direction-addresses",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-targets",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-fixed",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-unfixed",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "feature": "reasoning-carried",
+        "kind": "capability",
+        "present": true
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "behavior": "reasoning-expectation-after-files-put-back",
+        "is": "still-borne-out",
+        "area": "skills",
+        "was": "contradicted"
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "behavior": "reasoning-experiment-predicted-fixes",
+        "is": "fixed-or-unfixed-by-its-version",
+        "area": "skills"
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "behavior": "reasoning-direction-on-unrun-score",
+        "is": "carried",
+        "area": "skills"
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "behavior": "reasoning-standing-questions-experiments",
+        "is": "expected-fixes-open-problems-and-carried",
+        "area": "skills"
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    },
+    {
+      "quote": "The lion-reasoning skill records what each experiment was expected to fix, and says whether it did. A direction's notes list the problems it `addresses`, and a belief that `tries` a direction, such as `{\"id\": \"collapse-1\", \"tries\": \"collapse\", \"predicts\": [{\"question\": {\"case\": \"double spaces\", \"suite\": \"titles\"}, \"value\": \"pass\"}]}`, is what one experiment of it was expected to do, judged in the version it was recorded in and no other. Where it predicts a problem's question otherwise than the problem shows, the experiment `targets` the problem, which is `fixed` or `unfixed` by what that version answers. `carried` lists the directions whose experiments say nothing about a score, because none ran it with an earlier version to beat, as when the same eval is run under another model or a new benchmark arrives. Three standing questions ask what each experiment was expected to fix and whether it did, which problems still show though every direction that addresses them is set aside, and which directions are carried to a score. `bun run skill-eval` prints the models that ran each run, as `models: claude-opus-5-5`, so a run's model can be part of the score's question.",
+      "says": {
+        "behavior": "skill-eval-run-models",
+        "is": "printed",
+        "area": "skills"
+      },
+      "decisions": [
+        "experiment-expectation-in-its-version",
+        "direction-record-speaks-for-its-scores"
+      ]
+    }
+  ]
+}

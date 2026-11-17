@@ -207,6 +207,46 @@ A requirement keeps a score honest, as in [Scores and directions](../SKILL.md#sc
 
 Versions are of the one project the task folder is in, so run experiments one after another in it. Experiments in other checkouts, such as worktrees, have files the task's versions do not hold, and their runs speak for no version here.
 
+## Carrying an experiment loop to another model or benchmark
+
+A prompt, a skill, or an agent's harness that was tuned with one model on one set of evals is carried to another model or another set. What paid off before may not pay off there, and what was set aside may be worth another try. Declare the new setting as another score, since its runs are not comparable with the old ones, and ask what the record says about it. In the slug example of [What an experiment was expected to fix](../SKILL.md#what-an-experiment-was-expected-to-fix), two directions were tuned on a suite of titles, each change committed, and then a suite of names arrived:
+
+```bash
+node <skill>/scripts/see.mjs n3 -- node eval.mjs names        # on the files as they are: passed: 2 of 4
+```
+
+```json
+{"scores": [{"question": {"passed": "eval.mjs names"}, "better": "higher"}],
+ "observations": [
+   {"id": "n3-passed", "source": "n3", "quote": "passed: 2 of 4", "question": {"passed": "eval.mjs names"}, "value": 2}]}
+```
+
+`carried` then listed both directions for the new score: each had paid off on the titles, and no experiment of either had run the names with an earlier version to beat. To judge them, run the new score on the versions their experiments were made on and on the one before, by putting each version's files back:
+
+```bash
+git checkout 39db117 -- slug.mjs && node <skill>/scripts/see.mjs n1 -- node eval.mjs names   # before any change: passed: 1 of 4
+git checkout 0747385 -- slug.mjs && node <skill>/scripts/see.mjs n2 -- node eval.mjs names   # with collapse: passed: 2 of 4
+git checkout bcca23a -- slug.mjs                                                             # the present again
+```
+
+Each run is recorded as an observation of the new score. It speaks for the version whose files it ran on, whenever it was made, so the model then gave:
+
+```json
+{"improved": [
+   {"score": {"passed": "eval.mjs titles"}, "version": "v0002", "before": 3, "after": 4},
+   {"score": {"passed": "eval.mjs titles"}, "version": "v0003", "before": 4, "after": 5},
+   {"score": {"passed": "eval.mjs names"}, "version": "v0002", "before": 1, "after": 2}],
+ "paid": [
+   {"direction": "collapse", "version": "v0002", "score": {"passed": "eval.mjs titles"}},
+   {"direction": "collapse", "version": "v0002", "score": {"passed": "eval.mjs names"}},
+   {"direction": "trim", "version": "v0003", "score": {"passed": "eval.mjs titles"}}],
+ "carried": []}
+```
+
+`collapse` holds on the names too. `trim` was judged there and paid nothing: its version gave the 2 of 4 the version before it already gave. Neither is carried any longer. Commit each experiment, so its version can be put back; a version whose files you cannot put back cannot be run again.
+
+Keep the predictions with the record as well. A belief that `tries` a direction says which problems that experiment was expected to fix, and `fixed` and `unfixed` say which it did, so whoever continues the loop, under the new model or months later, reads why each change was made and what it did, not only that the score went up.
+
 ## What if
 
 A question never changes the model, so to see what would follow from something you have not observed, ask with it. In the bug above, what if `total` had turned out to keep no result?

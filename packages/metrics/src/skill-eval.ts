@@ -10,6 +10,8 @@ export interface Graded {
   readonly failures: readonly string[];
   readonly folder: string;
   readonly minutes: number | undefined;
+  /** The models that ran it, in order of name; none when it did not say. */
+  readonly models: readonly string[];
   readonly passed: number;
   readonly total: number;
   readonly turns: number | undefined;
@@ -20,6 +22,8 @@ export interface Spent {
   readonly costUsd: number | undefined;
   readonly error: boolean;
   readonly minutes: number | undefined;
+  /** The models the run used, in order of name; none when it did not say. */
+  readonly models: readonly string[];
   readonly turns: number | undefined;
 }
 
@@ -77,6 +81,7 @@ export const spentOf = (output: string): Spent => {
       costUsd: undefined,
       error: true,
       minutes: undefined,
+      models: [],
       turns: undefined,
     };
   }
@@ -90,10 +95,15 @@ export const spentOf = (output: string): Spent => {
         (message as { type?: unknown }).type === "result"
     ) as Record<string, unknown> | undefined;
   const ms = numberOr(result?.duration_ms);
+  const usage = result?.modelUsage;
   return {
     costUsd: numberOr(result?.total_cost_usd),
     error: result === undefined || result.is_error === true,
     minutes: ms === undefined ? undefined : ms / 60_000,
+    models:
+      typeof usage === "object" && usage !== null
+        ? Object.keys(usage).sort()
+        : [],
     turns: numberOr(result?.num_turns),
   };
 };
@@ -103,8 +113,9 @@ const fixed = (value: number | undefined, digits: number) =>
 
 /**
  * The lines a run prints: each one a question and its value, so the
- * reasoning skill can quote it as the observation of a score. A run with no
- * research folder passed nothing.
+ * reasoning skill can quote it as the observation of a score. The models
+ * that ran it are one of them, since runs under different models answer
+ * different questions. A run with no research folder passed nothing.
  */
 export const linesOf = (graded: Graded): string[] => [
   `run: ${graded.folder}`,
@@ -113,6 +124,7 @@ export const linesOf = (graded: Graded): string[] => [
   `cost usd: ${fixed(graded.costUsd, 2)}`,
   `minutes: ${fixed(graded.minutes, 1)}`,
   `turns: ${graded.turns ?? "unknown"}`,
+  `models: ${graded.models.length === 0 ? "unknown" : graded.models.join(", ")}`,
   ...graded.failures.map((failure) => `  failed  ${failure}`),
 ];
 

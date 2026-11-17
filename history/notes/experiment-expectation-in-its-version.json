@@ -1,0 +1,151 @@
+{
+  "title": "What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other",
+  "context": "A study of agents that improve their own harness (Self-Improvement Memory, arXiv 2611.18856) found that carrying a record of each problem, the edits tried for it, what each edit was predicted to fix, and what it did fix lets a later run improve further than carrying the harness alone, and that carrying the diagnoses without their evidence does not reliably help. The reasoning skill held the parts of such a record, problems, beliefs that predict, directions, and experiments, with nothing joining them: a direction did not say which problem it was for, and an experiment recorded its score and not what it was expected to do. An expectation written as a plain belief was also judged by every version from its own on, so putting the files back after an experiment contradicted an expectation that the experiment itself had borne out.",
+  "decision": "A belief may say which direction it `tries`, as an observation does. Such a belief is what one experiment of the direction was expected to do, and it is judged in the version it was formed in and no other. Where it predicts a problem's question otherwise than the problem shows, that experiment `targets` the problem; the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise. A direction `addresses` the problems its notes list and the problems its experiments target. Every other belief is judged as before.",
+  "consequences": "What an attempt was predicted to fix and what it fixed are derived from a belief's predictions, with no second kind of note, so `contradicted`, `borne_out`, `untested`, and `why` apply to them unchanged. The standing questions list what each experiment was expected to fix and whether it did, and the problems that still show though every direction addressing them is set aside. An expectation recorded before the change is judged in the unchanged project, where every fix it predicts comes out not fixed, so the skill says to make the change, then record the belief, then run.",
+  "alternatives": [
+    {
+      "option": "A note of its own for an attempt, with lists of the tasks predicted, fixed, and missed, as the study's record has",
+      "rejected": "An expectation about a change is already a belief with predictions; a second shape for it would need its own rules for which versions judge it, and `why` and the standing questions about beliefs would not see it."
+    },
+    {
+      "option": "Predictions on the direction itself",
+      "rejected": "A direction is recorded once and tried many times, so a prediction added later would judge the experiments made before it, after the fact."
+    },
+    {
+      "option": "Keep judging it by every version from its own on",
+      "rejected": "Putting the files back after a miss, or making the next experiment, contradicted an expectation the experiment had borne out."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "it is judged in the version it was formed in and no other",
+      "says": {
+        "decision": "reasoning-experiment-expectation-judging",
+        "chose": "its-own-version",
+        "over": [
+          "from-its-version-on",
+          "attempt-notes",
+          "predictions-on-the-direction"
+        ],
+        "because": "putting the files back after an experiment contradicted an expectation that the experiment itself had borne out",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "Such a belief is what one experiment of the direction was expected to do, and it is judged in the version it was formed in and no other. Where it predicts a problem's question otherwise than the problem shows, that experiment `targets` the problem; the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise.",
+      "says": {
+        "rule": "experiment-expectation-in-its-version",
+        "holds": true,
+        "statement": "A belief that tries a direction is judged in the version it was formed in and no other, and what its experiment fixed is what that version answers as it predicted",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-expectation-after-files-put-back",
+            "is": "still-borne-out"
+          },
+          {
+            "behavior": "reasoning-experiment-predicted-fixes",
+            "is": "fixed-or-unfixed-by-its-version"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Every other belief is judged as before.",
+      "says": {
+        "rule": "beliefs-judged-from-their-version",
+        "holds": true,
+        "statement": "A belief is judged by the evidence of every version from the one it was formed in on, an explanation by the versions where its problem shows, and a belief that tries a direction by the version it was formed in alone",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-non-explaining-belief-judged",
+            "is": "from-formed-version"
+          },
+          {
+            "behavior": "reasoning-belief-contradicted-in-earlier-version",
+            "is": "contradicted"
+          },
+          {
+            "behavior": "reasoning-explanation-after-fix",
+            "is": "not-contradicted"
+          },
+          {
+            "behavior": "reasoning-explaining-belief-judged",
+            "is": "where-problem-shows"
+          },
+          {
+            "behavior": "reasoning-expectation-after-files-put-back",
+            "is": "still-borne-out"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "putting the files back after an experiment contradicted an expectation that the experiment itself had borne out",
+      "says": {
+        "behavior": "reasoning-expectation-after-files-put-back",
+        "is": "still-borne-out",
+        "area": "skills",
+        "was": "contradicted"
+      }
+    },
+    {
+      "quote": "the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise",
+      "says": {
+        "behavior": "reasoning-experiment-predicted-fixes",
+        "is": "fixed-or-unfixed-by-its-version",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A direction `addresses` the problems its notes list and the problems its experiments target.",
+      "says": {
+        "behavior": "reasoning-direction-addresses",
+        "is": "listed-and-targeted",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A belief may say which direction it `tries`, as an observation does.",
+      "says": {
+        "feature": "reasoning-belief-tries",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A direction `addresses` the problems its notes list and the problems its experiments target.",
+      "says": {
+        "feature": "reasoning-direction-addresses",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "that experiment `targets` the problem",
+      "says": {
+        "feature": "reasoning-targets",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "the problem is `fixed` there when the version answers as predicted",
+      "says": {
+        "feature": "reasoning-fixed",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "`unfixed` when it answers otherwise",
+      "says": {
+        "feature": "reasoning-unfixed",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

@@ -180,6 +180,7 @@ checks failed: 6
 cost usd: 2.13
 minutes: 5.3
 turns: 28
+models: claude-opus-5-5
   failed  The page names no question a choice set aside or that has two senses: [["Questions the plan names that a choice set aside, or that have readings nobody chose between",[{"revenue":"tarnwell"},{"revenue":"tarnwell"}]]]
   failed  The report gives revenue as restated, $409.8M: no report.md
   failed  The report says the earlier figure was $412.6M: no report.md
@@ -215,6 +216,10 @@ node <lion-reasoning>/scripts/see.mjs d3 --about skills/lion-research -- 'git di
 ```
 
 Record each run's "checks passed", "checks failed", and "cost usd" as observations that `tries` the direction, and let the model say which version is best, whether the change cleared the spread of the runs, and where to spend the next run. Revert a miss with git: the runs of the version you return to speak for the present again.
+
+Say what each change is for. A check that fails is a problem, such as `{"id": "no-report", "question": {"check": "The report gives the gross margin, 26.4%"}, "value": "failed"}`, and before the run, a belief that `tries` the direction predicts which of them the change makes pass. The model then says which the experiment fixed and which it did not, beside whether the grade went up.
+
+A run prints the models that ran it, since a skill tuned under one model is not thereby tuned under another. When you pass `--model`, or the default model changes, put the model in the questions, as in `{"checks passed": "lion-research verifies-company-figures", "models": "claude-opus-5-5"}`, and declare them as scores of their own. `carried` then lists every direction whose record comes only from the other model, and running the eval under the new model on the version before a change and on the version with it says whether that change still helps.
 
 ## Tests
 

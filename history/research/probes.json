@@ -19679,7 +19679,14 @@
     "area": "logic",
     "program": [
       "begin",
-      ["relation", "order", ["id", "status"], { "key": "id" }],
+      [
+        "relation",
+        "order",
+        ["id", "status"],
+        {
+          "key": "id"
+        }
+      ],
       ["fact", ["order", 1, "shipped"], ["order", 2, "open"]],
       ["define", "before", ["snapshot"]],
       ["fact", ["order", 1, "open"], ["order", 1, "shipped"]],
@@ -19735,6 +19742,982 @@
         ["quote", "not-everywhere"]
       ],
       ["else", ["quote", "120-seconds-everywhere"]]
+    ]
+  },
+  {
+    "case": "reasoning-expectation-after-files-put-back",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "problem",
+          ["quote", "spaces"],
+          ["quote", "s"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 3],
+        [
+          "observed",
+          ["quote", "o1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "observed",
+          ["quote", "o2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ],
+        ["belief", ["quote", "e"], ["quote", "s"]],
+        ["since", ["quote", "e"], 2],
+        ["expects", ["quote", "collapse"], ["quote", "e"]],
+        [
+          "predicts",
+          ["quote", "e"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            [
+              "boolean/and",
+              [
+                "number/equals?",
+                ["array/length", ["find", "?x", ["holds", "?x"]]],
+                1
+              ],
+              [
+                "number/equals?",
+                [
+                  "array/length",
+                  [
+                    "find",
+                    "?x",
+                    ["contradicted", ["quote", "e"], "?_", "?_", "?_", "?x"]
+                  ]
+                ],
+                0
+              ]
+            ],
+            [
+              "number/equals?",
+              [
+                "array/length",
+                ["find", "?x", ["borne_out", ["quote", "e"], "?_", "?_", "?x"]]
+              ],
+              1
+            ]
+          ],
+          ["quote", "still-borne-out"]
+        ],
+        [
+          [
+            "number/greaterThan",
+            [
+              "array/length",
+              [
+                "find",
+                "?x",
+                ["contradicted", ["quote", "e"], "?_", "?_", "?_", "?x"]
+              ]
+            ],
+            0
+          ],
+          ["quote", "contradicted"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-experiment-predicted-fixes",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "problem",
+          ["quote", "spaces"],
+          ["quote", "s"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "problem",
+          ["quote", "mark"],
+          ["quote", "s"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 3],
+        ["direction", ["quote", "trim"], ["quote", "s"], 3],
+        ["addresses", ["quote", "trim"], ["quote", "mark"]],
+        [
+          "observed",
+          ["quote", "o1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "observed",
+          ["quote", "o2"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "observed",
+          ["quote", "o3"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ],
+        [
+          "observed",
+          ["quote", "o4"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        ["belief", ["quote", "e"], ["quote", "s"]],
+        ["since", ["quote", "e"], 2],
+        ["expects", ["quote", "collapse"], ["quote", "e"]],
+        [
+          "predicts",
+          ["quote", "e"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ],
+        [
+          "predicts",
+          ["quote", "e"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "pass"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            [
+              "boolean/and",
+              [
+                "schema/fits?",
+                [
+                  "query",
+                  [
+                    "fixed",
+                    "?direction",
+                    "?version",
+                    "?problem",
+                    ["quote", "o3"]
+                  ]
+                ],
+                [
+                  "quote",
+                  [
+                    {
+                      "direction": "collapse",
+                      "version": "v0002",
+                      "problem": "spaces"
+                    }
+                  ]
+                ]
+              ],
+              [
+                "schema/fits?",
+                [
+                  "query",
+                  [
+                    "unfixed",
+                    "?direction",
+                    "?version",
+                    "?problem",
+                    "?found",
+                    ["quote", "o4"]
+                  ]
+                ],
+                [
+                  "quote",
+                  [
+                    {
+                      "direction": "collapse",
+                      "version": "v0002",
+                      "problem": "mark",
+                      "found": "fail"
+                    }
+                  ]
+                ]
+              ]
+            ],
+            [
+              "number/equals?",
+              [
+                "array/length",
+                [
+                  "eval",
+                  [
+                    "object/get",
+                    ["repo/json", "skills/lion-reasoning/assets/checks.json"],
+                    [
+                      "quote",
+                      "What was each experiment expected to fix, and did it?"
+                    ]
+                  ]
+                ]
+              ],
+              2
+            ]
+          ],
+          ["quote", "fixed-or-unfixed-by-its-version"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-direction-addresses",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "problem",
+          ["quote", "spaces"],
+          ["quote", "s"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "problem",
+          ["quote", "mark"],
+          ["quote", "s"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 3],
+        ["direction", ["quote", "trim"], ["quote", "s"], 3],
+        ["addresses", ["quote", "trim"], ["quote", "mark"]],
+        [
+          "observed",
+          ["quote", "o1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "observed",
+          ["quote", "o2"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        [
+          "observed",
+          ["quote", "o3"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ],
+        [
+          "observed",
+          ["quote", "o4"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "fail"]
+        ],
+        ["belief", ["quote", "e"], ["quote", "s"]],
+        ["since", ["quote", "e"], 2],
+        ["expects", ["quote", "collapse"], ["quote", "e"]],
+        [
+          "predicts",
+          ["quote", "e"],
+          [
+            "quote",
+            {
+              "case": "double spaces"
+            }
+          ],
+          ["quote", "pass"]
+        ],
+        [
+          "predicts",
+          ["quote", "e"],
+          [
+            "quote",
+            {
+              "case": "trailing mark"
+            }
+          ],
+          ["quote", "pass"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            [
+              "number/equals?",
+              [
+                "array/length",
+                ["find", "?x", ["addresses", ["quote", "trim"], "?x"]]
+              ],
+              1
+            ],
+            [
+              "number/equals?",
+              [
+                "array/length",
+                ["find", "?x", ["addresses", ["quote", "collapse"], "?x"]]
+              ],
+              2
+            ]
+          ],
+          ["quote", "listed-and-targeted"]
+        ],
+        [
+          [
+            "number/equals?",
+            [
+              "array/length",
+              ["find", "?x", ["addresses", ["quote", "collapse"], "?x"]]
+            ],
+            0
+          ],
+          ["quote", "listed-only"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-direction-on-unrun-score",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 3],
+        [
+          "observed",
+          ["quote", "a1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 3]
+        ],
+        [
+          "observed",
+          ["quote", "a2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 4]
+        ],
+        ["tries", ["quote", "a2"], ["quote", "collapse"]],
+        [
+          "observed",
+          ["quote", "b2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", 2]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            ["query", ["carried", "?direction", "?score"]],
+            [
+              "quote",
+              [
+                {
+                  "direction": "collapse",
+                  "score": {
+                    "passed": "names"
+                  }
+                }
+              ]
+            ]
+          ],
+          ["quote", "carried"]
+        ],
+        [
+          [
+            "number/equals?",
+            ["array/length", ["find", "?x", ["carried", "?x", "?_"]]],
+            0
+          ],
+          ["quote", "not-listed"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-carried-direction-after-earlier-run",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 3],
+        [
+          "observed",
+          ["quote", "a1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 3]
+        ],
+        [
+          "observed",
+          ["quote", "a2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 4]
+        ],
+        ["tries", ["quote", "a2"], ["quote", "collapse"]],
+        [
+          "observed",
+          ["quote", "b2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", 2]
+        ],
+        [
+          "observed",
+          ["quote", "b1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", 1]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            [
+              "number/equals?",
+              ["array/length", ["find", "?x", ["carried", "?x", "?_"]]],
+              0
+            ],
+            [
+              "number/equals?",
+              [
+                "array/length",
+                [
+                  "find",
+                  "?x",
+                  [
+                    "paid_off",
+                    ["quote", "collapse"],
+                    "?x",
+                    [
+                      "quote",
+                      {
+                        "passed": "names"
+                      }
+                    ]
+                  ]
+                ]
+              ],
+              1
+            ]
+          ],
+          ["quote", "judged"]
+        ],
+        [
+          [
+            "number/greaterThan",
+            ["array/length", ["find", "?x", ["carried", "?x", "?_"]]],
+            0
+          ],
+          ["quote", "still-carried"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-patience-across-scores",
+    "area": "skills",
+    "program": [
+      "begin",
+      ["eval", ["repo/json", "skills/lion-reasoning/assets/core.json"]],
+      [
+        "fact",
+        ["version", ["quote", "v0001"], 1],
+        ["at", ["quote", "v0001"], ["quote", "src/slug.mjs"], ["quote", "h1"]],
+        ["version", ["quote", "v0002"], 2],
+        ["at", ["quote", "v0002"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["version", ["quote", "now"], 3],
+        ["at", ["quote", "now"], ["quote", "src/slug.mjs"], ["quote", "h2"]],
+        ["source", ["quote", "on-h1"], ["quote", "ran"], ["quote", "on-h1"]],
+        [
+          "about",
+          ["quote", "on-h1"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h1"]
+        ],
+        ["source", ["quote", "on-h2"], ["quote", "ran"], ["quote", "on-h2"]],
+        [
+          "about",
+          ["quote", "on-h2"],
+          ["quote", "src/slug.mjs"],
+          ["quote", "h2"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        [
+          "scored",
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", "higher"]
+        ],
+        ["direction", ["quote", "collapse"], ["quote", "s"], 1],
+        [
+          "observed",
+          ["quote", "a1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 3]
+        ],
+        [
+          "observed",
+          ["quote", "b1"],
+          ["quote", "on-h1"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", 1]
+        ],
+        [
+          "observed",
+          ["quote", "a2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "titles"
+            }
+          ],
+          ["quote", 3]
+        ],
+        ["tries", ["quote", "a2"], ["quote", "collapse"]],
+        [
+          "observed",
+          ["quote", "b2"],
+          ["quote", "on-h2"],
+          ["quote", "x"],
+          [
+            "quote",
+            {
+              "passed": "names"
+            }
+          ],
+          ["quote", 2]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            [
+              "number/equals?",
+              ["array/length", ["find", "?x", ["exhausted", "?x"]]],
+              0
+            ],
+            [
+              "number/equals?",
+              ["array/length", ["find", "?x", ["live", "?x"]]],
+              1
+            ]
+          ],
+          ["quote", "counted-over-every-score"]
+        ],
+        [
+          [
+            "number/equals?",
+            ["array/length", ["find", "?x", ["exhausted", "?x"]]],
+            1
+          ],
+          ["quote", "counted-for-each-score"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "reasoning-standing-questions-experiments",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "boolean/and",
+            [
+              "string/includes",
+              ["repo/read", "skills/lion-reasoning/assets/checks.json"],
+              "What was each experiment expected to fix, and did it?"
+            ],
+            [
+              "string/includes",
+              ["repo/read", "skills/lion-reasoning/assets/checks.json"],
+              "Which problems still show, though every direction that addresses them is set aside?"
+            ]
+          ],
+          [
+            "string/includes",
+            ["repo/read", "skills/lion-reasoning/assets/checks.json"],
+            "Which directions' experiments say nothing about a score, because none ran it with an earlier version to beat?"
+          ]
+        ],
+        ["quote", "expected-fixes-open-problems-and-carried"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "skill-eval-run-models",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", "packages/metrics/src/skill-eval.ts"],
+          "`models: ${"
+        ],
+        ["quote", "printed"]
+      ],
+      ["else", ["quote", "not-printed"]]
     ]
   }
 ]

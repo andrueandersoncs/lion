@@ -53,14 +53,25 @@ describe("the skill eval's cost", () => {
     {
       cost: between(0, 2000),
       error: between(0, 1),
+      models: Arbitrary.array(element(["opus", "haiku", "fable"]), {
+        maxLength: 3,
+      }),
       ms: between(0, 4_000_000),
       shape: between(0, 2),
       turns: between(1, 150),
     },
-    ({ cost, error, ms, shape, turns }) => {
+    ({ cost, error, models, ms, shape, turns }) => {
       const result = {
         duration_ms: ms,
         is_error: error === 1,
+        // No models at all is a result message that does not say.
+        ...(models.length === 0
+          ? {}
+          : {
+              modelUsage: Object.fromEntries(
+                models.map((model) => [model, { costUSD: 1 }])
+              ),
+            }),
         num_turns: turns,
         total_cost_usd: cost / 100,
         type: "result",
@@ -77,12 +88,14 @@ describe("the skill eval's cost", () => {
               costUsd: undefined,
               error: true,
               minutes: undefined,
+              models: [],
               turns: undefined,
             }
           : {
               costUsd: cost / 100,
               error: error === 1,
               minutes: ms / 60_000,
+              models: [...new Set(models)].sort(),
               turns,
             }
       );
@@ -96,27 +109,32 @@ describe("the skill eval's lines", () => {
     {
       cost: between(0, 2000),
       failures: Arbitrary.array(text(CHECK_TEXT), { maxLength: 3 }),
+      models: Arbitrary.array(element(["fable", "haiku", "opus"]), {
+        maxLength: 2,
+      }),
       passed: between(0, 30),
       turns: between(1, 150),
     },
-    ({ cost, failures, passed, turns }) => {
+    ({ cost, failures, models, passed, turns }) => {
       const graded = {
         costUsd: cost / 100,
         failures,
         folder: "out/run",
         minutes: 12.34,
+        models,
         passed,
         total: passed + failures.length,
         turns,
       };
       const lines = linesOf(graded);
-      expect(lines.slice(0, 6)).toEqual([
+      expect(lines.slice(0, 7)).toEqual([
         "run: out/run",
         `checks passed: ${passed} of ${passed + failures.length}`,
         `checks failed: ${failures.length}`,
         `cost usd: ${(cost / 100).toFixed(2)}`,
         "minutes: 12.3",
         `turns: ${turns}`,
+        `models: ${models.length === 0 ? "unknown" : models.join(", ")}`,
       ]);
       expect(gradeOf(lines.join("\n")).failures).toEqual(failures);
     }

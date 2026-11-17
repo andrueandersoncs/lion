@@ -84,6 +84,8 @@
   ],
   ["relation", "tries", ["observation", "direction"]],
   ["relation", "needs", ["direction", "question", "value"]],
+  ["relation", "expects", ["direction", "belief"]],
+  ["relation", "addresses", ["direction", "problem"]],
   ["relation", "valid", ["observation", "version"]],
   [
     "relation",
@@ -141,6 +143,15 @@
   ["relation", "ruled_out", ["direction", "question", "needed", "found"]],
   ["relation", "live", ["direction"]],
   ["relation", "progress", ["direction", "tried", "paid_off", "misses"]],
+  ["relation", "aims", ["belief", "problem", "question", "predicted"]],
+  ["relation", "targets", ["direction", "version", "problem", "belief"]],
+  ["relation", "fixed", ["direction", "version", "problem", "observation"]],
+  [
+    "relation",
+    "unfixed",
+    ["direction", "version", "problem", "found", "observation"]
+  ],
+  ["relation", "carried", ["direction", "score"]],
   [
     "invariant",
     [
@@ -341,6 +352,35 @@
     "invariant",
     [
       "and",
+      ["expects", "?d", "?b"],
+      ["not", ["and", ["direction", "?d", "?_", "?_"], ["belief", "?b", "?_"]]]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
+      ["addresses", "?d", "?p"],
+      [
+        "not",
+        [
+          "and",
+          ["direction", "?d", "?_", "?_"],
+          ["problem", "?p", "?_", "?_", "?_"]
+        ]
+      ]
+    ],
+    {
+      "assert": "none"
+    }
+  ],
+  [
+    "invariant",
+    [
+      "and",
       ["requires", "?s", "?q", "?_"],
       ["not", ["and", ["scored", "?s", "?_"], ["value/object?", "?q"]]]
     ],
@@ -455,9 +495,17 @@
     ["judged_in", "?b", "?v"],
     ["belief", "?b", "?_"],
     ["not", ["and", ["explains", "?b", "?p"], ["occurs", "?p", "?_"]]],
+    ["not", ["expects", "?_", "?b"]],
     ["judged_from", "?b", "?first"],
     ["version", "?v", "?n"],
     ["number/greaterThanOrEqualTo", "?n", "?first"]
+  ],
+  [
+    "rule",
+    ["judged_in", "?b", "?v"],
+    ["expects", "?_", "?b"],
+    ["judged_from", "?b", "?n"],
+    ["version", "?v", "?n"]
   ],
   [
     "rule",
@@ -762,6 +810,52 @@
       ]
     ],
     ["direction", "?d", "?_", "?_"]
+  ],
+  [
+    "rule",
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["predicts", "?b", "?q", "?predicted"],
+    ["problem", "?p", "?_", "?q", "?shows"],
+    ["not", ["=", "?predicted", "?shows"]]
+  ],
+  [
+    "rule",
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["expects", "?d", "?b"],
+    ["judged_from", "?b", "?n"],
+    ["version", "?v", "?n"],
+    ["aims", "?b", "?p", "?_", "?_"]
+  ],
+  ["rule", ["addresses", "?d", "?p"], ["targets", "?d", "?_", "?p", "?_"]],
+  [
+    "rule",
+    ["fixed", "?d", "?v", "?p", "?o"],
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?predicted", "?o"]
+  ],
+  [
+    "rule",
+    ["unfixed", "?d", "?v", "?p", "?found", "?o"],
+    ["targets", "?d", "?v", "?p", "?b"],
+    ["aims", "?b", "?p", "?q", "?predicted"],
+    ["answer_in", "?v", "?q", "?found", "?o"],
+    ["not", ["=", "?found", "?predicted"]]
+  ],
+  [
+    "rule",
+    ["carried", "?d", "?q"],
+    ["experiment", "?d", "?_"],
+    ["scored", "?q", "?_"],
+    [
+      "not",
+      [
+        "and",
+        ["experiment", "?d", "?v"],
+        ["answer_in", "?v", "?q", "?_", "?_"],
+        ["sure_before", "?v", "?q", "?_", "?_"]
+      ]
+    ]
   ],
   "ready"
 ]

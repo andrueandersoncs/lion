@@ -1,0 +1,79 @@
+{
+  "title": "A direction's record says nothing about a score none of its experiments ran with an earlier version to beat",
+  "context": "The same study continued a loop after the model or the benchmark changed, and found that a harness tuned under one model can start below the untouched one under another, so what paid off before has to be judged again. In the reasoning skill a score's question already holds what makes two runs comparable, so a new model or benchmark is another score, and its runs are never compared with the old ones. A direction's payoffs, misses, and patience were counted over every score together, so nothing told a direction that had been judged on a score from one whose record came only from another.",
+  "decision": "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat. A new model, benchmark, machine, or budget stays what it was, another score, and takes no word of its own. A carried direction is judged on the new score by running that score on the version before its experiment and on the experiment's version, since a run speaks for the version whose files it ran on, whenever it was made. Patience is counted as before, over every score.",
+  "consequences": "The standing questions list the directions whose record is only carried over to a score, with their record. After the score is run on the earlier versions, `improved` and `paid_off` say whether each change helps there, and the direction is carried no longer. A direction set aside under the old score stays set aside; when it is carried, its misses were all on another score, which the agent can take as a reason to try it once more. A version whose files cannot be put back cannot be run again, so the skill says to commit each experiment.",
+  "alternatives": [
+    {
+      "option": "Count patience for each score apart, so a direction set aside under one model is live again under another",
+      "rejected": "Directions and the research skill's leads share one rule for when to stop, and patience is a budget on the idea; the carried list tells the agent the same thing without a second way of counting."
+    },
+    {
+      "option": "A setting field on scores or observations, naming the model and the benchmark",
+      "rejected": "The score's question already holds what makes two runs comparable; a second place for it could disagree with the first."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat.",
+      "says": {
+        "decision": "reasoning-direction-record-across-scores",
+        "chose": "carried-list",
+        "over": ["patience-per-score", "setting-field"],
+        "because": "the score's question already holds what makes two runs comparable, and directions and leads share one rule for when to stop",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat.",
+      "says": {
+        "rule": "direction-record-speaks-for-its-scores",
+        "holds": true,
+        "statement": "A direction's record says nothing about a score none of its experiments ran with an earlier version to beat",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "reasoning-direction-on-unrun-score",
+            "is": "carried"
+          },
+          {
+            "behavior": "reasoning-carried-direction-after-earlier-run",
+            "is": "judged"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat.",
+      "says": {
+        "behavior": "reasoning-direction-on-unrun-score",
+        "is": "carried",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "After the score is run on the earlier versions, `improved` and `paid_off` say whether each change helps there, and the direction is carried no longer.",
+      "says": {
+        "behavior": "reasoning-carried-direction-after-earlier-run",
+        "is": "judged",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "Patience is counted as before, over every score.",
+      "says": {
+        "behavior": "reasoning-patience-across-scores",
+        "is": "counted-over-every-score",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "`carried` lists each direction that has experiments",
+      "says": {
+        "feature": "reasoning-carried",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

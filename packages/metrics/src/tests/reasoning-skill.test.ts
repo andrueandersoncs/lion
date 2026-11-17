@@ -642,20 +642,43 @@ interface Trial {
   readonly asked: readonly string[];
   readonly better: Readonly<Record<string, Better>>;
   readonly directions: readonly {
+    /** The problems it says it addresses. */
+    readonly addresses: readonly string[];
     readonly id: string;
     readonly needs: readonly [string, boolean] | undefined;
     readonly patience: number;
+  }[];
+  /**
+   * Beliefs formed in a version, numbered from 1, or in none when 0. One
+   * that `tries` a direction is what an experiment of it was expected to do.
+   */
+  readonly expectations: readonly {
+    readonly id: string;
+    readonly predicts: readonly (readonly [string, number | boolean])[];
+    readonly since: number;
+    readonly tries: string | undefined;
   }[];
   /** Whether the first score counts only where the check is 0. */
   readonly guarded: boolean;
   /** What the watched path holds in each version, numbered from 1. */
   readonly hashes: readonly number[];
+  /** Things wrong, each the question and the value that show it. */
+  readonly problems: readonly {
+    readonly id: string;
+    readonly question: string;
+    readonly value: number | boolean;
+  }[];
   readonly runs: readonly Run[];
 }
 
 const SCORES = ["q0", "q1"];
 const CHECK = "g";
 const NEEDS = ["n0", "n1"];
+/** What a problem can be about: the check, or a question with a yes or no. */
+const TROUBLES = [CHECK, "n0"];
+/** The value a question of a run takes for a number from a generator. */
+const answerFor = (q: string, value: number) =>
+  q.startsWith("n") ? value % 2 === 1 : value % 2;
 const questionOf = (q: string) =>
   q.startsWith("n") ? { need: q } : { topic: q };
 
@@ -663,7 +686,10 @@ const questionOf = (q: string) =>
  * A few versions of one watched path, scores of both kinds run in them,
  * a check the first score may require, and directions whose experiments
  * are some of those runs, some needing a question the user may answer.
- * Values are few, so versions often tie, improve, and fall back.
+ * Values are few, so versions often tie, improve, and fall back. Problems
+ * show on the check and on a yes-or-no question; directions say which they
+ * address, and beliefs formed in a version predict answers, some of them as
+ * what an experiment of a direction was expected to do.
  */
 const trial: Arbitrary.Arbitrary<Trial> = Arbitrary.map(
   Arbitrary.all({
@@ -671,34 +697,69 @@ const trial: Arbitrary.Arbitrary<Trial> = Arbitrary.map(
     better: Arbitrary.array(between(0, 1), { minLength: 2, maxLength: 2 }),
     directions: Arbitrary.array(
       Arbitrary.all({
+        addresses: between(0, 3),
         needs: between(0, 3),
         patience: between(1, 2),
         value: between(0, 1),
       }),
-      { maxLength: 3 }
+      { minLength: 1, maxLength: 3 }
+    ),
+    expectations: Arbitrary.array(
+      Arbitrary.all({
+        predicts: Arbitrary.array(
+          Arbitrary.all([between(0, 4), between(0, 1)]),
+          { minLength: 1, maxLength: 3 }
+        ),
+        since: between(0, 5),
+        tries: between(0, 2),
+      }),
+      { maxLength: 4 }
     ),
     guarded: between(0, 1),
     hashes: Arbitrary.array(between(0, 3), { minLength: 2, maxLength: 5 }),
+    problems: Arbitrary.array(Arbitrary.all([between(0, 1), between(0, 1)]), {
+      minLength: 1,
+      maxLength: 3,
+    }),
     runs: Arbitrary.array(
       Arbitrary.all({
         at: between(0, 9),
         kind: element([...KINDS]),
-        question: between(0, 6),
+        question: between(0, 9),
         tries: between(0, 4),
         user: between(0, 1),
         value: between(0, 9),
       }),
-      { maxLength: 12 }
+      { maxLength: 14 }
     ),
   }),
-  ({ asked, better, directions, guarded, hashes, runs }) => {
+  ({
+    asked,
+    better,
+    directions,
+    expectations,
+    guarded,
+    hashes,
+    problems,
+    runs,
+  }) => {
     const ids = directions.map((_, at) => `d${at}`);
+    const troubles = problems.map(([q, value], at) => ({
+      id: `p${at}`,
+      question: TROUBLES[q] as string,
+      value: answerFor(TROUBLES[q] as string, value),
+    }));
     return {
       asked: [...new Set(asked.map((at) => NEEDS[at] as string))],
       better: Object.fromEntries(
         SCORES.map((q, at) => [q, better[at] === 0 ? "lower" : "higher"])
       ),
       directions: directions.map((direction, at) => ({
+        addresses: troubles
+          .filter(
+            (_, which) => Math.floor(direction.addresses / 2 ** which) % 2
+          )
+          .map((problem) => problem.id),
         id: ids[at] as string,
         needs:
           direction.needs < 2
@@ -706,12 +767,36 @@ const trial: Arbitrary.Arbitrary<Trial> = Arbitrary.map(
             : undefined,
         patience: direction.patience,
       })),
+      expectations: expectations.map((expectation, at) => ({
+        id: `e${at}`,
+        predicts: unique(
+          expectation.predicts.map(([q, value]) => {
+            const question = [...TROUBLES, "q1", ...TROUBLES][q] as string;
+            return [
+              question,
+              question === "q1" ? value : answerFor(question, value),
+            ] as const;
+          })
+        ),
+        since: Math.min(expectation.since, hashes.length),
+        tries: ids[expectation.tries],
+      })),
       guarded: guarded === 1,
       hashes,
+      problems: troubles,
       runs: runs.map((run, at) => {
-        const question = ["q0", "q1", CHECK, "n0", "n1", "q0", "q1"][
-          run.question
-        ] as string;
+        const question = [
+          "q0",
+          "q1",
+          CHECK,
+          "n0",
+          "n1",
+          "q0",
+          "q1",
+          CHECK,
+          "n0",
+          CHECK,
+        ][run.question] as string;
         const needed = question.startsWith("n");
         const byUser = needed && run.user === 1;
         let value: number | boolean = run.value;
@@ -786,8 +871,35 @@ const trialProgram = (given: Trial) => {
       ...(given.guarded
         ? [["requires", quoted(questionOf("q0")), quoted(questionOf(CHECK)), 0]]
         : []),
+      ...given.problems.map((problem) => [
+        "problem",
+        quoted(problem.id),
+        quoted("s"),
+        quoted(questionOf(problem.question)),
+        problem.value,
+      ]),
+      ...given.expectations.flatMap((expectation) => [
+        ["belief", quoted(expectation.id), quoted("s")],
+        ...(expectation.since === 0
+          ? []
+          : [["since", quoted(expectation.id), expectation.since]]),
+        ...expectation.predicts.map(([q, value]) => [
+          "predicts",
+          quoted(expectation.id),
+          quoted(questionOf(q)),
+          value,
+        ]),
+        ...(expectation.tries === undefined
+          ? []
+          : [["expects", quoted(expectation.tries), quoted(expectation.id)]]),
+      ]),
       ...given.directions.flatMap((direction) => [
         ["direction", quoted(direction.id), quoted("s"), direction.patience],
+        ...direction.addresses.map((problem) => [
+          "addresses",
+          quoted(direction.id),
+          quoted(problem),
+        ]),
         ...(direction.needs === undefined
           ? []
           : [
@@ -809,16 +921,31 @@ const trialProgram = (given: Trial) => {
       ]),
     ],
     {
+      addresses: ask(["?d", "?p"], ["addresses", "?d", "?p"]),
       best: ask(["?q", "?v"], ["best", "?q", "?v"]),
       blocked: ask(["?d", "?q"], ["blocked", "?d", "?q"]),
+      borne: ask(
+        ["?b", "?q", "?v", "?o"],
+        ["borne_out", "?b", "?q", "?v", "?o"]
+      ),
+      carried: ask(["?d", "?q"], ["carried", "?d", "?q"]),
+      contradicted: ask(
+        ["?b", "?q", "?p", "?f", "?o"],
+        ["contradicted", "?b", "?q", "?p", "?f", "?o"]
+      ),
       disputed: ask(["?q", "?vs"], ["disputed", "?q", "?vs"]),
       exhausted: ["find", "?d", ["exhausted", "?d"]],
       experiment: ask(["?d", "?v"], ["experiment", "?d", "?v"]),
+      fixed: ask(["?d", "?v", "?p", "?o"], ["fixed", "?d", "?v", "?p", "?o"]),
       improved: ask(
         ["?q", "?v", "?b", "?a"],
         ["improved", "?q", "?v", "?b", "?a"]
       ),
       live: ["find", "?d", ["live", "?d"]],
+      unfixed: ask(
+        ["?d", "?v", "?p", "?f", "?o"],
+        ["unfixed", "?d", "?v", "?p", "?f", "?o"]
+      ),
       paid: ask(["?d", "?v", "?q"], ["paid_off", "?d", "?v", "?q"]),
       progress: ask(
         ["?d", "?t", "?p", "?m"],
@@ -833,6 +960,10 @@ const trialProgram = (given: Trial) => {
         ["?v", "?q", "?b", "?w"],
         ["score_in", "?v", "?q", "?b", "?w"]
       ),
+      targets: ask(
+        ["?d", "?v", "?p", "?b"],
+        ["targets", "?d", "?v", "?p", "?b"]
+      ),
       unmet: ask(["?v", "?s", "?q", "?n"], ["unmet", "?v", "?s", "?q", "?n"]),
     },
   ];
@@ -846,7 +977,12 @@ const trialProgram = (given: Trial) => {
  * experiment is the first version its run speaks for; it misses when it
  * improves nothing, and a direction is set aside after as many misses in a
  * row as its patience, when the user has not decided what it needs, or when
- * what it needs is answered otherwise.
+ * what it needs is answered otherwise. Its experiments say nothing about a
+ * score that none of them ran with an earlier version to beat. A belief that
+ * tries a direction is judged in the version it was formed in and no other;
+ * where it predicts a problem's question otherwise than the problem shows,
+ * that experiment targets the problem, and fixed it or not by what the
+ * version answers.
  */
 const trialExpected = (given: Trial) => {
   const names = namesOf(given.hashes);
@@ -975,12 +1111,89 @@ const trialExpected = (given: Trial) => {
     .filter((direction) => missesOf(direction.id).length >= direction.patience)
     .map((direction) => direction.id);
   const now = (q: string) => rangeIn(NOW, q);
+  const formedIn = (since: number) =>
+    since === 0 ? [] : [names[since - 1] as string];
+  const judgedIn = (expectation: Trial["expectations"][number]) =>
+    expectation.tries === undefined
+      ? unique(names.filter((_, at) => at + 1 >= expectation.since))
+      : formedIn(expectation.since);
+  const judged = given.expectations.flatMap((expectation) =>
+    expectation.predicts.flatMap(([q, predicted]) =>
+      judgedIn(expectation).flatMap((name) =>
+        answersIn(name)
+          .filter((run) => run.question === q)
+          .map((run) => ({ expectation, name, predicted, q, run }))
+      )
+    )
+  );
+  const targets = given.expectations.flatMap((expectation) =>
+    expectation.tries === undefined
+      ? []
+      : expectation.predicts.flatMap(([q, predicted]) =>
+          given.problems
+            .filter(
+              (problem) =>
+                problem.question === q && !same(problem.value, predicted)
+            )
+            .flatMap((problem) =>
+              formedIn(expectation.since).map((name) => ({
+                direction: expectation.tries as string,
+                expectation,
+                name,
+                predicted,
+                problem,
+              }))
+            )
+        )
+  );
+  const outcomes = targets.flatMap((target) =>
+    answersIn(target.name)
+      .filter((run) => run.question === target.problem.question)
+      .map((run) => ({ ...target, run }))
+  );
   return {
+    addresses: unique([
+      ...given.directions.flatMap((direction) =>
+        direction.addresses.map((problem) => [direction.id, problem])
+      ),
+      ...targets.map((target) => [target.direction, target.problem.id]),
+    ]),
     best: SCORES.flatMap((q) => {
       const best = bestOf(q);
       return best === undefined ? [] : [[questionOf(q), best]];
     }),
     blocked: given.directions.flatMap(blockedOf),
+    borne: judged
+      .filter(({ predicted, run }) => same(run.value, predicted))
+      .map(({ expectation, predicted, q, run }) => [
+        expectation.id,
+        questionOf(q),
+        predicted,
+        run.id,
+      ]),
+    // A direction's experiments speak for a score when one of them ran it in
+    // a version that an earlier version's runs can be compared with.
+    carried: given.directions.flatMap((direction) =>
+      experimentsOf(direction.id).length === 0
+        ? []
+        : SCORES.filter(
+            (q) =>
+              !experimentsOf(direction.id).some(
+                (name) =>
+                  valuesIn(name, q).length > 0 &&
+                  ranges(q, (u) => first(u) < first(name)).length > 0
+              )
+          ).map((q) => [direction.id, questionOf(q)])
+    ),
+    contradicted: judged
+      .filter(({ predicted, run }) => !same(run.value, predicted))
+      .map(({ expectation, predicted, q, run }) => [
+        expectation.id,
+        questionOf(q),
+        predicted,
+        run.value,
+        run.id,
+      ]),
     // The runs of a score differ by nature; only other questions are disputed.
     disputed: [CHECK, ...NEEDS].flatMap((q) => {
       const values = unique(answersNow(q));
@@ -990,6 +1203,14 @@ const trialExpected = (given: Trial) => {
     experiment: given.directions.flatMap((direction) =>
       experimentsOf(direction.id).map((name) => [direction.id, name])
     ),
+    fixed: outcomes
+      .filter(({ predicted, run }) => same(run.value, predicted))
+      .map(({ direction, name, problem, run }) => [
+        direction,
+        name,
+        problem.id,
+        run.id,
+      ]),
     improved,
     live: given.directions
       .filter(
@@ -999,6 +1220,15 @@ const trialExpected = (given: Trial) => {
           ruledOf(direction).length === 0
       )
       .map((direction) => direction.id),
+    unfixed: outcomes
+      .filter(({ predicted, run }) => !same(run.value, predicted))
+      .map(({ direction, name, problem, run }) => [
+        direction,
+        name,
+        problem.id,
+        run.value,
+        run.id,
+      ]),
     paid: given.directions.flatMap((direction) => paidOf(direction.id)),
     progress: given.directions.map((direction) => [
       direction.id,
@@ -1030,6 +1260,14 @@ const trialExpected = (given: Trial) => {
             : [name, questionOf(q), range[1], range[0]],
         ];
       })
+    ),
+    targets: unique(
+      targets.map((target) => [
+        target.direction,
+        target.name,
+        target.problem.id,
+        target.expectation.id,
+      ])
     ),
     unmet: versions.flatMap((name) =>
       unmet(name, "q0") ? [[name, questionOf("q0"), questionOf(CHECK), 0]] : []
@@ -1100,7 +1338,7 @@ describe("the reasoning skill's scores and directions", () => {
   );
 
   it.effect.prop(
-    "derive what a plain model of ranges, improvements, and patience derives",
+    "derive what a plain model of ranges, improvements, patience, and what each experiment was expected to fix derives",
     { given: trial },
     ({ given }) =>
       Effect.gen(function* () {
@@ -1128,8 +1366,10 @@ interface Notes {
       readonly value: unknown;
     }[];
     readonly statement: string;
+    readonly tries?: string;
   }[];
   readonly directions?: readonly {
+    readonly addresses?: readonly string[];
     readonly id: string;
     readonly needs?: readonly {
       readonly question: unknown;
@@ -1350,7 +1590,7 @@ describe("the reasoning skill's recorder", () => {
   );
 
   it.effect.prop(
-    "records scores, what they require, directions, what they need, and experiments as data, with a patience of 3 unless a direction says",
+    "records scores, what they require, directions, what they need and address, and experiments with what they were expected to do as data, with a patience of 3 unless a direction says",
     {
       names: Arbitrary.array(word, { minLength: 1, maxLength: 3 }),
       patience: Arbitrary.array(between(0, 4), { minLength: 3, maxLength: 3 }),
@@ -1361,8 +1601,15 @@ describe("the reasoning skill's recorder", () => {
         const { sourcesOf, stepOf } = yield* Effect.promise(() => recorder);
         const ids = [...new Set(names)];
         const notes: Notes = {
-          beliefs: [],
+          beliefs: ids.map((id) => ({
+            explains: [],
+            id: `b-${id}`,
+            predicts: [],
+            statement: say,
+            tries: `d-${id}`,
+          })),
           directions: ids.map((id, at) => ({
+            addresses: [`p-${id}`],
             id: `d-${id}`,
             needs: [{ question: { [say]: id }, value: [say] }],
             statement: say,
@@ -1377,7 +1624,12 @@ describe("the reasoning skill's recorder", () => {
             tries: `d-${id}`,
             value: at,
           })),
-          problems: [],
+          problems: ids.map((id) => ({
+            id: `p-${id}`,
+            question: { [say]: id },
+            statement: say,
+            value: say,
+          })),
           scores: ids.map((id, at) => ({
             better: at % 2 === 0 ? "lower" : "higher",
             question: { [say]: [say, at] },
@@ -1396,10 +1648,12 @@ describe("the reasoning skill's recorder", () => {
           core,
           stepOf(notes, sources, 1),
           {
+            addresses: ask(["?d", "?p"], ["addresses", "?d", "?p"]),
             directions: ask(
               ["?d", "?s", "?p"],
               ["direction", "?d", "?s", "?p"]
             ),
+            expects: ask(["?d", "?b"], ["expects", "?d", "?b"]),
             needs: ask(["?d", "?q", "?v"], ["needs", "?d", "?q", "?v"]),
             requires: ask(["?s", "?q", "?v"], ["requires", "?s", "?q", "?v"]),
             scored: ask(["?q", "?b"], ["scored", "?q", "?b"]),
@@ -1408,11 +1662,18 @@ describe("the reasoning skill's recorder", () => {
         ]);
         expect(outcome.ok ? asSets(outcome.value as never) : outcome).toEqual(
           asSets({
+            addresses: notes.directions?.flatMap((direction) =>
+              (direction.addresses ?? []).map((problem) => [
+                direction.id,
+                problem,
+              ])
+            ),
             directions: notes.directions?.map((direction) => [
               direction.id,
               direction.statement,
               direction.patience ?? 3,
             ]),
+            expects: notes.beliefs.map((belief) => [belief.tries, belief.id]),
             needs: notes.directions?.flatMap((direction) =>
               (direction.needs ?? []).map((need) => [
                 direction.id,

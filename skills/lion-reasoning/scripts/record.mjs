@@ -16,13 +16,16 @@
 //                  "question": {…}, "value": …}],
 //    "beliefs": [{"id": "b1", "statement": "…",
 //                 "predicts": [{"question": {…}, "value": …}],
-//                 "explains": ["p1"]}],
+//                 "explains": ["p1"]},
+//                {"id": "e1", "statement": "…", "tries": "cache",
+//                 "predicts": [{"question": {…}, "value": …}]}],
 //    "needed": [{"cause of": "p1"}],
 //    "ask": [{"question": {"keep": "old date format"}, "of": "user"}],
 //    "scores": [{"question": {"ms": "bench parse"}, "better": "lower",
 //                "requires": [{"question": {"failing tests": "core"},
 //                              "value": 0}]}],
 //    "directions": [{"id": "cache", "statement": "…", "patience": 3,
+//                    "addresses": ["p1"],
 //                    "needs": [{"question": {…}, "value": …}]}]}
 //
 // `ask` lists questions only one source may settle, the user unless `of`
@@ -31,7 +34,10 @@
 // `directions` the ideas you try to improve them with; an observation that
 // `tries` a direction is an experiment of it. A direction's patience is how
 // many experiments in a row may improve no score before it is set aside,
-// 3 unless it says.
+// 3 unless it says. A direction `addresses` the problems it is meant to
+// fix. A belief that `tries` a direction is what you expect of the change
+// you just made for it: it is judged in the version it was recorded in and
+// no other, so record it after the change and before the run.
 //
 // A source run with see.mjs needs no entry in "sources": it is taken from
 // seen/<id>.json, with the hashes of what it depended on when it ran. A
@@ -165,6 +171,9 @@ export const stepOf = (notes, sources, version) => [
         quoted(direction.statement ?? ""),
         quoted(direction.patience ?? PATIENCE),
       ],
+      ...[direction.addresses ?? []]
+        .flat()
+        .map((problem) => ["addresses", quoted(direction.id), quoted(problem)]),
       ...(direction.needs ?? []).map(({ question, value }) => [
         "needs",
         quoted(direction.id),
@@ -191,6 +200,9 @@ export const stepOf = (notes, sources, version) => [
       ...[belief.explains ?? []]
         .flat()
         .map((problem) => ["explains", quoted(belief.id), quoted(problem)]),
+      ...[belief.tries ?? []]
+        .flat()
+        .map((direction) => ["expects", quoted(direction), quoted(belief.id)]),
     ]),
     ...(notes.needed ?? []).map((question) => ["needed", quoted(question)]),
     ...(notes.ask ?? []).map((asked) => [

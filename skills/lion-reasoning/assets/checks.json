@@ -153,5 +153,61 @@
         ]
       ]
     ]
+  ],
+  "What was each experiment expected to fix, and did it?": [
+    "find",
+    {
+      "direction": "?direction",
+      "version": "?version",
+      "problem": "?problem",
+      "came": "?came"
+    },
+    [
+      "and",
+      ["targets", "?direction", "?version", "?problem", "?_"],
+      [
+        "or",
+        [
+          "and",
+          ["fixed", "?direction", "?version", "?problem", "?_"],
+          ["=", "?came", ["quote", "fixed"]]
+        ],
+        [
+          "and",
+          ["unfixed", "?direction", "?version", "?problem", "?_", "?_"],
+          ["=", "?came", ["quote", "not fixed"]]
+        ],
+        [
+          "and",
+          ["not", ["fixed", "?direction", "?version", "?problem", "?_"]],
+          [
+            "not",
+            ["unfixed", "?direction", "?version", "?problem", "?_", "?_"]
+          ],
+          ["=", "?came", ["quote", "not checked"]]
+        ]
+      ]
+    ]
+  ],
+  "Which problems still show, though every direction that addresses them is set aside?": [
+    "find",
+    "?problem",
+    [
+      "and",
+      ["occurs", "?problem", "now"],
+      ["addresses", "?_", "?problem"],
+      [
+        "not",
+        ["and", ["addresses", "?direction", "?problem"], ["live", "?direction"]]
+      ]
+    ]
+  ],
+  "Which directions' experiments say nothing about a score, because none ran it with an earlier version to beat?": [
+    "query",
+    [
+      "and",
+      ["carried", "?direction", "?score"],
+      ["progress", "?direction", "?tried", "?paid_off", "?misses"]
+    ]
   ]
 }
