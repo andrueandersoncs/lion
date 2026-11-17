@@ -11,6 +11,13 @@ import type { Mutation } from "./mutation.ts";
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
+/** The properties that compare `why` across histories and fact orders. */
+const TOLD_TESTS = [
+  "src/logic/tests/aggregates.test.ts",
+  "src/logic/tests/asking.test.ts",
+  "src/logic/tests/maintained.test.ts",
+  "src/logic/tests/why-not.test.ts",
+];
 const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
 const REASONING_TESTS = {
   package: "metrics",
@@ -154,11 +161,13 @@ const SCALING: readonly Mutation[] = [
     "    : rows.filter((row) => !facts?.has(row));",
     "    : rows;"
   ),
-  maintained(
-    "a row that becomes a fact keeps its derivation",
-    "        model.derivations.get(name)?.delete(key);\n",
-    ""
-  ),
+  {
+    name: "why tells how a row came about before a change was followed through it",
+    file: core("logic/maintain.ts"),
+    find: "          model.derivations.delete(name);",
+    replace: "",
+    tests: TOLD_TESTS,
+  },
   maintained(
     "a rule that invents into a relation with a key is followed",
     "(rule.invents === undefined || inventsAlone(stratum)) &&",
@@ -2364,6 +2373,48 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "",
     package: "site-runtime",
     tests: ["src/tests/package-readme.test.ts"],
+  },
+  {
+    name: "why explains a row by the first answer found, not the least",
+    file: core("logic/model.ts"),
+    find: "          if (other === undefined || compareAnswers(rule, vars, other) < 0) {",
+    replace: "          if (other === undefined) {",
+    tests: TOLD_TESTS,
+  },
+  {
+    name: "why compares no values of the answers that give a row",
+    file: core("logic/model.ts"),
+    find: "    names = [...new Set(rule.body.flatMap(termVariables))];",
+    replace: "    names = [];",
+    tests: TOLD_TESTS,
+  },
+  {
+    name: "why explains min, max, and shortest by the first match that gave the value",
+    file: core("logic/model.ts"),
+    find: "        group.matches = winners.sort(compareMatches(rules)).slice(0, 1);",
+    replace: "        group.matches = winners.slice(0, 1);",
+    tests: TOLD_TESTS,
+  },
+  {
+    name: "why lists an aggregate's matches in the order they were found",
+    file: core("logic/explain.ts"),
+    find: "        : [...derivation.matches].sort(compareMatches(telling.model.rules));",
+    replace: "        : derivation.matches;",
+    tests: TOLD_TESTS,
+  },
+  {
+    name: "why explains an invented row by the first answer that invented it",
+    file: core("logic/model.ts"),
+    find: "      triggers.sort(([a, x], [b, y]) =>",
+    replace: "      [].sort(([a, x], [b, y]) =>",
+    tests: [...TOLD_TESTS, ...EXISTENTIAL_TESTS],
+  },
+  {
+    name: "why explains a row a key made again by the first answer found",
+    file: core("logic/model.ts"),
+    find: "        all.sort((a, b) => compareAnswers(rule, a, b)),",
+    replace: "        all,",
+    tests: [...TOLD_TESTS, ...EXISTENTIAL_TESTS],
   },
   {
     name: "why tells a fact that does not hold as nothing",

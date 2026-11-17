@@ -270,6 +270,8 @@ Fails with `Facts may only contain data, but the "text" of ["note","source"] is 
 
 Its `because` holds the two `line` facts and `{ "check": ["=", 9, ["number/round", ["number/multiply", 365, ["number/divide", 4946, 210352]]]] }`. Each check, evaluated as it stands, is `true`, so anyone can work the arithmetic again. A row that a rule which invents gives only because a key or an equality rule made its unknown equal to another value ends with `{ "same": [unknown, value] }`: the unknown the rule named, and the value it was made. See [Existential rules](#existential-rules).
 
+A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. So the tree is the same whatever order the facts were added in, and whatever the database had derived before they changed. A path is explained by its shortest chain of edges: once `["edge", "a", "c"]` is added, `["why", ["path", "a", "c"]]` rests on that edge, even where the database derived the path through `b` before it came.
+
 A fact that does not hold is explained the other way round. `why` returns it as `absent`, and under `because` every way it could have held: each rule whose head can give it, with the goals of its body that held under `because`, and under `but` the goal that stopped it.
 
 ```json
@@ -480,7 +482,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 - An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a `find`. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
 - An aggregate of a `find` combines what the `find` found, wherever it is written: in a rule, in a query, or in plain code, as in `["aggregate/sum", ["find", "?amount", ["order", "?_", "?_", "?amount"]]]`.
 - Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
-- `why` on an aggregated fact lists every match it combines under `matches`. For `min`, `max`, and `shortest`, it explains the one match that produced the value.
+- `why` on an aggregated fact lists every match it combines under `matches`, in the order of their answers. For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
 
 #### Recursion through aggregates

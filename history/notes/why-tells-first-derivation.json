@@ -1,0 +1,90 @@
+{
+  "title": "`why` tells the derivation a new database finds first",
+  "context": "A row that several answers give holds once, and `why` explained it by the answer the model kept: the first that gave it. Which answer came first depended on the order facts were added in, and on whether the database had followed a change to its facts through rows it derived before, or derived them from the facts as they now are. After `[\"fact\", [\"link\", 0, 4]]`, a database that had already derived `[\"path\", 0, 4]` through `[\"path\", 0, 1]` kept explaining it that way, while a new database with the same three facts explained it by the new link. The guidelines ask that a database which followed changes and one which derives from the facts as they now are behave the same, so the properties compared `why` across histories only without what each goal rests on.",
+  "decision": "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. An aggregated row tells its matches in that order, and `min`, `max`, and `shortest` explain the least of the matches that give their value. A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model.",
+  "consequences": "`why` gives the same tree, down to what each goal rests on, whatever order the facts were added in, and in a database that followed changes to its facts as in one that derived from the facts as they now are. A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `[\"edge\", \"a\", \"c\"]` is added, `[\"why\", [\"path\", \"a\", \"c\"]]` rests on that edge. The matches of an aggregated row are listed in the order of their answers, not the order they were found in. Following a change through derived rows no longer keeps their derivations up to date, so the first `why` after such a change derives the group it asks about once more. The properties compare whole trees, and the helper that left out what goals rest on is gone.",
+  "alternatives": [
+    {
+      "option": "Keep the first answer the model happened to find",
+      "rejected": "Which answer that is depends on the order facts were added in and on what the database derived before a change, so two databases with the same facts and rules explain one row two ways."
+    },
+    {
+      "option": "Keep every answer that gives a row, and show them all",
+      "rejected": "A recursive row can rest on more ways than there are rows, and a reader follows one way down to the facts."
+    },
+    {
+      "option": "Keep the chosen derivation up to date as each change is followed",
+      "rejected": "A change that gives a row a shorter way changes the way of every row derived through it, which takes the rounds of a new derivation again. Every change would pay for what only `why` reads."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first.",
+      "says": {
+        "decision": "why-derivation-shown",
+        "chose": "found-first-by-new-derivation",
+        "over": ["first-kept"],
+        "because": "the first answer a model kept depended on the order facts were added in and on what the database had derived before a change",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them.",
+      "says": {
+        "rule": "why-tells-derivation-found-first",
+        "holds": true,
+        "statement": "why explains a row that several answers give by the least answer of the first rule that gives it, round after round from the facts up, as a database that derives it from the facts as they now are finds it, so the tree depends neither on the order facts were added in nor on what was derived before a change",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "why-row-after-shorter-way",
+            "is": "shorter-way"
+          },
+          {
+            "behavior": "why-row-of-tied-answers",
+            "is": "least-answer"
+          },
+          {
+            "behavior": "why-aggregated-matches-order",
+            "is": "answer-order"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `[\"edge\", \"a\", \"c\"]` is added, `[\"why\", [\"path\", \"a\", \"c\"]]` rests on that edge.",
+      "says": {
+        "behavior": "why-row-after-shorter-way",
+        "is": "shorter-way",
+        "area": "logic",
+        "was": "derived-before"
+      }
+    },
+    {
+      "quote": "Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them.",
+      "says": {
+        "behavior": "why-row-of-tied-answers",
+        "is": "least-answer",
+        "area": "logic",
+        "was": "added-first"
+      }
+    },
+    {
+      "quote": "The matches of an aggregated row are listed in the order of their answers, not the order they were found in.",
+      "says": {
+        "behavior": "why-aggregated-matches-order",
+        "is": "answer-order",
+        "area": "logic",
+        "was": "found-order"
+      }
+    },
+    {
+      "quote": "A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model.",
+      "says": {
+        "feature": "why-derives-followed-group-again",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

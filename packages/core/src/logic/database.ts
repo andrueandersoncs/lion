@@ -515,8 +515,9 @@ const follow = (
 /**
  * Takes what a model derived over to a model of new rules, and returns the
  * relations whose rules are not what they were. A group of relations with
- * the rules it had keeps its rows. A group whose rules changed takes its
- * rows along to be compared with what the new rules give.
+ * the rules it had keeps its rows, and `why` derives them again to tell how
+ * they came about. A group whose rules changed takes its rows along to be
+ * compared with what the new rules give.
  */
 const carry = (before: Model, next: Model) => {
   const stale = new Set<string>();
@@ -541,7 +542,6 @@ const carry = (before: Model, next: Model) => {
       if (held && rows !== undefined) {
         next.state.set(name, "done");
         next.relations.set(name, rows);
-        next.derivations.set(name, before.derivations.get(name) ?? new Map());
       }
       if (before.read.has(name)) {
         next.read.add(name);

@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 153 questions have been decided, 55 records explain them, and of what the records assert, 494 hold when Lion is run, 4 are broken, 260 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 154 questions have been decided, 56 records explain them, and of what the records assert, 498 hold when Lion is run, 4 are broken, 262 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -159,6 +159,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
 | 2026-11-17 | [`package-readme-source`](#package-readme-source) | `written-from-readme` | [The README of `@lionlang/core` is written from the repository's README](#package-readme) |
 | 2026-11-17 | [`why-fact-not-holding`](#why-fact-not-holding) | `absent-tree` | [`why` tells why a fact does not hold, and marks what is only assumed](#why-tells-absence) |
+| 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
 
 <a id="program-representation"></a>
 
@@ -3198,3 +3199,38 @@ Recorded 2026-11-17 in `history/notes/why-tells-absence.json`.
 - Holds when Lion is run: `why-absent-goal-repeated` is `told-once`. "An absent relation call is explained in turn, once in a tree"
 - Holds when Lion is run: rule `why-marks-assumptions` holds. "`"assumed": true` marks what could change once an unknown is known"
 - Holds when Lion is run: `why-absence-reads-unknown` is `assumed`. "`["why", ["mother", "ben", "eve"]]` is marked `assumed` when ben's mother is unknown"
+
+<a id="why-derivation-shown"></a>
+
+## why-derivation-shown
+
+Now: `found-first-by-new-derivation`.
+
+- 2026-11-17 `why-derivation-shown`: `found-first-by-new-derivation` over `first-kept`: "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first." (`why-tells-first-derivation.json`)
+
+<a id="why-tells-first-derivation"></a>
+
+### `why` tells the derivation a new database finds first
+
+Recorded 2026-11-17 in `history/notes/why-tells-first-derivation.json`.
+
+**Context.** A row that several answers give holds once, and `why` explained it by the answer the model kept: the first that gave it. Which answer came first depended on the order facts were added in, and on whether the database had followed a change to its facts through rows it derived before, or derived them from the facts as they now are. After `["fact", ["link", 0, 4]]`, a database that had already derived `["path", 0, 4]` through `["path", 0, 1]` kept explaining it that way, while a new database with the same three facts explained it by the new link. The guidelines ask that a database which followed changes and one which derives from the facts as they now are behave the same, so the properties compared `why` across histories only without what each goal rests on.
+
+**Decision.** A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. An aggregated row tells its matches in that order, and `min`, `max`, and `shortest` explain the least of the matches that give their value. A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model.
+
+**Consequences.** `why` gives the same tree, down to what each goal rests on, whatever order the facts were added in, and in a database that followed changes to its facts as in one that derived from the facts as they now are. A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `["edge", "a", "c"]` is added, `["why", ["path", "a", "c"]]` rests on that edge. The matches of an aggregated row are listed in the order of their answers, not the order they were found in. Following a change through derived rows no longer keeps their derivations up to date, so the first `why` after such a change derives the group it asks about once more. The properties compare whole trees, and the helper that left out what goals rest on is gone.
+
+**Alternatives considered.**
+
+- Keep the first answer the model happened to find. Which answer that is depends on the order facts were added in and on what the database derived before a change, so two databases with the same facts and rules explain one row two ways.
+- Keep every answer that gives a row, and show them all. A recursive row can rest on more ways than there are rows, and a reader follows one way down to the facts.
+- Keep the chosen derivation up to date as each change is followed. A change that gives a row a shorter way changes the way of every row derived through it, which takes the rounds of a new derivation again. Every change would pay for what only `why` reads.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `why-derivation-shown`: `found-first-by-new-derivation`. "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first."
+- Holds when Lion is run: rule `why-tells-derivation-found-first` holds. "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them."
+- Holds when Lion is run: `why-row-after-shorter-way` is `shorter-way`. "A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `["edge", "a", "c"]` is added, `["why", ["path", "a", "c"]]` rests on that edge."
+- Holds when Lion is run: `why-row-of-tied-answers` is `least-answer`. "Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them."
+- Holds when Lion is run: `why-aggregated-matches-order` is `answer-order`. "The matches of an aggregated row are listed in the order of their answers, not the order they were found in."
+- Stated, not checked by running Lion: `why-derives-followed-group-again` exists. "A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model."

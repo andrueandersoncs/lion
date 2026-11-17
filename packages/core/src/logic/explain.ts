@@ -28,9 +28,11 @@ import {
 } from "@/logic/compile";
 import {
   answerKey,
+  compareMatches,
   complete,
   derivationOf,
   ensure,
+  explanations,
   hasFree,
   holds,
   type LogicEffect,
@@ -538,8 +540,9 @@ const combinesUnknown = (
 };
 
 /**
- * Explains a row that holds: a fact, a computed row, or what derived it. A
- * row that combines matches counts what is known.
+ * Explains a row that holds: a fact, a computed row, or what derived it, as
+ * deriving it from the facts as they now are finds it first. A row that
+ * combines matches tells them in order, and counts what is known.
  */
 const explain = (
   telling: Telling,
@@ -552,14 +555,17 @@ const explain = (
     }
     const fact = [name, ...tuple];
     const derivation = derivationOf(
-      telling.model.derivations.get(name),
+      yield* explanations(telling.model, name),
       valueKey(tuple)
     );
     if (derivation === undefined) {
       return { fact, given: true };
     }
     const rule = derivation.rule.source;
-    const found = "vars" in derivation ? [derivation] : derivation.matches;
+    const found =
+      "vars" in derivation
+        ? [derivation]
+        : [...derivation.matches].sort(compareMatches(telling.model.rules));
     const told = yield* Effect.forEach(found, (one) => premises(telling, one));
     return marked(
       "vars" in derivation

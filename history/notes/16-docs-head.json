@@ -2792,7 +2792,7 @@
     {
       "id": "doc-readme-251",
       "source": "doc-readme",
-      "quote": "`why` on an aggregated fact lists every match it combines under `matches`.",
+      "quote": "`why` on an aggregated fact lists every match it combines under `matches`, in the order of their answers.",
       "says": {
         "behavior": "why-aggregated-fact",
         "is": "lists-matches",
@@ -2802,7 +2802,7 @@
     {
       "id": "doc-readme-252",
       "source": "doc-readme",
-      "quote": "For `min`, `max`, and `shortest`, it explains the one match that produced the value.",
+      "quote": "For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did.",
       "says": {
         "behavior": "why-aggregate-min-max-fact",
         "is": "producing-match",

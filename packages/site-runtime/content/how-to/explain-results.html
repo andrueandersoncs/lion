@@ -14,6 +14,21 @@
 </lion-example>
 <p>Each level names the <code>fact</code>, the <code>rule</code> that derived it, and the facts <code>because</code> of which it holds. A fact you added says <code>"given": true</code>.</p>
 
+<h2 id="explain-results-ways">See which way is told</h2>
+<p>A row can come about in several ways. <code>why</code> tells the one a new database finds first: rules run in the order they were added, round after round from the facts, and of the answers of the first rule that gives the row, the least. So a path is explained by its shortest chain of edges, here the edge from a to c that came after the path was derived through b:</p>
+<lion-example name="Why, after a shorter way came">
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  ["query", ["path", "?x", "?y"]],
+  ["fact", ["edge", "a", "c"]],
+  ["why", ["path", "a", "c"]]]
+</lion-example>
+<p>The tree does not depend on the order the facts were added in, or on what the database derived before they changed: a database given the three edges at once tells the same.</p>
+
 <h2>Read filters and negations</h2>
 <p>Filters appear as <code>check</code>, with the values they were called on, and negations as <code>absent</code>, with the goal that had no match and <a href="#explain-results-absent">why it had none</a>:</p>
 <lion-example name="Why with filters">
@@ -65,7 +80,7 @@
 </lion-example>
 
 <h2>See what an aggregate combined</h2>
-<p>For an aggregated fact, <code>why</code> lists every match it combined under <code>matches</code>. For <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the one match that produced the value.</p>
+<p>For an aggregated fact, <code>why</code> lists every match it combined under <code>matches</code>, in the order of their answers. For <code>min</code>, <code>max</code>, and <code>shortest</code>, it explains the one match that produced the value, the least where several did.</p>
 <lion-example name="Why an aggregate">
 ["begin",
   ["relation", "order", ["id", "customer", "amount"]],

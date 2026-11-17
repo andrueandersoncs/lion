@@ -19537,5 +19537,141 @@
       ],
       1
     ]
+  },
+  {
+    "case": "why-row-after-shorter-way",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "path", ["from", "to"]],
+      ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+      ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+      [
+        "rule",
+        ["path", "?x", "?z"],
+        ["path", "?x", "?y"],
+        ["edge", "?y", "?z"]
+      ],
+      ["query", ["path", "?x", "?y"]],
+      ["fact", ["edge", "a", "c"]],
+      [
+        "define",
+        "first",
+        [
+          "object/get",
+          [
+            "array/head",
+            ["object/get", ["why", ["path", "a", "c"]], ["quote", "because"]]
+          ],
+          ["quote", "fact"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          ["=", "first", ["quote", ["edge", "a", "c"]]],
+          ["quote", "shorter-way"]
+        ],
+        [
+          ["=", "first", ["quote", ["path", "a", "b"]]],
+          ["quote", "derived-before"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-row-of-tied-answers",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "path", ["from", "to"]],
+      [
+        "fact",
+        ["edge", "a", "c"],
+        ["edge", "c", "d"],
+        ["edge", "a", "b"],
+        ["edge", "b", "d"]
+      ],
+      ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+      [
+        "rule",
+        ["path", "?x", "?z"],
+        ["path", "?x", "?y"],
+        ["edge", "?y", "?z"]
+      ],
+      [
+        "define",
+        "first",
+        [
+          "object/get",
+          [
+            "array/head",
+            ["object/get", ["why", ["path", "a", "d"]], ["quote", "because"]]
+          ],
+          ["quote", "fact"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          ["=", "first", ["quote", ["path", "a", "b"]]],
+          ["quote", "least-answer"]
+        ],
+        [
+          ["=", "first", ["quote", ["path", "a", "c"]]],
+          ["quote", "added-first"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-aggregated-matches-order",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "order", ["id", "customer", "amount"]],
+      ["relation", "spend", ["customer", "total"]],
+      ["fact", ["order", 2, "ana", 20], ["order", 1, "ana", 30]],
+      [
+        "rule",
+        ["spend", "?c", ["aggregate/sum", "?a"]],
+        ["order", "?_", "?c", "?a"]
+      ],
+      [
+        "define",
+        "first",
+        [
+          "object/get",
+          [
+            "array/head",
+            [
+              "array/head",
+              [
+                "object/get",
+                ["why", ["spend", "ana", 50]],
+                ["quote", "matches"]
+              ]
+            ]
+          ],
+          ["quote", "fact"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          ["=", "first", ["quote", ["order", 1, "ana", 30]]],
+          ["quote", "answer-order"]
+        ],
+        [
+          ["=", "first", ["quote", ["order", 2, "ana", 20]]],
+          ["quote", "found-order"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

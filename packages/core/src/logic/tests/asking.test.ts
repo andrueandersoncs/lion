@@ -11,8 +11,9 @@ import { LogicDatabase } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
 import { element, oneOf } from "./programs";
-import { outlineOf, type Told, toldIn } from "./trees";
+import { type Told, toldIn } from "./trees";
 import {
+  chainOf,
   DOMAIN,
   everyone,
   linksOf,
@@ -1003,21 +1004,62 @@ describe("what a database has derived so far", () => {
         yield* run(["begin", ...setup(facts)], stdlib, { database });
         const changes: Form[] = [];
         for (const form of steps) {
-          // A row that several answers give is explained by one of them,
-          // whichever the facts gave first, so `why` is compared without
-          // what its goals rest on.
-          const read = (value: unknown) =>
-            (form as readonly unknown[])[0] === "why"
-              ? outlineOf(value as Told)
-              : value;
           const actual = yield* run(form, stdlib, { database });
           // The changes so far and this step alone, on a new database, which
-          // has derived nothing when the step runs.
-          expect(read(actual)).toEqual(
-            read(yield* evaluate(facts, [...changes, form], goalDirected))
+          // has derived nothing when the step runs. `why` tells the same
+          // tree, down to what each goal rests on.
+          expect(actual).toEqual(
+            yield* evaluate(facts, [...changes, form], goalDirected)
           );
           if (["fact", "retract"].includes((form as string[])[0] ?? "")) {
             changes.push(form);
+          }
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "explains a path by its shortest chain of links, whatever came before",
+    {
+      world,
+      later: Arbitrary.array(Arbitrary.all([member, member]), {
+        minLength: 1,
+        maxLength: 5,
+      }),
+      steps: Arbitrary.array(step, { maxLength: 4 }),
+      goalDirected: element(MODES),
+    },
+    ({ goalDirected, later, steps, world: facts }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase({ goalDirected });
+        // Every path is derived, then links come that can make one shorter.
+        const forms = [
+          ["query", ["path", "?from", "?to"]],
+          ["fact", ...later.map((pair) => ["link", ...pair])],
+          ...steps,
+        ];
+        yield* run(["begin", ...setup(facts)], stdlib, { database });
+        const links = new Map(linksOf(facts).map((pair) => [`${pair}`, pair]));
+        for (const form of forms) {
+          yield* run(form, stdlib, { database });
+          const [kind, ...rows] = form as [string, ...unknown[][]];
+          for (const [relation, ...pair] of ["fact", "retract"].includes(kind)
+            ? rows
+            : []) {
+            if (relation === "link" && kind === "fact") {
+              links.set(`${pair}`, pair as [number, number]);
+            } else if (relation === "link") {
+              links.delete(`${pair}`);
+            }
+          }
+        }
+        const now = { links: [...links.values()], p: [], q: [] };
+        for (const from of DOMAIN) {
+          for (const to of reach(now, from)) {
+            expect(
+              yield* run(["why", ["path", from, to]], stdlib, { database })
+            ).toEqual(chainOf(now.links, from, to));
           }
         }
       }),

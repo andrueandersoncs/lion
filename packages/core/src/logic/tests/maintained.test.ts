@@ -14,9 +14,10 @@
  * change is generated too, so what is already derived when the next change
  * arrives differs from run to run.
  *
- * An explanation must rest on what holds: every row `why` shows as given
- * is a fact, also for a row that was derived before a change took away
- * what first gave it.
+ * An explanation must not show the history either: `why` tells every row
+ * as the database that has derived nothing yet tells it, down to what each
+ * goal rests on, also a row that was derived before a change took away
+ * what first gave it, or gave it a shorter way.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
@@ -222,6 +223,9 @@ const EXPLAINED: readonly (readonly [number, string, readonly string[]])[] = [
   [2, "far", ["x", "y"]],
   [3, "hub", ["n"]],
   [4, "cancelled", ["id"]],
+  [5, "degree", ["n", "k"]],
+  [8, "reach", ["n", "k"]],
+  [23, "hops", ["to", "k"]],
 ];
 
 const node = element(NODES);
@@ -298,22 +302,6 @@ const settled = (outcome: unknown) => {
     : outcome;
 };
 
-interface Explained {
-  readonly because?: readonly Explained[];
-  readonly fact?: unknown;
-  readonly given?: boolean;
-}
-
-/** The rows an explanation shows as given, however deep. */
-const givenIn = (explained: Explained | null): unknown[] => {
-  if (explained === null || explained.fact === undefined) {
-    return [];
-  }
-  return explained.given
-    ? [explained.fact]
-    : (explained.because ?? []).flatMap(givenIn);
-};
-
 // A break in one kind of rule shows only when a change meets a relation of
 // that kind that was already derived, so the property runs often.
 const OPTIONS = { timeout: 300_000, arbitrary: { runs: 1000 } };
@@ -366,21 +354,9 @@ describe("a database that keeps what it derived through changes", () => {
               ];
               const explained = yield* attempt(why, kept);
               expect(explained).toMatchObject({ ok: true });
-              const { value } = explained as { value: Explained | null };
               // A row is given exactly when it is a fact, whichever came
-              // first: the fact, or an answer that derived the row.
-              expect(value?.given ?? false).toBe(
-                ((yield* attempt(why, fresh)) as { value: Explained | null })
-                  .value?.given ?? false
-              );
-              const facts = givenIn(value);
-              for (const shown of facts) {
-                // What is shown as given is given: a fresh database, which
-                // derived nothing before the change, says so too.
-                expect(yield* attempt(["why", shown], fresh)).toMatchObject({
-                  value: { given: true },
-                });
-              }
+              // first, and is derived the way a new derivation finds first.
+              expect(explained).toEqual(yield* attempt(why, fresh));
             }
           }
         }

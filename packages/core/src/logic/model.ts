@@ -49,6 +49,7 @@ import {
   type RelationInfo,
   sameValue,
   show,
+  termVariables,
   Unknown,
   valueKey,
 } from "@/logic/terms";
@@ -444,17 +445,36 @@ export const derivationOf = (
     : unpacked(found);
 };
 
+/** The variables a rule's body binds, in the order it binds them. */
+const BOUND = new WeakMap<CompiledRule, readonly string[]>();
+
 /**
- * The answers a model keeps for a derived row: the one that gave it, or for
- * an aggregated row, the ones it combines. None for a row that is given.
+ * The order of a rule's answers: by the values its body binds, in the order
+ * it binds them, compared as the `"order"` option compares values. Of the
+ * answers that give a row first, the least explains it, so how a row came
+ * about does not depend on the order the facts were added in.
  */
-export const answersFor = (model: Model, relation: string, tuple: Tuple) => {
-  const kept = derivationOf(model.derivations.get(relation), valueKey(tuple));
-  if (kept === undefined) {
-    return [];
+export const compareAnswers = (rule: CompiledRule, a: Vars, b: Vars) => {
+  let names = BOUND.get(rule);
+  if (names === undefined) {
+    names = [...new Set(rule.body.flatMap(termVariables))];
+    BOUND.set(rule, names);
   }
-  return "vars" in kept ? [kept] : kept.matches;
+  for (const name of names) {
+    const order = compareValues(a.get(name), b.get(name));
+    if (order !== 0) {
+      return order;
+    }
+  }
+  return 0;
 };
+
+/** The order of answers of several rules: by rule, then by answer. */
+export const compareMatches =
+  (rules: readonly CompiledRule[]) => (a: Match, b: Match) =>
+    a.rule === b.rule
+      ? compareAnswers(a.rule, a.vars, b.vars)
+      : rules.indexOf(a.rule) - rules.indexOf(b.rule);
 
 /**
  * A relation's rows as far as they are derived: every row once `ensure` has
@@ -1548,9 +1568,10 @@ const resettle = (
  * A row a key replaced came about as another row, so the answer that gave
  * it may not give it, and two rows that became one may each have rested on
  * the other. So the rules run again on the rows there are, from the facts
- * up, round by round: each row is explained by the first answer that gives
- * it, which rests only on rows explained before it. A rule that invents
- * gives the rows of its head with what keys made its unknowns equal to.
+ * up, round by round: each row is explained by the least answer of the
+ * first rule that gives it, which rests only on rows explained before it. A
+ * rule that invents gives the rows of its head with what keys made its
+ * unknowns equal to.
  */
 const justify = (
   model: Model,
@@ -1654,7 +1675,7 @@ const explaining =
   (rule, feed, into) =>
     Effect.flatMap(rule.equates ? Effect.succeed([]) : gathered(feed), (all) =>
       Effect.forEach(
-        all,
+        all.sort((a, b) => compareAnswers(rule, a, b)),
         (vars) =>
           Effect.gen(function* () {
             const same = yield* madeEqual(model, rule, vars, inventions);
@@ -1777,10 +1798,10 @@ const headRow = (model: Model, rule: CompiledRule, vars: Vars) =>
 /**
  * Derives the rows a rule's head gives for the answers of its body. The
  * rows join their relation once the body has run, so the body reads the
- * relation as it was when the round began. Only a row that is new waits:
- * one the relation has, or that an earlier answer gave, would change
- * nothing. Where rules invent, a key can make a row another, so every row
- * waits.
+ * relation as it was when the round began. Only a row that is new waits,
+ * with the least answer that gives it: one the relation has would change
+ * nothing. Where rules invent, a key can make a row another, so a row the
+ * relation has waits too.
  */
 export const deriveHeads = (
   model: Model,
@@ -1791,26 +1812,26 @@ export const deriveHeads = (
 ) =>
   Effect.gen(function* () {
     const relation = rule.head.relation;
-    const held = model.relations.get(relation.name);
-    const waiting = new Set<string>();
-    const derived: [Tuple, Vars, string | undefined][] = [];
+    const held =
+      inventions === undefined ? model.relations.get(relation.name) : undefined;
+    const waiting = new Map<string, readonly [Tuple, Vars]>();
     yield* feed((answers) =>
       Effect.gen(function* () {
         for (const vars of answers) {
           const tuple =
             plainRow(rule, vars) ?? (yield* headRow(model, rule, vars));
-          const key = inventions === undefined ? valueKey(tuple) : undefined;
-          // Without a key every row waits; with one, only a row that is new.
-          const known =
-            key !== undefined && (held?.hasKey(key) || waiting.has(key));
-          if (!known) {
-            waiting.add(key ?? "");
-            derived.push([tuple, vars, key]);
+          const key = valueKey(tuple);
+          if (held?.hasKey(key)) {
+            continue;
+          }
+          const other = waiting.get(key)?.[1];
+          if (other === undefined || compareAnswers(rule, vars, other) < 0) {
+            waiting.set(key, [tuple, vars]);
           }
         }
       })
     );
-    for (const [tuple, vars, key] of derived) {
+    for (const [key, [tuple, vars]] of waiting) {
       const problem = addDerived(
         model,
         delta,
@@ -1899,8 +1920,11 @@ export const aggregateKind = (rule: CompiledRule, position: number) =>
 export interface Group {
   /** Head values, with null where the head aggregates. */
   readonly key: Tuple;
-  /** Each match, or the one a selecting aggregate kept. */
-  matches: Match[];
+  /**
+   * Each match, or the one a selecting aggregate kept. Undefined for a
+   * group that goes on from the row it had, whose matches are not known.
+   */
+  matches?: Match[];
   readonly rule: CompiledRule;
   /** The row the group gave when it was last combined. */
   tuple?: Tuple;
@@ -1957,8 +1981,9 @@ const aggregateProblem = (
 /**
  * Combines a group's values into its row. A lattice aggregate then keeps
  * only its result, which later matches join, so recursion never starts over.
+ * A selecting aggregate keeps the least match that gives its result.
  */
-const combine = (group: Group) =>
+const combine = (group: Group, rules: readonly CompiledRule[]) =>
   Effect.gen(function* () {
     const { key, rule, values } = group;
     const tuple = [...key];
@@ -1975,9 +2000,10 @@ const combine = (group: Group) =>
       if (join !== undefined) {
         values[index] = [result];
       }
-      if (selectsAlone(rule)) {
-        const winner = given.findIndex((value) => sameValue(value, result));
-        group.matches = group.matches.slice(winner, winner + 1);
+      const { matches } = group;
+      if (matches !== undefined && selectsAlone(rule)) {
+        const winners = matches.filter((_, at) => sameValue(given[at], result));
+        group.matches = winners.sort(compareMatches(rules)).slice(0, 1);
       }
     }
     return yield* derivedRow(rule, tuple);
@@ -2031,7 +2057,7 @@ export const addMatches = (
       for (const [index, value] of values.entries()) {
         group.values[index]?.push(value);
       }
-      group.matches.push({ rule, vars });
+      group.matches?.push({ rule, vars });
       groups.changed.add(group);
     }
   });
@@ -2042,7 +2068,7 @@ export const settle = (model: Model, groups: Groups) =>
     const delta = new Map<string, TupleSet>();
     for (const group of groups.changed) {
       const { rule, tuple: old } = group;
-      const tuple = yield* combine(group);
+      const tuple = yield* combine(group, model.rules);
       if (old !== undefined && valueKey(old) === valueKey(tuple)) {
         continue;
       }
@@ -2060,16 +2086,19 @@ export const settle = (model: Model, groups: Groups) =>
       getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
       // Replaced rows keep their derivations, so explanations that pass
       // through an earlier best value still read correctly.
-      getOrCreate(
-        model.derivations,
-        relation,
-        () => new Map<string, Kept>()
-      ).set(
-        valueKey(tuple),
-        group.matches[0] !== undefined && selectsAlone(rule)
-          ? packed(group.matches[0])
-          : { rule, matches: group.matches.map(packed) }
-      );
+      const { matches } = group;
+      if (matches !== undefined) {
+        getOrCreate(
+          model.derivations,
+          relation,
+          () => new Map<string, Kept>()
+        ).set(
+          valueKey(tuple),
+          matches[0] !== undefined && selectsAlone(rule)
+            ? packed(matches[0])
+            : { rule, matches: matches.map(packed) }
+        );
+      }
     }
     groups.changed = new Set();
     return delta;
@@ -2277,6 +2306,11 @@ const evaluate = (model: Model, { members, rules }: Stratum) =>
     for (;;) {
       yield* settle(delta);
       yield* rounds(model, rules, run, delta, settle);
+      // Of the answers that invent the same unknowns, the least does.
+      const order = compareMatches(rules);
+      triggers.sort(([a, x], [b, y]) =>
+        order({ rule: a, vars: x }, { rule: b, vars: y })
+      );
       const ready = yield* active(model, triggers, fired);
       triggers = [];
       if (ready.length === 0 || inventions === undefined) {
@@ -2400,8 +2434,8 @@ export const forget = (model: Model, members: ReadonlySet<string>) => {
 
 /**
  * Derives the rows of relations that depend on each other, by running their
- * rules on top of their facts. A relation the rules read is derived when a
- * goal first reads it.
+ * rules on top of their facts, and keeps how each row came about. A
+ * relation the rules read is derived when a goal first reads it.
  */
 export const derive = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
@@ -2411,6 +2445,7 @@ export const derive = (model: Model, stratum: Stratum) =>
       const facts =
         model.base === undefined ? model.facts.get(name) : undefined;
       model.relations.set(name, facts?.clone() ?? new TupleSet());
+      model.derivations.set(name, new Map());
     }
     yield* evaluate(model, stratum);
     for (const name of members) {
@@ -2464,6 +2499,34 @@ export const ensure = (
   relation: RelationInfo
 ): LogicEffect<void> =>
   Effect.suspend(() => toRead(model, relation) ?? Effect.void);
+
+/**
+ * How each row of a relation came about, by row, as deriving it from the
+ * facts as they now are finds it. A group of relations that a change to
+ * facts was followed through has forgotten it, since what it found first
+ * then is not what a new derivation finds first: the group is derived
+ * again beside the model, on the rows the model holds, to tell.
+ */
+export const explanations = (model: Model, name: string) =>
+  Effect.gen(function* () {
+    yield* complete(model, name);
+    const stratum = model.strata.get(name);
+    if (stratum === undefined || model.derivations.has(name)) {
+      return model.derivations.get(name);
+    }
+    const again = new Model(model.facts, model.rules, model.base);
+    for (const [other, rows] of model.relations) {
+      if (!stratum.members.has(other)) {
+        again.relations.set(other, rows);
+        again.state.set(other, "done");
+      }
+    }
+    yield* derive(again, stratum);
+    for (const member of stratum.members) {
+      model.derivations.set(member, again.derivations.get(member) ?? new Map());
+    }
+    return model.derivations.get(name);
+  });
 
 /**
  * Answers a question that comes up while the model is read, such as one a

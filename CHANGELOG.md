@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Added
+
+- A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model. (`why-derives-followed-group-again` added)
+
 ### Changed
 
 - `["why", ["mother", "ada", "fay"]]` is not when ada's mother is eve (`why-absence-reads-no-unknown` is `not-assumed`)
@@ -14,15 +18,20 @@
 - Where several rows fit a goal with a variable of its own, the row shown is the one that sorts first (`why-matched-row-of-several` is `sorts-first`, was `added-first`)
 - When a rule's whole body holds, its `but` is the row the rule gave instead. (`why-rule-gave-another-row` is `row-explained`)
 - A `not` stops a rule because what it denies holds, so its `but` is that fact or check. (`why-stopped-by-not` is `what-it-denies`)
+- The matches of an aggregated row are listed in the order of their answers, not the order they were found in. (`why-aggregated-matches-order` is `answer-order`, was `found-order`)
+- A path is explained by its shortest chain of edges, the one that takes the least node at each step: once `["edge", "a", "c"]` is added, `["why", ["path", "a", "c"]]` rests on that edge. (`why-row-after-shorter-way` is `shorter-way`, was `derived-before`)
+- Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. (`why-row-of-tied-answers` is `least-answer`, was `added-first`)
 
 ### Decided
 
 - `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (`why-fact-not-holding`: `absent-tree` over `null`)
+- A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. (`why-derivation-shown`: `found-first-by-new-derivation` over `first-kept`)
 
 ### Rules
 
 - `"assumed": true` marks what could change once an unknown is known (rule `why-marks-assumptions`)
 - `why` tells how a goal holds or why it does not, by one rule in which `not` changes sides. (rule `why-tells-both-sides`)
+- A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first. Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them. (rule `why-tells-derivation-found-first`)
 
 ## 2026-11-17 — @lionlang/core 0.12.0, @lionlang/cli 0.11.0
 
@@ -1054,7 +1063,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - expects all numbers or all strings, but found (`aggregate-min-mixed-types` is `error`)
 - Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
 - Logic variables must be direct arguments, not nested inside arrays or records (`logic-variable-nested-in-array` is `error`; `logic-variable-nested-in-record` is `error`)
-- For `min`, `max`, and `shortest`, it explains the one match that produced the value. (`why-aggregate-min-max-fact` is `producing-match`)
+- For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did. (`why-aggregate-min-max-fact` is `producing-match`)
 - `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (`aggregate-shortest-tie` is `smaller-value`)
 - Every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it (`lattice-cycle-non-aggregating-relation` is `error`)
 - Each group keeps its best value, and rounds re-run the rules on rows that improved until nothing improves (`lattice-group-value` is `keeps-best`)

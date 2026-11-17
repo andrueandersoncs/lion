@@ -7,6 +7,8 @@
  * using it gave, and every row such an answer would give. The rows it
  * reaches are taken out, and derived again from the facts as they now are.
  * What a group gained and lost is what the groups that read it start from.
+ * A group followed this way forgets how its rows came about, which `why`
+ * tells as a new derivation would.
  *
  * An answer uses a row when a relation goal matched it, wherever the goal
  * stands in the rule: in its body, under `not`, in a find, in a value, or
@@ -38,7 +40,6 @@ import {
 } from "@/logic/compile";
 import { guarded } from "@/logic/magic";
 import {
-  answersFor,
   type Change,
   changedEach,
   combined,
@@ -562,7 +563,6 @@ const replace = (
   for (const [name, rows] of reached.rows) {
     for (const row of rows.values()) {
       model.relations.get(name)?.delete(row);
-      model.derivations.get(name)?.delete(valueKey(row));
     }
   }
   const added: Rows = new Map();
@@ -571,8 +571,6 @@ const replace = (
       const key = valueKey(row);
       if (model.relations.get(name)?.addKeyed(key, row)) {
         rowsIn(added, name).addKeyed(key, row);
-      } else {
-        model.derivations.get(name)?.delete(key);
       }
     }
   }
@@ -699,7 +697,6 @@ const followGroups = (pass: Pass, { members, rules }: Stratum) =>
       }
       const group: Group = {
         key,
-        matches: [...answersFor(model, rule.head.relation.name, row)],
         rule,
         tuple: row,
         values: rule.aggregates.map((position) => [row[position]]),
@@ -900,7 +897,15 @@ const upkeep = (pass: Pass, stratum: Stratum) => {
     model.last.set(name, way);
   }
   if (way === "followed") {
-    return followed(pass, stratum);
+    // What was found first before the change is not what a new derivation
+    // finds first, so how the rows came about is told again when asked.
+    return Effect.tap(followed(pass, stratum), () =>
+      Effect.sync(() => {
+        for (const name of stratum.members) {
+          model.derivations.delete(name);
+        }
+      })
+    );
   }
   if (way === "derived") {
     return deriveAgain(pass, stratum);

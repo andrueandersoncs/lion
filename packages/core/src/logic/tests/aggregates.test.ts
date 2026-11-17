@@ -1,7 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Arbitrary, Effect } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
+import { element } from "./programs";
 
 const orders = [
   ["relation", "order", ["id", "customer", "amount"]],
@@ -278,6 +279,84 @@ describe("aggregates in rule heads", () => {
       );
       expect(rows).toEqual([]);
     })
+  );
+});
+
+/** Orders of two customers, with few amounts, so that several tie. */
+const someOrders = Arbitrary.map(
+  Arbitrary.array(Arbitrary.all([element(["ana", "bo"]), element([1, 2, 3])]), {
+    minLength: 1,
+    maxLength: 8,
+  }),
+  (rows) => rows.map(([customer, amount], at) => [at + 1, customer, amount])
+);
+
+const RULES = [
+  ["relation", "order", ["id", "customer", "amount"]],
+  ["relation", "spend", ["customer", "total"]],
+  ["relation", "least", ["customer", "amount"]],
+  ["relation", "most", ["customer", "amount"]],
+  [
+    "rule",
+    ["spend", "?c", ["aggregate/sum", "?a"]],
+    ["order", "?_", "?c", "?a"],
+  ],
+  [
+    "rule",
+    ["least", "?c", ["aggregate/min", "?a"]],
+    ["order", "?_", "?c", "?a"],
+  ],
+  [
+    "rule",
+    ["most", "?c", ["aggregate/max", "?a"]],
+    ["order", "?_", "?c", "?a"],
+  ],
+];
+
+const given = (row: unknown) => ({
+  fact: ["order", ...(row as unknown[])],
+  given: true,
+});
+
+describe("why on an aggregated row", () => {
+  it.effect.prop(
+    "tells the matches in the order of their answers, and the least that gives a minimum or maximum, whatever order the facts came in",
+    { rows: someOrders, reversed: element([false, true]) },
+    ({ reversed, rows }) =>
+      Effect.gen(function* () {
+        const facts = reversed ? [...rows].reverse() : rows;
+        for (const customer of ["ana", "bo"]) {
+          // The body binds the id first, so its answers go by id.
+          const own = rows.filter((row) => row[1] === customer);
+          if (own.length === 0) {
+            continue;
+          }
+          const amounts = own.map((row) => row[2] as number);
+          const total = amounts.reduce((sum, amount) => sum + amount, 0);
+          const why = (fact: unknown[]) =>
+            run(
+              [
+                "begin",
+                ...RULES,
+                ["fact", ...facts.map((row) => ["order", ...row])],
+                ["why", fact],
+              ],
+              stdlib
+            );
+          expect(yield* why(["spend", customer, total])).toMatchObject({
+            matches: own.map((row) => [given(row)]),
+          });
+          for (const [relation, value] of [
+            ["least", Math.min(...amounts)],
+            ["most", Math.max(...amounts)],
+          ] as const) {
+            const first = own.find((row) => row[2] === value);
+            expect(yield* why([relation, customer, value])).toMatchObject({
+              because: [given(first)],
+            });
+          }
+        }
+      })
   );
 });
 

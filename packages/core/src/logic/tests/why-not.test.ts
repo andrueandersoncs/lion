@@ -29,11 +29,11 @@ import {
 import { attempt, element, type Outcome } from "./programs";
 import {
   isAssumed,
-  outlineOf,
   sayingItIs,
   type Told,
   toldIn,
   unknownsIn,
+  type Way,
   waysOf,
 } from "./trees";
 
@@ -293,6 +293,46 @@ const canGive = (rule: Form, [relation, ...values]: Form) =>
 
 const RUNS = { timeout: 120_000, arbitrary: { runs: 150 } };
 
+/**
+ * Expects `why` to tell every row that holds, and each fact asked about,
+ * the same way in a database given the facts in their order as in one
+ * given them the other way round.
+ */
+const tellsAlike = (
+  given: Facts,
+  forms: (facts: Facts) => Form[],
+  about: readonly Form[],
+  keyed: Keying = false
+) =>
+  Effect.gen(function* () {
+    const turned: Facts = {
+      links: [...given.links].reverse(),
+      parents: [...given.parents].reverse(),
+      people: [...given.people].reverse(),
+    };
+    const database = yield* started(forms(given), keyed);
+    const other = yield* started(forms(turned), keyed);
+    if (database === undefined || other === undefined) {
+      return;
+    }
+    // Every row that holds, which several answers may give, and facts
+    // that may not.
+    const rows = Object.entries(yield* everyRow(database)).flatMap(
+      ([relation, found]) => found.map((row): Form => [relation, ...row])
+    );
+    for (const goal of [...rows, ...about]) {
+      expect(yield* ask(["why", goal], other)).toEqual(
+        yield* ask(["why", goal], database)
+      );
+    }
+  });
+
+/**
+ * Rules under which two links into one child can pass it the same parent,
+ * beside a rule that invents a parent for everyone.
+ */
+const PASSED_ON = ["everyone has a parent", "a link passes a parent on"];
+
 const MORE = { timeout: 120_000, arbitrary: { runs: 300 } };
 
 describe("why", () => {
@@ -350,7 +390,7 @@ describe("why", () => {
           }
           if (!holds) {
             // Every rule that could give the fact is among the ways.
-            const tried = (outlineOf(tree).ways ?? []).map(({ rule }) =>
+            const tried = ((tree.because ?? []) as Way[]).map(({ rule }) =>
               JSON.stringify(rule)
             );
             for (const rule of [...picked.map(ruleForm), ...questions]) {
@@ -368,24 +408,35 @@ describe("why", () => {
     "tells the same ways whatever order the facts were added in",
     { given: facts, picked: rules, questions: asking, about: asked },
     ({ about, given, picked, questions }) =>
-      Effect.gen(function* () {
-        const turned: Facts = {
-          links: [...given.links].reverse(),
-          parents: [...given.parents].reverse(),
-          people: [...given.people].reverse(),
-        };
-        const database = yield* started(program(given, picked, questions));
-        const other = yield* started(program(turned, picked, questions));
-        if (database === undefined || other === undefined) {
-          return;
-        }
-        for (const goal of about) {
-          const tree = (yield* ask(["why", goal], database)) as Told;
-          expect(outlineOf((yield* ask(["why", goal], other)) as Told)).toEqual(
-            outlineOf(tree)
-          );
-        }
-      }),
+      tellsAlike(given, (some) => program(some, picked, questions), about),
+    RUNS
+  );
+
+  it.effect.prop(
+    "tells a row that several answers give alike, beside a rule that invents",
+    { given: facts, picked: rules, keyed: KEYING },
+    ({ given, keyed, picked }) =>
+      tellsAlike(
+        // A child has one given parent, so that a key, which keeps the
+        // fact added last, keeps the same facts in either order.
+        {
+          ...given,
+          parents: [
+            ...new Map(given.parents.map((row) => [row[0], row])).values(),
+          ],
+        },
+        (some) =>
+          program(
+            some,
+            RULE_POOL.filter(
+              (rule) => PASSED_ON.includes(rule.name) || picked.includes(rule)
+            ),
+            [],
+            keyed
+          ),
+        [],
+        keyed
+      ),
     RUNS
   );
 

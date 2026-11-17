@@ -60,28 +60,6 @@ export const isAssumed = (tree: Told): boolean =>
       isAssumed(item as Told)
     ));
 
-/** What a tree says of its first goal, without what that rests on. */
-const said = ({ absent, check, fact }: Told) => ({ absent, check, fact });
-
-/**
- * A tree without what its goals rest on: the fact that holds, or the absent
- * goal with each way it could have held, the goals that held there, and the
- * goal that did not. A row that several answers give is explained by one of
- * them, and which one depends on the order the facts came in. This much of
- * a tree does not.
- */
-export const outlineOf = (tree: Told) => ({
-  ...said(tree),
-  ways:
-    tree.absent === undefined
-      ? undefined
-      : ((tree.because ?? []) as Way[]).map(({ because, but, rule }) => ({
-          because: because?.map(said),
-          but: said(but),
-          rule,
-        })),
-});
-
 const isSome = (value: unknown): value is [string, string, unknown] =>
   Array.isArray(value) &&
   value.length === 3 &&
