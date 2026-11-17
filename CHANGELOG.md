@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-17 — @lionlang/core 0.12.0, @lionlang/cli 0.11.0
+
+The logic layer grows with its facts. What rules derive is kept and follows every change to the facts and the rules, in a full database and in a goal-directed query, instead of being derived again from nothing. A join runs in batches and keeps far less in memory, and a load under invariants or schemas no longer reads every row again for each form.
 
 ### Added
 
