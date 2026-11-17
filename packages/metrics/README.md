@@ -1,11 +1,12 @@
 # @lionlang/metrics
 
-Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer five questions:
+Tools that measure Lion, so a change can be judged by numbers and not by feel. They answer six questions:
 
 | Question | Command |
 | --- | --- |
 | Did the change make Lion simpler or more complex? | `bun run measure --against main` |
 | Did it make Lion faster or slower? | `bun run bench --against main` |
+| Does its time grow as the facts do, or faster? | `bun run scale --against main` |
 | Do the tests notice when the code is wrong? | `bun run mutate` |
 | What does the change do to a program's result? | `bun run compare main programs.json` |
 | How well does an agent do a skill's eval case? | `bun run skill-eval lion-research verifies-company-figures` |
@@ -99,11 +100,28 @@ Times the programs in [`src/benchmarks.ts`](src/benchmarks.ts): plain code, recu
 
 Times move by a few percent from run to run, so run it twice before you report a small change.
 
+## Growth: `bun run scale`
+
+```bash
+bun run scale --against main
+bun run scale --sizes 1000,1000000 --limit 120
+bun run scale load change
+```
+
+A benchmark says how fast one size is. `scale` runs the workloads in [`src/workloads.ts`](src/workloads.ts) at growing sizes, 1,000, 10,000, and 100,000 facts unless `--sizes` says otherwise, and says how the time grows: loading facts one form at a time and many, with and without invariants, schemas, and keys; asking every row and one row; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, so its memory is its own, and one that takes longer than `--limit` seconds, 60 by default, is stopped and shown as `over 60 s`.
+
+- `grows` is the power of the size the time follows between the two largest sizes that ran. `n^1.0` grows as the facts do. `n^2.0` grows as their square: something reads everything again for each row. A workload that was stopped shows `stops`.
+- `peak` is the most memory the timed programs added, and `kept` is what the database holds afterwards, both at the largest size.
+- With `--against`, a second line gives the same for the earlier commit, and `speed` says how many times as fast the working tree is at the largest size both ran.
+
+A workload whose answer is a number of rows says what that number is, counted without Lion, and the tests run every workload at small sizes against it, so a workload asks what its name says. Add a workload for each way a program can grow that the list does not cover.
+
 ## Tests that can fail: `bun run mutate`
 
 ```bash
 bun run mutate
 bun run mutate find recursion
+bun run mutate --in logic/model.ts,logic/database.ts
 bun run mutate --list
 ```
 
@@ -112,6 +130,8 @@ A property test that passes on broken code proves nothing about that code. `muta
 - `CAUGHT`: the tests failed, as they should.
 - `MISSED`: the tests passed on broken code. Add a property that fails on it.
 - `STALE`: the text to replace is not in the file exactly once, because the code moved. Point the mutation at the code that now does that job.
+
+The whole list takes most of an hour, since it also breaks the skills and the project record. Words after the command pick the mutations whose names hold one of them, and `--in` picks the ones in files whose paths hold one of its words: run the mutations of the files you changed.
 
 To try a break of your own without adding it to the list:
 

@@ -19026,5 +19026,109 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "derived-rows-after-fact-change",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["a", "b"]],
+      ["relation", "path", ["a", "b"]],
+      ["relation", "degree", ["a", "count"]],
+      ["relation", "sink", ["a"]],
+      ["relation", "n", ["x"]],
+      ["relation", "m", ["x"]],
+      ["relation", "both", ["x"]],
+      ["fact", ["edge", 1, 2], ["edge", 2, 3]],
+      ["fact", ["n", 1], ["n", 2], ["n", 3], ["m", 1], ["m", 2], ["m", 3]],
+      ["rule", ["path", "?a", "?b"], ["edge", "?a", "?b"]],
+      [
+        "rule",
+        ["path", "?a", "?c"],
+        ["path", "?a", "?b"],
+        ["edge", "?b", "?c"]
+      ],
+      [
+        "rule",
+        ["degree", "?a", ["aggregate/count", "?b"]],
+        ["edge", "?a", "?b"]
+      ],
+      [
+        "rule",
+        ["sink", "?b"],
+        ["edge", "?_", "?b"],
+        ["not", ["edge", "?b", "?_"]]
+      ],
+      ["rule", ["both", "?x"], ["n", "?x"], ["m", "?x"]],
+      [
+        "define",
+        "ask",
+        [
+          "lambda",
+          [],
+          {
+            "paths": ["find", ["array/make", "?a", "?b"], ["path", "?a", "?b"]],
+            "degrees": [
+              "find",
+              ["array/make", "?a", "?n"],
+              ["degree", "?a", "?n"]
+            ],
+            "sinks": ["find", "?a", ["sink", "?a"]],
+            "both": ["find", "?x", ["both", "?x"]]
+          }
+        ]
+      ],
+      ["define", "before", ["ask"]],
+      ["define", "found", ["query", ["both", "?x"]]],
+      ["fact", ["edge", 3, 4], ["edge", 3, 5]],
+      ["retract", ["edge", 1, 2], ["m", 1]],
+      ["fact", ["m", 1]],
+      [
+        "define",
+        "right",
+        [
+          "schema/fits?",
+          ["ask"],
+          [
+            "quote",
+            {
+              "paths": [[2, 3], [2, 4], [2, 5], [3, 4], [3, 5]],
+              "degrees": [[2, 1], [3, 2]],
+              "sinks": [4, 5],
+              "both": [1, 2, 3]
+            }
+          ]
+        ]
+      ],
+      ["define", "order", ["query", ["both", "?x"]]],
+      [
+        "cond",
+        [["schema/fits?", ["ask"], "before"], ["quote", "stale"]],
+        [["not", "right"], ["quote", "other"]],
+        [
+          [
+            "schema/fits?",
+            "order",
+            [
+              "quote",
+              [
+                {
+                  "x": 2
+                },
+                {
+                  "x": 3
+                },
+                {
+                  "x": 1
+                }
+              ]
+            ]
+          ],
+          ["quote", "followed"]
+        ],
+        [["schema/fits?", "order", "found"], ["quote", "derived-again"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

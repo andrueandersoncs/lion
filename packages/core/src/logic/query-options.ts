@@ -140,6 +140,13 @@ export const parseQueryOptions = (
       });
 
 /**
+ * The answer a message shows as an example: the first in sort order, so the
+ * message does not depend on the order the answers were found in.
+ */
+export const exampleOf = (rows: readonly Record<string, unknown>[]) =>
+  rows.reduce((least, row) => (compareValues(row, least) < 0 ? row : least));
+
+/**
  * Describes how a goal's answers break an assertion, or returns undefined.
  * `subject` names what made the assertion, such as "query" or "invariant".
  */
@@ -153,7 +160,7 @@ export const assertionProblem = (
     return `The ${subject} expected at least one answer but found none: ${show(goal)}.`;
   }
   if (assert === "none" && rows.length > 0) {
-    return `The ${subject} expected no answers but found ${rows.length}, such as ${JSON.stringify(rows[0])}: ${show(goal)}.`;
+    return `The ${subject} expected no answers but found ${rows.length}, such as ${JSON.stringify(exampleOf(rows))}: ${show(goal)}.`;
   }
   return undefined;
 };

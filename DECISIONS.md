@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 141 questions have been decided, 50 records explain them, and of what the records assert, 475 hold when Lion is run, 4 are broken, 232 are stated but not checked by running Lion, and 11 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 145 questions have been decided, 51 records explain them, and of what the records assert, 478 hold when Lion is run, 4 are broken, 242 are stated but not checked by running Lion, and 11 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -147,6 +147,10 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-16 | [`failed-feature-probe`](#failed-feature-probe) | `reported` | [A probe can read the repository, run a declared command, and answer for a feature](#probes-observe-the-repository) |
 | 2026-11-16 | [`probe-questions`](#probe-questions) | `behaviors-and-features` | [A probe can read the repository, run a declared command, and answer for a feature](#probes-observe-the-repository) |
 | 2026-11-16 | [`probe-reach`](#probe-reach) | `lion-and-repository` | [A probe can read the repository, run a declared command, and answer for a feature](#probes-observe-the-repository) |
+| 2026-11-16 | [`answers-of-a-rule-body`](#answers-of-a-rule-body) | `batches` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
+| 2026-11-16 | [`assertion-example-answer`](#assertion-example-answer) | `first-in-sort-order` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
+| 2026-11-16 | [`derived-rows-on-fact-change`](#derived-rows-on-fact-change) | `follow-the-change` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
+| 2026-11-16 | [`undoing-a-change-to-facts`](#undoing-a-change-to-facts) | `take-back-each-row` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
 
 <a id="program-representation"></a>
 
@@ -2934,3 +2938,72 @@ Now: `behaviors-and-features`.
 Now: `lion-and-repository`.
 
 - 2026-11-16 `probe-reach`: `lion-and-repository` over `lion-only`, `any-shell-command`, `library-functions`: "The host that runs the probes gives each probe's program functions beside the standard library" (`probes-observe-the-repository.json`)
+
+<a id="answers-of-a-rule-body"></a>
+
+## answers-of-a-rule-body
+
+Now: `batches`.
+
+- 2026-11-16 `answers-of-a-rule-body`: `batches` over `every-answer-at-once`, `one-answer-at-a-time`: "A rule body hands its answers on a batch at a time" (`derived-rows-follow-changes.json`)
+
+<a id="derived-rows-follow-changes"></a>
+
+### What a database derived follows a change to its facts
+
+Recorded 2026-11-16 in `history/notes/derived-rows-follow-changes.json`.
+
+**Context.** Every change to facts forgot everything the database had derived, so the next query derived it again from nothing. On a database of one million facts, adding one fact and asking every group's total again took 1.6 seconds, each time, and asking which rows a rule with `not` gives took 1.1 seconds; an agent that keeps a model of its work, or a research model that grows by one source at a time, paid for the whole model on every step. A `fact` or `retract` form also copied every relation it wrote to whenever the database held an invariant, a relation's `schema` among them, so that it could be undone: loading 100,000 facts one form at a time into a relation with a schema did not finish in a minute, where it takes half a second without the schema. And a rule body built the list of every answer of each goal before the next goal ran, so deriving 4.5 million paths held 9.2 gigabytes at its peak. The benchmarks time one size, 20,000 facts at most, and showed none of it.
+
+**Decision.** A database keeps what it derived when facts change, and follows the change through it, a group of relations at a time in the order they depend on each other. A changed row reaches every row that an answer using it gave or would give; the rows it reaches are taken out and derived again from the facts as they now are, and new rows go through the rules in rounds. An answer uses a row that one of its relation goals matched, and a row that a relation goal under `not` matches; an aggregated row is reached through its group, which is combined again from its matches. A relation whose rules ask about a changed relation any other way, in a `find` or as a value, that rules invent rows of, whose aggregate recurses, or whose rules hold a function from the host, is forgotten with every relation that reads it and derived again when something next reads it. A change is undone by taking back each row it added or removed, in place, instead of copying the relation first. A rule body hands its answers on a batch at a time, so it holds a few batches however many answers it has, and a row a rule derives joins its relation once the body has run. A model keeps the answer that derived each row as a list of the values of the rule's variables. A failed assertion shows as its example the first answer in sort order.
+
+**Consequences.** A change costs what it reaches, not what the database holds: at one million facts, adding a fact and asking every group's total again takes 23 milliseconds instead of 1.6 seconds, and loading facts one form at a time into a relation with a schema grows as the facts do. Deriving 4.5 million paths holds 2.1 gigabytes at its peak instead of 9.2. What the database has derived still never changes an answer, but it changes the order answers are found in: rows a change derives again come after the rows that stayed, so answer order now depends on the changes a database has seen, and `"order"` is the way to fix it. The example in an assertion's message would have depended on that order, which is why it is now the first answer in sort order. `why` explains a row by an answer that gives it from rows that hold; which answer that is can differ from the one a database that derived nothing before would show, when several give the row. A change an invariant refuses forgets what was derived, so the query after a refused change derives again. The first time a relation is read it is still derived in full. The engine is 832 lines larger, 8.6 percent: 10,472 lines of code where it had 9,640.
+
+**Alternatives considered.**
+
+- Forget only the relations that read what changed. The relation that read the changed row is still derived again in full, so a change to a large relation still costs the whole relation: it helps only a change to facts that no large rule reads.
+- Count the answers that give each row, and remove a row when its count reaches zero. Counts cannot tell a row that recursion supports through itself from one that still holds, and a count for every row is more memory where memory is what limits a database.
+- Keep every group's matches, to change an aggregate by one match. It keeps every match of every aggregate for as long as the database lives. Combining a reached group again from its matches reads only that group, through an index, and keeps nothing.
+- Undo the upkeep when an invariant refuses a change. It needs a log of every row and every derivation the upkeep touched. A refused change is the rare case, and forgetting what was derived is always right.
+- Keep rows on disk, or stream facts through without holding them. A Lion program is evaluated entirely in memory. Recursion needs the rows it has derived to know when to stop, an aggregate needs its group, and `not` needs every row of what it asks about, so only what a rule body holds while it runs can be streamed, and that is what batches do.
+- Hand on one answer at a time. Each answer would pay for the machinery that runs a goal, which a batch pays once. Batches hold as little as matters, and keep the order answers are found in.
+
+**What it asserts, checked.**
+
+- Holds when Lion is run: rule `derived-rows-follow-fact-changes` holds. "A database keeps what it derived when facts change, and follows the change through it"
+- Stated, not checked by running Lion: `derived-rows-after-refused-change` is `derived-again`. "A change an invariant refuses forgets what was derived"
+- Stated, not checked by running Lion: `million-facts-change-then-every-group-total-ms` is 23. "adding a fact and asking every group's total again takes 23 milliseconds instead of 1.6 seconds"
+- Stated, not checked by running Lion: `million-nodes-every-path-peak-mb` is 2146. "Deriving 4.5 million paths holds 2.1 gigabytes at its peak instead of 9.2"
+- Stated, not checked by running Lion: `core-code-lines` is 10472. "The engine is 832 lines larger, 8.6 percent: 10,472 lines of code where it had 9,640"
+- Stated, not checked by running Lion: decided `derived-rows-on-fact-change`: `follow-the-change`. "A database keeps what it derived when facts change, and follows the change through it"
+- Holds when Lion is run: `derived-rows-after-fact-change` is `followed`. "A changed row reaches every row that an answer using it gave or would give"
+- Stated, not checked by running Lion: decided `undoing-a-change-to-facts`: `take-back-each-row`. "A change is undone by taking back each row it added or removed, in place, instead of copying the relation first"
+- Stated, not checked by running Lion: decided `answers-of-a-rule-body`: `batches`. "A rule body hands its answers on a batch at a time"
+- Stated, not checked by running Lion: decided `assertion-example-answer`: `first-in-sort-order`. "A failed assertion shows as its example the first answer in sort order"
+- Stated, not checked by running Lion: `assertion-example-answer` is `first-in-sort-order`. "A failed assertion shows as its example the first answer in sort order"
+- Stated, not checked by running Lion: `answer-order-after-fact-changes` is `depends-on-changes`. "so answer order now depends on the changes a database has seen"
+- Holds when Lion is run: `derived-rows-present-vs-absent-answers` is `same`. "What the database has derived still never changes an answer"
+
+<a id="assertion-example-answer"></a>
+
+## assertion-example-answer
+
+Now: `first-in-sort-order`.
+
+- 2026-11-16 `assertion-example-answer`: `first-in-sort-order` over `first-found`: "A failed assertion shows as its example the first answer in sort order" (`derived-rows-follow-changes.json`)
+
+<a id="derived-rows-on-fact-change"></a>
+
+## derived-rows-on-fact-change
+
+Now: `follow-the-change`.
+
+- 2026-11-16 `derived-rows-on-fact-change`: `follow-the-change` over `forget-everything`, `forget-readers-of-what-changed`, `count-answers-per-row`: "A database keeps what it derived when facts change, and follows the change through it" (`derived-rows-follow-changes.json`)
+
+<a id="undoing-a-change-to-facts"></a>
+
+## undoing-a-change-to-facts
+
+Now: `take-back-each-row`.
+
+- 2026-11-16 `undoing-a-change-to-facts`: `take-back-each-row` over `copy-the-relation`: "A change is undone by taking back each row it added or removed, in place, instead of copying the relation first" (`derived-rows-follow-changes.json`)

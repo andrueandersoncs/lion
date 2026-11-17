@@ -19,7 +19,7 @@
 
 <h2>What is computed in full, and shared</h2>
 <p>Some relations cannot be narrowed safely. A relation that is aggregated, computed by a graph algorithm, <a href="#logic-asking">asked about</a>, under <code>not</code>, in a <code>find</code>, or as a value, or that rules <a href="#form-exists">invent</a> rows of, needs its complete contents to be right, so Lion derives it, and everything it depends on, in full. So does a goal that knows none of its arguments: a copy for it would hold every row anyway. Explanations from <code>why</code> also use full evaluation, so they describe the program as written.</p>
-<p>What Lion derives in full it derives once, in the database, and keeps until a fact or rule changes. Every later query reads it there, and a query that knows an argument of a relation the database already holds in full looks the rows up instead of deriving a copy. So a page that asks many different questions of one model derives each relation about once, as full evaluation would, and each question pays only for what it alone asks.</p>
+<p>What Lion derives in full it derives once, in the database, and keeps. Every later query reads it there, and a query that knows an argument of a relation the database already holds in full looks the rows up instead of deriving a copy. So a page that asks many different questions of one model derives each relation about once, as full evaluation would, and each question pays only for what it alone asks.</p>
 <p>A relation is derived the first time a goal reads it, so a query never pays for relations it does not reach. Here the query asks only for listed teams, so the rule for big ones never gets past its first goal, <code>big</code> is never derived, and the amount that is not a number never matters, though <code>["big", "?u"]</code> knows none of its arguments:</p>
 <lion-example name="Only what an answer reaches">
 ["begin",
@@ -35,6 +35,28 @@
   ["query", ["flag", "listed", "?t"], {"order": "t"}]]
 </lion-example>
 <p>Deriving <code>flag</code> in full, as <code>["flag", "?kind", "?t"]</code> would, runs every rule and fails on <code>"lots"</code>. The same holds in full evaluation: with <code>["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]</code> and no <code>audit</code> rows, <code>broken</code> is never derived.</p>
+
+<h2>When facts change</h2>
+<p>What Lion has derived it keeps when facts change, and brings up to date with the change. A changed row reaches every row that an answer using it gave or would give. Lion takes those rows out and derives them again from the facts as they now are, so a change costs what it reaches, not what the database holds. An answer uses a row that one of its relation goals matched, and also a row that a relation goal under <code>not</code> matches, since that row is why the answer is not one. An aggregated row is reached through its group, which is combined again from its matches.</p>
+<p>Here the first query derives every team's total and which teams have no spending. The new fact reaches one group of <code>total</code> and one row of <code>idle</code>, and the retract reaches one of each again:</p>
+<lion-example name="A change reaches what it changes">
+["begin",
+  ["relation", "team", ["name"]],
+  ["relation", "spend", ["team", "amount"]],
+  ["relation", "total", ["team", "amount"]],
+  ["relation", "idle", ["team"]],
+  ["fact", ["team", "web"], ["team", "ops"], ["team", "lab"]],
+  ["fact", ["spend", "web", 500], ["spend", "web", 20], ["spend", "ops", 70]],
+  ["rule", ["total", "?t", ["aggregate/sum", "?a"]], ["spend", "?t", "?a"]],
+  ["rule", ["idle", "?t"], ["team", "?t"], ["not", ["spend", "?t", "?_"]]],
+  ["define", "now", ["lambda", [],
+    {"totals": ["query", ["total", "?team", "?amount"], {"order": "team"}],
+     "idle": ["find", "?t", ["idle", "?t"]]}]],
+  {"first": ["now"],
+   "added": ["begin", ["fact", ["spend", "lab", 5]], ["now"]],
+   "retracted": ["begin", ["retract", ["spend", "ops", 70]], ["now"]]}]
+</lion-example>
+<p>The answers are what a database that had derived nothing would give; only the order answers are found in can differ, which is one more reason to sort with <a href="#query-options"><code>"order"</code></a> when order matters. A relation is derived again the next time something reads it, instead of being followed, when its rules ask about a changed relation any other way, in a <code>find</code> or as a value, when rules <a href="#form-exists">invent</a> its rows, when its aggregate recurses, or when a rule holds a function from the host that does not say it reads only its arguments. So is everything after a rule is added.</p>
 
 <h2>Turning it off</h2>
 <p>A host can create a database with <code>new LogicDatabase({ goalDirected: false })</code> to derive every row of the relations a query reads. This is useful for comparing results; Lion's own tests check that both ways agree.</p>

@@ -14,7 +14,7 @@ Reason about every task from what it is for, not from what exists: no format, fi
 
 ## Complexity
 
-Measure before you call a change to `@lionlang/core` done: `bun run measure --against main` for the code and the semantics, and `bun run bench --against main` for speed. Aim for the numbers to go down, and report them as they are, including the ones that went up. Add a new kind of expression, or a new place one can stand, to the interop grid in `packages/metrics/src/grid-cases.ts`; a cell that does not give what plain code gives is an exception to remove. See "Measuring Complexity" in AGENTS.md.
+Measure before you call a change to `@lionlang/core` done: `bun run measure --against main` for the code and the semantics, `bun run bench --against main` for speed, and `bun run scale --against main` for how time and memory grow with the facts. Aim for the numbers to go down, and report them as they are, including the ones that went up. Add a new kind of expression, or a new place one can stand, to the interop grid in `packages/metrics/src/grid-cases.ts`; a cell that does not give what plain code gives is an exception to remove. See "Measuring Complexity" in AGENTS.md.
 
 ## Features and semantics
 

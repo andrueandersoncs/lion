@@ -1310,7 +1310,7 @@
     {
       "id": "doc-readme-115",
       "source": "doc-readme",
-      "quote": "Removes facts. Derived answers update on the next query.",
+      "quote": "Removes facts. What rules derived from them changes with them.",
       "says": {
         "feature": "retract",
         "kind": "special-form",
@@ -1320,7 +1320,7 @@
     {
       "id": "doc-readme-116",
       "source": "doc-readme",
-      "quote": "Removes facts. Derived answers update on the next query.",
+      "quote": "Removes facts. What rules derived from them changes with them.",
       "says": {
         "behavior": "retract-derived-answers",
         "is": "update-on-next-query",
@@ -2431,7 +2431,7 @@
     {
       "id": "doc-readme-216",
       "source": "doc-readme",
-      "quote": "Without `\"order\"`, answers come in the order they are found.",
+      "quote": "Without `\"order\"`, answers come in the order they are found",
       "says": {
         "behavior": "query-answer-order-without-order-option",
         "is": "found-order",
@@ -3681,10 +3681,10 @@
     {
       "id": "doc-readme-328",
       "source": "doc-readme",
-      "quote": "A relation is derived the first time a goal reads it, and kept until a fact or rule changes, so a query never pays for relations it does not reach, and never fails on one",
+      "quote": "A relation is derived the first time a goal reads it, and kept, also [when facts change](#guarantees), so a query never pays for relations it does not reach, and never fails on one",
       "says": {
-        "behavior": "logic-answer-cache",
-        "is": "until-facts-or-rules-change",
+        "behavior": "derived-rows-after-fact-change",
+        "is": "followed",
         "area": "logic"
       }
     },
@@ -4264,7 +4264,7 @@
     {
       "id": "doc-readme-373",
       "source": "doc-readme",
-      "quote": "What the database has already derived never changes an answer.",
+      "quote": "What the database has already derived never changes an answer",
       "says": {
         "behavior": "derived-rows-present-vs-absent-answers",
         "is": "same",

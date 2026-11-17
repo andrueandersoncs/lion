@@ -7,6 +7,7 @@
   "scripts": {
     "measure": "bun run measure.ts",
     "bench": "bun run bench.ts",
+    "scale": "bun run scale.ts",
     "mutate": "bun run mutate.ts",
     "compare": "bun run compare.ts",
     "skill-eval": "bun run skill-eval.ts",

@@ -123,6 +123,9 @@ bun run measure --grid
 # Speed, beside main
 bun run bench --against main
 
+# How time and memory grow with the facts, beside main
+bun run scale --against main
+
 # Break the code in each listed place and check that the tests notice
 bun run mutate
 
@@ -142,6 +145,7 @@ How to use the numbers:
 - **Keep the grid's exceptions at the documented ones.** A new exception fails the tests of `packages/metrics`. Fix the feature rather than add to `KNOWN`.
 - **Never buy a lower number with a worse Lion.** Do not remove a feature, a test, or a message a user needs, and do not squeeze code until it is hard to read.
 - **Check the speed.** Run `bun run bench --against main` twice, since times move by a few percent between runs, and report any benchmark that got slower.
+- **Check the growth.** Run `bun run scale --against main`. A benchmark times one size, so it cannot show a step that reads everything again for each row. A workload should grow as its facts do, `n^1.0`; report any that grows faster, or that keeps more memory. Add a workload to `packages/metrics/src/workloads.ts` for a way of growing the list does not cover.
 - **Check what you say about behavior.** Before you write that a change fixes, breaks, or keeps something, in a changelog or a report, put the program in a file and run `bun run compare`.
 - **Do not edit code while `bun run mutate` runs.** It rewrites source files while their tests run, then puts them back.
 
@@ -170,9 +174,10 @@ bun run fix
 # Prepare development environment (installs the git hooks)
 bun run prepare
 
-# Measure complexity, speed, and how well the tests catch broken code
+# Measure complexity, speed, growth, and how well the tests catch broken code
 bun run measure --against main
 bun run bench --against main
+bun run scale --against main
 bun run mutate
 ```
 
@@ -433,9 +438,11 @@ packages/metrics/
 │   ├── grid-cases.ts   # the interop grid's rows, columns, and known exceptions
 │   ├── mutations.ts    # the breaks `bun run mutate` checks
 │   ├── benchmarks.ts   # the programs `bun run bench` times
+│   ├── workloads.ts    # the workloads `bun run scale` times at growing sizes
 │   └── *.ts
 ├── measure.ts
 ├── bench.ts
+├── scale.ts
 ├── mutate.ts
 ├── compare.ts
 └── package.json
@@ -470,7 +477,7 @@ packages/repl/
    - Run `bun run check`
    - Run `bun run test`
    - Run `bun run build`
-   - For a change to `@lionlang/core`, run `bun run measure --against main` and `bun run bench --against main`, and `bun run mutate` when you added behavior
+   - For a change to `@lionlang/core`, run `bun run measure --against main`, `bun run bench --against main`, and `bun run scale --against main`, and `bun run mutate --in <the files you changed>` when you added behavior
    - Run `bun run --cwd packages/site-runtime docs`, and give each new feature an example in the docs (see [Documenting Every Feature](#documenting-every-feature))
    - Record the change, and any design decision, as claims in `history/notes/`, then run `bun run history write` and `bun run history check`, and list or settle any new finding it reports (see [Recording Changes and Decisions](#recording-changes-and-decisions))
    - Do not write any file while `bun run mutate` runs, not even one outside the code: the repository's write hook formats files, and a mutation it reformats is left in place

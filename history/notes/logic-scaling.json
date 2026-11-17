@@ -1,0 +1,60 @@
+{
+  "claims": [
+    {
+      "quote": "A database keeps what it derived when facts change and follows the change through it, so a change costs what it reaches: a row that an answer using a changed row gave is taken out and derived again, through relation goals, goals under `not`, aggregates, and recursion. With one million facts, adding a fact and asking every group's total again takes 23 milliseconds, where it took 1.6 seconds, and a rule with `not` takes 8 milliseconds, where it took 1.1 seconds. Answers are the same as before; the order they are found in can differ with the changes a database has seen, so use `\"order\"` when it matters.",
+      "says": {
+        "behavior": "derived-rows-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["derived-rows-follow-changes"]
+    },
+    {
+      "quote": "A `fact` or `retract` form no longer copies the relations it writes to when the database holds an invariant, a relation's `schema` among them: when the change is refused it takes back each row it added or removed, and every fact is where it was. Loading 100,000 facts one form at a time into a relation with a schema takes 1.5 seconds; before, it did not finish in a minute, and the time grew with the square of the facts.",
+      "says": {
+        "behavior": "fact-form-cost-under-invariants",
+        "is": "grows-with-the-change",
+        "area": "logic",
+        "was": "grows-with-the-relation"
+      },
+      "decisions": ["derived-rows-follow-changes"]
+    },
+    {
+      "quote": "A rule body hands its answers on in batches instead of listing every answer of each goal first, and a model keeps less for each row it derives. Deriving 4.5 million paths holds 2.1 gigabytes at its peak, where it held 9.2, and keeps 1.9, where it kept 2.9.",
+      "says": {
+        "measured": "million-nodes-every-path-peak-mb",
+        "after": 2146,
+        "before": 9166,
+        "area": "metrics"
+      },
+      "decisions": ["derived-rows-follow-changes"]
+    },
+    {
+      "quote": "A failed assertion or invariant shows as its example the first answer in sort order, not the first one found, so the message does not depend on the order the answers were found in.",
+      "says": {
+        "behavior": "assertion-example-answer",
+        "is": "first-in-sort-order",
+        "area": "logic",
+        "was": "first-found"
+      },
+      "decisions": ["derived-rows-follow-changes"]
+    },
+    {
+      "quote": "`bun run scale` times workloads at growing sizes, 1,000 to 100,000 facts and more, on the working tree or beside a commit with `--against main`, and says how each time grows: `n^1.0` grows as the facts do, and `n^2.0` as their square. It covers loading facts one form at a time and many, with invariants, schemas, and keys; asking every row and one; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, and reports the memory it added at its peak and what the database keeps.",
+      "says": {
+        "feature": "bun-run-scale",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "`bun run mutate --in logic/model.ts,logic/database.ts` runs only the mutations in files whose paths hold one of the words, so a change can run the mutations of the files it touched instead of the whole list.",
+      "says": {
+        "feature": "mutate-in-option",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}

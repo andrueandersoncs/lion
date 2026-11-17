@@ -69,7 +69,177 @@ const researchStep = (
   tests: ["src/tests/research.test.ts"],
 });
 
+const MAINTAINED_TESTS = ["src/logic/tests/maintained.test.ts"];
+const TUPLE_SET_TESTS = ["src/logic/tests/tuple-set.test.ts"];
+const BATCH_TESTS = ["src/logic/tests/batches.test.ts"];
+
+/** A break in how derived rows follow a change, caught by the kept-database property. */
+const maintained = (name: string, find: string, replace: string): Mutation => ({
+  file: core("logic/maintain.ts"),
+  find,
+  name,
+  replace,
+  tests: MAINTAINED_TESTS,
+});
+
+/** Breaks in what makes the logic layer grow with its changes, not its facts. */
+const SCALING: readonly Mutation[] = [
+  {
+    name: "a removed tuple goes back at the end of its bucket when undone",
+    file: core("logic/model.ts"),
+    find: "      bucket.splice(this.placeIn(bucket, slot), 0, tuple);",
+    replace: "      bucket.push(tuple);",
+    tests: TUPLE_SET_TESTS,
+  },
+  {
+    name: "an added tuple stays in its bucket when undone",
+    file: core("logic/model.ts"),
+    find: "        rest?.pop();",
+    replace: "",
+    tests: TUPLE_SET_TESTS,
+  },
+  {
+    name: "tidying a set of tuples loses them",
+    file: core("logic/model.ts"),
+    find: "        this.rows.push(tuple);\n        this.keys.push(keys[slot] as string);",
+    replace: "",
+    tests: TUPLE_SET_TESTS,
+  },
+  {
+    name: "a refused change to facts is not taken back",
+    file: core("logic/database.ts"),
+    find: "    return changed ? () => undo(log ?? []) : undefined;",
+    replace: "    return changed ? () => undo([]) : undefined;",
+    tests: ["src/logic/tests/invariants.test.ts"],
+  },
+  {
+    name: "answers past a full batch are dropped",
+    file: core("logic/model.ts"),
+    find: "          yield* on(out);\n          out = [];",
+    replace: "          out = [];",
+    tests: BATCH_TESTS,
+  },
+  {
+    name: "answers short of a full batch are dropped",
+    file: core("logic/model.ts"),
+    find: "      }\n    }\n    yield* on(out);\n  });",
+    replace: "      }\n    }\n  });",
+    tests: BATCH_TESTS,
+  },
+  {
+    name: "a failed assertion shows the first answer found",
+    file: core("logic/query-options.ts"),
+    find: "  rows.reduce((least, row) => (compareValues(row, least) < 0 ? row : least));",
+    replace: "  rows[0];",
+    tests: BATCH_TESTS,
+  },
+  maintained(
+    "rows a change reached stay",
+    "      model.relations.get(name)?.delete(row);\n",
+    ""
+  ),
+  maintained(
+    "what a change reached is not derived again",
+    "    yield* deriveAgain(model, rules, reached.names, added);\n",
+    ""
+  ),
+  maintained(
+    "lost rows are not put back for the search",
+    "        rowsOf(model, name).add(row, back);\n",
+    ""
+  ),
+  maintained(
+    "a change reaches a row that is a fact",
+    "  return held?.has(row) && !model.facts.get(name)?.has(row) ? [row] : [];",
+    "  return held?.has(row) ? [row] : [];"
+  ),
+  maintained(
+    "a row that becomes a fact keeps its derivation",
+    "        model.derivations.get(name)?.delete(key);\n",
+    ""
+  ),
+  maintained(
+    "a question about a changed relation is followed",
+    "!(untracked(pass, relation) || changed(pass, relation.name))",
+    "!untracked(pass, relation)"
+  ),
+  maintained(
+    "an aggregate that recurses is followed",
+    "        !(recursive && rule.aggregates.length > 0) &&\n",
+    ""
+  ),
+  maintained(
+    "a rule that invents is followed",
+    "        rule.invents === undefined &&\n",
+    ""
+  ),
+  {
+    ...maintained(
+      "a function from the host reads nothing",
+      "    blind ||\n",
+      ""
+    ),
+    tests: ["src/logic/tests/incremental.test.ts"],
+  },
+  maintained(
+    "a computed relation survives a change to what it reads",
+    "        model.relations.delete(name);\n",
+    ""
+  ),
+  maintained(
+    "new rows do not go through the rules",
+    "    yield* rounds(model, rules, derive, start, (more) =>",
+    "    yield* rounds(model, rules, derive, new Map(), (more) =>"
+  ),
+  maintained(
+    "what a group gained is not passed on",
+    "    gained.set(name, plus);\n",
+    "    gained.set(name, new TupleSet());\n"
+  ),
+  maintained(
+    "what a group lost is not passed on",
+    "    lost.set(name, minus);\n",
+    "    lost.set(name, new TupleSet());\n"
+  ),
+  maintained(
+    "a forgotten group counts as unchanged",
+    "    unknown.add(name);\n",
+    ""
+  ),
+  maintained(
+    "a row a change reached does not reach the rows it gave",
+    "          rowsIn(next, name).add(each);\n",
+    ""
+  ),
+  maintained(
+    "a goal under not is not followed",
+    "    const under = refused(rule, literal);\n    const bodies",
+    "    const under = undefined as ReturnType<typeof refused>;\n    const bodies"
+  ),
+  maintained(
+    "a row an aggregate's relation gains does not reach its group",
+    "                gains: under !== undefined || rule.aggregates.length > 0,",
+    "                gains: under !== undefined,"
+  ),
+  maintained(
+    "other goals under not stay in the search",
+    "under?.map((goals) => [...goals, ...matched])",
+    "under?.map((goals) => [...goals, ...rule.body.filter((each) => each !== literal)])"
+  ),
+  maintained(
+    "an aggregated row is not reached through its group",
+    "    return [...(held?.lookup(named(rule), row) ?? [])];",
+    "    return [];"
+  ),
+  maintained(
+    "a group a change reached is not combined again",
+    "    addAll(into, yield* settle(model, groups));",
+    "    yield* settle(model, groups);"
+  ),
+];
+
 export const MUTATIONS: readonly Mutation[] = [
+  ...SCALING,
   research(
     "a lead covers only questions written exactly as it pursues them",
     '["schema/fits?", "?q", ["schema/open", "?p"]],',
@@ -252,8 +422,14 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "find does not sort what it found",
     file: core("logic/model.ts"),
-    find: "    return values.sort(compareValues);",
-    replace: "    return values;",
+    find: "      values.sort(compareValues)\n",
+    replace: "      values\n",
+  },
+  {
+    name: "find in plain code does not sort what it found",
+    file: core("logic/database.ts"),
+    find: "      return values.sort(compareValues);",
+    replace: "      return values;",
   },
   {
     name: "a match that two alternatives find counts twice",
@@ -288,8 +464,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a relation goal reads a relation's rows before they are derived",
     file: core("logic/model.ts"),
-    find: "            ? toRead(model, literal.relation, true)\n            : undefined;",
-    replace: "            ? undefined\n            : undefined;",
+    find: "    rows === undefined ? toRead(model, literal.relation, true) : undefined;",
+    replace: "    undefined as ReturnType<typeof toRead>;",
   },
   {
     name: "relations that depend on each other wait for each other's rows",
@@ -333,10 +509,10 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "  const question = asked([], []).find(inCycle);",
   },
   {
-    name: "derived rows survive a change to the facts",
+    name: "derived rows stay as they were through a change to the facts",
     file: core("logic/database.ts"),
-    find: "  database.model = undefined;",
-    replace: "  database.model = database.model;",
+    find: "    if (model === undefined || facts === undefined || running) {\n      database.model = undefined;",
+    replace: "    if (true) {",
   },
   {
     name: "a question may go through recursion when it runs",
@@ -588,7 +764,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a broken schema invariant does not say where the answer does not fit",
     file: core("logic/database.ts"),
-    find: '    const where = row === undefined ? "" : yield* misfitOf(database, goal, row);',
+    find: '    const where =\n      rows.length === 0 ? "" : yield* misfitOf(database, goal, exampleOf(rows));',
     replace: '    const where = "";',
     tests: ["src/logic/tests/schemas.test.ts"],
   },
@@ -741,8 +917,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a change says it added no rows",
     file: core("logic/database.ts"),
-    find: "        set.add(tuple);\n      }\n      return rows;",
-    replace: "      }\n      return rows;",
+    find: "      const into = count > 0 ? gained : lost;",
+    replace: "      const into = lost;",
     tests: [
       "src/logic/tests/incremental.test.ts",
       "src/logic/tests/invariants.test.ts",

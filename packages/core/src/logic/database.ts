@@ -16,27 +16,35 @@ import {
 } from "@/logic/compile";
 import { checkOf, misfit } from "@/logic/fit";
 import { factsName, rewriteQueries } from "@/logic/magic";
+import { maintain, type Rows } from "@/logic/maintain";
 import {
   aggregateKind,
   answer,
+  answerKey,
+  type Change,
   changedAnswers,
-  collect,
-  distinct,
   EMPTY,
+  each,
   explain,
+  found,
   holds,
   keyColumns,
   type LogicEffect,
   Model,
-  matches,
   NO_VARS,
+  type Sink,
   type Tuple,
   TupleSet,
   term,
   UNDIRECTED,
+  undo,
   type Vars,
 } from "@/logic/model";
-import { type Assertion, assertionProblem } from "@/logic/query-options";
+import {
+  type Assertion,
+  assertionProblem,
+  exampleOf,
+} from "@/logic/query-options";
 import {
   asked,
   components,
@@ -50,6 +58,7 @@ import {
 } from "@/logic/strata";
 import {
   Atom,
+  compareValues,
   type DeferredCall,
   isForm,
   isGroundValue,
@@ -351,7 +360,7 @@ const notData = (arg: unknown) => {
     : `the ${kind} "${name}". ${asString(name)}`;
 };
 
-/** Forgets what was derived, after the facts or rules changed. */
+/** Forgets what was derived. */
 const touch = (database: LogicDatabase) => {
   database.model = undefined;
   database.goals.clear();
@@ -368,18 +377,82 @@ const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
  */
 type Undo = (() => void) | undefined;
 
-const EMPTY_ROWS: ReadonlyMap<string, TupleSet> = new Map();
-
-/** What a change to facts touched. */
+/** What a change to facts did. */
 interface FactChange {
   /**
-   * The rows the change added, by relation; a superset is fine. Worked out
-   * only when an invariant asks, so a change pays nothing for it otherwise.
+   * The rows each relation gained and lost. Worked out only when something
+   * asks, so a change pays nothing for it otherwise.
    */
-  readonly added: () => ReadonlyMap<string, TupleSet>;
+  readonly net: () => { readonly gained: Rows; readonly lost: Rows };
   /** The relations whose facts the change wrote to. */
   readonly touched: ReadonlySet<string>;
 }
+
+/**
+ * The rows each relation gained and lost in a logged change. A row the
+ * change added and removed again, or removed and added again, is neither.
+ */
+const netOf = (
+  database: LogicDatabase,
+  touched: ReadonlySet<string>,
+  log: readonly Change[]
+) => {
+  const names = new Map<TupleSet, string>();
+  for (const name of touched) {
+    const facts = database.facts.get(name);
+    if (facts !== undefined) {
+      names.set(facts, name);
+    }
+  }
+  const counts = new Map<string, Map<string, [Tuple, number]>>();
+  for (const [set, tuple, , added] of log) {
+    const name = names.get(set) ?? "";
+    const rows = counts.get(name) ?? new Map<string, [Tuple, number]>();
+    const key = valueKey(tuple);
+    const [, count] = rows.get(key) ?? [tuple, 0];
+    rows.set(key, [tuple, count + (added ? 1 : -1)]);
+    counts.set(name, rows);
+  }
+  const gained: Rows = new Map();
+  const lost: Rows = new Map();
+  for (const [name, rows] of counts) {
+    for (const [key, [tuple, count]] of rows) {
+      const into = count > 0 ? gained : lost;
+      if (count !== 0) {
+        const set = into.get(name) ?? new TupleSet();
+        set.addKeyed(key, tuple);
+        into.set(name, set);
+      }
+    }
+  }
+  return { gained, lost };
+};
+
+/**
+ * Brings what was derived up to date with a change. A change to facts is
+ * followed through the rows the rules derived. After any other change, and
+ * when a rule fails on the new facts, what was derived is forgotten: the
+ * next reader derives it again, and is the one a failing rule fails.
+ */
+const keep = (database: LogicDatabase, facts: FactChange | undefined) =>
+  Effect.suspend(() => {
+    database.goals.clear();
+    const { model } = database;
+    // A change made while rules run finds their rows half derived.
+    const running = [...(model?.state.values() ?? [])].includes("running");
+    if (model === undefined || facts === undefined || running) {
+      database.model = undefined;
+      return Effect.void;
+    }
+    const { gained, lost } = facts.net();
+    return maintain(model, new Map(gained), new Map(lost)).pipe(
+      Effect.catch(() =>
+        Effect.sync(() => {
+          database.model = undefined;
+        })
+      )
+    );
+  });
 
 /**
  * Makes a change, then checks the invariants it can break: all of them, or
@@ -400,13 +473,15 @@ const commit = (
     if (undo === undefined) {
       return Effect.void;
     }
-    touch(database);
-    return checkInvariants(
-      database,
-      database.invariants,
-      `${describe} breaks an invariant, so nothing changed.`,
-      facts
-    ).pipe(
+    return keep(database, facts).pipe(
+      Effect.andThen(
+        checkInvariants(
+          database,
+          database.invariants,
+          `${describe} breaks an invariant, so nothing changed.`,
+          facts
+        )
+      ),
       Effect.onError(() =>
         Effect.sync(() => {
           undo();
@@ -418,64 +493,67 @@ const commit = (
 
 /**
  * Changes facts with `write`, which gets the facts of a relation to write
- * to and says whether it changed any. While the database has invariants,
- * the change writes to a copy of each fact set it touches, so undoing it
- * puts back the very sets it replaced, with their facts in the same order.
- * Without invariants nothing can fail after the change, so it writes in
- * place.
+ * to and says whether it changed any. Each tuple the change adds or removes
+ * is logged: undoing the change takes it back tuple by tuple, which leaves
+ * every fact where it was, and what was derived is brought up to date with
+ * just those tuples. With no invariant that could refuse the change and
+ * nothing derived, nobody asks what changed, so nothing is logged.
  */
 const changeFacts = (
   database: LogicDatabase,
   describe: string,
-  write: (facts: (relation: string) => TupleSet | undefined) => boolean,
-  added: FactChange["added"] = () => EMPTY_ROWS
+  write: (
+    facts: (relation: string) => TupleSet | undefined,
+    log: Change[] | undefined
+  ) => boolean
 ) => {
   const touched = new Set<string>();
+  let log: Change[] | undefined;
+  let net: ReturnType<FactChange["net"]> | undefined;
   const change = () => {
-    const replaced = new Map<string, TupleSet>();
-    const undo = () => {
-      for (const [relation, original] of replaced) {
-        database.facts.set(relation, original);
-      }
-    };
+    log =
+      database.invariants.length === 0 && database.model === undefined
+        ? undefined
+        : [];
     const changed = write((relation) => {
-      touched.add(relation);
       const facts = database.facts.get(relation);
-      if (
-        facts === undefined ||
-        database.invariants.length === 0 ||
-        replaced.has(relation)
-      ) {
-        return facts;
+      if (!touched.has(relation)) {
+        touched.add(relation);
+        facts?.tidy();
       }
-      replaced.set(relation, facts);
-      const copy = facts.clone();
-      database.facts.set(relation, copy);
-      return copy;
-    });
-    if (!changed) {
-      undo();
-    }
-    return changed ? undo : undefined;
+      return facts;
+    }, log);
+    return changed ? () => undo(log ?? []) : undefined;
   };
-  return commit(database, describe, change, { added, touched });
+  return commit(database, describe, change, {
+    net: () => {
+      net ??= netOf(database, touched, log ?? []);
+      return net;
+    },
+    touched,
+  });
 };
 
 const these = (atoms: readonly Atom[]) =>
   atoms.length === 1 ? "this fact" : "these facts";
 
 /** Adds a fact. One whose key is already present replaces the old row. */
-const addFact = (facts: TupleSet, { key }: RelationInfo, tuple: Tuple) => {
+const addFact = (
+  facts: TupleSet,
+  { key }: RelationInfo,
+  tuple: Tuple,
+  log: Change[] | undefined
+) => {
   let changed = false;
   if (key !== undefined) {
     const keyValues = key.map((position) => tuple[position]);
     for (const old of [...facts.lookup(key, keyValues)]) {
       if (valueKey(old) !== valueKey(tuple)) {
-        changed = facts.delete(old) || changed;
+        changed = facts.delete(old, log) || changed;
       }
     }
   }
-  return facts.add(tuple) || changed;
+  return facts.add(tuple, log) || changed;
 };
 
 export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
@@ -489,30 +567,21 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       }
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
-    const added = () => {
-      const rows = new Map<string, TupleSet>();
-      for (const [{ relation }, tuple] of tuples) {
-        let set = rows.get(relation.name);
-        if (set === undefined) {
-          set = new TupleSet();
-          rows.set(relation.name, set);
-        }
-        set.add(tuple);
-      }
-      return rows;
-    };
-    const write = (facts: (relation: string) => TupleSet | undefined) => {
+    const write = (
+      facts: (relation: string) => TupleSet | undefined,
+      log: Change[] | undefined
+    ) => {
       let changed = false;
       for (const [{ relation }, tuple] of tuples) {
         const set = facts(relation.name);
         // The declared relation decides the key, as when the fact was checked.
         const declared = database.relations.get(relation.name) ?? relation;
         changed =
-          (set !== undefined && addFact(set, declared, tuple)) || changed;
+          (set !== undefined && addFact(set, declared, tuple, log)) || changed;
       }
       return changed;
     };
-    yield* changeFacts(database, `Adding ${these(atoms)}`, write, added);
+    yield* changeFacts(database, `Adding ${these(atoms)}`, write);
     return atoms.map(render);
   });
 
@@ -525,9 +594,9 @@ export const retractFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
     const removed: unknown[] = [];
-    yield* changeFacts(database, `Retracting ${these(atoms)}`, (facts) => {
+    yield* changeFacts(database, `Retracting ${these(atoms)}`, (facts, log) => {
       for (const [atom, tuple] of tuples) {
-        if (facts(atom.relation.name)?.delete(tuple)) {
+        if (facts(atom.relation.name)?.delete(tuple, log)) {
           removed.push(render(atom));
         }
       }
@@ -878,25 +947,27 @@ const answering = (
   return answered;
 };
 
-/** Every answer of a goal's alternatives. */
-const solve = (
+/**
+ * Gives the answers of a goal's alternatives to what `taking` makes, a
+ * batch at a time, and returns it. A query that asks about an argument that
+ * is not data cannot be directed by it, so it is answered from every row
+ * instead, into something `taking` makes anew.
+ */
+const solve = <A>(
   database: LogicDatabase,
   base: Model,
-  alternatives: readonly (readonly Literal[])[]
+  alternatives: readonly (readonly Literal[])[],
+  taking: () => readonly [A, Sink]
 ) =>
   Effect.suspend(() => {
     const run = ({ bodies, model }: GoalModel) =>
       Effect.gen(function* () {
-        const found: Vars[] = [];
+        const [taken, sink] = taking();
         for (const body of bodies) {
-          for (const vars of yield* matches(model, body)) {
-            found.push(vars);
-          }
+          yield* each(model, body, sink);
         }
-        return found;
+        return taken;
       });
-    // A query that asks about an argument that is not data cannot be
-    // directed by it, so it is answered from every row instead.
     return run(answering(database, base, alternatives)).pipe(
       Effect.catchIf(
         (error) => error === UNDIRECTED,
@@ -911,24 +982,30 @@ export const queryDatabase = (
   { bodies, outputs }: CompiledQuery
 ) =>
   reading(database, (model) =>
-    Effect.gen(function* () {
-      const rows = new Map<string, Record<string, unknown>>();
-      for (const vars of yield* solve(database, model, bodies)) {
-        // An alternative of "or" may leave some of the variables unbound.
-        const row = Object.fromEntries(
-          outputs.flatMap((name) =>
-            vars.has(name) ? [[name, vars.get(name)]] : []
-          )
-        );
-        if (!isGroundValue(row)) {
-          return yield* logicError(
-            `The query produced an answer that is not data: ${show(row)}.`
-          );
-        }
-        rows.set(valueKey(row), row);
-      }
-      return [...rows.values()];
-    })
+    Effect.map(
+      solve(database, model, bodies, () => {
+        const rows = new Map<string, Record<string, unknown>>();
+        const sink: Sink = (answers) => {
+          for (const vars of answers) {
+            // An alternative of "or" may leave some of the variables unbound.
+            const row = Object.fromEntries(
+              outputs.flatMap((name) =>
+                vars.has(name) ? [[name, vars.get(name)]] : []
+              )
+            );
+            if (!isGroundValue(row)) {
+              return logicError(
+                `The query produced an answer that is not data: ${show(row)}.`
+              );
+            }
+            rows.set(valueKey(row), row);
+          }
+          return Effect.void;
+        };
+        return [rows, sink] as const;
+      }),
+      (rows) => [...rows.values()]
+    )
   );
 
 /**
@@ -941,19 +1018,43 @@ export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
       const plans = yield* compiling(() =>
         questionPlans(question, () => false)
       );
-      const found = yield* solve(
-        database,
-        model,
-        plans.map(({ body }) => body)
-      );
+      const bodies = plans.map(({ body }) => body);
       if (!isForm(question, "find")) {
-        return found.length > 0;
+        const found = yield* solve(database, model, bodies, () => {
+          const count = { answers: 0 };
+          const sink: Sink = (answers) =>
+            Effect.sync(() => {
+              count.answers += answers.length;
+            });
+          return [count, sink] as const;
+        });
+        return found.answers > 0;
       }
-      return yield* collect(
-        model,
-        question,
-        plans.length > 1 ? distinct(found) : found
-      );
+      // Answers that several alternatives find count once.
+      const values = yield* solve(database, model, bodies, () => {
+        const values: unknown[] = [];
+        const seen = new Set<string>();
+        const sink: Sink = (answers) =>
+          Effect.map(
+            found(
+              model,
+              question,
+              plans.length > 1
+                ? answers.filter((vars) => {
+                    const key = answerKey(vars);
+                    return !seen.has(key) && seen.add(key).size > 0;
+                  })
+                : answers
+            ),
+            (batch) => {
+              for (const value of batch) {
+                values.push(value);
+              }
+            }
+          );
+        return [values, sink] as const;
+      });
+      return values.sort(compareValues);
     })
   );
 
@@ -1009,8 +1110,8 @@ export const checkAssertion = (
     if (problem === undefined) {
       return;
     }
-    const [row] = rows;
-    const where = row === undefined ? "" : yield* misfitOf(database, goal, row);
+    const where =
+      rows.length === 0 ? "" : yield* misfitOf(database, goal, exampleOf(rows));
     return yield* logicError(`${context}${problem}${where}`);
   });
 
@@ -1100,7 +1201,7 @@ const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
 const unaffected = (
   database: LogicDatabase,
   invariant: Invariant,
-  { added, touched }: FactChange
+  { net, touched }: FactChange
 ) =>
   Effect.suspend(() => {
     const { direct, opaque, others } = footprintOf(database, invariant);
@@ -1115,7 +1216,7 @@ const unaffected = (
     if (invariant.assert !== "none") {
       return Effect.succeed(false);
     }
-    const rows = added();
+    const rows = net().gained;
     return reading(database, (model) =>
       Effect.gen(function* () {
         for (const body of invariant.query.bodies) {

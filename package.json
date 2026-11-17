@@ -13,6 +13,7 @@
     "typecheck": "turbo typecheck",
     "measure": "bun run --cwd packages/metrics measure",
     "bench": "bun run --cwd packages/metrics bench",
+    "scale": "bun run --cwd packages/metrics scale",
     "mutate": "bun run --cwd packages/metrics mutate",
     "skill-eval": "bun run --cwd packages/metrics skill-eval",
     "compare": "bun run --cwd packages/metrics compare",

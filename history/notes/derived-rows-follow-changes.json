@@ -1,0 +1,162 @@
+{
+  "title": "What a database derived follows a change to its facts",
+  "context": "Every change to facts forgot everything the database had derived, so the next query derived it again from nothing. On a database of one million facts, adding one fact and asking every group's total again took 1.6 seconds, each time, and asking which rows a rule with `not` gives took 1.1 seconds; an agent that keeps a model of its work, or a research model that grows by one source at a time, paid for the whole model on every step. A `fact` or `retract` form also copied every relation it wrote to whenever the database held an invariant, a relation's `schema` among them, so that it could be undone: loading 100,000 facts one form at a time into a relation with a schema did not finish in a minute, where it takes half a second without the schema. And a rule body built the list of every answer of each goal before the next goal ran, so deriving 4.5 million paths held 9.2 gigabytes at its peak. The benchmarks time one size, 20,000 facts at most, and showed none of it.",
+  "decision": "A database keeps what it derived when facts change, and follows the change through it, a group of relations at a time in the order they depend on each other. A changed row reaches every row that an answer using it gave or would give; the rows it reaches are taken out and derived again from the facts as they now are, and new rows go through the rules in rounds. An answer uses a row that one of its relation goals matched, and a row that a relation goal under `not` matches; an aggregated row is reached through its group, which is combined again from its matches. A relation whose rules ask about a changed relation any other way, in a `find` or as a value, that rules invent rows of, whose aggregate recurses, or whose rules hold a function from the host, is forgotten with every relation that reads it and derived again when something next reads it. A change is undone by taking back each row it added or removed, in place, instead of copying the relation first. A rule body hands its answers on a batch at a time, so it holds a few batches however many answers it has, and a row a rule derives joins its relation once the body has run. A model keeps the answer that derived each row as a list of the values of the rule's variables. A failed assertion shows as its example the first answer in sort order.",
+  "consequences": "A change costs what it reaches, not what the database holds: at one million facts, adding a fact and asking every group's total again takes 23 milliseconds instead of 1.6 seconds, and loading facts one form at a time into a relation with a schema grows as the facts do. Deriving 4.5 million paths holds 2.1 gigabytes at its peak instead of 9.2. What the database has derived still never changes an answer, but it changes the order answers are found in: rows a change derives again come after the rows that stayed, so answer order now depends on the changes a database has seen, and `\"order\"` is the way to fix it. The example in an assertion's message would have depended on that order, which is why it is now the first answer in sort order. `why` explains a row by an answer that gives it from rows that hold; which answer that is can differ from the one a database that derived nothing before would show, when several give the row. A change an invariant refuses forgets what was derived, so the query after a refused change derives again. The first time a relation is read it is still derived in full. The engine is 832 lines larger, 8.6 percent: 10,472 lines of code where it had 9,640.",
+  "alternatives": [
+    {
+      "option": "Forget only the relations that read what changed",
+      "rejected": "The relation that read the changed row is still derived again in full, so a change to a large relation still costs the whole relation: it helps only a change to facts that no large rule reads."
+    },
+    {
+      "option": "Count the answers that give each row, and remove a row when its count reaches zero",
+      "rejected": "Counts cannot tell a row that recursion supports through itself from one that still holds, and a count for every row is more memory where memory is what limits a database."
+    },
+    {
+      "option": "Keep every group's matches, to change an aggregate by one match",
+      "rejected": "It keeps every match of every aggregate for as long as the database lives. Combining a reached group again from its matches reads only that group, through an index, and keeps nothing."
+    },
+    {
+      "option": "Undo the upkeep when an invariant refuses a change",
+      "rejected": "It needs a log of every row and every derivation the upkeep touched. A refused change is the rare case, and forgetting what was derived is always right."
+    },
+    {
+      "option": "Keep rows on disk, or stream facts through without holding them",
+      "rejected": "A Lion program is evaluated entirely in memory. Recursion needs the rows it has derived to know when to stop, an aggregate needs its group, and `not` needs every row of what it asks about, so only what a rule body holds while it runs can be streamed, and that is what batches do."
+    },
+    {
+      "option": "Hand on one answer at a time",
+      "rejected": "Each answer would pay for the machinery that runs a goal, which a batch pays once. Batches hold as little as matters, and keep the order answers are found in."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A database keeps what it derived when facts change, and follows the change through it",
+      "says": {
+        "rule": "derived-rows-follow-fact-changes",
+        "holds": true,
+        "statement": "A database keeps what it derived when facts change and follows the change through it, so a change costs what it reaches and not what the database holds",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "derived-rows-after-fact-change",
+            "is": "followed"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A database keeps what it derived when facts change, and follows the change through it",
+      "says": {
+        "decision": "derived-rows-on-fact-change",
+        "chose": "follow-the-change",
+        "over": [
+          "forget-everything",
+          "forget-readers-of-what-changed",
+          "count-answers-per-row"
+        ],
+        "area": "logic",
+        "because": "an agent that keeps a model of its work, or a research model that grows by one source at a time, paid for the whole model on every step"
+      }
+    },
+    {
+      "quote": "A changed row reaches every row that an answer using it gave or would give",
+      "says": {
+        "behavior": "derived-rows-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A change is undone by taking back each row it added or removed, in place, instead of copying the relation first",
+      "says": {
+        "decision": "undoing-a-change-to-facts",
+        "chose": "take-back-each-row",
+        "over": ["copy-the-relation"],
+        "area": "logic",
+        "because": "copying made every form cost the whole relation, so loading facts one form at a time grew with the square of the facts"
+      }
+    },
+    {
+      "quote": "A rule body hands its answers on a batch at a time",
+      "says": {
+        "decision": "answers-of-a-rule-body",
+        "chose": "batches",
+        "over": ["every-answer-at-once", "one-answer-at-a-time"],
+        "area": "logic",
+        "because": "a body that lists every answer of each goal holds far more than it derives, and one answer at a time pays for running a goal once per answer"
+      }
+    },
+    {
+      "quote": "A failed assertion shows as its example the first answer in sort order",
+      "says": {
+        "decision": "assertion-example-answer",
+        "chose": "first-in-sort-order",
+        "over": ["first-found"],
+        "area": "logic",
+        "because": "the order answers are found in now depends on the changes a database has seen, and a message should not"
+      }
+    },
+    {
+      "quote": "A failed assertion shows as its example the first answer in sort order",
+      "says": {
+        "behavior": "assertion-example-answer",
+        "is": "first-in-sort-order",
+        "area": "logic",
+        "was": "first-found"
+      }
+    },
+    {
+      "quote": "so answer order now depends on the changes a database has seen",
+      "says": {
+        "behavior": "answer-order-after-fact-changes",
+        "is": "depends-on-changes",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "What the database has derived still never changes an answer",
+      "says": {
+        "behavior": "derived-rows-present-vs-absent-answers",
+        "is": "same",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A change an invariant refuses forgets what was derived",
+      "says": {
+        "behavior": "derived-rows-after-refused-change",
+        "is": "derived-again",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "adding a fact and asking every group's total again takes 23 milliseconds instead of 1.6 seconds",
+      "says": {
+        "measured": "million-facts-change-then-every-group-total-ms",
+        "after": 23,
+        "before": 1560,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Deriving 4.5 million paths holds 2.1 gigabytes at its peak instead of 9.2",
+      "says": {
+        "measured": "million-nodes-every-path-peak-mb",
+        "after": 2146,
+        "before": 9166,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The engine is 832 lines larger, 8.6 percent: 10,472 lines of code where it had 9,640",
+      "says": {
+        "measured": "core-code-lines",
+        "after": 10472,
+        "before": 9640,
+        "area": "metrics"
+      }
+    }
+  ]
+}

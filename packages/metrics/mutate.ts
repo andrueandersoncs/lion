@@ -4,6 +4,8 @@
 //
 //   bun run mutate                   every listed mutation
 //   bun run mutate find recursion    only those whose names hold a word
+//   bun run mutate --in logic/model.ts,logic/database.ts
+//                                    only those in files whose paths hold a word
 //   bun run mutate --list            the names, and whether each still applies
 //   bun run mutate --file packages/core/src/logic/model.ts \
 //     --find "values.sort(compareValues)" --replace "values" \
@@ -29,6 +31,7 @@ import { REPOSITORY } from "./src/sources.ts";
 const args = readArguments(process.argv.slice(2), [
   "file",
   "find",
+  "in",
   "replace",
   "tests",
 ]);
@@ -50,9 +53,12 @@ const own = ownMutation();
 const chosen =
   own === undefined
     ? MUTATIONS.filter(
-        ({ name }) =>
-          args.rest.length === 0 ||
-          args.rest.some((word) => name.includes(word))
+        ({ file, name }) =>
+          (args.rest.length === 0 ||
+            args.rest.some((word) => name.includes(word))) &&
+          (args.option("in")?.split(",") ?? [""]).some((word) =>
+            file.includes(word)
+          )
       )
     : [own];
 

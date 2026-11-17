@@ -127,7 +127,7 @@ const isLookup = (arg: unknown, bound: ReadonlySet<string>): boolean => {
  * test instead, placed where the rule's own plan has bound what it holds:
  * the copy does no more than the rule does, and keeps only what was asked.
  */
-const guarded = (body: readonly Literal[], guard: Atom): Literal[] => {
+export const guarded = (body: readonly Literal[], guard: Atom): Literal[] => {
   const given = new Set<string>();
   bindVariables(guard, given);
   const lookup = body.find(

@@ -344,7 +344,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | Form | Meaning |
 |---|---|
 | `["fact", goal, ...]` | Adds ground facts. Returns the facts added. |
-| `["retract", goal, ...]` | Removes facts. Derived answers update on the next query. |
+| `["retract", goal, ...]` | Removes facts. What rules derived from them changes with them. |
 | `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. A head is a relation call, `=` between two values, an `and` of those, or `exists` over relation calls. See [Existential rules](#existential-rules). |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
@@ -493,11 +493,11 @@ Evaluates to `[{ "player": "bo", "points": 30 }, { "player": "cy", "points": 30 
 | `"offset"`, `"limit"` | Skip `offset` answers, then return at most `limit`. |
 | `"assert"` | `"some"` fails the query when it has no answers, and `"none"` fails it when it has any. The assertion sees every answer, before `offset` and `limit`. |
 
-Without `"order"`, answers come in the order they are found. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules).
+Without `"order"`, answers come in the order they are found, which can differ with what the database had derived before and with the changes it has seen. Values sort in a fixed order across types: `null`, booleans, numbers, strings, arrays, records, then [unknowns](#existential-rules).
 
 ### Invariants
 
-An invariant is a query assertion the database keeps. `["invariant", goal, {"assert": "none"}]` says the goal never has answers, and `{"assert": "some"}` says it always has at least one. The invariant must hold when it is added, and from then on every `fact`, `retract`, and `rule` form is checked against it. A form that would break an invariant fails and changes nothing.
+An invariant is a query assertion the database keeps. `["invariant", goal, {"assert": "none"}]` says the goal never has answers, and `{"assert": "some"}` says it always has at least one. The invariant must hold when it is added, and from then on every `fact`, `retract`, and `rule` form is checked against it. A form that would break an invariant fails and changes nothing. The message counts the answers and shows one as an example: the first in [sort order](#query-options), whatever order they were found in.
 
 ```json
 ["begin",
@@ -732,7 +732,7 @@ Evaluates to `[{ "to": 2998 }, { "to": 2999 }, { "to": 3000 }]` in milliseconds.
 - A known argument narrows a rule when the rule can look rows up by it: when it stands whole in one of the rule's relation goals, as `?x` in `["edge", "?x", "?y"]`. Where the rule can only test it, inside a record pattern, a schema such as `["schema/open", {"topic": "?t"}]`, or an `in`, the rule runs as written and keeps the rows asked about, so it never does more than the rule itself.
 - Relations that are aggregated, computed by an algorithm, or asked about, under `not`, in a `find`, or as a value, are derived in full, along with everything they depend on. So is a relation that rules [invent](#existential-rules) rows of, since what such a rule adds depends on every row, and so is a relation that a goal asks with no argument known, since a copy for it would hold every row.
 - What is derived in full is derived once, in the database, and every later query reads it there; a query that knows an argument of a relation the database already holds in full looks its rows up rather than deriving a copy. A model asked many different questions derives each relation about once, as full evaluation would.
-- A relation is derived the first time a goal reads it, and kept until a fact or rule changes, so a query never pays for relations it does not reach, and never fails on one: with `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `broken` is never derived.
+- A relation is derived the first time a goal reads it, and kept, also [when facts change](#guarantees), so a query never pays for relations it does not reach, and never fails on one: with `["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]]` and no `audit` rows, `broken` is never derived.
 - The answers are the same either way, but they can come in a different order. Use the `"order"` query option when order matters. A goal-directed query also never fails on a row it does not derive, where full evaluation would.
 - `why` explains facts with every relation computed in full.
 - Pass `{ database: new LogicDatabase({ goalDirected: false }) }` to `run` to derive every row of the relations a query reads instead.
@@ -796,7 +796,11 @@ Nothing is guessed at: a filter must be true or false, and the rows a rule deriv
 
 Adding what the database already holds changes nothing: a fact that is already there, a relation or schema declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so `["limit", "k"]` with `k` bound to 3 is the same rule as `["limit", 3]`, and `["plus", "?x", 1]` with `plus` bound to `number/add` is the same rule as `["number/add", "?x", 1]`, while the variable `"?x"` and the string `["quote", "?x"]` differ. Running a program again, or loading a snapshot onto the database it came from, keeps one copy of each.
 
-Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept until a fact or rule changes. What the database has already derived never changes an answer. Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
+Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept. What the database has already derived never changes an answer, only the order answers come in.
+
+A change to facts is followed through what was derived, so it costs what it reaches and not what the database holds. A changed row reaches every row that an answer using it gave or would give; those rows are taken out and derived again from the facts as they now are. An answer uses a row that one of its relation goals matched, and a row that a relation goal under `not` matches, alone or among other goals and tests; an aggregated row is reached through its group, which is combined again. Recursion is followed round by round. A relation is instead derived again the next time something reads it, with every relation that reads it, when its rules ask about a changed relation any other way, in a `find` or as a value, when rules [invent](#existential-rules) its rows, when its aggregate recurses, or when a rule holds a [function from the host](#host-functions-in-rules) that does not say it reads only its arguments. So is everything after a `rule` form, and after a change an invariant refused.
+
+Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
 
 ## Schemas
 
@@ -1420,6 +1424,8 @@ To work on a specific package:
 turbo test --filter=@lionlang/core
 turbo dev --filter=@lionlang/repl
 ```
+
+To measure a change to the language, beside `main`: `bun run measure --against main` for how much code and how many rules it has, `bun run bench --against main` for speed, and `bun run scale --against main` for how time and memory grow as the facts grow from a thousand to a hundred thousand and more. [`packages/metrics`](packages/metrics/README.md) describes each.
 
 ## Website
 

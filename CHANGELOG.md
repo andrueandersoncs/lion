@@ -2,6 +2,31 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `bun run scale` times workloads at growing sizes, 1,000 to 100,000 facts and more, on the working tree or beside a commit with `--against main`, and says how each time grows: `n^1.0` grows as the facts do, and `n^2.0` as their square. It covers loading facts one form at a time and many, with invariants, schemas, and keys; asking every row and one; rules that join, aggregate, negate, and recurse; and changing a fact and asking again. Each run is a process of its own, and reports the memory it added at its peak and what the database keeps. (`bun-run-scale` added)
+- `bun run mutate --in logic/model.ts,logic/database.ts` runs only the mutations in files whose paths hold one of the words, so a change can run the mutations of the files it touched instead of the whole list. (`mutate-in-option` added)
+
+### Changed
+
+- so answer order now depends on the changes a database has seen (`answer-order-after-fact-changes` is `depends-on-changes`)
+- A failed assertion or invariant shows as its example the first answer in sort order, not the first one found, so the message does not depend on the order the answers were found in. (`assertion-example-answer` is `first-in-sort-order`, was `first-found`)
+- A change an invariant refuses forgets what was derived (`derived-rows-after-refused-change` is `derived-again`)
+- A `fact` or `retract` form no longer copies the relations it writes to when the database holds an invariant, a relation's `schema` among them: when the change is refused it takes back each row it added or removed, and every fact is where it was. Loading 100,000 facts one form at a time into a relation with a schema takes 1.5 seconds; before, it did not finish in a minute, and the time grew with the square of the facts. (`fact-form-cost-under-invariants` is `grows-with-the-change`, was `grows-with-the-relation`)
+
+### Decided
+
+- A rule body hands its answers on a batch at a time (`answers-of-a-rule-body`: `batches` over `every-answer-at-once`, `one-answer-at-a-time`)
+- A failed assertion shows as its example the first answer in sort order (`assertion-example-answer`: `first-in-sort-order` over `first-found`)
+- A database keeps what it derived when facts change, and follows the change through it (`derived-rows-on-fact-change`: `follow-the-change` over `forget-everything`, `forget-readers-of-what-changed`, `count-answers-per-row`)
+- A change is undone by taking back each row it added or removed, in place, instead of copying the relation first (`undoing-a-change-to-facts`: `take-back-each-row` over `copy-the-relation`)
+
+### Rules
+
+- A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
+
 ## 2026-11-16 — @lionlang/core 0.11.0, @lionlang/cli 0.10.0
 
 Rules that say something exists without saying what it is. A rule can give every person a mother nobody has named, and the value it invents is ordinary Lion data that a program can write, store, compare, and look up. Keys and equality rules make two such values one, and a goal-directed query shares what full evaluation has derived.
@@ -87,6 +112,7 @@ Rules that say something exists without saying what it is. A rule can give every
 - The file is loaded before the program runs, so the program can use its relations without declaring them (`cli-database-relations-undeclared` is `usable`)
 - Provide the recording artifact with the final response. Do not claim completion without it. (`completion-without-recording` is `not-complete`)
 - `bun run history check` fails on a finding of the model that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history ask` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. (`decision-claims-checked-by-research-model` is `against-every-rule-and-behavior`; `history-check-in-ci` is `runs-in-record-tests`; `history-check-unlisted-finding` is `fails`)
+- A database keeps what it derived when facts change and follows the change through it, so a change costs what it reaches: a row that an answer using a changed row gave is taken out and derived again, through relation goals, goals under `not`, aggregates, and recursion. With one million facts, adding a fact and asking every group's total again takes 23 milliseconds, where it took 1.6 seconds, and a rule with `not` takes 8 milliseconds, where it took 1.1 seconds. Answers are the same as before; the order they are found in can differ with the changes a database has seen, so use `"order"` when it matters. (`derived-rows-after-fact-change` is `followed`, was `derived-again`)
 - an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that sorts first, unless it describes the other. (`equality-rule-invented-unknown-vs-given` is `given-value`)
 - So the result does not depend on the order rules or facts were added in. (`existential-result-rule-order` is `independent`)
 - Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). (`filter-variable-unbound` is `error`; `rule-head-variable-unbound` is `error`)
@@ -789,7 +815,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Names are replaced by their values when the rule is written, also inside a waiting `cond` or lambda, so redefining a name later does not change the rule. (`rule-name-redefined-later` is `unchanged`)
 - Functions run forward only: `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`. (`unify-function-call-with-value` is `no-solve`)
 - `"?_"` is anonymous: each occurrence is a separate variable, and it never appears in an answer. (`anonymous-variable-in-answer` is `never-appears`)
-- What the database has derived for earlier queries still never changes an answer. (`derived-rows-present-vs-absent-answers` is `same`)
+- What the database has derived still never changes an answer (`derived-rows-present-vs-absent-answers` is `same`)
 - It can repeat a value, as `aggregate/collect` does; use `aggregate/unique` for distinct values. (`find-duplicate-values` is `kept`)
 - `["find", template, goal]` returns the template's value for every match of the goal, as a sorted list: `["find", "?c", ["parent", "ada", "?c"]]` is `["ben", "cy"]`. It works in plain code and inside rules. The Fold Map editor and the site highlighter recognize the form. (`find-in-rule` is `allowed`; `fold-map-find-form` is `recognized`)
 - `["find", template, goal]` returns the template's value for every match of the goal as a sorted list. (`find-result-order` is `sorted`)
@@ -988,7 +1014,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Other aggregates still cannot recurse (`recursive-rule-aggregate-sum` is `error`)
 - every relation in a cycle through an aggregate must aggregate, so a replaced value never strands rows derived from it; other aggregates still cannot recurse, and computed group columns still cannot recurse (`recursive-rule-computed-group-column` is `error`)
 - `why` explains a minimum with the chain that produced it (`why-lattice-minimum` is `producing-chain`)
-- Without `"order"`, answers come in the order they are found. (`query-answer-order-without-order-option` is `found-order`)
+- Without `"order"`, answers come in the order they are found (`query-answer-order-without-order-option` is `found-order`)
 - Query options. `["query", goal, {"order": ["-points", "player"], "offset": 10, "limit": 5, "assert": "some"}]` sorts answers by one or more variables (a leading `-` for descending), pages them, and can assert that a query has some answers or none. Values sort in a fixed order across types, and unknown options or variables are reported. lionlang.dev has a live Order and limit card. (`query-assert-none-with-answers` is `error`; `query-assert-some-no-answers` is `error`; `query-order-leading-minus` is `descending`; `query-order-unknown-variable` is `error`; `query-unknown-option` is `error`)
 - The assertion sees every answer, before `offset` and `limit`. (`query-assert-scope` is `before-offset-and-limit`)
 - A leading `-` sorts that variable in descending order, and the `?` is optional. (`query-order-question-mark` is `optional`)
@@ -1111,7 +1137,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - A goal with no variables returns `[{}]` when it holds and `[]` when it does not. (`query-ground-goal-fails` is `empty-list`; `query-ground-goal-holds` is `list-of-empty-record`)
 - calling it, as in `["edge", "a", "?b"]`, builds a goal, which is a value like any other (`relation-call` is `goal`)
 - One function, `takes`, carries the rule for library functions, relations, schemas, aggregates, and graph algorithms (`relation-call-wrong-arity` is `error`)
-- Removes facts. Derived answers update on the next query. (`retract-derived-answers` is `update-on-next-query`)
+- Removes facts. What rules derived from them changes with them. (`retract-derived-answers` is `update-on-next-query`)
 - the answer does not depend on the order rules are written in (`rule-order-answers` is `independent`)
 - Rules are checked for safety when they are added (`rule-safety-check-time` is `when-added`)
 - Each `run` gets its own database (`run-logic-database` is `fresh-per-run`)

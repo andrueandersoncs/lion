@@ -269,7 +269,7 @@
 <ul>
   <li>Removes each fact, and returns the facts that were present and removed. A fact can be <code>exists</code>, as in <code>fact</code>.</li>
   <li>A row of a keyed relation is removed only when every column matches.</li>
-  <li>Facts derived by rules cannot be retracted; derived answers update on the next query.</li>
+  <li>Facts derived by rules cannot be retracted. What rules derived from a removed fact changes with it.</li>
   <li>Like <code>fact</code>, the form is one all-or-nothing change.</li>
 </ul>
 <lion-example name="retract">
