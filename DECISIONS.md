@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 155 questions have been decided, 57 records explain them, and of what the records assert, 500 hold when Lion is run, 4 are broken, 263 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 157 questions have been decided, 59 records explain them, and of what the records assert, 509 hold when Lion is run, 4 are broken, 271 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -161,6 +161,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`ci-test-concurrency`](#ci-test-concurrency) | `one-package-at-a-time` | [CI runs one package's tests at a time, and a test has two minutes in every package](#ci-test-concurrency) |
 | 2026-11-17 | [`why-fact-not-holding`](#why-fact-not-holding) | `absent-tree` | [`why` tells why a fact does not hold, and marks what is only assumed](#why-tells-absence) |
 | 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
+| 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
+| 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
 
 <a id="program-representation"></a>
 
@@ -3266,3 +3268,77 @@ Recorded 2026-11-17 in `history/notes/why-tells-first-derivation.json`.
 - Holds when Lion is run: `why-row-of-tied-answers` is `least-answer`. "Rules run in the order they were added, round after round from the facts up, and of the answers of the first rule that gives the row, the least explains it, comparing the values its body binds in the order it binds them."
 - Holds when Lion is run: `why-aggregated-matches-order` is `answer-order`. "The matches of an aggregated row are listed in the order of their answers, not the order they were found in."
 - Stated, not checked by running Lion: `why-derives-followed-group-again` exists. "A group of relations that a change to facts was followed through forgets how its rows came about, and the first `why` that needs them derives the group again beside the model."
+
+<a id="reasoning-direction-record-across-scores"></a>
+
+## reasoning-direction-record-across-scores
+
+Now: `carried-list`.
+
+- 2026-11-17 `reasoning-direction-record-across-scores`: `carried-list` over `patience-per-score`, `setting-field`: "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat." (`direction-record-speaks-for-its-scores.json`)
+
+<a id="direction-record-speaks-for-its-scores"></a>
+
+### A direction's record says nothing about a score none of its experiments ran with an earlier version to beat
+
+Recorded 2026-11-17 in `history/notes/direction-record-speaks-for-its-scores.json`.
+
+**Context.** The same study continued a loop after the model or the benchmark changed, and found that a harness tuned under one model can start below the untouched one under another, so what paid off before has to be judged again. In the reasoning skill a score's question already holds what makes two runs comparable, so a new model or benchmark is another score, and its runs are never compared with the old ones. A direction's payoffs, misses, and patience were counted over every score together, so nothing told a direction that had been judged on a score from one whose record came only from another.
+
+**Decision.** `carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat. A new model, benchmark, machine, or budget stays what it was, another score, and takes no word of its own. A carried direction is judged on the new score by running that score on the version before its experiment and on the experiment's version, since a run speaks for the version whose files it ran on, whenever it was made. Patience is counted as before, over every score.
+
+**Consequences.** The standing questions list the directions whose record is only carried over to a score, with their record. After the score is run on the earlier versions, `improved` and `paid_off` say whether each change helps there, and the direction is carried no longer. A direction set aside under the old score stays set aside; when it is carried, its misses were all on another score, which the agent can take as a reason to try it once more. A version whose files cannot be put back cannot be run again, so the skill says to commit each experiment.
+
+**Alternatives considered.**
+
+- Count patience for each score apart, so a direction set aside under one model is live again under another. Directions and the research skill's leads share one rule for when to stop, and patience is a budget on the idea; the carried list tells the agent the same thing without a second way of counting.
+- A setting field on scores or observations, naming the model and the benchmark. The score's question already holds what makes two runs comparable; a second place for it could disagree with the first.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `reasoning-direction-record-across-scores`: `carried-list`. "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat."
+- Holds when Lion is run: rule `direction-record-speaks-for-its-scores` holds. "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat."
+- Holds when Lion is run: `reasoning-direction-on-unrun-score` is `carried`. "`carried` lists each direction that has experiments, with each score that none of them ran in a version with an earlier version to beat."
+- Holds when Lion is run: `reasoning-carried-direction-after-earlier-run` is `judged`. "After the score is run on the earlier versions, `improved` and `paid_off` say whether each change helps there, and the direction is carried no longer."
+- Holds when Lion is run: `reasoning-patience-across-scores` is `counted-over-every-score`. "Patience is counted as before, over every score."
+- Stated, not checked by running Lion: `reasoning-carried` exists. "`carried` lists each direction that has experiments"
+
+<a id="reasoning-experiment-expectation-judging"></a>
+
+## reasoning-experiment-expectation-judging
+
+Now: `its-own-version`.
+
+- 2026-11-17 `reasoning-experiment-expectation-judging`: `its-own-version` over `from-its-version-on`, `attempt-notes`, `predictions-on-the-direction`: "it is judged in the version it was formed in and no other" (`experiment-expectation-in-its-version.json`)
+
+<a id="experiment-expectation-in-its-version"></a>
+
+### What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other
+
+Recorded 2026-11-17 in `history/notes/experiment-expectation-in-its-version.json`.
+
+**Context.** A study of agents that improve their own harness (Self-Improvement Memory, arXiv 2611.18856) found that carrying a record of each problem, the edits tried for it, what each edit was predicted to fix, and what it did fix lets a later run improve further than carrying the harness alone, and that carrying the diagnoses without their evidence does not reliably help. The reasoning skill held the parts of such a record, problems, beliefs that predict, directions, and experiments, with nothing joining them: a direction did not say which problem it was for, and an experiment recorded its score and not what it was expected to do. An expectation written as a plain belief was also judged by every version from its own on, so putting the files back after an experiment contradicted an expectation that the experiment itself had borne out.
+
+**Decision.** A belief may say which direction it `tries`, as an observation does. Such a belief is what one experiment of the direction was expected to do, and it is judged in the version it was formed in and no other. Where it predicts a problem's question otherwise than the problem shows, that experiment `targets` the problem; the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise. A direction `addresses` the problems its notes list and the problems its experiments target. Every other belief is judged as before.
+
+**Consequences.** What an attempt was predicted to fix and what it fixed are derived from a belief's predictions, with no second kind of note, so `contradicted`, `borne_out`, `untested`, and `why` apply to them unchanged. The standing questions list what each experiment was expected to fix and whether it did, and the problems that still show though every direction addressing them is set aside. An expectation recorded before the change is judged in the unchanged project, where every fix it predicts comes out not fixed, so the skill says to make the change, then record the belief, then run.
+
+**Alternatives considered.**
+
+- A note of its own for an attempt, with lists of the tasks predicted, fixed, and missed, as the study's record has. An expectation about a change is already a belief with predictions; a second shape for it would need its own rules for which versions judge it, and `why` and the standing questions about beliefs would not see it.
+- Predictions on the direction itself. A direction is recorded once and tried many times, so a prediction added later would judge the experiments made before it, after the fact.
+- Keep judging it by every version from its own on. Putting the files back after a miss, or making the next experiment, contradicted an expectation the experiment had borne out.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `reasoning-experiment-expectation-judging`: `its-own-version`. "it is judged in the version it was formed in and no other"
+- Stated, not checked by running Lion: `reasoning-fixed` exists. "the problem is `fixed` there when the version answers as predicted"
+- Stated, not checked by running Lion: `reasoning-unfixed` exists. "`unfixed` when it answers otherwise"
+- Holds when Lion is run: rule `experiment-expectation-in-its-version` holds. "Such a belief is what one experiment of the direction was expected to do, and it is judged in the version it was formed in and no other. Where it predicts a problem's question otherwise than the problem shows, that experiment `targets` the problem; the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise."
+- Holds when Lion is run: rule `beliefs-judged-from-their-version` holds. "Every other belief is judged as before."
+- Holds when Lion is run: `reasoning-expectation-after-files-put-back` is `still-borne-out`. "putting the files back after an experiment contradicted an expectation that the experiment itself had borne out"
+- Holds when Lion is run: `reasoning-experiment-predicted-fixes` is `fixed-or-unfixed-by-its-version`. "the problem is `fixed` there when the version answers as predicted, and `unfixed` when it answers otherwise"
+- Holds when Lion is run: `reasoning-direction-addresses` is `listed-and-targeted`. "A direction `addresses` the problems its notes list and the problems its experiments target."
+- Stated, not checked by running Lion: `reasoning-belief-tries` exists. "A belief may say which direction it `tries`, as an observation does."
+- Stated, not checked by running Lion: `reasoning-direction-addresses` exists. "A direction `addresses` the problems its notes list and the problems its experiments target."
+- Stated, not checked by running Lion: `reasoning-targets` exists. "that experiment `targets` the problem"
