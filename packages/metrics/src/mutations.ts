@@ -976,8 +976,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a list fits a longer list",
     file: core("logic/fit.ts"),
-    find: "  Array.isArray(value) && value.length === parts.length",
-    replace: "  Array.isArray(value) && value.length >= parts.length",
+    find: "    (rest === NOTHING_LEFT && value.length > parts.length)",
+    replace: "    false",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
@@ -1041,8 +1041,9 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a record fits a record with keys it does not name",
     file: core("logic/fit.ts"),
-    find: "  for (const key of open ? [] : Object.keys(value)) {",
-    replace: "  for (const key of [] as string[]) {",
+    find: "  if (rest === NOTHING_LEFT) {\n    for (const key of others) {",
+    replace:
+      "  if (rest === NOTHING_LEFT) {\n    for (const key of [] as string[]) {",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
@@ -1281,8 +1282,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/open refuses keys the record does not name",
     file: core("logic/fit.ts"),
-    find: "  for (const key of open ? [] : Object.keys(value)) {",
-    replace: "  for (const key of Object.keys(value)) {",
+    find: "      const left = rest.length === 0 ? ANYTHING_LEFT : rest[0];",
+    replace: "      const left = rest.length === 0 ? NOTHING_LEFT : rest[0];",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
@@ -1316,8 +1317,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/open around a name that is no record quietly fits nothing",
     file: core("logic/fit.ts"),
-    find: "      recordOf(record) === undefined\n        ? logicError(",
-    replace: "      recordOf(record) === null\n        ? logicError(",
+    find: "      return recordOf(shape) === undefined\n        ? logicError(",
+    replace: "      return recordOf(shape) === null\n        ? logicError(",
     tests: ["src/logic/tests/groups.test.ts"],
   },
   {
@@ -1344,7 +1345,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "schema/open around a variable binds it instead of waiting for it",
     file: core("logic/terms.ts"),
-    find: "  const isPattern =\n    ofPattern === false || patternParts(term.args[0], true) !== undefined;",
+    find: "  const isPattern =\n    ofPattern === false ||\n    patternParts(first, true) !== undefined ||\n    (others.length > 0 && !(first instanceof LogicValue));",
     replace: "  const isPattern = true;",
     tests: ["src/logic/tests/patterns.test.ts"],
   },
