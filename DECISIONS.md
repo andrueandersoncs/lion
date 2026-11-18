@@ -166,8 +166,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`merge-survivor`](#merge-survivor) | `least-member-fewest-nested-then-first-sorted` | [Values a key or an equality rule makes one are written as their least member](#least-member-survives-a-merge) |
 | 2026-11-18 | [`compiled-code-lifetime`](#compiled-code-lifetime) | `kept-by-lambda` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`deep-calls`](#deep-calls) | `unwind-to-run-loop` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
-| 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
 | 2026-11-18 | [`scope-bindings-store`](#scope-bindings-store) | `map` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
+| 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
 
 <a id="program-representation"></a>
 
@@ -3466,6 +3466,14 @@ Now: `unwind-to-run-loop`.
 
 - 2026-11-18 `deep-calls`: `unwind-to-run-loop` over `continuation-passing`, `generators`, `trampoline-per-tail-call`: "A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop." (`compiled-evaluation.json`)
 
+<a id="scope-bindings-store"></a>
+
+## scope-bindings-store
+
+Now: `map`.
+
+- 2026-11-18 `scope-bindings-store`: `map` over `ref`: "A scope holds its bindings in a `Map` that compiled code reads and writes right away." (`compiled-evaluation.json`)
+
 <a id="library-argument-checks"></a>
 
 ## library-argument-checks
@@ -3502,11 +3510,3 @@ Recorded 2026-11-18 in `history/notes/library-argument-guards.json`.
 - Stated, not checked by running Lion: `fib-17-lambda-ms` is 2.2. "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms"
 - Stated, not checked by running Lion: `fib-24-lambda-ms` is 54. "fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms"
 - Stated, not checked by running Lion: `core-code-lines-added` is 67. "The core grew by 67 lines of code, 0.6 percent"
-
-<a id="scope-bindings-store"></a>
-
-## scope-bindings-store
-
-Now: `map`.
-
-- 2026-11-18 `scope-bindings-store`: `map` over `ref`: "A scope holds its bindings in a `Map` that compiled code reads and writes right away." (`compiled-evaluation.json`)
