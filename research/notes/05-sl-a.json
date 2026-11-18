@@ -1,0 +1,713 @@
+{
+  "sources": [
+    {
+      "id": "a-reynolds-2002",
+      "url": "https://www.cs.cmu.edu/~jcr/seplogic.pdf",
+      "title": "Separation Logic: A Logic for Shared Mutable Data Structures (LICS 2002)",
+      "publisher": "Reynolds (CMU)",
+      "kind": "primary",
+      "published": 20020722,
+      "for": ["sl-terms"]
+    },
+    {
+      "id": "a-ohearn-reynolds-yang-2001",
+      "url": "http://www0.cs.ucl.ac.uk/staff/p.ohearn/papers/localreasoning.pdf",
+      "title": "Local Reasoning about Programs that Alter Data Structures (CSL 2001)",
+      "publisher": "O'Hearn, Reynolds and Yang",
+      "kind": "primary",
+      "published": 20010910
+    },
+    {
+      "id": "a-ohearn-cacm-2019",
+      "url": "https://discovery.ucl.ac.uk/id/eprint/10075346/1/O%27Hearn_AAM_sl-cacm-cameraready.pdf",
+      "title": "Separation Logic (Communications of the ACM 62(2), review article; author's accepted manuscript)",
+      "publisher": "O'Hearn (Communications of the ACM)",
+      "kind": "secondary",
+      "published": 20190128,
+      "for": ["sl-terms"]
+    },
+    {
+      "id": "a-calcagno-ohearn-yang-2007",
+      "url": "https://www.cs.ox.ac.uk/people/hongseok.yang/paper/asl.pdf",
+      "title": "Local Action and Abstract Separation Logic (extended version of the LICS 2007 paper, April 30, 2007)",
+      "publisher": "Calcagno, O'Hearn and Yang",
+      "kind": "primary",
+      "published": 20070430
+    },
+    {
+      "id": "a-iris-ground-up-2018",
+      "url": "https://people.mpi-sws.org/~dreyer/papers/iris-ground-up/paper.pdf",
+      "title": "Iris from the ground up: A modular foundation for higher-order concurrent separation logic (JFP 28, e20)",
+      "publisher": "Iris project",
+      "kind": "primary",
+      "published": 20181122,
+      "for": ["sl-terms", "sl-persistent", "sl-algebra"]
+    },
+    {
+      "id": "a-birkedal-bizjak-iris-notes",
+      "url": "https://iris-project.org/tutorial-pdfs/iris-lecture-notes.pdf",
+      "title": "Lecture Notes on Iris: Higher-Order Concurrent Separation Logic (version of August 25, 2023)",
+      "publisher": "Iris project",
+      "kind": "secondary",
+      "published": 20230825,
+      "for": ["sl-persistent", "sl-algebra"]
+    },
+    {
+      "id": "a-bornat-2005",
+      "url": "https://ilyasergey.net/CS6217/_static/papers/Bornat-al-POPL05.pdf",
+      "title": "Permission Accounting in Separation Logic (POPL 2005; author's version)",
+      "publisher": "Bornat, Calcagno, O'Hearn and Parkinson",
+      "kind": "primary",
+      "published": 20050112
+    },
+    {
+      "id": "a-distefano-cacm-2019",
+      "url": "https://6826.csail.mit.edu/2020/papers/facebook-infer-cacm.pdf",
+      "title": "Scaling Static Analyses at Facebook (Communications of the ACM 62(8), August 2019)",
+      "publisher": "Facebook Infer team",
+      "kind": "primary",
+      "published": 20190801
+    },
+    {
+      "id": "a-kiran-blog",
+      "url": "https://kirancodes.me/posts/log-certified-synthesis.html",
+      "title": "Goodbye C developers: The future of programming with certified program synthesis",
+      "publisher": "Kiran (@kirancodes)",
+      "kind": "tertiary",
+      "published": 20210703,
+      "for": ["sl-terms"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "sl-a1",
+      "source": "a-reynolds-2002",
+      "quote": "The key to avoiding this difficulty is to introduce a novel logical operation P ∗ Q,called separating conjunction (or sometimes independent or spatial conjunction),that asserts that P and Q hold for disjoint portions of the addressable storage.",
+      "where": "Section 1, Introduction",
+      "says": {
+        "defines": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a2",
+      "source": "a-reynolds-2002",
+      "quote": "The key to avoiding this difficulty is to introduce a novel logical operation P ∗ Q,called separating conjunction (or sometimes independent or spatial conjunction),that asserts that P and Q hold for disjoint portions of the addressable storage.",
+      "where": "Section 1, Introduction",
+      "says": {
+        "covers": "state that splits into disjoint parts",
+        "by": "separating conjunction",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a3",
+      "source": "a-reynolds-2002",
+      "quote": "p0 ∗ p1 asserts that the heap can be split into two disjoint parts in which p0 and p1 hold respectively",
+      "where": "Section 3, assertion semantics",
+      "says": {
+        "defines": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a4",
+      "source": "a-reynolds-2002",
+      "quote": "emp asserts that the heap is empty",
+      "where": "Section 3, assertion semantics",
+      "says": {
+        "defines": "emp"
+      }
+    },
+    {
+      "id": "sl-a5",
+      "source": "a-reynolds-2002",
+      "quote": "asserts that the heap contains one cell,at address e with contents e′",
+      "where": "Section 3, assertion semantics",
+      "says": {
+        "defines": "points-to"
+      }
+    },
+    {
+      "id": "sl-a6",
+      "source": "a-reynolds-2002",
+      "quote": "if the current heap is extended with a disjoint part in which p0 holds,then p1 will hold in the extended heap",
+      "where": "Section 3, assertion semantics",
+      "says": {
+        "defines": "magic wand"
+      }
+    },
+    {
+      "id": "sl-a7",
+      "source": "a-reynolds-2002",
+      "quote": "neither contraction, p ⇒ p ∗ p,nor weakening, p ∗ q ⇒ p,are sound. Thus separation logic is a substructural logic.",
+      "where": "Section 3, rules that fail",
+      "says": {
+        "defines": "classical separation logic"
+      }
+    },
+    {
+      "id": "sl-a8",
+      "source": "a-reynolds-2002",
+      "quote": "Unfortunately,however,the rule of constancy is not sound for separation logic.",
+      "where": "Section 5, frame rule",
+      "says": {
+        "covers": "keeping an unchanged fact true across a command by plain conjunction",
+        "by": "hoare logic with aliasing",
+        "is": false
+      }
+    },
+    {
+      "id": "sl-a9",
+      "source": "a-reynolds-2002",
+      "quote": "Thus,the frame rule is the key to “local reasoning” about the heap",
+      "where": "Section 5, frame rule",
+      "says": {
+        "defines": "frame rule"
+      },
+      "credits": ["a-ohearn-reynolds-yang-2001"]
+    },
+    {
+      "id": "sl-a10",
+      "source": "a-reynolds-2002",
+      "quote": "Thus,the frame rule is the key to “local reasoning” about the heap",
+      "where": "Section 5, frame rule",
+      "says": {
+        "covers": "checking only what a change can affect",
+        "by": "frame rule",
+        "is": true
+      },
+      "credits": ["a-ohearn-reynolds-yang-2001"]
+    },
+    {
+      "id": "sl-a11",
+      "source": "a-reynolds-2002",
+      "quote": "which O’Hearn calls the footprint of c",
+      "where": "Section 5, frame rule",
+      "says": {
+        "defines": "footprint"
+      }
+    },
+    {
+      "id": "sl-a12",
+      "source": "a-ohearn-reynolds-yang-2001",
+      "quote": "If we start execution with a state that has additional heap cells, beyond those described by P , then the values of the additional cells will remain unaltered.",
+      "where": "Section 3",
+      "says": {
+        "defines": "frame rule"
+      }
+    },
+    {
+      "id": "sl-a13",
+      "source": "a-ohearn-reynolds-yang-2001",
+      "quote": "This enables the initial specification {P }C{Q} to concentrate on only the cells in the program’s footprint.",
+      "where": "Section 1, Introduction",
+      "says": {
+        "covers": "checking only what a change can affect",
+        "by": "frame rule",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a14",
+      "source": "a-ohearn-reynolds-yang-2001",
+      "quote": "Ishtiaq and O’Hearn devised a classical version of the logic that is more expressive than the intuitionistic version. In particular, it can express storage deallocation.",
+      "where": "Section 1, Introduction",
+      "says": {
+        "defines": "classical separation logic"
+      }
+    },
+    {
+      "id": "sl-a15",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "separating conjunction asks for a partitioning that divides the heap into parts, heaplets, satisfying its two conjuncts",
+      "where": "Section 2, Figure 1 discussion",
+      "says": {
+        "defines": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a16",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "separating conjunction asks for a partitioning that divides the heap into parts, heaplets, satisfying its two conjuncts",
+      "where": "Section 2, Figure 1 discussion",
+      "says": {
+        "covers": "state that splits into disjoint parts",
+        "by": "separating conjunction",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a17",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "emp is the unit of ∗, so that P = emp ∗ P = P ∗ emp.",
+      "where": "Section 2",
+      "says": {
+        "defines": "emp"
+      }
+    },
+    {
+      "id": "sl-a18",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "emp is the unit of ∗, so that P = emp ∗ P = P ∗ emp.",
+      "where": "Section 2",
+      "says": {
+        "covers": "a unit value for combining",
+        "by": "separating conjunction",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a19",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "−∗ is an implication quantifying over separate heaps",
+      "where": "Figure 2, semantics",
+      "says": {
+        "defines": "magic wand"
+      }
+    },
+    {
+      "id": "sl-a20",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "Assume a partial commutative monoid (H, ◦, e), where ◦ : H × H ⇀ H and e ∈ H.",
+      "where": "Figure 2, semantics",
+      "says": {
+        "defines": "separation algebra"
+      }
+    },
+    {
+      "id": "sl-a21",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "In the RAM model H is the set of finite partial functions from positive integers (addressible locations) to integers, h ◦ h′ is the union of functions with disjoint domain, and undefined when h and h′ overlap.",
+      "where": "Figure 2, semantics",
+      "says": {
+        "covers": "finite maps combined only when their keys are disjoint",
+        "by": "separating conjunction",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a22",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "To understand how a program works, it should be possible for reasoning and specification to be confined to the cells that the program actually accesses. The value of any other cell will automatically remain unchanged.",
+      "where": "Section 1, Introduction",
+      "says": {
+        "defines": "local reasoning"
+      },
+      "credits": ["a-ohearn-reynolds-yang-2001"]
+    },
+    {
+      "id": "sl-a23",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "allows a proof to be localized to the resources that a program component accesses (its footprint)",
+      "where": "Section 1, Introduction",
+      "says": {
+        "covers": "checking only what a change can affect",
+        "by": "frame rule",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a24",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "giving rise to the Infer static analyzer, a tool that is in deployment at Facebook where it catches thousands of bugs per month before code reaches production in products used by over a billion people daily",
+      "where": "Section 1, Introduction",
+      "says": {
+        "adopted": "separating conjunction",
+        "in": "Infer"
+      }
+    },
+    {
+      "id": "sl-a25",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "One of these, Verifiable C, is the foundation of Appel’s Verified Software Toolchain",
+      "where": "Section 6",
+      "says": {
+        "adopted": "separating conjunction",
+        "in": "Verified Software Toolchain"
+      }
+    },
+    {
+      "id": "sl-a26",
+      "source": "a-ohearn-cacm-2019",
+      "quote": "Iris has been used to provide a foundation of the type system of the Rust programming language",
+      "where": "Section 6",
+      "says": {
+        "adopted": "resource algebra",
+        "in": "Iris foundation for Rust's type system"
+      }
+    },
+    {
+      "id": "sl-a27",
+      "source": "a-calcagno-ohearn-yang-2007",
+      "quote": "A separation algebra is a cancellative, partial commutative monoid (Σ, •, u) .",
+      "where": "Section 2, Definition 1",
+      "says": {
+        "defines": "separation algebra"
+      }
+    },
+    {
+      "id": "sl-a28",
+      "source": "a-calcagno-ohearn-yang-2007",
+      "quote": "A partial commutative monoid is given by a partial binary operation where the unity, commutativity and associativity laws hold",
+      "where": "Section 2, after Definition 1",
+      "says": {
+        "defines": "separation algebra"
+      }
+    },
+    {
+      "id": "sl-a29",
+      "source": "a-calcagno-ohearn-yang-2007",
+      "quote": "An example of a permission algebra is the interval (0, 1] of rational numbers, with ◦ being addition but undefined when permissions add up to more than 1.",
+      "where": "Section 2, Example 2 (heaps with permissions)",
+      "says": {
+        "defines": "fractional permission"
+      },
+      "credits": ["a-bornat-2005"]
+    },
+    {
+      "id": "sl-a30",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Every PCM is an RA, but not vice versa",
+      "where": "Section 2.1",
+      "says": {
+        "defines": "resource algebra"
+      }
+    },
+    {
+      "id": "sl-a31",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Instead of partiality, RAs use validity to rule out invalid combinations of ownership.",
+      "where": "Section 2.1",
+      "says": {
+        "defines": "resource algebra"
+      }
+    },
+    {
+      "id": "sl-a32",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Instead of partiality, RAs use validity to rule out invalid combinations of ownership.",
+      "where": "Section 2.1",
+      "says": {
+        "covers": "a combining operation with a validity check",
+        "by": "resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a33",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Instead of having a single unit ε that is an identity to every element (i.e., that enjoys ε · a = a for any a), RAs have a partial function |−| that assigns to an element a its (duplicable) core |a|",
+      "where": "Section 2.1",
+      "says": {
+        "defines": "resource algebra"
+      }
+    },
+    {
+      "id": "sl-a34",
+      "source": "a-iris-ground-up-2018",
+      "quote": "In the special case that an RA does have a unit ε, we call it a unital RA (uRA).",
+      "where": "Section 2.1",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-a35",
+      "source": "a-iris-ground-up-2018",
+      "quote": "In the special case that an RA does have a unit ε, we call it a unital RA (uRA).",
+      "where": "Section 2.1",
+      "says": {
+        "covers": "a unit value for combining",
+        "by": "unital resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a36",
+      "source": "a-iris-ground-up-2018",
+      "quote": "It is worth noting that the global RA must be unital, which means it should have a unit element ε (Figure 3).",
+      "where": "Section 3.1",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-a37",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Note that one can always turn an RA into a unital RA by extending it with a unit element, preserving all frame-preserving updates.",
+      "where": "Section 3.1",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-a38",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Iris always maintains the invariant that the state obtained by composing the contributions of all threads is a valid RA element. We call state changes that maintain this invariant frame-preserving updates.",
+      "where": "Section 2.1",
+      "says": {
+        "defines": "frame-preserving update"
+      }
+    },
+    {
+      "id": "sl-a39",
+      "source": "a-iris-ground-up-2018",
+      "quote": "the task of the exclusive RA E X (X ) is to make sure that one party exclusively owns a value x ∈ X",
+      "where": "Section 3.1, Exclusive",
+      "says": {
+        "defines": "exclusive resource algebra"
+      }
+    },
+    {
+      "id": "sl-a40",
+      "source": "a-iris-ground-up-2018",
+      "quote": "the task of the agreement RA A G 0 (X ) is to make sure multiple parties can agree upon which value x ∈ X has been picked",
+      "where": "Section 3.1, Agreement",
+      "says": {
+        "defines": "agreement resource algebra"
+      }
+    },
+    {
+      "id": "sl-a41",
+      "source": "a-iris-ground-up-2018",
+      "quote": "the task of the agreement RA A G 0 (X ) is to make sure multiple parties can agree upon which value x ∈ X has been picked",
+      "where": "Section 3.1, Agreement",
+      "says": {
+        "covers": "keys that reject two different values",
+        "by": "agreement resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a42",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Persistent propositions can be freely duplicated ( PERSISTENT - DUP ); the usual restriction of resources being usable only once does not apply to them.",
+      "where": "Section 2.3",
+      "says": {
+        "defines": "persistent proposition"
+      }
+    },
+    {
+      "id": "sl-a43",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Iris is an affine separation logic, which means that it enjoys the weakening rule P ∗ Q ⇒ P. Intuitively, this rule lets one throw away resources",
+      "where": "Section 2.2",
+      "says": {
+        "defines": "affine separation logic"
+      }
+    },
+    {
+      "id": "sl-a44",
+      "source": "a-iris-ground-up-2018",
+      "quote": "in traditional classical separation logic it is guaranteed that allocated memory has been freed since one cannot throw away points-to predicates",
+      "where": "Section 9.5",
+      "says": {
+        "defines": "classical separation logic"
+      }
+    },
+    {
+      "id": "sl-a45",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Iris is a framework for higher-order concurrent separation logic, which has been implemented in the Coq proof assistant and deployed very effectively in a wide variety of verification projects.",
+      "where": "Abstract",
+      "says": {
+        "adopted": "resource algebra",
+        "in": "Iris (Coq)"
+      }
+    },
+    {
+      "id": "sl-a46",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "A resource algebra is a commutative semigroup M together with a subset V ⊆ M of elements called valid, and a partial function | · | : M → M, called the core.",
+      "where": "Section 8, Definition 8.10",
+      "says": {
+        "defines": "resource algebra"
+      },
+      "credits": ["a-iris-ground-up-2018"]
+    },
+    {
+      "id": "sl-a47",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "A resource algebra is a commutative semigroup M together with a subset V ⊆ M of elements called valid, and a partial function | · | : M → M, called the core.",
+      "where": "Section 8, Definition 8.10",
+      "says": {
+        "covers": "a combining operation with a validity check",
+        "by": "resource algebra",
+        "is": true
+      },
+      "credits": ["a-iris-ground-up-2018"]
+    },
+    {
+      "id": "sl-a48",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "A resource algebra is unital if M is a commutative monoid with unit ε and the following properties hold.",
+      "where": "Section 8, Definition 8.10",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-a49",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "A resource algebra is unital if M is a commutative monoid with unit ε and the following properties hold.",
+      "where": "Section 8, Definition 8.10",
+      "says": {
+        "covers": "a unit value for combining",
+        "by": "unital resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a50",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "A canonical example of a unital resource algebra is the one of heaps.",
+      "where": "Section 8, Example 8.13",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-a51",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "The non-trivial compositions are only m · m = m and otherwise (when m and n are distinct) m · n = ⊥.",
+      "where": "Section 8, Example 8.14",
+      "says": {
+        "defines": "agreement resource algebra"
+      }
+    },
+    {
+      "id": "sl-a52",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "The non-trivial compositions are only m · m = m and otherwise (when m and n are distinct) m · n = ⊥.",
+      "where": "Section 8, Example 8.14",
+      "says": {
+        "covers": "keys that reject two different values",
+        "by": "agreement resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a53",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "The operation is defined such that x·y = ⊥ for all x and y.",
+      "where": "Section 8, Example 8.18",
+      "says": {
+        "defines": "exclusive resource algebra"
+      }
+    },
+    {
+      "id": "sl-a54",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "However the valid elements are only those q less than or equal to 1",
+      "where": "Section 8, Example 8.17",
+      "says": {
+        "defines": "fractional permission"
+      }
+    },
+    {
+      "id": "sl-a55",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "It states that any element compatible with a is compatible with some element in B.",
+      "where": "Section 8, Definition 8.23",
+      "says": {
+        "defines": "frame-preserving update"
+      }
+    },
+    {
+      "id": "sl-a56",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "P ∧ Q ` P ∗ Q if P is persistent.",
+      "where": "Section 4, persistent propositions",
+      "says": {
+        "needs": "resources that cannot be duplicated",
+        "by": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a57",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "if one of the propositions is persistent, then there is no difference between conjunction and separating conjunction",
+      "where": "Section 4, persistent propositions",
+      "says": {
+        "needs": "resources that cannot be duplicated",
+        "by": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a58",
+      "source": "a-birkedal-bizjak-iris-notes",
+      "quote": "Persistent propositions are important because they are duplicable",
+      "where": "Section 7, The Persistently Modality",
+      "says": {
+        "defines": "persistent proposition"
+      }
+    },
+    {
+      "id": "sl-a59",
+      "source": "a-bornat-2005",
+      "quote": "The roots of the approach are in Boyland’s [3] demonstration of the utility of fractional permissions in specifying non-interference between concurrent threads.",
+      "where": "Abstract",
+      "says": {
+        "defines": "fractional permission"
+      }
+    },
+    {
+      "id": "sl-a60",
+      "source": "a-bornat-2005",
+      "quote": "a permission is z, where 0 < z ≤ 1; z = 1 allows dispose, write and read; any other value is read access only.",
+      "where": "Section 7, Fractional permissions in detail",
+      "says": {
+        "defines": "fractional permission"
+      }
+    },
+    {
+      "id": "sl-a61",
+      "source": "a-distefano-cacm-2019",
+      "quote": "Infer, as we will discuss, uses one analysis based on the theory of Separation Logic",
+      "where": "Introduction",
+      "says": {
+        "adopted": "separating conjunction",
+        "in": "Infer"
+      }
+    },
+    {
+      "id": "sl-a62",
+      "source": "a-kiran-blog",
+      "quote": "the separating conjunct , to allow denotating that assertions hold over disjoint subsets of the heap",
+      "where": "Section: Separating Conjunct",
+      "says": {
+        "defines": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a63",
+      "source": "a-kiran-blog",
+      "quote": "All it asserts is that there exists some partitioning of the entire heap, such that one can make spatial assertions P and Q both true.",
+      "where": "Section: Separating Conjunct",
+      "says": {
+        "defines": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-a64",
+      "source": "a-kiran-blog",
+      "quote": "All it asserts is that there exists some partitioning of the entire heap, such that one can make spatial assertions P and Q both true.",
+      "where": "Section: Separating Conjunct",
+      "says": {
+        "covers": "state that splits into disjoint parts",
+        "by": "separating conjunction",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-a65",
+      "source": "a-iris-ground-up-2018",
+      "quote": "Note that one can always turn an RA into a unital RA by extending it with a unit element, preserving all frame-preserving updates.",
+      "where": "Section 3.1",
+      "says": {
+        "covers": "a unit added to an algebra that has none",
+        "by": "unital resource algebra",
+        "is": true
+      }
+    }
+  ]
+}

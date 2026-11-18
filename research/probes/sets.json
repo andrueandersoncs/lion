@@ -1,0 +1,13 @@
+[
+  "begin",
+  ["relation", "said", ["who", "what"]],
+  ["fact", ["said", "ana", "yes"]],
+  ["fact", ["said", "ana", "yes"]],
+  {
+    "rows": ["query", ["said", "?who", "?what"]],
+    "one row matched twice by and": [
+      "query",
+      ["and", ["said", "?a", "?w"], ["said", "?b", "?w"]]
+    ]
+  }
+]

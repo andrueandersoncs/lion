@@ -1,0 +1,53 @@
+{
+  "sources": [
+    {
+      "id": "f-beginner-iris-2021",
+      "url": "https://arxiv.org/abs/2105.12077",
+      "title": "A beginner's guide to Iris, Coq and separation logic (bachelor's thesis, arXiv v2)",
+      "publisher": "Dietrich (Indiana University Bloomington)",
+      "kind": "secondary",
+      "published": 20250123,
+      "for": ["sl-terms"]
+    },
+    {
+      "id": "f-krebbers-2017",
+      "url": "https://doi.org/10.1007/978-3-662-54434-1_26",
+      "title": "The Essence of Higher-Order Concurrent Separation Logic (ESOP 2017)",
+      "publisher": "Iris project",
+      "kind": "primary",
+      "published": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "sl-f1",
+      "source": "f-beginner-iris-2021",
+      "quote": "Figure 6. The definition of a (unital) resource algebra (RA).",
+      "where": "Section 5, Figure 6",
+      "says": {
+        "defines": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-f2",
+      "source": "f-beginner-iris-2021",
+      "quote": "∀a. ϵ · a = a RA − ID V(ϵ) RA − V ALID − ID",
+      "where": "Section 5, Figure 6",
+      "says": {
+        "covers": "a unit value for combining",
+        "by": "unital resource algebra",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-f3",
+      "source": "f-beginner-iris-2021",
+      "quote": "All the logic demands is that the set of resources forms a unital resource algebra (RA)",
+      "where": "Section 5",
+      "says": {
+        "defines": "unital resource algebra"
+      },
+      "credits": ["f-krebbers-2017"]
+    }
+  ]
+}

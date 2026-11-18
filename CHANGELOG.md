@@ -2,6 +2,26 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. (`research-probes-runner` added)
+- `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`researching-guideline` added)
+- The separation-logic run is the first run in `research/`. (`separation-logic-research` added)
+
+### Changed
+
+- `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`research-extends-existing-model` is `true`)
+
+### Decided
+
+- Every research run adds to one Lion model in `research/`. (`research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`)
+
+### Rules
+
+- A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. (rule `research-runs-extend-shared-model`)
+
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
 `why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.

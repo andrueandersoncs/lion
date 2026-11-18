@@ -1,0 +1,181 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2304.04332"
+   ],
+   [
+    "quote",
+    "Better Together: Unifying Datalog and Equality Saturation (PLDI 2023)"
+   ],
+   [
+    "quote",
+    "Zhang, Wang, Flatt, Cao, Zucker, Rosenthal, Tatlock, Willsey (egglog)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230410
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-e1"
+   ],
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ],
+   [
+    "quote",
+    "An egglog function can be annotated with a merge expression , a novel mechanism that egglog uses to resolve functional dependency violations by combining the two conflicting output values."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a combining operation with a validity check",
+     "by": "egglog merge",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-e1"
+   ],
+   [
+    "quote",
+    "Section 2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-e2"
+   ],
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ],
+   [
+    "quote",
+    "f f ’s merge expression might assert that b = d b=d (essentially asserting congruence of f f ), or return the supremum of b b and d d ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "keys that reject two different values",
+     "by": "egglog merge",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-e2"
+   ],
+   [
+    "quote",
+    "Section 2"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-e3"
+   ],
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ],
+   [
+    "quote",
+    "Functions and :merge allow egglog to support Datalog with lattices similar to tools like Flix"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "egglog merge",
+     "in": "egglog"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-e3"
+   ],
+   [
+    "quote",
+    "Section 3"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-e4"
+   ],
+   [
+    "quote",
+    "lion-shared-algebra"
+   ],
+   [
+    "quote",
+    "Under this design, a fact is simply one more candidate of its group"
+   ],
+   [
+    "quote",
+    {
+     "covers": "aggregated relations that accept facts",
+     "by": "group folds (earlier Lion design)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-e4"
+   ],
+   [
+    "quote",
+    "What this changes for people who write Lion"
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ],
+   [
+    "quote",
+    "sl-algebra"
+   ],
+   10
+  ]
+ ],
+ "recorded"
+]

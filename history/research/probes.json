@@ -20719,5 +20719,67 @@
       ],
       ["else", ["quote", "not-printed"]]
     ]
+  },
+  {
+    "case": "research-model-folder",
+    "area": "docs",
+    "program": [
+      "cond",
+      [
+        [
+          "number/greaterThan",
+          ["array/length", ["repo/files", "research/steps"]],
+          0
+        ],
+        "research"
+      ],
+      ["else", "none"]
+    ]
+  },
+  {
+    "feature": "research-probes-runner",
+    "kind": "tool",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/probes/run.mjs"]],
+      1
+    ]
+  },
+  {
+    "feature": "researching-guideline",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "guidelines/researching.md"]],
+      1
+    ]
+  },
+  {
+    "feature": "separation-logic-research",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      [
+        "array/length",
+        ["repo/files", "research/runs/separation-logic/report.md"]
+      ],
+      1
+    ]
+  },
+  {
+    "case": "research-extends-existing-model",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", "skills/lion-research/SKILL.md"],
+          "add the run to it instead of starting a new folder"
+        ],
+        "true"
+      ],
+      ["else", "false"]
+    ]
   }
 ]

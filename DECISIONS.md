@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 157 questions have been decided, 59 records explain them, and of what the records assert, 509 hold when Lion is run, 4 are broken, 271 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 60 records explain them, and of what the records assert, 514 hold when Lion is run, 4 are broken, 272 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -163,6 +163,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
 | 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
+| 2026-11-18 | [`research-layout`](#research-layout) | `one-shared-model` | [Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions](#research-compounds) |
 
 <a id="program-representation"></a>
 
@@ -3342,3 +3343,38 @@ Recorded 2026-11-17 in `history/notes/experiment-expectation-in-its-version.json
 - Stated, not checked by running Lion: `reasoning-belief-tries` exists. "A belief may say which direction it `tries`, as an observation does."
 - Stated, not checked by running Lion: `reasoning-direction-addresses` exists. "A direction `addresses` the problems its notes list and the problems its experiments target."
 - Stated, not checked by running Lion: `reasoning-targets` exists. "that experiment `targets` the problem"
+
+<a id="research-layout"></a>
+
+## research-layout
+
+Now: `one-shared-model`.
+
+- 2026-11-18 `research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`: "Every research run adds to one Lion model in `research/`." (`research-compounds.json`)
+
+<a id="research-compounds"></a>
+
+### Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions
+
+Recorded 2026-11-18 in `history/notes/research-compounds.json`.
+
+**Context.** Research runs with the lion-research skill kept each run in its own folder under the git-ignored `out/`. The run on what Lion should improve next (2026-11-17) and the run on separation logic (2026-11-18) each recorded what Lion has, from its docs and from programs run on it, under names of their own. The second run could not query the first, and neither was kept: a removed worktree takes `out/` with it. The programs that checked an inference, such as the model of a record split run over every small case, lived beside the model and were lost with it.
+
+**Decision.** Every research run adds to one Lion model in `research/`. Its steps, notes, sources, probes, standing checks, and each run's report and page plan are committed. A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. When Lion changes, the probes run again under a new source id, and the publisher's latest word replaces its earlier one.
+
+**Consequences.** The separation-logic run is the first run in `research/`. Its frame was split into the shared frame `steps/01-frame.src.json`, which holds the kinds of statement and the rules that judge an idea for Lion, and its own step `02-sl-frame.json`, which holds its assumptions. Its claim, lead, and assumption ids start with `sl-`. `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. `model.json` and each run's built page are not committed: the replay builds them.
+
+**Alternatives considered.**
+
+- A folder per run, each its own model. Runs cannot ask one another, name the same feature differently, and keep two copies of what Lion does that drift apart.
+- Keep research under the git-ignored out/. The evidence and the programs behind a conclusion are lost with the worktree, and the next run starts from nothing.
+- Commit model.json beside the steps. It is built from the steps, as the project record's model is, and a copy would go stale the first time a step changed.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `research-layout`: `one-shared-model`. "Every research run adds to one Lion model in `research/`."
+- Holds when Lion is run: rule `research-runs-extend-shared-model` holds. "A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix."
+- Holds when Lion is run: `research-probes-runner` exists. "What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule."
+- Holds when Lion is run: `researching-guideline` exists. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
+- Holds when Lion is run: `research-extends-existing-model` is `true`. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
+- Holds when Lion is run: `separation-logic-research` exists. "The separation-logic run is the first run in `research/`."

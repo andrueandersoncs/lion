@@ -1,0 +1,568 @@
+{
+  "sources": [
+    {
+      "id": "c-chr-survey-2010",
+      "url": "https://arxiv.org/pdf/0906.4474",
+      "title": "As Time Goes By: Constraint Handling Rules - A Survey of CHR Research from 1998 to 2007",
+      "publisher": "Sneyers, Van Weert, Schrijvers, De Koninck (K.U.Leuven); Theory and Practice of Logic Programming 10(1)",
+      "kind": "secondary",
+      "published": 20090625
+    },
+    {
+      "id": "c-hodas-miller-1994",
+      "url": "https://www.lix.polytechnique.fr/~dale/papers/ic94.pdf",
+      "title": "Logic Programming in a Fragment of Intuitionistic Linear Logic",
+      "publisher": "Hodas (Harvey Mudd) and Miller (UPenn); Information and Computation 110(2)",
+      "kind": "primary",
+      "published": 19940501
+    },
+    {
+      "id": "c-ceptre-2015",
+      "url": "https://www.cs.cmu.edu/~cmartens/ceptre.pdf",
+      "title": "Ceptre: A Language for Modeling Generative Interactive Systems",
+      "publisher": "Chris Martens (Carnegie Mellon University); AIIDE 2015",
+      "kind": "primary",
+      "published": 20151114
+    },
+    {
+      "id": "c-linear-meld-2014",
+      "url": "https://arxiv.org/pdf/1405.3556",
+      "title": "A Linear Logic Programming Language for Concurrent Programming over Graph Structures",
+      "publisher": "Cruz, Rocha, Goldstein, Pfenning (Carnegie Mellon / University of Porto); Theory and Practice of Logic Programming",
+      "kind": "primary",
+      "published": 20140514
+    },
+    {
+      "id": "c-bonner-1988",
+      "url": "https://cdn.aaai.org/AAAI/1988/AAAI88-085.pdf",
+      "title": "A Logic for Hypothetical Reasoning",
+      "publisher": "Anthony J. Bonner (Rutgers University); AAAI-88",
+      "kind": "primary",
+      "published": 19880821
+    },
+    {
+      "id": "c-bonner-1990",
+      "url": "https://ftp.cs.toronto.edu/db/bonner/papers/hypotheticals/tcs90.ps",
+      "title": "Hypothetical Datalog: Complexity and Expressibility",
+      "publisher": "Anthony J. Bonner (Rutgers University); Theoretical Computer Science 76(1):3-51; author's PostScript copy",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "c-saenz-perez-2015",
+      "url": "https://arxiv.org/pdf/1512.06945",
+      "title": "Restricted Predicates for Hypothetical Datalog",
+      "publisher": "Fernando Saenz-Perez (Universidad Complutense de Madrid); PROLE 2015, EPTCS 200",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "c-biabduction-2011",
+      "url": "https://www.cs.ox.ac.uk/people/hongseok.yang/paper/jacm11-biabduction-webversion.pdf",
+      "title": "Compositional Shape Analysis by means of Bi-Abduction",
+      "publisher": "Calcagno, Distefano, O'Hearn, Yang (Imperial/Monoidics, Queen Mary, Oxford); Journal of the ACM 58(6)",
+      "kind": "primary",
+      "published": 20111201
+    },
+    {
+      "id": "c-scaling-fb-2019",
+      "url": "https://6826.csail.mit.edu/2020/papers/facebook-infer-cacm.pdf",
+      "title": "Scaling Static Analyses at Facebook",
+      "publisher": "Distefano, Fahndrich, Logozzo, O'Hearn (Facebook); Communications of the ACM 62(8)",
+      "kind": "primary",
+      "published": 20190801
+    },
+    {
+      "id": "c-incorrectness-logic-2020",
+      "url": "https://discovery.ucl.ac.uk/10095439/1/IL.pdf",
+      "title": "Incorrectness Logic",
+      "publisher": "Peter W. O'Hearn (Facebook and University College London); POPL 2020, PACMPL 4",
+      "kind": "primary",
+      "published": 20200101
+    },
+    {
+      "id": "c-isl-2020",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7363320/",
+      "title": "Local Reasoning About the Presence of Bugs: Incorrectness Separation Logic",
+      "publisher": "Raad, Berdine, Dang, Dreyer, O'Hearn, Villard (Imperial/UCL, Facebook, MPI-SWS); CAV 2020",
+      "kind": "primary",
+      "published": 20200616
+    },
+    {
+      "id": "c-gheorghiu-docherty-pym-2023",
+      "url": "https://www.cantab.net/users/david.pym/rlp-sc.pdf",
+      "title": "Reductive Logic, Proof-search, and Coalgebra: A Perspective from Resource Semantics",
+      "publisher": "Gheorghiu, Docherty, Pym (University College London); preprint of a 2023 Springer chapter",
+      "kind": "primary",
+      "published": 20220918
+    },
+    {
+      "id": "c-reynolds-2002",
+      "url": "https://www.cs.cmu.edu/~jcr/seplogic.pdf",
+      "title": "Separation Logic: A Logic for Shared Mutable Data Structures",
+      "publisher": "John C. Reynolds (Carnegie Mellon University); LICS 2002",
+      "kind": "primary",
+      "published": 20020722
+    },
+    {
+      "id": "c-navarro-rybalchenko-2011",
+      "url": "https://archive.model.in.tum.de/um/bibdb/navarro/pldi2011.pdf",
+      "title": "Separation Logic + Superposition Calculus = Heap Theorem Prover",
+      "publisher": "Navarro Perez and Rybalchenko (TU Munchen); PLDI 2011",
+      "kind": "primary",
+      "published": 20110604
+    }
+  ],
+  "claims": [
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "Constraint Handling Rules (CHR) is a high-level programming language based on multi-headed, committed-choice, guarded multiset rewrite rules.",
+      "where": "§1 Introduction",
+      "states": "CHR programs are multiset rewrite rules that commit to one rule application and do not backtrack over it.",
+      "technique": "constraint handling rules",
+      "feature": "committed-choice multiset rewriting",
+      "has": true,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "If there are two prime/1 constraints prime(A) and prime(B), such that B is a multiple of A, the latter constraint is removed.",
+      "where": "§1.2 Constraint Handling Rules (primes program)",
+      "states": "A simpagation rule deletes a matched constraint from the store when it fires.",
+      "technique": "constraint handling rules",
+      "feature": "facts used up when a rule reads them",
+      "has": true,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "It is necessary to do this explicitly since CHR has multiset semantics.",
+      "where": "§1.2 Constraint Handling Rules (leq program, idempotence rule)",
+      "states": "The CHR store is a multiset, so duplicate constraints stay unless a rule removes them.",
+      "technique": "constraint handling rules",
+      "feature": "set semantics",
+      "has": false,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "It features a constraint store with set semantics",
+      "where": "§4.1.1 CHR(LP), on the CHRd system",
+      "states": "One CHR variant, CHRd, uses a constraint store with set semantics, suited to tabled execution.",
+      "technique": "constraint handling rules (CHRd variant)",
+      "feature": "set semantics",
+      "has": true,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "the existence of a decidable, sufficient and necessary test for confluence of terminating programs",
+      "where": "§3.1 Confluence",
+      "states": "For terminating CHR programs there is a decidable test of confluence, the property that every derivation from a state ends in the same final state.",
+      "technique": "constraint handling rules",
+      "feature": "check that results are independent of rule order",
+      "has": true,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-chr-survey-2010",
+      "quote": "CHR programs often rely on the execution control offered by the ωr semantics for",
+      "where": "§2.2.2 Refined Operational Semantics",
+      "states": "Many CHR programs depend on the refined semantics, which tries rule occurrences in program order, to be correct or fast.",
+      "technique": "constraint handling rules",
+      "feature": "results independent of rule order",
+      "has": false,
+      "credits": ["c-chr-survey-2010"]
+    },
+    {
+      "source": "c-hodas-miller-1994",
+      "quote": "Attempting to prove a goal of the form D ⊃ G from the context (set of formulas) Γ leads to an attempt to prove the goal G in the extended context Γ ∪ {D}.",
+      "where": "Abstract",
+      "states": "An implication goal D => G is proved by adding D to the program context and proving G there.",
+      "technique": "implication goals",
+      "feature": "adding facts for the duration of a goal",
+      "has": true,
+      "credits": ["c-hodas-miller-1994"]
+    },
+    {
+      "source": "c-hodas-miller-1994",
+      "quote": "then every formula in the bounded part of the context must be used exactly once",
+      "where": "§3 A linear logic programming language",
+      "states": "In the linear fragment, each formula in the bounded context must be consumed exactly once in a proof.",
+      "technique": "linear logic programming",
+      "feature": "facts used up when a rule reads them",
+      "has": true,
+      "credits": ["c-hodas-miller-1994"]
+    },
+    {
+      "source": "c-hodas-miller-1994",
+      "quote": "if a data base is held in the bounded part of a context, then querying the data base about an item makes that item unavailable elsewhere.",
+      "where": "§3 A linear logic programming language",
+      "states": "Querying a linear (bounded) fact consumes it, so a plain query is not a non-destructive read.",
+      "technique": "linear logic programming",
+      "feature": "reading a fact without consuming it",
+      "has": false,
+      "credits": ["c-hodas-miller-1994"]
+    },
+    {
+      "source": "c-hodas-miller-1994",
+      "quote": "the latter must be split into disjoint contexts ∆1 and ∆2 for which G1 follows from ∆1 and G2 follows from ∆2",
+      "where": "Abstract",
+      "states": "Proving a multiplicative conjunction G1 ⊗ G2 requires splitting the resources into two disjoint parts, one for each conjunct.",
+      "technique": "linear logic programming",
+      "feature": "conjunction that splits resources",
+      "has": true,
+      "credits": ["c-hodas-miller-1994"]
+    },
+    {
+      "source": "c-hodas-miller-1994",
+      "quote": "Since there is an exponential number of such splits, it is important to delay the choice of a split as much as possible.",
+      "where": "Abstract",
+      "states": "The number of ways to split a context is exponential, so an interpreter delays the split (lazy splitting).",
+      "technique": "linear logic programming",
+      "feature": "cost of splitting resources",
+      "has": true,
+      "credits": ["c-hodas-miller-1994"]
+    },
+    {
+      "source": "c-ceptre-2015",
+      "quote": "The rules in Σ are unordered, and several may apply, potentially giving rise to nondeterminism.",
+      "where": "Bird’s-Eye View",
+      "states": "Ceptre rules have no order, and when several apply the choice is nondeterministic.",
+      "technique": "linear logic programming",
+      "feature": "results independent of rule order",
+      "has": false,
+      "credits": ["c-ceptre-2015"]
+    },
+    {
+      "source": "c-ceptre-2015",
+      "quote": "Note that because of the replacement semantics of the rule, we need to reiterate everything on the right-hand side of the -o that we don’t want to disappear",
+      "where": "Predicates and Rules",
+      "states": "A Ceptre rule replaces the facts it matches, so any matched fact that should survive must be restated (or marked with $).",
+      "technique": "linear logic programming",
+      "feature": "facts used up when a rule reads them",
+      "has": true,
+      "credits": ["c-ceptre-2015"]
+    },
+    {
+      "source": "c-linear-meld-2014",
+      "quote": "Linear Meld (LM) is a forward chaining logic programming language in the style of Datalog (Ullman 1990).",
+      "where": "§2 LM By Example",
+      "states": "LM evaluates bottom-up like Datalog while adding linear (consumable) facts.",
+      "technique": "linear logic programming",
+      "feature": "Datalog-style forward chaining with consumable facts",
+      "has": true,
+      "credits": ["c-linear-meld-2014"]
+    },
+    {
+      "source": "c-linear-meld-2014",
+      "quote": "If a rule uses linear facts, they are consumed and thus deleted from the database.",
+      "where": "§2 LM By Example",
+      "states": "Linear facts matched by a rule body are deleted from the database when the rule fires.",
+      "technique": "linear logic programming",
+      "feature": "facts used up when a rule reads them",
+      "has": true,
+      "credits": ["c-linear-meld-2014"]
+    },
+    {
+      "source": "c-linear-meld-2014",
+      "quote": "While linear facts may be retracted, persistent facts are always true once they are derived.",
+      "where": "§2 LM By Example",
+      "states": "LM keeps two kinds of facts: linear ones that rules consume and persistent ones (marked !) that stay true.",
+      "technique": "linear logic programming",
+      "feature": "persistent facts alongside consumable ones",
+      "has": true,
+      "credits": ["c-linear-meld-2014"]
+    },
+    {
+      "source": "c-linear-meld-2014",
+      "quote": "When a rule body is instantiated using facts from the database, facts are picked non-deterministically.",
+      "where": "§3 The LM Language (Selectors)",
+      "states": "Which facts a rule consumes is chosen nondeterministically, in an implementation-dependent order.",
+      "technique": "linear logic programming",
+      "feature": "deterministic choice of matched facts",
+      "has": false,
+      "credits": ["c-linear-meld-2014"]
+    },
+    {
+      "source": "c-linear-meld-2014",
+      "quote": "every node A will derive visited(A), regardless of the order in which rules are applied",
+      "where": "§2 LM By Example (visit program)",
+      "states": "For the visit program on a connected graph, the authors argue the result is the same whatever order rules fire in; this is shown per program.",
+      "technique": "linear logic programming",
+      "feature": "results independent of rule order",
+      "has": true,
+      "credits": ["c-linear-meld-2014"]
+    },
+    {
+      "source": "c-bonner-1988",
+      "quote": "Horn-clause logic is augmented with rules, called embedded implications, which can hypothetically add atomic formulas to a rulebase.",
+      "where": "Abstract",
+      "states": "Embedded implications extend Horn clauses with rules that hypothetically add facts to the rulebase.",
+      "technique": "hypothetical datalog",
+      "feature": "adding facts for the duration of a goal",
+      "has": true,
+      "credits": ["c-bonner-1988"]
+    },
+    {
+      "source": "c-bonner-1990",
+      "quote": "is true if inserting C into the database makes B true",
+      "where": "§2.2 Hypothetical Rules",
+      "states": "A hypothetical rule A <- B[add: C] makes A true if B would hold after inserting C into the database.",
+      "technique": "hypothetical datalog",
+      "feature": "adding facts for the duration of a goal",
+      "has": true,
+      "credits": ["c-bonner-1990"]
+    },
+    {
+      "source": "c-bonner-1990",
+      "quote": "increases its data-complexity from PTIME to PSPACE",
+      "where": "Abstract",
+      "states": "Adding hypothetical additions to function-free Horn-clause logic raises its data complexity from PTIME to PSPACE.",
+      "technique": "hypothetical datalog",
+      "feature": "cost of hypothetical additions",
+      "has": true,
+      "credits": ["c-bonner-1990"]
+    },
+    {
+      "source": "c-bonner-1990",
+      "quote": "When deletions are added as well, complexity increases again, to EXPTIME.",
+      "where": "Abstract",
+      "states": "Allowing hypothetical deletions as well raises data complexity to EXPTIME.",
+      "technique": "hypothetical datalog",
+      "feature": "cost of hypothetical deletions",
+      "has": true,
+      "credits": ["c-bonner-1990"]
+    },
+    {
+      "source": "c-bonner-1990",
+      "quote": "It is shown that negation does not increase complexity.",
+      "where": "Abstract",
+      "states": "Stratified negation-as-failure can be added to hypothetical rulebases without raising data complexity.",
+      "technique": "hypothetical datalog",
+      "feature": "stratified negation with hypothetical goals",
+      "has": true,
+      "credits": ["c-bonner-1990"]
+    },
+    {
+      "source": "c-bonner-1990",
+      "quote": "it is shown that for a given rulebase, the value of FIXPOINT is independent of the way it is stratified",
+      "where": "§7.2 Operational Semantics (proved in §7.3)",
+      "states": "The bottom-up fixpoint of a stratified hypothetical rulebase does not depend on which stratification is used to compute it.",
+      "technique": "hypothetical datalog",
+      "feature": "results independent of evaluation order (stratification)",
+      "has": true,
+      "credits": ["c-bonner-1990"]
+    },
+    {
+      "source": "c-saenz-perez-2015",
+      "quote": "an embedded implication plays the role of assuming its premise for deriving its consequence",
+      "where": "Abstract",
+      "states": "In Hypothetical Datalog an embedded implication assumes its premise while deriving its conclusion.",
+      "technique": "hypothetical datalog",
+      "feature": "adding facts for the duration of a goal",
+      "has": true,
+      "credits": ["c-saenz-perez-2015"]
+    },
+    {
+      "source": "c-saenz-perez-2015",
+      "quote": "it lacks the ability to locally delete tuples in the same context",
+      "where": "§1 Introduction",
+      "states": "The earlier tabled Hypothetical Datalog could add tuples locally for a goal but not delete them locally.",
+      "technique": "hypothetical datalog",
+      "feature": "removing facts for the duration of a goal",
+      "has": false,
+      "credits": ["c-saenz-perez-2015"]
+    },
+    {
+      "source": "c-biabduction-2011",
+      "quote": "This paper describes a method of boosting shape analyses by defining a compositional method, where each procedure is analyzed independently of its callers.",
+      "where": "Abstract",
+      "states": "Bi-abduction lets a shape analysis summarize each procedure without knowing its callers.",
+      "technique": "bi-abduction",
+      "feature": "compositional analysis",
+      "has": true,
+      "credits": ["c-biabduction-2011"]
+    },
+    {
+      "source": "c-biabduction-2011",
+      "quote": "it jointly infers anti-frames (missing portions of state) and frames (portions of state not touched by an operation)",
+      "where": "Abstract",
+      "states": "Bi-abduction infers both the missing state a call needs (anti-frame) and the state it leaves untouched (frame).",
+      "technique": "bi-abduction",
+      "feature": "infers missing and untouched parts of state",
+      "has": true,
+      "credits": ["c-biabduction-2011"]
+    },
+    {
+      "source": "c-biabduction-2011",
+      "quote": "Then, if a procedure (or recursive procedure group) is changed, only it has to be re-analyzed; the old analysis results for independent procedures remain unchanged.",
+      "where": "§1.1 Context and Motivating Question",
+      "states": "A compositional analysis is incremental: changing one procedure only requires re-analyzing it.",
+      "technique": "bi-abduction",
+      "feature": "incremental re-analysis",
+      "has": true,
+      "credits": ["c-biabduction-2011"]
+    },
+    {
+      "source": "c-scaling-fb-2019",
+      "quote": "it has seen over 100 thousand reported issues fixed by developers before code reaches production",
+      "where": "Opening summary (p. 62)",
+      "states": "Infer's reported issues had led to over 100,000 fixes before code reached production.",
+      "technique": "infer",
+      "feature": "industrial deployment",
+      "has": true,
+      "credits": ["c-scaling-fb-2019"]
+    },
+    {
+      "source": "c-scaling-fb-2019",
+      "quote": "the diff time deployment saw a 70% fix rate",
+      "where": "Opening section on deployment models",
+      "states": "Reporting at code-review (diff) time got a 70% fix rate where a batch deployment got 0%.",
+      "technique": "infer",
+      "feature": "industrial deployment",
+      "has": true,
+      "credits": ["c-scaling-fb-2019"]
+    },
+    {
+      "source": "c-scaling-fb-2019",
+      "quote": "Infer, as we will discuss, uses one analysis based on the theory of Separation Logic",
+      "where": "Introduction, technical overview of Infer and Zoncolan",
+      "states": "One of Infer's analyses is based on separation logic.",
+      "technique": "infer",
+      "feature": "separation logic in a deployed analyzer",
+      "has": true,
+      "credits": ["c-scaling-fb-2019"]
+    },
+    {
+      "source": "c-scaling-fb-2019",
+      "quote": "compositional analyses are naturally incremental—changing one procedure does not necessitate",
+      "where": "Compositionality and Abstraction (end of article)",
+      "states": "Because the analyses are compositional, changing one procedure does not force re-analysis of all others.",
+      "technique": "infer",
+      "feature": "incremental re-analysis",
+      "has": true,
+      "credits": ["c-scaling-fb-2019"]
+    },
+    {
+      "source": "c-incorrectness-logic-2020",
+      "quote": "we use a specification form [presumption]code[result] which says that the post-assertion result be an under-approximation (subset) of the final states that can be reached starting from states satisfying the presumption",
+      "where": "§1 Introduction",
+      "states": "An incorrectness triple promises that every state in its result can actually be reached.",
+      "technique": "incorrectness logic",
+      "feature": "under-approximate specifications",
+      "has": true,
+      "credits": ["c-incorrectness-logic-2020"]
+    },
+    {
+      "source": "c-incorrectness-logic-2020",
+      "quote": "Because of under-approximation, reasoning is arranged to avoid false positives (bug suggestions that are not true).",
+      "where": "§1 Introduction",
+      "states": "Incorrectness logic can prove that bugs are present but not that they are absent, and is arranged to give no false positives.",
+      "technique": "incorrectness logic",
+      "feature": "no false positives",
+      "has": true,
+      "credits": ["c-incorrectness-logic-2020"]
+    },
+    {
+      "source": "c-isl-2020",
+      "quote": "use it to derive a begin-anywhere, intra-procedural symbolic execution analysis that has no false positives by construction",
+      "where": "Abstract",
+      "states": "Incorrectness separation logic yields an analysis, Pulse in Infer, that reports no false positives by construction.",
+      "technique": "incorrectness logic",
+      "feature": "no false positives",
+      "has": true,
+      "credits": ["c-isl-2020"]
+    },
+    {
+      "source": "c-isl-2020",
+      "quote": "we recover the frame rule for a refined model with negative heap assertions",
+      "where": "§1 Introduction",
+      "states": "Under-approximate local reasoning needs explicit negative facts (a location is known deallocated) for the frame rule to hold.",
+      "technique": "incorrectness logic",
+      "feature": "negative facts needed for local reasoning",
+      "has": true,
+      "credits": ["c-isl-2020"]
+    },
+    {
+      "source": "c-gheorghiu-docherty-pym-2023",
+      "quote": "Informally, a judgement m |= φ ∧ ψ is a declaration that the resource m satisfies φ and satisfies ψ, meanwhile the judgement m |= φ ∗ ψ says that it can be split into two parts n and n′ such that n |= φ and n′ |= ψ.",
+      "where": "§2.1 The Logic of Bunched Implications",
+      "states": "In BI the additive conjunction lets both sides share the same resource, while the multiplicative conjunction splits it into two parts.",
+      "technique": "bunched implications",
+      "feature": "conjunction that splits resources",
+      "has": true,
+      "credits": ["c-gheorghiu-docherty-pym-2023"]
+    },
+    {
+      "source": "c-gheorghiu-docherty-pym-2023",
+      "quote": "contexts in the sequent calculus require two different context-formers: one that admits structural rules of Weakening and Contraction, and another that does not",
+      "where": "§2.1 The Logic of Bunched Implications",
+      "states": "BI contexts combine a sharing context-former (duplicable, discardable) with a separating one that is not.",
+      "technique": "bunched implications",
+      "feature": "sharing and separating conjunction together",
+      "has": true,
+      "credits": ["c-gheorghiu-docherty-pym-2023"]
+    },
+    {
+      "source": "c-gheorghiu-docherty-pym-2023",
+      "quote": "in the resource interpretation of BI a proposition is not a resource itself, but a declaration about the state of some resources",
+      "where": "§2.1 The Logic of Bunched Implications",
+      "states": "Unlike linear logic, a BI proposition describes resources rather than being a resource that proof search consumes.",
+      "technique": "bunched implications",
+      "feature": "facts used up when a rule reads them",
+      "has": false,
+      "credits": ["c-gheorghiu-docherty-pym-2023"]
+    },
+    {
+      "source": "c-gheorghiu-docherty-pym-2023",
+      "quote": "The equivalent implementation in hHLP would require a tagging system to show compatibility of the columns",
+      "where": "§5.2 Example: Databases",
+      "states": "In a deductive-database example, BI's separating conjunction expresses 'one item from each disjoint column' that plain hereditary Harrop logic programming would need tags for.",
+      "technique": "bunched implications",
+      "feature": "separating conjunction in a deductive database",
+      "has": true,
+      "credits": ["c-gheorghiu-docherty-pym-2023"]
+    },
+    {
+      "source": "c-reynolds-2002",
+      "quote": "that asserts that P and Q hold for disjoint portions of the addressable storage",
+      "where": "§1 Introduction",
+      "states": "The separating conjunction P ∗ Q asserts that P and Q hold for disjoint parts of the heap.",
+      "technique": "separation logic",
+      "feature": "conjunction that splits resources",
+      "has": true,
+      "credits": ["c-reynolds-2002"]
+    },
+    {
+      "source": "c-reynolds-2002",
+      "quote": "neither contraction, p ⇒ p ∗ p,nor weakening, p ∗ q ⇒ p,are sound.",
+      "where": "§3 Assertions and their Inference Rules",
+      "states": "In separation logic a heap assertion cannot be duplicated (p does not imply p ∗ p) or dropped from a separating conjunction.",
+      "technique": "separation logic",
+      "feature": "duplicating a fact",
+      "has": false,
+      "credits": ["c-reynolds-2002"]
+    },
+    {
+      "source": "c-reynolds-2002",
+      "quote": "p1 ∧ p2 ⇒ p1 ∗ p2 when p1 or p2 is pure p1 ∗ p2 ⇒ p1 ∧ p2 when p1 and p2 are pure",
+      "where": "§3 Assertions and their Inference Rules (pure assertions)",
+      "states": "For pure (heap-independent) assertions the separating and ordinary conjunctions coincide.",
+      "technique": "separation logic",
+      "feature": "conjunction over duplicable facts behaves like ordinary conjunction",
+      "has": true,
+      "credits": ["c-reynolds-2002"]
+    },
+    {
+      "source": "c-navarro-rybalchenko-2011",
+      "quote": "Our implementation, which is written in Prolog to allow a declarative specification of the inference rules of the proof system",
+      "where": "§1 Introduction",
+      "states": "A separation-logic entailment prover was written in Prolog so its inference rules could be stated declaratively.",
+      "technique": "separation logic in logic programming",
+      "feature": "separation-logic reasoning implemented as logic program",
+      "has": true,
+      "credits": ["c-navarro-rybalchenko-2011"]
+    }
+  ]
+}

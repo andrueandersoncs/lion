@@ -1,0 +1,169 @@
+{
+  "What do sources disagree on?": [
+    "query",
+    ["disputed", "?question", "?values"]
+  ],
+  "What rests on one publisher's word?": [
+    "query",
+    ["single_origin", "?question", "?value", "?publisher"]
+  ],
+  "What is known only second-hand?": [
+    "query",
+    ["secondhand", "?question", "?value", "?credited"]
+  ],
+  "Which sources are credited with something they do not say?": [
+    "query",
+    ["misquoted", "?claim", "?to", "?question", "?relayed", "?said"]
+  ],
+  "Which credited sources are still unread?": [
+    "find",
+    "?source",
+    ["unread", "?source"]
+  ],
+  "Which assumptions failed, and on what evidence?": [
+    "query",
+    ["violated", "?assumption", "?witness"]
+  ],
+  "Which assumptions have no evidence yet?": [
+    "query",
+    ["unsettled", "?assumption", "?question"]
+  ],
+  "Which assumptions are confirmed?": ["find", "?a", ["confirmed", "?a"]],
+  "Verdicts": [
+    "query",
+    ["verdict", "?candidate", "?verdict"],
+    {
+      "order": "candidate"
+    }
+  ],
+  "Ranking of what to adopt": [
+    "query",
+    [
+      "and",
+      ["rank", "?candidate", "?position"],
+      ["standing", "?candidate", "?gains", "?publishers"]
+    ],
+    {
+      "order": "position"
+    }
+  ],
+  "What each candidate adds": [
+    "query",
+    ["adds", "?candidate", "?feature", "?technique"]
+  ],
+  "Candidates with no verdict yet": ["find", "?c", ["unjudged", "?c"]],
+  "Blocked": ["query", ["blocks", "?candidate", "?guarantee", "?technique"]],
+  "Moot": ["query", ["moot", "?candidate", "?condition"]],
+  "Terms the tweet raises, and who defines them": [
+    "find",
+    {
+      "term": "?t",
+      "defined by": [
+        "aggregate/unique",
+        [
+          "find",
+          "?p",
+          [
+            "and",
+            [
+              "answer",
+              {
+                "defines": "?t"
+              },
+              true,
+              "?c"
+            ],
+            ["claim", "?c", "?s", "?_", "?_"],
+            ["source", "?s", "?_", "?_", "?p", "?_", "?_"]
+          ]
+        ]
+      ]
+    },
+    [
+      "stated",
+      {
+        "raises": "?t"
+      },
+      true
+    ]
+  ],
+  "Which statements does no answer rule read?": [
+    "find",
+    "?claim",
+    [
+      "and",
+      ["claim", "?claim", "?_", "?_", "?_"],
+      ["not", ["answer", "?_", "?_", "?claim"]]
+    ]
+  ],
+  "Which technique names do no candidate use?": [
+    "aggregate/unique",
+    [
+      "find",
+      "?t",
+      [
+        "and",
+        [
+          "answer",
+          [
+            "schema/open",
+            {
+              "by": "?t"
+            }
+          ],
+          "?_",
+          "?_"
+        ],
+        ["not", ["uses", "?_", "?t"]]
+      ]
+    ]
+  ],
+  "Which features do candidates offer that no claim answers?": [
+    "find",
+    "?f",
+    [
+      "and",
+      ["offers", "?_", "?f"],
+      [
+        "not",
+        [
+          "answer",
+          {
+            "lion has": "?f"
+          },
+          "?_",
+          "?_"
+        ]
+      ]
+    ]
+  ],
+  "Caveats": ["query", ["caveat", "?candidate", "?feature", "?technique"]],
+  "Where should the next search go?": [
+    "query",
+    [
+      "and",
+      ["live", "?lead"],
+      ["progress", "?lead", "?read", "?paid_off", "?misses"]
+    ],
+    {
+      "order": ["-paid_off", "read"]
+    }
+  ],
+  "Which leads are done, set aside, or waiting?": [
+    "find",
+    {
+      "lead": "?lead",
+      "why": "?why"
+    },
+    [
+      "or",
+      [
+        "and",
+        ["done", "?lead"],
+        ["=", "?why", "confirmed by two publishers first-hand"]
+      ],
+      ["and", ["exhausted", "?lead"], ["=", "?why", "set aside"]]
+    ]
+  ],
+  "Disputed": ["query", ["disputed", "?question", "?values"]]
+}

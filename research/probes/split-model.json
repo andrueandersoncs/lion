@@ -1,0 +1,321 @@
+[
+  "begin",
+  ["define", "kinds", ["quote", ["absent", "num", "str", "optnum"]]],
+  ["define", "items", ["quote", ["absent", 1, "x"]]],
+  [
+    "define",
+    "build",
+    [
+      "lambda",
+      ["pairs"],
+      [
+        "array/reduce",
+        "pairs",
+        {},
+        [
+          "lambda",
+          ["acc", "pair"],
+          [
+            "cond",
+            [["=", ["array/head", ["array/tail", "pair"]], "absent"], "acc"],
+            [
+              "else",
+              [
+                "object/set",
+                "acc",
+                ["array/head", "pair"],
+                ["array/head", ["array/tail", "pair"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "specs",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?ka"],
+          ["array/make", "b", "?kb"],
+          ["array/make", "c", "?kc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?ka", "kinds"],
+        ["in", "?kb", "kinds"],
+        ["in", "?kc", "kinds"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "values",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?va"],
+          ["array/make", "b", "?vb"],
+          ["array/make", "c", "?vc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?va", "items"],
+        ["in", "?vb", "items"],
+        ["in", "?vc", "items"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "base",
+    [
+      "lambda",
+      ["kind"],
+      [
+        "cond",
+        [["=", "kind", "str"], "value/string?"],
+        ["else", "value/number?"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "schemaOf",
+    [
+      "lambda",
+      ["spec"],
+      [
+        "array/reduce",
+        ["object/keys", "spec"],
+        {},
+        [
+          "lambda",
+          ["acc", "k"],
+          [
+            "object/set",
+            "acc",
+            "k",
+            [
+              "cond",
+              [
+                ["=", ["object/get", "spec", "k"], "optnum"],
+                ["schema/optional", "value/number?"]
+              ],
+              ["else", ["base", ["object/get", "spec", "k"]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "split",
+    [
+      "lambda",
+      ["spec", "rest", "v"],
+      [
+        "boolean/and",
+        [
+          "array/reduce",
+          ["object/keys", "spec"],
+          true,
+          [
+            "lambda",
+            ["ok", "k"],
+            [
+              "boolean/and",
+              "ok",
+              [
+                "cond",
+                [
+                  ["array/includes?", ["object/keys", "v"], "k"],
+                  [
+                    "schema/fits?",
+                    ["object/get", "v", "k"],
+                    ["base", ["object/get", "spec", "k"]]
+                  ]
+                ],
+                ["else", ["=", ["object/get", "spec", "k"], "optnum"]]
+              ]
+            ]
+          ]
+        ],
+        [
+          "schema/fits?",
+          [
+            "array/reduce",
+            ["object/keys", "spec"],
+            "v",
+            ["lambda", ["r", "k"], ["object/remove", "r", "k"]]
+          ],
+          "rest"
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "disjoint",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "s"],
+        true,
+        [
+          "lambda",
+          ["ok", "k"],
+          [
+            "boolean/and",
+            "ok",
+            ["boolean/not", ["array/includes?", ["object/keys", "t"], "k"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "union",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "t"],
+        "s",
+        [
+          "lambda",
+          ["acc", "k"],
+          ["object/set", "acc", "k", ["object/get", "t", "k"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "record schemas tried": ["array/length", "specs"],
+    "records tried": ["array/length", "values"],
+    "pairs where an exact record differs from a split with an empty rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schemaOf", "?s"]],
+              ["split", "?s", {}, "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "pairs where schema/open differs from a split with any record as the rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schema/open", ["schemaOf", "?s"]]],
+              ["split", "?s", "value/object?", "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "disjoint pairs of exact schemas tried": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"]
+        ]
+      ]
+    ],
+    "triples where a split with an exact rest differs from the one exact schema of both parts": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["split", "?s", ["schemaOf", "?t"], "?v"],
+              ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "triples where allOf of the two exact parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "schema/fits?",
+            "?v",
+            ["schema/allOf", ["schemaOf", "?s"], ["schemaOf", "?t"]]
+          ]
+        ]
+      ]
+    ],
+    "triples where the one exact schema of both parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+        ]
+      ]
+    ]
+  }
+]

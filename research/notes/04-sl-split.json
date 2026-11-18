@@ -1,0 +1,147 @@
+{
+  "claims": [
+    {
+      "id": "sl-m1",
+      "source": "lion-logic-forms",
+      "quote": "A record fits a record with the same keys, with values that fit.",
+      "where": "What fits a schema",
+      "says": {
+        "lion": "record patterns exact by default",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-m2",
+      "source": "lion-logic-forms",
+      "quote": "schema/open allows keys the record does not name.",
+      "where": "What fits a schema",
+      "says": {
+        "lion": "open record patterns",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-m3",
+      "source": "lion-fit-code",
+      "quote": "open = false",
+      "where": "checkRecord",
+      "says": {
+        "lion": "open record patterns",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-m4",
+      "source": "lion-probes",
+      "quote": "\"pairs where an exact record differs from a split with an empty rest\": 0",
+      "where": "split-model.json",
+      "says": {
+        "covers": "record patterns exact by default",
+        "by": "record split with a rest schema",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-m5",
+      "source": "lion-probes",
+      "quote": "\"pairs where schema/open differs from a split with any record as the rest\": 0",
+      "where": "split-model.json",
+      "says": {
+        "covers": "open record patterns",
+        "by": "record split with a rest schema",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-m6",
+      "source": "lion-probes",
+      "quote": "\"triples where a split with an exact rest differs from the one exact schema of both parts\": 0",
+      "where": "split-model.json",
+      "says": {
+        "covers": "composing exact record schemas",
+        "by": "record split with a rest schema",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-m7",
+      "source": "lion-probes",
+      "quote": "\"record schemas tried\": 64",
+      "where": "split-model.json",
+      "says": {
+        "counted": "record schemas",
+        "n": 64
+      }
+    },
+    {
+      "id": "sl-m8",
+      "source": "lion-probes",
+      "quote": "\"records tried\": 27",
+      "where": "split-model.json",
+      "says": {
+        "counted": "records",
+        "n": 27
+      }
+    },
+    {
+      "id": "sl-m9",
+      "source": "lion-probes",
+      "quote": "\"pairs where an exact record differs from a split with an empty rest\": 0",
+      "where": "split-model.json",
+      "says": {
+        "counted": "exact records that differ from a split",
+        "n": 0
+      }
+    },
+    {
+      "id": "sl-m10",
+      "source": "lion-probes",
+      "quote": "\"pairs where schema/open differs from a split with any record as the rest\": 0",
+      "where": "split-model.json",
+      "says": {
+        "counted": "open records that differ from a split",
+        "n": 0
+      }
+    },
+    {
+      "id": "sl-m11",
+      "source": "lion-probes",
+      "quote": "\"disjoint pairs of exact schemas tried\": 343",
+      "where": "split-model.json",
+      "says": {
+        "counted": "disjoint pairs of exact schemas",
+        "n": 343
+      }
+    },
+    {
+      "id": "sl-m12",
+      "source": "lion-probes",
+      "quote": "\"triples where a split with an exact rest differs from the one exact schema of both parts\": 0",
+      "where": "split-model.json",
+      "says": {
+        "counted": "composed schemas that differ from a split",
+        "n": 0
+      }
+    },
+    {
+      "id": "sl-m13",
+      "source": "lion-probes",
+      "quote": "\"triples where allOf of the two exact parts fits\": 27",
+      "where": "split-model.json",
+      "says": {
+        "counted": "records allOf of two exact parts accepts",
+        "n": 27
+      }
+    },
+    {
+      "id": "sl-m14",
+      "source": "lion-probes",
+      "quote": "\"triples where the one exact schema of both parts fits\": 729",
+      "where": "split-model.json",
+      "says": {
+        "counted": "records the combined exact schema accepts",
+        "n": 729
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "title": "Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions",
+  "context": "Research runs with the lion-research skill kept each run in its own folder under the git-ignored `out/`. The run on what Lion should improve next (2026-11-17) and the run on separation logic (2026-11-18) each recorded what Lion has, from its docs and from programs run on it, under names of their own. The second run could not query the first, and neither was kept: a removed worktree takes `out/` with it. The programs that checked an inference, such as the model of a record split run over every small case, lived beside the model and were lost with it.",
+  "decision": "Every research run adds to one Lion model in `research/`. Its steps, notes, sources, probes, standing checks, and each run's report and page plan are committed. A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. When Lion changes, the probes run again under a new source id, and the publisher's latest word replaces its earlier one.",
+  "consequences": "The separation-logic run is the first run in `research/`. Its frame was split into the shared frame `steps/01-frame.src.json`, which holds the kinds of statement and the rules that judge an idea for Lion, and its own step `02-sl-frame.json`, which holds its assumptions. Its claim, lead, and assumption ids start with `sl-`. `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. `model.json` and each run's built page are not committed: the replay builds them.",
+  "alternatives": [
+    {
+      "option": "A folder per run, each its own model",
+      "rejected": "Runs cannot ask one another, name the same feature differently, and keep two copies of what Lion does that drift apart."
+    },
+    {
+      "option": "Keep research under the git-ignored out/",
+      "rejected": "The evidence and the programs behind a conclusion are lost with the worktree, and the next run starts from nothing."
+    },
+    {
+      "option": "Commit model.json beside the steps",
+      "rejected": "It is built from the steps, as the project record's model is, and a copy would go stale the first time a step changed."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every research run adds to one Lion model in `research/`.",
+      "says": {
+        "decision": "research-layout",
+        "chose": "one-shared-model",
+        "over": ["folder-per-run", "ignored-out-folder"],
+        "area": "docs",
+        "because": "a later run starts from what earlier runs established, evidence from different runs meets on one question, and the programs that prove a conclusion are kept with it"
+      }
+    },
+    {
+      "quote": "A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix.",
+      "says": {
+        "rule": "research-runs-extend-shared-model",
+        "holds": true,
+        "statement": "A research run adds its steps, notes, sources, and probes to the shared model in research/, starts from what it holds, reuses its names, and is committed",
+        "area": "docs",
+        "predicts": [
+          {
+            "behavior": "research-model-folder",
+            "is": "research"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule.",
+      "says": {
+        "feature": "research-probes-runner",
+        "kind": "tool",
+        "present": true
+      }
+    },
+    {
+      "quote": "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps.",
+      "says": {
+        "feature": "researching-guideline",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps.",
+      "says": {
+        "behavior": "research-extends-existing-model",
+        "is": "true",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "The separation-logic run is the first run in `research/`.",
+      "says": {
+        "feature": "separation-logic-research",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

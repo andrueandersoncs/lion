@@ -1,0 +1,8 @@
+[
+  "begin",
+  ["relation", "spend", ["who", "usd"]],
+  ["relation", "total", ["who", "usd"]],
+  ["fact", ["spend", "ana", 30], ["spend", "ana", 20]],
+  ["rule", ["total", "?w", ["aggregate/sum", "?u"]], ["spend", "?w", "?u"]],
+  ["fact", ["total", "bo", 5]]
+]

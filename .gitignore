@@ -41,3 +41,7 @@ history/research/model.json
 history/research/steps/*.json
 !history/research/steps/*.src.json
 history/research/notes/20-runs.json
+# Built from research/steps by the replay, and from each run's page plan.
+research/model.json
+research/runs/*/explorer.html
+research/runs/*/page-check.json

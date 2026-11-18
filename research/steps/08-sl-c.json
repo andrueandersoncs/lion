@@ -1,0 +1,1787 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/pdf/0906.4474"
+   ],
+   [
+    "quote",
+    "As Time Goes By: Constraint Handling Rules - A Survey of CHR Research from 1998 to 2007"
+   ],
+   [
+    "quote",
+    "Sneyers, Van Weert, Schrijvers and De Koninck"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    20090625
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "https://www.lix.polytechnique.fr/~dale/papers/ic94.pdf"
+   ],
+   [
+    "quote",
+    "Logic Programming in a Fragment of Intuitionistic Linear Logic"
+   ],
+   [
+    "quote",
+    "Hodas and Miller"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    19940501
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-ceptre-2015"
+   ],
+   [
+    "quote",
+    "https://www.cs.cmu.edu/~cmartens/ceptre.pdf"
+   ],
+   [
+    "quote",
+    "Ceptre: A Language for Modeling Generative Interactive Systems"
+   ],
+   [
+    "quote",
+    "Martens (CMU)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20151114
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/pdf/1405.3556"
+   ],
+   [
+    "quote",
+    "A Linear Logic Programming Language for Concurrent Programming over Graph Structures"
+   ],
+   [
+    "quote",
+    "Cruz, Rocha, Goldstein and Pfenning"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20140514
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-bonner-1988"
+   ],
+   [
+    "quote",
+    "https://cdn.aaai.org/AAAI/1988/AAAI88-085.pdf"
+   ],
+   [
+    "quote",
+    "A Logic for Hypothetical Reasoning"
+   ],
+   [
+    "quote",
+    "Bonner (Rutgers)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    19880821
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "https://ftp.cs.toronto.edu/db/bonner/papers/hypotheticals/tcs90.ps"
+   ],
+   [
+    "quote",
+    "Hypothetical Datalog: Complexity and Expressibility"
+   ],
+   [
+    "quote",
+    "Bonner (Rutgers)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-saenz-perez-2015"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/pdf/1512.06945"
+   ],
+   [
+    "quote",
+    "Restricted Predicates for Hypothetical Datalog"
+   ],
+   [
+    "quote",
+    "Saenz-Perez (Complutense)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-biabduction-2011"
+   ],
+   [
+    "quote",
+    "https://www.cs.ox.ac.uk/people/hongseok.yang/paper/jacm11-biabduction-webversion.pdf"
+   ],
+   [
+    "quote",
+    "Compositional Shape Analysis by means of Bi-Abduction"
+   ],
+   [
+    "quote",
+    "Calcagno, Distefano, O'Hearn and Yang"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20111201
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-incorrectness-logic-2020"
+   ],
+   [
+    "quote",
+    "https://discovery.ucl.ac.uk/10095439/1/IL.pdf"
+   ],
+   [
+    "quote",
+    "Incorrectness Logic"
+   ],
+   [
+    "quote",
+    "O'Hearn (POPL 2020)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20200101
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-isl-2020"
+   ],
+   [
+    "quote",
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC7363320/"
+   ],
+   [
+    "quote",
+    "Local Reasoning About the Presence of Bugs: Incorrectness Separation Logic"
+   ],
+   [
+    "quote",
+    "Raad, Berdine, Dang, Dreyer, O'Hearn and Villard"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20200616
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "https://www.cantab.net/users/david.pym/rlp-sc.pdf"
+   ],
+   [
+    "quote",
+    "Reductive Logic, Proof-search, and Coalgebra: A Perspective from Resource Semantics"
+   ],
+   [
+    "quote",
+    "Gheorghiu, Docherty and Pym (UCL)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20220918
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "c-navarro-rybalchenko-2011"
+   ],
+   [
+    "quote",
+    "https://archive.model.in.tum.de/um/bibdb/navarro/pldi2011.pdf"
+   ],
+   [
+    "quote",
+    "Separation Logic + Superposition Calculus = Heap Theorem Prover"
+   ],
+   [
+    "quote",
+    "Navarro Perez and Rybalchenko (TU Munich)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20110604
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c1"
+   ],
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "Constraint Handling Rules (CHR) is a high-level programming language based on multi-headed, committed-choice, guarded multiset rewrite rules."
+   ],
+   [
+    "quote",
+    {
+     "defines": "constraint handling rules"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c1"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c2"
+   ],
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "If there are two prime/1 constraints prime(A) and prime(B), such that B is a multiple of A, the latter constraint is removed."
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts used up when a rule reads them",
+     "by": "constraint handling rules",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c2"
+   ],
+   [
+    "quote",
+    "§1.2 Constraint Handling Rules (primes program)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c3"
+   ],
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "the existence of a decidable, sufficient and necessary test for confluence of terminating programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a test that results do not depend on rule order",
+     "by": "constraint handling rules",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c3"
+   ],
+   [
+    "quote",
+    "§3.1 Confluence"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c4"
+   ],
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "CHR programs often rely on the execution control offered by the ωr semantics for"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "constraint handling rules",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c4"
+   ],
+   [
+    "quote",
+    "§2.2.2 Refined Operational Semantics"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c5"
+   ],
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "Attempting to prove a goal of the form D ⊃ G from the context (set of formulas) Γ leads to an attempt to prove the goal G in the extended context Γ ∪ {D}."
+   ],
+   [
+    "quote",
+    {
+     "covers": "adding facts for the duration of a goal",
+     "by": "implication goals",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c5"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c6"
+   ],
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "then every formula in the bounded part of the context must be used exactly once"
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts used up when a rule reads them",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c6"
+   ],
+   [
+    "quote",
+    "§3 A linear logic programming language"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c7"
+   ],
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "if a data base is held in the bounded part of a context, then querying the data base about an item makes that item unavailable elsewhere."
+   ],
+   [
+    "quote",
+    {
+     "covers": "reading a fact without using it up",
+     "by": "linear logic programming",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c7"
+   ],
+   [
+    "quote",
+    "§3 A linear logic programming language"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c8"
+   ],
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "the latter must be split into disjoint contexts ∆1 and ∆2 for which G1 follows from ∆1 and G2 follows from ∆2"
+   ],
+   [
+    "quote",
+    {
+     "covers": "conjunction that splits resources",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c8"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c9"
+   ],
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "Since there is an exponential number of such splits, it is important to delay the choice of a split as much as possible."
+   ],
+   [
+    "quote",
+    {
+     "covers": "cheap search for how to split resources",
+     "by": "linear logic programming",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c9"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c10"
+   ],
+   [
+    "quote",
+    "c-ceptre-2015"
+   ],
+   [
+    "quote",
+    "The rules in Σ are unordered, and several may apply, potentially giving rise to nondeterminism."
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "linear logic programming",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c10"
+   ],
+   [
+    "quote",
+    "Bird’s-Eye View"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c11"
+   ],
+   [
+    "quote",
+    "c-ceptre-2015"
+   ],
+   [
+    "quote",
+    "Note that because of the replacement semantics of the rule, we need to reiterate everything on the right-hand side of the -o that we don’t want to disappear"
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts used up when a rule reads them",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c11"
+   ],
+   [
+    "quote",
+    "Predicates and Rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c12"
+   ],
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "Linear Meld (LM) is a forward chaining logic programming language in the style of Datalog (Ullman 1990)."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "linear logic programming",
+     "in": "Linear Meld"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c12"
+   ],
+   [
+    "quote",
+    "§2 LM By Example"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c13"
+   ],
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "If a rule uses linear facts, they are consumed and thus deleted from the database."
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts used up when a rule reads them",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c13"
+   ],
+   [
+    "quote",
+    "§2 LM By Example"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c14"
+   ],
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "While linear facts may be retracted, persistent facts are always true once they are derived."
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts that stay true beside facts that are used up",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c14"
+   ],
+   [
+    "quote",
+    "§2 LM By Example"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c15"
+   ],
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "When a rule body is instantiated using facts from the database, facts are picked non-deterministically."
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "linear logic programming",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c15"
+   ],
+   [
+    "quote",
+    "§3 The LM Language (Selectors)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c16"
+   ],
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "every node A will derive visited(A), regardless of the order in which rules are applied"
+   ],
+   [
+    "quote",
+    {
+     "covers": "order-independent results for some programs",
+     "by": "linear logic programming",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c16"
+   ],
+   [
+    "quote",
+    "§2 LM By Example (visit program)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c17"
+   ],
+   [
+    "quote",
+    "c-bonner-1988"
+   ],
+   [
+    "quote",
+    "Horn-clause logic is augmented with rules, called embedded implications, which can hypothetically add atomic formulas to a rulebase."
+   ],
+   [
+    "quote",
+    {
+     "covers": "adding facts for the duration of a goal",
+     "by": "hypothetical datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c17"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c18"
+   ],
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "is true if inserting C into the database makes B true"
+   ],
+   [
+    "quote",
+    {
+     "covers": "adding facts for the duration of a goal",
+     "by": "hypothetical datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c18"
+   ],
+   [
+    "quote",
+    "§2.2 Hypothetical Rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c19"
+   ],
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "increases its data-complexity from PTIME to PSPACE"
+   ],
+   [
+    "quote",
+    {
+     "covers": "polynomial data complexity",
+     "by": "hypothetical datalog",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c19"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c20"
+   ],
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "When deletions are added as well, complexity increases again, to EXPTIME."
+   ],
+   [
+    "quote",
+    {
+     "covers": "polynomial data complexity with hypothetical deletions",
+     "by": "hypothetical datalog",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c20"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c21"
+   ],
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "It is shown that negation does not increase complexity."
+   ],
+   [
+    "quote",
+    {
+     "covers": "stratified negation at no extra complexity",
+     "by": "hypothetical datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c21"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c22"
+   ],
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "it is shown that for a given rulebase, the value of FIXPOINT is independent of the way it is stratified"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "hypothetical datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c22"
+   ],
+   [
+    "quote",
+    "§7.2 Operational Semantics (proved in §7.3)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c23"
+   ],
+   [
+    "quote",
+    "c-saenz-perez-2015"
+   ],
+   [
+    "quote",
+    "an embedded implication plays the role of assuming its premise for deriving its consequence"
+   ],
+   [
+    "quote",
+    {
+     "covers": "adding facts for the duration of a goal",
+     "by": "hypothetical datalog",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c23"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c24"
+   ],
+   [
+    "quote",
+    "c-saenz-perez-2015"
+   ],
+   [
+    "quote",
+    "it lacks the ability to locally delete tuples in the same context"
+   ],
+   [
+    "quote",
+    {
+     "covers": "removing facts for the duration of a goal",
+     "by": "hypothetical datalog",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c24"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c25"
+   ],
+   [
+    "quote",
+    "c-biabduction-2011"
+   ],
+   [
+    "quote",
+    "This paper describes a method of boosting shape analyses by defining a compositional method, where each procedure is analyzed independently of its callers."
+   ],
+   [
+    "quote",
+    {
+     "defines": "bi-abduction"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c25"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c26"
+   ],
+   [
+    "quote",
+    "c-biabduction-2011"
+   ],
+   [
+    "quote",
+    "it jointly infers anti-frames (missing portions of state) and frames (portions of state not touched by an operation)"
+   ],
+   [
+    "quote",
+    {
+     "covers": "showing what is missing for a goal to hold",
+     "by": "bi-abduction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c26"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c27"
+   ],
+   [
+    "quote",
+    "c-biabduction-2011"
+   ],
+   [
+    "quote",
+    "Then, if a procedure (or recursive procedure group) is changed, only it has to be re-analyzed; the old analysis results for independent procedures remain unchanged."
+   ],
+   [
+    "quote",
+    {
+     "covers": "checking only what a change can affect",
+     "by": "bi-abduction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c27"
+   ],
+   [
+    "quote",
+    "§1.1 Context and Motivating Question"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c28"
+   ],
+   [
+    "quote",
+    "a-distefano-cacm-2019"
+   ],
+   [
+    "quote",
+    "it has seen over 100 thousand reported issues fixed by developers before code reaches production"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "bi-abduction",
+     "in": "Infer"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c28"
+   ],
+   [
+    "quote",
+    "Opening summary (p. 62)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c29"
+   ],
+   [
+    "quote",
+    "a-distefano-cacm-2019"
+   ],
+   [
+    "quote",
+    "compositional analyses are naturally incremental—changing one procedure does not necessitate"
+   ],
+   [
+    "quote",
+    {
+     "covers": "checking only what a change can affect",
+     "by": "bi-abduction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c29"
+   ],
+   [
+    "quote",
+    "Compositionality and Abstraction (end of article)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c30"
+   ],
+   [
+    "quote",
+    "c-incorrectness-logic-2020"
+   ],
+   [
+    "quote",
+    "we use a specification form [presumption]code[result] which says that the post-assertion result be an under-approximation (subset) of the final states that can be reached starting from states satisfying the presumption"
+   ],
+   [
+    "quote",
+    {
+     "defines": "incorrectness logic"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c30"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c31"
+   ],
+   [
+    "quote",
+    "c-incorrectness-logic-2020"
+   ],
+   [
+    "quote",
+    "Because of under-approximation, reasoning is arranged to avoid false positives (bug suggestions that are not true)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "reports only bugs that can happen",
+     "by": "incorrectness logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c31"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c32"
+   ],
+   [
+    "quote",
+    "c-isl-2020"
+   ],
+   [
+    "quote",
+    "use it to derive a begin-anywhere, intra-procedural symbolic execution analysis that has no false positives by construction"
+   ],
+   [
+    "quote",
+    {
+     "covers": "reports only bugs that can happen",
+     "by": "incorrectness logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c32"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c33"
+   ],
+   [
+    "quote",
+    "c-isl-2020"
+   ],
+   [
+    "quote",
+    "we recover the frame rule for a refined model with negative heap assertions"
+   ],
+   [
+    "quote",
+    {
+     "covers": "the frame rule for under-approximate reasoning",
+     "by": "incorrectness logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c33"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c34"
+   ],
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "Informally, a judgement m |= φ ∧ ψ is a declaration that the resource m satisfies φ and satisfies ψ, meanwhile the judgement m |= φ ∗ ψ says that it can be split into two parts n and n′ such that n |= φ and n′ |= ψ."
+   ],
+   [
+    "quote",
+    {
+     "defines": "bunched implications"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c34"
+   ],
+   [
+    "quote",
+    "§2.1 The Logic of Bunched Implications"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c35"
+   ],
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "Informally, a judgement m |= φ ∧ ψ is a declaration that the resource m satisfies φ and satisfies ψ, meanwhile the judgement m |= φ ∗ ψ says that it can be split into two parts n and n′ such that n |= φ and n′ |= ψ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "conjunction that splits resources",
+     "by": "bunched implications",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c35"
+   ],
+   [
+    "quote",
+    "§2.1 The Logic of Bunched Implications"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c36"
+   ],
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "contexts in the sequent calculus require two different context-formers: one that admits structural rules of Weakening and Contraction, and another that does not"
+   ],
+   [
+    "quote",
+    {
+     "covers": "sharing and separating conjunction in one logic",
+     "by": "bunched implications",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c36"
+   ],
+   [
+    "quote",
+    "§2.1 The Logic of Bunched Implications"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c37"
+   ],
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "in the resource interpretation of BI a proposition is not a resource itself, but a declaration about the state of some resources"
+   ],
+   [
+    "quote",
+    {
+     "covers": "facts used up when a rule reads them",
+     "by": "bunched implications",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c37"
+   ],
+   [
+    "quote",
+    "§2.1 The Logic of Bunched Implications"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c38"
+   ],
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "The equivalent implementation in hHLP would require a tagging system to show compatibility of the columns"
+   ],
+   [
+    "quote",
+    {
+     "covers": "picking facts from separate parts of a database without a tag column",
+     "by": "bunched implications",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c38"
+   ],
+   [
+    "quote",
+    "§5.2 Example: Databases"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c39"
+   ],
+   [
+    "quote",
+    "a-reynolds-2002"
+   ],
+   [
+    "quote",
+    "p1 ∧ p2 ⇒ p1 ∗ p2 when p1 or p2 is pure p1 ∗ p2 ⇒ p1 ∧ p2 when p1 and p2 are pure"
+   ],
+   [
+    "quote",
+    {
+     "needs": "resources that cannot be duplicated",
+     "by": "separating conjunction"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c39"
+   ],
+   [
+    "quote",
+    "§3 Assertions and their Inference Rules (pure assertions)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-c40"
+   ],
+   [
+    "quote",
+    "c-navarro-rybalchenko-2011"
+   ],
+   [
+    "quote",
+    "Our implementation, which is written in Prolog to allow a declarative specification of the inference rules of the proof system"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "separating conjunction",
+     "in": "a Prolog heap theorem prover"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-c40"
+   ],
+   [
+    "quote",
+    "§1 Introduction"
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-chr-survey-2010"
+   ],
+   [
+    "quote",
+    "sl-linear"
+   ],
+   11
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "sl-linear"
+   ],
+   12
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-hodas-miller-1994"
+   ],
+   [
+    "quote",
+    "sl-hypo"
+   ],
+   12
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-ceptre-2015"
+   ],
+   [
+    "quote",
+    "sl-linear"
+   ],
+   13
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-linear-meld-2014"
+   ],
+   [
+    "quote",
+    "sl-linear"
+   ],
+   14
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-bonner-1988"
+   ],
+   [
+    "quote",
+    "sl-hypo"
+   ],
+   15
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-bonner-1990"
+   ],
+   [
+    "quote",
+    "sl-hypo"
+   ],
+   16
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-saenz-perez-2015"
+   ],
+   [
+    "quote",
+    "sl-hypo"
+   ],
+   17
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "c-gheorghiu-docherty-pym-2023"
+   ],
+   [
+    "quote",
+    "sl-persistent"
+   ],
+   18
+  ]
+ ],
+ "recorded"
+]

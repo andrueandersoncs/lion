@@ -68,6 +68,16 @@ It runs every step in order into a new model and replaces `model.json` only when
 
 Write the frame as `steps/01-frame.src.json`. The replay writes it out as `01-frame.json`, putting the skill's time functions wherever the frame says `"@utc-minutes"` or `"@utc-text"`, so the frame you edit stays short. Edit the `.src.json` file only.
 
+### Building on earlier research
+
+If the project already keeps a research model, add the run to it instead of starting a new folder. Look for a folder with `steps/` and `sources/`, or instructions that name one; in the Lion repository it is `research/`. One model lets a later run start from what earlier runs established, and new evidence corrects their conclusions, since rules derive them.
+
+- **Replay it, and ask it first.** Rebuild it, and ask what it already holds on the question before searching.
+- **Reuse its names.** Name features, techniques, sources, and conclusions as the model already names them, so that evidence from two runs meets on one question.
+- **Give the run's own ids a prefix.** This applies to claims, leads, and assumptions, so they never collide with another run's.
+- **Edit the frame in place.** Add what later runs will want to the shared frame step, and keep the run's own beliefs in a step of its own. Change a schema or rule in the step that wrote it, and replay.
+- **Keep each run's answer apart.** Put the run's `report.md` and `page.json` in a folder of its own beside the model, and build its page with `build-explorer.mjs`'s `--out`.
+
 ## What the core gives you
 
 `assets/core.json` in this skill's folder is the first step of every model. Copy it to `steps/00-core.json`. It declares the relations every research model shares, so the same queries and the explorer work on all of them.

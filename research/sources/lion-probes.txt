@@ -1,0 +1,703 @@
+Lion programs run for research with @lionlang/cli 0.12.0 built at commit f49b97a (core 0.13.0), 2026-11-18.
+
+== program records.json
+{
+  "two exact parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    ["schema/allOf", { "id": "value/integer?" }, { "tag": "value/string?" }]
+  ],
+  "two open parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "two open parts let an extra key through": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new", "typo": true }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "an exact record pattern with one key too few": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    { "id": "value/integer?" }
+  ],
+  "a list pattern shorter than the list": [
+    "schema/fits?",
+    ["quote", [1, 2, 3]],
+    ["array/make", "value/number?", "value/number?"]
+  ],
+  "the rest of a record, in plain code": [
+    "object/remove",
+    ["quote", { "id": 1, "tag": "new", "note": "x" }],
+    "id"
+  ],
+  "the rest of a record, as a pattern": [
+    "query",
+    [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/open", { "id": "?id" }]
+    ]
+  ]
+}
+== gives
+{
+  "two exact parts, combined with allOf": false,
+  "two open parts, combined with allOf": true,
+  "two open parts let an extra key through": true,
+  "an exact record pattern with one key too few": false,
+  "a list pattern shorter than the list": false,
+  "the rest of a record, in plain code": {
+    "tag": "new",
+    "note": "x"
+  },
+  "the rest of a record, as a pattern": [
+    {
+      "id": 1
+    }
+  ]
+}
+
+== program named-schemas.json
+[
+  "begin",
+  ["schema", "Id", { "id": "value/integer?" }],
+  ["schema", "Tagged", { "tag": "value/string?" }],
+  {
+    "a record with an id and a tag fits allOf of the two named exact schemas": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/allOf", "Id", "Tagged"]
+    ],
+    "two literal record schemas joined with object/set, in plain code": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["object/set", { "id": "value/integer?" }, "tag", "value/string?"]
+    ]
+  }
+]
+== gives
+{
+  "a record with an id and a tag fits allOf of the two named exact schemas": false,
+  "two literal record schemas joined with object/set, in plain code": true
+}
+
+== program lists.json
+{
+  "a list pattern takes the first item and the rest": [
+    "query",
+    ["schema/fits?", ["quote", [1, 2, 3]], ["array/make", "?first", "?rest"]]
+  ],
+  "a count of a find with no match": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a sum of a find with no match": [
+    "aggregate/sum",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a union of a find with no match": [
+    "aggregate/union",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}
+== gives
+{
+  "a list pattern takes the first item and the rest": [],
+  "a count of a find with no match": 0,
+  "a sum of a find with no match": 0,
+  "a union of a find with no match": []
+}
+
+== program units.json
+{
+  "min of nothing": [
+    "aggregate/min",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "max of nothing": [
+    "aggregate/max",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "mean of nothing": [
+    "aggregate/mean",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "count of nothing": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "collect of nothing": [
+    "aggregate/collect",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}
+== gives
+{
+  "min of nothing": null,
+  "max of nothing": null,
+  "mean of nothing": null,
+  "count of nothing": 0,
+  "collect of nothing": []
+}
+
+== program keys.json
+[
+  "begin",
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["price", "a1", 3], ["price", "a1", 4]],
+  {
+    "a fact with a key that is present replaces the row": [
+      "query",
+      ["price", "?sku", "?usd"]
+    ]
+  }
+]
+== gives
+{
+  "a fact with a key that is present replaces the row": [
+    {
+      "sku": "a1",
+      "usd": 4
+    }
+  ]
+}
+
+== program keys-rules.json
+[
+  "begin",
+  ["relation", "quote_", ["sku", "usd"]],
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["quote_", "a1", 3], ["quote_", "a1", 4]],
+  ["rule", ["price", "?s", "?u"], ["quote_", "?s", "?u"]],
+  ["query", ["price", "?sku", "?usd"]]
+]
+== gives
+
+ERROR
+  "price" is keyed by ["sku"], but ["rule",["price","?s","?u"],["quote_","?s","?u"]] derived ["price","a1",4] while ["price","a1",3] holds.
+
+== program sets.json
+[
+  "begin",
+  ["relation", "said", ["who", "what"]],
+  ["fact", ["said", "ana", "yes"]],
+  ["fact", ["said", "ana", "yes"]],
+  {
+    "rows": ["query", ["said", "?who", "?what"]],
+    "one row matched twice by and": [
+      "query",
+      ["and", ["said", "?a", "?w"], ["said", "?b", "?w"]]
+    ]
+  }
+]
+== gives
+{
+  "rows": [
+    {
+      "who": "ana",
+      "what": "yes"
+    }
+  ],
+  "one row matched twice by and": [
+    {
+      "a": "ana",
+      "w": "yes",
+      "b": "ana"
+    }
+  ]
+}
+
+== program aggregate-facts.json
+[
+  "begin",
+  ["relation", "spend", ["who", "usd"]],
+  ["relation", "total", ["who", "usd"]],
+  ["fact", ["spend", "ana", 30], ["spend", "ana", 20]],
+  ["rule", ["total", "?w", ["aggregate/sum", "?u"]], ["spend", "?w", "?u"]],
+  ["fact", ["total", "bo", 5]]
+]
+== gives
+
+ERROR
+  "total" is computed by aggregate rules, so it cannot have facts.
+
+== program why-missing.json
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["why", ["path", "a", "c"]]
+]
+== gives
+{
+  "absent": [
+    "path",
+    "a",
+    "c"
+  ],
+  "because": [
+    {
+      "rule": [
+        "rule",
+        [
+          "path",
+          "?x",
+          "?y"
+        ],
+        [
+          "edge",
+          "?x",
+          "?y"
+        ]
+      ],
+      "because": [],
+      "but": {
+        "absent": [
+          "edge",
+          "a",
+          "c"
+        ],
+        "because": []
+      }
+    },
+    {
+      "rule": [
+        "rule",
+        [
+          "path",
+          "?x",
+          "?z"
+        ],
+        [
+          "edge",
+          "?x",
+          "?y"
+        ],
+        [
+          "path",
+          "?y",
+          "?z"
+        ]
+      ],
+      "because": [
+        {
+          "fact": [
+            "edge",
+            "a",
+            "b"
+          ],
+          "given": true
+        }
+      ],
+      "but": {
+        "absent": [
+          "path",
+          "b",
+          "c"
+        ],
+        "because": [
+          {
+            "rule": [
+              "rule",
+              [
+                "path",
+                "?x",
+                "?y"
+              ],
+              [
+                "edge",
+                "?x",
+                "?y"
+              ]
+            ],
+            "because": [],
+            "but": {
+              "absent": [
+                "edge",
+                "b",
+                "c"
+              ],
+              "because": []
+            }
+          },
+          {
+            "rule": [
+              "rule",
+              [
+                "path",
+                "?x",
+                "?z"
+              ],
+              [
+                "edge",
+                "?x",
+                "?y"
+              ],
+              [
+                "path",
+                "?y",
+                "?z"
+              ]
+            ],
+            "because": [],
+            "but": {
+              "absent": [
+                "edge",
+                "b",
+                "?y"
+              ],
+              "because": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+== program split-model.json
+[
+  "begin",
+  ["define", "kinds", ["quote", ["absent", "num", "str", "optnum"]]],
+  ["define", "items", ["quote", ["absent", 1, "x"]]],
+  [
+    "define",
+    "build",
+    [
+      "lambda",
+      ["pairs"],
+      [
+        "array/reduce",
+        "pairs",
+        {},
+        [
+          "lambda",
+          ["acc", "pair"],
+          [
+            "cond",
+            [["=", ["array/head", ["array/tail", "pair"]], "absent"], "acc"],
+            [
+              "else",
+              [
+                "object/set",
+                "acc",
+                ["array/head", "pair"],
+                ["array/head", ["array/tail", "pair"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "specs",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?ka"],
+          ["array/make", "b", "?kb"],
+          ["array/make", "c", "?kc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?ka", "kinds"],
+        ["in", "?kb", "kinds"],
+        ["in", "?kc", "kinds"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "values",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?va"],
+          ["array/make", "b", "?vb"],
+          ["array/make", "c", "?vc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?va", "items"],
+        ["in", "?vb", "items"],
+        ["in", "?vc", "items"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "base",
+    [
+      "lambda",
+      ["kind"],
+      [
+        "cond",
+        [["=", "kind", "str"], "value/string?"],
+        ["else", "value/number?"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "schemaOf",
+    [
+      "lambda",
+      ["spec"],
+      [
+        "array/reduce",
+        ["object/keys", "spec"],
+        {},
+        [
+          "lambda",
+          ["acc", "k"],
+          [
+            "object/set",
+            "acc",
+            "k",
+            [
+              "cond",
+              [
+                ["=", ["object/get", "spec", "k"], "optnum"],
+                ["schema/optional", "value/number?"]
+              ],
+              ["else", ["base", ["object/get", "spec", "k"]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "split",
+    [
+      "lambda",
+      ["spec", "rest", "v"],
+      [
+        "boolean/and",
+        [
+          "array/reduce",
+          ["object/keys", "spec"],
+          true,
+          [
+            "lambda",
+            ["ok", "k"],
+            [
+              "boolean/and",
+              "ok",
+              [
+                "cond",
+                [
+                  ["array/includes?", ["object/keys", "v"], "k"],
+                  [
+                    "schema/fits?",
+                    ["object/get", "v", "k"],
+                    ["base", ["object/get", "spec", "k"]]
+                  ]
+                ],
+                ["else", ["=", ["object/get", "spec", "k"], "optnum"]]
+              ]
+            ]
+          ]
+        ],
+        [
+          "schema/fits?",
+          [
+            "array/reduce",
+            ["object/keys", "spec"],
+            "v",
+            ["lambda", ["r", "k"], ["object/remove", "r", "k"]]
+          ],
+          "rest"
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "disjoint",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "s"],
+        true,
+        [
+          "lambda",
+          ["ok", "k"],
+          [
+            "boolean/and",
+            "ok",
+            ["boolean/not", ["array/includes?", ["object/keys", "t"], "k"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "union",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "t"],
+        "s",
+        [
+          "lambda",
+          ["acc", "k"],
+          ["object/set", "acc", "k", ["object/get", "t", "k"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "record schemas tried": ["array/length", "specs"],
+    "records tried": ["array/length", "values"],
+    "pairs where an exact record differs from a split with an empty rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schemaOf", "?s"]],
+              ["split", "?s", {}, "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "pairs where schema/open differs from a split with any record as the rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schema/open", ["schemaOf", "?s"]]],
+              ["split", "?s", "value/object?", "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "disjoint pairs of exact schemas tried": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"]
+        ]
+      ]
+    ],
+    "triples where a split with an exact rest differs from the one exact schema of both parts": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["split", "?s", ["schemaOf", "?t"], "?v"],
+              ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "triples where allOf of the two exact parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "schema/fits?",
+            "?v",
+            ["schema/allOf", ["schemaOf", "?s"], ["schemaOf", "?t"]]
+          ]
+        ]
+      ]
+    ],
+    "triples where the one exact schema of both parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+        ]
+      ]
+    ]
+  }
+]
+== gives
+{
+  "record schemas tried": 64,
+  "records tried": 27,
+  "pairs where an exact record differs from a split with an empty rest": 0,
+  "pairs where schema/open differs from a split with any record as the rest": 0,
+  "disjoint pairs of exact schemas tried": 343,
+  "triples where a split with an exact rest differs from the one exact schema of both parts": 0,
+  "triples where allOf of the two exact parts fits": 27,
+  "triples where the one exact schema of both parts fits": 729
+}

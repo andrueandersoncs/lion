@@ -1,0 +1,18 @@
+{
+  "a list pattern takes the first item and the rest": [
+    "query",
+    ["schema/fits?", ["quote", [1, 2, 3]], ["array/make", "?first", "?rest"]]
+  ],
+  "a count of a find with no match": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a sum of a find with no match": [
+    "aggregate/sum",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a union of a find with no match": [
+    "aggregate/union",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}

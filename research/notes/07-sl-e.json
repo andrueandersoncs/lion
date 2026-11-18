@@ -1,0 +1,58 @@
+{
+  "sources": [
+    {
+      "id": "e-zhang-egglog-2023",
+      "url": "https://arxiv.org/abs/2304.04332",
+      "title": "Better Together: Unifying Datalog and Equality Saturation (PLDI 2023)",
+      "publisher": "Zhang, Wang, Flatt, Cao, Zucker, Rosenthal, Tatlock, Willsey (egglog)",
+      "kind": "primary",
+      "published": 20230410,
+      "for": ["sl-algebra"]
+    }
+  ],
+  "claims": [
+    {
+      "id": "sl-e1",
+      "source": "e-zhang-egglog-2023",
+      "quote": "An egglog function can be annotated with a merge expression , a novel mechanism that egglog uses to resolve functional dependency violations by combining the two conflicting output values.",
+      "where": "Section 2",
+      "says": {
+        "covers": "a combining operation with a validity check",
+        "by": "egglog merge",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-e2",
+      "source": "e-zhang-egglog-2023",
+      "quote": "f f ’s merge expression might assert that b = d b=d (essentially asserting congruence of f f ), or return the supremum of b b and d d .",
+      "where": "Section 2",
+      "says": {
+        "covers": "keys that reject two different values",
+        "by": "egglog merge",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-e3",
+      "source": "e-zhang-egglog-2023",
+      "quote": "Functions and :merge allow egglog to support Datalog with lattices similar to tools like Flix",
+      "where": "Section 3",
+      "says": {
+        "adopted": "egglog merge",
+        "in": "egglog"
+      }
+    },
+    {
+      "id": "sl-e4",
+      "source": "lion-shared-algebra",
+      "quote": "Under this design, a fact is simply one more candidate of its group",
+      "where": "What this changes for people who write Lion",
+      "says": {
+        "covers": "aggregated relations that accept facts",
+        "by": "group folds (earlier Lion design)",
+        "is": true
+      }
+    }
+  ]
+}

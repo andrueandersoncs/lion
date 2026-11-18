@@ -1,0 +1,480 @@
+{
+  "sources": [
+    {
+      "id": "b-racket-match",
+      "url": "https://docs.racket-lang.org/reference/match.html",
+      "title": "The Racket Reference, 9 Pattern Matching (match)",
+      "publisher": "Racket",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-json-schema-object",
+      "url": "https://json-schema.org/understanding-json-schema/reference/object",
+      "title": "Understanding JSON Schema: object",
+      "publisher": "JSON Schema",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-json-schema-core-2020-12",
+      "url": "https://json-schema.org/draft/2020-12/json-schema-core",
+      "title": "JSON Schema: A Media Type for Describing JSON Documents (draft-bhutton-json-schema-01, 2020-12)",
+      "publisher": "JSON Schema (Wright, Andrews, Hutton, Dennis, eds.)",
+      "kind": "primary",
+      "published": 20220616
+    },
+    {
+      "id": "b-mdn-destructuring",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring",
+      "title": "Destructuring (MDN JavaScript reference)",
+      "publisher": "Mozilla",
+      "kind": "secondary",
+      "published": 20261117
+    },
+    {
+      "id": "b-leijen-scoped-labels",
+      "url": "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/scopedlabels.pdf",
+      "title": "Extensible records with scoped labels (draft revision 76, TFP 2005)",
+      "publisher": "Leijen (Utrecht University; copy hosted by Microsoft Research)",
+      "kind": "primary",
+      "published": 20050723
+    },
+    {
+      "id": "b-purescript-types",
+      "url": "https://github.com/purescript/documentation/blob/master/language/Types.md",
+      "title": "PureScript documentation: Types (Records, Row Polymorphism, Rows)",
+      "publisher": "PureScript",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-disjoint-intersection",
+      "url": "https://i.cs.hku.hk/~bruno/papers/icfp2016.pdf",
+      "title": "Disjoint Intersection Types (ICFP 2016)",
+      "publisher": "Oliveira, Shi, Alpuim (The University of Hong Kong)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-disjoint-polymorphism",
+      "url": "https://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf",
+      "title": "Disjoint Polymorphism (ESOP 2017)",
+      "publisher": "Alpuim, Oliveira, Shi (The University of Hong Kong)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-javert",
+      "url": "https://www.doc.ic.ac.uk/~pg/publications/FragosoSantos2018JaVerT.pdf",
+      "title": "JaVerT: JavaScript Verification Toolchain (POPL 2018, PACMPL vol. 2)",
+      "publisher": "Fragoso Santos, Maksimović, Naudžiūnienė, Wood, Gardner (Imperial College London)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-gardner-js-logic",
+      "url": "https://www.doc.ic.ac.uk/~pg/publications/Gardner2012Towards.pdf",
+      "title": "Towards a Program Logic for JavaScript (POPL 2012)",
+      "publisher": "Gardner, Maffeis, Smith (Imperial College London)",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-elixir-patterns",
+      "url": "https://hexdocs.pm/elixir/patterns-and-guards.html",
+      "title": "Elixir documentation: Patterns and guards",
+      "publisher": "Elixir",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-clojure-spec",
+      "url": "https://clojure.org/guides/spec",
+      "title": "Clojure guides: spec Guide",
+      "publisher": "Clojure",
+      "kind": "primary",
+      "published": null
+    },
+    {
+      "id": "b-typescript-objects",
+      "url": "https://www.typescriptlang.org/docs/handbook/2/objects.html",
+      "title": "TypeScript Handbook: Object Types",
+      "publisher": "Microsoft (TypeScript)",
+      "kind": "primary",
+      "published": 20261117
+    }
+  ],
+  "claims": [
+    {
+      "source": "b-racket-match",
+      "quote": "When ht-opt is not provided or when it is #:closed , all of the keys in the hash table value must be matched.",
+      "where": "9 Pattern Matching, (hash expr pat ... ... ht-opt)",
+      "states": "Racket's hash pattern is closed by default: every key in the matched table must be named by the pattern.",
+      "feature": "record pattern closed by default",
+      "has": true,
+      "system": "Racket match (hash pattern)",
+      "credits": ["b-racket-match"]
+    },
+    {
+      "source": "b-racket-match",
+      "quote": "When ht-opt is #:open , there can be keys in the hash table value that are not specified in the pattern.",
+      "where": "9 Pattern Matching, (hash expr pat ... ... ht-opt)",
+      "states": "Adding #:open to a Racket hash pattern lets the table have keys the pattern does not name.",
+      "feature": "switch between open and closed record patterns",
+      "has": true,
+      "system": "Racket match (hash pattern)",
+      "credits": ["b-racket-match"]
+    },
+    {
+      "source": "b-racket-match",
+      "quote": "When ht-opt is #:rest pat , pat is further matched against the residue hash table.",
+      "where": "9 Pattern Matching, (hash expr pat ... ... ht-opt)",
+      "states": "With #:rest pat, the table of keys the hash pattern did not name is matched against a further pattern.",
+      "feature": "record pattern that binds the rest",
+      "has": true,
+      "system": "Racket match (hash pattern)",
+      "credits": ["b-racket-match"]
+    },
+    {
+      "source": "b-racket-match",
+      "quote": "If ht-opt is not specified, it behaves like #:open (as opposed to #:closed ).",
+      "where": "9 Pattern Matching, (hash* [expr pat kv-opt] ... ht-opt)",
+      "states": "Racket's second hash pattern, hash*, is open by default, unlike hash.",
+      "feature": "record pattern open by default",
+      "has": true,
+      "system": "Racket match (hash* pattern)",
+      "credits": ["b-racket-match"]
+    },
+    {
+      "source": "b-racket-match",
+      "quote": "the final pat matches the “rest” of the list after the last lvp",
+      "where": "9 Pattern Matching, (list-rest lvp ... pat)",
+      "states": "Racket's list-rest pattern binds the remainder of a list after its leading element patterns.",
+      "feature": "list pattern that binds the rest",
+      "has": true,
+      "system": "Racket match (list-rest pattern)",
+      "credits": ["b-racket-match"]
+    },
+    {
+      "source": "b-json-schema-object",
+      "quote": "By default any additional properties are allowed.",
+      "where": "Additional Properties",
+      "states": "A JSON Schema object schema accepts properties it does not list unless told otherwise.",
+      "feature": "other: record schema open by default",
+      "has": true,
+      "system": "JSON Schema",
+      "credits": ["b-json-schema-object"]
+    },
+    {
+      "source": "b-json-schema-object",
+      "quote": "Setting the additionalProperties schema to false means no additional properties will be allowed.",
+      "where": "Additional Properties",
+      "states": "additionalProperties: false closes a JSON Schema object schema to unlisted properties.",
+      "feature": "other: closing a record schema with a keyword",
+      "has": true,
+      "system": "JSON Schema",
+      "credits": ["b-json-schema-object"]
+    },
+    {
+      "source": "b-json-schema-object",
+      "quote": "additionalProperties can restrict you from \"extending\" a schema using combining keywords such as allOf",
+      "where": "Extending Closed Schemas",
+      "states": "A schema closed with additionalProperties cannot be extended through allOf, because the other subschema's properties count as additional.",
+      "feature": "composing closed record schemas",
+      "has": false,
+      "system": "JSON Schema (additionalProperties with allOf)",
+      "credits": ["b-json-schema-object"]
+    },
+    {
+      "source": "b-json-schema-object",
+      "quote": "The unevaluatedProperties keyword is similar to additionalProperties except that it can recognize properties declared in subschemas.",
+      "where": "Unevaluated Properties (new in draft 2019-09)",
+      "states": "unevaluatedProperties, added in draft 2019-09, closes a schema while counting properties declared in its subschemas, so a closed schema can be extended with allOf.",
+      "feature": "composing closed record schemas",
+      "has": true,
+      "system": "JSON Schema (unevaluatedProperties)",
+      "credits": ["b-json-schema-object"]
+    },
+    {
+      "source": "b-json-schema-core-2020-12",
+      "quote": "Validation with \"additionalProperties\" applies only to the child values of instance names that do not appear in the annotation results of either \"properties\" or \"patternProperties\".",
+      "where": "10.3.2.3 additionalProperties",
+      "states": "The specification limits additionalProperties to names not covered by properties or patternProperties in the same schema object.",
+      "feature": "composing closed record schemas",
+      "has": false,
+      "system": "JSON Schema (additionalProperties)",
+      "credits": ["b-json-schema-core-2020-12"]
+    },
+    {
+      "source": "b-json-schema-core-2020-12",
+      "quote": "Validation with \"unevaluatedProperties\" applies only to the child values of instance names that do not appear in the \"properties\", \"patternProperties\", \"additionalProperties\", or \"unevaluatedProperties\" annotation results that apply to the instance location being validated.",
+      "where": "11.3 unevaluatedProperties",
+      "states": "The specification applies unevaluatedProperties only to properties that no adjacent keyword or in-place applicator subschema has evaluated.",
+      "feature": "composing closed record schemas",
+      "has": true,
+      "system": "JSON Schema (unevaluatedProperties)",
+      "credits": ["b-json-schema-core-2020-12"]
+    },
+    {
+      "source": "b-mdn-destructuring",
+      "quote": "For object destructuring, it copies all enumerable own properties of the object that are not already picked off by the destructuring pattern into a new object called rest .",
+      "where": "Rest properties and rest elements",
+      "states": "A JavaScript object pattern can end in ...rest, which binds a new object of the properties the pattern did not name.",
+      "feature": "record pattern that binds the rest",
+      "has": true,
+      "system": "JavaScript destructuring",
+      "credits": ["b-mdn-destructuring"]
+    },
+    {
+      "source": "b-mdn-destructuring",
+      "quote": "For array destructuring, it collects remaining elements of the iterable into a new array called rest (or any name you give it).",
+      "where": "Rest properties and rest elements",
+      "states": "A JavaScript array pattern can end in ...rest, which binds the remaining elements as a new array.",
+      "feature": "list pattern that binds the rest",
+      "has": true,
+      "system": "JavaScript destructuring",
+      "credits": ["b-mdn-destructuring"]
+    },
+    {
+      "source": "b-mdn-destructuring",
+      "quote": "object destructuring can only have an identifier (or a property access in assignment patterns) as the rest property.",
+      "where": "Using a binding pattern as the rest property",
+      "states": "In JavaScript the rest of an object can only be bound to a name, not matched against a further pattern (array rest can be).",
+      "feature": "other: rest of a record matched against a nested pattern",
+      "has": false,
+      "system": "JavaScript destructuring",
+      "credits": ["b-mdn-destructuring"]
+    },
+    {
+      "source": "b-leijen-scoped-labels",
+      "quote": "In contrast to many programming languages, the distance function works for any record that contains an x and y field of a suitable numeric type.",
+      "where": "2 Record operations, Selection",
+      "states": "With row-polymorphic record types, a function that reads x and y accepts any record that has those fields plus others.",
+      "feature": "other: row-polymorphic record type admits other fields",
+      "has": true,
+      "system": "Leijen's scoped-label records",
+      "credits": ["b-leijen-scoped-labels"]
+    },
+    {
+      "source": "b-leijen-scoped-labels",
+      "quote": "Finally, the restriction operation (r − l ) removes a label l from a record r .",
+      "where": "2 Record operations, Restriction",
+      "states": "Restriction r − l is the primitive operation that gives a record without one label, the rest of the record.",
+      "feature": "other: record operation that gives the rest of a record",
+      "has": true,
+      "system": "Leijen's scoped-label records (after Cardelli and Mitchell)",
+      "credits": ["b-leijen-scoped-labels"]
+    },
+    {
+      "source": "b-leijen-scoped-labels",
+      "quote": "Special lacks predicates are used to prevent records from containing duplicate labels.",
+      "where": "3.2 Scoped labels, Predicates (on Gaster and Jones)",
+      "states": "In Gaster and Jones's system, extending a record requires a lacks predicate proving the label is not already in the row.",
+      "feature": "disjointness when combining records",
+      "has": true,
+      "system": "Gaster and Jones extensible records (as described by Leijen)",
+      "credits": ["b-leijen-scoped-labels"]
+    },
+    {
+      "source": "b-leijen-scoped-labels",
+      "quote": "Our type system accepts the extension of a record with a field that is already present",
+      "where": "2.1 Safe operations",
+      "states": "Leijen's system drops the disjointness requirement: a record may be extended with a label it already has, and both fields are kept.",
+      "feature": "disjointness when combining records",
+      "has": false,
+      "system": "Leijen's scoped-label records",
+      "credits": ["b-leijen-scoped-labels"]
+    },
+    {
+      "source": "b-purescript-types",
+      "quote": "In other words, addProps accepts any record which has properties foo and bar , and any other record properties .",
+      "where": "Row Polymorphism",
+      "states": "In PureScript the row variable r in { foo :: Int, bar :: Int | r } stands for any other properties of the record.",
+      "feature": "other: row variable stands for the other fields",
+      "has": true,
+      "system": "PureScript row polymorphism",
+      "credits": ["b-purescript-types"]
+    },
+    {
+      "source": "b-purescript-types",
+      "quote": "To denote an open row (i.e. one which may unify with another row to add new fields), separate the specified terms from a row variable by a pipe:",
+      "where": "Rows",
+      "states": "PureScript writes a closed row as comma-separated fields and an open row by adding | and a row variable.",
+      "feature": "other: open and closed record types",
+      "has": true,
+      "system": "PureScript rows",
+      "credits": ["b-purescript-types"]
+    },
+    {
+      "source": "b-disjoint-intersection",
+      "quote": "The notation A ∗ B is inspired by the separating conjunction construct in Reynolds’ separation logic [29].",
+      "where": "1 Introduction, footnote 1",
+      "states": "The authors name their disjointness relation A ∗ B after separation logic's separating conjunction.",
+      "feature": "other: disjointness notation taken from the separating conjunction",
+      "has": true,
+      "system": "λi (disjoint intersection types)",
+      "credits": ["b-disjoint-intersection"]
+    },
+    {
+      "source": "b-disjoint-intersection",
+      "quote": "T-MERGE means that a merge e1, , e2, is assigned an intersection type composed of the resulting types of e1 and e2, as long as the types of the two expressions are disjoint.",
+      "where": "3.3 Declarative Type System",
+      "states": "In λi the merge of two values is well typed only when their types are disjoint.",
+      "feature": "disjointness when combining records",
+      "has": true,
+      "system": "λi (disjoint intersection types)",
+      "credits": ["b-disjoint-intersection"]
+    },
+    {
+      "source": "b-disjoint-polymorphism",
+      "quote": "If the labels coincide, then the records are disjoint whenever their fields’ types are also disjoint; otherwise they are always disjoint.",
+      "where": "Disjointness rules DRec= and DRec≠",
+      "states": "In Fi two single-field record types with different labels are always disjoint, and with the same label only if their field types are disjoint.",
+      "feature": "disjointness when combining records",
+      "has": true,
+      "system": "Fi (disjoint polymorphism)",
+      "credits": ["b-disjoint-polymorphism"]
+    },
+    {
+      "source": "b-disjoint-polymorphism",
+      "quote": "The disjointness constraint on B ensures that values of type B do not contain a record with type l : A.",
+      "where": "3.2 Extensible Records, Polymorphic extensible records",
+      "states": "In Fi a record is typed {l : A} & B, where the type variable B for the rest is constrained to be disjoint from the named field.",
+      "feature": "other: type of the rest of a record, disjoint from the named field",
+      "has": true,
+      "system": "Fi (disjoint polymorphism)",
+      "credits": ["b-disjoint-polymorphism"]
+    },
+    {
+      "source": "b-javert",
+      "quote": "is a partial function mapping pairs of object locations and property names to JS heap values.",
+      "where": "3 JaVerT: JS Logic (heap model)",
+      "states": "JaVerT's JavaScript heap is addressed by (object location, property name) pairs, so each property is its own heap cell.",
+      "feature": "object properties as separate heap cells",
+      "has": true,
+      "system": "JaVerT / JS Logic",
+      "credits": ["b-javert"]
+    },
+    {
+      "source": "b-javert",
+      "quote": "states that the object at the location denoted by E1 has no properties other than possibly those included in the set denoted by E2.",
+      "where": "3 JaVerT: JS Logic assertions (emptyFields)",
+      "states": "JaVerT's emptyFields(o | S) is a spatial assertion stating that object o has no properties outside the set S.",
+      "feature": "other: assertion for the absent rest of an object's properties",
+      "has": true,
+      "system": "JaVerT / JS Logic",
+      "credits": ["b-javert"]
+    },
+    {
+      "source": "b-javert",
+      "quote": "which shows how a single none-cell can be taken out of or put into an emptyFields assertion",
+      "where": "5.2 JSIL Verify: Entailment Engine, frame inference",
+      "states": "JaVerT's entailment rules move single absent-property cells between a points-to-None assertion and an emptyFields assertion.",
+      "feature": "other: negative resource for absent properties",
+      "has": true,
+      "system": "JaVerT / JSIL Verify",
+      "credits": ["b-javert"]
+    },
+    {
+      "source": "b-gardner-js-logic",
+      "quote": "An object is represented by a set of heap cells addressed by the same location but with different field names.",
+      "where": "3.1 Heaps",
+      "states": "In Gardner, Maffeis and Smith's JavaScript logic an object is a set of heap cells, one per field.",
+      "feature": "object properties as separate heap cells",
+      "has": true,
+      "system": "Gardner–Maffeis–Smith JavaScript program logic",
+      "credits": ["b-gardner-js-logic"]
+    },
+    {
+      "source": "b-gardner-js-logic",
+      "quote": "The separating conjunction P ∗Q says that the heap may be split into two disjoint heaps, one satisfying P and the other Q.",
+      "where": "4 Assertion Language",
+      "states": "The separating conjunction holds when the heap splits into two disjoint parts, one satisfying each conjunct.",
+      "feature": "other: separating conjunction splits a heap into disjoint parts",
+      "has": true,
+      "system": "Separation logic (as used for JavaScript)",
+      "credits": ["b-gardner-js-logic"]
+    },
+    {
+      "source": "b-gardner-js-logic",
+      "quote": "The assertion says nothing about any other field of L.",
+      "where": "2 Motivating example",
+      "states": "A field cell assertion describes one field and leaves the object's other fields unconstrained.",
+      "feature": "other: field assertion open about other fields",
+      "has": true,
+      "system": "Gardner–Maffeis–Smith JavaScript program logic",
+      "credits": ["b-gardner-js-logic"]
+    },
+    {
+      "source": "b-gardner-js-logic",
+      "quote": "which asserts the absence from L′ of all the fields we have not mentioned as parameters.",
+      "where": "2 Motivating example (newobj predicate)",
+      "states": "The newobj predicate asserts that an object has none of the fields beyond those it lists, a closed description of the object.",
+      "feature": "other: assertion that an object has no other fields",
+      "has": true,
+      "system": "Gardner–Maffeis–Smith JavaScript program logic",
+      "credits": ["b-gardner-js-logic"]
+    },
+    {
+      "source": "b-elixir-patterns",
+      "quote": "This means a map pattern will match any other map that has at least all of the keys in the pattern.",
+      "where": "Patterns, Maps",
+      "states": "Elixir map patterns are open: they match maps with extra keys.",
+      "feature": "record pattern open by default",
+      "has": true,
+      "system": "Elixir map patterns",
+      "credits": ["b-elixir-patterns"]
+    },
+    {
+      "source": "b-elixir-patterns",
+      "quote": "pattern matching on %{} would match any map, not only the empty ones",
+      "where": "Guards",
+      "states": "In Elixir the pattern %{} matches every map, so testing for the empty map needs a guard such as map_size.",
+      "feature": "other: empty map pattern matches every map",
+      "has": true,
+      "system": "Elixir map patterns",
+      "credits": ["b-elixir-patterns"]
+    },
+    {
+      "source": "b-clojure-spec",
+      "quote": "Also note that ALL attributes are checked via keys , not just those listed in the :req and :opt keys.",
+      "where": "Entity Maps",
+      "states": "A Clojure s/keys spec checks every registered key present in a map, including keys it does not list in :req or :opt.",
+      "feature": "other: record schema open by default",
+      "has": true,
+      "system": "Clojure spec (s/keys)",
+      "credits": ["b-clojure-spec"]
+    },
+    {
+      "source": "b-clojure-spec",
+      "quote": "The s/merge spec can be used to combine multiple s/keys specs into a single spec that combines their requirements.",
+      "where": "Entity Maps (s/merge)",
+      "states": "Clojure spec composes map specs with s/merge, which requires the keys of every part.",
+      "feature": "other: composing open map specs",
+      "has": true,
+      "system": "Clojure spec (s/merge)",
+      "credits": ["b-clojure-spec"]
+    },
+    {
+      "source": "b-typescript-objects",
+      "quote": "In the case of intersection types, properties with different types will be merged automatically.",
+      "where": "Interface Extension vs. Intersection",
+      "states": "TypeScript intersections do not require the combined object types to have disjoint properties; a shared property gets both types (never, if they conflict).",
+      "feature": "disjointness when combining records",
+      "has": false,
+      "system": "TypeScript intersection types",
+      "credits": ["b-typescript-objects"]
+    },
+    {
+      "source": "b-typescript-objects",
+      "quote": "Object literals get special treatment and undergo excess property checking when assigning them to other variables, or passing them as arguments.",
+      "where": "Excess Property Checks",
+      "states": "TypeScript rejects unknown properties when an object literal is assigned or passed directly to an object type; other values are not checked this way.",
+      "feature": "other: closed check only for object literals",
+      "has": true,
+      "system": "TypeScript object types",
+      "credits": ["b-typescript-objects"]
+    }
+  ]
+}
