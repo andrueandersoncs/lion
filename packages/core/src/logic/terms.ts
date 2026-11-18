@@ -151,6 +151,13 @@ export interface RelationInfo {
   readonly computed?: ComputedRelation;
   /** Positions of the key columns; a keyed relation has one row per key. */
   readonly key?: readonly number[];
+  /**
+   * How the rows of a key combine, column by column: a position and the
+   * lattice aggregate that joins the values it gets there, such as `min`.
+   * Every row a key gets, from a fact or a rule, is a candidate, and the key
+   * holds their join; a column that does not merge must agree.
+   */
+  readonly merge?: readonly (readonly [position: number, kind: string])[];
   readonly name: string;
 }
 

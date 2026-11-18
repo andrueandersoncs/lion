@@ -1224,7 +1224,7 @@ describe("a schema used or declared wrongly", () => {
     },
     "an option that is not one": {
       options: { shape: "Tree" },
-      says: 'Unknown relation option "shape". Relation options are "key", "schema".',
+      says: 'Unknown relation option "shape". Relation options are "key", "schema", "merge".',
     },
   };
 

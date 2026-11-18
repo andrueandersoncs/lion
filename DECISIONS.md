@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 159 questions have been decided, 61 records explain them, and of what the records assert, 519 hold when Lion is run, 4 are broken, 273 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 160 questions have been decided, 62 records explain them, and of what the records assert, 524 hold when Lion is run, 4 are broken, 274 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -165,6 +165,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
 | 2026-11-18 | [`research-layout`](#research-layout) | `one-shared-model` | [Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions](#research-compounds) |
 | 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
+| 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
 
 <a id="program-representation"></a>
 
@@ -3414,3 +3415,38 @@ Recorded 2026-11-18 in `history/notes/rest-of-a-record.json`.
 - Holds when Lion is run: `schema-open-composes-exact-schemas` is `fits`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
 - Holds when Lion is run: `schema-open-rest-binds` is `the-other-keys`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
 - Holds when Lion is run: `schema-open-list-rest` is `the-other-items`. "What it leaves over is the rest: the record of the other keys, or the list of the items after."
+
+<a id="merging-what-a-key-gets"></a>
+
+## merging-what-a-key-gets
+
+Now: `lattice-merge-option`.
+
+- 2026-11-18 `merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`: "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`." (`merging-what-a-key-gets.json`)
+
+<a id="merging-what-a-key-gets"></a>
+
+### A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too
+
+Recorded 2026-11-18 in `history/notes/merging-what-a-key-gets.json`.
+
+**Context.** A keyed relation held one row per key by agreement alone: a fact replaced the row its key had, and two different rows that rules gave one key were an error. Combining the values a key gets took a second relation and a rule that aggregated into it, and that relation could not have facts, so a value known as a fact and values derived by rules could not meet in one place. The research run on separation logic (`research/runs/separation-logic/`) found the same split in Iris's resource algebras: values that combine, a check of which combinations are valid, and a unit. Lion's keyed rules are the agreement algebra, where equal values combine and different ones are invalid, and its lattice aggregates are algebras where every combination is valid. Lion's earlier design for incremental maintenance (`shared-algebra.md`, 2026-11-18) planned to make a key's columns folds over its candidates, with facts as candidates.
+
+**Decision.** A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. A fact of such a relation never replaces another, and `retract` takes it back. A rule's head gives a merged column plainly, and the relation joins it, so a relation that merges is an aggregated relation whose facts are candidates too.
+
+**Consequences.** The relation form takes the option `"merge"`, written in snapshots beside the key. The relation's declaration adds a rule that reads its facts as candidates, under the name the goal-directed rewrite already uses for a relation's own facts; a snapshot writes the declaration, not the rule, and `why` tells a fact that won as given, with the declaration as its rule. Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. `aggregate/sum`, `aggregate/count`, and the other aggregates that add up a rule's matches do not merge, since a fact is not a match: a relation that aggregates with them still cannot have facts.
+
+**Alternatives considered.**
+
+- Let any aggregated relation take facts as candidates. A sum or count adds up a rule's matches, and a fact is not one: with facts kept as a set, two equal facts would count once. A lattice join gives the same result whatever is repeated.
+- A merge function the program writes, as egglog's `:merge`. Lion could not check that a written function is associative, commutative, and idempotent, and without that the row a key holds would depend on the order candidates come in, against the guarantee that a program has one answer.
+- Combine facts when they are written, as an upsert that keeps the better value. The candidates would be lost: `retract` could not take one back, and the rows rules give could not meet the facts.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `merging-what-a-key-gets`: `lattice-merge-option`. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
+- Holds when Lion is run: rule `a-key-holds-the-join-of-its-candidates` holds. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key."
+- Holds when Lion is run: `relation-merge-option` exists. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
+- Holds when Lion is run: `merge-joins-facts-and-rules` is `join`. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values."
+- Holds when Lion is run: `merge-fact-retract` is `candidate-removed`. "A fact of such a relation never replaces another, and `retract` takes it back."
+- Holds when Lion is run: `keyed-aggregated-rows-differ` is `error`. "Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were."

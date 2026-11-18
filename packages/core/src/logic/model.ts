@@ -25,7 +25,7 @@ import {
   questionPlans,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
-import { originalName } from "@/logic/magic";
+import { factsOf, originalName } from "@/logic/magic";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
   Atom,
@@ -483,9 +483,23 @@ export const compareMatches =
 export const rowsOf = (model: Model, relation: string): TupleSet =>
   model.relations.get(relation) ??
   (model.base === undefined
-    ? model.facts.get(relation)
+    ? model.facts.get(factsOf(relation) ?? relation)
     : rowsOf(model.base, relation)) ??
   EMPTY;
+
+/**
+ * The facts a relation starts from when its rules derive it: none for a
+ * relation that merges, whose facts are candidates its rule reads.
+ */
+const startingFacts = (model: Model, relation: RelationInfo | string) => {
+  const name = typeof relation === "string" ? relation : relation.name;
+  const merges = model.rules.some(
+    (rule) => rule.given && rule.head.relation.name === name
+  );
+  return model.base === undefined && !merges
+    ? model.facts.get(name)
+    : undefined;
+};
 
 const LINE_BREAKS = /\s*\n\s*/g;
 
@@ -1616,7 +1630,7 @@ const givenRows = (
     final.set(name, rows);
     fresh.set(name, new Map());
     const given = new TupleSet();
-    const facts = model.base === undefined ? model.facts.get(name) : EMPTY;
+    const facts = startingFacts(model, name);
     for (const tuple of facts?.values() ?? []) {
       if (rows.has(tuple)) {
         given.add(tuple);
@@ -2081,6 +2095,10 @@ export const settle = (model: Model, groups: Groups) =>
       if (old !== undefined) {
         tuples.delete(old);
       }
+      const clash = keyClash(rule, tuples, tuple);
+      if (clash !== undefined) {
+        return yield* logicError(clash);
+      }
       tuples.add(tuple);
       group.tuple = tuple;
       getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
@@ -2103,6 +2121,26 @@ export const settle = (model: Model, groups: Groups) =>
     groups.changed = new Set();
     return delta;
   });
+
+/**
+ * Says why a row that combines matches cannot join a keyed relation: another
+ * row has its key. Their groups differ in a column that does not combine,
+ * which must agree, as the rows a key gets from rules must.
+ */
+const keyClash = (rule: CompiledRule, rows: TupleSet, tuple: Tuple) => {
+  const { key, name } = rule.head.relation;
+  if (key === undefined) {
+    return;
+  }
+  const values = key.map((position) => tuple[position]);
+  for (const other of rows.lookup(key, values)) {
+    if (valueKey(other) !== valueKey(tuple)) {
+      const shown = originalName(name);
+      return `"${shown}" is keyed by ${JSON.stringify(keyColumns(rule.head.relation))}, but it would hold ${show([shown, ...tuple])} and ${show([shown, ...other])}, which differ in a column that does not merge.`;
+    }
+  }
+  return;
+};
 
 /** Recursion through lattice aggregates stops after this many rounds. */
 export const MAX_LATTICE_ROUNDS = 10_000;
@@ -2442,8 +2480,7 @@ export const derive = (model: Model, stratum: Stratum) =>
     const { members } = stratum;
     for (const name of members) {
       model.state.set(name, "running");
-      const facts =
-        model.base === undefined ? model.facts.get(name) : undefined;
+      const facts = startingFacts(model, name);
       model.relations.set(name, facts?.clone() ?? new TupleSet());
       model.derivations.set(name, new Map());
     }

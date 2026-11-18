@@ -499,7 +499,29 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 - When one `fact` form repeats a key, the last row wins, and the form writes no other row for that key. So a form whose last row for each key holds already changes nothing, not even the order a snapshot writes the rows in.
 - `retract` removes a row only when every column matches.
 - Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error, unless they differ only in values that rules invented: then the key makes them one. See [Existential rules](#existential-rules).
-- Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.
+- Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns, key, and merge.
+
+#### Merging what a key gets
+
+`"merge"` says how the rows a key gets combine instead: for a column outside the key, a lattice aggregate, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row, whose merged columns join the candidates' values. A column the merge does not name must agree, as it must for any key.
+
+```json
+["begin",
+  ["relation", "offer", ["sku", "shop", "usd"]],
+  ["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+  ["fact", ["offer", "a1", "north", 5], ["offer", "a1", "south", 4], ["offer", "b2", "north", 9]],
+  ["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?_", "?usd"]],
+  ["fact", ["best", "b2", 7], ["best", "c3", 2]],
+  {"best": ["query", ["best", "?sku", "?usd"], {"order": "sku"}],
+   "why b2": ["why", ["best", "b2", 7]]}]
+```
+
+Evaluates to `{ "best": [{ "sku": "a1", "usd": 4 }, { "sku": "b2", "usd": 7 }, { "sku": "c3", "usd": 2 }], "why b2": { "fact": ["best", "b2", 7], "rule": ["relation", "best", ["sku", "usd"], { "key": ["sku"], "merge": { "usd": "aggregate/min" } }], "because": [{ "fact": ["best", "b2", 7], "given": true }] } }`.
+
+- A fact of a relation that merges never replaces another: it is one more candidate, and `retract` takes it back. The fact `["best", "b2", 7]` beats the rule's 9 above, and `c3` has only its fact.
+- A rule's head gives a merged column plainly, as above, and the relation joins it: it is the rule `["rule", ["best", "?sku", ["aggregate/min", "?usd"]], ...]`, which may also be written. So a relation that merges is an aggregated relation whose facts are candidates too, and like one it is derived in full, before the rules that read it, and can go through recursion: a merge with `aggregate/min` over a rule that adds a road's length to a distance gives the shortest distances.
+- Only a lattice aggregate merges, since its join does not depend on the order the candidates come in. `aggregate/sum` and `aggregate/count` add up a rule's matches, which a fact is not, so they stay in rule heads.
+- `why` tells the candidate that gave the row: a fact, with the relation's declaration as its rule, or a rule's match.
 
 ### Query options
 
@@ -597,7 +619,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`, or a constant: `["aggregate/count", 1]` counts the matches.
 - An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a `find`. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
 - An aggregate of a `find` combines what the `find` found, wherever it is written: in a rule, in a query, or in plain code, as in `["aggregate/sum", ["find", "?amount", ["order", "?_", "?_", "?amount"]]]`.
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate.
 - `why` on an aggregated fact lists every match it combines under `matches`, in the order of their answers. For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
 

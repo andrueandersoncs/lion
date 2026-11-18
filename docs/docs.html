@@ -5493,11 +5493,13 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 
 <h2 id="form-relation"><code>relation</code></h2>
 <div class="code-block"><pre><code data-highlight>["relation", name, [column, ...]]
-["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]</code></pre></div>
+["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]
+["relation", name, [column, ...], {"key": column-or-columns, "merge": {column: aggregate, ...}}]</code></pre></div>
 <ul>
   <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal. Each term is a schema for its column: a value, a variable, a <a href="#logic-patterns">pattern</a>, or a predicate.</li>
-  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code> and <code>"schema"</code>.</li>
+  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code>, <code>"schema"</code>, and <code>"merge"</code>.</li>
   <li>With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.</li>
+  <li>With a merge, which needs a key, the rows a key gets combine instead: each column the merge names, outside the key, joins the values of every candidate with its lattice aggregate, <code>"aggregate/min"</code>, <code>"aggregate/max"</code>, <code>"aggregate/shortest"</code>, or <code>"aggregate/union"</code>. Every fact of the relation and every row its rules give is a candidate, a fact never replaces another, and a column the merge does not name must agree. A rule's head gives a merged column plainly, or with the same aggregate. The relation is aggregated: it is derived in full before the rules that read it, and can go through recursion.</li>
   <li>With a schema, the name of a declared <a href="#form-schema">schema</a>, every row must fit it, taken as a record of every column, so the schema names every column or is <code>schema/open</code>. The option adds the invariant <code>["invariant", ["and", [name, "?column", ...], ["not", [schema, {"column": "?column", ...}]]], {"assert": "none"}]</code>, and is nothing more: it must hold for the rows that are there, it is kept and reported like every <a href="#form-invariant">invariant</a>, and a snapshot writes it as one.</li>
   <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails. A relation cannot take the name of a schema.</li>
 </ul>
@@ -5511,6 +5513,22 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <div class="playground-output">
     <span class="playground-status is-ok">result</span>
     <pre class="playground-result"><code>[{"id":1,"status":"paid"}]</code></pre>
+  </div>
+</div>
+<p>With a merge, the cheapest offer for each item is the row its key holds, whether a fact or a rule gives it:</p>
+<div class="playground" data-playground="A relation that merges">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["relation", "offer", ["sku", "usd"]],
+  ["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4], ["offer", "b2", 9]],
+  ["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?usd"]],
+  ["fact", ["best", "b2", 7]],
+  ["query", ["best", "?sku", "?usd"], {"order": "sku"}]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>[{"sku":"a1","usd":4},{"sku":"b2","usd":7}]</code></pre>
   </div>
 </div>
 <p>With a schema, a change that would leave a row that does not fit is refused. Here the schema is open, so it need not name the <code>note</code> column:</p>
@@ -5759,8 +5777,8 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and <a href="#form-some">unknowns</a>. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
   <li>A fact can be <a href="#form-exists"><code>exists</code></a> over a relation call or an <code>and</code> of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
-  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing.</li>
-  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
+  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.</li>
+  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts, unless it merges what a key gets.</li>
   <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
 </ul>
 
@@ -7000,7 +7018,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <ul>
   <li>A rule cannot ask a <a href="#logic-asking">question</a> about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under <code>not</code>, a goal used as a value, a <code>find</code>, and a relation handed to a function. A question that a rule only builds when it runs, as with <code>eval</code>, fails then instead.</li>
   <li>An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, and <code>aggregate/union</code>, and only when every relation in the recursive cycle aggregates.</li>
-  <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts.</li>
+  <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts, unless it merges what a key gets, which makes each fact a candidate.</li>
   <li>A rule that <a href="#form-exists">invents</a> cannot aggregate. Rules that invent wait until every rule that invents nothing has finished, then every one whose head does not hold invents, all at once, and the other rules run on what was invented, until nothing more is.</li>
 </ul>
 <p>Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.</p>
@@ -7050,7 +7068,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <h2 id="guarantee-keys">Keys</h2>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
-  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows.</li>
+  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows. A relation that merges joins its merged columns instead, and the rest must agree.</li>
   <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that sorts first, and every row that holds it is replaced. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 

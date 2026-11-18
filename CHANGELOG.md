@@ -10,22 +10,31 @@
 - `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`researching-guideline` added)
 - The separation-logic run is the first run in `research/`. (`separation-logic-research` added)
 - `schema/open` takes one or two arguments, and a list of schemas as well as a record. (`schema-open-rest` added)
+- A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`relation-merge-option` added)
 
 ### Changed
 
 - `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`research-extends-existing-model` is `true`)
 - A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern. (`schema-open-composes-exact-schemas` is `fits`; `schema-open-rest-binds` is `the-other-keys`)
 - What it leaves over is the rest: the record of the other keys, or the list of the items after. (`schema-open-list-rest` is `the-other-items`)
+- A fact of such a relation never replaces another, and `retract` takes it back. (`merge-fact-retract` is `candidate-removed`)
+- Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. (`merge-joins-facts-and-rules` is `join`)
+
+### Fixed
+
+- Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. (`keyed-aggregated-rows-differ` is `error`, was `both-held`)
 
 ### Decided
 
 - Every research run adds to one Lion model in `research/`. (`research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`)
 - On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
+- A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
 
 ### Rules
 
 - A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. (rule `research-runs-extend-shared-model`)
 - A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
+- Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
@@ -1101,7 +1110,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. (`aggregate-match-found-by-several-or-alternatives` is `counts-once`; `aggregate-separate-rules-same-relation` is `add-up`)
 - Sum and mean of numbers (`mean` of nothing is `null`) (`aggregate-mean-empty` is `null`)
 - expects all numbers or all strings, but found (`aggregate-min-mixed-types` is `error`)
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
 - Logic variables must be direct arguments, not nested inside arrays or records (`logic-variable-nested-in-array` is `error`; `logic-variable-nested-in-record` is `error`)
 - For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did. (`why-aggregate-min-max-fact` is `producing-match`)
 - `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (`aggregate-shortest-tie` is `smaller-value`)

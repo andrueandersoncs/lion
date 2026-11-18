@@ -504,6 +504,20 @@ const held = (
  */
 const premises = (telling: Telling, { rule, same, vars }: Match) =>
   Effect.gen(function* () {
+    // A candidate of a relation's merge is one of its facts.
+    if (rule.given) {
+      return [
+        {
+          fact: [
+            rule.head.relation.name,
+            ...rule.head.relation.columns.map((_, at) =>
+              vars.get(`_fact${at}`)
+            ),
+          ],
+          given: true,
+        },
+      ];
+    }
     const out: unknown[] = [];
     for (const literal of rule.body) {
       out.push(yield* held(telling, literal, vars));

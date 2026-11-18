@@ -24,7 +24,7 @@
 <ul>
   <li>A rule cannot ask a <a href="#logic-asking">question</a> about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under <code>not</code>, a goal used as a value, a <code>find</code>, and a relation handed to a function. A question that a rule only builds when it runs, as with <code>eval</code>, fails then instead.</li>
   <li>An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, and <code>aggregate/union</code>, and only when every relation in the recursive cycle aggregates.</li>
-  <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts.</li>
+  <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts, unless it merges what a key gets, which makes each fact a candidate.</li>
   <li>A rule that <a href="#form-exists">invents</a> cannot aggregate. Rules that invent wait until every rule that invents nothing has finished, then every one whose head does not hold invents, all at once, and the other rules run on what was invented, until nothing more is.</li>
 </ul>
 <p>Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.</p>
@@ -58,7 +58,7 @@
 <h2 id="guarantee-keys">Keys</h2>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
-  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows.</li>
+  <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows. A relation that merges joins its merged columns instead, and the rest must agree.</li>
   <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that sorts first, and every row that holds it is replaced. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 

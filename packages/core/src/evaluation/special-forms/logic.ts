@@ -158,13 +158,18 @@ const atoms = (form: string, facts: readonly LionExpressionType[]) =>
   });
 
 /**
- * Reads `{"key": [...], "schema": name}`. Relation options are read as
- * written: the key names columns, and the schema names a declared schema.
+ * Reads `{"key": [...], "schema": name, "merge": {column: aggregate}}`.
+ * Relation options are read as written: the key names columns, the schema
+ * names a declared schema, and the merge says which lattice aggregate joins
+ * the values a key gets in each column it names.
  */
 const relationOptions = (name: string, options: unknown) =>
   Effect.gen(function* () {
-    const { key: given, schema } =
-      options === undefined ? {} : yield* readOptions("relation", options);
+    const {
+      key: given,
+      merge,
+      schema,
+    } = options === undefined ? {} : yield* readOptions("relation", options);
     const key = typeof given === "string" ? [given] : given;
     const isKey =
       Array.isArray(key) && key.every((column) => typeof column === "string");
@@ -178,7 +183,25 @@ const relationOptions = (name: string, options: unknown) =>
         `The schema of "${name}" must be the name of a declared schema, but found ${show(schema)}.`
       );
     }
-    return { key: key as readonly string[] | undefined, schema };
+    const merges =
+      typeof merge === "object" && merge !== null && !Array.isArray(merge)
+        ? Object.entries(merge as Record<string, unknown>)
+        : undefined;
+    if (
+      !(
+        merge === undefined ||
+        merges?.every(([, kind]) => typeof kind === "string")
+      )
+    ) {
+      return yield* logicError(
+        `The merge of "${name}" must be a record from a column to the aggregate that joins its values, as in {"price": "aggregate/min"}, but found ${show(merge)}.`
+      );
+    }
+    return {
+      key: key as readonly string[] | undefined,
+      merge: merges as readonly (readonly [string, string])[] | undefined,
+      schema,
+    };
   });
 
 const VARIABLE_NAME = /^[A-Za-z][\w-]*$/;
@@ -227,7 +250,8 @@ const rowsMustFit = (
 /**
  * ["relation", "dep", ["from", "to"]] declares a relation and binds it.
  * ["relation", "order", ["id", "status"], {"key": ["id"]}] gives it a key,
- * and {"schema": "Order"} says that its rows must fit a declared schema.
+ * {"schema": "Order"} says that its rows must fit a declared schema, and
+ * {"merge": {"price": "aggregate/min"}} that the prices a key gets join.
  */
 export const evaluateRelation = ([
   _,
@@ -237,7 +261,7 @@ export const evaluateRelation = ([
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
     const store = yield* database;
-    const { key, schema } = yield* relationOptions(name, options);
+    const { key, merge, schema } = yield* relationOptions(name, options);
     const rowSchema =
       schema === undefined ? undefined : store.schemas.get(schema);
     if (schema !== undefined && rowSchema === undefined) {
@@ -245,7 +269,7 @@ export const evaluateRelation = ([
         `Relation "${name}" names the schema "${schema}" for its rows, but no schema is declared under that name. Declare it first, as in ["schema", "${schema}", {...}].`
       );
     }
-    const relation = yield* declareRelation(store, name, columns, key);
+    const relation = yield* declareRelation(store, name, columns, key, merge);
     const value = relationValue(relation);
     yield* setGlobalBinding(yield* LionEnvironmentService, name, value);
     if (schema !== undefined && rowSchema !== undefined) {

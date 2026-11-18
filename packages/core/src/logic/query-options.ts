@@ -32,7 +32,10 @@ const FORMS = {
     example: '{"order": "-points", "limit": 10}',
   },
   invariant: { names: ["assert"], example: '{"assert": "none"}' },
-  relation: { names: ["key", "schema"], example: '{"key": ["id"]}' },
+  relation: {
+    names: ["key", "schema", "merge"],
+    example: '{"key": ["id"]}',
+  },
 };
 
 const fail = (message: string) => Effect.fail(new LogicError({ message }));

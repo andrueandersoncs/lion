@@ -85,11 +85,13 @@
 <code-block lang="json">
 ["relation", name, [column, ...]]
 ["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]
+["relation", name, [column, ...], {"key": column-or-columns, "merge": {column: aggregate, ...}}]
 </code-block>
 <ul>
   <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal. Each term is a schema for its column: a value, a variable, a <a href="#logic-patterns">pattern</a>, or a predicate.</li>
-  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code> and <code>"schema"</code>.</li>
+  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code>, <code>"schema"</code>, and <code>"merge"</code>.</li>
   <li>With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.</li>
+  <li>With a merge, which needs a key, the rows a key gets combine instead: each column the merge names, outside the key, joins the values of every candidate with its lattice aggregate, <code>"aggregate/min"</code>, <code>"aggregate/max"</code>, <code>"aggregate/shortest"</code>, or <code>"aggregate/union"</code>. Every fact of the relation and every row its rules give is a candidate, a fact never replaces another, and a column the merge does not name must agree. A rule's head gives a merged column plainly, or with the same aggregate. The relation is aggregated: it is derived in full before the rules that read it, and can go through recursion.</li>
   <li>With a schema, the name of a declared <a href="#form-schema">schema</a>, every row must fit it, taken as a record of every column, so the schema names every column or is <code>schema/open</code>. The option adds the invariant <code>["invariant", ["and", [name, "?column", ...], ["not", [schema, {"column": "?column", ...}]]], {"assert": "none"}]</code>, and is nothing more: it must hold for the rows that are there, it is kept and reported like every <a href="#form-invariant">invariant</a>, and a snapshot writes it as one.</li>
   <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails. A relation cannot take the name of a schema.</li>
 </ul>
@@ -98,6 +100,16 @@
   ["relation", "order", ["id", "status"], {"key": "id"}],
   ["fact", ["order", 1, "open"], ["order", 1, "paid"]],
   ["query", ["order", "?id", "?status"]]]
+</lion-example>
+<p>With a merge, the cheapest offer for each item is the row its key holds, whether a fact or a rule gives it:</p>
+<lion-example name="A relation that merges">
+["begin",
+  ["relation", "offer", ["sku", "usd"]],
+  ["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4], ["offer", "b2", 9]],
+  ["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?usd"]],
+  ["fact", ["best", "b2", 7]],
+  ["query", ["best", "?sku", "?usd"], {"order": "sku"}]]
 </lion-example>
 <p>With a schema, a change that would leave a row that does not fit is refused. Here the schema is open, so it need not name the <code>note</code> column:</p>
 <lion-example name="A relation with a schema" expect="error">
@@ -257,8 +269,8 @@
   <li>Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and <a href="#form-some">unknowns</a>. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
   <li>A fact can be <a href="#form-exists"><code>exists</code></a> over a relation call or an <code>and</code> of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
-  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing.</li>
-  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
+  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.</li>
+  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts, unless it merges what a key gets.</li>
   <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
 </ul>
 

@@ -11,6 +11,8 @@ import type { Mutation } from "./mutation.ts";
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
+/** The properties of relations that merge what a key gets. */
+const MERGE_TESTS = ["src/logic/tests/merging.test.ts"];
 /** The properties of the rest of a record or list, and of the model of schemas. */
 const REST_TESTS = [
   "src/logic/tests/rests.test.ts",
@@ -708,6 +710,50 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("evaluation/special-forms/match.ts"),
     find: "      value = yield* answer(value);",
     replace: "      value = true;",
+  },
+  // Relations that merge what a key gets.
+  {
+    name: "a fact of a relation that merges replaces the fact its key has",
+    file: core("logic/database.ts"),
+    find: "  if (key !== undefined && merge === undefined) {",
+    replace: "  if (key !== undefined) {",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a relation that merges starts from its facts as rows",
+    file: core("logic/model.ts"),
+    find: "  return model.base === undefined && !merges",
+    replace: "  return model.base === undefined",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a change to the facts of a relation that merges is followed as a change to its rows",
+    file: core("logic/database.ts"),
+    find: "          database.relations.get(name)?.merge === undefined",
+    replace: "          true",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a plain head of a relation that merges does not merge",
+    file: core("logic/compile.ts"),
+    find: "      return kind === undefined ||",
+    replace: "      return true ||",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "two rows a key gets that differ where nothing merges both hold",
+    file: core("logic/model.ts"),
+    find: "  const { key, name } = rule.head.relation;\n  if (key === undefined) {",
+    replace:
+      "  const { key, name } = rule.head.relation;\n  if (key !== key) {",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a relation that merges cannot have facts",
+    file: core("logic/database.ts"),
+    find: "        declared?.merge === undefined &&",
+    replace: "        true &&",
+    tests: MERGE_TESTS,
   },
   // Schemas, and the invariants a change to facts can break.
   {

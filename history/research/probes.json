@@ -20918,5 +20918,151 @@
         ["schema/recordOf", "value/string?"]
       ]
     ]
+  },
+  {
+    "case": "merge-joins-facts-and-rules",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "offer", ["sku", "usd"]],
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/min"
+          }
+        }
+      ],
+      ["fact", ["offer", "a1", 5], ["offer", "a1", 4]],
+      ["rule", ["best", "?s", "?u"], ["offer", "?s", "?u"]],
+      ["fact", ["best", "a1", 3], ["best", "b2", 7]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "query",
+              ["best", "?s", "?u"],
+              {
+                "order": "s"
+              }
+            ],
+            [
+              "quote",
+              [
+                {
+                  "s": "a1",
+                  "u": 3
+                },
+                {
+                  "s": "b2",
+                  "u": 7
+                }
+              ]
+            ]
+          ],
+          ["quote", "join"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "merge-fact-retract",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/min"
+          }
+        }
+      ],
+      ["fact", ["best", "a1", 3], ["best", "a1", 5]],
+      ["retract", ["best", "a1", 3]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["query", ["best", "a1", "?u"]],
+            [
+              "quote",
+              [
+                {
+                  "u": 5
+                }
+              ]
+            ]
+          ],
+          ["quote", "candidate-removed"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "keyed-aggregated-rows-differ",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "tag",
+        ["id", "tags", "owner"],
+        {
+          "key": "id",
+          "merge": {
+            "tags": "aggregate/union"
+          }
+        }
+      ],
+      [
+        "fact",
+        ["tag", 1, ["quote", ["a"]], "ana"],
+        ["tag", 1, ["quote", ["b"]], "bo"]
+      ],
+      ["query", ["tag", "?i", "?t", "?o"]]
+    ]
+  },
+  {
+    "feature": "relation-merge-option",
+    "kind": "option",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/max"
+          }
+        }
+      ],
+      ["fact", ["best", "a1", 3], ["best", "a1", 5]],
+      [
+        "=",
+        ["query", ["best", "a1", "?u"]],
+        [
+          "quote",
+          [
+            {
+              "u": 5
+            }
+          ]
+        ]
+      ]
+    ]
   }
 ]
