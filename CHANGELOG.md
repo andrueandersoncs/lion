@@ -9,18 +9,23 @@
 - What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. (`research-probes-runner` added)
 - `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`researching-guideline` added)
 - The separation-logic run is the first run in `research/`. (`separation-logic-research` added)
+- `schema/open` takes one or two arguments, and a list of schemas as well as a record. (`schema-open-rest` added)
 
 ### Changed
 
 - `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`research-extends-existing-model` is `true`)
+- A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern. (`schema-open-composes-exact-schemas` is `fits`; `schema-open-rest-binds` is `the-other-keys`)
+- What it leaves over is the rest: the record of the other keys, or the list of the items after. (`schema-open-list-rest` is `the-other-items`)
 
 ### Decided
 
 - Every research run adds to one Lion model in `research/`. (`research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`)
+- On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
 
 ### Rules
 
 - A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. (rule `research-runs-extend-shared-model`)
+- A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

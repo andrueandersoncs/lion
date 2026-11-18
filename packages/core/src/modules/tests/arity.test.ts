@@ -95,7 +95,7 @@ const TAKES: Record<string, readonly [least: number, most: number]> = {
   "schema/arrayOf": [1, 1],
   "schema/assert": [2, 2],
   "schema/fits?": [2, 2],
-  "schema/open": [1, 1],
+  "schema/open": [1, 2],
   "schema/optional": [1, 1],
   "schema/problems": [2, 2],
   "schema/recordOf": [1, 1],

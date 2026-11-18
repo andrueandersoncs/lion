@@ -342,7 +342,7 @@ const isDataShape = (given: Shape): boolean => {
     case "literal":
       return true;
     case "tuple":
-      return given.items.every(isDataShape);
+      return !given.open && given.items.every(isDataShape);
     case "record":
       return (
         !given.open &&
@@ -1010,7 +1010,7 @@ describe("schema/open around a variable", () => {
           expect(result).toMatchObject({
             ok: false,
             message: expect.stringContaining(
-              "schema/open expects a record of schemas, or a schema that names one"
+              "schema/open expects a record or a list of schemas, or a schema that names one"
             ),
           });
         }

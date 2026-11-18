@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 60 records explain them, and of what the records assert, 514 hold when Lion is run, 4 are broken, 272 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 159 questions have been decided, 61 records explain them, and of what the records assert, 519 hold when Lion is run, 4 are broken, 273 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -164,6 +164,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
 | 2026-11-18 | [`research-layout`](#research-layout) | `one-shared-model` | [Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions](#research-compounds) |
+| 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
 
 <a id="program-representation"></a>
 
@@ -3378,3 +3379,38 @@ Recorded 2026-11-18 in `history/notes/research-compounds.json`.
 - Holds when Lion is run: `researching-guideline` exists. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
 - Holds when Lion is run: `research-extends-existing-model` is `true`. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
 - Holds when Lion is run: `separation-logic-research` exists. "The separation-logic run is the first run in `research/`."
+
+<a id="rest-of-a-record"></a>
+
+## rest-of-a-record
+
+Now: `schema-open-second-argument`.
+
+- 2026-11-18 `rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`: "On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`." (`rest-of-a-record.json`)
+
+<a id="rest-of-a-record"></a>
+
+### What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it
+
+Recorded 2026-11-18 in `history/notes/rest-of-a-record.json`.
+
+**Context.** A record schema was exact and `schema/open` let other keys be, with nothing between: a pattern could not bind the keys it did not name, a list pattern could not take the items after its first ones, and two exact record schemas could not be combined, since `schema/allOf` asks a record to have only the keys of each at once. The research run on separation logic (`research/runs/separation-logic/`) found the same split in its separating conjunction, where a heap is a finite map and P ∗ Q splits it into disjoint parts, and in Racket's `hash` pattern, closed by default, with `#:open` and `#:rest`. JSON Schema met the composition problem and added `unevaluatedProperties` in draft 2019-09. Lion's own lion-research core computed a record's rest by hand with `object/remove`.
+
+**Decision.** A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern.
+
+**Consequences.** `schema/open` takes one or two arguments, and a list of schemas as well as a record. `fit.ts` checks a record and a list by one rule, the rest's schema in place of the flag that said whether a record was open. A problem in the rest is shown where it stands in the value, and the rest as a whole that does not fit is the value not fitting the `schema/open` schema. A call of `schema/open` around a known record and a variable for the rest is a pattern, so it binds in a relation call and in `schema/fits?`, in rules and goal-directed queries alike. The model of schemas in `logic/tests/shapes.ts` generates rests for records and lists, so every property of schemas and patterns covers them.
+
+**Alternatives considered.**
+
+- A new form, such as `schema/rest` or a reserved key like `"..."` in a record. A reserved key takes a string that JSON data may use, and a new name adds a word for what `schema/open` already means: the keys a record leaves to something else.
+- Make records open by default, as Elixir's map patterns and JSON Schema's objects are. Lion's records were made exact so that what a pattern binds does not depend on goal order, and Racket's `hash` pattern is exact by default too.
+- Fix `schema/allOf` to let each record skip the keys of the others. `schema/allOf` means that a value fits every schema on its own, everywhere else; changing it for records alone would be a special case, which `unevaluatedProperties` shows JSON Schema needed a new keyword to avoid.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `rest-of-a-record`: `schema-open-second-argument`. "On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`."
+- Holds when Lion is run: rule `rest-of-a-record-or-list` holds. "A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after."
+- Holds when Lion is run: `schema-open-rest` exists. "`schema/open` takes one or two arguments, and a list of schemas as well as a record."
+- Holds when Lion is run: `schema-open-composes-exact-schemas` is `fits`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
+- Holds when Lion is run: `schema-open-rest-binds` is `the-other-keys`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
+- Holds when Lion is run: `schema-open-list-rest` is `the-other-items`. "What it leaves over is the rest: the record of the other keys, or the list of the items after."

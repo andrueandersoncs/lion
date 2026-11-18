@@ -27,6 +27,24 @@
    "with a note": ["find", "?id", ["inbox", ["schema/open", {"id": "?id", "note": "?_"}]]]}]
 </lion-example>
 
+<h2>Keep the rest of a record or list</h2>
+<p>Give <code>schema/open</code> a second schema, and what the record leaves over must fit it: the record of the keys it does not name. A variable there takes the rest, so a rule can strip the keys it knows and pass on the others. Around a list, the rest is the list of the items after the ones it names:</p>
+<lion-example name="The rest of a record">
+["begin",
+  ["relation", "inbox", ["doc"]],
+  ["relation", "extras", ["id", "rest"]],
+  ["fact",
+    ["inbox", {"type": "order", "id": 1, "note": "gift"}],
+    ["inbox", {"type": "order", "id": 2, "rush": true, "via": "phone"}],
+    ["inbox", {"type": "refund", "id": 3}]],
+  ["rule", ["extras", "?id", "?rest"],
+    ["inbox", ["schema/open", {"type": "order", "id": "?id"}, "?rest"]]],
+  {"extras": ["query", ["extras", "?id", "?rest"], {"order": "id"}],
+   "first and others": ["query",
+     ["schema/fits?", ["array/make", "a", "b", "c"], ["schema/open", ["array/make", "?first"], "?others"]]]}]
+</lion-example>
+<p>The parts a pattern names and its rest, put back together, are the value: a key the record names is never in the rest.</p>
+
 <h2>Go through a list inside a record</h2>
 <p>The element of <code>in</code> can be a pattern too. Here one goal takes the lines out of each order, and <code>in</code> takes each line apart, so a rule turns nested documents into rows that other rules can count:</p>
 <lion-example name="The items of a list">

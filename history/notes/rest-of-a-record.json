@@ -1,0 +1,90 @@
+{
+  "title": "What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it",
+  "context": "A record schema was exact and `schema/open` let other keys be, with nothing between: a pattern could not bind the keys it did not name, a list pattern could not take the items after its first ones, and two exact record schemas could not be combined, since `schema/allOf` asks a record to have only the keys of each at once. The research run on separation logic (`research/runs/separation-logic/`) found the same split in its separating conjunction, where a heap is a finite map and P ∗ Q splits it into disjoint parts, and in Racket's `hash` pattern, closed by default, with `#:open` and `#:rest`. JSON Schema met the composition problem and added `unevaluatedProperties` in draft 2019-09. Lion's own lion-research core computed a record's rest by hand with `object/remove`.",
+  "decision": "A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. On its own, a record or list of schemas leaves nothing; `[\"schema/open\", record]` leaves anything; `[\"schema/open\", record, rest]` leaves what fits `rest`. A key the record names is never part of the rest, so `[\"schema/open\", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern.",
+  "consequences": "`schema/open` takes one or two arguments, and a list of schemas as well as a record. `fit.ts` checks a record and a list by one rule, the rest's schema in place of the flag that said whether a record was open. A problem in the rest is shown where it stands in the value, and the rest as a whole that does not fit is the value not fitting the `schema/open` schema. A call of `schema/open` around a known record and a variable for the rest is a pattern, so it binds in a relation call and in `schema/fits?`, in rules and goal-directed queries alike. The model of schemas in `logic/tests/shapes.ts` generates rests for records and lists, so every property of schemas and patterns covers them.",
+  "alternatives": [
+    {
+      "option": "A new form, such as `schema/rest` or a reserved key like `\"...\"` in a record",
+      "rejected": "A reserved key takes a string that JSON data may use, and a new name adds a word for what `schema/open` already means: the keys a record leaves to something else."
+    },
+    {
+      "option": "Make records open by default, as Elixir's map patterns and JSON Schema's objects are",
+      "rejected": "Lion's records were made exact so that what a pattern binds does not depend on goal order, and Racket's `hash` pattern is exact by default too."
+    },
+    {
+      "option": "Fix `schema/allOf` to let each record skip the keys of the others",
+      "rejected": "`schema/allOf` means that a value fits every schema on its own, everywhere else; changing it for records alone would be a special case, which `unevaluatedProperties` shows JSON Schema needed a new keyword to avoid."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "On its own, a record or list of schemas leaves nothing; `[\"schema/open\", record]` leaves anything; `[\"schema/open\", record, rest]` leaves what fits `rest`.",
+      "says": {
+        "decision": "rest-of-a-record",
+        "chose": "schema-open-second-argument",
+        "over": ["reserved-key", "open-by-default", "allof-skips-keys"],
+        "area": "schemas",
+        "because": "one rule says what every record or list of schemas leaves over, so exact and open records are its two ends, a pattern can bind the rest, and two exact schemas compose into a third"
+      }
+    },
+    {
+      "quote": "A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after.",
+      "says": {
+        "rule": "rest-of-a-record-or-list",
+        "holds": true,
+        "statement": "A record or list of schemas leaves the rest of a value to the schema of its rest: nothing on its own, anything in schema/open with one argument, and the second argument of schema/open otherwise",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "schema-open-rest-binds",
+            "is": "the-other-keys"
+          },
+          {
+            "behavior": "schema-open-composes-exact-schemas",
+            "is": "fits"
+          },
+          {
+            "behavior": "schema-open-list-rest",
+            "is": "the-other-items"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`schema/open` takes one or two arguments, and a list of schemas as well as a record.",
+      "says": {
+        "feature": "schema-open-rest",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A key the record names is never part of the rest, so `[\"schema/open\", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern.",
+      "says": {
+        "behavior": "schema-open-composes-exact-schemas",
+        "is": "fits",
+        "area": "schemas",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "A key the record names is never part of the rest, so `[\"schema/open\", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern.",
+      "says": {
+        "behavior": "schema-open-rest-binds",
+        "is": "the-other-keys",
+        "area": "schemas",
+        "follows": "racket"
+      }
+    },
+    {
+      "quote": "What it leaves over is the rest: the record of the other keys, or the list of the items after.",
+      "says": {
+        "behavior": "schema-open-list-rest",
+        "is": "the-other-items",
+        "area": "schemas",
+        "follows": "racket"
+      }
+    }
+  ]
+}

@@ -11,6 +11,12 @@ import type { Mutation } from "./mutation.ts";
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
+/** The properties of the rest of a record or list, and of the model of schemas. */
+const REST_TESTS = [
+  "src/logic/tests/rests.test.ts",
+  "src/logic/tests/schemas.test.ts",
+  "src/logic/tests/patterns.test.ts",
+];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
   "src/logic/tests/aggregates.test.ts",
@@ -704,6 +710,41 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "      value = true;",
   },
   // Schemas, and the invariants a change to facts can break.
+  {
+    name: "the rest of a record or list is never checked",
+    file: core("logic/fit.ts"),
+    find: "      found.push(...(yield* checkRest(rest, left, at, answered, whole, shift)));",
+    replace: "      found.push(answered);",
+    tests: REST_TESTS,
+  },
+  {
+    name: "the rest of a record holds the keys the record names too",
+    file: core("logic/fit.ts"),
+    find: "        Object.fromEntries(others.map((key) => [key, value[key]])),",
+    replace: "        value,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "the rest of a list holds the items the list names too",
+    file: core("logic/fit.ts"),
+    find: "        value.slice(parts.length),",
+    replace: "        value,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "a problem in the rest of a list is shown at its place in the rest",
+    file: core("logic/fit.ts"),
+    find: '              typeof step === "number" ? step + shift : step,',
+    replace: "              step,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "a variable for the rest of a known record is not a pattern",
+    file: core("logic/terms.ts"),
+    find: "    (others.length > 0 && !(first instanceof LogicValue));",
+    replace: "    false;",
+    tests: REST_TESTS,
+  },
   {
     name: "a predicate that answers something other than true still fits",
     file: core("logic/fit.ts"),

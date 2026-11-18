@@ -20781,5 +20781,142 @@
       ],
       ["else", "false"]
     ]
+  },
+  {
+    "case": "schema-open-rest-binds",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "query",
+            [
+              "schema/fits?",
+              [
+                "quote",
+                {
+                  "type": "order",
+                  "id": 1,
+                  "rush": true
+                }
+              ],
+              [
+                "schema/open",
+                {
+                  "type": "order"
+                },
+                "?rest"
+              ]
+            ]
+          ],
+          [
+            "quote",
+            [
+              {
+                "rest": {
+                  "id": 1,
+                  "rush": true
+                }
+              }
+            ]
+          ]
+        ],
+        ["quote", "the-other-keys"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "schema-open-composes-exact-schemas",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "Id",
+        {
+          "id": "value/integer?"
+        }
+      ],
+      [
+        "schema",
+        "Tagged",
+        {
+          "tag": "value/string?"
+        }
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            [
+              "quote",
+              {
+                "id": 1,
+                "tag": "new"
+              }
+            ],
+            ["schema/open", "Id", "Tagged"]
+          ],
+          ["quote", "fits"]
+        ],
+        ["else", ["quote", "does-not-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-open-list-rest",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "query",
+            [
+              "schema/fits?",
+              ["quote", ["a", "b", "c"]],
+              ["schema/open", ["array/make", "?first"], "?rest"]
+            ]
+          ],
+          [
+            "quote",
+            [
+              {
+                "first": "a",
+                "rest": ["b", "c"]
+              }
+            ]
+          ]
+        ],
+        ["quote", "the-other-items"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "feature": "schema-open-rest",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      [
+        "quote",
+        {
+          "id": 1,
+          "x": "y"
+        }
+      ],
+      [
+        "schema/open",
+        {
+          "id": "value/integer?"
+        },
+        ["schema/recordOf", "value/string?"]
+      ]
+    ]
   }
 ]

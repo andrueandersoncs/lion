@@ -213,7 +213,7 @@
     <tr data-entry="schema/arrayOf"><td><code>["schema/arrayOf", schema]</code></td><td>A schema that fits a list whose every item fits the schema</td></tr>
     <tr data-entry="schema/recordOf"><td><code>["schema/recordOf", schema]</code></td><td>A schema that fits a record whose every value fits the schema</td></tr>
     <tr data-entry="schema/optional"><td><code>["schema/optional", schema]</code></td><td>As the schema of a record's key, lets the key be left out; a key that is there must fit. Anywhere else it is the schema itself.</td></tr>
-    <tr data-entry="schema/open"><td><code>["schema/open", record]</code></td><td>A schema that fits a record which fits the record of schemas, or the named schema of one, whatever other keys it has</td></tr>
+    <tr data-entry="schema/open"><td><code>["schema/open", record]</code><br><code>["schema/open", record, rest]</code></td><td>A schema that fits a record which fits the record of schemas, or the named schema of one, whatever other keys it has. With <code>rest</code>, the record of its other keys must fit <code>rest</code>. A list of schemas works the same way, with the items after the ones it names as the rest. A record or list of schemas on its own leaves nothing for its rest.</td></tr>
   </tbody>
 </table>
 <p>What the building functions return is a function: called with a value, it says whether the value fits. A snapshot writes it as the call that built it.</p>
@@ -231,6 +231,8 @@
  "optional": ["schema/fits?", {}, {"note": ["schema/optional", "value/string?"]}],
  "extra key": ["schema/problems", {"id": 1, "extra": true}, {"id": "value/integer?"}],
  "open": ["schema/fits?", {"id": 1, "extra": true}, ["schema/open", {"id": "value/integer?"}]],
+ "open with a rest": ["schema/problems", {"id": 1, "size": "m", "count": 2},
+   ["schema/open", {"id": "value/integer?"}, ["schema/recordOf", "value/string?"]]],
  "called": [["schema/arrayOf", "value/number?"], ["array/make", 1, "two"]]}
 </lion-example>
 <lion-example name="A value that does not fit" expect="error">

@@ -490,8 +490,14 @@ export const patternParts = (
     return term.args;
   }
   const ofPattern = asSchema ? SCHEMA_BUILDERS.get(term.fn) : undefined;
+  // A call that looks at what its first schema is made of is a pattern when
+  // that schema is one, or when it is known and the call waits for another
+  // argument, as `schema/open` waits for a variable that takes the rest.
+  const [first, ...others] = term.args;
   const isPattern =
-    ofPattern === false || patternParts(term.args[0], true) !== undefined;
+    ofPattern === false ||
+    patternParts(first, true) !== undefined ||
+    (others.length > 0 && !(first instanceof LogicValue));
   return ofPattern !== undefined && isPattern ? term.args : undefined;
 };
 

@@ -306,6 +306,28 @@ export const EXPRESSIONS: readonly Expression[] = [
     boolean: true,
   },
   {
+    name: "record with a rest",
+    form: [
+      "schema/fits?",
+      { id: 1, more: X },
+      ["schema/open", { id: 1 }, { more: ["schema/anyOf", 1, 2] }],
+    ],
+    boolean: true,
+  },
+  {
+    name: "list with a rest",
+    form: [
+      "schema/fits?",
+      ["array/make", 1, X],
+      [
+        "schema/open",
+        ["array/make", 1],
+        ["array/make", ["schema/anyOf", 1, 2]],
+      ],
+    ],
+    boolean: true,
+  },
+  {
     name: "predicate made from the variable",
     form: ["schema/fits?", 2, ["func/partial", "number/lessThan", X]],
     boolean: true,

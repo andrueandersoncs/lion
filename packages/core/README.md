@@ -727,7 +727,7 @@ A schema says what a value must be. Anything is a schema, and one rule says what
 - A list fits a list of the same length, item by item.
 - Any other value fits a value equal to it.
 
-So data is a schema for itself: it fits exactly the values equal to it. A function in it makes room for every value the function accepts, `schema/optional` for a key that can be left out, and `schema/open` for keys the record does not name.
+So data is a schema for itself: it fits exactly the values equal to it. A function in it makes room for every value the function accepts, `schema/optional` for a key that can be left out, and `schema/open` for the keys a record does not name or the items after a list, which are the rest.
 
 `["schema/fits?", value, schema]` asks whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, and `["schema/assert", value, schema]` returns the value when it fits and fails when it does not. `["schema", name, shape]` gives a schema a name, and the name is then a predicate: `["Order", value]`.
 
@@ -761,7 +761,8 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 | `["schema/arrayOf", schema]` | A list whose every item fits the schema. |
 | `["schema/recordOf", schema]` | A record whose every value fits the schema. |
 | `["schema/optional", schema]` | As the schema of a record's key, lets the key be left out. A key that is there must fit. |
-| `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. |
+| `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. With a list of schemas, a list that starts with items that fit them, whatever comes after. |
+| `["schema/open", record, rest]` | The same, when the record of its other keys, or the list of its other items, fits the schema `rest`. |
 
 - What these functions build is a function like any other, so it can be called, as in `[["schema/arrayOf", "value/number?"], "items"]`, and given to `array/map` or `match`.
 - A predicate that fails, or returns anything but `true`, does not fit. So `["lambda", ["n"], ["number/greaterThan", "n", 0]]` needs no check that `n` is a number first: a string does not fit it.
@@ -772,6 +773,34 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 - `value/any?` fits every value. `["schema/anyOf", "value/string?", null]` fits a string or `null`.
 - A problem has a `path`, the keys and positions that lead to the part that does not fit. A part with the wrong value has what was `expected`, a schema written as the expression that makes it, and what was `found`. A part that is missing has only `expected`, and a key the schema does not name has only `found`. Problems come in the order of their paths.
 - `schema/anyOf` reports one problem, at the value that fits none of its schemas. `schema/allOf` reports the problems of every schema the value does not fit.
+
+#### The rest of a record or list
+
+A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. One rule says what the rest must fit:
+- **On its own**, a record or list of schemas leaves nothing: `{}`, or `[]`. So a record has no other keys, and a list has no other items.
+- **`["schema/open", record]`** leaves anything.
+- **`["schema/open", record, rest]`** leaves what fits `rest`.
+
+A key the record names is never part of the rest. So `["schema/open", a, b]`, where `a` and `b` are records of schemas with no key in common, is the one record of schemas with the keys of both: two exact schemas build a third that is exact too. `["schema/allOf", a, b]` asks for a record that has only `a`'s keys and only `b`'s keys at once, which no record does when each has a key the other lacks.
+
+```json
+["begin",
+  ["schema", "Entity", {"id": "value/integer?", "created": "value/string?"}],
+  ["schema", "Line", {"sku": "value/string?", "qty": "value/integer?"}],
+  ["schema", "Stock", ["schema/open", "Entity", "Line"]],
+  ["schema", "Tagged", ["schema/open", {"id": "value/integer?"}, ["schema/recordOf", "value/string?"]]],
+  {"stock": ["Stock", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2}]],
+   "allOf": ["schema/fits?", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2}], ["schema/allOf", "Entity", "Line"]],
+   "problems": ["schema/problems", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2, "rush": true}], "Stock"],
+   "tagged": ["Tagged", ["quote", {"id": 1, "color": "red", "size": "m"}]],
+   "numbers after a name": ["schema/fits?", ["quote", ["total", 3, 4]], ["schema/open", ["array/make", "value/string?"], ["schema/arrayOf", "value/number?"]]]}]
+```
+
+Evaluates to `{ "stock": true, "allOf": false, "problems": [{ "path": ["rush"], "found": true }], "tagged": true, "numbers after a name": true }`.
+
+- A part of the rest that does not fit is shown where it stands in the value, as `rush` is above. When the rest as a whole does not fit, the problem is the value not fitting the `schema/open` schema.
+- A record of schemas with no rest is `["schema/open", record, {}]`, and `["schema/open", record]` is `["schema/open", record, "value/any?"]`: each fits the same values.
+- `rest` is a schema like any other: a variable binds the rest in a pattern, as [Taking data apart](#taking-data-apart) shows.
 
 ### Named schemas
 
@@ -793,7 +822,7 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
   Evaluates to `{ "fits": true, "does not": false }`.
 - A value fits only when that follows from the shapes in finitely many steps, so a schema that comes back to itself without going into the value does not fit: only `1` fits `["schema", "Loop", ["schema/anyOf", "Loop", 1]]`.
 - What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: declaring `Line` after an `Order` whose shape says `"Line"` fails, and says to declare `Line` first, to declare the two in one form, or to write `["quote", "Line"]` for the string.
-- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record.
+- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record or a list.
 - A shape cannot ask the database while it is declared, since a snapshot writes the shape and it has to mean the same when it is loaded. To check a value against the facts, use a relation as a schema, or ask inside a lambda.
 - Declaring a schema again, for example in a later `run` that shares the database, must repeat the same shape, and changes nothing. A schema and a relation cannot share a name.
 - A named schema that is `schema/optional` lets a record's key be left out, and `schema/open` takes a named record schema, like the schemas they name.
@@ -819,12 +848,15 @@ A logic variable in a schema stands for a value. Once it is bound it is that val
      ["and",
        ["inbox", ["schema/open", {"id": "?order", "lines": "?lines"}]],
        ["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]]],
-   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
+   "the rest": ["find", ["array/make", "?id", "?rest"], ["inbox", ["schema/open", {"type": "order", "id": "?id"}, "?rest"]]],
+   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]],
+   "the tail": ["query", ["schema/fits?", ["quote", ["a", "b", "c"]], ["schema/open", ["array/make", "?head"], "?tail"]]]}]
 ```
 
-Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], "lines": [[1, "a1", 2], [1, "b2", 1]], "ends": [{ "first": "a", "last": "c" }] }`.
+Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], "lines": [[1, "a1", 2], [1, "b2", 1]], "the rest": [[1, { "lines": [{ "sku": "a1", "qty": 2 }, { "sku": "b2", "qty": 1 }] }], [2, { "lines": [], "rush": true }]], "ends": [{ "first": "a", "last": "c" }], "the tail": [{ "head": "a", "tail": ["b", "c"] }] }`.
 
 - A record in a pattern is a record schema: it fits a record with the same keys. `schema/open` takes the keys it names from a record that has more, as `orders` does above, where the second order also has `rush`.
+- A variable as the rest of `schema/open` binds what the record or list leaves over: the record of the other keys, as `the rest` does above, or the list of the items after, as `the tail` does. Put back together with the parts the pattern names, the two are the value. A rest that another goal bound first must be exactly what is left over.
 - `?_` fits any value and binds nothing. A variable that occurs twice must take the same value: `{"a": "?x", "b": "?x"}` fits `{"a": 1, "b": 1}` and not `{"a": 1, "b": 2}`.
 - Every `schema` function works in a pattern. `["schema/allOf", "value/integer?", "?id"]` binds `?id` only to an integer. `["schema/anyOf", a, b]` gives the answers of every schema that fits, each once: `["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]` binds `?x` to 1 and then to 2 for `{"a": 1, "b": 2}`.
 - An argument of a relation call that is not data is a schema like any other. With readings of `30`, `10`, and `"n/a"`, `["reading", "?sensor", "value/number?"]` asks for the two that are numbers, and `["and", ["limit", "?max"], ["reading", "?sensor", ["func/partial", "number/lessThan", "?max"]]]` for those above the limit.

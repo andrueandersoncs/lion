@@ -153,7 +153,7 @@
 <p>Anything is a schema, and one rule says what fits it. <code>match</code>, the functions of the <a href="#module-schema"><code>schema</code> module</a>, a schema's own parts, and the schema of a relation's rows all ask through it.</p>
 <ul>
   <li>A function is a predicate: a value fits when the function returns <code>true</code>. A failure, or any other result, counts as not fitting, except a misspelled name, which is an <a href="#errors">error</a>. A relation with one column, a named schema, and a schema that a <code>schema</code> function built are functions. A relation with more columns is not the schema of one value, and using it as one is an error.</li>
-  <li>A record fits a record with the same keys, with values that fit. A key whose schema is <code>schema/optional</code> can be left out, and <code>schema/open</code> allows keys the record does not name.</li>
+  <li>A record fits a record with the same keys, with values that fit. A key whose schema is <code>schema/optional</code> can be left out, and <code>schema/open</code> allows keys the record does not name: what a record or list of schemas leaves over is its rest, which is nothing on its own, anything in <code>["schema/open", record]</code>, and what fits <code>rest</code> in <code>["schema/open", record, rest]</code>.</li>
   <li>A list fits a list of the same length, item by item.</li>
   <li>Any other value fits a value equal to it.</li>
 </ul>
@@ -206,7 +206,7 @@
   <li><a href="#form-unify"><code>=</code></a> and <a href="#form-in"><code>in</code></a> bind the variables of a record or list, on either side of <code>=</code> or as the element of <code>in</code>. They compare values, so a function in the record is a value there, and not a predicate.</li>
 </ul>
 <ul>
-  <li>A record in a pattern fits a record with the same keys, and <code>schema/open</code> takes the keys it names from a record that has more. A list fits a list of the same length.</li>
+  <li>A record in a pattern fits a record with the same keys, and <code>schema/open</code> takes the keys it names from a record that has more. A list fits a list of the same length, and <code>schema/open</code> around a list takes its first items. A variable as the rest, as in <code>["schema/open", {"id": "?id"}, "?rest"]</code>, binds the record of the other keys or the list of the other items.</li>
   <li><code>?_</code> fits any value and binds nothing. A variable that occurs twice must take the same value.</li>
   <li>Every <code>schema</code> function works in a pattern. <code>schema/anyOf</code> gives the answers of every schema that fits, each once; in plain code, where nothing is left to bind, the first that fits decides.</li>
   <li>A predicate made from a variable, as <code>["func/partial", "number/lessThan", "?max"]</code> is, is the predicate made from the variable's value.</li>
