@@ -1,0 +1,23 @@
+[
+  "begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "gran", ["parent", "gran"]],
+  ["fact", ["person", "b"], ["person", "c"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["gran", "?x", "?g"]], ["mother", "c", "?x"]],
+  [
+    "rule",
+    ["=", "?a", "?b"],
+    ["mother", "b", "?a"],
+    ["mother", "c", "?b"],
+    ["gran", "?_", "?_"]
+  ],
+  ["rule", ["=", "?a", "?b"], ["gran", "?_", "?a"], ["mother", "b", "?b"]],
+  {
+    "the unknowns the mothers and grans hold": [
+      "aggregate/unique",
+      ["find", "?m", ["or", ["mother", "?_", "?m"], ["gran", "?_", "?m"]]]
+    ]
+  }
+]

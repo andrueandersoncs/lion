@@ -1,0 +1,248 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-li-built"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after merges kept the least member (91f41a5) and every open branch was merged (c219278)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118180000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "bun run bench --against main; bun run scale --against main; the lion command on research/probes/loop.json"
+   ],
+   [
+    "quote",
+    "Lion benchmarks run after compiled evaluation (bdc3c06) and component following (73698b5) were merged with main"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118180000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b1"
+   ],
+   [
+    "quote",
+    "lion-probes-li-built"
+   ],
+   [
+    "quote",
+    "\"the unknowns the mothers and grans hold\": [ [ \"some\", \"?m\", [ \"mother\", \"b\", \"?m\" ] ] ]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "order-independent merges",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-b1"
+   ],
+   [
+    "quote",
+    "order-ab.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b2"
+   ],
+   [
+    "quote",
+    "lion-probes-li-built"
+   ],
+   [
+    "quote",
+    "\"the unknowns the mothers and grans hold\": [ [ \"some\", \"?m\", [ \"mother\", \"b\", \"?m\" ] ] ]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "order-independent merges",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-b2"
+   ],
+   [
+    "quote",
+    "order-ba.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b3"
+   ],
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "plain: fib(17) through a recursive lambda                               47.8 ms    2.0 ms  23.96×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "fib(17) through a recursive lambda",
+     "ms": 2
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b4"
+   ],
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "plain: array/map and array/reduce over 20,000 items                    124.1 ms   12.9 ms   9.62×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "array/map and array/reduce over 20,000 items",
+     "ms": 12.9
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b5"
+   ],
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "explaining: why 200 rows hold or do not, over 20,000 facts              75.8 ms   50.5 ms   1.50×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "why 200 rows hold or do not, over 20,000 facts",
+     "ms": 50.5
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b6"
+   ],
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "n = 100,000: real 0.27 s"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "a tail-recursive loop of 100,000 steps",
+     "s": 0.27
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-b6"
+   ],
+   [
+    "quote",
+    "loop.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-b7"
+   ],
+   [
+    "quote",
+    "lion-bench-built"
+   ],
+   [
+    "quote",
+    "change: add a twin, ask the mother a key gave them, 20 times                10 ms       15 ms        79 ms  n^0.7"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "add a twin, ask the mother a key gave them, 20 times",
+     "power": 0.7
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

@@ -1,0 +1,79 @@
+Lion programs run for research with @lionlang/cli 0.12.0 built at commit 95d18f0 (core 0.13.0), 2026-11-18.
+
+== program order-ab.json
+[
+  "begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "gran", ["parent", "gran"]],
+  ["fact", ["person", "b"], ["person", "c"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["gran", "?x", "?g"]], ["mother", "c", "?x"]],
+  ["rule", ["=", "?a", "?b"], ["gran", "?_", "?a"], ["mother", "b", "?b"]],
+  [
+    "rule",
+    ["=", "?a", "?b"],
+    ["mother", "b", "?a"],
+    ["mother", "c", "?b"],
+    ["gran", "?_", "?_"]
+  ],
+  {
+    "the unknowns the mothers and grans hold": [
+      "aggregate/unique",
+      ["find", "?m", ["or", ["mother", "?_", "?m"], ["gran", "?_", "?m"]]]
+    ]
+  }
+]
+== gives
+{
+  "the unknowns the mothers and grans hold": [
+    [
+      "some",
+      "?m",
+      [
+        "mother",
+        "b",
+        "?m"
+      ]
+    ]
+  ]
+}
+
+== program order-ba.json
+[
+  "begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "gran", ["parent", "gran"]],
+  ["fact", ["person", "b"], ["person", "c"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["gran", "?x", "?g"]], ["mother", "c", "?x"]],
+  [
+    "rule",
+    ["=", "?a", "?b"],
+    ["mother", "b", "?a"],
+    ["mother", "c", "?b"],
+    ["gran", "?_", "?_"]
+  ],
+  ["rule", ["=", "?a", "?b"], ["gran", "?_", "?a"], ["mother", "b", "?b"]],
+  {
+    "the unknowns the mothers and grans hold": [
+      "aggregate/unique",
+      ["find", "?m", ["or", ["mother", "?_", "?m"], ["gran", "?_", "?m"]]]
+    ]
+  }
+]
+== gives
+{
+  "the unknowns the mothers and grans hold": [
+    [
+      "some",
+      "?m",
+      [
+        "mother",
+        "b",
+        "?m"
+      ]
+    ]
+  ]
+}

@@ -69,7 +69,7 @@ A feature name is the same words in every run, so that evidence from different r
 | Run | Steps | Question |
 |---|---|---|
 | `separation-logic` (2026-11-18) | `02-sl-*` to `10-sl-*` | What can Lion use from separation logic? Step `10-sl-built` records Lion after the three ideas it ranked were built. |
-| `lion-improvements` (2026-11-17) | `11-li-*` to `22-li-*` | What to improve in Lion next? It weighs seven directions, such as one algebra of changes (DBSP) and annotated relations, by net reasons: Lion features one mechanism would take over, capabilities it would add, and measured gaps a published speedup applies to. Its own frame, `11-li-frame`, ranks them as `net_rank` from `tally`. |
+| `lion-improvements` (2026-11-17) | `11-li-*` to `23-li-*` | What to improve in Lion next? It weighs seven directions, such as one algebra of changes (DBSP) and annotated relations, by net reasons: Lion features one mechanism would take over, capabilities it would add, and measured gaps a published speedup applies to, until Lion closes them. Its own frame, `11-li-frame`, ranks them as `net_rank` from `tally`. Step `23-li-built` records Lion after the least-member fix, component following, and compiled evaluation were built. |
 
 A run's own ids start with its prefix: claims `sl-a1`, leads `sl-terms`, assumptions `sl-records`. Source ids, candidate ids, and feature names have no prefix, because later runs share them. A later run that reads Reynolds 2002 cites `a-reynolds-2002`, and new evidence about the record split adds to the candidate `rest`.
 

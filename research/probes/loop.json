@@ -1,0 +1,20 @@
+[
+  "begin",
+  [
+    "define",
+    "count",
+    [
+      "lambda",
+      ["n", "total"],
+      [
+        "cond",
+        [["number/equals?", "n", 0], "total"],
+        [
+          "else",
+          ["count", ["number/subtract", "n", 1], ["number/add", "total", 1]]
+        ]
+      ]
+    ]
+  ],
+  ["count", 100000, 0]
+]

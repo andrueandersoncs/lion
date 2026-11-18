@@ -1,0 +1,79 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-li-built",
+      "url": "research/probes/",
+      "title": "Lion programs run after merges kept the least member (91f41a5) and every open branch was merged (c219278)",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118180000
+    },
+    {
+      "id": "lion-bench-built",
+      "url": "bun run bench --against main; bun run scale --against main; the lion command on research/probes/loop.json",
+      "title": "Lion benchmarks run after compiled evaluation (bdc3c06) and component following (73698b5) were merged with main",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118180000
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-b1",
+      "source": "lion-probes-li-built",
+      "quote": "\"the unknowns the mothers and grans hold\": [ [ \"some\", \"?m\", [ \"mother\", \"b\", \"?m\" ] ] ]",
+      "where": "order-ab.json",
+      "says": { "lion": "order-independent merges", "has": true }
+    },
+    {
+      "id": "li-b2",
+      "source": "lion-probes-li-built",
+      "quote": "\"the unknowns the mothers and grans hold\": [ [ \"some\", \"?m\", [ \"mother\", \"b\", \"?m\" ] ] ]",
+      "where": "order-ba.json",
+      "says": { "lion": "order-independent merges", "has": true }
+    },
+    {
+      "id": "li-b3",
+      "source": "lion-bench-built",
+      "quote": "plain: fib(17) through a recursive lambda                               47.8 ms    2.0 ms  23.96×",
+      "says": { "lion measured": "fib(17) through a recursive lambda", "ms": 2 }
+    },
+    {
+      "id": "li-b4",
+      "source": "lion-bench-built",
+      "quote": "plain: array/map and array/reduce over 20,000 items                    124.1 ms   12.9 ms   9.62×",
+      "says": {
+        "lion measured": "array/map and array/reduce over 20,000 items",
+        "ms": 12.9
+      }
+    },
+    {
+      "id": "li-b5",
+      "source": "lion-bench-built",
+      "quote": "explaining: why 200 rows hold or do not, over 20,000 facts              75.8 ms   50.5 ms   1.50×",
+      "says": {
+        "lion measured": "why 200 rows hold or do not, over 20,000 facts",
+        "ms": 50.5
+      }
+    },
+    {
+      "id": "li-b6",
+      "source": "lion-bench-built",
+      "quote": "n = 100,000: real 0.27 s",
+      "where": "loop.json",
+      "says": {
+        "lion measured": "a tail-recursive loop of 100,000 steps",
+        "s": 0.27
+      }
+    },
+    {
+      "id": "li-b7",
+      "source": "lion-bench-built",
+      "quote": "change: add a twin, ask the mother a key gave them, 20 times                10 ms       15 ms        79 ms  n^0.7",
+      "says": {
+        "lion grows": "add a twin, ask the mother a key gave them, 20 times",
+        "power": 0.7
+      }
+    }
+  ]
+}
