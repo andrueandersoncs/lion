@@ -1,0 +1,523 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after the three ideas were built (commits 5ec2b84, 5f46e6d, 48880e4)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118120000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "README.md"
+   ],
+   [
+    "quote",
+    "Lion README, after the three ideas were built"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118120000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u1"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"a rest variable binds the other keys\": [ { \"id\": 1, \"rest\": { \"tag\": \"new\", \"note\": \"x\" } } ]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "record pattern that binds the rest",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u1"
+   ],
+   [
+    "quote",
+    "built-rest.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u2"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"two exact schemas composed\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "composing exact record schemas",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u2"
+   ],
+   [
+    "quote",
+    "built-rest.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u3"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"a list rest binds the other items\": [ { \"first\": 1, \"rest\": [ 2, 3 ] } ]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "list pattern that binds the rest",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u3"
+   ],
+   [
+    "quote",
+    "built-rest.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u4"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"the rest matched against a schema\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "rest of a record matched against a further pattern",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u4"
+   ],
+   [
+    "quote",
+    "built-rest.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u5"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"facts and a rule merge by the minimum\": [ { \"sku\": \"a1\", \"usd\": 3 }"
+   ],
+   [
+    "quote",
+    {
+     "lion": "aggregated relations that accept facts",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u5"
+   ],
+   [
+    "quote",
+    "built-merge.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u6"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "which differ in a column that does not merge."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a combining operation with a validity check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u6"
+   ],
+   [
+    "quote",
+    "built-clash.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u7"
+   ],
+   [
+    "quote",
+    "lion-probes-built"
+   ],
+   [
+    "quote",
+    "\"a reaches d after adding c to d\": true"
+   ],
+   [
+    "quote",
+    {
+     "lion": "adding facts for the duration of a goal",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u7"
+   ],
+   [
+    "quote",
+    "built-assuming.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u8"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "A variable as the rest of `schema/open` binds what the record or list leaves over: the record of the other keys, as `the rest` does above, or the list of the items after, as `the tail` does."
+   ],
+   [
+    "quote",
+    {
+     "lion": "record pattern that binds the rest",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u8"
+   ],
+   [
+    "quote",
+    "Taking data apart"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u9"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "A variable as the rest of `schema/open` binds what the record or list leaves over: the record of the other keys, as `the rest` does above, or the list of the items after, as `the tail` does."
+   ],
+   [
+    "quote",
+    {
+     "lion": "list pattern that binds the rest",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u9"
+   ],
+   [
+    "quote",
+    "Taking data apart"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u10"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "is the one record of schemas with the keys of both: two exact schemas build a third that is exact too."
+   ],
+   [
+    "quote",
+    {
+     "lion": "composing exact record schemas",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u10"
+   ],
+   [
+    "quote",
+    "The rest of a record or list"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u11"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "**`[\"schema/open\", record, rest]`** leaves what fits `rest`."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rest of a record matched against a further pattern",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u11"
+   ],
+   [
+    "quote",
+    "The rest of a record or list"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u12"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row, whose merged columns join the candidates' values. A column the merge does not name must agree, as it must for any key."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a combining operation with a validity check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u12"
+   ],
+   [
+    "quote",
+    "Merging what a key gets"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u13"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "A fact of a relation that merges never replaces another: it is one more candidate, and `retract` takes it back."
+   ],
+   [
+    "quote",
+    {
+     "lion": "aggregated relations that accept facts",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u13"
+   ],
+   [
+    "quote",
+    "Merging what a key gets"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-u14"
+   ],
+   [
+    "quote",
+    "lion-readme-built"
+   ],
+   [
+    "quote",
+    "`[\"assuming\", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is."
+   ],
+   [
+    "quote",
+    {
+     "lion": "adding facts for the duration of a goal",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-u14"
+   ],
+   [
+    "quote",
+    "Asking what would hold"
+   ]
+  ]
+ ],
+ "recorded"
+]

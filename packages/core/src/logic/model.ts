@@ -25,7 +25,7 @@ import {
   questionPlans,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
-import { originalName } from "@/logic/magic";
+import { factsOf, originalName } from "@/logic/magic";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
   Atom,
@@ -47,6 +47,7 @@ import {
   LogicVariable,
   patternParts,
   type RelationInfo,
+  replaceVariables,
   sameValue,
   show,
   termVariables,
@@ -381,6 +382,15 @@ export class Model {
    * compared, or forgotten until something reads them.
    */
   readonly last = new Map<string, "followed" | "derived" | "forgotten">();
+  /**
+   * Asks a question of the database as it would be after some changes: the
+   * `fact` and `retract` forms of an `assuming`, with their values, and its
+   * expression. The database that keeps this model sets it.
+   */
+  assume?: (
+    changes: readonly LogicForm[],
+    expression: unknown
+  ) => LogicEffect<unknown>;
 
   constructor(
     facts: ReadonlyMap<string, TupleSet>,
@@ -483,9 +493,23 @@ export const compareMatches =
 export const rowsOf = (model: Model, relation: string): TupleSet =>
   model.relations.get(relation) ??
   (model.base === undefined
-    ? model.facts.get(relation)
+    ? model.facts.get(factsOf(relation) ?? relation)
     : rowsOf(model.base, relation)) ??
   EMPTY;
+
+/**
+ * The facts a relation starts from when its rules derive it: none for a
+ * relation that merges, whose facts are candidates its rule reads.
+ */
+const startingFacts = (model: Model, relation: RelationInfo | string) => {
+  const name = typeof relation === "string" ? relation : relation.name;
+  const merges = model.rules.some(
+    (rule) => rule.given && rule.head.relation.name === name
+  );
+  return model.base === undefined && !merges
+    ? model.facts.get(name)
+    : undefined;
+};
 
 const LINE_BREAKS = /\s*\n\s*/g;
 
@@ -572,10 +596,50 @@ export const term = (
   if (isForm(value, "some")) {
     return unknownOf(model, value, vars);
   }
+  if (isForm(value, "assuming")) {
+    return assumed(model, value, vars);
+  }
   return isForm(value, "find")
     ? findAll(model, value, vars)
     : holds(model, value as Goal, vars);
 };
+
+/**
+ * What an `assuming` gives for an answer: its changes with the values of
+ * their arguments, asked of the database as it would be after them, with
+ * the variables the answer bound in place in its expression. Every other
+ * variable of the expression is its own.
+ */
+const assumed = (
+  model: Model,
+  question: LogicForm,
+  vars: Vars
+): LogicEffect<unknown> =>
+  Effect.gen(function* () {
+    const home = model.base ?? model;
+    if (home.assume === undefined) {
+      return yield* logicError(
+        `${show(instantiate(question, vars))} needs a database to ask: assuming asks the database as it would be after its changes.`
+      );
+    }
+    const changes: LogicForm[] = [];
+    for (const change of question.parts.slice(0, -1) as LogicForm[]) {
+      const calls: Atom[] = [];
+      for (const call of change.parts as Atom[]) {
+        calls.push(
+          new Atom(
+            call.relation,
+            yield* Effect.forEach(call.args, (arg) => term(model, arg, vars))
+          )
+        );
+      }
+      changes.push(new LogicForm(change.form, calls));
+    }
+    const expression = replaceVariables(question.parts.at(-1), (variable) =>
+      vars.has(variable.name) ? vars.get(variable.name) : undefined
+    );
+    return yield* home.assume(changes, expression);
+  });
 
 /**
  * The variables that stand in what `some` describes: as an argument of a
@@ -955,6 +1019,14 @@ export const holds = (
       return Effect.map(
         solve(model, goal as LogicForm, vars),
         (found) => found.length > 0
+      );
+    case "assuming":
+      return Effect.flatMap(assumed(model, goal as LogicForm, vars), (value) =>
+        typeof value === "boolean"
+          ? Effect.succeed(value)
+          : logicError(
+              `As a goal, ${show(instantiate(goal, vars))} must be true or false, but its expression gives ${show(value)}. Use it as a value, as in ["=", "?found", ["assuming", ...]].`
+            )
       );
     case "=":
     case "in":
@@ -1639,7 +1711,7 @@ const givenRows = (
     final.set(name, rows);
     fresh.set(name, new Map());
     const given = new TupleSet();
-    const facts = model.base === undefined ? model.facts.get(name) : EMPTY;
+    const facts = startingFacts(model, name);
     for (const tuple of facts?.values() ?? []) {
       if (rows.has(tuple)) {
         given.add(tuple);
@@ -2104,6 +2176,10 @@ export const settle = (model: Model, groups: Groups) =>
       if (old !== undefined) {
         tuples.delete(old);
       }
+      const clash = keyClash(rule, tuples, tuple);
+      if (clash !== undefined) {
+        return yield* logicError(clash);
+      }
       tuples.add(tuple);
       group.tuple = tuple;
       getOrCreate(delta, relation, () => new TupleSet()).add(tuple);
@@ -2126,6 +2202,26 @@ export const settle = (model: Model, groups: Groups) =>
     groups.changed = new Set();
     return delta;
   });
+
+/**
+ * Says why a row that combines matches cannot join a keyed relation: another
+ * row has its key. Their groups differ in a column that does not combine,
+ * which must agree, as the rows a key gets from rules must.
+ */
+const keyClash = (rule: CompiledRule, rows: TupleSet, tuple: Tuple) => {
+  const { key, name } = rule.head.relation;
+  if (key === undefined) {
+    return;
+  }
+  const values = key.map((position) => tuple[position]);
+  for (const other of rows.lookup(key, values)) {
+    if (valueKey(other) !== valueKey(tuple)) {
+      const shown = originalName(name);
+      return `"${shown}" is keyed by ${JSON.stringify(keyColumns(rule.head.relation))}, but it would hold ${show([shown, ...tuple])} and ${show([shown, ...other])}, which differ in a column that does not merge.`;
+    }
+  }
+  return;
+};
 
 /** Recursion through lattice aggregates stops after this many rounds. */
 export const MAX_LATTICE_ROUNDS = 10_000;
@@ -2465,8 +2561,7 @@ export const derive = (model: Model, stratum: Stratum) =>
     const { members } = stratum;
     for (const name of members) {
       model.state.set(name, "running");
-      const facts =
-        model.base === undefined ? model.facts.get(name) : undefined;
+      const facts = startingFacts(model, name);
       model.relations.set(name, facts?.clone() ?? new TupleSet());
       model.derivations.set(name, new Map());
     }
@@ -2538,6 +2633,9 @@ export const explanations = (model: Model, name: string) =>
       return model.derivations.get(name);
     }
     const again = new Model(model.facts, model.rules, model.base);
+    if (model.assume !== undefined) {
+      again.assume = model.assume;
+    }
     for (const [other, rows] of model.relations) {
       if (!stratum.members.has(other)) {
         again.relations.set(other, rows);

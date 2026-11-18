@@ -151,6 +151,13 @@ export interface RelationInfo {
   readonly computed?: ComputedRelation;
   /** Positions of the key columns; a keyed relation has one row per key. */
   readonly key?: readonly number[];
+  /**
+   * How the rows of a key combine, column by column: a position and the
+   * lattice aggregate that joins the values it gets there, such as `min`.
+   * Every row a key gets, from a fact or a rule, is a candidate, and the key
+   * holds their join; a column that does not merge must agree.
+   */
+  readonly merge?: readonly (readonly [position: number, kind: string])[];
   readonly name: string;
 }
 
@@ -188,6 +195,9 @@ export type FormName =
   | "="
   | "in"
   | "find"
+  | "assuming"
+  | "fact"
+  | "retract"
   | "exists"
   | "some"
   | "schema/fits?";
@@ -201,6 +211,9 @@ export type FormName =
  * - `["in", element, list]`: the element is one of the list's items.
  * - `["find", template, goal]`: the template's value for every match of
  *   the goal, as a sorted list.
+ * - `["assuming", change, ..., expression]`: what the expression gives in
+ *   the database as it would be after the changes, each a `fact` or
+ *   `retract` form held as a logic form of its relation calls.
  * - `["exists", names, goal]`: the goal holds for some values of the
  *   variables `names` lists, which are its own. Its parts are the names,
  *   without the `?`, and the goal.
@@ -375,7 +388,7 @@ export const isRelational = (value: unknown): boolean =>
  * what it found.
  */
 export const isQuestion = (value: unknown): boolean =>
-  isForm(value, "find", "exists") ||
+  isForm(value, "find", "exists", "assuming") ||
   value instanceof Atom ||
   (isForm(value, "not", "and", "or") && value.parts.some(isQuestion));
 
@@ -490,8 +503,14 @@ export const patternParts = (
     return term.args;
   }
   const ofPattern = asSchema ? SCHEMA_BUILDERS.get(term.fn) : undefined;
+  // A call that looks at what its first schema is made of is a pattern when
+  // that schema is one, or when it is known and the call waits for another
+  // argument, as `schema/open` waits for a variable that takes the rest.
+  const [first, ...others] = term.args;
   const isPattern =
-    ofPattern === false || patternParts(term.args[0], true) !== undefined;
+    ofPattern === false ||
+    patternParts(first, true) !== undefined ||
+    (others.length > 0 && !(first instanceof LogicValue));
   return ofPattern !== undefined && isPattern ? term.args : undefined;
 };
 

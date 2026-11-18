@@ -1,0 +1,34 @@
+{
+  "claims": [
+    {
+      "id": "li-r1",
+      "source": "b-abokhamis-2022",
+      "quote": "In this paper we propose a foundation for a query language that supports both recursion and aggregation.",
+      "says": {
+        "covers": "recursion",
+        "by": "datalog-o",
+        "is": true
+      }
+    },
+    {
+      "id": "li-r2",
+      "source": "b-li-2023",
+      "quote": "Besides recursion, Scallop also supports negation and aggregation",
+      "says": {
+        "covers": "recursion",
+        "by": "scallop",
+        "is": true
+      }
+    },
+    {
+      "id": "li-r3",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "Z-sets generalize sets and bags.",
+      "says": {
+        "covers": "counting",
+        "by": "dbsp",
+        "is": true
+      }
+    }
+  ]
+}

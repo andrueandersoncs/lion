@@ -1,0 +1,61 @@
+A special form is an array whose first element is the form's name. Unlike a function call, a special form decides which of its parts to evaluate, and when. The logic layer's forms are in Logic forms.
+quote
+["quote", expression]
+Returns expression without evaluating it. Use it for literal lists, records that contain lists, and strings that might be bound names.
+["quote", ["number/add", 1, 2]]
+eval
+["eval", expression]
+Evaluates expression, then evaluates the result as a program in the current environment. The result must be JSON data; a function or other host value fails with SchemaError.
+["eval", ["quote", ["number/add", 1, 2]]]
+begin
+["begin", expression, ...]
+Evaluates each expression in order and returns the last result. ["begin"] returns [].
+["begin", ["define", "x", 1], ["define", "x", 2], "x"]
+define
+["define", name, expression]
+  Evaluates expression, binds name to the result in the global environment, and returns the result.
+  Always binds globally, even inside a lambda.
+  Binding a name again replaces its value. Functions that use the name see the new value when they next run.
+  name must be a non-empty string that is not a reserved name.
+["begin",
+  ["define", "greet", ["lambda", [], ["string/concat", "hello, ", "who"]]],
+  ["define", "who", "world"],
+  ["greet"]]
+lambda
+["lambda", [parameter, ...], body]
+  Returns a function. Calling it binds each parameter to the matching argument, in a new environment whose parent is the one where the lambda was created, then evaluates body.
+  Called with fewer arguments than parameters, it fails with ArgumentMismatchError. Extra arguments are ignored.
+  The body is one expression; use begin for several.
+  Parameters must be non-empty strings that are not reserved names.
+["begin",
+  ["define", "makeAdder", ["lambda", ["n"], ["lambda", ["x"], ["number/add", "x", "n"]]]],
+  ["define", "addTen", ["makeAdder", 10]],
+  ["addTen", 5]]
+cond
+["cond", [condition, result], ..., ["else", result]]
+  Evaluates each condition in order and returns the evaluated result of the first one that is truthy. Later conditions are not evaluated.
+  A condition that is a goal with a relation in it, such as a relation call, is asked: it holds when the goal has a match.
+  An else branch, allowed only last, always matches.
+  With no match and no else, returns null.
+["cond",
+  [["number/greaterThan", 3, 5], "big"],
+  [["number/greaterThan", 3, 1], "medium"],
+  ["else", "small"]]
+match
+["match", value, [schema, function], ..., fallback]
+  Evaluates value, then tries each pair in order. The first whose schema the value fits is chosen, and its function is called with the value. If the value fits none, fallback is called with the value.
+  Anything is a schema. A function is a predicate: the value fits when it returns true, and a failure, or any other result, counts as not fitting. A relation with one column is a predicate too: the value fits when the goal the relation builds from it has a match.
+  A record fits a record with the same keys, where each value fits the schema under the same key; ["schema/open", record] fits a record that has other keys too. A list fits a list of the same length, item by item. Any other value fits a value equal to it. Schemas nest.
+  At least one pair and the fallback are required.
+["match", {"type": "user", "name": "Ada"},
+  [{"type": ["func/partial", "string/equals?", "user"], "name": "value/string?"},
+   ["lambda", ["u"], ["string/concat", "user ", ["object/get", "u", "name"]]]],
+  ["lambda", ["other"], "unknown"]]
+A plain value, a list, and a schema built by the schema module are schemas too. The first pair here asks for a record with one key, so it does not fit; the third opens the record and takes it:
+["match", ["quote", {"type": "refund", "amount": 5, "lines": [1, 2]}],
+  [{"type": "refund"}, ["lambda", ["m"], "a refund and nothing else"]],
+  [["schema/open", {"type": "sale"}], ["lambda", ["m"], "a sale"]],
+  [["schema/open", {"type": ["schema/anyOf", "refund", "void"],
+                    "lines": ["array/make", "value/number?", "value/number?"]}],
+   ["lambda", ["m"], ["object/get", "m", "amount"]]],
+  ["lambda", ["m"], "something else"]]

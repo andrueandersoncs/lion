@@ -1,0 +1,42 @@
+{
+  "sources": [
+    {
+      "id": "lion-research-core",
+      "url": "skills/lion-research/assets/core.json",
+      "title": "lion-research skill: the core every research model starts from",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-research-patterns",
+      "url": "skills/lion-research/references/patterns.md",
+      "title": "lion-research skill: patterns for research models",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    }
+  ],
+  "claims": [
+    {
+      "id": "sl-s1",
+      "source": "lion-research-core",
+      "quote": "[\"lambda\", [\"rest\", \"key\"], [\"object/remove\", \"rest\", \"key\"]]",
+      "where": "rule for base",
+      "says": {
+        "lion": "the rest of a record as a value",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-s2",
+      "source": "lion-research-patterns",
+      "quote": "To ask what would follow from a fact you do not have, or from reading an ambiguous source another way, run it against a copy, so the model stays as the evidence left it",
+      "where": "What if",
+      "says": {
+        "lion": "adding facts for the duration of a goal",
+        "has": false
+      }
+    }
+  ]
+}

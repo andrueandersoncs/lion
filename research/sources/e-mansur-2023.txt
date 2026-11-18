@@ -1,0 +1,119 @@
+Toggle navigation
+reposiTUm
+ABOUT REPOSITUM
+HELP
+Login
+News
+Browse by
+Publication Types
+Organizations
+Researchers
+Projects
+TU Wien Academic Press
+Open Access Series
+Theses
+Digitised Works
+Year of Publication
+Record link:
+http://hdl.handle.net/20.500.12708/188016
+-
+Title:
+Dependency-Aware Metamorphic Testing of Datalog Engines
+en
+Citation:
+Numair Mansur, M., Wüstholz, V., & Christakis, M. (2023). Dependency-Aware Metamorphic Testing of Datalog Engines. In ISSTA 2023: Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis (pp. 236–247). Association for Computing Machinery. https://doi.org/10.1145/3597926.3598052
+-
+CatalogPlus:
+AC17166116
+-
+Publisher DOI:
+10.1145/3597926.3598052
+-
+Publication Type:
+Inproceedings - Full-Paper Contribution
+en
+Language:
+English
+-
+Authors:
+Numair Mansur, Muhammad
+Wüstholz, Valentin
+Christakis, Maria
+-
+Organisational Unit:
+E194-01 - Forschungsbereich Software Engineering
+E194 - Institut für Information Systems Engineering
+-
+Published in:
+ISSTA 2023: Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis
+-
+ISBN:
+979-8-4007-0221-1
+-
+DOI of the book:
+10.1145/3597926
+-
+Date (published):
+Jul-2023
+-
+Event name:
+ISSTA 2023. 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis
+en
+Event date:
+17-Jul-2023 - 21-Jul-2023
+-
+Event place:
+Seattle, United States of America (the)
+-
+Number of Pages:
+12
+-
+Publisher:
+Association for Computing Machinery, New York
+-
+Peer reviewed:
+Yes
+-
+Keywords:
+Datalog; metamorphic testing; fuzzing
+en
+Abstract:
+Datalog is a declarative query language with wide applicability, especially in program analysis. Queries are evaluated by Datalog engines, which are complex and thus prone to returning incorrect results. Such bugs, called query bugs, may compromise the soundness of upstream program analyzers, having potentially detrimental consequences in safety-critical settings.
+To address this issue, we develop a metamorphic testing approach for detecting query bugs in Datalog engines. In comparison to existing work, our approach is based on rich precedence information capturing dependencies among relations in the program. This enables much more general and effective metamorphic transformations. We implement our approach in DLSmith, which detected 16 previously unknown query bugs in four Datalog engines.
+en
+Project title:
+Testing Program Analyzers Ad Absurdum: 101076510 (European Commission)
+-
+Link (external):
+https://dl.acm.org/doi/10.1145/3597926.3598052
+-
+Research Areas:
+Information Systems Engineering: 100%
+-
+Science Branch:
+1020 - Informatik: 100%
+-
+License:
+CC BY 4.0
+en
+Appears in Collections:
+Conference Paper
+Fulltext
+(Version of Record (published version))
+Adobe PDF
+(398.33 kB)
+CC BY 4.0
+Show full item record
+Page view(s)
+499
+checked on Nov 22, 2023
+Download(s)
+278
+checked on Nov 22, 2023
+Google Scholar TM
+Check
+© TU Wien
+Data Protection Declaration
+Support
+Policies
+Legal Notice

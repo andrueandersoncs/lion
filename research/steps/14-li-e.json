@@ -1,0 +1,1280 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2305.12295"
+   ],
+   [
+    "quote",
+    "Logic-LM: Empowering Large Language Models with Symbolic Solvers for Faithful Logical Reasoning"
+   ],
+   [
+    "quote",
+    "Pan, Albalak, Wang, Wang (UC Santa Barbara)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230520
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-olausson-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2310.15164"
+   ],
+   [
+    "quote",
+    "LINC: A Neurosymbolic Approach for Logical Reasoning by Combining Language Models with First-Order Logic Provers"
+   ],
+   [
+    "quote",
+    "Olausson, Solar-Lezama et al. (MIT)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20231023
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-ye-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2305.09656"
+   ],
+   [
+    "quote",
+    "SatLM: Satisfiability-Aided Language Models Using Declarative Prompting"
+   ],
+   [
+    "quote",
+    "Ye, Chen, Dillig, Durrett (UT Austin)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230516
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-lyu-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2301.13379"
+   ],
+   [
+    "quote",
+    "Faithful Chain-of-Thought Reasoning"
+   ],
+   [
+    "quote",
+    "Lyu, Apidianaki, Callison-Burch et al. (UPenn)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230131
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-chen-2024"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2304.05128"
+   ],
+   [
+    "quote",
+    "Teaching Large Language Models to Self-Debug"
+   ],
+   [
+    "quote",
+    "Chen, Lin, Schärli, Zhou (Google DeepMind)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230411
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-olausson-2024"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2306.09896"
+   ],
+   [
+    "quote",
+    "Is Self-Repair a Silver Bullet for Code Generation?"
+   ],
+   [
+    "quote",
+    "Olausson, Solar-Lezama et al. (MIT)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230616
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-geng-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2305.13971"
+   ],
+   [
+    "quote",
+    "Grammar-Constrained Decoding for Structured NLP Tasks without Finetuning"
+   ],
+   [
+    "quote",
+    "Geng, West et al. (EPFL)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230523
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-mundler-2025"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2504.09246"
+   ],
+   [
+    "quote",
+    "Type-Constrained Code Generation with Language Models"
+   ],
+   [
+    "quote",
+    "Mündler, He, Vechev et al. (ETH Zurich SRI Lab)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20250412
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-tam-2024"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2408.02442"
+   ],
+   [
+    "quote",
+    "Let Me Speak Freely? A Study on the Impact of Format Restrictions on Performance of Large Language Models"
+   ],
+   [
+    "quote",
+    "Tam, Wu et al. (Appier AI Research)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20240805
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-geng-2025"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2501.10868"
+   ],
+   [
+    "quote",
+    "Generating Structured Outputs from Language Models: Benchmark and Studies (JSONSchemaBench)"
+   ],
+   [
+    "quote",
+    "Geng, West et al. (EPFL)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20250118
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-banerjee-2025"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2502.09061"
+   ],
+   [
+    "quote",
+    "CRANE: Reasoning with constrained LLM generation"
+   ],
+   [
+    "quote",
+    "Banerjee, Misailovic, Singh et al. (UIUC)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20250213
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-mansur-2021"
+   ],
+   [
+    "quote",
+    "https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3468264.3468573?fields=title,abstract,year,venue,authors"
+   ],
+   [
+    "quote",
+    "Metamorphic testing of Datalog engines (queryFuzz), ESEC/FSE 2021"
+   ],
+   [
+    "quote",
+    "Mansur, Christakis, Wüstholz (MPI-SWS / TU Wien)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20210801
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-mansur-2023"
+   ],
+   [
+    "quote",
+    "https://repositum.tuwien.at/handle/20.500.12708/188016"
+   ],
+   [
+    "quote",
+    "Dependency-Aware Metamorphic Testing of Datalog Engines (DLSmith), ISSTA 2023"
+   ],
+   [
+    "quote",
+    "Mansur, Christakis, Wüstholz (MPI-SWS / TU Wien)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230701
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "e-zhang-2024"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/html/2402.12863v1"
+   ],
+   [
+    "quote",
+    "Finding Cross-rule Optimization Bugs in Datalog Engines (Deopt), OOPSLA 2024"
+   ],
+   [
+    "quote",
+    "Zhang, Wang, Rigger (Nanjing University, NUS)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20240220
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e1"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "On average, Logic-LM achieves a significant performance boost of 39.2% over using LLM alone with standard prompting"
+   ],
+   [
+    "quote",
+    {
+     "result": "logic-lm",
+     "measure": "accuracy gain over standard prompting",
+     "bound": "average",
+     "percent": 39.2
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e2"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "Logic-LM also improves CoT by a large margin of 18.4% on average"
+   ],
+   [
+    "quote",
+    {
+     "result": "logic-lm",
+     "measure": "accuracy gain over chain-of-thought",
+     "bound": "average",
+     "percent": 18.4
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e3"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "GPT-4’s performance is notably less promising, with Exe_Rate scores of 79.9% and 32.6% respectively"
+   ],
+   [
+    "quote",
+    {
+     "result": "logic-lm",
+     "measure": "share of generated programs that run (GPT-4, AR-LSAT)",
+     "bound": "exact",
+     "percent": 32.6
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e4"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "self-refinement is effective in fixing the in-executable symbolic formulations, increasing the Exe_Rate by 5.01 on average"
+   ],
+   [
+    "quote",
+    {
+     "result": "logic-lm self-refinement",
+     "measure": "executable-rate gain from repair with solver errors (points)",
+     "bound": "average",
+     "percent": 5.01
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e5"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "We also introduce a self-refinement module, which utilizes the symbolic solver’s error messages to revise symbolic formalizations."
+   ],
+   [
+    "quote",
+    {
+     "covers": "program repair from errors",
+     "by": "logic-lm",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e6"
+   ],
+   [
+    "quote",
+    "e-pan-2023"
+   ],
+   [
+    "quote",
+    "However, the accuracy tends to stagnate in subsequent rounds, even though the Exe_Rate continues to increase."
+   ],
+   [
+    "quote",
+    {
+     "covers": "semantic error repair",
+     "by": "logic-lm",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e7"
+   ],
+   [
+    "quote",
+    "e-olausson-2023"
+   ],
+   [
+    "quote",
+    "When used with GPT-4, LINC scores 26% higher than CoT on ProofWriter while performing comparatively on FOLIO."
+   ],
+   [
+    "quote",
+    {
+     "result": "linc",
+     "measure": "accuracy gain over chain-of-thought (GPT-4, ProofWriter)",
+     "bound": "exact",
+     "percent": 26
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e8"
+   ],
+   [
+    "quote",
+    "e-olausson-2023"
+   ],
+   [
+    "quote",
+    "the FOL expressions sometimes contain syntax errors: 38% for StarCoderPlus, 24% for GPT-3.5, and 13% for GPT-4"
+   ],
+   [
+    "quote",
+    {
+     "result": "linc",
+     "measure": "generated logic programs with syntax errors (GPT-4)",
+     "bound": "exact",
+     "percent": 13
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e9"
+   ],
+   [
+    "quote",
+    "e-ye-2023"
+   ],
+   [
+    "quote",
+    "SatLM outperforms program-aided LMs by 23% on a challenging subset of the GSM arithmetic reasoning dataset"
+   ],
+   [
+    "quote",
+    {
+     "result": "satlm",
+     "measure": "accuracy gain over program-aided LMs (GSM-Sys)",
+     "bound": "exact",
+     "percent": 23
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e10"
+   ],
+   [
+    "quote",
+    "e-ye-2023"
+   ],
+   [
+    "quote",
+    "SatLM ’s selective accuracy is consistently better than ProgLM ’s, especially on GSM-Sys (77% vs 45%)"
+   ],
+   [
+    "quote",
+    {
+     "result": "satlm",
+     "measure": "selective accuracy when abstaining on UNSAT or ambiguous specs (GSM-Sys)",
+     "bound": "exact",
+     "percent": 77
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e11"
+   ],
+   [
+    "quote",
+    "e-ye-2023"
+   ],
+   [
+    "quote",
+    "Unlike the executor used in ProgLM that can only detect errors in code execution, SAT solver can spot UNSAT and AMBIG in addition to ERROR ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "unsat and ambiguity checks",
+     "by": "satlm",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e12"
+   ],
+   [
+    "quote",
+    "e-ye-2023"
+   ],
+   [
+    "quote",
+    "Our current approach parses a problem into a SAT specification, runs the solver, and returns the answer in a one-round fashion."
+   ],
+   [
+    "quote",
+    {
+     "covers": "program repair from errors",
+     "by": "satlm",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e13"
+   ],
+   [
+    "quote",
+    "e-lyu-2023"
+   ],
+   [
+    "quote",
+    "with a relative accuracy gain of 6.3% on Math Word Problems (MWP), 3.4% on Planning, 5.5% on Multi-hop Question Answering (QA), and 21.4% on Relational Inference"
+   ],
+   [
+    "quote",
+    {
+     "result": "faithful cot",
+     "measure": "relative accuracy gain over chain-of-thought (relational inference)",
+     "bound": "exact",
+     "percent": 21.4
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e14"
+   ],
+   [
+    "quote",
+    "e-lyu-2023"
+   ],
+   [
+    "quote",
+    "the likely primary cause is the sparsity of Datalog in the pretraining data for Codex, as an overwhelming 29% of errors are syntax-related"
+   ],
+   [
+    "quote",
+    {
+     "result": "faithful cot",
+     "measure": "share of errors that are Datalog syntax errors (StrategyQA)",
+     "bound": "exact",
+     "percent": 29
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e15"
+   ],
+   [
+    "quote",
+    "e-chen-2024"
+   ],
+   [
+    "quote",
+    "On TransCoder and MBPP where unit tests are available, Self-Debugging improves the baseline accuracy by up to 12 %"
+   ],
+   [
+    "quote",
+    {
+     "result": "self-debugging",
+     "measure": "accuracy gain over no debugging (with unit tests)",
+     "bound": "up to",
+     "percent": 12
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e16"
+   ],
+   [
+    "quote",
+    "e-chen-2024"
+   ],
+   [
+    "quote",
+    "Self-Debugging instructs the model to execute the code, then generate a feedback message based on the code and its execution result."
+   ],
+   [
+    "quote",
+    {
+     "covers": "program repair from errors",
+     "by": "self-debugging",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e17"
+   ],
+   [
+    "quote",
+    "e-olausson-2024"
+   ],
+   [
+    "quote",
+    "drawing 10 samples up front and then 1 repair candidate each (up to 20 samples total) leads to a pass rate 1.05 ×"
+   ],
+   [
+    "quote",
+    {
+     "result": "self-repair",
+     "measure": "pass rate over i.i.d. sampling at equal budget (GPT-4, APPS)",
+     "bound": "exact",
+     "times": 1.05
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e18"
+   ],
+   [
+    "quote",
+    "e-olausson-2024"
+   ],
+   [
+    "quote",
+    "replacing GPT-4’s own explanations with those of a human programmer improves repair significantly, increasing the fraction of repaired programs which pass the tests by a factor of 1.58 ×"
+   ],
+   [
+    "quote",
+    {
+     "result": "human feedback for self-repair",
+     "measure": "repaired programs passing tests over model's own feedback (GPT-4)",
+     "bound": "exact",
+     "times": 1.58
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e19"
+   ],
+   [
+    "quote",
+    "e-olausson-2024"
+   ],
+   [
+    "quote",
+    "current models are held back by their inability to reliably produce accurate and useful feedback on why the code is wrong"
+   ],
+   [
+    "quote",
+    {
+     "covers": "feedback on why code is wrong",
+     "by": "self-repair",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e20"
+   ],
+   [
+    "quote",
+    "e-olausson-2024"
+   ],
+   [
+    "quote",
+    "drawing 2 samples up front and then drawing 10 repair candidates each (up to 22 samples total) leads to a pass rate which is lower than the baseline pass@22 ( 0.97 ×"
+   ],
+   [
+    "quote",
+    {
+     "result": "self-repair",
+     "measure": "pass rate over i.i.d. sampling at equal budget (GPT-4, APPS, 2 initial + 10 repairs)",
+     "bound": "exact",
+     "times": 0.97
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e21"
+   ],
+   [
+    "quote",
+    "e-geng-2023"
+   ],
+   [
+    "quote",
+    "grammar-constrained decoding (GCD) can be used to control the generation of LMs, guaranteeing that the output follows a given structure"
+   ],
+   [
+    "quote",
+    {
+     "covers": "constrained generation",
+     "by": "grammar-constrained decoding",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e22"
+   ],
+   [
+    "quote",
+    "e-geng-2023"
+   ],
+   [
+    "quote",
+    "We see a significant improvement when constraining the generation to only produce valid entities and relations."
+   ],
+   [
+    "quote",
+    {
+     "covers": "constrained generation",
+     "by": "input-dependent grammars",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e23"
+   ],
+   [
+    "quote",
+    "e-mundler-2025"
+   ],
+   [
+    "quote",
+    "we introduce a type-constrained decoding approach that leverages type systems to guide code generation"
+   ],
+   [
+    "quote",
+    {
+     "covers": "constrained generation",
+     "by": "type-constrained decoding",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e24"
+   ],
+   [
+    "quote",
+    "e-mundler-2025"
+   ],
+   [
+    "quote",
+    "LLMs frequently generate code with typing errors, which are beyond the domain of syntax and generally hard to adequately constrain"
+   ],
+   [
+    "quote",
+    {
+     "covers": "well-typed generation",
+     "by": "grammar-constrained decoding",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e25"
+   ],
+   [
+    "quote",
+    "e-tam-2024"
+   ],
+   [
+    "quote",
+    "We observe declines in LLMs’ reasoning abilities under format restrictions, with stricter constraints generally leading to greater performance degradation in reasoning tasks."
+   ],
+   [
+    "quote",
+    {
+     "covers": "reasoning under constrained output",
+     "by": "json-mode format restriction",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e26"
+   ],
+   [
+    "quote",
+    "e-tam-2024"
+   ],
+   [
+    "quote",
+    "we found that 100% of GPT 3.5 Turbo JSON-mode responses placed the \"answer\" key before the \"reason\" key"
+   ],
+   [
+    "quote",
+    {
+     "result": "json-mode format restriction",
+     "measure": "responses that put the answer key before the reasoning key (GPT-3.5, Last Letter)",
+     "bound": "exact",
+     "percent": 100
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e27"
+   ],
+   [
+    "quote",
+    "e-tam-2024"
+   ],
+   [
+    "quote",
+    "Comparing NL-to-Format with unrestricted Natural Language responses, we observe nearly identical performance across most models"
+   ],
+   [
+    "quote",
+    {
+     "covers": "reasoning under constrained output",
+     "by": "nl-to-format",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e28"
+   ],
+   [
+    "quote",
+    "e-geng-2025"
+   ],
+   [
+    "quote",
+    "Constrained decoding can speed up the generation process by 50% compared to unconstrained decoding."
+   ],
+   [
+    "quote",
+    {
+     "result": "json schema constrained decoding",
+     "measure": "generation speedup over unconstrained decoding",
+     "bound": "up to",
+     "percent": 50
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e29"
+   ],
+   [
+    "quote",
+    "e-geng-2025"
+   ],
+   [
+    "quote",
+    "Constrained decoding consistently improves the performance of downstream tasks up to 4%, even for tasks with minimal structure like GSM8k."
+   ],
+   [
+    "quote",
+    {
+     "result": "json schema constrained decoding",
+     "measure": "downstream accuracy gain over unconstrained decoding",
+     "bound": "up to",
+     "percent": 4
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e30"
+   ],
+   [
+    "quote",
+    "e-geng-2025"
+   ],
+   [
+    "quote",
+    "evaluate six state-of-the-art constrained decoding frameworks, including Guidance , Outlines , Llamacpp , XGrammar , OpenAI , and Gemini ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "json schema constrained decoding",
+     "in": "OpenAI API"
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e31"
+   ],
+   [
+    "quote",
+    "e-banerjee-2025"
+   ],
+   [
+    "quote",
+    "showing up to 10% points accuracy improvement over baselines on challenging symbolic reasoning benchmarks GSM-symbolic and FOLIO"
+   ],
+   [
+    "quote",
+    {
+     "result": "crane",
+     "measure": "accuracy gain over constrained and unconstrained decoding (GSM-Symbolic, FOLIO)",
+     "bound": "up to",
+     "percent": 10
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e32"
+   ],
+   [
+    "quote",
+    "e-banerjee-2025"
+   ],
+   [
+    "quote",
+    "it is always possible to preserve the reasoning capabilities of the LLM while ensuring syntactic and semantic correctness in its outputs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "reasoning under constrained output",
+     "by": "crane",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e33"
+   ],
+   [
+    "quote",
+    "e-mansur-2021"
+   ],
+   [
+    "quote",
+    "We ran our tool on three mature engines and found 13 previously unknown query bugs"
+   ],
+   [
+    "quote",
+    {
+     "result": "queryfuzz",
+     "measure": "previously unknown query bugs found in three engines",
+     "bound": "exact",
+     "count": 13
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e34"
+   ],
+   [
+    "quote",
+    "e-mansur-2021"
+   ],
+   [
+    "quote",
+    "we present the first metamorphic-testing approach for detecting query bugs in Datalog engines"
+   ],
+   [
+    "quote",
+    {
+     "covers": "datalog engine testing",
+     "by": "queryfuzz",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e35"
+   ],
+   [
+    "quote",
+    "e-mansur-2023"
+   ],
+   [
+    "quote",
+    "We implement our approach in DLSmith, which detected 16 previously unknown query bugs in four Datalog engines."
+   ],
+   [
+    "quote",
+    {
+     "result": "dlsmith",
+     "measure": "previously unknown query bugs found in four engines",
+     "bound": "exact",
+     "count": 16
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e36"
+   ],
+   [
+    "quote",
+    "e-zhang-2024"
+   ],
+   [
+    "quote",
+    "evaluated Deopt on four mature Datalog engines, namely Soufflé, CozoDB, µZ, and DDlog, and discovered a total of 30 bugs"
+   ],
+   [
+    "quote",
+    {
+     "result": "deopt",
+     "measure": "bugs found in four engines",
+     "bound": "exact",
+     "count": 30
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e37"
+   ],
+   [
+    "quote",
+    "e-zhang-2024"
+   ],
+   [
+    "quote",
+    "The core idea behind the test oracle is to compare the results of an optimized program and a program without cross-rule optimization; any difference indicates a bug in the Datalog engine."
+   ],
+   [
+    "quote",
+    {
+     "covers": "datalog engine testing",
+     "by": "deopt",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-e38"
+   ],
+   [
+    "quote",
+    "e-zhang-2024"
+   ],
+   [
+    "quote",
+    "our incremental approach can produce 1.17 × \\times (for DDlog) to 31.02 × \\times (for Soufflé) as many valid test cases with non-empty results as the naive random method"
+   ],
+   [
+    "quote",
+    {
+     "result": "deopt",
+     "measure": "valid non-empty test cases over naive random generation (60 rules)",
+     "bound": "up to",
+     "times": 31.02
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

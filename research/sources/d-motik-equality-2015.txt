@@ -1,0 +1,1499 @@
+Combining Rewriting and Incremental Materialisation Maintenance
+
+for Datalog Programs with Equality
+
+Boris Motik, Yavor Nenov, Robert Piro and Ian Horrocks
+
+Department of Computer Science, Oxford University
+
+Oxford, United Kingdom
+firstname.lastname@cs.ox.ac.uk
+
+Abstract
+
+Materialisation precomputes all consequences of a
+set of facts and a datalog program so that queries
+can be evaluated directly (i.e., independently from
+the program). Rewriting optimises materialisation
+for datalog programs with equality by replacing all
+equal constants with a single representative; and incremental maintenance algorithms can efficiently
+update a materialisation for small changes in the
+input facts. Both techniques are critical to practical applicability of datalog systems; however, we
+are unaware of an approach that combines rewriting and incremental maintenance. In this paper we
+present the first such combination, and we show
+empirically that it can speed up updates by several orders of magnitude compared to using either
+rewriting or incremental maintenance in isolation.
+
+1
+Introduction
+Datalog [Abiteboul et al., 1995] is a declarative, rule-based
+language that can describe (possibly recursive) data dependencies. It is widely used in applications as diverse as enterprise data management [Aref, 2010] and query answering
+over ontologies in the OWL 2 RL profile [Motik et al., 2009]
+extended with SWRL rules [Horrocks et al., 2004].
+
+Querying the set Π∞(E) of consequences of a set of explicit facts E and a datalog program Π is a key service in datalog systems. It can be supported by precomputing and storing
+Π∞(E) so that queries can be evaluated directly, without further reference to Π. Set Π∞(E) and the process of computing
+it are called the materialisation of E w.r.t. Π. This technique
+is used in the state of the art systems such as Olwgres [Stocker
+and Smith, 2008], WebPIE [Urbani et al., 2012], Oracle’s
+RDF store [Wu et al., 2008], GraphDB (formerly OWLIM)
+[Bishop et al., 2011], and RDFox [Motik et al., 2014].
+
+Although datalog traditionally employs the unique name
+assumption (UNA), in some applications uniqueness of identifiers cannot be guaranteed. For example, due to the distribution and the independence of data sources, in the Semantic
+Web different identifies are often used to refer to the same domain object. Handling such use cases requires an extension
+of datalog without UNA, in which one can infer equalities
+between constants using a special equality predicate ≈that
+
+can occur in facts and rule heads. The semantics of ≈can be
+captured explicitly using rules that axiomatise ≈as a congruence relation; however, this is known to be inefficient when
+equality is used extensively. Therefore, systems commonly
+use rewriting [Baader and Nipkow, 1998; Nieuwenhuis and
+Rubio, 2001]—an optimisation where equal constants are replaced with a canonical representative, and only facts containing such representatives are stored. The benefits of rewriting have been well-documented in practice [Wu et al., 2008;
+Urbani et al., 2012; Bishop et al., 2011; Motik et al., 2015a].
+
+Moreover, datalog applications often need to handle continuous updates to the set of explicit facts E. Rematerialisation (i.e., computing the materialisation from scratch) is often
+very costly, so incremental maintenance algorithms are often
+used in practice. Adding facts to E is trivial as one can simply continue from where the initial materialisation has finished; hence, given a materialisation Π∞(E) of E w.r.t. Π
+and a set of facts E−, the main challenge for an incremental algorithm is to efficiently compute Π∞(E \ E−). Several
+such algorithms have already been proposed. Truth maintenance systems [Doyle, 1979; de Kleer, 1986; Goasdou´e et al.,
+2013] track dependencies between facts to efficiently determine whether a fact has a derivation from E \ E−, so only
+facts for which no such derivations exist are deleted. Such approaches, however, store large amounts of auxiliary information and are thus often unsuitable for data-intensive applications. Counting [Nicolas and Yazdanian, 1983; Gupta et al.,
+1993; Urbani et al., 2013; Goasdou´e et al., 2013] stores with
+each fact F ∈Π∞(E) the number of times F has been derived during initial materialisation, and this number is used to
+determine when to delete F; however, in its basic form counting works only with nonrecursive rules, and a proposed extension to recursive rules requires multiple counts per fact [Dewan et al., 1992], which can be costly. The Delete/Rederive
+(DRed) algorithm [Gupta et al., 1993] handles recursive rules
+with no storage overhead: to delete E−from E, the algorithm first overdeletes all consequences of E−in Π∞(E) and
+then rederives all facts provable from E \ E−. The Backward/Forward (B/F) algorithm combines backward and forward chaining in a way that outperforms DRed on inputs
+where facts have many alternative derivations—a common
+scenario in Semantic Web applications [Motik et al., 2015b].
+
+Combining rewriting and incremental maintenance is difficult due to complex interactions between the two tech-
+
+arXiv:1505.00212v1 [cs.DB] 1 May 2015
+
+
+niques: removing E−from E may entail retracting equalities, which may (partially) invalidate the rewriting and require
+the restoration of rewritten facts (see Section 3). To the best
+of our knowledge, such a combination has not been considered in the literature, and practical systems either use rewriting with rematerialisation, or axiomatise equality and use incremental maintenance; in either case they give up a technique known to be critical for performance. In this paper we
+present the B/F≈algorithm, which combines rewriting with
+B/F: given a set of facts E−, our algorithm efficiently updates
+the materialisation of E w.r.t. Π computed using the rewriting
+approach by Motik et al. (2015a). Extensions of datalog with
+equality are nowadays used mainly for querying RDF data
+extended with OWL 2 RL ontologies and SWRL rules, so we
+formalise our algorithm in the framework of RDF; however,
+our approach can easily be adapted to general datalog.
+
+We have implemented B/F≈in the open-source RDFox
+system1 and have evaluated it on several real-world and synthetic datasets. Our results show that the algorithm indeed
+combines the best of both worlds, as it is often several orders
+of magnitude faster than either rematerialisation with rewriting, or B/F with axiomatised equality.
+
+2
+Preliminaries
+
+Datalog. A term is a constant (a, b, A, R, etc.) or a variable
+(x, y, z, etc.). An (RDF) atom has the form ⟨t1, t2, t3⟩, where
+t1, t2, t3 are terms; an (RDF) fact (also called a triple) is a
+variable-free RDF atom; and a dataset is a finite set of facts.
+A (datalog) rule r is an implication of the form (1), where
+H, B1, . . . , Bn are atoms and each variable occurring in H
+also occurs in some Bi; h(r) ··= H is the head atom of r;
+each Bi is a body atom of r; and b(r) is the set of all body
+atoms of r. A (datalog) program is a finite set of rules.
+
+H ←B1 ∧· · · ∧Bn
+(1)
+
+A substitution is a partial mapping of variables to terms. For
+α a term, atom, rule, or a set of these, voc(α) is the set of all
+constants in α, and ασ is the result of applying a substitution
+σ to α. The materialisation Π∞(E) of a dataset E w.r.t. a
+program Π is the smallest superset of E containing h(r)σ for
+each rule r ∈Π and substitution σ with b(r)σ ⊆Π∞(E).
+Equality.
+The constant owl:sameAs (abbreviated ≈) can
+be used to encode equality between constants. For example, fact ⟨P. Smith, ≈, Peter Smith⟩states that P. Smith and
+Peter Smith are one and the same object. Facts of the form
+⟨s, ≈, t⟩are called equalities and, for readability, are abbreviated as s ≈t; note that ≈∈voc(s ≈t). Program Π≈consisting of rules (≈1)–(≈4) axiomatises ≈as a congruence relation. If a program Π or a dataset E contain ≈, systems then
+answer queries in the materialisation of E w.r.t. Π ∪Π≈.
+
+⟨x′
+
+1, x2, x3⟩←⟨x1, x2, x3⟩∧x1 ≈x′
+1
+(≈1)
+
+⟨x1, x′
+
+2, x3⟩←⟨x1, x2, x3⟩∧x2 ≈x′
+2
+(≈2)
+
+⟨x1, x2, x′
+
+3⟩←⟨x1, x2, x3⟩∧x3 ≈x′
+3
+(≈3)
+xi ≈xi ←⟨x1, x2, x3⟩, for 1 ≤i ≤3
+(≈4)
+
+1http://www.cs.ox.ac.uk/isg/tools/RDFox/
+
+Rewriting is a well-known optimisation of this approach. For
+π a mapping of constants to constants and α a constant, fact,
+rule, dataset, or substitution, π(α) is the result of replacing
+each constant c in α with π(c); such α is normal w.r.t. π
+if π(α) = α; and π(α) is the representative of α in π. For
+c a constant, let cπ ··= {d | π(d) = c}. For U a dataset, let
+U π ··= {⟨s, p, o⟩| ⟨π(s), π(p), π(o)⟩∈U}; and, for F a fact,
+let F π ··= {F}π.
+We assume that all constant are totally
+ordered such that ≈is the smallest constant; then, for S a
+nonempty set of constants, min S (resp. max S) is the smallest (resp. greatest) element of S. Let U be a dataset and let
+Ec(U) ··= {c} ∪{d | c ≈d ∈U}; then, the rewriting of U is
+the pair (π, I) such that
+
+1. π(c) = min Ec(U) for each constant c, and
+
+2. I = π(U).
+
+Note that π(≈) = ≈, that the rewriting is unique for U, and
+that Π∞
+
+≈(U) = U implies Iπ = U. The r-materialisation of
+a dataset E w.r.t. a program Π is the rewriting (π, I) of the
+dataset J = (Π ∪Π≈)∞(E). Motik et al. (2015a) show how
+to answer queries over J by materialising (π, I) instead of J.
+
+3
+Updating R-Materialisation Incrementally
+
+Let E and E−be datasets, let E′ = E \ E−, and let Π be a
+program. Moreover, let J (resp. J′) be the materialisation of
+E (resp. E′) w.r.t. Π ∪Π≈, and let (π, I) (resp. (π′, I′)) be
+the r-materialisation of E (resp. E′) w.r.t. Π. Given (π, I),
+Π, and E−, the B/F≈algorithm computes (π′, I′) efficiently
+by combining the B/F algorithm by Motik et al. (2015b) for
+incremental maintenance in datalog without equality with the
+r-materialisation algorithm by Motik et al. (2015a). We discuss the intuition in Section 3.1 and some optimisations in
+Section 3.2, and we formalise the algorithm in Section 3.3.
+
+3.1
+Intuition
+Main Difficulty. An update may lead to the deletion of equalities, which may require adding facts to I. The following
+example program Π and dataset E exhibit such behaviour.
+
+Π = { y1 ≈y2 ←⟨y1, R, x⟩∧⟨y2, R, x⟩,
+
+y1 ≈y2 ←⟨x, R, y1⟩∧⟨x, R, y2⟩}
+
+E = { ⟨a, R, b⟩, ⟨c, R, d⟩, ⟨a, R, d⟩}
+
+I = { ⟨a, R, b⟩, a ≈a, R ≈R, b ≈b, ≈≈≈}
+π = { a �→a, b �→b, c �→a, d �→b, R �→R, ≈�→≈}
+
+E−= { ⟨a, R, d⟩}
+
+I′ = { ⟨a, R, b⟩, a ≈a, R ≈R, b ≈b, ≈≈≈,
+
+⟨c, R, d⟩, c ≈c, d ≈d }
+π′ = { a �→a, b �→b, c �→c, d �→d, R �→R, ≈�→≈}
+
+Relation R is bijective in Π, so a ≈c ∈J as both a and c
+have outgoing R-edges to d, and b ≈d ∈J as both b and d
+have incoming R-edges from a. By rewriting, we represent
+each fact ⟨α, R, β⟩from J using a single fact ⟨a, R, b⟩, and
+analogously for facts involving ≈; thus, instead of 14 facts,
+we store just five facts. Assume now that we remove E−
+from E. In J and J′ we ascribe no particular meaning to
+≈, so the monotonicity of datalog ensures J ⊆J′; thus, the
+B/F algorithm just needs to delete facts that no longer hold.
+
+
+However, a ≈c̸ ∈J′ and b ≈d̸ ∈J′, so we must update π
+and extend I with the facts from J′ that are not represented
+via π′. Thus, in our example, I′ actually contains I.
+
+Solution Overview. B/F≈consists of Algorithms 1–7 that
+follow the same basic idea as B/F; to highlight the differences,
+lines that exist in B/F in a modified form are marked with ‘∗’,
+and new lines and algorithms are marked with‘▷’.
+
+We initially mark all facts in π(E−) as ‘doubtful’—that
+is, we indicate that their truth might change. Next, for each
+‘doubtful’ fact F, we determine whether F is provable from
+E′ and, if not, we identify the immediate consequences of F
+(i.e., the facts in I that can be derived using F) and mark them
+as ‘doubtful’; we know exactly which facts have changed after processing all ‘doubtful’ facts. To check the provability
+of F, we use backward chaining to identify the facts in I that
+can prove F, and we use forward chaining to actually prove
+F. The latter process also identifies the necessary changes to
+π and I, which we apply to (π, I) in a final step. We next
+describe the components of B/F≈in more detail.
+
+Procedure saturate() is given a dataset C ⊆I of checked
+facts, and it computes the set L containing each fact F derivable from E′ such that each fact in a derivation of F is contained in Cπ; thus, C identifies the part of J′ to recompute.
+Rather than storing L directly, we adapt the r-materialisation
+algorithm by Motik et al. (2015a) and represent L by its
+rewriting (γ, P \ ˆP); the role of the two sets P and ˆP is discussed shortly. Lines 36–40 compute the facts in L derivable
+immediately from E′: we iterate over each F ∈C and each
+G ∈F π; since we represent L by its rewriting, we add γ(G)
+to P. The roles of set Y and lines 37–39 will be discussed
+shortly. Lines 41–50 compute the facts in L derivable using
+rules: we consider each fact F in P \ ˆP (lines 41–42), each
+rule r, and each match σ of F to a body atom of r (line 48),
+we evaluate the remaining body atoms of r (line 49), and we
+derive γ(h(r)τ) for each match τ (line 50). This basic idea
+is slightly more complicated by rewriting: if F = a ≈b, we
+modify γ so that one constant becomes the representative of
+the other one (line 45). As a consequence, facts can become
+‘outdated’ w.r.t. γ, so we keep track of such facts using ˆP: if
+F is ‘outdated’, we add F to ˆP and γ(F) to P (line 44); due
+to the latter, P \ ˆP eventually contains all ‘up to date’ facts.
+Finally, we apply the reflexivity rules (≈4) to F (line 47).
+
+Procedure saturate() is repeatedly called in B/F≈. Set C,
+however, never shrinks between successive calls, so set L
+never shrinks either; hence, at each call we can just continue
+the computation instead of starting ‘from scratch’. A minor
+problem arises if we derive a fact F with F̸ ∈Cπ and so we
+do not add γ(F) to P, but C is later extended so that F ∈Cπ
+holds. We handle this by maintaining a set Y of ‘delayed’
+facts: in line 59 we add F to Y if F̸ ∈Cπ; and in line 40 we
+identify each ‘delayed’ fact G ∈Cπ ∩Y and add γ(G) to P.
+
+Procedure rewrite(a, b) implements rewriting: we update γ
+(line 52), apply the replacement rules (≈1)–(≈3) to already
+processed facts containing ‘outdated’ constants (line 54), ensure that Γ is normal w.r.t. γ (line 56), and reapply the normalised rules (lines 57–58). Motik et al. (2015a) discuss in
+detail the issues related to rule updating and reevaluation.
+
+Procedure checkProvability() takes a fact F ∈I and ensures
+that, for each G ∈F π, we have G ∈J′ iff γ(G) ∈P \ ˆP—
+that is, we know the correct status of each fact that F represents. To this end, we add F to C (line 22) and thus ensure
+that (γ, P \ ˆP) correctly represents L (line 23). Each fact is
+added to C only once, which guarantees termination of the
+recursion. We then use backward chaining to examine facts
+occurring in proofs of F and recursively check their provability; we stop at any point during that process if all facts in
+F π become provable (lines 24, 28, 31, and 35). Lines 25–
+24 handle the reflexivity rules (≈4): to check provability of
+c ≈c, we recursively check the provability each fact containing c. Lines 29–31 handle replacement rules (≈1)–(≈3): we
+recursively check the provability of c ≈c for each constant c
+occurring in F. Finally, lines 32–35 handle the rules in π(Π):
+we consider each rule r ∈π(Π) whose head matches F and
+each substitution τ that matches the body of r in I, and we
+recursively check the provability of b(r)τ.
+Procedure BF≈() computes the set D ⊆I of ‘doubtful’
+facts. After initialising D to π(E−) (lines 3–4), we consider
+each fact F ∈D (lines 5–16) and determine whether some
+G ∈F π is no longer provable (line 6); if so, we add to D all
+facts that might be affected by the deletion of G. Lines 9–11
+handle rules (≈1)–(≈3); line 12 handles rules (≈4); and lines
+13–15 handle π(Π): we identify each rule r ∈π(Π) where F
+matches a body atom of r, we evaluate the remaining body
+atoms of r in I, and we add h(r)τ to D for each τ such
+that b(r)τ ⊆I. Once D is processed, (γ, P \ ˆP) reflects the
+changes to (π, I), which we exploit in Algorithm 2.
+
+3.2
+Optimisations
+Reflexivity. Facts of the form F = c ≈c can be expensive for
+backward chaining: due to reflexivity rules (≈4), in lines 25–
+28 we may end up recursively proving each fact G that mentions c. However, F holds trivially if E′ contains a fact mentioning c, in which case we can consider F proven and avoid
+any recursion. This is implemented in lines 37–39.
+Avoiding Redundant Derivations. Assume that Γ contains a
+rule y1 ≈y2 ←⟨x, R, y1⟩∧⟨x, R, y2⟩, and consider a call to
+saturate() in which facts ⟨a, R, b⟩and ⟨a, R, d⟩both end up
+in P. Unless we are careful, in line 50 we might consider substitution τ1 = {x �→a, y1 �→b, y2 �→d} twice: once when
+we match ⟨a, R, b⟩to ⟨x, R, y1⟩, and once when we match
+⟨a, R, d⟩to ⟨x, R, y2⟩. Such redundant derivations can substantially degrade performance.
+
+To solve this problem, set V keeps track of the processed
+subset of P: after we extract a fact F from P, in line 42
+we transfer F to V ; moreover, in line 49 we evaluate rule
+bodies in V \ ˆP instead of P \ ˆP. Now if ⟨a, R, b⟩is processed before ⟨a, R, d⟩, at that point we have ⟨a, R, d⟩̸ ∈V ,
+so τ1 is not returned as a match in line 49; the situation when
+⟨a, R, d⟩is processed first is analogous. This, however, does
+not eliminate all repetition: τ2 = {x �→a, y1 �→b, y2 �→b}
+is still considered when ⟨a, R, b⟩is matched to either of the
+two body atoms in the rule.
+Therefore, we annotate (see
+Section 3.3) the body atoms of rules so that, whenever F is
+matched to some body atom Bi, no atom Bj preceding Bi in
+the body of r can be matched to F. In our example, τ2 is thus
+
+
+considered only when ⟨a, R, b⟩is matched to ⟨x, R, y1⟩.
+
+B/F≈avoids redundant derivations in similar vein: set O
+tracks the processed subset of D; in lines 10 and 14 we match
+the relevant rules in I \ O; and in line 16 we add a fact to O
+once it has been processed.
+Disproved Facts. For each F ∈I with F π ∩J′ = ∅, no fact
+in F π participates in a proof of any fact in J′. Thus, in line 7
+we collect all such facts in a set S of disproved facts, and in
+lines 26, 29, and 33 we exclude S from backward chaining.
+Singletons. If we encounter F = c ≈c in line 9 or 29 where
+c represents only itself (i.e., |cπ| = 1), then we know that no
+fact in F π can derive a new fact using rules (≈1)–(≈3), and
+so we can avoid considering rules (≈1)–(≈3).
+
+3.3
+Formalisation
+We borrow the notation by Motik et al. (2015b) to formalise
+B/F≈. We recapitulate some definitions, present the pseudocode, and formally state the algorithm’s properties.
+
+Given a dataset X and a fact F, operation X.add(F) adds
+F to X, and operation X.delete(F) removes F from X; both
+return t if X was changed. For iteration, operation X.next
+returns the next fact from X, or ε if no such fact exists.
+
+An annotated query has the form Q = B▷◁1
+
+1
+∧· · · ∧B▷◁k
+
+k ,
+where each Bi is an atom and annotation ▷◁i is either empty
+or equal to̸ =. Given datasets X and Y and a substitution
+σ, operation X.eval(Q, Y, σ) returns a set containing each
+smallest substitution τ such that σ ⊆τ and, for 1 ≤i ≤k,
+(i) Biτ ∈X if ▷◁i is empty or (ii) Biτ ∈X \ Y if ▷◁i is̸ =.
+We often write [Z \ W] instead of X, meaning that Q is evaluated in the difference of sets Z and W.
+
+Given a fact F, operation Π.matchHead(F) returns all tuples ⟨r, Q, σ⟩with r ∈Π a rule of the form (1), σ a substitution such that Hσ = F, and Q = B1 ∧· · · ∧Bn. Moreover, operation Π.matchBody(F) returns all tuples ⟨r, Q, σ⟩
+with r ∈Π a rule of the form (1), σ a substitution such that
+Biσ = F for some 1 ≤i ≤n, and Q is defined as
+
+Q = B̸=
+
+1 ∧· · · ∧B̸=
+i−1 ∧Bi+1 ∧· · · ∧Bn.
+(2)
+
+Finally, given a mapping γ of constants to constants, and
+constants d and c, operation γ.mergeInto(d, c) modifies γ so
+that γ(e) = c holds for each constant e with γ(e) = d.
+
+B/F≈consists of Algorithms 1–7. Theorem 1 shows that
+the algorithm is correct and that, just like the semina¨ıve algorithm [Abiteboul et al., 1995], it does not repeat derivations;
+the proof is given in the appendix.
+
+4
+Evaluation
+
+We have implemented and evaluated the B/F≈algorithm in
+the open-source RDF data management system RDFox. The
+system and the test data are all available online.2
+
+Objectives. Updates can be handled either incrementally or
+by rematerialisation, and equality can be handled either by
+rewriting or by axiomatisation, giving rise to four possible
+approaches to updates. Our first objective was to compare all
+of them to determine their relative strengths and weaknesses.
+
+2https://krr-nas.cs.ox.ac.uk/2015/IJCAI/RDFox/index.html
+
+As E−increases in size, incremental update becomes
+harder, but rematerialisation becomes easier. Thus, our second objective was to investigate the relationship between the
+update size and the performance of the respective approaches.
+Datasets. Equality is often used in OWL ontologies on the
+Semantic Web, so we based our evaluation on several wellknown synthetic and ‘real’ RDF datasets.
+
+Each dataset comprises an OWL ontology and a set of explicit facts E. UOBM [Ma et al., 2006] extends LUBM [Guo
+et al., 2005], and we used the data generated for 100 universities; we did not use LUBM because it does not use ≈. Claros
+contains information about cultural artefacts.3 DBpedia consists of structured information extracted from Wikipedia.4
+UniProt is a knowledge base about protein sequences;5 we selected a subset of the original (very large) set of facts. Finally,
+OpenCyc is an extensive, manually curated upper ontology.6
+
+Following Zhou et al. (2013), we converted the ontologies
+into lower (L) and upper bound (U) programs: the former
+is the OWL 2 RL subset of the ontology transformed into
+datalog as described by Grosof et al. (2003), and the latter
+captures all consequences of the ontology using an unsound
+approximation. Upper bound programs are interesting as they
+tend to be ‘hard’. We also manually extended the lower bound
+(LE) of Claros with ‘hard’ rules (e.g., we defined related documents as pairs of documents that refer to the same topic).
+Update Sets. For each dataset, we randomly selected several
+subsets E−of E. We considered small updates of 100 and 5k
+facts on all datasets. Moreover, for each dataset we identified
+the ‘equilibrium’ point n at which B/F≈and Remat≈take
+roughly the same time. If n was large, we generated subsets
+E−with sizes equal to 25%, 50%, 75%, and 100% of n;
+otherwise, we divided n in an ad hoc way.
+Test Setting. We used a Dell server with two 2.60GHz Intel
+Xeon E5-2670 CPUs and 256 GB of RAM running Fedora
+release 20, kernel version 3.17.7-200.fc20.x86 64.
+Test Results. Table 1 summarises our test results. For each
+dataset, we show the numbers of explicit facts (|E|) and
+rules (|Π|), the number of facts in the initial r-materialisation
+(|I≈|), and the time (T ≈) and the number of derivations (D≈)
+used to compute it via rewriting; moreover, we show the latter three numbers for the initial materialisation computed using axiomatised equality (|IA|, T A, and DA). For each set
+E−, we show the numbers ∆|I≈| and ∆|IA| of deleted facts
+with rewriting and axiomatisation, respectively, as well as the
+times (T) and the number of derivations (D) for each of the
+four update approaches. All times are in seconds. We could
+not complete all axiomatisation tests with Claros-LE as each
+run took about two hours. Due to the upper bound transformation, the r-materialisation of UOBM-100-U contains a
+constant c with |cπ| = 3930; thus, when ≈is axiomatised,
+deriving just all equalities involving cπ requires 39303 = 60
+billion derivations, which causes the initial materialisation to
+last longer than four hours. The number of derivations D in
+
+3http://www.clarosnet.org/XDB/ASP/clarosHome/
+4http://dbpedia.org/
+5http://www.uniprot.org
+6http://www.cyc.com/platform/opencyc
+
+
+Input Variables
+E
+: the explicit facts
+Π
+: the datalog program
+(π, I) : the r-materialisation of E w.r.t. Π
+
+E−
+: the facts to delete from E
+
+Global Temporary Variables
+D
+: the consequences of E−that might require deletion
+O
+: the processed subset of D
+C
+: the facts whose provability must be checked
+γ
+: the mapping recording the changes needed to π
+P
+: the proved facts
+ˆP
+: the proved rewritten facts
+Y
+: the proved facts not in Cπ
+V
+: the processed subset of P
+S
+: the set of disproved facts
+
+Algorithm 1 B/F≈()
+
+∗1: C ··= D ··= P ··= ˆP ··= Y ··= O ··= S ··= V ··= ∅
+▷2: initialise γ as identity and Γ ··= Π
+
+3: for each F ∈E−do
+4:
+if E.delete(F) then D.add(π(F))
+5: while (F ··= D.next)̸ = ε do
+6:
+checkProvability(F)
+∗7:
+for each G ∈C s.t. allDisproved(G) do S.add(G)
+
+∗8:
+if not allProved(F) then
+▷9:
+if F = c ≈c and |cπ| > 1 then
+▷10:
+for each G ∈I \ O with c ∈voc(G) do
+▷11:
+D.add(G)
+
+▷12:
+for each c ∈voc(F) do D.add(c ≈c)
+
+13:
+for each ⟨r, Q, σ⟩∈π(Π).matchBody(F) do
+14:
+for each τ ∈[I \ O].eval(Q, {F}, σ) do
+15:
+D.add(h(r)τ)
+
+16:
+O.add(F)
+
+∗17: propagateChanges()
+
+▷Algorithm 2 propagateChanges()
+
+18: for each c ≈c ∈C and each d with π(d) = c do
+19:
+π(d) ··= γ(d)
+
+20: for each F ∈D \ (P \ ˆP) do I.delete(F)
+21: for each F ∈P \ ˆP do I.add(π(F))
+
+▷Algorithm 3 Auxiliary functions
+
+allProved(F):
+
+t iff F̸ ∈S and γ(F π) ⊆(P \ ˆP)
+
+allDisproved(F):
+
+t iff γ(F π) ∩(P \ ˆP) = ∅
+
+Algorithm 4 checkProvability(F)
+
+22: if not C.add(F) then return
+
+23: saturate()
+∗24: if allProved(F) then return
+
+▷25: if F = c ≈c then
+▷26:
+for each G ∈I \ S with c ∈voc(G) do
+▷27:
+checkProvability(G)
+▷28:
+if allProved(F) then return
+▷29: for each c ∈voc(F) with c ≈c̸ ∈S and |cπ| > 1 do
+▷30:
+checkProvability(c ≈c)
+▷31:
+if allProved(F) then return
+
+32: for each ⟨r, Q, σ⟩∈π(Π).matchHead(F) do
+33:
+for each τ ∈[I \ S].eval(Q, ∅, σ) and G ∈b(r)τ do
+34:
+checkProvability(G)
+35:
+if allProved(F) then return
+
+Algorithm 5 saturate()
+
+36: while (F ··= C.next)̸ = ε do
+▷37:
+if F = c ≈c then
+▷38:
+for each d ∈voc(E) with π(d) = c do
+▷39:
+P.add(γ(d) ≈γ(d))
+
+∗40:
+for each G ∈F π ∩(E ∪Y ) do P.add(γ(G))
+41: while (F ··= P.next)̸ = ε do
+∗42:
+if F ∈P \ ( ˆP ∪V ) and V.add(F) then
+▷43:
+G ··= γ(F)
+▷44:
+if F̸ = G then ˆP.add(F) and P.add(G)
+▷45:
+else if F = a ≈b and a̸ = b then rewrite(a, b)
+▷46:
+else
+∗47:
+for each c ∈voc(G) do prove(c ≈c)
+
+48:
+for each ⟨r, Q, σ⟩∈Γ.matchBody(G) do
+∗49:
+for each τ ∈[V \ ˆP].eval(Q, {G}, σ) do
+∗50:
+prove(h(r)τ)
+
+▷Algorithm 6 rewrite(a, b)
+
+51: c ··= min{a, b}
+d ··= max{a, b}
+52: γ.mergeInto(d, c)
+53: for each F ∈P \ ˆP with d ∈voc(F) do
+54:
+ˆP.add(F) and P.add(γ(F))
+55: for each r ∈Γ with r̸ = γ(r) do
+56:
+replace r in Γ with r′ ··= γ(r)
+57:
+for each τ ∈[V \ ˆP].eval(b(r′), ∅, ∅) do
+58:
+prove(h(r′)τ)
+
+▷Algorithm 7 prove(F)
+
+59: if π(F) ∈C then P.add(F) else Y.add(F)
+
+Theorem 1. Let (π, I) be the r-materialisation of a dataset E w.r.t. a program Π, and let E−be a dataset.
+
+1. Algorithm 1 terminates, at which point (π, I) contains the r-materialisation of E \ E−w.r.t. Π.
+
+2. Each combination of a rule r and a substitution τ is considered at most once in line 50 or line 58, but not both.
+
+3. Each combination of a rule r and a substitution τ is considered at most once in line 15.
+
+
+UOBM-100-L
+|E| = 24.5M
+|I≈| = 46.4M
+T ≈= 69
+D≈= 79.3M
+|Π| = 210
+|IA| = 46.7M
+T A = 122
+DA = 361M
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+146
+0.6
+0.7k 45.1 79.3M
+146
+4.6
+32.8k 94.6 361M
+5k
+7.8k
+1.2
+45.8k 42.5 79.3M
+7.9k
+7.1
+805k 93.1 361M
+1.3M
+1.9M 18.2
+8.7M 39.2 75.4M
+2.0M 38.0 98.0M 89.5 361M
+2.5M
+3.9M 29.9 15.8M 41.7 71.5M
+4.0M 54.5
+151M 83.7 345M
+3.8M
+5.8M 31.8 22.3M 37.4 67.7M
+5.9M 70.9
+188M 79.3 329M
+5M
+7.7M 41.2 28.4M 36.2 63.8M
+7.9M 73.8
+218M 73.2 314M
+
+UOBM-100-U
+|E| = 24.5M
+|I≈| = 78.8M
+T ≈= 225
+D≈= 719M
+|Π| = 279
+|IA| = —
+T A = —
+DA = —
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+197
+3.5
+21.5k 209 719M
+—
+—
+—
+—
+—
+1k
+1.8k 277 581M 219 719M
+—
+—
+—
+—
+—
+2.5k
+4.3k 338 584M 209 719M
+—
+—
+—
+—
+—
+5k
+8.5k 345 584M 214 719M
+—
+—
+—
+—
+—
+
+Claros-L
+|E| = 18.8M
+|I≈| = 79.5M
+T ≈= 83
+D≈= 129M
+|Π| = 1.3k
+|IA| = 102M
+T A = 3.9k
+DA = 11.0G
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+209
+8.3
+797k 77.4 135M
+819 2476 15.8G 3174 11.0G
+5k
+11.2k
+9.1
+895k 77.0 135M
+18.6k 2609 15.8G 3166 11.0G
+750k
+1.7M 29.5 14.5M 80.9 131M
+4.0M 2816 17.1G 2690
+9.5G
+1.5M
+3.5M 46.1 26.5M 81.5 127M
+10.1M 2757 17.4G 1933
+7.3G
+2.3M
+5.3M 63.9 38.4M 77.7 123M
+15.3M 3092 18.3G 1389
+5.5G
+3M
+7.2M 78.4 48.8M 72.4 119M
+19.4M 3170 18.6G 1075
+4.4G
+
+Claros-LE
+|E| = 18.8M
+|I≈| = 539M
+T ≈= 4514
+D≈= 12.6G
+|Π| = 1.3k
+|IA| = 562M
+T A = 9048
+DA = 26.3G
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+522
+16.1
+617k 4397 12.6G
+1132 5703 25.8G 8693 26.3G
+2.5k
+179k
+31.6
+9.9M 4430 12.6G
+—
+—
+—
+—
+—
+5k
+427k
+39.4 10.7M 4392 12.6G
+435k 5845 25.8G 9383 26.3G
+7.5k
+609k
+44.8 11.6M 4713 12.6G
+—
+—
+—
+—
+—
+10k
+781k 4300
+12.4G 4627 12.6G
+—
+—
+—
+—
+—
+
+DBpedia-L
+|E| = 113M
+|I≈| = 136M
+T ≈= 49.3
+D≈= 36.6M
+|Π| = 3.4k
+|IA| = 139M
+T A = 641
+DA = 895M
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+105
+0.3
+91 47.5 36.6M
+105
+8.9
+1.7M 251 895M
+5k
+5.0k
+0.4 24.4k 64.6 36.6M
+5.3k 20.3
+5.7M 256 895M
+1.8M
+1.8M 29.4
+2.1M 48.7 36.3M
+2.0M 50.0 72.2M 239 895M
+3.5M
+3.6M 38.9
+3.6M 49.0 35.9M
+3.9M 85.5
+116M 237 881M
+5.3M
+5.3M 52.2
+4.9M 54.3 35.5M
+5.9M 89.8
+152M 232 866M
+7M
+7.1M 63.1
+6.2M 50.7 35.1M
+7.8M
+103
+184M 227 852M
+
+UniProt-L
+|E| = 123M
+|I≈| = 179M
+T ≈= 118
+D≈= 183M
+|Π| = 451
+|IA| = 229M
+T A = 527
+DA = 1.6G
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+125
+2.5
+892 235 238M
+125 14.3
+6.0k 490
+1.6G
+5k
+6.1k
+3.4
+35k 221 238M
+6.1k 17.5
+271k 482
+1.6G
+4.5M
+5.7M 84.0 24.8M 204 232M
+5.7M
+125 190M 475
+1.5G
+9M
+11.5M
+137 46.7M 216 225M
+11.5M
+192 344M 478 1.5M
+13.5M
+17.4M
+209 67.1M 220 218M
+17.4M
+315 483M 473
+1.4G
+18M
+23.4M
+220 86.5M 217 210M
+23.4M
+371 613M 481
+1.4G
+
+OpenCyc-L
+|E| = 2.4M
+|I≈| = 141M
+T ≈= 164
+D≈= 280M
+|Π| = 261k
+|IA| = 1.2G
+T A = 3.5k
+DA = 12.9G
+
+|E−|
+∆|I≈|
+B/F≈
+Remat≈
+
+∆|IA|
+B/FA
+RematA
+
+T
+D
+T
+D
+T
+D
+T
+D
+100
+5.4k
+15.5
+405k 220 280M
+50.0k
+472 8.5M 3296 12.9G
+1k
+53.1k 1062 69.5M 222 280M
+5.1M 5537
+2.0G 3479 12.9G
+2.5k
+130k 1078 69.8M 178 279M
+5.8M 5339
+2.1G 3621 12.8G
+5k
+261k 1123 70.4M 177 279M
+7.2M 5475
+2.1G 3334 12.8G
+
+Table 1: Experimental results
+
+B/F≈is the sum of the number of times a fact is determined as
+‘doubtful’ (lines 11, 12, and 15), checked in backward chaining (lines 27, 30, and 34), or derived in forward chaining (line
+59); we use this number to estimate reasoning difficulty independently from implementation details.
+
+Discussion. For updates of 100 facts, B/F≈outperforms all
+other approaches, often by orders of magnitude, and in most
+cases it does so even for much larger updates.
+
+Even when |IA| −|I≈| is ‘small’ (i.e., when not many
+equalities are derived), B/F≈outperforms B/FA. This seems
+to be mainly because B/FA ascribes no special meaning to
+Π≈and so it does not use the optimisation from lines 37–39;
+thus, when trying to prove c ≈c, B/FA performs backward
+chaining via rules (≈4) and so it potentially examines each
+fact containing c. On Claros-L, although |IA| and |I≈| are
+of similar sizes, IA contains one constant c with |cπ| = 306,
+which gives rise to 3063 derivations; this explains the difference in the performance of B/F≈and B/FA.
+
+Remat≈outperforms B/F≈in cases similar to those described by Motik et al. (2015b). For example, in UOBM, relation hasSameHomeTownWith is symmetric and transitive,
+which creates cliques of connected constants; B/F always recomputes each changed clique, thus repeating most of the
+
+‘hard’ work. Equality connects constants in cliques, which
+poses similar problems for B/F≈. For example, due to the
+constant c with |cπ| = 3930, deleting 5k facts in UOBM-100-
+U results in only 961k (about 1.2% of |I≈|) facts being added
+to set C in line 22, but these facts contribute to 73% of the
+derivations from the initial r-materialisation; thus, B/F≈repeats in Algorithm 5 a substantial portion of the initial work.
+
+On OpenCyc-L, Remat≈already outperforms B/F≈on updates of 1k triples, which was surprising since the former
+makes more derivations than the latter.
+Our investigation
+revealed that OpenCyc-L contains about 200 rules of the
+form ⟨x, type, y⟩←⟨x, Ri, y⟩that never fire during forward
+chaining; however, to check provability of ⟨a, type, C⟩, Algorithm 4 considers in line 32 each time each of the 200
+rules. After removing all such ‘idle’ rules manually, B/F≈
+and Remat≈could update 1k tuples in roughly the same time.
+Further analysis revealed that the slowdown in B/F≈occurs
+mainly in line 40: the condition is checked for 13.3M facts
+F, and these give rise to 139M facts in F π, each requiring
+an index lookup; the latter number is similar to the number
+of derivations in rematerialisation, which explains the slowdown. We believe one can check this condition more efficiently by using additional book-keeping.
+
+
+5
+Conclusion
+This paper describes what we believe to be the first approach
+to incremental maintenance of datalog materialisation when
+the latter is computed using rewriting—a common optimisation used when programs contain equality. Our algorithm
+proved to be very effective, particularly on small updates.
+
+In our future work, we shall aim to address the issues we
+identified in Section 4. For example, to optimise the check
+in line 40, we shall investigate ways of keeping track of how
+explicit facts are merged so that we can implement the test
+by iterating over the appropriate subset of E rather than over
+F π. Moreover, we believe we can considerably improve the
+efficiency of both the initial materialisation and the incremental updates by using specialised algorithms for rules that produce large cliques; hence, we shall identify common classes
+of ‘hard’ rules and then develop such specialised algorithms.
+
+Acknowledgments
+This work was funded by the EPSRC projects MaSI3, Score!,
+and DBOnto, and the FP7 project Optique.
+
+References
+[Abiteboul et al., 1995] S. Abiteboul, R. Hull, and V. Vianu.
+
+Foundations of Databases. Addison Wesley, 1995.
+[Aref, 2010] Molham Aref. Datalog for Enterprise Software:
+
+from Industrial Applications to Research (Invited Talk). In
+Tech. Comm. ICLP, volume 7, page 1, 2010.
+[Baader and Nipkow, 1998] F. Baader and T. Nipkow. Term
+
+Rewriting and All That. CUP, 1998.
+[Bishop et al., 2011] Barry
+Bishop,
+Atanas
+Kiryakov,
+Damyan Ognyanoff, Ivan Peikov, Zdravko Tashev, and
+Ruslan Velkov. OWLIM: A family of scalable semantic
+repositories. Semantic Web, 2(1):33–42, 2011.
+[de Kleer, 1986] Johan de Kleer.
+An Assumption-Based
+TMS. Artificial Intelligence, 28(2):127–162, 1986.
+[Dewan et al., 1992] H. M. Dewan, D. Ohsie, S. J. Stolfo,
+
+O. Wolfson, and S. Da Silva. Incremental Database Rule
+Processing In PARADISER. Journal of Intelligent Information Systems, 1(2):177–209, 1992.
+[Doyle, 1979] Jon Doyle. A Truth Maintenance System. Ar-
+
+tificial Intelligence, 12(3):231–272, 1979.
+[Goasdou´e et al., 2013] Franc¸ois
+Goasdou´e,
+Ioana
+Manolescu, and Alexandra Roatis.
+Efficient query
+answering against dynamic RDF databases.
+In Proc.
+EDBT, pages 299–310. ACM, 2013.
+[Grosof et al., 2003] B. N. Grosof, I. Horrocks, R. Volz, and
+
+S. Decker. Description Logic Programs: Combining Logic
+Programs with Description Logic. In Proc. WWW, pages
+48–57, 2003.
+[Guo et al., 2005] Y. Guo, Z. Pan, and J. Heflin. LUBM: A
+
+benchmark for OWL knowledge base systems. Journal of
+Web Semantics, 3(2–3):158–182, 2005.
+[Gupta et al., 1993] A. Gupta, I. S. Mumick, and V. S. Sub-
+
+rahmanian. Maintaining Views Incrementally. In Proc.
+SIGMOD, pages 157–166. ACM, 1993.
+
+[Horrocks et al., 2004] I. Horrocks, P. F. Patel-Schneider,
+
+H. Boley, S. Tabet, B. Grosof, and M. Dean.
+SWRL:
+A Semantic Web Rule Language Combining OWL and
+RuleML, W3C Member Submission, 2004.
+[Ma et al., 2006] L. Ma, Y. Yang, Z. Qiu, G. T. Xie, Y. Pan,
+
+and S. Liu. Towards a Complete OWL Ontology Benchmark. In Proc. ESWC, pages 125–139, 2006.
+[Motik et al., 2009] B. Motik, B. Cuenca Grau, I. Horrocks,
+
+Z. Wu, A. Fokoue, and C. Lutz. OWL 2 Web Ontology
+Language: Profiles, W3C Recommendation, October 27
+2009.
+[Motik et al., 2014] Boris Motik, Yavor Nenov, Robert Piro,
+
+Ian Horrocks, and Dan Olteanu. Parallel Materialisation
+of Datalog Programs in Centralised, Main-Memory RDF
+Systems. In Proc. AAAI, 2014.
+[Motik et al., 2015a] Boris Motik, Yavor Nenov, Robert
+
+Piro, and Ian Horrocks. Handling owl:sameAs via Rewriting. In Proc. AAAI, 2015.
+[Motik et al., 2015b] Boris Motik, Yavor Nenov, Robert
+
+Piro, and Ian Horrocks.
+Incremental Update of Datalog Materialisation: the Backward/Forward Algorithm. In
+Proc. AAAI, 2015.
+[Nicolas and Yazdanian, 1983] J.-M. Nicolas and K. Yazda-
+
+nian. An Outline of BDGEN: A Deductive DBMS. In
+Proc. IFIP, pages 711–717, 1983.
+[Nieuwenhuis and Rubio, 2001] R. Nieuwenhuis and A. Ru-
+
+bio.
+Paramodulation-Based Theorem Proving.
+In
+A. Robinson and A. Voronkov, editors, Handbook of Automated Reasoning, volume I, chapter 7, pages 371–443.
+Elsevier Science, 2001.
+[Stocker and Smith, 2008] Markus
+Stocker
+and
+Michael
+Smith. Owlgres: A Scalable OWL Reasoner. In Proc.
+OWLED, 2008.
+[Urbani et al., 2012] J. Urbani, S. Kotoulas, J. Maassen,
+
+F. van Harmelen, and H. E. Bal. WebPIE: A Web-scale
+Parallel Inference Engine using MapReduce. Journal of
+Web Semantics, 10:59–75, 2012.
+[Urbani et al., 2013] J. Urbani, A. Margara, C. J. H. Jacobs,
+
+F. van Harmelen, and H. E. Bal. DynamiTE: Parallel Materialization of Dynamic RDF Data. In Proc. ISWC, volume
+8218, pages 657–672. Springer, 2013.
+[Wu et al., 2008] Z. Wu, G. Eadon, S. Das, E. I. Chong,
+
+V. Kolovski, M. Annamalai, and J. Srinivasan.
+Implementing an Inference Engine for RDFS/OWL Constructs
+and User-Defined Rules in Oracle. In Proc. ICDE, pages
+1239–1248. IEEE, 2008.
+[Zhou et al., 2013] Y. Zhou, B. Cuenca Grau, I. Horrocks,
+
+Z. Wu, and J. Banerjee. Making the most of your triple
+store: query answering in OWL 2 using an RL reasoner.
+In Proc. WWW, pages 1569–1580, 2013.
+
+
+A
+Proof of Theorem 1
+Let Π be a program (that ascribes no special meaning to ≈), and let E be a dataset. A derivation tree for a fact F from E w.r.t.
+Π is a finite tree T in which each node t is labelled with a fact Ft, and each nonleaf node t is labelled with a rule rt ∈Π and a
+substitution σt such that the following holds:
+D1. Fϵ = F holds for the root ϵ of T;
+D2. Ft ∈E holds for each leaf node t of T; and
+D3. h(rt)σt = Ft and b(rt)σt = {Ft1, . . . , Ftn} hold for each nonleaf node t of T with children t1, . . . , tn.
+The materialisation Π∞(E) of E w.r.t. Π is the smallest set containing each fact that has a derivation tree from E w.r.t. Π; this
+definition of Π∞(E) is equivalent to the one in Section 2. The height of a derivation tree is the length of its longest branch;
+moreover, the height of a fact F ∈Π∞(E) w.r.t. E and Π is the minimum height of a derivation tree for F from E w.r.t. Π.
+
+In the rest of this paper, we make the following assumption (∗): no derivation tree contains a node t where rt is (≈1) and
+σt(x1) = σt(x′
+
+1), or rt is (≈2) and σt(x2) = σt(x′
+2), or rt is (≈3) and σt(x3) = σt(x′
+3) . This is w.l.o.g. because, for each such
+t, we have Ft = Ft1 for t1 the first child of t; hence, we can always remove such t from the derivation tree.
+
+Next, we recapitulate Theorem 1 and present its proof, which we split into several claims.
+Theorem 1. Let (π, I) be the r-materialisation of a dataset E w.r.t. a program Π, and let E−be a dataset.
+
+1. Algorithm 1 terminates, at which point (π, I) contains the r-materialisation of E \ E−w.r.t. Π.
+2. Each combination of a rule r and a substitution τ is considered at most once in line 50 or line 58, but not both.
+3. Each combination of a rule r and a substitution τ is considered at most once in line 15.
+In the rest of this section, we fix a datalog program Π and datasets E and E−. Let (π, I) be the r-materialisation of E w.r.t. Π;
+let J ··= (Π ∪Π≈)∞(E); let E′ ··= E \ E−; let (π′, I′) be the r-materialisation of E′ w.r.t. Π; and let J′ ··= (Π ∪Π≈)∞(E′).
+By the monotonicity of datalog, we clearly have J′ ⊆J.
+
+We next show that Algorithm 5 essentially captures the r-materialisation algorithm by Motik et al. (2015a).
+
+Claim 1. Let P and ˆP be as obtained after a call to Algorithm 5 in line 23, let K ··= {d ≈d | d ∈voc(E)}, and let L be the
+set containing precisely each fact F that has a derivation T from K ∪E′ w.r.t. Π ∪Π≈in which Ft ∈Cπ holds for each node
+t of T. Then, the following properties hold:
+
+1. γ(c) = min Ec(L) for each constant c;
+
+2. P \ ˆP = γ(L); and
+3. each combination of a rule r and a substitution τ is considered at most once in line 50 or line 58, but not both.
+
+Proof (Sketch). Algorithm 5 is a variant of the r-materialisation algorithm by Motik et al. (2015a), so properties 1–3 hold by a
+straightforward modification of the correctness proof of that algorithm. This proof is quite lengthy so, for the sake of brevity,
+we just summarise the differences.
+
+• Lines 37–39 ensure γ(Cπ ∩K) ⊆P \ ˆP, and line 40 ensures γ(Cπ ∩E′) ⊆P \ ˆP; hence, Cπ ∩(K ∪E′) plays the
+same role that explicit facts play in the algorithm by Motik et al. (2015a).
+• Let F be an arbitrary fact considered in line 41. To ensure property 4 of Claim 1, the algorithm by Motik et al. (2015a)
+uses slightly different annotated queries to apply the rules in lines 48–49 only to facts extracted before F. In contrast,
+Algorithm 7 keeps track of previously processed facts in set V , but this has exactly the same effect.
+• All derivations of a fact in line 47, 50, or 58, are handled by Algorithm 7, which, for each F, checks whether π(F) ∈C;
+this is equivalent to checking F ∈Cπ. If the latter holds, then F is added to P, and otherwise F is added to Y . If in a
+subsequent invocation of Algorithm 5 set C is extended such that π(F) ∈C suddenly holds, then γ(F) is added to P in
+line 40. This, however, does not change the algorithm in any substantial way.
+
+The following claim follows immediately from the definitions in Algorithm 3.
+Claim 2. The following properties hold for an arbitrary fact F normal w.r.t. π:
+
+1. allProved(F) = t if and only if F̸ ∈S and F π ⊆(P \ ˆP)γ; and
+
+2. allDisproved(F) = t if and only if F π ∩(P \ ˆP)γ = ∅.
+
+We next show that sets C, P, ˆP, S, and γ always satisfy an important property.
+
+Claim 3. Assume that Algorithm 4 is applied to some fact F, mapping γ, and sets S, C, P, and ˆP where S is normal w.r.t. π
+and Sπ ∩J′ = ∅, and assume that all of these satisfy the following property:
+
+(♦) for each G ∈C, either Gπ ⊆(P \ ˆP)γ or, for each fact H ∈Gπ, each derivation tree T for H from E′ w.r.t.
+Π ∪Π≈, and each child ti of the root of T, we have π(Fti) ∈C.
+
+
+Then, property (♦) remains preserved after the invocation of Algorithm 4.
+
+Proof. The proof is by induction on recursion depth of Algorithm 4 at which a fact is added to C. For the induction base, (♦)
+remains preserved if the algorithm returns in line 22.
+
+For the induction step, assume that (♦) holds for each fact G ∈C different from F after a recursive call in line 27, 30, or 34.
+If the algorithm returns in line 24, 28, 31, or 35, then property 1 of Claim 2 implies F π ⊆(P \ ˆP)γ, so property (♦) remains
+preserved. Otherwise, consider an arbitrary fact H ∈F π and an arbitrary derivation tree T for H from E′ w.r.t. Π ∪Π≈.
+Let t1, . . . , tn be the children (if any exist) of the root ϵ of T; since J contains each fact labelling a node of T, we have
+{Fti, . . . , Fti} ⊆J′ ⊆J. Now let Fi = π(Fti); by the definition of r-materialisation, we have {F1, . . . , Fn} ⊆I. Moreover,
+for each 1 ≤i ≤n, we have Fi ∈J′ and Sπ ∩J′ = ∅, which imply Fi̸ ∈Sπ; moreover, S is normal w.r.t. π, so Fi̸ ∈S as
+well. Finally, we clearly have π(rϵσϵ) = π(rϵ)π(σϵ), and so h(π(rϵ))π(σϵ) = F and b(π(rϵ))π(σϵ) = {F1, . . . , Fn} ⊆I \ S.
+We next consider the forms of rϵ.
+
+• Assume rϵ is of the form (≈4), so n = 1. Fact F1 is eventually considered in line 26, so, due to the recursive call in line 27,
+we have F1 ∈C, as required.
+• Assume rϵ is of the form (≈1)–(≈3); thus, n = 2, F1 = F, and F2 = c ≈c for some constant c. Fact F1 = F is added to
+C in line 22. Moreover, by assumption (∗) on the shape of T, we have F2 = s ≈t with s̸ = t; since π(s) = π(t) = c, we
+have |cπ| > 1. Thus, due to the recursive call in line 30, we have F2 ∈C, as required.
+• Assume rϵ ∈Π. Then, π(rϵ) ∈π(Π), so π(rϵ) and π(σϵ) are eventually considered in lines 32 and 33; hence, due to the
+recursive call in line 34, we have Fi ∈C for each 1 ≤i ≤n, as required.
+
+Calls in line 6 ensure another property on C, P, ˆP, and S.
+Claim 4. The following properties hold after each line of Algorithm 1:
+
+1. property (♦) is satisfied;
+
+2. (P \ ˆP)γ = Cπ ∩J′;
+3. γ(c) = min Ec(Cπ ∩J′) for each constant c; and
+4. Sπ ∩J′ = ∅.
+5. For each fact F ∈O, we have F π̸ ⊆J′.
+6. D ⊆C.
+
+Proof. The proof is by induction on the number of iterations of the loop in lines 5–16. For the induction base, we have
+S = C = P = O = ∅in line 1, so properties 1–5 clearly hold initially. For the induction step, assume that all properties hold
+before line 6. Due to property 4 and Claim 3, property 1 remains preserved after line 6; hence, we next consider properties 2–6.
+
+(Property 2) Let K and L be as stated in Claim 1; note that property 2 of Claim 1 is equivalent to (P \ ˆP)γ = L. We first
+show (P \ ˆP)γ ⊆Cπ ∩J′. Since K ⊆J′, we clearly have J′ = (Π ∪Π≈)∞(K ∪E′). Moreover, for each F ∈(P \ ˆP)γ we
+have F ∈L, so by the definition of L there exists a derivation tree T for F from K ∪E′ w.r.t. P ∪Π≈such that Ft ∈Cπ holds
+for each node t of T; but then, we clearly have F ∈Cπ ∩J′. We next prove Cπ ∩J′ ⊆(P \ ˆP)γ by induction on the height
+h of a fact F ∈Cπ ∩J′ w.r.t. E′ and Π ∪Π≈.
+
+• If h = 0, then F ∈E′; since F ∈Cπ, by the definition of L we have F ∈L; but then, F ∈(P \ ˆP)γ as well.
+• Assume that the claim holds for each fact in Cπ ∩J′ whose height w.r.t. E′ and Π ∪Π≈is at most h, and consider an
+arbitrary fact F ∈Cπ ∩J′ with height h + 1; let T be the corresponding derivation tree for F. Moreover, assume that
+F̸ ∈(P \ ˆP)γ; then, F ∈Cπ implies π(F) ∈C; hence, property (♦) ensures that, for each child ti of the root of T, we
+have π(Fti) ∈C, which is equivalent to Fti ∈Cπ. Now the height of each Fti w.r.t. E′ and Π ∪Π≈is at most h so, by
+the induction assumption, we have Fti ∈(P \ ˆP)γ = L. The latter ensures that, for each Fti, there exists a derivation tree
+Ti in which each node is labelled by a fact contained in Cπ. Let T ′ be the derivation tree in which the root ϵ is labelled
+with the same fact, rule, and substitution as in T, and each Ti is a subtree of ϵ. Clearly, T ′ is a derivation tree for F
+from E′ w.r.t. Π ∪Π≈in which each node is labelled by a fact contained in Cπ; thus, by the definition of L, we have
+F ∈L = (P \ ˆP)γ, as required.
+
+(Property 3) This property follows directly from property 1 of Claim 1 and property 2 of Claim 4.
+(Property 4) Assume that some fact G is added to S in line 7. Then allDisproved(G) = t, which by property 2 of Claim 2
+implies Gπ ∩(P \ ˆP)γ = ∅. Property 2 of Claim 4 holds at this point, so we have Gπ ∩Cπ ∩J′ = ∅. Finally, lines 6 and 22
+ensure G ∈C, so we have Gπ ⊆Cπ; thus, Gπ ∩J′ = ∅, and so adding G to S preserves property 4.
+
+(Property 5) Assume that some fact F is added to O in line 16. Then allProved(F) = f, which by property 1 of Claim 2
+implies F ∈S or F π̸ ⊆(P \ ˆP)γ. In the former case, F π̸ ⊆J′ holds directly from property 4. In the latter case, property 2 of
+
+
+Claim 4 holds at this point, so we have F π̸ ⊆Cπ ∩J′; moreover, lines 6 and 22 ensure F ∈C, which implies F π ⊆Cπ; this,
+in turn, implies F π̸ ⊆J′. Consequently, adding F to O preserves property 5.
+
+(Property 6) Each fact F extracted from D in line 5 is passed in line 6 to Algorithm 4, which in turn ensures that F is added
+to C in line 22.
+
+We next show that set D contains each fact that needs to be deleted, and each fact that contains a constant whose representative
+changes as a result of the update.
+
+Claim 5. For each fact F ∈J \ J′, the following two properties hold in line 17:
+
+1. π(F) ∈D, and
+
+2. if F = s ≈t with s̸ = t, then D contains each fact G ∈I such that π(s) ∈voc(G) and Gπ̸ ⊆J′.
+
+Proof. Consider an arbitrary fact F ∈J \ J′.
+
+(Property 1) We prove the claim by induction on the height h of F w.r.t. E and Π ∪Π≈; the notion of the height of F is
+correctly defined because F ∈J. For the induction base, assume h = 0; now F ∈J implies F ∈E; moreover, F̸ ∈J′ implies
+F̸ ∈E′; thus, F ∈E−, and so π(F) is added to D in lines 3–4. For the induction step, assume that the claim holds for each fact
+in J \ J′ whose height w.r.t. E and Π ∪Π≈is at most h, and assume that the height of F w.r.t. E and Π ∪Π≈is h+1. Let T be
+a corresponding derivation tree for F from E w.r.t. Π ∪Π≈; let t1, . . . , tn be the children of the root ϵ of T; and let Fi = π(Fti)
+for each 1 ≤i ≤n. Moreover, let N contain precisely each Fi, 1 ≤i ≤n, such that Fi ∈D and F π
+
+i̸ ⊆J. Since F̸ ∈J′, some
+j with 1 ≤j ≤n exists such that Ftj̸ ∈J′; moreover, T is a derivation tree for F from E w.r.t. Π ∪Π≈, so Ftj ∈J and the
+height of Ftj is at most h; but then, we have π(Ftj) = Fj ∈D by the induction hypothesis, and so we also have Fj ∈N—that
+is, N̸ = ∅. Each fact in D is eventually considered in line 5; thus, let F ′ be the fact from N that is consider first. At that point,
+we have O ∩N = ∅because facts are added to added to O in line 16 only after they have been considered; hence, Fi ∈I \ O
+holds at this point for each 1 ≤i ≤n. Furthermore, F ′ ∈D ⊆C implies (F ′)π ⊆Cπ; but then, (F ′)π̸ ⊆J′ and property 2
+of Claim 4 imply (F ′)π̸ ⊆(P \ ˆP)γ; thus, property 1 of Claim 2 ensures we have allProved(F ′) = f and so the check in line 8
+passes. We next consider the possible forms of the rule rϵ.
+
+• Assume that rϵ is (≈1)–(≈3). Then, we clearly have π(F) = F1; fact Ft2 is of the form Ft2 = s ≈t with s̸ = t and
+c = π(s) = π(t); and c ∈voc(F1). We have two possible ways to choose F ′. If F ′ = F1, then π(F) = F1 = F ′ ∈D
+holds. If F ′ = F2, then s̸ = t by assumption (∗) on the shape of T, so |cπ| > 1 and the check in line 9 passes; furthermore,
+due to F1 ∈I \ O, we eventually consider fact G = F1 = π(F) in line 10 and add it to D in line 11.
+
+• Assume that rϵ is (≈4). Then, F is of the form s ≈s so π(F) = c ≈c for c = π(s); clearly, we have c ∈voc(F ′) and
+F ′ = F1. But then, π(F) is added to D in line 12.
+
+• Assume that rϵ ∈Π. We clearly have π(rϵσϵ) = π(rϵ)π(σϵ); therefore, we have π(F) = π(h(rϵσϵ)) = h(π(rϵ))π(σϵ)
+and π(b(rϵσϵ)) = {F1, . . . , Fn} = b(π(rϵ))π(σϵ) ⊆I \ O. Moreover, we clearly have π(rϵ) ∈π(Π). Finally, let i be the
+smallest integer with 1 ≤i ≤n such that Fi = F ′, and let Q be annotated query (2) obtained from π(rϵ) for that i; clearly,
+the way in which we chose i ensures Fj̸ = F ′ for each j with 1 ≤j < i. All of these observations ensure together that
+⟨π(rϵ), Q, σ)⟩∈π(Π).matchBody(F ′) is considered in line 13, and that π(σϵ) is considered in line 14; consequently,
+π(F) is added to D in line 15.
+
+(Property 2) Assume that F is of the form F = s ≈t with s̸ = t, let c = π(s) = π(t), and let F ′ = π(F). Property 1 of
+this claim ensures F ′ = c ≈c ∈D ⊆C, and so we have (F ′)π ⊆Cπ; but then, together with F̸ ∈J′, property 2 of Claim 4
+ensures (F ′)π̸ ⊆(P \ ˆP)γ; finally, property 1 of Claim 2 ensures allProved(F ′) = f. Fact F ′ is eventually processed in line 5,
+and by the previous discussion the check in line 8 passes. Moreover, s̸ = t implies |cπ| > 1, so the check in line 9 passes as
+well. Now consider an arbitrary fact G ∈I such that c ∈voc(G) and Gπ̸ ⊆J′; property 5 of Claim 4 ensures G̸ ∈O, and
+therefore G is added to D in line 11.
+
+We next show that Algorithm 1 correctly updates I to I′.
+
+Claim 6. Algorithm 1 updates set I to I′.
+
+Proof. Property 6 of Claim 4 and property 1 of Claim 5 clearly ensure that (3) holds. Furthermore, property 2 of Claim 4
+clearly ensures that (4) holds.
+
+J \ J′ ⊆Dπ ⊆Cπ
+(3)
+
+(P \ ˆP)γ ⊆J′ ⊆J
+(4)
+
+For convenience we recapitulate the definitions of π(c), π′(c), and γ(c); note that (7) follows immediately from properties 2
+and 3 of Claim 4. Finally, (4), (6), and (7) clearly imply (8).
+
+π(c) = min Ec(J)
+(5)
+
+
+π′(c) = min Ec(J′)
+(6)
+
+γ(c) = min Ec((P \ ˆP)γ)
+(7)
+
+π′((P \ ˆP)γ) = π′(P \ ˆP)
+(8)
+
+Before proceeding, we prove several useful properties. Consider an arbitrary constant c with π(c) = c; by (4) and (5)–(7),
+we clearly have π′(c) = c and γ(c) = c. Thus, for each fact F with π(F) = F, we have π′(F) = F and γ(F) = F, which
+ensures the following properties:
+
+F ∈I iff F ∈J,
+F ∈I′ iff F ∈J′,
+F ∈(P \ ˆP)γ iff F ∈P \ ˆP,
+F ∈D iff F ∈Dπ, and
+F ∈C iff F ∈Cπ.
+(9)
+
+We next show that lines 18–19 update π to π′. To this end, consider arbitrary constants c and d with π(d) = c, and let
+F = c ≈c. Set F π clearly contains each triple of the form d ≈e ∈J, which, together with (4), implies
+
+Ed(F π ∩(P \ ˆP)γ) = Ed((P \ ˆP)γ),
+Ed(F π ∩J′) = Ed(J′),
+and
+Ed(F π ∩J) = Ed(J).
+(10)
+
+We now consider two possible cases.
+
+• Assume that F ∈C. Thus, F π ⊆Cπ holds, so property 2 of Claim 4 ensures F π ∩(P \ ˆP)γ = F π ∩J′ = V . But then,
+(10) imply Ed(V ) = Ed(J′) = Ed((P \ ˆP)γ). Finally, (6) and (7) imply π′(d) = γ(d).
+
+• Assume that F̸ ∈C. We thus have F π ∩Cπ = ∅; but then, J \ J′ ⊆Cπ implies F π ∩(J \ J′) = ∅, which then implies
+F π ∩J = F π ∩J′. Finally, (5), (6), and (10) together imply π′(d) = π(d).
+
+We next prove I \ I′ = D \ (P \ ˆP) and hence show that line 20 correctly deletes the relevant facts. To this end, we next
+consider each side of the inclusion.
+
+• Assume that F ∈I \ I′. Then F ∈I implies π(F) = F, so by (9) we have F ∈J \ J′. By (3) we have F ∈Dπ ⊆Cπ,
+and by (9) we have F ∈D ⊆C. Moreover, F̸ ∈J′ and property 2 of Claim 4 imply F̸ ∈(P \ ˆP)γ, which by (9) implies
+F̸ ∈P \ ˆP. Consequently, we have F ∈D \ (P \ ˆP).
+
+• Assume that F ∈D \ (P \ ˆP). Then D ⊆I implies F ∈I, so π(F) = F. Also, F̸ ∈P \ ˆP and (9) imply F̸ ∈(P \ ˆP)γ.
+But then, property 2 of Claim 4 ensures F̸ ∈Cπ ∩J′. Due to D ⊆C and (9), we have F ∈Cπ; thus, F̸ ∈J′, so by (9)
+we have F̸ ∈I′. Consequently, we have F ∈I \ I′.
+
+We finally prove that I′ = [I \ (I \ I′)] ∪π′(P \ ˆP) and hence show that line 21 correctly adds the relevant facts; please
+remember that, due to updates in lines 18–19, mapping π actually contains π′ in line 21.
+
+• Assume that F ∈[I \ (I \ I′)] ∪π′(P \ ˆP). We consider two cases.
+
+– Assume that F ∈I \ (I \ I′). Thus, F ∈I and F̸ ∈I \ I′; but then, we have F ∈I′, as required.
+– Assume that F ∈π′(P \ ˆP). Then, some G ∈(P \ ˆP)γ exists such that π′(G) = F. By property 2 of Claim 4, we
+
+have G ∈J′; but then, we have π′(G) = F ∈I′, as required.
+
+• Assume that F ∈I′ and F̸ ∈I \ (I \ I′). Thus, F̸ ∈I, but clearly F ∈J′ ⊆J. Due to the latter, some G ∈I exists
+such that π(F) = G; clearly, F̸ = G and Gπ̸ ⊆J. Since G ∈I, we have π(G) = G; thus, by (9) we have π′(G) = G.
+Moreover, F ∈I′ implies π′(F) = F.
+Consequently, distinct constants a ∈voc(F) and b ∈voc(G) exist such that
+a ≈b ∈J \ J′; but then, property 2 of Claim 5 and Gπ̸ ⊆J ensure that G ∈D ⊆C ⊆Cπ, which ensures F ∈Cπ.
+Since F ∈J′, by property 2 of Claim 4 we have F ∈(P \ ˆP)γ; but then, by (8) we have F ∈π′(P \ ˆP), as required.
+
+We next show that Algorithm 1 does not repeat derivations.
+
+Claim 7. Each combination of a rule r and a substitution τ is considered at most once in line 15.
+
+Proof. Assume that a rule r ∈Π and substitution τ exist that are considered in line 15 twice, when (not necessarily distinct)
+facts F and F ′ are extracted from D. Moreover, let Bi and Bi′ be the body atoms of r that τ matches to F and F ′—that is,
+F = Biτ and F ′ = Bi′τ. Finally, let Q′ be the annotated query considered in line 13 when atom Bi′ of r is matched to F ′. We
+have the following possibilities.
+
+• Assume that F = F ′. Then, Bi and Bi′ must be distinct, so w.l.o.g. assume that i ≤i′. But then, query Q′ contains atom
+B̸=
+
+i , so τ cannot be returned in line 14 when evaluating Q′.
+
+• Assume that F̸ = F ′ and that, w.l.o.g. F is extracted from D before F ′. Then, we have F ∈O due to line 16, and therefore
+we have F̸ ∈I \ O; consequently, τ cannot be returned in line 14 when evaluating Q′.

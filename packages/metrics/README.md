@@ -171,7 +171,7 @@ With `--docs` in place of a file, the programs are the ones the docs show: every
 bun run skill-eval lion-research verifies-company-figures --runs 2
 ```
 
-A skill's frozen eval case (a folder under `skills/<skill>/evals/` with a `prompt.md`, a `case.yaml`, a corpus, and a `grade.mjs`) is run by headless agents, `claude -p`, each in a folder of its own under `out/skill-eval/`. Each agent gets a copy of the skill without its `evals/` folder, so it cannot read the answers, and the case's corpus where the prompt says it is. The session's own skills are switched off and only project settings load, so an installed copy of the skill cannot stand in for the one under test. The case's grader then grades what each run made, with the repository's own Lion build or the one `LION_CLI` names, and each run prints lines like these:
+A skill's frozen eval case (a folder under `skills/<skill>/evals/` with a `prompt.md`, a `case.yaml`, a corpus, and a `grade.mjs`) is run by headless agents, `claude -p`. Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, so neither the repository's `CLAUDE.md` nor the memory Claude Code keeps of the repository reaches it, and no agent finds another's work. Each agent gets a copy of the skill without its `evals/` folder, so it cannot read the answers, and the case's corpus where the prompt says it is. The session's own skills are switched off and only project settings load, so an installed copy of the skill cannot stand in for the one under test. When its sessions end, its folder is copied to `out/skill-eval/<run>/`, beside its transcripts, which it never saw. The case's grader then grades what each run made, its research folder when it made one and the run's folder otherwise, with the repository's own Lion build or the one `LION_CLI` names, and each run prints lines like these:
 
 ```
 run: out/skill-eval/lion-research-verifies-company-figures-2026-11-14T16-36-01-186Z-2
@@ -191,7 +191,23 @@ models: claude-opus-5-5
 
 The other run of the same command passed 23 of 23, for $2.85 in 7.4 minutes: two runs of one skill can differ by six checks, which is why a change to a skill is judged on more than one run.
 
-`--runs n` runs n agents at once. `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, `--model` and `--budget` (US dollars per run) pass on to `claude -p`, and `--grade <run folder>` grades a run again. A run costs what an agent session of the case's length costs, so run few, and more than one only where the runs disagree.
+`--runs n` runs n agents at once. `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, or another skill to compare it with; the agent is told the name its `SKILL.md` gives. `--bare` runs the case with no skill at all. `--model` and `--budget` (US dollars per session) pass on to `claude -p`, and `--grade <run folder>` grades a run again. A run costs what an agent session of the case's length costs, so run few, and more than one only where the runs disagree.
+
+### Cases of more than one session
+
+A case may run its agent several times in the same folder, as work that a later session picks up. Its prompts are then a `sessions/` folder of files named by number, `1.md`, `2.md`, run in that order, and each later prompt gets the message the session before it ended with wherever it says `{{earlier}}`. The transcripts are `agent-1.json`, `agent-2.json`, and the lines add up what all the sessions spent.
+
+A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts. All of it lives under `evals/`, so no agent reads it.
+
+The reasoning skill's case `rechecks-what-changed` is one: two sessions check the documented scores of 24 prompts through a metered eval service, and between them seven prompts change in ways neither git nor file times date. Run it with the skill, with the plain-notes baseline the case keeps, and with no skill, to see what the skill's record is worth:
+
+```bash
+bun run skill-eval lion-reasoning rechecks-what-changed --runs 2
+bun run skill-eval lion-reasoning rechecks-what-changed --from skills/lion-reasoning/evals/rechecks-what-changed/baselines/notes --runs 2
+bun run skill-eval lion-reasoning rechecks-what-changed --bare --runs 2
+```
+
+Its README gives the results of each.
 
 ### An experiment loop over a skill
 

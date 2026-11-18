@@ -1,0 +1,51 @@
+{
+  "claims": [
+    {
+      "id": "li-l34",
+      "source": "lion-readme",
+      "quote": "Evaluation always finishes.",
+      "says": {
+        "lion": "guaranteed termination",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l35",
+      "source": "lion-readme",
+      "quote": "So the result does not depend on the order rules or facts were added in.",
+      "says": {
+        "lion": "results independent of rule order",
+        "has": true
+      },
+      "where": "Existential rules"
+    },
+    {
+      "id": "li-l36",
+      "source": "lion-readme",
+      "quote": "Lion is a JSON-based Lisp.",
+      "says": {
+        "lion": "plain-code evaluation",
+        "has": true
+      }
+    },
+    {
+      "id": "li-l37",
+      "source": "lion-bench",
+      "quote": "n = 100,000: real 2.56 s",
+      "says": {
+        "lion": "deep recursion",
+        "has": true
+      }
+    },
+    {
+      "id": "li-l38",
+      "source": "lion-bench",
+      "quote": "time grows about n^1.9 between the two largest sizes",
+      "says": {
+        "lion": "skewed joins",
+        "has": false
+      }
+    }
+  ]
+}

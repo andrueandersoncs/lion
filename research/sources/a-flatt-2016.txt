@@ -1,0 +1,124 @@
+▼ Binding as Sets of Scopes
+1 Background: Scope and Macros
+2 Scope Sets for Pattern- Based Macros
+3 Scope Sets for Procedural Macros and Modules
+4 Implementation and Experience
+5 Model
+6 Defining Hygiene
+7 Other Related Work
+8 Conclusion
+Acknowledgments
+References
+On this page:
+Binding as Sets of Scopes
+&larr; prev up next &rarr;
+Binding as Sets of Scopes
+Notes on a new model of macro expansion for Racket
+Matthew Flatt University of Utah, USA mflatt@cs.utah.edu
+This is an extended version of a
+POPL’16
+paper . Executable models from the paper are available as
+model.zip . The
+POPL’16
+artifact provides additional supporting material,
+including archived implementations of the old and new
+expanders.
+Racket supports a family of languages— including the main Racket
+language, Typed Racket, teaching languages, a documentation language,
+an Algol 60 implementation, and more— where the languages interoperate
+in natural and useful ways. Furthermore, programmers
+can create new languages and language extensions with the same level
+of support and interoperability as the predefined languages. Racket’s
+support for multiple languages and extensions is enabled by its
+macro system, which provides a representation of syntax
+fragments and constructs for manipulating and composing
+those fragments.
+Racket’s representation of syntax builds on a long line of
+work on macros in Lisp and Scheme ( Kohlbecker et al. 1986 ; Kohlbecker and Wand 1987 ; Clinger and Rees 1991 ; Dybvig et al. 1993 ). A result of that line of
+work is often referenced by the shorthand of hygienic macro
+expansion , meaning that macros can both introduce bindings and refer
+to binding from the macro’s definition context, and macro expansion will not
+trigger accidental name capture in the way that naive textual
+expansion would. Although Racket does not restrict language extension
+to forms that can be expressed as hygienic macros, a representation of
+syntax fragments that supports hygienic expansion is an essential
+ingredient to more general, composable language extensions.
+Roughly, hygienic macro expansion is desirable for the same reason as
+lexical scope: both enable local reasoning about binding so that
+program fragments compose reliably. The analogy suggests specifying
+hygienic macro expansion as a kind of translation into lexical-scope
+machinery. In that view, variables must be renamed to match the
+mechanisms of lexical scope as macro expansion proceeds. A
+specification of hygiene in terms of renaming accommodates simple
+binding forms well, but it becomes unwieldy for recursive definition
+contexts ( Flatt et al. 2012, section 3.8 ), especially for
+contexts that allow a mixture of macro and non-macro definitions. The
+renaming approach is also difficult to implement compactly and
+efficiently in a macro system that supports “hygiene bending”
+operations, such as datum->syntax , because a history of
+renamings must be recorded for replay on an arbitrary symbol.
+In a new macro expander for Racket, we discard the renaming approach
+and start with a generalized idea of macro scope, where lexical scope
+is just a special case of macro scope when applied to a language
+without macros. Roughly, every binding form and macro expansion
+creates a scope , and each fragment of syntax acquires a
+set of scopes that determines binding of identifiers within
+the fragment. In a language without macros, each scope set is
+identifiable by a single innermost scope. In a language with macros,
+identifiers acquire scope sets that overlap in more general ways.
+Our experience is that this set-of-scopes model is simpler
+to use than the old macro expander, especially for macros that work with recursive-definition
+contexts or create unusual binding patterns. Along similar lines, the
+expander’s implementation is simpler than the old one based on
+renaming, and the implementation avoids bugs that were
+difficult to repair in the old expander.
+Finally, the new macro expander is able to provide more helpful
+debugging information when binding resolution fails.
+All of these benefits reflect the way that scope sets
+are precise enough for specification but abstract enough to allow
+high-level reasoning.
+This change to the expander’s underlying model of binding can affect
+the meaning of existing Racket macros. A small amount of
+incompatibility seems acceptable and even desirable if it enables
+easier reasoning overall. Drastic incompatibilities would be suspect,
+however, both because the old expander has proven effective and because
+large changes to code base would be impractical. Consistent with those
+aims, purely pattern-based macros work with the new expander the same
+as with the old one, except for unusual macro patterns within a
+recursive definition context.
+More generally, our experiments indicate that the majority of existing
+Racket macros work unmodified, and other macros can be adapted with
+reasonable effort.
+1 Background: Scope and Macros
+2 Scope Sets for Pattern-Based Macros
+2.1 Scope Sets
+2.2 Bindings
+2.3 Recursive Macros and Use-Site Scopes
+2.4 Use-Site Scopes and Macro-Generated Definitions
+2.5 Ambiguous References
+3 Scope Sets for Procedural Macros and Modules
+3.1 Identifier Comparisons with Scope Sets
+3.2 Local Bindings and Syntax Quoting
+3.3 Ensuring Distinct Bindings
+3.4 First-Class Definition Contexts
+3.5 Rename Transformers
+3.6 Modules and Phases
+3.7 The Top Level
+3.8 The Syntax-Function Zoo
+4 Implementation and Experience
+4.1 Initial Compatibility Results
+4.2 Longer-Term Compatibility Considerations
+4.3 Benefits for New Macros
+4.4 Debugging Support
+4.5 Scope Sets for JavaScript
+5 Model
+5.1 Single-Phase Expansion
+5.2 Multi-Phase Expansion
+5.3 Local Expansion
+5.4 First-Class Definition Contexts
+6 Defining Hygiene
+7 Other Related Work
+8 Conclusion
+Acknowledgments
+References
+&larr; prev up next &rarr;

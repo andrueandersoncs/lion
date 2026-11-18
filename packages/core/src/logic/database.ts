@@ -5,7 +5,11 @@ import {
   logicError,
   takes,
 } from "@/errors/evaluation";
-import { aggregator, LATTICE_AGGREGATES } from "@/logic/aggregates";
+import {
+  aggregateCall,
+  aggregator,
+  LATTICE_AGGREGATES,
+} from "@/logic/aggregates";
 import {
   type CompiledQuery,
   type CompiledRule,
@@ -61,6 +65,7 @@ import {
   isForm,
   isGroundValue,
   type LionFunction,
+  type LogicForm,
   type LogicValue,
   LogicVariable,
   logicKey,
@@ -157,16 +162,102 @@ const keyProblem = (
     : `Relation "${name}" repeats a key column.`;
 };
 
-const describeRelation = (relation: RelationInfo) =>
-  relation.key === undefined
-    ? `columns ${JSON.stringify(relation.columns)}`
-    : `columns ${JSON.stringify(relation.columns)} and key ${JSON.stringify(keyColumns(relation))}`;
+/** What a relation's merge says, as the option writes it: column to aggregate. */
+export const mergeOption = (relation: RelationInfo) =>
+  relation.merge === undefined
+    ? undefined
+    : Object.fromEntries(
+        relation.merge.map(([position, kind]) => [
+          relation.columns[position],
+          `aggregate/${kind}`,
+        ])
+      );
+
+const describeRelation = (relation: RelationInfo) => {
+  const columns = `columns ${JSON.stringify(relation.columns)}`;
+  const key =
+    relation.key === undefined
+      ? ""
+      : ` and key ${JSON.stringify(keyColumns(relation))}`;
+  const merge =
+    relation.merge === undefined
+      ? ""
+      : ` and merge ${JSON.stringify(mergeOption(relation))}`;
+  return `${columns}${key}${merge}`;
+};
+
+const MERGES = LATTICE_AGGREGATES.map((kind) => `"aggregate/${kind}"`);
+
+/**
+ * What is wrong with a relation's merge: it needs a key, and names columns
+ * outside the key, each with a lattice aggregate, whose values only move
+ * one way, so the join of a key's candidates does not depend on their order.
+ */
+const mergeProblem = (
+  name: string,
+  columns: readonly string[],
+  key: readonly string[] | undefined,
+  merge: readonly (readonly [string, string])[]
+) => {
+  if (key === undefined) {
+    return `Relation "${name}" merges the rows a key gets, so it needs a key, as in {"key": ["id"], "merge": {...}}.`;
+  }
+  for (const [column, kind] of merge) {
+    if (!columns.includes(column)) {
+      return `Relation "${name}" has no column "${column}" to merge. Its columns are ${JSON.stringify(columns)}.`;
+    }
+    if (key.includes(column)) {
+      return `Relation "${name}" cannot merge "${column}": it is part of the key, and the key says which rows merge.`;
+    }
+    if (!MERGES.includes(JSON.stringify(kind))) {
+      return `Relation "${name}" merges "${column}" with ${JSON.stringify(kind)}, but a merge joins values with ${latticeNames("or")}, whose result does not depend on the order the values come in.`;
+    }
+  }
+  return;
+};
+
+/**
+ * The rule that makes a relation's facts the candidates of its merge: it
+ * reads them under `factsName`, and its head joins each merged column. Its
+ * source is the relation's declaration, which is what makes facts combine.
+ */
+export const factsRule = (relation: RelationInfo): CompiledRule => {
+  const vars = relation.columns.map(
+    (_, position) => new LogicVariable(`_fact${position}`)
+  );
+  const kinds = new Map(relation.merge ?? []);
+  const merge = mergeOption(relation);
+  return {
+    aggregates: [...kinds.keys()].sort((a, b) => a - b),
+    body: [
+      new Atom(
+        { columns: relation.columns, name: factsName(relation.name) },
+        vars
+      ),
+    ],
+    given: true,
+    head: new Atom(
+      relation,
+      vars.map((variable, position) => {
+        const kind = kinds.get(position);
+        return kind === undefined ? variable : aggregateCall(kind, variable);
+      })
+    ),
+    source: [
+      "relation",
+      relation.name,
+      relation.columns,
+      { key: keyColumns(relation), ...(merge === undefined ? {} : { merge }) },
+    ],
+  };
+};
 
 export const declareRelation = (
   database: LogicDatabase,
   name: string,
   columns: readonly string[],
-  key?: readonly string[]
+  key?: readonly string[],
+  merge?: readonly (readonly [string, string])[]
 ): Effect.Effect<RelationInfo, LogicError> => {
   if (new Set(columns).size !== columns.length) {
     return logicError(`Relation "${name}" repeats a column name.`);
@@ -183,7 +274,10 @@ export const declareRelation = (
     return logicError(used);
   }
   const problem =
-    key === undefined ? undefined : keyProblem(name, columns, key);
+    (key === undefined ? undefined : keyProblem(name, columns, key)) ??
+    (merge === undefined || merge.length === 0
+      ? undefined
+      : mergeProblem(name, columns, key, merge));
   if (problem !== undefined) {
     return logicError(problem);
   }
@@ -193,6 +287,19 @@ export const declareRelation = (
     ...(key === undefined
       ? {}
       : { key: key.map((column) => columns.indexOf(column)) }),
+    ...(merge === undefined || merge.length === 0
+      ? {}
+      : {
+          merge: merge
+            .map(
+              ([column, kind]) =>
+                [
+                  columns.indexOf(column),
+                  kind.slice("aggregate/".length),
+                ] as const
+            )
+            .sort(([a], [b]) => a - b),
+        }),
   };
   const existing = database.relations.get(name);
   if (existing !== undefined) {
@@ -204,6 +311,10 @@ export const declareRelation = (
   }
   database.relations.set(name, relation);
   database.facts.set(name, new TupleSet());
+  if (relation.merge !== undefined) {
+    database.rules = [...database.rules, factsRule(relation)];
+    touch(database);
+  }
   return Effect.succeed(relation);
 };
 
@@ -498,12 +609,19 @@ const follow = (
     if (goals.size > MOST_GOALS) {
       goals.clear();
     }
-    return Effect.gen(function* () {
-      const pass = yield* maintain(
-        model,
-        new Map(net.gained),
-        new Map(net.lost)
+    // The facts of a relation that merges are the candidates its rule
+    // reads, under their own name, and not its rows.
+    const given = (rows: ReadonlyMap<string, TupleSet>) =>
+      new Map(
+        [...rows].map(([name, set]) => [
+          database.relations.get(name)?.merge === undefined
+            ? name
+            : factsName(name),
+          set,
+        ])
       );
+    return Effect.gen(function* () {
+      const pass = yield* maintain(model, given(net.gained), given(net.lost));
       for (const [key, goal] of [...goals]) {
         if (!(yield* followGoal(goal, pass, net, touched))) {
           goals.delete(key);
@@ -567,7 +685,7 @@ const renew = (database: LogicDatabase, before: Model | undefined) =>
     if (before === undefined || running) {
       return Effect.void;
     }
-    const next = new Model(database.facts, database.rules);
+    const next = modelOf(database);
     const stale = carry(before, next);
     database.model = next;
     return maintain(next, new Map(), new Map(), stale).pipe(
@@ -673,15 +791,19 @@ const changeFacts = (
 const these = (atoms: readonly Atom[]) =>
   atoms.length === 1 ? "this fact" : "these facts";
 
-/** Adds a fact. One whose key is already present replaces the old row. */
+/**
+ * Adds a fact. One whose key is already present replaces the old row,
+ * unless the relation merges what a key gets: then every fact is a
+ * candidate, and the key holds their join.
+ */
 const addFact = (
   facts: TupleSet,
-  { key }: RelationInfo,
+  { key, merge }: RelationInfo,
   tuple: Tuple,
   log: Change[] | undefined
 ) => {
   let changed = false;
-  if (key !== undefined) {
+  if (key !== undefined && merge === undefined) {
     const keyValues = key.map((position) => tuple[position]);
     for (const old of [...facts.lookup(key, keyValues)]) {
       if (valueKey(old) !== valueKey(tuple)) {
@@ -707,10 +829,12 @@ const stated = (
   const ids: (string | undefined)[] = [];
   let keyed = 0;
   for (const [atom, tuple] of tuples.length < 2 ? [] : tuples) {
-    const { key, name } =
+    const { key, merge, name } =
       database.relations.get(atom.relation.name) ?? atom.relation;
     const id =
-      key && valueKey([name, ...key.map((position) => tuple[position])]);
+      key === undefined || merge !== undefined
+        ? undefined
+        : valueKey([name, ...key.map((position) => tuple[position])]);
     ids.push(id);
     if (id !== undefined) {
       keyed += 1;
@@ -730,7 +854,11 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
     for (const atom of atoms) {
-      if (isAggregated(database.rules, atom.relation.name)) {
+      const declared = database.relations.get(atom.relation.name);
+      if (
+        declared?.merge === undefined &&
+        isAggregated(database.rules, atom.relation.name)
+      ) {
         return yield* logicError(
           `"${atom.relation.name}" is computed by aggregate rules, so it cannot have facts.`
         );
@@ -793,7 +921,10 @@ const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
     for (const { relation } of headsOf(rule)) {
       const earlier = shapes.get(relation.name);
       if (earlier !== undefined && earlier !== shape) {
-        return `Every rule for "${relation.name}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`;
+        const merge = mergeOption(relation);
+        return merge === undefined
+          ? `Every rule for "${relation.name}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`
+          : `"${relation.name}" merges ${show(merge)}, so a rule for it gives each of those columns plainly or with that aggregate, and aggregates nothing else, but ${show(rule.source)} differs.`;
       }
       shapes.set(relation.name, shape);
     }
@@ -1023,6 +1154,7 @@ export const addRules = (
     const relation = rule.head.relation.name;
     if (
       rule.aggregates.length > 0 &&
+      database.relations.get(relation)?.merge === undefined &&
       (database.facts.get(relation)?.size ?? 0) > 0
     ) {
       return logicError(
@@ -1062,6 +1194,64 @@ export const addRules = (
 };
 
 /**
+ * A database that starts as this one is and goes its own way: it shares
+ * the declarations, rules, and invariants, and the facts of each relation
+ * until it changes them, when it changes its own copy.
+ */
+const copyOf = (database: LogicDatabase, changing: Iterable<string>) => {
+  const copy = new LogicDatabase({ goalDirected: database.goalDirected });
+  for (const [name, relation] of database.relations) {
+    copy.relations.set(name, relation);
+  }
+  for (const [name, schema] of database.schemas) {
+    copy.schemas.set(name, schema);
+  }
+  for (const [name, facts] of database.facts) {
+    copy.facts.set(name, facts);
+  }
+  for (const name of changing) {
+    const facts = database.facts.get(name);
+    if (facts !== undefined) {
+      copy.facts.set(name, facts.clone());
+    }
+  }
+  copy.rules = database.rules;
+  copy.invariants = database.invariants;
+  return copy;
+};
+
+/**
+ * What an expression gives in the database as it would be after some
+ * changes, each a `fact` or `retract` form with its relation calls, made in
+ * order as the form would make it. The database itself does not change.
+ */
+const assumeIn =
+  (database: LogicDatabase) =>
+  (changes: readonly LogicForm[], expression: unknown): LogicEffect<unknown> =>
+    Effect.gen(function* () {
+      const calls = (change: LogicForm) => change.parts as readonly Atom[];
+      const copy = copyOf(
+        database,
+        changes.flatMap((change) =>
+          calls(change).map(({ relation }) => relation.name)
+        )
+      );
+      for (const change of changes) {
+        yield* change.form === "fact"
+          ? assertFacts(copy, calls(change))
+          : retractFacts(copy, calls(change));
+      }
+      return yield* reading(copy, (model) => answer(model, expression));
+    });
+
+/** A model of the database's facts and rules, which can ask what it assumes. */
+const modelOf = (database: LogicDatabase) => {
+  const model = new Model(database.facts, database.rules);
+  model.assume = assumeIn(database);
+  return model;
+};
+
+/**
  * Reads the database's model. While `use` runs, the model also answers the
  * questions that waiting forms ask when they run.
  */
@@ -1070,7 +1260,7 @@ const reading = <A>(
   use: (model: Model) => LogicEffect<A>
 ): LogicEffect<A> =>
   Effect.suspend(() => {
-    database.model ??= new Model(database.facts, database.rules);
+    database.model ??= modelOf(database);
     const model = database.model;
     return use(model).pipe(
       Effect.provideService(LionAskerService, {
@@ -1195,6 +1385,9 @@ export const queryDatabase = (
 export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
   reading(database, (model) =>
     Effect.gen(function* () {
+      if (isForm(question, "assuming")) {
+        return yield* term(model, question, new Map());
+      }
       const plans = yield* compiling(() =>
         questionPlans(question, () => false)
       );

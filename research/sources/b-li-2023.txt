@@ -1,0 +1,2666 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract.
+1 Introduction
+2 Illustrative Overview
+3 Language
+3.1 Data Types
+3.2 (Horn) Rules
+3.3 Probabilistic Extensions
+4 Reasoning Framework
+4.1 Provenance Framework
+4.2 SclRam Intermediate Language
+4.3 Operational Semantics of SclRam
+4.4 External Interface and Execution Pipeline
+4.5 Differentiable Reasoning with Provenance
+4.5.1 diff-max-min-prob ( dmmp )
+4.5.2 diff-add-mult-prob ( damp )
+4.5.3 diff-top-k-proofs ( dtkp )
+4.6 Practical Considerations
+5 Implementation
+6 Evaluation
+6.1 Benchmarks and Baselines
+6.2 RQ1: Our Solutions and Expressivity
+6.3 RQ2: Performance and Accuracy
+6.4 RQ3: Runtime Efficiency
+6.5 RQ4: Generalizability, Interpretability, and Data-Efficiency
+6.6 RQ5: Analysis of Failure Modes
+7 Related Work
+8 Conclusion
+References
+A Scallop Language Syntax
+B Reasoning Framework
+B.1 Provenance Extensions
+B.2 Abstract Syntax of SclRam
+Remark
+B.3 Operational Semantics of SclRam
+B.4 Provenance Structures
+B.4.1 diff-max-min-prob
+Runtime Analysis
+B.4.2 diff-add-mult-prob
+Runtime Analysis
+B.4.3 diff-top-k-proofs
+Runtime Analysis
+B.4.4 diff-top-k-proofs-me
+Support for Mutually Exclusive Facts
+C Evaluation
+C.1 MNIST-R
+Experimental Setup
+Scallop code
+C.2 Hand Written Formula
+Experimental Setup
+C.3 Pathfinder
+Problem Definition
+Architecture
+Experimental Setup
+C.4 PacMan-Maze
+Experimental Setup
+C.5 CLUTRR
+Learn with Manually Specified Rules
+Rule Learning
+Learn without Rules
+Experimental Setup
+C.6 Mugen
+Experimental Setup
+C.7 CLEVR
+Architecture
+License: CC BY 4.0
+arXiv:2304.04812v1 [cs.PL] 10 Apr 2023
+1
+Scallop: A Language for Neurosymbolic Programming
+DOI: 10.1145/3591280 pldi23main-p360-p Journal: PACMPL Volume: 7 PLDI 6 CCS: Software and its engineering Domain specific languages CCS: Computing methodologies Learning paradigms CCS: Computing methodologies Probabilistic reasoning
+Ziyang Li
+Note: The two authors contributed equally on the paper
+Affiliation: University of Pennsylvania
+email: liby99@seas.upenn.edu
+,
+Jiani Huang
+Affiliation: University of Pennsylvania
+email: jianih@seas.upenn.edu
+and
+Mayur Naik
+Affiliation: University of Pennsylvania
+email: mnaik@seas.upenn.edu
+© , 2023
+Abstract.
+We present Scallop, a language which combines the benefits of deep learning and logical reasoning.
+Scallop enables users to write a wide range of neurosymbolic applications and train them in a data- and compute-efficient manner.
+It achieves these goals through three key features:
+1) a flexible symbolic representation that is based on the relational data model;
+2) a declarative logic programming language that is based on Datalog and supports recursion, aggregation, and negation; and
+3) a framework for automatic and efficient differentiable reasoning that is based on the theory of provenance semirings.
+We evaluate Scallop on a suite of eight neurosymbolic applications from the literature.
+Our evaluation demonstrates that Scallop is capable of expressing algorithmic reasoning in diverse and challenging AI tasks, provides a succinct interface for machine learning programmers to integrate logical domain knowledge, and yields solutions that are comparable or superior to state-of-the-art models in terms of accuracy.
+Furthermore, Scallop’s solutions outperform these models in aspects such as runtime and data efficiency, interpretability, and generalizability.
+1. Introduction
+Classical algorithms and deep learning embody two prevalent paradigms of modern programming.
+Classical algorithms are well suited for exactly-defined tasks, such as sorting a list of numbers or finding a shortest path in a graph.
+Deep learning, on the other hand, is well suited for tasks that are not tractable or feasible to perform using classical algorithms, such as detecting objects in an image or parsing natural language text.
+These tasks are typically specified using a set of input-output training data, and solving them involves learning the parameters of a deep neural network to fit the data using gradient-based methods.
+The two paradigms are complementary in nature.
+For instance, a classical algorithm such as the logic program P P depicted in Figure 1(a) is interpretable but operates on limited (e.g., structured) input r r .
+In contrast, a deep neural network such as M θ M_{\theta} depicted in
+Figure 1(b) can operate on rich (e.g., unstructured) input x x but is not interpretable.
+Modern applications demand the capabilities of both paradigms.
+Examples include question answering ( Rajpurkar et al., 2016 ) , code completion ( Chen et al., 2021b ) , and mathematical problem solving ( Lewkowycz et al., 2022 ) , among many others.
+For instance, code completion requires deep learning to comprehend programmer intent from the code context, and classical algorithms to ensure that the generated code is correct.
+A natural and fundamental question then is how to program such applications by integrating the two paradigms.
+Neurosymbolic programming is an emerging paradigm that aims to fulfill this goal ( Chaudhuri et al., 2021 ) .
+It seeks to integrate symbolic knowledge and reasoning with neural architectures for better efficiency, interpretability, and generalizability than the neural or symbolic counterparts alone.
+Consider the task of handwritten formula evaluation ( Li
+et al., 2020 ) , which takes as input a formula as an image, and outputs a number corresponding to the result of evaluating it.
+An input-output example for this task is ⟨ x = , y = 1.6 ⟩ \langle x=\raisebox{-1.20007pt}{\includegraphics[height=8.39996pt,keepaspectratio]{images/hwf/example-1/expr}},y=1.6\rangle .
+A neurosymbolic program for this task, such as the one depicted in Figure 1(c) , might first apply a convolutional neural network M θ M_{\theta} to the input image to obtain a structured intermediate form r r as a sequence of symbols [‘1’, ‘+’, ‘3’, ‘/’, ‘5’], followed by a classical algorithm P P to parse the sequence, evaluate the parsed formula, and output the final result 1.6 1.6 .
+(a) Logic program.
+(b) Neural model.
+(c) A basic neurosymbolic program.
+Figure 1 .
+Comparison of different paradigms.
+Logic program P P accepts only structured input r r whereas neural model M θ M_{\theta} with parameter θ \theta can operate on unstructured input x x .
+Supervision is provided on data indicated in double boxes.
+Under algorithmic supervision , a neurosymbolic program must learn θ \theta without supervision on r r .
+Despite significant strides in individual neurosymbolic applications ( Yi et al., 2018 ; Mao
+et al., 2019 ; Chen
+et al., 2020 ; Li
+et al., 2020 ; Minervini et al., 2020 ; Wang
+et al., 2019 ) , there is a lack of a language with compiler support to make the benefits of the neurosymbolic paradigm more widely accessible.
+We set out to develop such a language and identified five key criteria that it should satisfy in order to be practical.
+These criteria, annotated by the components of the neurosymbolic program in Figure 1(c) , are as follows:
+(1)
+A symbolic data representation for r r that supports diverse kinds of data, such as image, video, natural language text, tabular data, and their combinations.
+(2)
+A symbolic reasoning language for P P that allows to express common reasoning patterns such as recursion, negation, and aggregation.
+(3)
+An automatic and efficient differentiable reasoning engine for learning ( ∂ y ∂ r \frac{\partial{y}}{\partial{r}} ) under algorithmic supervision , i.e., supervision on observable input-output data ( x , y ) (x,y) but not r r .
+(4)
+The ability to tailor learning ( ∂ y ∂ r \frac{\partial{y}}{\partial{r}} ) to individual applications’ characteristics, since non-continuous loss landscapes of logic programs hinder learning using a one-size-fits-all method.
+(5)
+A mechanism to leverage and integrate with existing training pipelines ( ∂ r ∂ θ \frac{\partial{r}}{\partial{\theta}} ), implementations of neural architectures and models M θ M_{\theta} ,
+and hardware (e.g., GPU) optimizations.
+In this paper, we present Scallop, a language which satisfies the above criteria.
+The key insight underlying Scallop is its choice of three inter-dependent design decisions: a relational model for symbolic data representation, a declarative language for symbolic reasoning, and a provenance framework for differentiable reasoning.
+We elaborate upon each of these decisions.
+Relations can represent arbitrary graphs and are therefore well suited for representing symbolic data in Scallop applications.
+For instance, they can represent scene graphs , a canonical symbolic representation of images ( Johnson et al., 2015 ) , or abstract syntax trees, a symbolic representation
+of natural language text.
+Further, they can be combined in a relational database to represent multi-modal data.
+Relations are also a natural fit for probabilistic reasoning ( Dries et al., 2015 ) , which is necessary since symbols in r r produced by neural model M θ M_{\theta} can have associated probabilities.
+Next, the symbolic reasoning program P P in Scallop is specified in a declarative logic programming language.
+The language extends Datalog ( Abiteboul
+et al., 1995 )
+and is expressive enough for programmers to specify complex domain knowledge patterns that the neural model M θ M_{\theta} would struggle with.
+Datalog implementations can take advantage of optimizations from the literature on relational database systems.
+This in turn enables efficient inference and learning since the logical domain knowledge specifications of the task at hand help reduce the burden of M θ M_{\theta} , whose responsibilities are now less complex and more modular.
+Finally, Datalog is rule-based, which makes programs easier to write, debug, and verify.
+It also facilitates inferring them by leveraging techniques from program synthesis ( Gulwani et al., 2017 ) and ILP ( Cropper et al., 2022 ) .
+While symbolic reasoning offers many aforementioned benefits, it poses a fundamental challenge for learning parameter θ \theta .
+Deep learning relies on gradient-based methods, enabled by the differentiable nature of the low-level activation functions that comprise M θ M_{\theta} , to obtain ∂ r ∂ θ \frac{\partial{r}}{\partial{\theta}} .
+The key challenge then concerns how to support automatic and efficient differentiation of the high-level logic program P P to obtain ∂ y ∂ r \frac{\partial{y}}{\partial{r}} , which can be used in conjunction with ∂ r ∂ θ \frac{\partial{r}}{\partial{\theta}} to compute ∂ y ∂ θ \frac{\partial{y}}{\partial{\theta}} .
+Scallop addresses this problem by leveraging the framework of provenance semirings ( Green
+et al., 2007 ) .
+The framework proposes a common algebraic structure for applications that define annotations (i.e., tags) for tuples and propagate the annotations from inputs to outputs of relational algebra (RA) queries.
+One of our primary contributions is a novel adaptation of the framework for differentiable reasoning for an extended fragment of RA that includes recursion, negation, and aggregation.
+Scallop implements an extensible library of provenance structures including the extended max-min semiring and the top- k k proofs semiring ( Huang et al., 2021 ) .
+We further demonstrate that different provenance structures enable different heuristics for the gradient calculations, providing an effective mechanism to tailor the learning process to individual applications’ characteristics.
+We have implemented a comprehensive and open-source toolchain for Scallop in 45K LoC of Rust.
+It includes a compiler, an interpreter, and PyTorch bindings to integrate Scallop programs with existing machine learning pipelines.
+We evaluate Scallop using a suite of eight neurosymbolic applications that span the domains of image and video processing, natural language processing, planning, and knowledge graph querying, in a variety of learning settings such as supervised learning, reinforcement learning, rule learning, and contrastive learning.
+Our evaluation demonstrates that Scallop is expressive and yields solutions of comparable, and often times superior, accuracy than state-of-the-art models.
+We show additional benefits of Scallop’s solutions in terms of runtime and data efficiency, interpretability, and generalizability.
+Any programming language treatise would be remiss without acknowledging the language’s lineage.
+TensorLog ( Cohen
+et al., 2017 ) and DeepProbLog (DPL) ( Manhaeve et al., 2021 ) pioneered the idea of extending probabilistic logic programming languages (e.g., ProbLog ( Dries et al., 2015 ) ) with differentiable reasoning.
+Scallop was originally proposed in ( Huang et al., 2021 ) to improve the scalability of DPL by using Datalog instead of Prolog and relaxing its exact probabilistic semantics.
+We build upon ( Huang et al., 2021 ) by extending its expressiveness, formalizing the semantics, developing a customizable provenance framework, and providing a practical toolchain.
+The rest of the paper is organized as follows.
+Section 2 presents an illustrative overview of Scallop.
+Section 3 describes Scallop’s language for symbolic reasoning.
+Section 4 presents the differentiable reasoning framework.
+Section 5 describes our implementation of Scallop.
+Section 6 empirically evaluates Scallop on a benchmark suite.
+Section 7 surveys related work and Section 8 concludes.
+2. Illustrative Overview
+We illustrate Scallop using an reinforcement learning (RL) based planning application which we call PacMan-Maze.
+The application, depicted in Fig. 2(a) , concerns an intelligent agent realizing a sequence of actions in a simplified version of the PacMan maze game.
+The maze is an implicit 5 × 5 5\times 5 grid of cells.
+Each cell is either empty or has an entity, which can be either the actor (PacMan), the goal (flag), or an enemy (ghost).
+At each step, the agent moves the actor in one of four directions: up, down, right, or left.
+The game ends when the actor reaches the goal or hits an enemy.
+The maze is provided to the agent as a raw image that is updated at each step, requiring the agent to process sensory inputs, extract relevant features, and logically plan the path to take.
+Additionally, each session of the game has randomized initial positions of the actor, the goal, and the enemies.
+Step 0
+Step 4
+Step 7
+(a) Three states of one gameplay session.
+(b) Architecture of application with Scallop.
+⬇
+1
+class PacManAgent ( torch . nn . Module ):
+2
+def __init__ ( self , grid_dim , cell_size ):
+3
+# initializations...
+4
+self . extract_entities =
+5
+EntityExtractor ( grid_dim , cell_size )
+6
+self . path_planner = ScallopModule (
+7
+file = "path_planner.scl" ,
+8
+provenance = "diff-top-k-proofs" , k =1,
+9
+input_mappings ={ "actor" : cells ,
+10
+"goal" : cells , "enemy" : cells },
+11
+output_mappings ={ "next_action" : actions })
+12
+13
+def forward ( self , game_state_image ):
+14
+actor , goal , enemy =
+15
+self . extract_entities ( game_state_image )
+16
+next_action = self . path_planner (
+17
+actor = actor , goal = goal , enemy = enemy )
+18
+return next_action
+(c) Snippet of implementation in Python.
+Figure 2 . Illustration of a planning application PacMan-Maze in Scallop.
+Concretely, the game is modeled as a sequence of interactions between the agent and an environment, as depicted in Fig. 2(b) .
+The game state s i ∈ S s_{i}\in S at step i i is a 200 × 200 200\times 200 colored image ( S = ℝ 200 × 200 × 3 S=\mathbb{R}^{200\times 200\times 3} ).
+The agent proposes an action a i ∈ A = { up , down , right , left } a_{i}\in A=\{{\texttt{\small up}},{\texttt{\small down}},{\texttt{\small right}},{\texttt{\small left}}\} to the environment, which generates a new image s i + 1 s_{i+1} as the next state.
+The environment also returns a reward r i r_{i} to the agent:
+1 upon reaching the goal, and 0 otherwise.
+This procedure repeats until the game ends or reaches a predefined limit on the number of steps.
+A popular RL method to realize our application is Q Q -Learning. Its goal is to learn a function Q : S × A → ℝ Q:S\times A\rightarrow\mathbb{R} that returns the expected reward of taking action a i a_{i} in state s i s_{i} . 1 1
+1
+We elide the Q-Learning algorithm as it is not needed to illustrate the neurosymbolic programming aspects of our example.
+Since the game states are images, we employ Deep Q Q -Learning ( Mnih
+et al., 2015 ) , which approximates the Q Q function using a convolutional neural network (CNN) model with learned parameter θ \theta .
+An end-to-end deep learning based approach for our application involves training the model to predict the Q Q -value of each action for a given game state.
+This approach takes 50K training episodes to achieve a 84.9% test success rate, where a single episode is one gameplay session from start to end.
+In contrast, a neurosymbolic solution using Scallop only needs 50 training episodes to attain a 99.4% test success rate.
+Scallop enables to realize these benefits of the neurosymbolic paradigm by decomposing the agent’s task into separate neural and symbolic components, as shown in Fig. 2(b) .
+These components perform sub-tasks that are ideally suited for their respective paradigms: the neural component perceives pixels of individual cells of the image at each step to identify the entities in them, while the symbolic component reasons about enemy-free paths from the actor to the goal to determine the optimal next action.
+Fig. 2(c) shows an outline of this architecture’s implementation using the popular PyTorch framework.
+Concretely, the neural component is still a CNN, but it now takes the pixels of a single cell in the input image at a time, and classifies the entity in it.
+The implementation of the neural component ( EntityExtractor ) is standard and elided for brevity.
+It is invoked on lines 14-15 with input game_state_image , a tensor in ℝ 200 × 200 × 3 \mathbb{R}^{200\times 200\times 3} , and returns three ℝ 5 × 5 \mathbb{R}^{5\times 5} tensors of entities.
+For example, actor is an ℝ 5 × 5 \mathbb{R}^{5\times 5} tensor and actor i ​ j {\texttt{\small actor}}_{ij} is the probability of the actor being in cell ( i , j ) (i,j) .
+A representation of the entities is then passed to the symbolic component on lines 16-17, which derives the Q Q -value of each action.
+The symbolic component, which is configured on lines 6-11, comprises the Scallop program shown in Fig. 3 .
+We next illustrate the three key design decisions of Scallop outlined in Section 1 with respect to this program.
+Relational Model.
+In Scallop, the primary data structure for representing symbols is a relation .
+In our example, the game state can be symbolically described by the kinds of entities that occur in the discrete cells of a 5 × 5 5\times 5 grid.
+We can therefore represent the input to the symbolic component using binary relations for the three kinds of entities: actor , goal , and enemy .
+For instance, the fact actor(2,3) indicates that the actor is in cell (2,3).
+Likewise, since there are four possible actions, the output of the symbolic component is represented by a unary relation next_action .
+⬇
+1
+// File path_planner.scl
+2
+type actor ( x : i32 , y : i32 ), goal ( x : i32 , y : i32 ), enemy ( x : i32 , y : i32 )
+3
+4
+const UP = 0, DOWN = 1, RIGHT = 2, LEFT = 3
+5
+rel safe_cell ( x , y ) = range (0, 5, x ), range (0, 5, y ), not enemy ( x , y )
+6
+rel edge ( x , y , x , yp , UP ) = safe_cell ( x , y ), safe_cell ( x , yp ), yp == y + 1
+7
+// Rules for DOWN, RIGHT, and LEFT edges are omitted...
+8
+9
+rel next_pos ( p , q , a ) = actor ( x , y ), edge ( x , y , p , q , a )
+10
+rel path ( x , y , x , y ) = next_pos ( x , y , _ )
+11
+rel path ( x1 , y1 , x3 , y3 ) = path ( x1 , y1 , x2 , y2 ), edge ( x2 , y2 , x3 , y3 , _ )
+12
+rel next_action ( a ) = next_pos ( p , q , a ), path ( p , q , r , s ), goal ( r , s )
+Figure 3 . The logic program of the PacMan-Maze application in Scallop.
+Symbols extracted from unstructured inputs by neural networks have associated probabilities, such as the ℝ 5 × 5 \mathbb{R}^{5\times 5} tensor actor produced by the neural component in our example (line 14 of Fig. 2(c) ).
+Scallop therefore allows to associate tuples with probabilities, e.g. 0.96 : : actor(2,3) 0.96::{\texttt{\small actor(2,3)}} , to indicate that the actor is in cell (2,3) with probability 0.96.
+More generally, Scallop enables the conversion of tensors in the neural component to and from relations in the symbolic component via input-output mappings (lines 9-11 in Fig. 2(c) ), allowing the two components to exchange information seamlessly.
+Declarative Language.
+Another key consideration in a neurosymbolic language concerns what constructs to provide for symbolic reasoning.
+Scallop uses a declarative language based on Datalog, which we present in Section 3 and illustrate here using the program in Fig. 3 .
+The program realizes the symbolic component of our example using a set of logic rules.
+Following Datalog syntax, they are “if-then” rules, read right to left, with commas denoting conjunction.
+Recall that we wish to determine an action a a (up, down, right, or left) to a cell ( p , q ) (p,q)
+that is adjacent to the actor’s cell ( x , y ) (x,y) such that there is an enemy-free path from ( p , q ) (p,q) to the goal’s cell ( r , s ) (r,s) .
+The nine depicted rules succinctly compute this sophisticated reasoning pattern by building successively complex relations, with the final rule (on line 14) computing all such actions. 2 2
+2
+We elide showing an auxiliary relation of all grid cells tagged with probability 0.99 which serves as the penalty for taking a step.
+Thus, longer paths are penalized more, driving the symbolic program to prioritize moving closer to the goal.
+The arguably most complex concept is the path relation which is recursively defined (on lines 10-11).
+Recursion allows to define the pattern succinctly, enables the trained application to generalize to grids arbitrarily larger than 5 × 5 5\times 5 unlike the purely neural version, and makes the pattern more amenable to synthesis from input-output examples.
+Besides recursion, Scallop also supports negation and aggregation; together, these features render the language adequate for specifying common high-level reasoning patterns in practice.
+Differentiable Reasoning.
+With the neural and symbolic components defined, the last major consideration concerns how to train the neural component using only end-to-end supervision.
+In our example, supervision is provided in the form of a reward of 1 or 0 per gameplay session, depending upon whether or not the sequence of actions by the agent successfully led the actor to the goal without hitting any enemy.
+This form of supervision, called algorithmic or weak supervision, alleviates the need to label intermediate relations at the interface of the neural and symbolic components, such as the actor , goal , and enemy relations.
+However, this also makes it challenging to learn the gradients for the tensors of these relations, which in turn are needed to train the neural component using gradient-descent techniques.
+The key insight in Scallop is to exploit the structure of the logic program to guide the gradient calculations.
+The best heuristic for such calculations depends on several application characteristics such as the amount of available data, reasoning patterns, and the learning setup.
+Scallop provides a convenient interface for the user to select from a library of built-in heuristics.
+Furthermore, since all of these heuristics follow the structure of the logic program,
+Scallop implements them uniformly as instances of a general and extensible provenance framework , described in Section 4 .
+For our example, line 8 in Fig. 2(c) specifies diff-top-k-proofs with k=1 as the heuristic to use, which is the default in Scallop that works best for many applications, as we demonstrate in Section 6 .
+3. Language
+We provide an overview of Scallop’s language for symbolic reasoning which we previously illustrated in the program shown in Fig. 3 .
+Appendix A provides the formal syntax of the language.
+Here, we illustrate each of the key constructs using examples of inferring kinship relations.
+3.1. Data Types
+The fundamental data type in Scallop is set-valued relations comprising tuples of statically-typed primitive values.
+The primitive data types include signed and unsigned integers of various sizes (e.g. i32 , usize ), single- and double-precision floating point numbers ( f32 , f64 ), boolean ( bool ), character ( char ), and string ( String ).
+The following example declares two binary relations, mother and father :
+⬇
+type mother ( c : String , m : String ), father ( c : String , f : String )
+Values of relations can be specified via individual tuples or a set of tuples of constant literals:
+⬇
+rel mother ( "Bob" , "Christine" ) // Christine is Bob’s mother
+rel father = {( "Alice" , "Bob" ), ( "John" , "Bob" )} // Bob is father of two kids
+As a shorthand, primitive values can be named and used as constant variables:
+⬇
+const FATHER = 0, MOTHER = 1, GRANDMOTHER = 2, ... // other relationships
+rel composition ( FATHER , MOTHER , GRANDMOTHER ) // father’s mother is grandmother
+Type declarations are optional since Scallop supports type inference.
+The type of the composition relation is inferred as (usize, usize, usize) since the default type of unsigned integers is usize .
+3.2. (Horn) Rules
+Since Scallop’s language is based on Datalog, it supports “if-then” rule-like Horn clauses.
+Each rule is composed of a head atom and a body, connected by the symbol :- or = .
+The following code shows two rules defining the grandmother relation.
+Conjunction is specified using “ , ”-separated atoms within the rule body whereas disjunction is specified by multiple rules with the same head predicate.
+Each variable appearing in the head must also appear in some positive atom in the body (we introduce negative atoms below).
+⬇
+rel grandmother ( a , c ) :- father ( a , b ), mother ( b , c ) // father’s mother
+rel grandmother ( a , c ) :- mother ( a , b ), mother ( b , c ) // mother’s mother
+Conjunctions and disjunctions can also be expressed using logical connectives like and , or , and implies .
+For instance, the following rule is equivalent to the above two rules combined.
+⬇
+rel grandmother ( a , c ) = ( mother ( a , b ) or father ( a , b )) and mother ( b , c )
+Scallop supports value creation by means of foreign functions (FFs).
+FFs are polymorphic and include arithmetic operators such as + and - , comparison operators such as != and >= , type conversions such as [i32] as String , and built-in functions like $hash and $string_concat .
+They only operate on primitive values but not relational tuples or atoms.
+The following example shows how strings are concatenated together using FF, producing the result full_name("Alice Lee") .
+⬇
+rel first_name ( "Alice" ), last_name ( "Lee" )
+rel full_name ( $string_concat ( x , " ␣ " , y )) = first_name ( x ), last_name ( y )
+Note that FFs can fail due to runtime errors such as division-by-zero and integer overflow, in which case the computation for that single fact is omitted.
+In the example below, when dividing 6 by denominator , the result is not computed for denominator 0 since it causes a FF failure:
+⬇
+rel denominator = {0, 1, 2}
+rel result (6 / x ) = denominator ( x ) // result contains only integers 3 and 6
+The purpose of this semantics is to support probabilistic extensions (Section 3.3 ) rather than silent suppression of runtime errors.
+When dealing with floating-point numbers, tuples with NaN (not-a-number) are also discarded.
+Recursion.
+A relation r r is dependent on s s if an atom s s appears in the body of a rule with head atom r r .
+A recursive relation is one that depends on itself, directly or transitively.
+The following rule derives additional kinship facts by composing existing kinship facts using the composition relation.
+⬇
+rel kinship ( r3 , a , c ) = kinship ( r1 , a , b ), kinship ( r2 , b , c ), composition ( r1 , r2 , r3 )
+Negation.
+Scallop supports stratified negation using the not operator on atoms in the rule body.
+The following example shows a rule defining the has_no_children relation as any person p who is neither a father nor a mother.
+Note that we need to bound p by a positive atom person in order for the rule to be well-formed.
+⬇
+rel person = { "Alice" , "Bob" , "Christine" } // can omit () since arity is 1
+rel has_no_children ( p ) = person ( p ) and not father ( _ , p ) and not mother ( _ , p )
+A relation r r is negatively dependent on s s if a negated atom s s appears in the body of a rule with head atom r r .
+In the above example, has_no_children negatively depends on father .
+A relation cannot be negatively dependent on itself, directly or transitively, as Scallop supports only stratified negation.
+The following rule is rejected by the compiler, as the negation is not stratified:
+⬇
+rel something_is_true () = not something_is_true () // compilation error!
+Aggregation.
+Scallop also supports stratified aggregation.
+The set of built-in aggregators include common ones such as count , sum , max , and first-order quantifiers forall and exists .
+Besides the operator, the aggregation specifies the binding variables, the aggregation body to bound those variables, and the result variable(s) to assign the result.
+The aggregation in the example below reads,
+“variable n is assigned the count of p , such that p is a person”:
+⬇
+rel num_people ( n ) = n := count ( p : person ( p ))
+In the rule, p is the binding variable and n is the result variable.
+Depending on the aggregator, there could be multiple binding variables or multiple result variables.
+Further, Scallop supports SQL-style group-by using a where clause in the aggregation.
+In the following example, we compute the number of children of each person p , which serves as the group-by variable.
+⬇
+rel parent ( a , b ) = father ( a , b ) or mother ( a , b )
+rel num_child ( p , n ) = n := count ( c : parent ( c , p ) where p : person ( p ))
+Finally, quantifier aggregators such as forall and exists return one boolean variable.
+For instance, in the aggregation below, variable sat is assigned the truthfulness ( true or false ) of the following statement: “for all a and b , if b is a ’s father, then a is b ’s son or daughter”.
+⬇
+rel integrity_constraint ( sat ) =
+sat := forall ( a , b : father ( a , b ) implies ( son ( b , a ) or daughter ( b , a )))
+There are a couple of syntactic checks on aggregations.
+First, similar to negation, aggregation also needs to be stratified—a relation cannot be dependent on itself through an aggregation.
+Second, the binding variables must be bounded by a positive atom in the body of the aggregation.
+3.3. Probabilistic Extensions
+Although Scallop is designed primarily for neurosymbolic programming, its syntax also supports probabilistic programming.
+This is especially useful when debugging Scallop code before integrating it with a neural network.
+Consider a machine learning programmer who wishes to extract structured relations from a natural language sentence “Bob takes his daughter Alice to the beach”.
+The programmer could imitate a neural network producing a probability distribution of kinship relations between Alice ( A ) and Bob ( B ) as follows:
+⬇
+rel kinship = {0.95::( FATHER , A , B ); 0.01::( MOTHER , A , B ); ... }
+Here, we list out all possible kinship relations between Alice and Bob.
+For each of them, we use the syntax [PROB]::[TUPLE] to tag the kinship tuples with probabilities.
+The semicolon “ ; ” separating them specifies that they are mutually exclusive—Bob cannot be both the mother and father of Alice.
+Scallop also supports operators to sample from probability distributions. They share the same surface syntax as aggregations, allowing sampling with group-by.
+The following rule deterministically picks the most likely kinship relation between a given pair of people a and b , which are implicit group-by variables in this aggregation.
+As the end, only one fact, 0.95::top_1_kinship(FATHER, A, B) , will be derived according to the above probabilities.
+⬇
+rel top_1_kinship ( r , a , b ) = r := top <1>( rp : kinship ( rp , a , b ))
+Other types of sampling are also supported, including categorical sampling ( categorical<K> ) and uniform sampling ( uniform<K> ), where a static constant K denotes the number of trials.
+Finally, rules can also be tagged by probabilities which can reflect their confidence.
+The following rule states that a grandmother’s daughter is one’s mother with 90% confidence.
+⬇
+rel 0.9:: mother ( a , c ) = grandmother ( a , b ) and daughter ( b , c )
+Probabilistic rules are syntactic sugar.
+They are implemented by introducing in the rule’s body an auxiliary 0-ary (i.e., boolean) fact that is regarded true with the tagged probability.
+4. Reasoning Framework
+(Tag) t ∈ T (False) 𝟎 ∈ T (True) 𝟏 ∈ T (Disjunction) ⊕ : T × T → T (Conjunction) ⊗ : T × T → T (Negation) ⊖ : T → T (Saturation)
+○
+= : T × T → Bool \begin{array}[]{rccl}\text{(Tag)}&t&\in&T\\
+\text{(False)}&\mathbf{0}&\in&T\\
+\text{(True)}&\mathbf{1}&\in&T\\
+\text{(Disjunction)}&\oplus&:&T\times T\rightarrow T\\
+\text{(Conjunction)}&\otimes&:&T\times T\rightarrow T\\
+\text{(Negation)}&\ominus&:&T\rightarrow T\\
+\text{(Saturation)}&\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}&:&T\times T\rightarrow\text{Bool}\\
+\end{array}
+Figure 4 . Algebraic interface for provenance.
+(Predicate) p (Aggregator) g : ⁣ := count | sum | max ​ | exists | ​ … (Expression) e : ⁣ := p | γ g ​ ( e ) ​ | π α ​ ( e ) | ​ σ β ​ ( e ) | e 1 ∪ e 2 ​ | e 1 × e 2 | ​ e 1 − e 2 (Rule) r : ⁣ := p ← e (Stratum) s : ⁣ := { r 1 , … , r n } (Program) s ¯ : ⁣ := s 1 ; … ; s n \begin{array}[]{rcrl}\text{(Predicate)}&p\\
+\text{(Aggregator)}&g&::=&{\texttt{\footnotesize count}}~|~{\texttt{\footnotesize sum}}~|~{\texttt{\footnotesize max}}~|~{\texttt{\footnotesize exists}}~|\dots\\
+\text{(Expression)}&e&::=&p~|~\gamma_{g}(e)~|~\pi_{\alpha}(e)~|~\sigma_{\beta}(e)\\
+&&~|&e_{1}\cup e_{2}~|~e_{1}\times e_{2}~|~e_{1}-e_{2}\\
+\text{(Rule)}&r&::=&p\leftarrow e\\
+\text{(Stratum)}&s&::=&\{r_{1},\dots,r_{n}\}\\
+\text{(Program)}&\overline{s}&::=&s_{1};\dots;s_{n}\\
+\end{array}
+Figure 5 . Abstract syntax of core fragment of SclRam .
+The preceding section presented Scallop’s surface language for use by programmers to express discrete reasoning.
+However, the language must also support differentiable reasoning to enable end-to-end
+training.
+In this section, we formally define the semantics of the language by means of a provenance framework.
+We show how Scallop uniformly supports different reasoning modes—discrete, probabilistic, and differentiable—simply by defining different provenances.
+We start by presenting the basics of our provenance framework (Section 4.1 ).
+We then present a low-level representation SclRam , its operational semantics, and its interface to the rest of a Scallop application (Sections 4.2 - 4.4 ).
+We next present differentiation and three different provenances for differentiable reasoning
+(Section 4.5 ).
+Lastly, we discuss practical considerations (Section 4.6 ).
+4.1. Provenance Framework
+Scallop’s provenance framework enables to tag and propagate additional information alongside relational tuples in the logic program’s execution.
+The framework is based on the theory of provenance semirings ( Green
+et al., 2007 ) .
+Fig. 4 defines Scallop’s algebraic interface for provenance.
+We call the additional information a tag t t from a tag space T T .
+There are two distinguished tags, 𝟎 \mathbf{0} and 𝟏 \mathbf{1} , representing unconditionally false and true tags.
+Tags are propagated through operations of binary disjunction ⊕ \oplus , binary conjunction ⊗ \otimes , and unary negation ⊖ \ominus resembling logical or , and , and not .
+Lastly, a saturation check
+○
+= \mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}} serves as a customizable stopping mechanism for fixed-point iteration.
+All of the above components combined form a 7-tuple ( T , 𝟎 , 𝟏 , ⊕ , ⊗ , ⊖ ,
+○
+= ) (T,\mathbf{0},\mathbf{1},\oplus,\otimes,\ominus,\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}) which we call a provenance T T .
+Scallop provides a built-in library of provenances and users can add custom provenances simply by implementing this interface.
+Example 4.1.
+max-min-prob
+( mmp ) ≜ ( [ 0 , 1 ] , 0 , 1 , max , min , λ x . ( 1 − x ) , == ) {\texttt{\small mmp}})\triangleq([0,1],0,1,\text{max},\text{min},\lambda x.(1-x),\texttt{==}) ,
+is a built-in probabilistic provenance , where tags are numbers between 0 and 1 that are propagated with max and min.
+The tags do not represent true probabilities but are merely an approximation.
+We discuss richer provenances for more accurate probability calculations later in this section.
+A provenance must satisfy a few properties. First, the 5-tuple ( T , 𝟎 , 𝟏 , ⊕ , ⊗ ) (T,\mathbf{0},\mathbf{1},\oplus,\otimes) should form a semiring.
+That is, 𝟎 \mathbf{0} is the additive identity and annihilates under multiplication, 𝟏 \mathbf{1} is the multiplicative identity, ⊕ \oplus and ⊗ \otimes are associative and commutative, and ⊗ \otimes distributes over ⊕ \oplus .
+To guarantee the existence of fixed points (which are discussed in Section 4.3 ), it must also be absorptive , i.e., t 1 ⊕ ( t 1 ⊗ t 2 ) = t 1 t_{1}\oplus(t_{1}\otimes t_{2})=t_{1} ( Dannert
+et al., 2021 ) .
+Moreover, we need ⊖ 𝟎 = 𝟏 \ominus~\mathbf{0}=\mathbf{1} , ⊖ 𝟏 = 𝟎 \ominus~\mathbf{1}=\mathbf{0} , 𝟎
+○
+≠ 𝟏 \mathbf{0}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle\neq$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle\neq$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle\neq$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle\neq$\cr}}}}\mathbf{1} , 𝟎
+○
+= 𝟎 \mathbf{0}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}\mathbf{0} , and 𝟏
+○
+= 𝟏 \mathbf{1}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}\mathbf{1} .
+A provenance which violates an individual property (e.g. absorptive) is still useful to applications that do not use the affected features (e.g. recursion) or if the user simply wishes to bypass the restrictions.
+4.2. SclRam Intermediate Language
+(Constant) ℂ ∋ c : ⁣ := i ​ n ​ t | b ​ o ​ o ​ l ​ | s ​ t ​ r | ​ … (Tuple) 𝕌 ∋ u : ⁣ := c | ( u 1 , … , u n ) (Tagged-Tuple) 𝕌 T ∋ u t : ⁣ := t : : u (Fact) 𝔽 ∋ f : ⁣ := p ⁡ ( u ) (Tagged-Fact) 𝔽 T ∋ f t : ⁣ := t : : p ⁡ ( u ) (Tuples) U ∈ 𝒰 ≜ 𝒫 ⁡ ( 𝕌 ) (Tagged-Tuples) U T ∈ 𝒰 T ≜ 𝒫 ⁡ ( 𝕌 T ) (Facts) F ∈ ℱ ≜ 𝒫 ⁡ ( 𝔽 ) (Database) F T ∈ ℱ T ≜ 𝒫 ⁡ ( 𝔽 T ) \begin{array}[]{rlcccl}\text{(Constant)}&\mathbb{C}&\ni&c&::=&int~|~bool~|~str~|\dots\\
+\text{(Tuple)}&\mathbb{U}&\ni&u&::=&c~|~(u_{1},\dots,u_{n})\\
+\text{(Tagged-Tuple)}&\mathbb{U}_{T}&\ni&u_{t}&::=&t::u\\
+\text{(Fact)}&\mathbb{F}&\ni&f&::=&p(u)\\
+\text{(Tagged-Fact)}&\mathbb{F}_{T}&\ni&f_{t}&::=&t::p(u)\\
+\end{array}\begin{array}[]{rcclcl}\text{(Tuples)}&U&\in&\mathcal{U}&\triangleq&\mathcal{P}(\mathbb{U})\\
+\text{(Tagged-Tuples)}&U_{T}&\in&\mathcal{U}_{T}&\triangleq&\mathcal{P}(\mathbb{U}_{T})\\
+\text{(Facts)}&F&\in&\mathcal{F}&\triangleq&\mathcal{P}(\mathbb{F})\\
+\text{(Database)}&F_{T}&\in&\mathcal{F}_{T}&\triangleq&\mathcal{P}(\mathbb{F}_{T})\\
+\end{array}
+Figure 6 . Semantic domains for SclRam .
+Scallop programs are compiled to a low-level representation called SclRam .
+Fig. 5 shows the abstract syntax of a core fragment of SclRam .
+Expressions resemble queries in an extended relational algebra. They operate over relational predicates ( p p ) using unary operations for
+aggregation ( γ g \gamma_{g} with aggregator g g ),
+projection ( π α \pi_{\alpha} with mapping α \alpha ), and
+selection ( σ β \sigma_{\beta} with condition β \beta ), and binary operations
+union ( ∪ \cup ), product ( × \times ), and difference ( − - ).
+A rule r r in SclRam is denoted p ← e p\leftarrow e , where predicate p p is the rule head and expression e e is the rule body.
+An unordered set of rules combined form a stratum s s , and a sequence of strata s 1 ; … ; s n s_{1};\dots;s_{n} constitutes a SclRam program.
+Rules in the same stratum have distinct head predicates.
+Denoting the set of head predicates in stratum s s by P s P_{s} , we also require P s i ∩ P s j = ∅ P_{s_{i}}\cap P_{s_{j}}=\emptyset forall i ≠ j i\neq j in a program.
+Stratified negation and aggregation from the surface language is enforced as syntax restrictions in SclRam :
+within a rule in stratum s i s_{i} , if a relational predicate p p is used under aggregation ( γ \gamma ) or right-hand-side of difference ( − - ),
+that predicate p p cannot appear in P s j P_{s_{j}} if j ≥ i j\geq i .
+We next define the semantic domains in Fig. 6 which are used subsequently to define the semantics of SclRam .
+A tuple u u is either a constant or a sequence of tuples.
+A fact p ⁡ ( u ) ∈ 𝔽 p(u)\in\mathbb{F} is a tuple u u named under a relational predicate p p .
+Tuples and facts can be tagged, forming tagged tuples ( t : : u t::u ) and tagged facts ( t : : p ⁡ ( u ) t::p(u) ).
+Given a set of tagged tuples U T U_{T} , we say U T ⊨ u U_{T}~\scalebox{1.2}{$\vDash$}~u iff there exists a t t such that t : : u ∈ U T t::u\in U_{T} .
+A set of tagged facts form a database F T F_{T} .
+We use bracket notation F T ​ [ p ] F_{T}[p] to denote the set of tagged facts in F T F_{T} under predicate p p .
+4.3. Operational Semantics of SclRam
+We now present the operational semantics for our core fragment of SclRam in Fig. 7 .
+A SclRam program s ¯ \overline{s} takes as input an extensional database (EDB) F T F_{T} , and returns an intentional database (IDB) F T ′ = ⟦ s ¯ ⟧ ​ ( F T ) F_{T}^{\prime}=\llbracket\overline{s}\rrbracket(F_{T}) .
+The semantics is conditioned on the underlying provenance T T .
+We call this tagged semantics , as opposed to the untagged semantics found in traditional Datalog.
+Basic Relational Algebra.
+Evaluating an expression in SclRam yields a set of tagged tuples according to the rules defined at the top of Fig. 7 .
+A predicate p p evaluates to all facts under that predicate in the database.
+Selection filters tuples that satisfy condition β \beta , and projection transforms tuples according to mapping α \alpha .
+The mapping function α \alpha is partial: it may fail since it can apply foreign functions to values.
+A tuple in a union e 1 ∪ e 2 e_{1}\cup e_{2} can come from either e 1 e_{1} or e 2 e_{2} .
+In (cartesian) product, each pair of incoming tuples combine and we use ⊗ \otimes to compute the tag conjunction.
+Expression semantics
+α : 𝕌 ⇀ 𝕌 , β : 𝕌 → Bool , g : 𝒰 → 𝒰 , ⟦ e ⟧ : ℱ T → 𝒰 T \alpha:\mathbb{U}\rightharpoonup\mathbb{U},\hskip 8.50012pt\beta:\mathbb{U}\rightarrow\text{Bool},\hskip 8.50012ptg:\mathcal{U}\rightarrow\mathcal{U},\hskip 8.50012pt\llbracket e\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{U}_{T}
+t : : p ⁡ ( u ) ∈ F T t : : u ∈ ⟦ p ⟧ ​ ( F T ) right=(Predicate) t : : u ∈ ⟦ e ⟧ ​ ( F T ) ​ β ​ ( u ) = true t : : u ∈ ⟦ σ β ​ ( e ) ⟧ ​ ( F T ) right=(Select) t : : u ∈ ⟦ e ⟧ ​ ( F T ) ​ u ′ = α ⁡ ( u ) t : : u ′ ∈ ⟦ π α ​ ( e ) ⟧ ​ ( F T ) right=(Project) \frac{t::p(u)\in F_{T}}{t::u\in\llbracket p\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Predicate)}}\hskip 5.0pt\frac{t::u\in\llbracket e\rrbracket(F_{T})\hskip 8.50012pt\beta(u)=\text{true}}{t::u\in\llbracket\sigma_{\beta}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Select)}}\hskip 5.0pt\frac{t::u\in\llbracket e\rrbracket(F_{T})\hskip 8.50012ptu^{\prime}=\alpha(u)}{t::u^{\prime}\in\llbracket\pi_{\alpha}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Project)}}
+t : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ∪ ⟦ e 2 ⟧ ​ ( F T ) t : : u ∈ ⟦ e 1 ∪ e 2 ⟧ ​ ( F T ) right=(Union) t 1 : : u 1 ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u 2 ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ t 2 ) : : ( u 1 , u 2 ) ∈ ⟦ e 1 × e 2 ⟧ ​ ( F T ) right=(Product) \frac{t::u\in\llbracket e_{1}\rrbracket(F_{T})\cup\llbracket e_{2}\rrbracket(F_{T})}{t::u\in\llbracket e_{1}\cup e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Union)}}\hskip 8.50012pt\frac{t_{1}::u_{1}\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u_{2}\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes t_{2})::(u_{1},u_{2})\in\llbracket e_{1}\times e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Product)}}
+t : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ ⟦ e 2 ⟧ ​ ( F T ) ⊭ u t : : u ∈ ⟦ e 1 − e 2 ⟧ ​ ( F T ) right=(Diff-1) t 1 : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ ( ⊖ t 2 ) ) : : u ∈ ⟦ e 1 − e 2 ⟧ ​ ( F T ) right=(Diff-2) \frac{t::u\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012pt\llbracket e_{2}\rrbracket(F_{T})\nvDash u}{t::u\in\llbracket e_{1}-e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Diff-1)}}\hskip 8.50012pt\frac{t_{1}::u\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes(\ominus~t_{2}))::u\in\llbracket e_{1}-e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Diff-2)}}
+X T ⊆ ⟦ e ⟧ ( F T ) { t i : : u i } i = 1 n = X T { t ¯ j : : u ¯ j } j = 1 m = ⟦ e ⟧ ( F T ) − X T u ∈ g ( { u i } i = 1 n ) ( ⨂ i = 1 n t i ) ⊗ ( ⨂ j = 1 m ( ⊖ t ¯ j ) ) : : u ∈ ⟦ γ g ​ ( e ) ⟧ ​ ( F T ) right=(Aggregate) \frac{X_{T}\subseteq\llbracket e\rrbracket(F_{T})\hskip 8.50012pt\{t_{i}::u_{i}\}_{i=1}^{n}=X_{T}\hskip 8.50012pt\{\overline{t}_{j}::\overline{u}_{j}\}_{j=1}^{m}=\llbracket e\rrbracket(F_{T})-X_{T}\hskip 8.50012ptu\in g(\{u_{i}\}_{i=1}^{n})}{\textstyle(\bigotimes_{i=1}^{n}t_{i})\otimes(\bigotimes_{j=1}^{m}(\ominus~\overline{t}_{j}))::u\in\llbracket\gamma_{g}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Aggregate)}}
+Rule semantics
+⟨ . ⟩ : 𝒰 T → 𝒰 T , ⟦ r ⟧ : ℱ T → ℱ T \left\langle.\right\rangle:\mathcal{U}_{T}\rightarrow\mathcal{U}_{T},\hskip 8.50012pt\llbracket r\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}
+(Normalize) ⟨ U T ⟩ = { ( ⨁ i = 1 n t i ) : : u | t 1 : : u , … , t n : : u are all tagged-tuples in U T with the same tuple u } \textsc{(Normalize)}\hskip 8.50012pt\left\langle U_{T}\right\rangle=\{(\textstyle\bigoplus_{i=1}^{n}t_{i})::u~|~t_{1}::u,\dots,t_{n}::u~\text{are all tagged-tuples in}~U_{T}~\text{with the same tuple}~u\}
+t old : : u ∈ ⟦ p ⟧ ​ ( F T ) ​ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ⊭ u t old : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-1) t new : : u ∈ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ​ ⟦ p ⟧ ​ ( F T ) ⊭ u t new : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-2) \frac{t^{\texttt{old}}::u\in\llbracket p\rrbracket(F_{T})\hskip 8.50012pt\left\langle\llbracket e\rrbracket(F_{T})\right\rangle\nvDash u}{t^{\texttt{old}}::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-1)}}\hskip 8.50012pt\frac{t^{\texttt{new}}::u\in\left\langle\llbracket e\rrbracket(F_{T})\right\rangle\hskip 8.50012pt\llbracket p\rrbracket(F_{T})\nvDash u}{t^{\texttt{new}}::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-2)}}
+t old : : u ∈ ⟦ p ⟧ ​ ( F T ) ​ t new : : u ∈ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ( t old ⊕ t new ) : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-3) \frac{t^{\texttt{old}}::u\in\llbracket p\rrbracket(F_{T})\hskip 8.50012ptt^{\texttt{new}}::u\in\left\langle\llbracket e\rrbracket(F_{T})\right\rangle}{(t^{\texttt{old}}\oplus t^{\texttt{new}})::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-3)}}
+Stratum and Program semantics
+𝐥𝐟𝐩 ∘ : ( ℱ T → ℱ T ) → ( ℱ T → ℱ T ) , ⟦ s ⟧ , ⟦ s ¯ ⟧ : ℱ T → ℱ T \mathbf{lfp}^{\circ}:(\mathcal{F}_{T}\rightarrow\mathcal{F}_{T})\rightarrow(\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}),\hskip 8.50012pt\llbracket s\rrbracket,\llbracket\overline{s}\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}
+(Saturation)
+F T old ≗ F T new iff ∀ t new : : p ( u ) ∈ F T new , ∃ t old : : p ( u ) ∈ F T old such that t old ○ = t new \displaystyle\hskip 8.50012ptF_{T}^{\texttt{old}}\circeq F_{T}^{\texttt{new}}~\text{iff}~\forall t^{\texttt{new}}::p(u)\in F_{T}^{\texttt{new}},\exists t^{\texttt{old}}::p(u)\in F_{T}^{\texttt{old}}~\text{such that}~t^{\texttt{old}}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t^{\texttt{new}}
+(Fixpoint)
+𝐥𝐟𝐩 ∘ ​ ( h ) = h ∘ ⋯ ∘ h = h n ​ if there exists a minimum ​ n > 0 , such that ​ h n ​ ( F T ) ≗ h n + 1 ​ ( F T ) \displaystyle\hskip 8.50012pt\mathbf{lfp}^{\circ}(h)=h\circ\dots\circ h=h^{n}~\text{if there exists a minimum}~n>0,~\text{such that}~h^{n}(F_{T})\circeq h^{n+1}(F_{T})
+(Stratum)
+⟦ s ⟧ = 𝐥𝐟𝐩 ∘ ( λ F T . ( F T − ⋃ p ∈ P s F T [ p ] ) ∪ ( ⋃ r ∈ s ⟦ r ⟧ ( F T ) ) ) \displaystyle\hskip 8.50012pt\llbracket s\rrbracket=\mathbf{lfp}^{\circ}(\lambda F_{T}.(F_{T}-\textstyle\bigcup_{p\in P_{s}}F_{T}[p])\cup(\textstyle\bigcup_{r\in s}\llbracket r\rrbracket(F_{T})))
+(Program)
+⟦ s ¯ ⟧ = ⟦ s n ⟧ ∘ ⋯ ∘ ⟦ s 1 ⟧ , where s ¯ = s 1 ; … ; s n . \displaystyle\hskip 8.50012pt\llbracket\overline{s}\rrbracket=\llbracket s_{n}\rrbracket\circ\dots\circ\llbracket s_{1}\rrbracket,~\text{where}~\overline{s}=s_{1};\dots;s_{n}.
+Figure 7 . Operational semantics of core fragment of SclRam .
+Difference and Negation.
+To evaluate a difference expression e 1 − e 2 e_{1}-e_{2} , there are two cases depending on whether a tuple u u evaluated from e 1 e_{1} appears in the result of e 2 e_{2} .
+If it does not, we simply propagate the tuple and its tag to the result ( Diff-1 );
+otherwise, we get t 1 : : u t_{1}::u from e 1 e_{1} and t 2 : : u t_{2}::u from e 2 e_{2} .
+Instead of erasing the tuple u u from the result as in untagged semantics, we propagate a tag t 1 ⊗ ( ⊖ t 2 ) t_{1}\otimes(\ominus~t_{2}) with u u ( Diff-2 ).
+In this manner, information is not lost during negation.
+Fig. 8 compares the evaluations of an example difference expression under different semantics.
+While the tuple ( 2 , 3 ) (2,3) is removed in the outcome with untagged semantics, it remains with the tagged semantics.
+rel safe \ _cell ( x , y ) = grid \ _cell ( x , y ), not enemy ( x , y )   → \rightarrow
+  safe_cell ← grid_cell − enemy {\texttt{\footnotesize safe\_cell}}\leftarrow{\texttt{\footnotesize grid\_cell}}-{\texttt{\footnotesize enemy}}
+(a) Untagged semantics
+(b) SclRam tagged semantics
+(c) SclRam with max-min-prob
+Figure 8 .
+An example rule adapted from Section 2 is compiled to a SclRam rule with difference.
+g and e are abbreviated relation names.
+The graphs illustrate the evaluation of expression g − e {\texttt{\small g}}-{\texttt{\small e}} under different semantics.
+rel num \ _enemies ( n ) = n := count ( x , y : enemy ( x , y ))   → \rightarrow
+ 
+num_enemies ← π λ ​ n . ( n ) ​ ( γ count ​ ( enemy ) ) {\texttt{\footnotesize num\_enemies}}\leftarrow\pi_{\lambda n.(n)}(\gamma_{\texttt{count}}({\texttt{\footnotesize enemy}}))
+(a) Maze image
+(b) enemy
+⟨ ⟦ γ count ​ ( enemy ) ⟧ ​ ( F T ) ⟩ \left\langle\llbracket\gamma_{\texttt{count}}({\texttt{\footnotesize enemy}})\rrbracket(F_{T})\right\rangle
+⟨ ⟦ γ count ​ ( enemy ) ⟧ ​ ( F mmp ) ⟩ \left\langle\llbracket\gamma_{\texttt{count}}({\texttt{\footnotesize enemy}})\rrbracket(F_{\texttt{mmp}})\right\rangle
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+: : 0 ::0
+0.1 : : 0 0.1::0
+\IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ \oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ ⋯ ⊕ \oplus\dots\oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ \oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+: : 1 ::1
+0.1 : : 1 0.1::1
+\IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ \oplus
+\IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ ⋯ ⊕ \oplus\dots\oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ ⋯ ⊕ \oplus\dots\oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+⊕ \oplus
+\IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ f ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{f}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+: : 2 ::2
+0.8 : : 2 0.8::2
+… \dots
+… \dots
+\IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \IfEqCase ​ t ​ t ​ ■ ​ f ​ □ \begin{array}[]{ccc}\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}&\IfEqCase{t}{{t}{\blacksquare}{f}{\Box}}\\
+\end{array}
+: : 9 ::9
+0.1 : : 9 0.1::9
+(c) Evaluation of the aggregation expression
+Figure 9 .
+An example counting enemies in a PacMan maze.
+Shown above are the Scallop rule and compiled SclRam rule with aggregation.
+(a) and (b) visualize the maze and the content of a probabilistic enemy relation.
+For example, we have t B2 : : enemy ​ ( B , 2 ) t_{\texttt{B2}}::{\texttt{\small enemy}}(B,2) where t B2 = 0.8 t_{\texttt{B2}}=0.8 .
+In (c), we show two normalized ( ⟨ . ⟩ \left\langle.\right\rangle defined in Fig. 7 ) evaluation results under abstract tagged semantics and with max-min-prob provenance.
+Each symbol such as
+■ □ □ □ □ □ □ □ □ \begin{array}[]{ccc}\blacksquare&\Box&\Box\\
+\Box&\Box&\Box\\
+\Box&\Box&\Box\\
+\end{array}
+represents a world corresponding to our arena ( ■ \blacksquare : enemy; □ \Box : no enemy).
+A world is a conjunction of 9 tags, e.g., ■ □ □ □ □ □ □ □ □ = t A3 ⊗ ( ⊖ t A2 ) ⊗ ⋯ ⊗ ( ⊖ t C1 ) \raisebox{1.5pt}{\scalebox{0.5}[0.5]{$\begin{array}[]{ccc}\blacksquare&\Box&\Box\\
+\Box&\Box&\Box\\
+\Box&\Box&\Box\\
+\end{array}$}}=t_{\texttt{A3}}\otimes(\ominus t_{\texttt{A2}})\otimes\dots\otimes(\ominus t_{\texttt{C1}}) .
+We mark the correct world
+□ □ □ □ ■ ■ □ □ □ \begin{array}[]{ccc}\Box&\Box&\Box\\
+\Box&\blacksquare&\blacksquare\\
+\Box&\Box&\Box\\
+\end{array}
+which yields the answer 2 2 .
+Aggregation.
+Aggregators in SclRam are discrete functions g g operating on set of (untagged) tuples U ∈ 𝒰 U\in\mathcal{U} .
+They return a set of aggregated tuples to account for aggregators like argmax which can produce multiple outcomes.
+For example, we have count ​ ( U ) = { | U | } {\texttt{\small count}}(U)=\{|U|\} .
+However, in the probabilistic domain, discrete symbols do not suffice.
+Given n n tagged tuples to aggregate over, each tagged tuple can be turned on or off, resulting in 2 n 2^{n} distinct worlds .
+Each world is a partition of the input set U T U_{T} ( | U T | = n |U_{T}|=n ).
+Denoting the positive part as X T X_{T} and the negative part as X ¯ T = U T − X T \overline{X}_{T}=U_{T}-X_{T} , the tag associated with this world is a conjunction of tags in X T X_{T} and negated tags in X ¯ T \overline{X}_{T} .
+Aggregating on this world then involves applying aggregator g g on tuples in the positive part X T X_{T} .
+This is inherently exponential if we enumerate all worlds.
+However, we can optimize over each aggregator and each provenance to achieve better performance.
+For instance, counting over max-min-prob tagged tuples can be implemented by an O ⁡ ( n ​ log ⁡ ( n ) ) O(n\log(n)) algorithm, much faster than exponential.
+Fig. 9 demonstrates a running example and an evaluation of a counting expression under max-min-prob provenance.
+The resulting count can be 0-9, each derivable by multiple worlds.
+Rules and Fixed-Point Iteration.
+Evaluating a rule p ← e p\leftarrow e on database F T F_{T} concerns evaluating the expression e e and merging the result with the existing facts under predicate p p in F T F_{T} .
+The result of evaluating e e may contain duplicated tuples tagged by distinct tags, owing to expressions such as union, projection, or aggregation.
+Therefore, we perform normalization on the set to join ( ⊕ \oplus ) the distinct tags.
+From here, there are three cases to merge the newly derived tuples ( ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ \left\langle\llbracket e\rrbracket(F_{T})\right\rangle ) with the previously derived tuples ( ⟦ p ⟧ ​ ( F T ) \llbracket p\rrbracket(F_{T}) ).
+If a fact is present only in the old or the new, we simply propagate the fact to the output.
+When a tuple u u appears in both the old and the new, we propagate the disjunction of the old and new tag ( t old ⊕ t new t^{\texttt{old}}\oplus t^{\texttt{new}} ).
+Combining all cases, we obtain a set of newly tagged facts under predicate p p .
+Recursion in SclRam is realized similar to least fixed point iteration in Datalog ( Abiteboul
+et al., 1995 ) .
+The iteration happens on a per-stratum basis to enforce stratified negation and aggregation.
+Evaluating a single step of stratum s s means evaluating all the rules in s s and returning the updated database.
+Note that we define a specialized least fixed point operator lfp ∘ \textbf{lfp}^{\circ} , which stops the iteration once the whole database is saturated .
+Fig. 10 illustrates an evaluation involving recursion and database saturation.
+The whole database saturates on the 7th iteration, and finds the tag representing the optimal path for the PacMan to reach the goal.
+Termination is not universally guaranteed in SclRam due to the presence features such as value creation.
+But its existence can be proven in a per-provenance basis.
+For example, it is easy to show that if a program terminates under untagged semantics, then it terminates under tagged semantics with max-min-prob provenance.
+rel path ( x1 , y1 , x3 , y3 ) = ( edge ( x1 , y1 , x3 , y3 ) or path ( x1 , y1 , x2 , y2 ) and edge ( x2 , y2 , x3 , y3 )) and not enemy ( x3 , y3 )
+Iteration count i i
+1   
+2   
+3   
+4   
+5   
+6   
+7
+t C1-C3 ( i ) t_{\texttt{C1-C3}}^{(i)} in F T ( i ) F_{T}^{(i)}
+–   
+  
+(same)   
+⊕ ⊕ ⋯ ⊕ \raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cxswe.pdf}}\oplus\raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cxsde.pdf}}\oplus\cdots\oplus\raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cde.pdf}}   
+(same)   
+⊕ ⊕ ⋯ ⊕ {\raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cxzaqwe.pdf}}}\oplus\raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cxsaqwe.pdf}}\oplus\cdots\oplus\raisebox{-4.0pt}{\includegraphics[height=12.0pt]{images/pacman/cde.pdf}}   
+(same)
+t C1-C3 ( i ) t_{\texttt{C1-C3}}^{(i)} in F mmp ( i ) F_{\texttt{mmp}}^{(i)}
+–   
+0.1   
+0.1   
+0.2   
+0.2   
+0.9   
+0.9
+t C1-C3 ( i ) t_{\texttt{C1-C3}}^{(i)} saturated?
+–   
+false   
+true   
+false   
+true   
+false   
+true
+F mmp ( i ) F_{\texttt{mmp}}^{(i)} saturated?
+false   
+false   
+false   
+false   
+false   
+false   
+true
+Figure 10 .
+A demonstration of the fixed-point iteration to check whether actor at C1 can reach C3 without hitting an enemy (Fig. 9(a) ).
+The Scallop rule to derive this is defined on the top, and we assume bidirectional edges are populated and tagged by 1 .
+Let t C1-C3 t_{\texttt{C1-C3}} be the tag associated with path(C,1,C,3) .
+We use a symbol like to represent a conjunction of negated tags of enemy along the illustrated path, e.g. = ( ⊖ t C2 ) ⊗ ( ⊖ t C3 ) \raisebox{-3.0pt}{\includegraphics[height=10.0pt]{images/pacman/cde-small.pdf}}=(\ominus t_{\texttt{C2}})\otimes(\ominus t_{\texttt{C3}}) .
+2nd iter is the first time t C1-C3 t_{\texttt{C1-C3}} is derived, but the path is blocked by an enemy.
+On 6th iter, the best path is derived in the tag.
+After that, under the max-min-prob provenance, both the tag t C1-C3 t_{\texttt{C1-C3}} and the database F mmp F_{\texttt{mmp}} are saturated, causing the iteration to stop.
+Compared to untagged semantics in Datalog which will stop after 4 iterations, SclRam with mmp saturates slower but allowing to explore better reasoning chains.
+4.4. External Interface and Execution Pipeline
+Thus far, we have only illustrated the max-min-prob provenance, in which the tags are approximated probabilities.
+There are other probabilistic provenances with more complex tags such as proof trees or boolean formulae.
+We therefore introduce, for each provenance T T , an input tag space I I , an output tag space O O , a tagging function τ : I → T \tau:I\rightarrow T , and a recover function ρ : T → O \rho:T\rightarrow O .
+For instance, all probabilistic provenances share the same input and output tag spaces I = O = [ 0 , 1 ] I=O=[0,1] for a unified interface, while the internal tag spaces T T could be different.
+We call the 4-tuple ( I , O , τ , ρ ) (I,O,\tau,\rho) the external interface for a provenance T T .
+The whole execution pipeline is then illustrated below:
+In the context of a Scallop application, an EDB is provided in the form F option< I > F_{\texttt{option<$I$>}} .
+During the tagging phase , τ \tau is applied to each input tag to obtain F T F_{T} , following which the SclRam program operates on F T F_{T} .
+For convenience, not all input facts need to be tagged—untagged input facts are simply associated by the tag 1 in F T F_{T} .
+In the recovery phase , ρ \rho is applied to obtain F O F_{O} , the IDB that the whole pipeline returns.
+Scallop allows the user to specify a set of output relations and ρ \rho is only applied to tags under such relations to avoid redundant computations.
+4.5. Differentiable Reasoning with Provenance
+Provenance
+T T
+0
+1
+t 1 ⊕ t 2 t_{1}\oplus t_{2}
+t 1 ⊗ t 2 t_{1}\otimes t_{2}
+⊖ t \ominus~t
+t 1
+○
+= t 2 t_{1}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t_{2}
+τ ⁡ ( r i ) \tau(r_{i})
+ρ ⁡ ( t ) \rho(t)
+diff-max-min-prob
+𝔻 \mathbb{D}
+0 ^ \hat{0}
+1 ^ \hat{1}
+max ​ ( t 1 , t 2 ) \text{max}(t_{1},t_{2})
+min ​ ( t 1 , t 2 ) \text{min}(t_{1},t_{2})
+1 ^ − t \hat{1}-t
+t 1 fst ​ == ​ t 2 fst t_{1}^{\text{fst}}~\texttt{==}~t_{2}^{\text{fst}}
+( r i , 𝐞 → i ) (r_{i},\vec{\mathbf{e}}_{i})
+t t
+diff-add-mult-prob
+𝔻 \mathbb{D}
+0 ^ \hat{0}
+1 ^ \hat{1}
+clamp ​ ( t 1 + t 2 ) \text{clamp}(t_{1}+t_{2})
+t 1 ⋅ t 2 t_{1}\cdot t_{2}
+1 ^ − t \hat{1}-t
+true
+( r i , 𝐞 → i ) (r_{i},\vec{\mathbf{e}}_{i})
+t t
+diff-top-k-proofs
+Φ \Phi
+∅ \emptyset
+{ ∅ } \{\emptyset\}
+t 1 ∨ k t 2 t_{1}\vee_{k}t_{2}
+t 1 ∧ k t 2 t_{1}\wedge_{k}t_{2}
+¬ k t \neg_{k}~t
+t 1 ​ == ​ t 2 t_{1}~\texttt{==}~t_{2}
+{ { pos ​ ( i ) } } \{\{\text{pos}(i)\}\}
+WMC ​ ( t , Γ ) \text{WMC}(t,\Gamma)
+Figure 11 .
+Definitions of three differentiable provenances.
+a ^ i = ( a i , ∇ a i ) ∈ 𝔻 0 ^ = ( 0 , 0 → ) 1 ^ = ( 1 , 0 → ) a ^ 1 + a ^ 2 = ( a 1 + a 2 , ∇ a 1 + ∇ a 2 ) a ^ 1 ⋅ a ^ 2 = ( a 1 ⋅ a 2 , a 2 ⋅ ∇ a 1 + a 1 ⋅ ∇ a 2 ) − a ^ 1 = ( − a 1 , − ∇ a 1 ) min ​ ( a ^ 1 , a ^ 2 ) = a ^ i , where ​ i = argmin i ​ ( a i ) max ​ ( a ^ 1 , a ^ 2 ) = a ^ i , where ​ i = argmax i ​ ( a i ) clamp ​ ( a ^ 1 ) = ( clamp 0 1 ​ ( a 1 ) , ∇ a 1 ) \begin{array}[]{rcl}\hat{a}_{i}&=&(a_{i},\nabla a_{i})\in\mathbb{D}\\
+\hat{0}&=&(0,\vec{0})\\
+\hat{1}&=&(1,\vec{0})\end{array}\hskip 17.00024pt\begin{array}[]{rcl}\hat{a}_{1}+\hat{a}_{2}&=&(a_{1}+a_{2},\nabla a_{1}+\nabla a_{2})\\
+\hat{a}_{1}\cdot\hat{a}_{2}&=&(a_{1}\cdot a_{2},a_{2}\cdot\nabla a_{1}+a_{1}\cdot\nabla a_{2})\\
+-\hat{a}_{1}&=&(-a_{1},-\nabla a_{1})\end{array}\hskip 17.00024pt\begin{array}[]{rcl}\text{min}(\hat{a}_{1},\hat{a}_{2})&=&\hat{a}_{i},~\text{where}~i=\text{argmin}_{i}(a_{i})\\
+\text{max}(\hat{a}_{1},\hat{a}_{2})&=&\hat{a}_{i},~\text{where}~i=\text{argmax}_{i}(a_{i})\\
+\text{clamp}(\hat{a}_{1})&=&(\text{clamp}_{0}^{1}(a_{1}),\nabla a_{1})\end{array}
+Figure 12 . Operations on dual-number 𝔻 ≜ [ 0 , 1 ] × ℝ n \mathbb{D}\triangleq[0,1]\times\mathbb{R}^{n} , where n n is the number of input probabilities.
+(Variable) i ∈ 1 ​ … ​ n (Literal) ν : ⁣ := pos ​ ( i ) | neg ​ ( i ) (Proof) η : ⁣ := { ν 1 , ν 2 , … } (Formula) Φ ∋ φ : ⁣ := { η 1 , η 2 , … } φ 1 ∨ k φ 2 = top k ​ ( φ 1 ∪ φ 2 ) φ 1 ∧ k φ 2 = top k ( { η | ( η 1 , η 2 ) ∈ φ 1 × φ 2 , η = η 1 ∪ η 2 , η no conflict } ) ¬ k φ = top k ​ ( cnf2dnf ​ ( { { ¬ ν | ν ∈ η } | η ∈ φ } ) ) Γ ⁡ ( i ) = ( r i , 𝐞 → i ) \begin{array}[]{rrcl}\text{(Variable)}&i&\in&1\dots n\\
+\text{(Literal)}&\nu&::=&\text{pos}(i)~|~\text{neg}(i)\\
+\text{(Proof)}&\eta&::=&\{\nu_{1},\nu_{2},\dots\}\\
+\text{(Formula)}&\Phi\ni\varphi&::=&\{\eta_{1},\eta_{2},\dots\}\end{array}\hskip 8.50012pt\begin{array}[]{rcl}\varphi_{1}\vee_{k}\varphi_{2}&=&\text{top}_{k}(\varphi_{1}\cup\varphi_{2})\\
+\varphi_{1}\wedge_{k}\varphi_{2}&=&\text{top}_{k}(\{~\eta~|~(\eta_{1},\eta_{2})\in\varphi_{1}\times\varphi_{2},\eta=\eta_{1}\cup\eta_{2},\eta~\text{no conflict}~\})\\
+\neg_{k}~\varphi&=&\text{top}_{k}(\text{cnf2dnf}(\{\{\neg\nu~|~\nu\in\eta\}~|~\eta\in\varphi\}))\\
+\Gamma(i)&=&(r_{i},\vec{\mathbf{e}}_{i})\end{array}
+Figure 13 . Definitions used for diff-top-k-proofs provenance.
+We now elucidate how provenance also supports differentiable reasoning.
+Let all the probabilities in the EDB form a vector r → ∈ ℝ n \vec{r}\in\mathbb{R}^{n} , and the probabilities in the resulting IDB form a vector y → ∈ ℝ m \vec{y}\in\mathbb{R}^{m} .
+Differentiation concerns deriving output probabilities y → \vec{y} as well as the derivative ∇ y → = ∂ y → ∂ r → ∈ ℝ m × n \nabla\vec{y}=\frac{\partial\vec{y}}{\partial\vec{r}}\in\mathbb{R}^{m\times n} .
+In Scallop, one can obtain these using a differentiable provenance (DP).
+DPs share the same external interface—let the input tag space I = [ 0 , 1 ] I=[0,1] and output tag space O O be the space of dual-numbers 𝔻 \mathbb{D} (Fig. 12 ).
+Now, each input tag r i ∈ [ 0 , 1 ] r_{i}\in[0,1] is a probability,
+and each output tag y ^ j = ( y j , ∇ y j ) \hat{y}_{j}=(y_{j},\nabla y_{j}) encapsulates the output probability y j y_{j} and its derivative w.r.t. inputs, ∇ y j \nabla y_{j} .
+From here, we can obtain our expected output y → \vec{y} and ∇ y → \nabla\vec{y} by stacking together y j y_{j} -s and ∇ y j \nabla y_{j} -s respectively.
+Scallop provides 8 configurable built-in DPs with different empirical advantages in terms of runtime efficiency, reasoning granularity, and performance.
+In this section, we elaborate upon 3 simple but versatile DPs, whose definitions are shown in Fig. 11 .
+In the following discussion, we use r i r_{i} to denote the i i -th element of r → \vec{r} , where i i is called a variable (ID).
+Vector 𝐞 → i ∈ ℝ n \vec{\mathbf{e}}_{i}\in\mathbb{R}^{n} is the standard basis vector where all entries are 0 except the i i -th entry.
+4.5.1. diff-max-min-prob ( dmmp )
+This provenance is the differentiable version of mmp .
+When obtaining r i r_{i} from an input tag, we transform it into a dual-number by attaching 𝐞 → i \vec{\mathbf{e}}_{i} as its derivative.
+Note that throughout the execution, the derivative will always have at most one entry being non-zero and, specifically, 1 1 or − 1 -1 .
+The saturation check is based on equality of the probability part only, so that the derivative does not affect termination.
+All of its operations can be implemented by algorithms with time complexity O ⁡ ( 1 ) O(1) , making it extremely runtime-efficient.
+4.5.2. diff-add-mult-prob ( damp )
+This provenance has the same internal tag space, tagging function, and recover function as dmmp .
+As suggested by its name, its disjunction and conjunction operations are just + + and ⋅ \cdot for dual-numbers.
+When performing disjunction, we clamp the real part of the dual-number obtained from performing + + , while keeping the derivative the same.
+The saturation function for damp is designed to always returns true to avoid non-termination.
+But this decision makes it less suitable for complex recursive programs.
+The time complexity of operations in damp is O ⁡ ( n ) O(n) , which is slower than dmmp is but still very efficient in practice.
+4.5.3. diff-top-k-proofs ( dtkp )
+This provenance extends the top- k k proofs semiring originally proposed in ( Huang et al., 2021 ) to additionally support negation and aggregation.
+Shown in Fig. 11 and 13 , the tags of dtkp are boolean formulas φ ∈ Φ \varphi\in\Phi in disjunctive normal form (DNF).
+Each conjunctive clause in the DNF is called a proof η \eta .
+A formula can contain at most k k proofs, where k k is a tunable hyper-parameter.
+Throughout execution, boolean formulas are propagated with ∨ k \vee_{k} , ∧ k \wedge_{k} , and ¬ k \neg_{k} , which resemble or , and , and not on DNF formulas.
+At the end of these computations, top k \text{top}_{k} is applied to keep only k k proofs with the highest proof probability :
+(1)
+Pr ⁡ ( η ) = ∏ ν ∈ η Pr ⁡ ( ν ) , Pr ⁡ ( pos ​ ( i ) ) = r i , Pr ⁡ ( neg ​ ( i ) ) = 1 − r i . \displaystyle\Pr(\eta)=\textstyle\prod_{\nu\in\eta}\Pr(\nu),\quad\Pr(\text{pos}(i))=r_{i},\quad\Pr(\text{neg}(i))=1-r_{i}.
+When merging two proofs during ∧ k \wedge_{k} , there might be conflicting literals, e.g. pos ​ ( i ) \text{pos}(i) and neg ​ ( i ) \text{neg}(i) , in which case we remove the whole proof.
+To take negation ¬ k \neg_{k} on φ \varphi , we first negate all the literals to obtain a conjunctive normal form (CNF) equivalent to ¬ φ \neg\varphi .
+Then we perform cnf2dnf operation (conflict check included) to convert it back to a DNF.
+To obtain the output dual-number y ^ j \hat{y}_{j} from a DNF formula φ j \varphi_{j} , the tag for j j -th output tuple, we adopt a differentiable weighted-model-counting (WMC) procedure ( Manhaeve et al., 2021 ) .
+WMC computes the weight of a boolean formula φ j \varphi_{j} given the weights of individual variables.
+Concretely, y ^ j = WMC ​ ( φ j , Γ ) \hat{y}_{j}=\text{WMC}(\varphi_{j},\Gamma) where Γ ⁡ ( i ) = ( r i , 𝐞 → i ) \Gamma(i)=(r_{i},\vec{\mathbf{e}}_{i}) is the mapping from variables to their dual-numbers.
+Note that WMC is #P-complete, and is the main contributor to the runtime when using this provenance.
+The tunable k k enables the user to balance between runtime and reasoning granularity.
+Detailed runtime analysis is shown in Appendix B .
+4.6. Practical Considerations
+We finally discuss some practical aspects concerning SclRam extensions and provenance selection.
+Additional Features.
+We only presented the syntax and semantics of the core fragment of SclRam .
+SclRam additionally supports the following useful features:
+1) sampling operations, and the provenance extension supporting them,
+2) group-by aggregations,
+3) tag-based early removal and its extension in provenance, and
+4) mutually exclusive tags in dtkp .
+We formalize these in Appendix B .
+Provenance Selection.
+A natural question is how to select a differentiable provenance for a given Scallop application.
+Based on our empirical evaluation in Section 6 , dtkp is often the best performing one, and setting k = 3 k=3 is usually a good choice for both runtime efficiency and learning performance.
+This suggests that a user can start with dtkp as the default.
+In general, the provenance selection process is similar to the process of hyperparameter tuning common in machine learning.
+5. Implementation
+Module
+LoC
+Compiler
+19K
+Runtime
+16K
+Interpreter
+2K
+scallopy
+4K
+Table 1 . LoC of core Scallop modules.
+We implemented the core Scallop system in 45K LoC of Rust.
+The LoC of individual modules is shown in Table 1 .
+Within the compiler, there are two levels of intermediate representations, front-IR and back-IR , between the surface language and the SclRam language.
+In front-IR , we perform analyses such as type inference and transformations such as desugaring.
+In back-IR , we generate query plans and apply optimizations.
+The runtime operates directly on SclRam and is based on semi-naive evaluation specialized for tagged semantics.
+There are dynamic and static runtimes for interpreted and compiled SclRam programs.
+Currently, all computation is on CPU only, but can be parallelized per-batch for machine learning.
+Scallop can be used through different interfaces such as interpreter, compiler, and interactive terminal.
+It also provides language bindings such as scallopy for Python and scallop-wasm for WebAssembly and JavaScript.
+With scallopy , Scallop can be seamlessly integrated with machine learning frameworks such as PyTorch, wherein
+the scallopy module is treated just like any other PyTorch module.
+When jit is specified in scallopy , Scallop programs can be just-in-time (JIT) compiled to Rust, turned into binaries, and dynamically loaded into the Python environment.
+Scallop provides 18 built-in provenances (4 for discrete reasoning, 6 for probabilistic, and 8 for differentiable).
+The WMC algorithm is implemented using sentential decision diagram (SDD) ( Darwiche, 2011 ) with naive bottom-up compilation.
+We allow each provenance to provide its own implementation for operations such as aggregation and sampling.
+This gives substantial freedom and enables optimizations for complex operations.
+Our provenance framework is also interfaced with scallopy , allowing to quickly create and test new provenances in Python.
+6. Evaluation
+We evaluate the Scallop language and framework on a benchmark suite comprising eight neurosymbolic applications.
+Our evaluation aims to answer the following research questions:
+RQ1
+How expressive is Scallop for solving diverse neurosymbolic tasks?
+RQ2
+How do Scallop’s solutions compare to state-of-the-art baselines in terms of accuracy?
+RQ3
+Is the differentiable reasoning module of Scallop runtime-efficient?
+RQ4
+Is Scallop effective at improving generalizability, interpretability, and data-efficiency?
+RQ5
+What are the failure modes of Scallop solutions and how can we mitigate them?
+In the following sections, we first introduce the benchmark tasks and the chosen baselines for each task (Section 6.1 ).
+Then, we answer RQ1 to RQ5 in Section 6.2 to Section 6.6 respectively.
+All Scallop related and runtime related experiments were conducted on a machine with two 20-core Intel Xeon CPUs, four GeForce RTX 2080 Ti GPUs, and 768 GB RAM.
+6.1. Benchmarks and Baselines
+Figure 14 .
+Visualization of benchmark tasks.
+Beside the name of each task we specify the size of the training dataset and the output domain.
+PacMan-Maze is omitted since it has been shown in Section 2 .
+We present an overview of our benchmarks in Fig. 14 .
+They cover a wide spectrum of tasks involving perception and reasoning.
+The input data modality ranges from images and videos to natural language texts and knowledge bases (KB).
+The size of the training dataset is also presented in the figure.
+We next elaborate on the benchmark tasks and their corresponding baselines.
+MNIST-R : A Synthetic MNIST Test Suite.
+This benchmark is designed to test various features of Scallop such as negation and aggregation.
+Each task takes as input one or more images of hand-written digits from the MNIST dataset ( Lecun
+et al., 1998 ) and performs
+simple arithmetic (sum2, sum3, sum4),
+comparison (less-than),
+negation (not-3-or-4),
+or counting (count-3, count-3-or-4)
+over the depicted digits.
+For count-3 and count-3-or-4, we count digits from a set of 8 images.
+For this test suite, we use a CNN-based model, DeepProbLog (DPL) ( Manhaeve et al., 2021 ) , and our prior work ( Huang et al., 2021 ) (Prior) as the baselines.
+HWF : Hand-Written Formula Parsing and Evaluation.
+HWF, proposed in ( Li
+et al., 2020 ) , concerns parsing and evaluating hand-written formulas.
+The formula is provided in the form of a sequence of images, where each image represents either a digit (0-9) or an arithmetic symbol ( + , − , × , ÷ +,-,\times,\div ).
+Formulas are well-formed according to a grammar and do not divide by zero.
+The size of the formulas ranges from 1 to 7 and is indicated as part of the input.
+The goal is to evaluate the formula to obtain a rational number as the result.
+We choose from ( Li
+et al., 2020 ) the baselines NGS- m m -BS, NGS-RL, and NGS-MAPO, which are neurosymbolic methods designed specifically for this task.
+Pathfinder : Image Classification with Long-Range Dependency.
+In this task from ( Tay et al., 2020 ) , the input is an image containing two dots that are possibly connected by curved and dashed lines.
+The goal is to tell whether the dots are connected.
+There are two subtasks, Path and Path-X, where Path contains 32 × 32 32\times 32 images and Path-X contains 128 × 128 128\times 128 ones.
+We pick as baselines standard CNN and Transformer based models, as well as the state-of-the-art neural models S4 ( Gu
+et al., 2021 ) , S4 ∗ ( Gu
+et al., 2022 ) , and SGConv ( Li
+et al., 2022 ) .
+PacMan-Maze : Playing PacMan Maze Game.
+As presented in Section 2 , this task tests an agent’s ability to recognize entities in an image and plan the path for the PacMan to reach the goal.
+An RL environment provides the game state image as input and the agent must plan the optimal action { up , down , left , right } \{{\texttt{\footnotesize up}},{\texttt{\footnotesize down}},{\texttt{\footnotesize left}},{\texttt{\footnotesize right}}\} to take at each step.
+There is no “training dataset” as the environment is randomized for every session.
+We pick as baseline a CNN based Deep-Q-Network (DQN).
+Unlike other tasks, we use the “success rate” metric for evaluation, i.e., among 1000 game sessions, we measure the number of times the PacMan reaches the goal within a certain time-budget.
+CLUTRR : Kinship Reasoning from Natural Language Context.
+In this task from ( Sinha et al., 2019 ) , the input contains a natural language (NL) passage about a set of characters.
+Each sentence in the passage hints at kinship relations.
+The goal is to infer the relationship between a given pair of characters.
+The target relation is not stated explicitly in the passage and it must be deduced through a reasoning chain.
+Our baseline models include RoBERTa ( Liu et al., 2019 ) , BiLSTM ( Graves
+et al., 2013 ) , GPT-3-FT (fine-tuned), GPT-3-ZS (zero-shot), and GPT-3-FS (5-shot) ( Brown
+et al., 2020 ) .
+In an alternative setup, CLUTRR-G, instead of the NL passage, the structured kinship graph corresponding to the NL passage is provided, making it a Knowledge Graph Reasoning problem.
+For CLUTRR-G, we pick GAT ( Veličković et al., 2017 ) and CTP ( Minervini et al., 2020 ) as baselines.
+Mugen : Video-Text Alignment and Retrieval.
+Mugen ( Hayes et al., 2022 ) is based on a game called CoinRun ( Cobbe
+et al., 2019 ) .
+In the video-text alignment task, the input contains a 3.2 second long video of gameplay footage and a short NL paragraph describing events happening in the video.
+The goal is to compute a similarity score representing how “aligned” they are.
+There are two subsequent tasks, Video-to-Text Retrieval (VTR) and Text-to-Video Retrieval (TVR).
+In TVR, the input is a piece of text and a set of 16 videos, and the goal is to retrieve the video that best aligns with the text.
+In VTR, the goal is to retrieve text from video.
+We compare our method with SDSC ( Hayes et al., 2022 ) .
+CLEVR : Compositional Language and Elementary Visual Reasoning ( Johnson et al., 2017 ) .
+In this visual question answering (VQA) task, the input contains a rendered image of geometric objects and a NL question that asks about counts, attributes, and relationships of objects.
+The goal is to answer the question based on the image.
+We pick as baselines NS-VQA ( Yi et al., 2018 ) and NSCL ( Mao
+et al., 2019 ) , which are neurosymbolic methods designed specifically for this task.
+VQAR : Visual-Question-Answering with Common-Sense Reasoning.
+This task, like CLEVR, also concerns VQA but with three salient differences:
+it contains real-life images from the GQA dataset ( Hudson and
+Manning, 2019 ) ;
+the queries are in a programmatic form, asking to retrieve objects in the image; and
+there is an additional input in the form of a common-sense knowledge base (KB) ( Gao
+et al., 2019 ) containing triplets such as (giraffe, is-a, animal) for common-sense reasoning.
+The baselines for this task are NMNs ( Andreas
+et al., 2016 ) and LXMERT ( Tan and Bansal, 2019 ) .
+6.2. RQ1: Our Solutions and Expressivity
+Task
+Input
+Neural Net
+Interface Relation(s)
+Scallop Program
+Features
+LoC
+R
+N
+A
+MNIST-R
+Images
+CNN
+digit ( id , digit )
+Arithmetic, comparison, negation, and counting.
+✔
+✔
+2 †
+HWF
+Images
+CNN
+symbol ( id , symbol )
+Parses and evaluates formula over recognized symbols.
+✔
+39
+length ( len )
+Pathfinder
+Image
+CNN
+dot ( id )
+Checks if the dots are connected by dashes.
+✔
+4
+dash ( from_id , to_id )
+PacMan-
+Maze
+Image
+CNN
+actor ( x , y )
+Plans the optimal action by finding an enemy-free path from actor to goal.
+✔
+✔
+✔
+31
+enemy ( x , y )
+goal ( x , y )
+CLUTRR
+(-G)
+NL
+RoBERTa
+kinship ( rela , sub , obj )
+Deduces queried relationship by recursively applying learnt composition rules.
+✔
+✔
+✔
+8
+Query ∗
+–
+question ( sub , obj )
+Rule
+–
+composition ( r 1 r_{1} , r 2 r_{2} , r 3 r_{3} )
+Mugen
+Video
+S3D
+action ( frame , action , mod )
+Checks if events specified in NL text match the actions recognized from the video.
+✔
+✔
+✔
+46
+NL
+DistilBERT
+expr ( expr_id , action )
+mod ( expr_id , mod )
+CLEVR
+Image
+FastRCNN
+obj \ _attr ( obj_id , attr , val )
+Interprets CLEVR-DSL program (extracted from question) on scene graph (extracted from image).
+✔
+✔
+✔
+51
+obj \ _rela ( rela , o 1 o_{1} , o 2 o_{2} )
+NL
+BiLSTM
+filter \ _expr ( e , ce , attr , val )
+count \ _expr ( e , ce ) , …
+VQAR
+Image
+FastRCNN
+obj \ _name ( obj_id , name )
+Evaluates query over scene graphs (extracted from image) with the aid of common-sense knowledge base (KB).
+✔
+42
+obj \ _attr ( obj_id , val )
+obj \ _rela ( rela , o 1 o_{1} , o 2 o_{2} )
+KB ∗
+–
+is \ _a ( name1 , name2 ) , …
+Table 2 .
+Characteristics of Scallop solutions for each task.
+Structured input which is not learnt is denoted by ∗ .
+Neural models used are RoBERTa ( Liu et al., 2019 ) , DistilBERT ( Sanh
+et al., 2019 ) , and BiLSTM ( Graves
+et al., 2013 ) for natural language (NL), CNN and FastRCNN ( Girshick, 2015 ) for images, and S3D ( Xie
+et al., 2018 ) for video.
+We show the three key features of Scallop used by each solution: (R)ecursion, (N)egation, and (A)ggregation.
+† \dagger : For MNIST-R, the LoC is 2 for every subtask.
+To answer RQ1 , we demonstrate our Scallop solutions to the benchmark tasks (Table 2 ).
+For each task, we specify the interface relations which serve as the bridge between the neural and symbolic components.
+The neural modules process the perceptual input and their outputs are mapped to (probabilistic) facts in the interface relations.
+Our Scallop programs subsequently take these facts as input and perform the described reasoning to produce the final output.
+As shown by the features column, our solutions use all of the core features provided by Scallop.
+The complete Scallop program for each task is provided in the Appendix C .
+These programs are succinct, as indicated by the LoCs in the last column of Table 2 .
+We highlight three tasks, HWF, Mugen, and CLEVR, to demonstrate Scallop’s expressivity.
+For HWF, the Scallop program consists of a formula parser.
+It is capable of parsing probabilistic input symbols according to a context free grammar for simple arithmetic expressions.
+For Mugen, the Scallop program is a temporal specification checker , where the specification is extracted from NL text to match the sequential events excerpted from the video.
+For CLEVR, the Scallop program is an interpreter for CLEVR-DSL, a domain-specific functional language introduced in the CLEVR dataset ( Johnson et al., 2017 ) .
+We note that our prior work ( Huang et al., 2021 ) , which only supports positive Datalog, cannot express 5 out of the 8 tasks since they need negation and aggregation, as indicated by columns ‘N’ and ‘A’.
+Moreover, HWF requires floating point support which is also lacking in our prior work.
+Besides diverse kinds of perceptual data and reasoning patterns, the Scallop programs are applied in a variety of learning settings.
+As shown in Section 2 , the program for PacMan-Maze is used in a online representation learning setting.
+For CLUTRR, we write integrity constraints (similar to the one shown in Section 3.2 ) to derive semantic loss used for constraining the language model outputs.
+For CLUTRR-G, learnable weights are attached to composition facts such as composition(FATHER, MOTHER, GRANDMOTHER) , which enables to learn such facts
+from data akin to rule learning in ILP.
+For Mugen, our program is trained in a contrastive learning setup, since it requires to maximize similarity scores between aligned video-text pairs but minimize that for un-aligned ones.
+6.3. RQ2: Performance and Accuracy
+Figure 15 . MNIST-R suite accuracy comparison.
+Method
+Scallop
+DQN
+dmmp
+damp
+dtkp-1
+Succ Rate
+8.80%
+7.84%
+99.40%
+84.90%
+#Episodes
+50
+50
+50
+50K
+Table 3 . PacMan-Maze performance.
+Figure 16 . HWF learning curve.
+Figure 17 .
+Overall benchmark accuracy comparison.
+The best-performing provenance structure for our solution is indicated for each task.
+Among the shown tasks, dtkp performs the best on 6 tasks, damp on 2, and dmmp on 1.
+To answer RQ2 , we evaluate the performance and accuracy of our methods in terms of two aspects:
+1) the best performance of our solutions compared to existing baselines, and
+2) the performance of our solutions with different provenance structures ( dmmp , damp , dtkp with different k k ).
+We start with comparing our solutions against selected baselines on all the benchmark tasks, as shown in Fig. 15 , Table 3 , and Fig. 17 .
+First, we highlight two applications, PacMan-Maze and CLUTRR, which benefit the most from our solution.
+For PacMan-Maze, compared to DQN, we obtain a 1,000 × \times speed-up in terms of training episodes, and a near perfect success rate of 99.4%.
+Note that our solution encodes environment dynamics (i.e. game rules) which are unavailable and hard to incorporate in the DQN model.
+For CLUTRR, we obtain a 25% improvement over baselines, which includes GPT-3-FT, the state-of-the-art large language model fine-tuned on the CLUTRR dataset.
+Next, for tasks such as HWF and CLEVR, our solutions attain comparable performance, even compared to neurosymbolic baselines NGS- m m -BS, NSCL, and NS-VQA specifically designed for each task.
+On Path and Path-X, our solution obtains a 4% accuracy gain over our underlying model CNN and even outperforms a carefully designed transformer based model S4.
+The performance of the Scallop solution for each task depends on the chosen provenance structure.
+As can be seen from Table 3 and Figs. 15 – 17 , although dtkp is generally the best-performing one, each presented provenance is useful, e.g., dtkp for PacMan-Maze and VQAR, damp for less-than (MNIST-R) and Mugen, and dmmp for HWF and CLEVR.
+Note that under positive Datalog, Scallop’s dtkp is identical to ( Huang et al., 2021 ) , allowing us to achieve similar performance.
+In conclusion, allowing configurable provenance helps tailor our methods to different applications.
+6.4. RQ3: Runtime Efficiency
+We evaluate the runtime efficiency of Scallop solutions with different provenance structures and compare it against baseline neurosymbolic approaches.
+As shown in Table 4 , Scallop achieves substantial speed-up over DeepProbLog (DPL) on MNIST-R tasks.
+DPL is a probabilistic programming system based on Prolog using exact probabilistic reasoning.
+As an example, on sum4, DPL takes 40 days to finish only 4K training samples, showing that it is prohibitively slow to use in practice.
+On the contrary, Scallop solutions can finish a training epoch (15K samples) in minutes without sacrificing testing accuracy (according to Fig. 15 ).
+For HWF, Scallop achieves comparable runtime efficiency, even when compared against the hand-crafted and specialized NGS- m m -BS method.
+Comparing among provenance structures, we see significant runtime blowup when increasing k k for dtkp .
+This is expected as increasing k k results in larger boolean formula tags, making the WMC procedure exponentially slower.
+In practice, we find k = 3 k=3 for dtkp to be a good balance point between runtime efficiency and reasoning granularity.
+In fact, dtkp generalizes DPL, as one can set an extremely large k ≥ 2 n k\geq 2^{n} ( n n is the total number of input facts) for exact probabilistic reasoning.
+6.5. RQ4: Generalizability, Interpretability, and Data-Efficiency
+Task
+Scallop
+Baseline
+dmmp
+damp
+dtkp-3
+dtkp-10
+sum2
+34
+88
+72
+185
+21,430 (DPL)
+sum3
+34
+119
+71
+1,430
+30,898 (DPL)
+sum4
+34
+154
+77
+4,329
+timeout (DPL)
+less-than
+35
+42
+34
+43
+2,540 (DPL)
+not-3-or-4
+37
+33
+33
+34
+3,218 (DPL)
+HWF
+89
+107
+120
+8,435
+79 (NGS- m m -BS)
+CLEVR
+1,964
+1,618
+2,325
+timeout
+–
+Table 4 .
+Runtime efficiency comparison on selected benchmark tasks.
+Numbers shown are average training time (sec.) per epoch.
+Our variants attaining the best accuracy are indicated in bold.
+Figure 18 .
+Systematic generalizability on CLUTRR dataset.
+( climb , up )
+( collect , coin )
+( kill , face )
+Figure 19 .
+The predicted most likely (action, mod) pair for example video segments from Mugen dataset.
+%Train
+Scallop
+NGS
+dtkp-5
+RL
+MAPO
+m m -BS
+100%
+97.85
+3.4
+71.7
+98.5
+50%
+95.7
+3.6
+9.5
+95.7
+25%
+92.95
+3.5
+5.1
+93.3
+Table 5 .
+Testing accuracy of various methods on HWF when trained with only a portion of the data.
+Numbers are in percentage (%).
+We now consider other important desirable aspects of machine learning models besides accuracy and runtime, such as generalizability on unseen inputs, interpretability of the outputs, and data-efficiency of the training process. For brevity, we focus on a single benchmark task in each case.
+We evaluate Scallop’s generalization ability for the CLUTRR task.
+Each data-point in CLUTRR is annotated with a parameter k k denoting the length of the reasoning chain to infer the target kinship relation.
+To test different solutions’ systematic generalizability , we train them on data-points with k ∈ { 2 , 3 } k\in\{2,3\} and test on data-points with k ∈ { 2 , … , 10 } k\in\{2,\dots,10\} .
+As shown in Fig. 18 , the neural baselines suffer a steep drop in accuracy on the more complex unseen instances, whereas the accuracy of Scallop’s solution degrades more slowly, indicating that it is able to generalize better.
+Next, we demonstrate Scallop’s interpretability on the Mugen task.
+Although the goal of the task is to see whether a video-text pair is aligned, the perceptual model in our method extracts interpretable symbols, i.e., the action of the controlled character at a certain frame.
+Fig. 19 shows that the predicted (action, mod) pairs perfectly match the events in the video.
+Thus, our solution not only tells whether a video-text pair is aligned, but also why it is aligned.
+Lastly, we evaluate Scallop’s data-efficiency on the HWF task, using lesser training data (Table 5 ).
+While methods such as NGS-MAPO suffer significantly when trained on less data, Scallop’s testing accuracy decreases slowly, and is comparable to the data-efficiency of the state-of-the-art neurosymbolic NGS- m m -BS method.
+PacMan-Maze task also demonstrates Scallop’s data-efficiency, as it takes much less training episodes than DQN does, while achieving much higher success rate.
+6.6. RQ5: Analysis of Failure Modes
+Compared to purely neural models,
+Scallop solutions provide more transparency, allowing programmers to debug effectively.
+By manually checking the interface relations, we observed that the main source of error lies in inaccurate predictions from the neural components.
+For example, the RoBERTa model for CLUTRR correctly extracts only 84.69% of kinship relations.
+There are two potential causes—either the neural component is not powerful enough, or our solution is not providing adequate supervision to train it.
+The former can be addressed by employing better neural architectures or more data.
+The latter can be mitigated in different ways, such as tuning the selected provenance or incorporating integrity constraints (discussed in Section 3.2 ) into training and/or inference.
+For instance, in PacMan-Maze, a constraint that “there should be no more than one goal in the arena” helps to improve robustness.
+7. Related Work
+We survey related work in four different but overlapping domains:
+provenance reasoning, Datalog and logic programming, probabilistic and differentiable programming, and neurosymbolic methods.
+Relational Algebra and Provenance.
+Relational algebra is extensively studied in databases ( Abiteboul
+et al., 1995 ) , and extended with recursion ( Jachiet et al., 2020 ) in Datalog.
+The provenance semiring framework ( Green
+et al., 2007 ) was first proposed for positive relational algebra (RA + ) and later extended with difference ( Amsterdamer
+et al., 2011 ) and fixed-point ( Dannert
+et al., 2021 ) .
+It is deployed in variants of Datalog ( Khamis
+et al., 2021 ) and supports applications such as program synthesis ( Si
+et al., 2019 ) .
+Scallop employs an extended provenance semiring framework and demonstrates its application to configurable differentiable reasoning.
+Datalog
+is a declarative logic programming language where rules are logical formulas.
+Despite being less expressive than Prolog, it is widely studied in both the programming language and database communities for language extensions and optimizations ( Khamis
+et al., 2021 ) .
+A variety of Datalog-based systems has been built for program analysis ( Scholz et al., 2016 ) and enterprise databases ( Aref et al., 2015 ) .
+Scallop is also a Datalog-based system that extends ( Huang et al., 2021 ) with numerous language constructs such as negation and aggregation.
+Probabilistic Programming
+is a paradigm for programmers to model distributions and perform probabilistic sampling and inference.
+Such systems include ProbLog ( Dries et al., 2015 ) , Pyro ( Bingham
+et al., 2018 ) , Turing ( Ge
+et al., 2018 ) , and PPL ( van de
+Meent et al., 2018 ) .
+When integrated with modern ML systems, they are well suited for statistical modeling and building generative models.
+Scallop also supports ProbLog-style exact probabilistic inference as one instantiation of our provenance framework.
+But advanced statistical sampling and generative modeling is not yet supported and left for future work.
+Differentiable Programming
+(DP) systems seek to enable writing code that is differentiable.
+Common practices for DP include symbolic differentiation and automatic differentiation (auto-diff) ( Baydin
+et al., 2015 ) , resulting in popular ML frameworks such as PyTorch ( Paszke
+et al., 2019 ) , TensorFlow ( Abadi et al., 2015 ) , and JAX ( Bradbury et al., 2018 ) .
+However, most of these systems are designed for real-valued functions.
+Scallop is also a differentiable programming system, but with a focus on programming with discrete, logical, and relational symbols.
+Neurosymbolic Methods
+have emerged to incorporate symbolic reasoning into existing learning systems.
+Their success has been demonstrated in a number of applications ( Yi et al., 2018 ; Mao
+et al., 2019 ; Li
+et al., 2020 ; Wang
+et al., 2019 ; Xu
+et al., 2022 ; Chen
+et al., 2020 ; Minervini et al., 2020 ) .
+Similar to ( Yi et al., 2018 ; Mao
+et al., 2019 ; Li
+et al., 2020 ) , we focus primarily on solutions involving perception followed by symbolic reasoning.
+Other ways of incorporating symbolic knowledge include semantic loss ( Xu et al., 2018 ; Xu
+et al., 2022 ) , program synthesis ( Shah et al., 2020 ; Chen et al., 2021a ) , and invoking large language models (LLMs) ( Cheng et al., 2022 ; Zelikman et al., 2023 ) .
+Most aforementioned neurosymbolic methods build their own domain-specific language or specialized reasoning components, many of which are programmable in Scallop and are instantiations of our provenance framework ( Mao
+et al., 2019 ; Chen
+et al., 2020 ; Xu et al., 2018 ; Xu
+et al., 2022 ) .
+TensorLog ( Cohen
+et al., 2017 ) , DPL ( Manhaeve et al., 2021 ) , and ( Huang et al., 2021 ) can be viewed as unified neurosymbolic frameworks of varying expressivity.
+Scallop is inspired by DPL, and additionally offers a more scalable, customizable, and easy-to-use language and framework.
+8. Conclusion
+We presented Scallop, a neurosymbolic programming language for integrating deep learning and logical reasoning.
+We introduced a declarative language and a reasoning framework based on provenance computations.
+We showed that our framework is practical by applying it to a variety of machine learning tasks.
+In particular, our experiments show that Scallop solutions are comparable and even supersede many existing baselines.
+In the future, we plan to extend Scallop in three aspects:
+1) Supporting more machine learning paradigms, such as generative modeling, open domain reasoning, in-context learning, and adversarial learning.
+2) Further enhancing the usability, efficiency, and expressiveness of Scallop’s language and framework.
+We intend to provide bindings to other ML frameworks such as TensorFlow and JAX,
+leverage hardware such as GPUs to accelerate computation,
+and support constructs such as algebraic data types.
+3) Applying Scallop to real-world and safety-critical domains.
+For instance, we intend to integrate it with the CARLA driving simulator ( Dosovitskiy et al., 2017 ) to specify soft temporal constraints for autonomous driving systems.
+We also intend to apply Scallop in the medical domain for explainable disease diagnosis from electronic health records (EHR) data.
+Acknowledgement
+We thank Neelay Velingker, Hanjun Dai, Hanlin Zhang, and Sernam Lin for helpful comments on the presentation and experiments.
+We thank the anonymous reviewers and artifact reviewers for useful feedback.
+This research was supported by grants from DARPA (#FA8750-19-2-0201), NSF (#2107429 and #1836936), and ONR (#N00014-18-1-2021).
+Artifact Availability
+All software necessary to reproduce the experiments in this paper is available at ( Li et al., 2023 ) .
+Additionally, the latest source code of Scallop and its documentation is available at https://github.com/scallop-lang/scallop .
+References
+Abadi et al . (2015)
+Martín Abadi, Ashish
+Agarwal, Paul Barham, Eugene Brevdo,
+Zhifeng Chen, Craig Citro,
+Greg S. Corrado, Andy Davis,
+Jeffrey Dean, Matthieu Devin,
+et al . 2015.
+TensorFlow: Large-Scale Machine Learning on
+Heterogeneous Distributed Systems.
+arXiv:1603.04467
+Abiteboul
+et al . (1995)
+Serge Abiteboul, Richard
+Hull, and Victor Vianu.
+1995.
+Foundations of Databases: The Logical
+Level .
+Addison-Wesley Longman Publishing Co., Inc.
+Amsterdamer
+et al . (2011)
+Yael Amsterdamer, Daniel
+Deutch, and Val Tannen.
+2011.
+On the Limitations of Provenance for Queries With
+Difference.
+(2011).
+arXiv:1105.2255
+Andreas
+et al . (2016)
+Jacob Andreas, Marcus
+Rohrbach, Trevor Darrell, and Dan
+Klein. 2016.
+Neural Module Networks. In
+IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR) .
+Aref et al . (2015)
+Molham Aref, Balder ten
+Cate, Todd J. Green, Benny Kimelfeld,
+Dan Olteanu, Emir Pasalic,
+Todd L. Veldhuizen, and Geoffrey
+Washburn. 2015.
+Design and Implementation of the LogicBlox System.
+In ACM International Conference on Management of
+Data (SIGMOD) .
+Baydin
+et al . (2015)
+Atilim Gunes Baydin,
+Barak A. Pearlmutter, and
+Alexey Andreyevich Radul. 2015.
+Automatic Differentiation in Machine Learning: a
+Survey.
+(2015).
+arXiv:1502.05767
+Bingham
+et al . (2018)
+Eli Bingham, Jonathan P.
+Chen, Martin Jankowiak, Fritz Obermeyer,
+Neeraj Pradhan, Theofanis Karaletsos,
+Rohit Singh, Paul Szerlip,
+Paul Horsfall, and Noah D. Goodman.
+2018.
+Pyro: Deep Universal Probabilistic Programming.
+Journal of Machine Learning Research
+(2018).
+Bradbury et al . (2018)
+James Bradbury, Roy
+Frostig, Peter Hawkins, Matthew James
+Johnson, Chris Leary, Dougal Maclaurin,
+George Necula, Adam Paszke,
+Jake VanderPlas, Skye
+Wanderman-Milne, and Qiao Zhang.
+2018.
+JAX: Composable Transformations of
+Python+NumPy Programs .
+https://github.com/google/jax .
+Brown
+et al . (2020)
+Tom Brown, Benjamin Mann,
+Nick Ryder, Melanie Subbiah,
+Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam,
+Girish Sastry, Amanda Askell,
+et al . 2020.
+Language Models are Few-Shot Learners. In
+Conference on Neural Information Processing Systems
+(NeurIPS) .
+Chaudhuri et al . (2021)
+Swarat Chaudhuri, Kevin
+Ellis, Oleksandr Polozov, Rishabh Singh,
+Armando Solar-Lezama, Yisong Yue,
+et al . 2021.
+Neurosymbolic Programming.
+Foundations and Trends in Programming
+Languages 7, 3 (2021).
+Chen et al . (2021b)
+Mark Chen, Jerry Tworek,
+Heewoo Jun, Qiming Yuan,
+Henrique Ponde de Oliveira Pinto, Jared
+Kaplan, Harri Edwards, Yuri Burda,
+Nicholas Joseph, Greg Brockman,
+et al . 2021b.
+Evaluating Large Language Models Trained on Code.
+(2021).
+arXiv:2107.03374
+Chen et al . (2021a)
+Qiaochu Chen, Aaron
+Lamoreaux, Xinyu Wang, Greg Durrett,
+Osbert Bastani, and Isil Dillig.
+2021a.
+Web Question Answering with Neurosymbolic Program
+Synthesis. In ACM International Conference on
+Programming Language Design and Implementation (PLDI) .
+Chen
+et al . (2020)
+Xinyun Chen, Chen Liang,
+Adams Wei Yu, Denny Zhou,
+Dawn Song, and Quoc V. Le.
+2020.
+Neural Symbolic Reader: Scalable Integration of
+Distributed and Symbolic Representations for Reading Comprehension. In
+International Conference on Learning
+Representations (ICLR) .
+Cheng et al . (2022)
+Zhoujun Cheng, Tianbao
+Xie, Peng Shi, Chengzu Li,
+Rahul Nadkarni, Yushi Hu,
+Caiming Xiong, Dragomir Radev,
+Mari Ostendorf, Luke Zettlemoyer,
+et al . 2022.
+Binding Language Models in Symbolic Languages.
+(2022).
+arXiv:2210.02875
+Cobbe
+et al . (2019)
+Karl Cobbe, Oleg Klimov,
+Chris Hesse, Taehoon Kim, and
+John Schulman. 2019.
+Quantifying generalization in reinforcement
+learning. In International Conference on Machine
+Learning (ICML) . PMLR, 1282–1289.
+Cohen
+et al . (2017)
+William W. Cohen, Fan
+Yang, and Kathryn Rivard Mazaitis.
+2017.
+TensorLog: Deep Learning Meets Probabilistic DBs.
+arXiv:1707.05390
+Cropper et al . (2022)
+Andrew Cropper, Sebastijan
+Dumancic, Richard Evans, and Stephen H.
+Muggleton. 2022.
+Inductive Logic Programming at 30.
+Machine Learning 111,
+1 (2022).
+Dannert
+et al . (2021)
+Katrin M. Dannert, Erich
+Grädel, Matthias Naaf, and Val
+Tannen. 2021.
+Semiring Provenance for Fixed-Point Logic. In
+Conference on Computer Science Logic (CSL) .
+Darwiche (2011)
+Adnan Darwiche.
+2011.
+SDD: A New Canonical Representation of
+Propositional Knowledge Bases. In International
+Joint Conference on Artificial Intelligence (IJCAI) .
+Dosovitskiy et al . (2017)
+Alexey Dosovitskiy, German
+Ros, Felipe Codevilla, Antonio Lopez,
+and Vladlen Koltun. 2017.
+CARLA: An Open Urban Driving Simulator. In
+Conference on Robot Learning (CoRL) .
+Dries et al . (2015)
+Anton Dries, Angelika
+Kimmig, Wannes Meert, Joris Renkens,
+Guy Van den Broeck, Jonas Vlasselaer,
+and Luc De Raedt. 2015.
+ProbLog2: Probabilistic Logic Programming. In
+European Conference on Machine Learning and
+Knowledge Discovery in Databases (ECML PKDD) .
+Gao
+et al . (2019)
+Difei Gao, Ruiping Wang,
+Shiguang Shan, and Xilin Chen.
+2019.
+From Two Graphs to N Questions: A VQA Dataset
+for Compositional Reasoning on Vision and Commonsense.
+(2019).
+arXiv:1908.02962
+Ge
+et al . (2018)
+Hong Ge, Kai Xu, and
+Zoubin Ghahramani. 2018.
+Turing: a Language for Flexible Probabilistic
+Inference. In International Conference on
+Artificial Intelligence and Statistics, (AISTATS) .
+Girshick (2015)
+Ross B. Girshick.
+2015.
+Fast R-CNN.
+(2015).
+arXiv:1504.08083
+Graves
+et al . (2013)
+Alex Graves, Abdel-rahman
+Mohamed, and Geoffrey Hinton.
+2013.
+Speech Recognition with Deep Recurrent Neural
+Networks. In IEEE International Conference on
+Acoustics, Speech, and Signal Processing (ICASSP) .
+Green
+et al . (2007)
+Todd J. Green, Grigoris
+Karvounarakis, and Val Tannen.
+2007.
+Provenance Semirings. In
+ACM Symposium on Principles of Database Systems
+(PODS) .
+Gu
+et al . (2021)
+Albert Gu, Karan Goel,
+and Christopher Ré.
+2021.
+Efficiently Modeling Long Sequences with Structured
+State Spaces.
+(2021).
+arXiv:2111.00396
+Gu
+et al . (2022)
+Albert Gu, Isys Johnson,
+Aman Timalsina, Atri Rudra, and
+Christopher Ré. 2022.
+How to Train Your HiPPO: State Space Models with
+Generalized Orthogonal Basis Projections.
+(2022).
+arXiv:2206.12037
+Gulwani et al . (2017)
+Sumit Gulwani, Oleksandr
+Polozov, Rishabh Singh, et al .
+2017.
+Program synthesis.
+Foundations and Trends in Programming
+Languages 4, 1-2
+(2017).
+Hayes et al . (2022)
+Thomas Hayes, Songyang
+Zhang, Xi Yin, Guan Pang,
+Sasha Sheng, Harry Yang,
+Songwei Ge, Qiyuan Hu, and
+Devi Parikh. 2022.
+MUGEN: A Playground for Video-Audio-Text Multimodal
+Understanding and GENeration.
+arXiv:2204.08058
+Huang et al . (2021)
+Jiani Huang, Ziyang Li,
+Binghong Chen, Karan Samel,
+Mayur Naik, Le Song, and
+Xujie Si. 2021.
+Scallop: From Probabilistic Deductive Databases to
+Scalable Differentiable Reasoning. In Conference
+on Neural Information Processing Systems (NeurIPS) .
+Hudson and
+Manning (2019)
+Drew A Hudson and
+Christopher D Manning. 2019.
+GQA: A New Dataset for Real-World Visual Reasoning
+and Compositional Question Answering. In IEEE
+Conference on Computer Vision and Pattern Recognition (CVPR) .
+Jachiet et al . (2020)
+Louis Jachiet, Pierre
+Genevès, Nils Gesbert, and Nabil
+Layaida. 2020.
+On the Optimization of Recursive Relational
+Queries: Application to Graph Queries. In ACM
+International Conference on Management of Data (SIGMOD) .
+Johnson et al . (2017)
+Justin Johnson, Bharath
+Hariharan, Laurens Van Der Maaten, Li
+Fei-Fei, C Lawrence Zitnick, and Ross
+Girshick. 2017.
+Clevr: A diagnostic dataset for compositional
+language and elementary visual reasoning. In
+Proceedings of the IEEE Conference on Computer
+Vision and Pattern Recognition (CVPR) . 2901–2910.
+Johnson et al . (2015)
+Justin Johnson, Ranjay
+Krishna, Michael Stark, Li-Jia Li,
+David Shamma, Michael Bernstein, and
+Li Fei-Fei. 2015.
+Image Retrieval Using Scene Graphs. In
+IEEE Conference on Computer Vision and Pattern
+Recognition (CVPR) .
+Khamis
+et al . (2021)
+Mahmoud Abo Khamis,
+Hung Q. Ngo, Reinhard Pichler,
+Dan Suciu, and Yisu Remy Wang.
+2021.
+Convergence of Datalog over (Pre-) Semirings.
+arXiv:2105.14435
+Lecun
+et al . (1998)
+Y. Lecun, L. Bottou,
+Y. Bengio, and P. Haffner.
+1998.
+Gradient-Based Learning Applied to Document
+Recognition.
+Proc. IEEE 86,
+11 (1998).
+Lewkowycz et al . (2022)
+Aitor Lewkowycz, Anders
+Andreassen, David Dohan, Ethan Dyer,
+Henryk Michalewski, Vinay Ramasesh,
+Ambrose Slone, Cem Anil,
+Imanol Schlag, Theo Gutman-Solo,
+et al . 2022.
+Solving Quantitative Reasoning Problems with
+Language Models.
+(2022).
+Li
+et al . (2020)
+Qing Li, Siyuan Huang,
+Yining Hong, Yixin Chen,
+Ying Nian Wu, and Song-Chun Zhu.
+2020.
+Closed Loop Neural-Symbolic Learning via
+Integrating Neural Perception, Grammar Parsing, and Symbolic Reasoning. In
+International Conference on Machine Learning
+(ICML) .
+Li
+et al . (2022)
+Yuhong Li, Tianle Cai,
+Yi Zhang, Deming Chen, and
+Debadeepta Dey. 2022.
+What Makes Convolutional Models Great on Long
+Sequence Modeling?
+(2022).
+arXiv:2210.09298
+Li et al . (2023)
+Ziyang Li, Jiani Huang,
+and Mayur Naik. 2023.
+Scallop: A Language for Neurosymbolic
+Programming .
+https://doi.org/10.5281/zenodo.7709690
+Liu et al . (2019)
+Yinhan Liu, Myle Ott,
+Naman Goyal, Jingfei Du,
+Mandar Joshi, Danqi Chen,
+Omer Levy, Mike Lewis,
+Luke Zettlemoyer, and Veselin
+Stoyanov. 2019.
+RoBERTa: A Robustly Optimized BERT Pretraining
+Approach.
+(2019).
+arXiv:1907.11692
+Manhaeve et al . (2021)
+Robin Manhaeve, Sebastijan
+Dumancic, Angelika Kimmig, Thomas
+Demeester, and Luc De Raedt.
+2021.
+Neural Probabilistic Logic Programming in
+DeepProbLog.
+Artificial Intelligence
+298 (2021).
+Mao
+et al . (2019)
+Jiayuan Mao, Chuang Gan,
+Pushmeet Kohli, Joshua B Tenenbaum, and
+Jiajun Wu. 2019.
+The Neuro-Symbolic Concept Learner: Interpreting
+Scenes, Words, and Sentences From Natural Supervision.
+(2019).
+arXiv:1904.12584
+Minervini et al . (2020)
+Pasquale Minervini,
+Sebastian Riedel, Pontus Stenetorp,
+Edward Grefenstette, and Tim
+Rocktäschel. 2020.
+Learning Reasoning Strategies in End-to-End
+Differentiable Proving. In International
+Conference on Machine Learning (ICML) .
+Mnih
+et al . (2015)
+Volodymyr Mnih, Koray
+Kavukcuoglu, David Silver, Andrei A
+Rusu, Joel Veness, Marc G Bellemare,
+Alex Graves, Martin Riedmiller,
+Andreas K Fidjeland, Georg Ostrovski,
+et al . 2015.
+Human-level Control Through Deep Reinforcement
+Learning.
+Nature 518,
+7540 (2015).
+Paszke
+et al . (2019)
+Adam Paszke, Sam Gross,
+Francisco Massa, Adam Lerer,
+James Bradbury, Gregory Chanan,
+Trevor Killeen, Zeming Lin,
+Natalia Gimelshein, Luca Antiga,
+et al . 2019.
+PyTorch: An Imperative Style, High-Performance Deep
+Learning Library. In Conference on Neural
+Information Processing Systems (NeurIPS) .
+Rajpurkar et al . (2016)
+Pranav Rajpurkar, Jian
+Zhang, Konstantin Lopyrev, and Percy
+Liang. 2016.
+SQuAD: 100,000+ Questions for Machine Comprehension
+of Text. In Conference on Empirical Methods in
+Natural Language Processing (EMNLP) .
+Sanh
+et al . (2019)
+Victor Sanh, Lysandre
+Debut, Julien Chaumond, and Thomas
+Wolf. 2019.
+DistilBERT, a Distilled Version of BERT: Smaller,
+Faster, Cheaper and Lighter.
+(2019).
+arXiv:1910.01108
+Scholz et al . (2016)
+Bernhard Scholz, Herbert
+Jordan, Pavle Subotić, and Till
+Westmann. 2016.
+On Fast Large-Scale Program Analysis in Datalog.
+In International Conference on Compiler
+Construction (CC) .
+Shah et al . (2020)
+Ameesh Shah, Eric Zhan,
+Jennifer Sun, Abhinav Verma,
+Yisong Yue, and Swarat Chaudhuri.
+2020.
+Learning Differentiable Programs with Admissible
+Neural Heuristics. In Conference on Neural
+Information Processing Systems (NeurIPS) .
+Si
+et al . (2019)
+Xujie Si, Mukund
+Raghothaman, Kihong Heo, and Mayur
+Naik. 2019.
+Synthesizing Datalog Programs using Numerical
+Relaxation. In International Joint Conference on
+Artificial Intelligence (IJCAI) .
+Sinha et al . (2019)
+Koustuv Sinha, Shagun
+Sodhani, Jin Dong, Joelle Pineau, and
+William L. Hamilton. 2019.
+CLUTRR: A Diagnostic Benchmark for Inductive
+Reasoning from Text.
+(2019).
+arXiv:1908.06177
+Tan and Bansal (2019)
+Hao Tan and Mohit
+Bansal. 2019.
+LXMERT: Learning Cross-Modality Encoder
+Representations from Transformers.
+(2019).
+arXiv:1908.07490
+Tay et al . (2020)
+Yi Tay, Mostafa Dehghani,
+Samira Abnar, Yikang Shen,
+Dara Bahri, Philip Pham,
+Jinfeng Rao, Liu Yang,
+Sebastian Ruder, and Donald Metzler.
+2020.
+Long Range Arena: A Benchmark for Efficient
+Transformers.
+(2020).
+arXiv:2011.04006
+van de
+Meent et al . (2018)
+Jan-Willem van de Meent,
+Brooks Paige, Hongseok Yang, and
+Frank Wood. 2018.
+An Introduction to Probabilistic Programming.
+arXiv:1809.10756
+Vaswani et al . (2017)
+Ashish Vaswani, Noam
+Shazeer, Niki Parmar, Jakob Uszkoreit,
+Llion Jones, Aidan N Gomez,
+Łukasz Kaiser, and Illia
+Polosukhin. 2017.
+Attention Is All You Need. In
+Conference on Neural Information Processing Systems
+(NeurIPS) .
+Veličković et al . (2017)
+Petar Veličković,
+Guillem Cucurull, Arantxa Casanova,
+Adriana Romero, Pietro Lio, and
+Yoshua Bengio. 2017.
+Graph Attention Networks.
+(2017).
+arXiv:1710.10903
+Wang
+et al . (2019)
+Po-Wei Wang, Priya L.
+Donti, Bryan Wilder, and Zico Kolter.
+2019.
+SATNet: Bridging Deep Learning and Logical
+Reasoning Using a Differentiable Satisfiability Solver. In
+International Conference on Machine Learning
+(ICML) .
+Xie
+et al . (2018)
+Saining Xie, Chen Sun,
+Jonathan Huang, Zhuowen Tu, and
+Kevin Murphy. 2018.
+Rethinking Spatiotemporal Feature Learning:
+Speed-Accuracy Trade-offs in Video Classification. In
+European Conference on Computer Vision (ECCV) .
+Xu et al . (2018)
+Jingyi Xu, Zilu Zhang,
+Tal Friedman, Yitao Liang, and
+Guy Van den Broeck. 2018.
+A Semantic Loss Function for Deep Learning with
+Symbolic Knowledge. In International Conference on
+Machine Learning (ICML) .
+Xu
+et al . (2022)
+Ziwei Xu, Yogesh S Rawat,
+Yongkang Wong, Mohan Kankanhalli, and
+Mubarak Shah. 2022.
+Don’t Pour Cereal into Coffee: Differentiable
+Temporal Logic for Temporal Action Segmentation. In
+Conference on Neural Information Processing Systems
+(NeurIPS) .
+Yi et al . (2018)
+Kexin Yi, Jiajun Wu,
+Chuang Gan, Antonio Torralba,
+Pushmeet Kohli, and Josh Tenenbaum.
+2018.
+Neural-Symbolic VQA: Disentangling Reasoning from
+Vision and Language Understanding. In Conference
+on Neural Information Processing Systems (NeurIPS) .
+Zelikman et al . (2023)
+Eric Zelikman, Qian
+Huang, Gabriel Poesia, Noah D. Goodman,
+and Nick Haber. 2023.
+Parsel: A (De-)compositional Framework for
+Algorithmic Reasoning with Language Models.
+arXiv:2212.10561
+Appendix A Scallop Language Syntax
+i ​ t ​ e ​ m : ⁣ = @ a t t r N a m e ( a t t r A r g ∗ ) d e f d ​ e ​ f : ⁣ = i ​ m ​ p ​ o ​ r ​ t ​ D ​ e ​ f ​ | t ​ y ​ p ​ e ​ D ​ e ​ f | ​ c ​ o ​ n ​ s ​ t ​ D ​ e ​ f ​ | r ​ e ​ l ​ a ​ D ​ e ​ f | ​ q ​ u ​ e ​ r ​ y ​ D ​ e ​ f i ​ m ​ p ​ o ​ r ​ t ​ D ​ e ​ f : ⁣ = import ​ f ​ i ​ l ​ e t ​ y ​ p ​ e ​ D ​ e ​ f : ⁣ = type t y p e N a m e = a l i a s N a m e | type t y p e N a m e <: s u p e r T y p e N a m e | type r e l a t i o n N a m e ( [ n a m e : ] t y p e ∗ ) c ​ o ​ n ​ s ​ t ​ D ​ e ​ f : ⁣ = const c o n s t N a m e [ : t y p e ] = c o n s t a n t r ​ e ​ l ​ a ​ D ​ e ​ f : ⁣ = rel [ t a g :: ] r e l a N a m e ( e x p r ∗ ) | rel r e l a N a m e = { t a g g e d T u p l e ∗ } | rel [ t a g :: ] a t o m :- f o r m u l a t ​ a ​ g ​ g ​ e ​ d ​ T ​ u ​ p ​ l ​ e : ⁣ = [ t a g :: ] ( c o n s t a n t ∗ ) a ​ t ​ o ​ m : ⁣ = r ​ e ​ l ​ a ​ N ​ a ​ m ​ e ​ ( ​ e ​ x ​ p ​ r ∗ ​ ) f ​ o ​ r ​ m ​ u ​ l ​ a : ⁣ = f ​ o ​ r ​ m ​ u ​ l ​ a ​ and ​ f ​ o ​ r ​ m ​ u ​ l ​ a ​ | f ​ o ​ r ​ m ​ u ​ l ​ a ​ or ​ f ​ o ​ r ​ m ​ u ​ l ​ a | ​ f ​ o ​ r ​ m ​ u ​ l ​ a ​ implies ​ f ​ o ​ r ​ m ​ u ​ l ​ a | a ​ t ​ o ​ m | ¬ a ​ t ​ o ​ m ​ | c ​ o ​ n ​ s ​ t ​ r ​ a ​ i ​ n ​ t | ​ r ​ e ​ d ​ u ​ c ​ e r ​ e ​ d ​ u ​ c ​ e : ⁣ = v a r ∗ = a g g r e g a t o r ( v a r ∗ : f o r m u l a [ where v a r ∗ : f o r m u l a ] ) | v a r ∗ = s a m p l e r ( v a r ∗ : f o r m u l a [ where v a r ∗ : f o r m u l a ] ) c ​ o ​ n ​ s ​ t ​ r ​ a ​ i ​ n ​ t : ⁣ = e ​ x ​ p ​ r t ​ y ​ p ​ e : ⁣ = u8 ​ | u16 ​ | u32 ​ | u64 ​ | usize ​ | i8 ​ | i16 ​ | i32 | ​ i64 | ​ isize | ​ f32 | ​ f64 | ​ bool | ​ char | ​ String e ​ x ​ p ​ r : ⁣ = e ​ x ​ p ​ r ​ b ​ i ​ n ​ O ​ p ​ e ​ x ​ p ​ r | u ​ n ​ a ​ r ​ y ​ O ​ p ​ e ​ x ​ p ​ r ​ | e ​ x ​ p ​ r ​ as ​ t ​ y ​ p ​ e | ​ if ​ e ​ x ​ p ​ r ​ then ​ e ​ x ​ p ​ r ​ else ​ e ​ x ​ p ​ r | $ f u n c ( e x p r ∗ ) | v a r i a b l e | c o n s t a n t b ​ i ​ n ​ O ​ p : ⁣ = + ​ | - ​ | * ​ | / ​ | % ​ | && ​ | || | ​ == | ​ != | ​ < | ​ <= | ​ > | ​ >= u ​ n ​ a ​ r ​ y ​ O ​ p : ⁣ = ! | - a ​ g ​ g ​ r ​ e ​ g ​ a ​ t ​ o ​ r : ⁣ = min ​ | max | ​ argmin< ​ v ​ a ​ r ∗ ​ > ​ | argmax< ​ v ​ a ​ r ∗ ​ > | ​ count ​ | sum ​ | prod | ​ exists | ​ forall s ​ a ​ m ​ p ​ l ​ e ​ r : ⁣ = top<K> ​ | categorical<K> | ​ uniform<K> \begin{array}[]{rrl}item&:=&\texttt{@}attrName(attrArg*)def\\
+def&:=&importDef~|~typeDef~|~constDef~|~relaDef~|~queryDef\\
+importDef&:=&\texttt{import}~file\\
+typeDef&:=&\texttt{type}~typeName~\texttt{=}~aliasName~|~\texttt{type}~typeName~\texttt{<:}~superTypeName\\
+&~|&\texttt{type}~relationName\texttt{(}[name\texttt{:}]type^{*}\texttt{)}\\
+constDef&:=&\texttt{const}~constName[\texttt{:}~type]~\texttt{=}~constant\\
+relaDef&:=&\texttt{rel}~[tag~\texttt{::}]~relaName\texttt{(}expr^{*}\texttt{)}~|~\texttt{rel}~relaName~\texttt{=}~\texttt{\lx@text@lbrace}taggedTuple^{*}\texttt{\lx@text@rbrace}\\
+&~|&\texttt{rel}~[tag~\texttt{::}]~atom~\texttt{:-}~formula\\
+taggedTuple&:=&[tag~\texttt{::}]~\texttt{(}constant^{*}\texttt{)}\\
+atom&:=&relaName\texttt{(}expr^{*}\texttt{)}\\
+formula&:=&formula~\texttt{and}~formula~|~formula~\texttt{or}~formula~|~formula~\texttt{implies}~formula\\
+&~|&atom~|~\neg atom~|~constraint~|~reduce\\
+reduce&:=&var^{*}~\texttt{=}~aggregator(var^{*}\texttt{:}~formula~[\texttt{where}~var^{*}\texttt{:}~formula])\\
+&~|&var^{*}~\texttt{=}~sampler(var^{*}\texttt{:}~formula~[\texttt{where}~var^{*}\texttt{:}~formula])\\
+constraint&:=&expr\\
+type&:=&\texttt{u8}~|~\texttt{u16}~|~\texttt{u32}~|~\texttt{u64}~|~\texttt{usize}~|~\texttt{i8}~|~\texttt{i16}~|~\texttt{i32}~|~\texttt{i64}~|~\texttt{isize}~|~\texttt{f32}~|~\texttt{f64}~|~\texttt{bool}~|~\texttt{char}~|~\texttt{String}\\
+expr&:=&expr~binOp~expr~|~unaryOp~expr~|~expr~\texttt{as}~type~|~\texttt{if}~expr~\texttt{then}~expr~\texttt{else}~expr\\
+&~|&\$func\texttt{(}expr^{*}\texttt{)}~|~variable~|~constant\\
+binOp&:=&\texttt{+}~|~\texttt{-}~|~\texttt{*}~|~\texttt{/}~|~\texttt{\%}~|~\texttt{\&\&}~|~\texttt{||}~|~\texttt{==}~|~\texttt{!=}~|~\texttt{<}~|~\texttt{<=}~|~\texttt{>}~|~\texttt{>=}\\
+unaryOp&:=&\texttt{!}~|~\texttt{-}\\
+aggregator&:=&\texttt{min}~|~\texttt{max}~|~\texttt{argmin<}var^{*}\texttt{>}~|~\texttt{argmax<}var^{*}\texttt{>}~|~\texttt{count}~|~\texttt{sum}~|~\texttt{prod}~|~\texttt{exists}~|~\texttt{forall}\\
+sampler&:=&\texttt{top<K>}~|~\texttt{categorical<K>}~|~\texttt{uniform<K>}\end{array}
+Figure 20 . Language grammar ( v ​ a ​ r : v ​ a ​ r ​ i ​ a ​ b ​ l ​ e var:variable and f : f ​ o ​ r ​ m ​ u ​ l ​ a f:formula ).
+In this appendix, we provide the abstract syntax of the full language of Scallop in Fig. 20 .
+Appendix B Reasoning Framework
+In this appendix, we provide the extensions to our provenance framework, and illustrate the additional features provided by full SclRam .
+B.1. Provenance Extensions
+(Tag) t ∈ T (False) 𝟎 ∈ T (True) 𝟏 ∈ T (Disjunction) ⊕ : T × T → T (Conjunction) ⊗ : T × T → T (Negation) ⊖ : T → T (Saturation)
+○
+= : T × T → Bool (Early Removal) discard : T → Bool (Weight) weight : T → ℝ \begin{array}[]{rrcl}\text{(Tag)}&t&\in&T\\
+\text{(False)}&\mathbf{0}&\in&T\\
+\text{(True)}&\mathbf{1}&\in&T\\
+\text{(Disjunction)}&\oplus&:&T\times T\rightarrow T\\
+\text{(Conjunction)}&\otimes&:&T\times T\rightarrow T\\
+\text{(Negation)}&\ominus&:&T\rightarrow T\\
+\text{(Saturation)}&\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}&:&T\times T\rightarrow\text{Bool}\\
+\text{(Early Removal)}&\text{discard}&:&T\rightarrow\text{Bool}\\
+\text{(Weight)}&\text{weight}&:&T\rightarrow\mathbb{R}\\
+\end{array}
+Figure 21 . Full interface for a provenance structure.
+We present the full provenance interface including two additional features, early removal and weight for sampling, in Fig. 21 .
+For early removal, we introduce a function discard where it returns a boolean value based on a tag.
+When returned true, the fact associated with this tag will be early removed from the computation.
+For sampling, we allow each provenance to implement a function weight that returns a real number in ℝ \mathbb{R} representing the weight of the tag.
+These features will be used later when we introduce the full SclRam syntax and semantics.
+B.2. Abstract Syntax of SclRam
+}}~|~{\texttt{\footnotesize categorical<K>}}~|~{\texttt{\footnotesize uniform<K>}}\\
+\text{(Expression)}&e&::=&\varnothing~|~p~|~\mathbbm{1}(e)~|~\emptyset(e)~|~\gamma_{g}(e)~|~\hat{\gamma}_{g}(e_{1},e_{2})~|~\psi_{\mu}(e)~|~\hat{\psi}_{\mu}(e_{1},e_{2})~|~\pi_{\alpha}(e)~|~\sigma_{\beta}(e)\\
+&&~|&e_{1}\cup e_{2}~|~e_{1}\times e_{2}~|~e_{1}\bowtie e_{2}~|~e_{1}\cap e_{2}~|~e_{1}-e_{2}\\
+\text{(Rule)}&r&::=&p\leftarrow e\\
+\text{(Stratum)}&s&::=&\{r_{1},\dots,r_{n}\}\\
+\text{(Program)}&\overline{s}&::=&s_{1};\dots;s_{n}\\
+\end{array}" display="block" intent=":literal"> (Predicate) p (Aggregator) g : ⁣ := count | sum ​ | prod | ​ exists ​ | max | ​ min ​ | argmax | ​ argmin (Sampler) μ : ⁣ := top<K> ​ | categorical<K> | ​ uniform<K> (Expression) e : ⁣ := ∅ | p ​ | 𝟙 ​ ( e ) | ​ ∅ ​ ( e ) ​ | γ g ​ ( e ) | ​ γ ^ g ​ ( e 1 , e 2 ) ​ | ψ μ ​ ( e ) ​ | ψ ^ μ ​ ( e 1 , e 2 ) | ​ π α ​ ( e ) | ​ σ β ​ ( e ) | e 1 ∪ e 2 ​ | e 1 × e 2 | ​ e 1 ⋈ e 2 ​ | e 1 ∩ e 2 | ​ e 1 − e 2 (Rule) r : ⁣ := p ← e (Stratum) s : ⁣ := { r 1 , … , r n } (Program) s ¯ : ⁣ := s 1 ; … ; s n \begin{array}[]{rcrl}\text{(Predicate)}&p\\
+\text{(Aggregator)}&g&::=&{\texttt{\footnotesize count}}~|~{\texttt{\footnotesize sum}}~|~{\texttt{\footnotesize prod}}~|~{\texttt{\footnotesize exists}}~|~{\texttt{\footnotesize max}}~|~{\texttt{\footnotesize min}}~|~{\texttt{\footnotesize argmax}}~|~{\texttt{\footnotesize argmin}}\\
+\text{(Sampler)}&\mu&::=&{\texttt{\footnotesize top<K>}}~|~{\texttt{\footnotesize categorical<K>}}~|~{\texttt{\footnotesize uniform<K>}}\\
+\text{(Expression)}&e&::=&\varnothing~|~p~|~\mathbbm{1}(e)~|~\emptyset(e)~|~\gamma_{g}(e)~|~\hat{\gamma}_{g}(e_{1},e_{2})~|~\psi_{\mu}(e)~|~\hat{\psi}_{\mu}(e_{1},e_{2})~|~\pi_{\alpha}(e)~|~\sigma_{\beta}(e)\\
+&&~|&e_{1}\cup e_{2}~|~e_{1}\times e_{2}~|~e_{1}\bowtie e_{2}~|~e_{1}\cap e_{2}~|~e_{1}-e_{2}\\
+\text{(Rule)}&r&::=&p\leftarrow e\\
+\text{(Stratum)}&s&::=&\{r_{1},\dots,r_{n}\}\\
+\text{(Program)}&\overline{s}&::=&s_{1};\dots;s_{n}\\
+\end{array}
+Figure 22 . Full abstract syntax of SclRam .
+We revisit the abstract syntax of SclRam , and add extensions including:
+(1)
+Empty-set ( ∅ \varnothing ), One-overwrite ( 𝟙 ​ ( e ) \mathbbm{1}(e) ) and zero-overwrite ( ∅ ​ ( e ) \emptyset(e) ),
+(2)
+Intersection ( ∩ \cap ), Natural-Join ( ⋈ \bowtie ), and Anti-join ( ⊳ \triangleright ),
+(3)
+Group-by aggregate ( γ ^ g ​ ( e 1 , e 2 ) \hat{\gamma}_{g}(e_{1},e_{2}) ), where e 1 e_{1} is the expression finding groups, and e 2 e_{2} is the main expression to aggregate over, conditioned on the groups found by evaluating e 1 e_{1} ,
+(4)
+Sampling ( ψ μ ​ ( e ) \psi_{\mu}(e) ) where μ \mu denotes a sampler,
+(5)
+Group-by sampling ( ψ ^ μ ​ ( e 1 , e 2 ) \hat{\psi}_{\mu}(e_{1},e_{2}) ), which is sampling but similar to aggregate, we have e 1 e_{1} being the expression finding groups.
+Remark
+The One-overwrite 𝟙 ​ ( e ) \mathbbm{1}(e) is particularly useful for defining magic-set transformation under tagged semantics.
+Overwriting 1 will make the tuples in magic-set predicate serve as pure demand fact for optimization, not conditioned on some given tags.
+B.3. Operational Semantics of SclRam
+We show the full semantics in Fig. 23 and Fig. 24 , with the addition of group-by, sampling, and early-removal.
+Note that the sampler μ : 𝒰 ℝ → 𝒰 \mu:\mathcal{U}_{\mathbb{R}}\rightarrow\mathcal{U} takes in facts tagged by weights, and samples according to the weight.
+The early removal happens in the stage of normalization before each rule update.
+Expression semantics
+α : 𝕌 ⇀ 𝕌 , β : 𝕌 → Bool , g : 𝒰 → 𝒰 , μ : 𝒰 ℝ → 𝒰 , ⟦ e ⟧ : ℱ T → 𝒰 T \alpha:\mathbb{U}\rightharpoonup\mathbb{U},\hskip 8.50012pt\beta:\mathbb{U}\rightarrow\text{Bool},\hskip 8.50012ptg:\mathcal{U}\rightarrow\mathcal{U},\hskip 8.50012pt\mu:\mathcal{U}_{\mathbb{R}}\rightarrow\mathcal{U},\hskip 8.50012pt\llbracket e\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{U}_{T}
+⟦ ∅ ⟧ ​ ( F T ) = ∅ right=(Empty Set) t : : p ⁡ ( u ) ∈ F T t : : u ∈ ⟦ p ⟧ ​ ( F T ) right=(Predicate) \frac{}{\llbracket\varnothing\rrbracket(F_{T})=\emptyset}\hskip 8.50012pt\textsc{right={\footnotesize(Empty Set)}}\hskip 8.50012pt\frac{t::p(u)\in F_{T}}{t::u\in\llbracket p\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Predicate)}}
+t : : u ∈ ⟦ e ⟧ ​ ( F T ) 𝟎 : : u ∈ ⟦ ∅ ​ ( e ) ⟧ ​ ( F T ) right=( 0 -Overwrite) t : : u ∈ ⟦ e ⟧ ​ ( F T ) 𝟏 : : u ∈ ⟦ 𝟙 ​ ( e ) ⟧ ​ ( F T ) right=( 1 -Overwrite) \frac{t::u\in\llbracket e\rrbracket(F_{T})}{\bm{0}::u\in\llbracket\emptyset(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize({0}-Overwrite)}}\hskip 8.50012pt\frac{t::u\in\llbracket e\rrbracket(F_{T})}{\bm{1}::u\in\llbracket\mathbbm{1}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize({1}-Overwrite)}}
+t : : u ∈ ⟦ e ⟧ ​ ( F T ) ​ β ​ ( u ) = true t : : u ∈ ⟦ σ β ​ ( e ) ⟧ ​ ( F T ) right=(Select) t : : u ∈ ⟦ e ⟧ ​ ( F T ) ​ u ′ = α ⁡ ( u ) t : : u ′ ∈ ⟦ π α ​ ( e ) ⟧ ​ ( F T ) right=(Project) \frac{t::u\in\llbracket e\rrbracket(F_{T})\hskip 8.50012pt\beta(u)=\text{true}}{t::u\in\llbracket\sigma_{\beta}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Select)}}\hskip 5.0pt\frac{t::u\in\llbracket e\rrbracket(F_{T})\hskip 8.50012ptu^{\prime}=\alpha(u)}{t::u^{\prime}\in\llbracket\pi_{\alpha}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Project)}}
+t : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ∪ ⟦ e 2 ⟧ ​ ( F T ) t : : u ∈ ⟦ e 1 ∪ e 2 ⟧ ​ ( F T ) right=(Union) t 1 : : u 1 ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u 2 ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ t 2 ) : : ( u 1 , u 2 ) ∈ ⟦ e 1 × e 2 ⟧ ​ ( F T ) right=(Product) \frac{t::u\in\llbracket e_{1}\rrbracket(F_{T})\cup\llbracket e_{2}\rrbracket(F_{T})}{t::u\in\llbracket e_{1}\cup e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Union)}}\hskip 8.50012pt\frac{t_{1}::u_{1}\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u_{2}\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes t_{2})::(u_{1},u_{2})\in\llbracket e_{1}\times e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Product)}}
+t 1 : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ t 2 ) : : u ∈ ⟦ e 1 ∩ e 2 ⟧ ​ ( F T ) right=(Intersect) \frac{t_{1}::u\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes t_{2})::u\in\llbracket e_{1}\cap e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Intersect)}}
+t 1 : : ( u , u 1 ) ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : ( u , u 2 ) ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ t 2 ) : : ( u , u 1 , u 2 ) ∈ ⟦ e 1 ⋈ e 2 ⟧ ( F T ) right=(Natural-Join) \frac{t_{1}::(u,u_{1})\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::(u,u_{2})\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes t_{2})::(u,u_{1},u_{2})\in\llbracket e_{1}\bowtie e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Natural-Join)}}
+t : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ ⟦ e 2 ⟧ ​ ( F T ) ⊭ u t : : u ∈ ⟦ e 1 − e 2 ⟧ ​ ( F T ) right=(Diff-1) t 1 : : u ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ ( ⊖ t 2 ) ) : : u ∈ ⟦ e 1 − e 2 ⟧ ​ ( F T ) right=(Diff-2) \frac{t::u\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012pt\llbracket e_{2}\rrbracket(F_{T})\nvDash u}{t::u\in\llbracket e_{1}-e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Diff-1)}}\hskip 8.50012pt\frac{t_{1}::u\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes(\ominus~t_{2}))::u\in\llbracket e_{1}-e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Diff-2)}}
+t : : ( u 1 , u 2 ) ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ ⟦ e 2 ⟧ ​ ( F T ) ⊭ u 1 t : : ( u 1 , u 2 ) ∈ ⟦ e 1 ⊳ e 2 ⟧ ​ ( F T ) right=(AntiJoin-1) \frac{t::(u_{1},u_{2})\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012pt\llbracket e_{2}\rrbracket(F_{T})\nvDash u_{1}}{t::(u_{1},u_{2})\in\llbracket e_{1}\triangleright e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(AntiJoin-1)}}
+t 1 : : ( u 1 , u 2 ) ∈ ⟦ e 1 ⟧ ​ ( F T ) ​ t 2 : : u 1 ∈ ⟦ e 2 ⟧ ​ ( F T ) ( t 1 ⊗ ( ⊖ t 2 ) ) : : ( u 1 , u 2 ) ∈ ⟦ e 1 ⊳ e 2 ⟧ ​ ( F T ) right=(AntiJoin-2) \frac{t_{1}::(u_{1},u_{2})\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptt_{2}::u_{1}\in\llbracket e_{2}\rrbracket(F_{T})}{(t_{1}\otimes(\ominus~t_{2}))::(u_{1},u_{2})\in\llbracket e_{1}\triangleright e_{2}\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(AntiJoin-2)}}
+X T ⊆ ⟦ e ⟧ ( F T ) { t i : : u i } i = 1 n = X T { t ¯ j : : u ¯ j } j = 1 m = ⟦ e ⟧ ( F T ) − X T u ∈ g ( { u i } i = 1 n ) ( ⨂ i = 1 n t i ) ⊗ ( ⨂ j = 1 m ( ⊖ t ¯ j ) ) : : u ∈ ⟦ γ g ​ ( e ) ⟧ ​ ( F T ) right=(Aggregate) \frac{X_{T}\subseteq\llbracket e\rrbracket(F_{T})\hskip 8.50012pt\{t_{i}::u_{i}\}_{i=1}^{n}=X_{T}\hskip 8.50012pt\{\overline{t}_{j}::\overline{u}_{j}\}_{j=1}^{m}=\llbracket e\rrbracket(F_{T})-X_{T}\hskip 8.50012ptu\in g(\{u_{i}\}_{i=1}^{n})}{\textstyle(\bigotimes_{i=1}^{n}t_{i})\otimes(\bigotimes_{j=1}^{m}(\ominus~\overline{t}_{j}))::u\in\llbracket\gamma_{g}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Aggregate)}}
+t ′ : : ( u g , u g ′ ) ∈ ⟦ e 1 ⟧ ( F T ) X T ⊆ ⟦ e 2 ⟧ ( F T ) { t i : : ( u g , u i ) } i = 1 n = X T { t ¯ j : : ( u g , u ¯ j ) } j = 1 m = ⟦ e 2 ⟧ ( F T ) − X T u ∈ g ( { u i } i = 1 n ) t ′ ⊗ ( ⨂ i = 1 n t i ) ⊗ ( ⨂ j = 1 m ( ⊖ t ¯ j ) ) : : ( u g , u g ′ , u ) ∈ ⟦ γ ^ g ​ ( e 1 , e 2 ) ⟧ ​ ( F T ) right=(Group-By Aggregate) \frac{t^{\prime}::(u_{g},u_{g}^{\prime})\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012ptX_{T}\subseteq\llbracket e_{2}\rrbracket(F_{T})\hskip 8.50012pt\hskip 8.50012pt\{t_{i}::(u_{g},u_{i})\}_{i=1}^{n}=X_{T}\hskip 8.50012pt\{\overline{t}_{j}::(u_{g},\overline{u}_{j})\}_{j=1}^{m}=\llbracket e_{2}\rrbracket(F_{T})-X_{T}\hskip 8.50012ptu\in g(\{u_{i}\}_{i=1}^{n})}{t^{\prime}\otimes\textstyle(\bigotimes_{i=1}^{n}t_{i})\otimes(\bigotimes_{j=1}^{m}(\ominus~\overline{t}_{j}))::(u_{g},u_{g}^{\prime},u)\in\llbracket\hat{\gamma}_{g}(e_{1},e_{2})\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Group-By Aggregate)}}
+{ t i : : u i } i = 1 n = ⟦ e ⟧ ( F T ) u j ∈ μ ( { weight ( t i ) : : u i } i = 1 n ) t j : : u j ∈ ⟦ ψ μ ​ ( e ) ⟧ ​ ( F T ) right=(Sample) \frac{\{t_{i}::u_{i}\}_{i=1}^{n}=\llbracket e\rrbracket(F_{T})\hskip 8.50012ptu_{j}\in\mu(\{\text{weight}(t_{i})::u_{i}\}_{i=1}^{n})}{t_{j}::u_{j}\in\llbracket\psi_{\mu}(e)\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Sample)}}
+t ′ : : ( u g , u g ′ ) ∈ ⟦ e 1 ⟧ ( F T ) { t i : : ( u g , u i ) } i = 1 n ⊆ ⟦ e ⟧ ( F T ) u j ∈ μ ( { weight ( t i ) : : u i } i = 1 n ) ( t ′ ⊗ t j ) : : ( u g , u g ′ , u j ) ∈ ⟦ ψ ^ μ ​ ( e 1 , e 2 ) ⟧ ​ ( F T ) right=(Group-By Sample) \frac{t^{\prime}::(u_{g},u_{g}^{\prime})\in\llbracket e_{1}\rrbracket(F_{T})\hskip 8.50012pt\{t_{i}::(u_{g},u_{i})\}_{i=1}^{n}\subseteq\llbracket e\rrbracket(F_{T})\hskip 8.50012ptu_{j}\in\mu(\{\text{weight}(t_{i})::u_{i}\}_{i=1}^{n})}{(t^{\prime}\otimes t_{j})::(u_{g},u_{g}^{\prime},u_{j})\in\llbracket\hat{\psi}_{\mu}(e_{1},e_{2})\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Group-By Sample)}}
+Figure 23 . Operational semantics of SclRam .
+Rule semantics
+⟨ . ⟩ : 𝒰 T → 𝒰 T , ⟦ r ⟧ : ℱ T → ℱ T \left\langle.\right\rangle:\mathcal{U}_{T}\rightarrow\mathcal{U}_{T},\hskip 8.50012pt\llbracket r\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}
+t 1 : : u , … , t n : : u ​ are all tagged-tuples in ​ U T ​ t = ⨁ i = 1 n t i ​ discard ​ ( t ) = false t : : u ∈ ⟨ U T ⟩ right=(Normalize) \frac{t_{1}::u,\dots,t_{n}::u~\text{are all tagged-tuples in}~U_{T}\hskip 8.50012ptt=\textstyle\bigoplus_{i=1}^{n}t_{i}\hskip 8.50012pt\text{discard}(t)=\text{false}}{t::u\in\left\langle U_{T}\right\rangle}\hskip 8.50012pt\textsc{right={\footnotesize(Normalize)}}
+t old : : u ∈ ⟦ p ⟧ ​ ( F T ) ​ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ⊭ u t old : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-1) t new : : u ∈ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ​ ⟦ p ⟧ ​ ( F T ) ⊭ u t new : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-2) \frac{t^{\texttt{old}}::u\in\llbracket p\rrbracket(F_{T})\hskip 8.50012pt\left\langle\llbracket e\rrbracket(F_{T})\right\rangle\nvDash u}{t^{\texttt{old}}::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-1)}}\hskip 8.50012pt\frac{t^{\texttt{new}}::u\in\left\langle\llbracket e\rrbracket(F_{T})\right\rangle\hskip 8.50012pt\llbracket p\rrbracket(F_{T})\nvDash u}{t^{\texttt{new}}::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-2)}}
+t old : : u ∈ ⟦ p ⟧ ​ ( F T ) ​ t new : : u ∈ ⟨ ⟦ e ⟧ ​ ( F T ) ⟩ ( t old ⊕ t new ) : : p ( u ) ∈ ⟦ p ← e ⟧ ( F T ) right=(Rule-3) \frac{t^{\texttt{old}}::u\in\llbracket p\rrbracket(F_{T})\hskip 8.50012ptt^{\texttt{new}}::u\in\left\langle\llbracket e\rrbracket(F_{T})\right\rangle}{(t^{\texttt{old}}\oplus t^{\texttt{new}})::p(u)\in\llbracket p\leftarrow e\rrbracket(F_{T})}\hskip 8.50012pt\textsc{right={\footnotesize(Rule-3)}}
+Stratum and Program semantics
+𝐥𝐟𝐩 ∘ : ( ℱ T → ℱ T ) → ( ℱ T → ℱ T ) , ⟦ s ⟧ , ⟦ s ¯ ⟧ : ℱ T → ℱ T \mathbf{lfp}^{\circ}:(\mathcal{F}_{T}\rightarrow\mathcal{F}_{T})\rightarrow(\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}),\hskip 8.50012pt\llbracket s\rrbracket,\llbracket\overline{s}\rrbracket:\mathcal{F}_{T}\rightarrow\mathcal{F}_{T}
+(Saturation)
+F T old ≗ F T new iff ∀ t new : : p ( u ) ∈ F T new , ∃ t old : : p ( u ) ∈ F T old such that t old ○ = t new \displaystyle\hskip 8.50012ptF_{T}^{\texttt{old}}\circeq F_{T}^{\texttt{new}}~\text{iff}~\forall t^{\texttt{new}}::p(u)\in F_{T}^{\texttt{new}},\exists t^{\texttt{old}}::p(u)\in F_{T}^{\texttt{old}}~\text{such that}~t^{\texttt{old}}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t^{\texttt{new}}
+(Fixpoint)
+𝐥𝐟𝐩 ∘ ​ ( h ) = h ∘ ⋯ ∘ h = h n ​ if there exists a minimum ​ n > 0 , such that ​ h n ​ ( F T ) ≗ h n + 1 ​ ( F T ) \displaystyle\hskip 8.50012pt\mathbf{lfp}^{\circ}(h)=h\circ\dots\circ h=h^{n}~\text{if there exists a minimum}~n>0,~\text{such that}~h^{n}(F_{T})\circeq h^{n+1}(F_{T})
+(Stratum)
+⟦ s ⟧ = 𝐥𝐟𝐩 ∘ ( λ F T . ( F T − ⋃ p ∈ P s F T [ p ] ) ∪ ( ⋃ r ∈ s ⟦ r ⟧ ( F T ) ) ) \displaystyle\hskip 8.50012pt\llbracket s\rrbracket=\mathbf{lfp}^{\circ}(\lambda F_{T}.(F_{T}-\textstyle\bigcup_{p\in P_{s}}F_{T}[p])\cup(\textstyle\bigcup_{r\in s}\llbracket r\rrbracket(F_{T})))
+(Program)
+⟦ s ¯ ⟧ = ⟦ s n ⟧ ∘ ⋯ ∘ ⟦ s 1 ⟧ , where s ¯ = s 1 ; … ; s n . \displaystyle\hskip 8.50012pt\llbracket\overline{s}\rrbracket=\llbracket s_{n}\rrbracket\circ\dots\circ\llbracket s_{1}\rrbracket,~\text{where}~\overline{s}=s_{1};\dots;s_{n}.
+Figure 24 . Operational semantics of SclRam (Cont.)
+B.4. Provenance Structures
+We provide detailed runtime analysis for each presented provenance structure in the following sections.
+Additionally, we discuss the extended provenance diff-top-k-proofs-me which can handle mutual exclusive facts.
+B.4.1. diff-max-min-prob
+Runtime Analysis
+Operation
+Algorithm
+Time Complexity
+t 1 ⊕ t 2 t_{1}\oplus t_{2}
+max ​ ( t 1 , t 2 ) \text{max}(t_{1},t_{2})
+O ⁡ ( 1 ) O(1)
+t 1 ⊗ t 2 t_{1}\otimes t_{2}
+min ​ ( t 1 , t 2 ) \text{min}(t_{1},t_{2})
+O ⁡ ( 1 ) O(1)
+⊖ t \ominus t
+1 ^ − t \hat{1}-t
+O ⁡ ( 1 ) O(1)
+t 1
+○
+= t 2 t_{1}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t_{2}
+t 1 = = t 2 t_{1}==t_{2}
+O ⁡ ( 1 ) O(1)
+ρ ⁡ ( t ) \rho(t)
+t t
+O ⁡ ( 1 ) O(1)
+Table 6 . diff-max-min-prob provenance structure run time analysis
+Operation
+Algorithm
+Time Complexity
+t 1 ⊕ t 2 t_{1}\oplus t_{2}
+c ​ l ​ a ​ m ​ p ​ ( t 1 + t 2 ) clamp(t_{1}+t_{2})
+O ⁡ ( n ) O(n)
+t 1 ⊗ t 2 t_{1}\otimes t_{2}
+t 1 ⋅ t 2 t_{1}\cdot t_{2}
+O ⁡ ( n ) O(n)
+⊖ t \ominus t
+1 ^ − t \hat{1}-t
+O ⁡ ( n ) O(n)
+t 1
+○
+= t 2 t_{1}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t_{2}
+true
+O ⁡ ( 1 ) O(1)
+ρ ⁡ ( t ) \rho(t)
+t t
+O ⁡ ( 1 ) O(1)
+Table 7 . diff-add-mult-prob provenance structure run time analysis
+Operation
+Algorithm
+Time Complexity
+t 1 ⊕ t 2 t_{1}\oplus t_{2}
+top k ​ ( t 1 ∪ t 2 ) \text{top}_{k}(t_{1}\cup t_{2})
+O ⁡ ( n ​ k ) O(nk)
+t 1 ⊗ t 2 t_{1}\otimes t_{2}
+top k ( { η | ( η 1 , η 2 ) ∈ t 1 × t 2 , η = η 1 ∪ η 2 , η no conflict } ) \text{top}_{k}(\{~\eta~|~(\eta_{1},\eta_{2})\in t_{1}\times t_{2},\eta=\eta_{1}\cup\eta_{2},\eta~\text{no conflict}~\})
+O ⁡ ( n 2 ​ k 2 ) O(n^{2}k^{2})
+⊖ t \ominus t
+top k ​ ( cnf2dnf ​ ( { { ¬ ν | ν ∈ η } | η ∈ t } CLOSE CLOSE \text{top}_{k}(\text{cnf2dnf}(\{\{\neg\nu~|~\nu\in\eta\}~|~\eta\in t\}
+O ⁡ ( 2 n ) O(2^{n})
+t 1
+○
+= t 2 t_{1}\mathbin{\mathchoice{\vtop{\halign{#\cr$\displaystyle\vbox{\hbox{\scalebox{0.73}{$\displaystyle\bigcirc$}}}$\cr$\displaystyle=$\cr}}}{\vtop{\halign{#\cr$\textstyle\vbox{\hbox{\scalebox{0.73}{$\textstyle\bigcirc$}}}$\cr$\textstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptstyle\bigcirc$}}}$\cr$\scriptstyle=$\cr}}}{\vtop{\halign{#\cr$\scriptscriptstyle\vbox{\hbox{\scalebox{0.73}{$\scriptscriptstyle\bigcirc$}}}$\cr$\scriptscriptstyle=$\cr}}}}t_{2}
+t 1 = = t 2 t_{1}==t_{2}
+O ⁡ ( n ​ k ) O(nk)
+ρ ⁡ ( t ) \rho(t)
+WMC ( t , Γ ) (t,\Gamma)
+O ⁡ ( 2 n ) O(2^{n})
+Table 8 . diff-top-k-proofs provenance structure run time analysis. We assume the term number for each tag is of O ⁡ ( n ) O(n) , and the number of clauses is of O ⁡ ( k ) O(k) . Note that we show the time complexity for the naive implementation of cnf2dnf and WMC algorithms.
+We showcase the time complexity for each operator in the max-min-prob provenance structure in Table 6 .
+We next present our optimized counting algorithm in Fig. 1 which performs counting over a set of max-min-prob tagged-tuples.
+Note that we only showed the algorithm for mmp for simplicity.
+But it easily extends to dmmp .
+It can be easily shown that its runtime complexity is O ⁡ ( n ​ log ⁡ ( n ) ) O(n\log(n)) .
+Algorithm 1 Counting over max-min-prob tagged tuples
+Data: U mmp = { t 1 : : u 1 , t 2 : : u 2 , … , t n : : u n } U_{\texttt{mmp}}=\{t_{1}::u_{1},t_{2}::u_{2},\dots,t_{n}::u_{n}\} : 𝒰 mmp \mathcal{U}_{\texttt{mmp}} , set of tagged-tuples
+Result: U mmp ′ U_{\texttt{mmp}}^{\prime} : 𝒰 mmp \mathcal{U}_{\texttt{mmp}}
+/* sort all positive tuples according to their tags from small to large. O(nlog(n)) */
+1
+t pos = s ​ o ​ r ​ t ​ e ​ d ​ ( [ t i | i = 1 ​ … ​ n ] ) \textbf{t}^{\text{pos}}=sorted([t_{i}~|~i=1\dots n]) ;
+2
+t neg = [ 1 − t n − i + 1 pos | i = 1 ​ … ​ n ] \textbf{t}^{\text{neg}}=[1-t^{\text{pos}}_{n-i+1}~|~i=1\dots n] ;
+/* Iterate through all possible partitions between positive and negative tags. O(n) */
+3
+U mmp ′ U_{\texttt{mmp}}^{\prime} = { t n neg : : 0 , t 1 pos : : n } \{t^{\text{neg}}_{n}::0,t^{\text{pos}}_{1}::n\} ;
+4
+for i = 1 ​ … ​ ( n − 1 ) i=1\dots(n-1) do
+   
+5
+Add min ​ ( t i + 1 pos , t i neg ) : : ( n − i ) \text{min}(t^{\text{pos}}_{i+1},t^{\text{neg}}_{i})::(n-i) to U mmp ′ U_{\texttt{mmp}}^{\prime} ;
+6
+return U mmp ′ U_{\texttt{mmp}}^{\prime}
+B.4.2. diff-add-mult-prob
+Runtime Analysis
+We showcase the time complexity for the diff-add-mult-prob provenance structure in Table 7 . We denote the number of total variables in the input as n n .
+Since we are performing calculations over the dual-numbers, the time complexity is decided by the gradient calculation over vectors of dimension n n .
+B.4.3. diff-top-k-proofs
+Runtime Analysis
+We showcase the time complexity for the diff-top-k-proofs provenance structure in Table 8 . Note that we show the runtime analysis for the naive implementation of the cnf2dnf function and weighted model counting process.
+We leave the optimizations for future work.
+B.4.4. diff-top-k-proofs-me
+Support for Mutually Exclusive Facts
+We keep the original diff-top-k-proofs and extend it to support mutal exclusive tags (hence the name -me ).
+Most of the operations remains, and we start by giving it a new input tag space:
+I dtkp-me = [ 0 , 1 ] × Option< ​ ℕ ​ > . I_{{\texttt{\small dtkp-me}}}=[0,1]\times\texttt{Option<}\mathbb{N}\texttt{>}.
+The probability remains the same, and the second part is an optional identifier of one mutual exclusion.
+Not providing that means the fact does not belong to a mutual exclusion.
+If presented, we denote such a tag
+t i = ( r i , Some ​ ( me i ) ) t_{i}=(r_{i},\texttt{Some}(\textbf{me}_{i}))
+Example B.1.
+Consider the sum2 task, we have two distributions specified by
+⬇
+rel digit = {0.90::( A , 0); 0.01::( A , 1); ...; 0.02::( A , 9)}
+rel digit = {0.01::( B , 0); 0.91::( B , 1); ...; 0.01::( B , 9)}
+Then we would have the input facts being
+⟦ digit ⟧ ( F Option< ​ I ​ > ) = { ( 0.90 , Some ​ ( 1 ) ) : ⁣ : ( A , 0 ) , ( 0.01 , Some ​ ( 1 ) ) : ⁣ : ( A , 1 ) , ⋮ ( 0.02 , Some ​ ( 1 ) ) : ⁣ : ( A , 9 ) , ( 0.01 , Some ​ ( 2 ) ) : ⁣ : ( B , 0 ) , ( 0.91 , Some ​ ( 2 ) ) : ⁣ : ( B , 1 ) , ⋮ ( 0.01 , Some ​ ( 2 ) ) : ⁣ : ( B , 9 ) } . \llbracket\texttt{digit}\rrbracket(F_{\texttt{Option<}I\texttt{>}})=\left\{\begin{array}[]{rcl}(0.90,{\texttt{\small Some}}(1))&::&(A,0),\\
+(0.01,{\texttt{\small Some}}(1))&::&(A,1),\\
+&\vdots&\\
+(0.02,{\texttt{\small Some}}(1))&::&(A,9),\\
+\hline\cr(0.01,{\texttt{\small Some}}(2))&::&(B,0),\\
+(0.91,{\texttt{\small Some}}(2))&::&(B,1),\\
+&\vdots&\\
+(0.01,{\texttt{\small Some}}(2))&::&(B,9)\\
+\end{array}\right\}.
+There are two me -s, namely 1 1 and 2 2 , suggesting there are two mutual exclusions.
+The first 10 facts for digit A A belong to mutual exclusion 1 1 , and the next 10 for digit B B belong to mutual exclusion 2 2 .
+Putting it in action, two facts f i f_{i} and f j f_{j} with the same me ( me i = me j \textbf{me}_{i}=\textbf{me}_{j} ) cannot appear together in the same proof.
+This is enforced inside of the conflict check during dtkp ’s ∧ k \wedge_{k} and ¬ k \neg_{k} operations.
+If the proof violates the mutual exclusive assumption, it will be deemed invalid proof and discarded.
+For example, executing the following rule
+⬇
+rel not_possible () = digit ( A , x ), digit ( A , y ), x != y
+shall yield no valid output due to this mechanism, i.e., the internal tag associated with not_possible() is going to be ∅ \emptyset and be early-removed from the computation.
+Appendix C Evaluation
+C.1. MNIST-R
+Experimental Setup
+The total MNIST ( Lecun
+et al., 1998 ) dataset contains 60K handwritten digits.
+According to the number of digits used in each task, we further split the MNIST dataset into downstream task data points.
+For example, we have 30K training pairs for sum-2, 20K training pairs for sum-3, and 15K training pairs for sum-4.
+As the counting task consumes 8 8 images per datapoint, we have 7.5K training pairs for the counting tasks.
+The test and training splits follow the original MNIST task setup.
+Our neural module consists of a 2-layer CNN connected by a 2-layer MLP, with a hidden layer size of 1024 1024 .
+We trained the Scallop module 10 10 epochs on the training dataset, the learning rate is set to 0.001 0.001 , and the batch size is 64 64 , with a BCE-loss closing the training loop.
+Scallop code
+We present the Scallop code that is used in the MNIST-R benchmark in Fig. 25 .
+⬇
+type digit_1 ( u32 ), digit_2 ( u32 )
+rel sum_2 ( a + b ) = digit_1 ( a ), digit_2 ( b )
+(a) Scallop code for MNIST sum-2.
+⬇
+type digit_1 ( u32 ), digit_2 ( u32 ), digit_3 ( u32 )
+rel sum_3 ( a + b + c ) = digit_1 ( a ), digit_2 ( b ), digit_3 ( c )
+(b) Scallop code for MNIST sum-3.
+⬇
+type digit_1 ( u32 ), digit_2 ( u32 ), digit_3 ( u32 ), digit_4 ( u32 )
+rel sum_4 ( a + b + c + d ) = digit_1 ( a ), digit_2 ( b ), digit_3 ( c ), digit_4 ( d )
+(c) Scallop code for MNIST sum-4.
+⬇
+type digit_1 ( u32 ), digit_2 ( u32 )
+rel less_than ( a < b ) = digit_1 ( a ), digit_2 ( b )
+(d) Scallop code for MNIST less-than.
+⬇
+type digit ( u32 )
+rel not_3_or_4 () = not digit (3) and not digit (4)
+(e) Scallop code for MNIST not-3-or-4.
+⬇
+type digit ( digit_id : u32 , digit_value : u32 )
+rel count_3 ( x ) :- x = count ( o : digit ( o , 3))
+(f) Scallop code for MNIST count-3.
+⬇
+type digit ( digit_id : u32 , digit_value : u32 )
+rel count_3_or_4 ( x ) = x = count ( o : digit ( o , 3) or digit ( o , 4))
+(g) Scallop code for MNIST count-3-or-4.
+Figure 25 . Scallop code for MNIST-R.
+C.2. Hand Written Formula
+⬇
+1
+type symbol ( index : usize , symbol : String )
+2
+type length ( n : usize )
+3
+4
+rel digit = { "0" , "1" , "2" , "3" , "4" , "5" , "6" , "7" , "8" , "9" }
+5
+6
+type term ( value : f32 , begin : usize , end : usize )
+7
+rel term ( x as f32 , b , b + 1) = symbol ( b , x ) and digit ( x )
+8
+9
+type mult_div ( value : f32 , begin : usize , end : usize )
+10
+rel mult_div ( x , b , r ) = term ( x , b , r )
+11
+rel mult_div ( x * y , b , e ) = mult_div ( x , b , m ) and symbol ( m , "*" ) and
+12
+term ( y , m + 1, e )
+13
+rel mult_div ( x / y , b , e ) = mult_div ( x , b , m ) and symbol ( m , "/" ) and
+14
+term ( y , m + 1, e )
+15
+16
+type add_minus ( value : f32 , begin : usize , end : usize )
+17
+rel add_minus ( x , b , r ) = mult_div ( x , b , r )
+18
+rel add_minus ( x + y , b , e ) = add_minus ( x , b , m ) and symbol ( m , "+" ) and
+19
+mult_div ( y , m + 1, e )
+20
+rel add_minus ( x - y , b , e ) = add_minus ( x , b , m ) and symbol ( m , "-" ) and
+21
+mult_div ( y , m + 1, e )
+22
+23
+type result ( value : f32 )
+24
+rel result ( y ) = add_minus ( y , 0, l ) and length ( l )
+25
+26
+query result
+Figure 26 . Scallop code for HWF.
+Experimental Setup
+The HWF ( Li
+et al., 2020 ) dataset takes in a sequence of images, where each image can be either a digit or an arithmetic symbol, and aims to calculate the outcome of the formula.
+We apply the same CNN-based symbol recognition network as for the MNIST-based tasks, with the only difference being that the model now performs a 14-way classification.
+We then generate a probabilistic database containing two relations:
+1) length(usize) , a non-probabilistic relation storing the length of the formula, and
+2) symbol(id: usize, σ \sigma : String) , a probabilistic relation mapping index IDs to symbols σ ∈ Σ \sigma\in\Sigma .
+For the reasoning component, we write a formula parser in Scallop (as shown in 26 ).
+Additionally, Scallop is used to perform calculations based on the parsed abstract syntax tree (AST) to obtain the final rational number output.
+The training loop is closed by a BCE loss at the end, forming an end-to-end training pipeline where gradients can back-propagate all the way from the output to the symbol recognition network.
+To prune the enormous output domain if we enumerate every possible parse tree, we sample only a subset of symbol predictions to be sent to Scallop.
+There are 10K images answer pairs for the training dataset.
+We set the batch size to 16, the learning rate to 0.0001, and the training epochs to 100.
+To enhance the learning efficiency, we adopt a sampling strategy, which only preserves the 7 7 most likely classification result for each image classification task, and sends it to Scallop.
+C.3. Pathfinder
+Problem Definition
+Easy
+Medium
+Hard
+Positive
+(Connected)
+Negative
+(Disconnected)
+Figure 27 . Examples of positive and negative for each difficulty level.
+⬇
+1
+// Input from neural networks
+2
+type dash ( i8 , i8 )
+3
+type dot ( i8 )
+4
+5
+// Connectivity check
+6
+rel path ( x , y ) = dash ( x , y ) or path ( x , z ) and dash ( z , y )
+7
+rel connected () = dot ( x ), dot ( y ), path ( x , y ), x != y
+Figure 28 . Scallop code for Pathfinder.
+Pathfinder is a task that initially set out to test the long-range reasoning ability of neural networks.
+It is adopted into a benchmark called Long Range Arena (LRA) ( Tay et al., 2020 ) to evaluate the long-range reasoning ability of neural networks, or more specifically the Transformers ( Vaswani et al., 2017 ) .
+In this task, we are provided with images with dark backgrounds and two white dots possibly connected by dashes.
+The model is then required to make a binary prediction on whether the two dots are connected or not.
+There are multiple versions of the dataset: one consisting of only 32 × 32 32\times 32 images (Path) and the other one with 128 × 128 128\times 128 (Path-X).
+Both versions have 3 difficulties, easy, normal, and hard, depending on the length of the dashes connecting the two dots – longer means harder.
+Table 27 shows the 3 difficulties each with one positive and one negative sample from Path-X.
+Architecture
+Going to the extreme of symbolism one would use the individual symbol to represent each small dash and dot.
+However, doing so would mean that the perception network, presumably a CNN, needs to segment the image precisely to extract all dashes and dots as entities.
+At the same time, the reasoning module bears an extra burden when processing individual connectivities.
+Instead, we employ a simple grid-based connectivity graph:
+each node represents a conceptual “dot” and each edge represents a conceptual “dash”.
+We ask neural networks to take in the image and output a feature vector with the size of the number of dots plus the number of edges.
+Each logit in this vector is then treated as a probability of that “dot” or “dash”.
+The Scallop program we use for this task, as shown in Fig. 28 , is simply a transitive closure that checks whether there are two distinct dots connected by dashes.
+Experimental Setup
+There are 600K training data points for both PATH and PATH-X, which are images of 32 × 32 32\times 32 and 128 × 128 128\times 128 pixels respectively, and the y-label represents whether there exists a path that connects the two dots on the image.
+We recognize the “dash” and “dots” relations through a 4-layer CNN, and the local connectivity is recognized through a 2-layer MLP classifier.
+We set the learning rate to 0.0001 0.0001 , the batch size to 64 64 , and the number of epochs to 100 100 .
+C.4. PacMan-Maze
+⬇
+1
+// Input from neural networks
+2
+type grid_node ( x : usize , y : usize ) // 0.99 for each grid cell
+3
+type actor ( x : usize , y : usize )
+4
+type goal ( x : usize , y : usize )
+5
+type enemy ( x : usize , y : usize )
+6
+7
+// Basic connectivity
+8
+const UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3
+9
+rel safe_node ( x , y ) = grid_node ( x , y ), not enemy ( x , y )
+10
+rel edge ( x , y , x , yp , UP ) = safe_node ( x , y ), safe_node ( x , yp ), yp == y + 1
+11
+rel edge ( x , y , xp , y , RIGHT ) = safe_node ( x , y ), safe_node ( xp , y ), xp == x + 1
+12
+rel edge ( x , y , x , yp , DOWN ) = safe_node ( x , y ), safe_node ( x , yp ), yp == y - 1
+13
+rel edge ( x , y , xp , y , LEFT ) = safe_node ( x , y ), safe_node ( xp , y ), xp == x - 1
+14
+15
+// Get the next position
+16
+rel next_pos ( xp , yp , a ) = actor ( x , y ), edge ( x , y , xp , yp , a )
+17
+18
+// Path for connectivity; will condition on no enemy on the path
+19
+rel path ( x , y , x , y ) = next_pos ( x , y , _ )
+20
+rel path ( x1 , y1 , x3 , y3 ) = path ( x1 , y1 , x2 , y2 ), edge ( x2 , y2 , x3 , y3 , _ )
+21
+22
+// Get the next action
+23
+rel next_action ( a ) = next_pos ( x , y , a ), goal ( gx , gy ), path ( x , y , gx , gy )
+24
+25
+// Constraint violation
+26
+type too_many_goal (), too_many_actor (), too_many_enemy ()
+27
+rel too_many_goal () = n := count ( x , y : goal ( x , y )), n > 1
+28
+rel too_many_actor () = n := count ( x , y : actor ( x , y )), n > 1
+29
+rel too_many_enemy () = n := count ( x , y : enemy ( x , y )), n > 5
+30
+rel violation () = too_many_goal () or too_many_enemy () or too_many_actor ()
+Figure 29 . Scallop code for PacMan-Maze.
+PacMan-Maze is a reinforcement learning based planning application, which aims to lead the actor to the flag without running into any enemy. We show the Scallop code for this task in Fig. 29 .
+In addition to the code shown in Section 2 , we added additional “integrity constraint violation” terms that need to be minimized during learning.
+Experimental Setup
+We set the size of the maze to be a 5 × 5 5\times 5 matrix, and the maximum number of enemies that exists in the arena to be 5 5 . In the training process, we set the batch size to be 24 24 , the memory replay buffer size to be 3000 3000 , and the maximum number of actions in an episode to be 30 30 . We update the target net every 10 epochs, we set the exploration rate to be 0.9 0.9 , its falloff to be 0.98 0.98 , and the learning rate is set to 0.0001 0.0001 .
+C.5. CLUTRR
+⬇
+1
+// Define kinships belong to the Relation type
+2
+type Relation = usize
+3
+4
+// Input from neural networks
+5
+type question ( sub : String , obj : String )
+6
+type kinship ( rela : Relation , sub : String , obj : String )
+7
+type composition ( Relation , Relation , Relation )
+8
+9
+// Rules to derive the final answer
+10
+rel kinship ( r3 , x , z ) = composition ( r1 , r2 , r3 ), kinship ( r1 , x , y ),
+11
+kinship ( r2 , y , z ), x != z
+12
+rel answer ( r ) = question ( s , o ), kinship ( r , s , o )
+Figure 30 . Scallop code for CLUTRR.
+With CLUTRR ( Sinha et al., 2019 ) we step into the domain of NLP on kinship reasoning.
+Each data point in the CLUTRR dataset consists of a natural language passage, a query, and its answer.
+The passage tells a story about a family’s daily activities;
+the query is a tuple of two names, denoting the target pair of persons that we want to predict the relation for;
+the answer is among the 20 basic relations such as “mother”, “uncle”, and “daughter-in-law”.
+The dataset is further categorized into 10 difficulty levels according to the number of facts ( k k ) required to derive the final result.
+Note that the knowledge base for kinship compositionality, such as "father’s father is grandfather" is not included in the dataset.
+We, therefore, designed three experiments to help alleviate the issue of missing knowledge base, a) learning with manually specified rules, b) rule learning, and c) learning without rules.
+We showcase our Scallop code in Fig. 30 .
+Learn with Manually Specified Rules
+A straightforward strategy to overcome the missing required database issue, is to manually add it.
+We created an external knowledge base with 92 kinship composition triplets and 3 rules.
+To define how two known relations can be connected to derive the third relation, we design a high-order predicate, composition .
+As an example, the rule “father’s mother is grandmother” is encoded as composition(FATHER, MOTHER, GRANDMOTHER) .
+The full Scallop program connecting the knowledge base into the reasoning process is shown in Fig. 30
+Given the knowledge base, context, and question-answer pairs, we are ready to perform learning over the new dataset.
+As the context has varies lengths, we first separate the context into multiple windows to ensure the perception model processes similar-length-context across the dataset.
+Then a large language model, such as RoBERTa ( Liu et al., 2019 ) , is adopted to extract relations from these windowed texts.
+The kinship extracted from the context goes into kinship(rela, sub, obj) .
+For example, kinship(SON, "Alice", "Bob")
+indicates that Bob is Alice’s son.
+The query, on the other hand, is stored in the relation question(sub, obj) .
+Next, we will combine the predicted relations from all the context windows into one probabilistic database, together with the knowledge base, and the query to perform logical reasoning.
+Last, we compare the probabilistic query result with the ground truth with BCE loss.
+Rule Learning
+Specifying 92 composition rules manually could be time consuming.
+With Scallop, it is possible to do this in a smarter way.
+Since there are 20 basic kinship relations, we have a finite space containing 20 3 = 8 ​ K 20^{3}=8\text{K} possible composition facts.
+We treat all 8K composition facts as probabilistic and to be learnt, and therefore we store them inside a tensor of size 20 × 20 × 20 20\times 20\times 20 .
+We can initialize this tensor randomly but with a low maximum weight (i.e. 0.1 0.1 ).
+During training, we will allow gradients to be back-propagated to this composition tensor so that these weights can also be learnt.
+In this case, the user does not specify any composition fact manually and everything is learnt on the fly.
+Note that, 8K composition facts can slow down the training time.
+Therefore, we use multinomial sampling to pick 150 composition facts for training.
+During testing, we simply select the top 150 for inference.
+Learn without Rules
+We can also jointly extract entity relations and learn the composition rules without the human specified rules. This is a more challenging task where one needs to figure out the way to combine inferred relations and derive the desired answer without intermediate supervision.
+Experimental Setup
+We have 10K training data points, which are triplets of passage, query, and answers.
+We use RoBERTa as the backbone language model.
+We further train a 2-layer MLP-based relation extractor which takes in the embedding of three components, a global embedding of the passage, and the embedding of the queried subject and the object, and returns the result for a 21-way classification.
+We set the batch size to 32 32 , the learning rate to
+0.00001 0.00001 , and train the models for 100 100 epochs.
+C.6. Mugen
+⬇
+1
+// Input from neural networks
+2
+type action ( usize , String )
+3
+type expr ( usize , String )
+4
+type expr_start ( usize )
+5
+type expr_end ( usize )
+6
+type action_start ( usize )
+7
+type action_end ( usize )
+8
+9
+type match_single ( usize , usize , usize )
+10
+type match_sub ( usize , usize , usize , usize )
+11
+12
+// Check whether does a subsection of text specification matches the
+13
+// video content
+14
+rel match_single ( tid , vid , vid + 1) = expr ( tid , a ), action ( vid , a )
+15
+rel match_sub ( tid , tid , vid_start , vid_end ) =
+16
+match_single ( tid , vid_start , vid_end )
+17
+rel match_sub ( tid , tid , vid_start , vid_end ) =
+18
+match_sub ( tid , tid , vid_start , vid_mid ),
+19
+match_single ( tid , vid_mid , vid_end )
+20
+rel match_sub ( tid_start , tid_end , vid_start , vid_end ) =
+21
+match_sub ( tid_start , tid_end - 1, vid_start , vid_mid ),
+22
+match_single ( tid_end , vid_mid , vid_end )
+23
+24
+// Check whether does the whole text specification matches the video content
+25
+rel match () = expr_start ( tid_start ),
+26
+expr_end ( tid_end ), action_start ( vid_start ), action_end ( vid_end ),
+27
+match_sub ( tid_start , tid_end , vid_start , vid_end )
+28
+29
+// Integrity violation when too many identical text expressions
+30
+// occurs consecutively
+31
+rel too_many_consecutive_expr () = expr ( tid , a ),
+32
+expr ( tid + 1, a ), expr ( tid + 2, a ), expr ( tid + 3, a )
+Figure 31 . Scallop code for Mugen.
+Experimental Setup
+We sample 1K Mugen ( Hayes et al., 2022 ) video and text pairs as the training dataset, and another 1K for testing.
+Our neural module consists of the S3D image embedding and the distillBert text embedding.
+Then we pass the embeddings through a 2-layer MLP, with a hidden layer size of 256.
+We trained the Scallop module 1000 epochs on the training dataset, the learning rate is set to 0.0001, and the batch size is 3, with BCE-loss closing the training loop.
+The Scallop code is shown in Fig. 31
+C.7. CLEVR
+⬇
+1
+// yes/no question
+2
+rel eval_yn ( e , x > y ) = greater_than_expr ( e , a , b ),
+3
+eval_num ( a , x ), eval_num ( b , y )
+4
+rel eval_yn ( e , x < y ) = less_than_expr ( e , a , b ),
+5
+eval_num ( a , x ), eval_num ( b , y )
+6
+rel eval_yn ( e , x == y ) = equal_expr ( e , a , b ),
+7
+eval_num ( a , x ), eval_num ( b , y )
+8
+rel eval_yn ( e , x == y ) = equal_color_expr ( e , a , b ),
+9
+eval_query ( a , x ), eval_query ( b , y )
+10
+rel eval_yn ( e , x == y ) = equal_material_expr ( e , a , b ),
+11
+eval_query ( a , x ), eval_query ( b , y )
+12
+rel eval_yn ( e , x == y ) = equal_shape_expr ( e , a , b ),
+13
+eval_query ( a , x ), eval_query ( b , y )
+14
+rel eval_yn ( e , x == y ) = equal_size_expr ( e , a , b ),
+15
+eval_query ( a , x ), eval_query ( b , y )
+16
+rel eval_yn ( e , b ) = b := exists ( o : eval_objs ( f , o )
+17
+where e : exists_expr ( e , f ))
+18
+19
+// count number of objects
+20
+rel eval_num ( e , n ) = n := count ( o : eval_objs ( f , o ) where e : count_expr ( e , f ))
+21
+22
+// objects filter
+23
+rel eval_objs ( e , o ) = scene_expr ( e ), obj ( o )
+24
+rel eval_objs ( e , o ) = unique_expr ( e , f ), eval_objs ( f , o )
+25
+rel eval_objs ( e , o ) = filter_size_expr ( e , f , s ), eval_objs ( f , o ), size ( o , s )
+26
+rel eval_objs ( e , o ) = filter_color_expr ( e , f , c ), eval_objs ( f , o ), color ( o , c )
+27
+rel eval_objs ( e , o ) = filter_material_expr ( e , f , m ), eval_objs ( f , o ), material ( o , m )
+28
+rel eval_objs ( e , o ) = filter_shape_expr ( e , f , s ), eval_objs ( f , o ), shape ( o , s )
+29
+rel eval_objs ( e , o ) = and_expr ( e , f1 , f2 ), eval_objs ( f1 , o ), eval_objs ( f2 , o )
+30
+rel eval_objs ( e , o ) = or_expr ( e , f1 , f2 ) and ( eval_objs ( f1 , o ) or eval_objs ( f2 , o ))
+31
+32
+// same attribute
+33
+rel eval_objs ( e , o ) = same_size_expr ( e , f ),
+34
+eval_objs ( f , p ), size ( p , c ), size ( o , c ), o != p
+35
+rel eval_objs ( e , o ) = same_color_expr ( e , f ),
+36
+eval_objs ( f , p ), color ( p , c ), color ( o , c ), o != p
+37
+rel eval_objs ( e , o ) = same_material_expr ( e , f ),
+38
+eval_objs ( f , p ), material ( p , m ), material ( o , m ), o != p
+39
+rel eval_objs ( e , o ) = same_shape_expr ( e , f ),
+40
+eval_objs ( f , p ), shape ( p , s ), shape ( o , s ), o != p
+41
+42
+// relation
+43
+rel relate ( "right" , p , o ) = relate ( "left" , o , p )
+44
+rel relate ( "front" , p , o ) = relate ( "behind" , o , p )
+45
+rel eval_objs ( e , o ) = relate_expr ( e , f , r ),
+46
+eval_objs ( f , p ), relate ( r , p , o ), o != p
+47
+48
+// eval query
+49
+rel eval_query ( e , s ) = query_size_expr ( e , f ), eval_objs ( f , o ), size ( o , s )
+50
+rel eval_query ( e , c ) = query_color_expr ( e , f ), eval_objs ( f , o ), color ( o , c )
+51
+rel eval_query ( e , m ) = query_material_expr ( e , f ), eval_objs ( f , o ), material ( o , m )
+52
+rel eval_query ( e , s ) = query_shape_expr ( e , f ), eval_objs ( f , o ), shape ( o , s )
+⬇
+54
+// Final result
+55
+rel result ( y as String ) = root_expr ( e ), eval_yn ( e , y )
+56
+rel result ( y as String ) = root_expr ( e ), eval_num ( e , y )
+57
+rel result ( y ) = root_expr ( e ), eval_query ( e , y )
+Figure 32 . Scallop code for CLEVR.
+CLEVR ( Johnson et al., 2017 ) stands for C ompositional L anguage and E lementary V isual R easoning,
+is a synthetic dataset testing model’s ability to perform Visual Question Answering (VQA).
+Each data point of the dataset contains an image and a question-answer pair with regard to the image.
+The images are randomly generated from a dictionary of 3 shapes, 8 colors, 2 materials, and 2 sizes and the programmatic queries are also randomly generated.
+Given a rendered image with simple objects such as cubes and spheres, we aim to answer a question about the image.
+Architecture
+The object feature vectors are obtained by a 4-layer convolutional neural network.
+The feature vectors are then passed to four 2-layer MLP classifiers and another 3-layer MLP classifier to obtain the attributes and the spacial relations respectively.
+The learning rate is set to 0.0001 0.0001 , the batch size is 32 32 , and the latent dimension is 1024 1024 . We show our Scallop code in Fig. 32 .
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

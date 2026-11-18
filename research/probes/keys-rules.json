@@ -1,0 +1,8 @@
+[
+  "begin",
+  ["relation", "quote_", ["sku", "usd"]],
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["quote_", "a1", 3], ["quote_", "a1", 4]],
+  ["rule", ["price", "?s", "?u"], ["quote_", "?s", "?u"]],
+  ["query", ["price", "?sku", "?usd"]]
+]

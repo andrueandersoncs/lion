@@ -1,0 +1,125 @@
+Skip to main content
+Search
+Submit
+Donate
+Log in
+Search arXiv
+Press Enter to search &middot; Advanced search
+Computer Science > Databases
+arXiv:1101.1110 (cs)
+[Submitted on 5 Jan 2011]
+Title: Provenance for Aggregate Queries
+Authors: Yael Amsterdamer , Daniel Deutch , Val Tannen
+View a PDF of the paper titled Provenance for Aggregate Queries, by Yael Amsterdamer and 2 other authors
+View PDF
+HTML (experimental)
+Abstract: We study in this paper provenance information for queries with aggregation. Provenance information was studied in the context of various query languages that do not allow for aggregation, and recent work has suggested to capture provenance by annotating the different database tuples with elements of a commutative semiring and propagating the annotations through query evaluation. We show that aggregate queries pose novel challenges rendering this approach inapplicable. Consequently, we propose a new approach, where we annotate with provenance information not just tuples but also the individual values within tuples, using provenance to describe the values computation. We realize this approach in a concrete construction, first for "simple" queries where the aggregation operator is the last one applied, and then for arbitrary (positive) relational algebra queries with aggregation; the latter queries are shown to be more challenging in this context. Finally, we use aggregation to encode queries with difference, and study the semantics obtained for such queries on provenance annotated databases.
+Subjects:
+Databases (cs.DB)
+Cite as:
+arXiv:1101.1110 [cs.DB]
+(or
+arXiv:1101.1110v1 [cs.DB] for this version)
+https://doi.org/10.48550/arXiv.1101.1110
+Focus to learn more
+arXiv-issued DOI via DataCite
+Submission history
+From: Yael Amsterdamer [ view email ]
+[v1]
+Wed, 5 Jan 2011 22:20:29 UTC (80 KB)
+Full-text links:
+Access Paper:
+View a PDF of the paper titled Provenance for Aggregate Queries, by Yael Amsterdamer and 2 other authors
+View PDF
+HTML (experimental)
+TeX Source
+view license
+Additional Features
+Audio Summary
+Current browse context:
+cs.DB
+< prev
+|
+next >
+new
+|
+recent
+| 2011-01
+Change to browse by:
+cs
+References & Citations
+SciX
+Google Scholar
+Semantic Scholar
+DBLP - CS Bibliography
+listing | bibtex
+Yael Amsterdamer
+Daniel Deutch
+Val Tannen
+export BibTeX citation
+Loading...
+BibTeX formatted citation
+&times;
+loading...
+Data provided by:
+Bookmark
+Bibliographic Tools
+Bibliographic and Citation Tools
+Bibliographic Explorer Toggle
+Bibliographic Explorer ( What is the Explorer? )
+Connected Papers Toggle
+Connected Papers ( What is Connected Papers? )
+Litmaps Toggle
+Litmaps ( What is Litmaps? )
+scite.ai Toggle
+scite Smart Citations ( What are Smart Citations? )
+Code, Data, Media
+Code, Data and Media Associated with this Article
+alphaXiv Toggle
+alphaXiv ( What is alphaXiv? )
+Links to Code Toggle
+CatalyzeX Code Finder for Papers ( What is CatalyzeX? )
+DagsHub Toggle
+DagsHub ( What is DagsHub? )
+GotitPub Toggle
+Gotit.pub ( What is GotitPub? )
+Huggingface Toggle
+Hugging Face ( What is Huggingface? )
+ScienceCast Toggle
+ScienceCast ( What is ScienceCast? )
+Demos
+Demos
+Replicate Toggle
+Replicate ( What is Replicate? )
+Spaces Toggle
+Hugging Face Spaces ( What is Spaces? )
+Spaces Toggle
+TXYZ.AI ( What is TXYZ.AI? )
+Related Papers
+Recommenders and Search Tools
+Link to Influence Flower
+Influence Flower ( What are Influence Flowers? )
+Core recommender toggle
+CORE Recommender ( What is CORE? )
+Author
+Venue
+Institution
+Topic
+About arXivLabs
+arXivLabs: experimental projects with community collaborators
+arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+Which authors of this paper are endorsers? |
+Disable MathJax ( What is MathJax? )
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

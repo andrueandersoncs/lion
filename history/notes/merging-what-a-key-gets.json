@@ -1,0 +1,89 @@
+{
+  "title": "A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too",
+  "context": "A keyed relation held one row per key by agreement alone: a fact replaced the row its key had, and two different rows that rules gave one key were an error. Combining the values a key gets took a second relation and a rule that aggregated into it, and that relation could not have facts, so a value known as a fact and values derived by rules could not meet in one place. The research run on separation logic (`research/runs/separation-logic/`) found the same split in Iris's resource algebras: values that combine, a check of which combinations are valid, and a unit. Lion's keyed rules are the agreement algebra, where equal values combine and different ones are invalid, and its lattice aggregates are algebras where every combination is valid. Lion's earlier design for incremental maintenance (`shared-algebra.md`, 2026-11-18) planned to make a key's columns folds over its candidates, with facts as candidates.",
+  "decision": "A keyed relation can declare `\"merge\"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. A fact of such a relation never replaces another, and `retract` takes it back. A rule's head gives a merged column plainly, and the relation joins it, so a relation that merges is an aggregated relation whose facts are candidates too.",
+  "consequences": "The relation form takes the option `\"merge\"`, written in snapshots beside the key. The relation's declaration adds a rule that reads its facts as candidates, under the name the goal-directed rewrite already uses for a relation's own facts; a snapshot writes the declaration, not the rule, and `why` tells a fact that won as given, with the declaration as its rule. Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. `aggregate/sum`, `aggregate/count`, and the other aggregates that add up a rule's matches do not merge, since a fact is not a match: a relation that aggregates with them still cannot have facts.",
+  "alternatives": [
+    {
+      "option": "Let any aggregated relation take facts as candidates",
+      "rejected": "A sum or count adds up a rule's matches, and a fact is not one: with facts kept as a set, two equal facts would count once. A lattice join gives the same result whatever is repeated."
+    },
+    {
+      "option": "A merge function the program writes, as egglog's `:merge`",
+      "rejected": "Lion could not check that a written function is associative, commutative, and idempotent, and without that the row a key holds would depend on the order candidates come in, against the guarantee that a program has one answer."
+    },
+    {
+      "option": "Combine facts when they are written, as an upsert that keeps the better value",
+      "rejected": "The candidates would be lost: `retract` could not take one back, and the rows rules give could not meet the facts."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A keyed relation can declare `\"merge\"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`.",
+      "says": {
+        "decision": "merging-what-a-key-gets",
+        "chose": "lattice-merge-option",
+        "over": [
+          "facts-for-every-aggregate",
+          "written-merge-function",
+          "merge-on-write"
+        ],
+        "area": "logic",
+        "because": "a lattice join does not depend on the order candidates come in, so facts and rules can feed one key and the program keeps one answer"
+      }
+    },
+    {
+      "quote": "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key.",
+      "says": {
+        "rule": "a-key-holds-the-join-of-its-candidates",
+        "holds": true,
+        "statement": "A relation that merges holds one row per key, whose merged columns join every candidate the key gets from facts and rules, and whose other columns must agree",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "merge-joins-facts-and-rules",
+            "is": "join"
+          },
+          {
+            "behavior": "merge-fact-retract",
+            "is": "candidate-removed"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A keyed relation can declare `\"merge\"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`.",
+      "says": {
+        "feature": "relation-merge-option",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values.",
+      "says": {
+        "behavior": "merge-joins-facts-and-rules",
+        "is": "join",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A fact of such a relation never replaces another, and `retract` takes it back.",
+      "says": {
+        "behavior": "merge-fact-retract",
+        "is": "candidate-removed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were.",
+      "says": {
+        "behavior": "keyed-aggregated-rows-differ",
+        "is": "error",
+        "area": "logic",
+        "was": "both-held",
+        "fixes": true
+      }
+    }
+  ]
+}

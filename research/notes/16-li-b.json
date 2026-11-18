@@ -1,0 +1,471 @@
+{
+  "sources": [
+    {
+      "id": "b-green-2007",
+      "url": "https://web.cs.ucdavis.edu/~green/papers/pods07.pdf",
+      "title": "Provenance Semirings",
+      "publisher": "Green, Karvounarakis, Tannen (UPenn)",
+      "kind": "primary",
+      "published": 20070611
+    },
+    {
+      "id": "b-amsterdamer-2011",
+      "url": "https://arxiv.org/abs/1101.1110",
+      "title": "Provenance for Aggregate Queries",
+      "publisher": "Amsterdamer, Deutch, Tannen (Tel Aviv University, UPenn)",
+      "kind": "primary",
+      "published": 20110105
+    },
+    {
+      "id": "b-gradel-2017",
+      "url": "https://arxiv.org/html/1712.01980",
+      "title": "Semiring Provenance for First-Order Model Checking",
+      "publisher": "Grädel, Tannen (RWTH Aachen, UPenn)",
+      "kind": "primary",
+      "published": 20171201
+    },
+    {
+      "id": "b-dannert-2021",
+      "url": "https://arxiv.org/abs/1910.07910",
+      "title": "Generalized Absorptive Polynomials and Provenance Semantics for Fixed-Point Logic (CSL 2021: Semiring Provenance for Fixed-Point Logic)",
+      "publisher": "Grädel, Tannen (RWTH Aachen, UPenn)",
+      "kind": "primary",
+      "published": 20191017
+    },
+    {
+      "id": "b-abokhamis-2022",
+      "url": "https://arxiv.org/html/2105.14435",
+      "title": "Convergence of Datalog over (Pre-) Semirings",
+      "publisher": "Abo Khamis, Ngo, Pichler, Suciu, Wang (RelationalAI, TU Wien, U. Washington)",
+      "kind": "primary",
+      "published": 20220601
+    },
+    {
+      "id": "b-huang-2021",
+      "url": "https://www.cis.upenn.edu/~mhnaik/papers/neurips21.pdf",
+      "title": "Scallop: From Probabilistic Deductive Databases to Scalable Differentiable Reasoning",
+      "publisher": "Naik group (UPenn)",
+      "kind": "primary",
+      "published": 20211201
+    },
+    {
+      "id": "b-li-2023",
+      "url": "https://arxiv.org/html/2304.04812",
+      "title": "Scallop: A Language for Neurosymbolic Programming",
+      "publisher": "Naik group (UPenn)",
+      "kind": "primary",
+      "published": 20230410
+    },
+    {
+      "id": "b-madsen-2016",
+      "url": "https://plg.uwaterloo.ca/~olhotak/pubs/pldi16.pdf",
+      "title": "From Datalog to Flix: A Declarative Language for Fixed Points on Lattices",
+      "publisher": "Madsen, Yee, Lhoták (University of Waterloo)",
+      "kind": "primary",
+      "published": 20160601
+    },
+    {
+      "id": "b-arntzenius-2016",
+      "url": "http://www.rntz.net/files/datafun.pdf",
+      "title": "Datafun: A Functional Datalog",
+      "publisher": "Arntzenius, Krishnaswami (University of Birmingham)",
+      "kind": "primary",
+      "published": 20160901
+    },
+    {
+      "id": "b-sahebolamri-2022",
+      "url": "https://s-arash.github.io/ascent/cc22main-p95-seamless-deductive-inference-via-macros.pdf",
+      "title": "Seamless Deductive Inference via Macros",
+      "publisher": "Sahebolamri, Gilray, Micinski (Syracuse, UAB)",
+      "kind": "primary",
+      "published": 20220402
+    },
+    {
+      "id": "b-lee-2019",
+      "url": "https://arxiv.org/html/1808.05752",
+      "title": "PUG: A Framework and Practical Implementation for Why & Why-Not Provenance",
+      "publisher": "Lee, Ludäscher, Glavic (IIT, UIUC)",
+      "kind": "primary",
+      "published": 20190201
+    },
+    {
+      "id": "b-deraedt-2007",
+      "url": "https://www.ijcai.org/Proceedings/07/Papers/396.pdf",
+      "title": "ProbLog: A Probabilistic Prolog and its Application in Link Discovery",
+      "publisher": "De Raedt, Kimmig, Toivonen (Freiburg, Helsinki)",
+      "kind": "primary",
+      "published": 20070101
+    },
+    {
+      "id": "b-senellart-provsql",
+      "url": "https://raw.githubusercontent.com/PierreSenellart/provsql/master/doc/provsql.md",
+      "title": "ProvSQL (project README)",
+      "publisher": "Senellart et al. (Inria Valda)",
+      "kind": "primary",
+      "published": 20180801
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-b1",
+      "source": "b-green-2007",
+      "quote": "Computing the why-provenance for queries in RA+ turns out to be exactly Definition 3.2 for the semiring",
+      "says": {
+        "covers": "why provenance",
+        "by": "semiring provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b2",
+      "source": "b-green-2007",
+      "quote": "bag semantics can be viewed as a generalization to annotated relations, where a tuple’s annotation is a number representing its multiplicity",
+      "says": {
+        "covers": "counting",
+        "by": "semiring provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b3",
+      "source": "b-green-2007",
+      "quote": "We give algorithms for datalog provenance calculation as well as datalog evaluation for incomplete and probabilistic databases.",
+      "says": {
+        "covers": "probabilities",
+        "by": "semiring provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b4",
+      "source": "b-green-2007",
+      "quote": "we would like to extend Definition 3.2 to include negation, which seems to require axiomatizing an additional operation akin to “proper subtraction” in N.",
+      "says": {
+        "covers": "stratified negation",
+        "by": "semiring provenance",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b5",
+      "source": "b-amsterdamer-2011",
+      "quote": "We show that aggregate queries pose novel challenges rendering this approach inapplicable.",
+      "says": {
+        "covers": "aggregates",
+        "by": "semiring provenance",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b6",
+      "source": "b-amsterdamer-2011",
+      "quote": "we annotate with provenance information not just tuples but also the individual values within tuples, using provenance to describe the values computation",
+      "says": {
+        "covers": "aggregates",
+        "by": "semimodule provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b7",
+      "source": "b-gradel-2017",
+      "quote": "This works fine for positive database query languages [ 16 ] but difference/negation cause problems.",
+      "says": {
+        "covers": "stratified negation",
+        "by": "semiring provenance",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b8",
+      "source": "b-gradel-2017",
+      "quote": "The dashed arrows corresponds to absent edges, whose absence, however, we also wish to track.",
+      "says": {
+        "covers": "showing what is missing for a goal to hold",
+        "by": "dual-indeterminate provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b9",
+      "source": "b-gradel-2017",
+      "quote": "the semiring approach has been successfully implemented in two software systems, Orchestra [ 15 , 17 , 18 ] and Propolis [ 8 ] .",
+      "says": {
+        "adopted": "semiring provenance",
+        "in": "Orchestra"
+      }
+    },
+    {
+      "id": "li-b10",
+      "source": "b-dannert-2021",
+      "quote": "So far, this approach has been developed mainly for first-order logic and for the positive fragment of least fixed-point logic.",
+      "says": {
+        "covers": "non-stratified negation",
+        "by": "dual-indeterminate provenance",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b11",
+      "source": "b-dannert-2021",
+      "quote": "We show that an adequate framework for the provenance analysis of full fixed-point logics is provided by semirings that are (1) fully continuous, (2) absorptive, and (3) chain-positive.",
+      "says": {
+        "covers": "non-stratified negation",
+        "by": "absorptive semiring provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b12",
+      "source": "b-abokhamis-2022",
+      "quote": "This program solves the Single-Source-Shortest-Path (SSSP) problem with source",
+      "says": {
+        "covers": "shortest paths",
+        "by": "datalog-o",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b13",
+      "source": "b-abokhamis-2022",
+      "quote": "enabling the semi-naïve algorithm to be applied to programs with aggregation in recursion",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "datalog-o",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b14",
+      "source": "b-abokhamis-2022",
+      "quote": "we show that termination is guaranteed iff the POPS enjoys a certain algebraic property called stability",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "datalog-o",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b15",
+      "source": "b-abokhamis-2022",
+      "quote": "program converges in N N steps; in particular, the program runs in polynomial time in the size of the input database.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "datalog-o over 0-stable semirings",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b16",
+      "source": "b-abokhamis-2022",
+      "quote": "The tropical semiring is such an example; every distributive lattice is also a 0-stable semiring",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "datalog-o over 0-stable semirings",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b17",
+      "source": "b-huang-2021",
+      "quote": "As before, we construct a top-k proof semiring (Appendix A.2), with which we can express the",
+      "says": {
+        "covers": "top-k proofs",
+        "by": "top-k proofs semiring",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b18",
+      "source": "b-huang-2021",
+      "quote": "outperforming two VQA-tailored models based on Neural Module Networks and transformers by 12.42% and 21.66% respectively",
+      "says": {
+        "result": "scallop",
+        "measure": "accuracy gain over Neural Module Network model on multi-hop VQA",
+        "bound": "exact",
+        "percent": 12.42
+      }
+    },
+    {
+      "id": "li-b19",
+      "source": "b-li-2023",
+      "quote": "We show how Scallop uniformly supports different reasoning modes—discrete, probabilistic, and differentiable—simply by defining different provenances.",
+      "says": {
+        "covers": "probabilities",
+        "by": "scallop",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b20",
+      "source": "b-li-2023",
+      "quote": "First, similar to negation, aggregation also needs to be stratified—a relation cannot be dependent on itself through an aggregation.",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "scallop",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b21",
+      "source": "b-li-2023",
+      "quote": "A relation cannot be negatively dependent on itself, directly or transitively, as Scallop supports only stratified negation.",
+      "says": {
+        "covers": "non-stratified negation",
+        "by": "scallop",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b22",
+      "source": "b-li-2023",
+      "quote": "This provenance extends the top- k k proofs semiring originally proposed in ( Huang et al., 2021 ) to additionally support negation and aggregation.",
+      "says": {
+        "covers": "stratified negation",
+        "by": "top-k proofs semiring",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b23",
+      "source": "b-li-2023",
+      "quote": "For CLUTRR, we obtain a 25% improvement over baselines, which includes GPT-3-FT",
+      "says": {
+        "result": "scallop",
+        "measure": "accuracy improvement on CLUTRR over baselines including fine-tuned GPT-3",
+        "bound": "exact",
+        "percent": 25
+      }
+    },
+    {
+      "id": "li-b24",
+      "source": "b-li-2023",
+      "quote": "a framework for automatic and efficient differentiable reasoning that is based on the theory of provenance semirings",
+      "says": {
+        "adopted": "semiring provenance",
+        "in": "Scallop"
+      }
+    },
+    {
+      "id": "li-b25",
+      "source": "b-madsen-2016",
+      "quote": "FLIX is inspired by Datalog and extends it with lattices and monotone functions.",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "flix lattices",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b26",
+      "source": "b-madsen-2016",
+      "quote": "FLIX currently does not support any form of negation, but it is something we plan to add.",
+      "says": {
+        "covers": "stratified negation",
+        "by": "flix lattices",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b27",
+      "source": "b-madsen-2016",
+      "quote": "of the IFDS algorithm is about 3x slower than the imperative Scala implementation",
+      "says": {
+        "result": "flix lattices",
+        "measure": "slowdown against hand-coded imperative Scala IFDS",
+        "bound": "about",
+        "times": 3
+      }
+    },
+    {
+      "id": "li-b28",
+      "source": "b-arntzenius-2016",
+      "quote": "a typed functional language which permits programming in the style of Datalog, while still supporting the full power of higher-order functional programming",
+      "says": {
+        "covers": "plain-code evaluation",
+        "by": "datafun",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b29",
+      "source": "b-sahebolamri-2022",
+      "quote": "Since we are interested in shortest paths, we use the type Dual<u32>to ensure that for any pair of nodes, from the path lengths computed so far, only the shortest one is stored.",
+      "says": {
+        "covers": "shortest paths",
+        "by": "ascent lattices",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b30",
+      "source": "b-sahebolamri-2022",
+      "quote": "our Ascent implementation to be between 56×and 170×faster than a comparable",
+      "says": {
+        "result": "ascent lattices",
+        "measure": "speedup over Flix on lattice shortest paths",
+        "bound": "up to",
+        "times": 170
+      }
+    },
+    {
+      "id": "li-b31",
+      "source": "b-sahebolamri-2022",
+      "quote": "Negation, sum, and count are achievable by utilizing a Set lattice; and min and max are less expensive",
+      "says": {
+        "covers": "stratified negation",
+        "by": "ascent lattices",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b32",
+      "source": "b-lee-2019",
+      "quote": "Thus, a unification of why and why-not provenance is naturally achieved by developing a provenance model for queries with negation.",
+      "says": {
+        "covers": "showing what is missing for a goal to hold",
+        "by": "pug",
+        "is": true
+      }
+    },
+    {
+      "id": "li-b33",
+      "source": "b-lee-2019",
+      "quote": "In this paper, consider non-recursive Datalog with negation (FO queries)",
+      "says": {
+        "covers": "recursion",
+        "by": "pug",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b34",
+      "source": "b-lee-2019",
+      "quote": "(for the class of queries supported, e.g., we do not support aggregation yet).",
+      "says": {
+        "covers": "aggregates",
+        "by": "pug",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b35",
+      "source": "b-deraedt-2007",
+      "quote": "Computing the probability of DNF formulae is an NP-hard problem even if all variables are independent, as they are in our case.",
+      "says": {
+        "covers": "tractable exact probabilities",
+        "by": "problog",
+        "is": false
+      }
+    },
+    {
+      "id": "li-b36",
+      "source": "b-senellart-provsql",
+      "quote": "ProvSQL adds (m-)semiring provenance and uncertainty management to PostgreSQL, enabling computation of probabilities, Shapley values, and various semiring evaluations",
+      "says": {
+        "adopted": "semiring provenance",
+        "in": "ProvSQL (PostgreSQL extension)"
+      }
+    }
+  ]
+}

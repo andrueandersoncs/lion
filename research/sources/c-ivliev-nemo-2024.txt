@@ -1,0 +1,710 @@
+KR2024 Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning
+Hanoi, Vietnam . November 2-8, 2024 .
+Edited by Pierre Marquis,
+Magdalena Ortiz
+Maurice Pagnucco
+ISSN: 2334-1033
+ISBN: 978-1-956792-05-8
+Sponsored by Principles of Knowledge Representation and Reasoning, Incorporated (KR, Inc.)
+Published by IJCAI Organization
+Copyright © 2024 International Joint Conferences on Artificial Intelligence Organization
+KR Proceedings
+2024
+KR in the Wild
+Pages 743–754
+Nemo: Your Friendly and Versatile Rule Reasoning Toolkit
+Alex Ivliev ( Knowledge-Based Systems Group, TU Dresden, Dresden, Germany )
+Lukas Gerlach ( Knowledge-Based Systems Group, TU Dresden, Dresden, Germany )
+Simon Meusel ( Knowledge-Based Systems Group, TU Dresden, Dresden, Germany )
+Jakob Steinberg ( Knowledge-Based Systems Group, TU Dresden, Dresden, Germany )
+Markus Krötzsch ( Knowledge-Based Systems Group, TU Dresden, Dresden, Germany )
+In Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning — KR in the Wild . Pages 743 – 754 .
+PDF
+BibTeX
+https://doi.org/ 10.24963/kr.2024/70
+Keywords
+Reasoning system implementations-General
+Knowledge representation languages-General
+Ontologies and knowledge-enriched data management-General
+Reasoning in knowledge graphs-General
+Abstract
+We present Nemo, a toolkit for rule-based reasoning and data processing that emphasises robustness and ease of use. Nemo’s core is a scalable and efficient main-memory reasoner that supports an expressive extension of Datalog with support for datatypes, existential rules, aggregates, and (stratified) negation. Built around this core is a versatile system of libraries and applications for interfacing with several data formats and programming languages, use as a progressive web application, and IDE integration. In this system description, we present this toolkit and discuss relevant application areas in rule-based knowledge representation, knowledge graph processing, and reasoner prototyping. Our evaluation on a range of tasks from these areas demonstrates Nemo’s robust performance in comparison to state-of-the-art rule engines.
+
+=== Full text (camera-ready PDF, iccl.inf.tu-dresden.de/w/images/f/fb/KR-2024-CR.pdf), line breaks joined ===
+Nemo: YourFriendlyandVersatileRuleReasoning Toolkit AlexIvliev, LukasGerlach, Simon Meusel, Jakob Steinberg, Markus Krötzsch Knowledge-Based Systems Group, TU Dresden,Dresden, Germany {alex.ivliev,lukas.gerlach, markus.kroetzsch}@tu-dresden.de, {simon.meusel,jakob_maximilian.steinberg}@mailbox.tu-dresden.de Abstract We present Nemo, a toolkit for rule-based reasoning and data processing that emphasises robustness and ease of use.
+Nemo’scoreisascalableandefficientmain-memoryreasoner that supports an expressive extension of Datalog with sup- portfordatatypes,existentialrules,aggregates,and(stratified) negation.Builtaroundthiscoreisaversatilesystemoflibrar- ies and applications for interfacing with several data formats and programming languages, use as a web application, and IDE integration.
+In this system description, we present this toolkit and discuss relevant application areas in rule-based knowledge representation, knowledge graph processing, and reasonerprototyping.Ourevaluationonarangeoftasksfrom theseareasdemonstratesNemo’srobustperformanceincom- parisonto state-of-the-art rule engines.
+1 Introduction Declarative rule languages are central to knowledge repres- entationandreasoning(KRR),beitasthefoundationoflogic programming (Körner et al.
+2022; Calimeri et al.
+2020), as a design principle for ontology languages (ter Horst 2005; Motik et al.
+2009; Krötzsch, Rudolph, and Hitzler 2013), or merely as a computational framework for reasoning (GómezÁlvarez,Rudolph,andStrass2023;Simančík,Kaza- kov, and Horrocks 2011; Krötzsch 2011).
+Indeed, few lo- gicalparadigmsembodysuchharmonyofintuitivemeaning, formal semantics, and practical execution.
+In recent years, rules have therefore become an important approach to de- clarative computation, not only in KRR but also in many fieldsconcernedwiththemanagement,integration,andana- lysis of data (Aberger et al.
+2016; Seo, Guo, and Lam 2015; Aref etal.
+2015).
+One of the most basic rule languages is Datalog (Abite- boul, Hull, and Vianu 1994),which is also the core of many morecomplexformalisms.Recentyearssawmuchincreased interestinDatalog(AlvianoandPieris2024)andcloselyre- latedlanguagessuchasexistentialrules(Benediktetal.2017; Mugnier and Thomazo 2014).
+Accordingly, many rule reas- oning systems have been presented, which we can roughly classify inthefollowingtypes (Ivlievet al.
+2023): 1.
+Answersetprogrammingsolvers(Gebser,Kaufmann,and Schaub2012;Alvianoetal.2017)andlogicprogramming systems such as Prolog (Körner et al.
+2022) 2.
+Knowledge graph and deductive database engines such as RDFox (Nenov et al.
+2015), VLog (Urbani, Jacobs, andKrötzsch2016),Vadalog(Bellomarini,Sallinger,and Gottlob 2018), andGraal (Baget et al.2015) 3.
+Specialiseddata-analyticssystemssuchasSoufflé(Jordan, Scholz, and Subotic 2016), LogicBlox (Aref et al.
+2015), SocialLite (Seo, Guo, and Lam 2015), or EmptyHeaded (Aberger et al.2016) 4.
+Data management frameworks such as Datomic, Google Logica, andCozoDB In spite of this apparent abundance, researchers and prac- titioners may struggle to find a rule engine that suits their needs.
+First of all, the design space for such systems is very large, and the breadth of applications depends on a wide range of relevant features.
+For example, tools of type (4) are more similar to rule-based database APIs than to reason- ers for knowledge representation.
+Moreover, many systems describedintheliteraturemaynotbeaviablechoiceinprac- tice,duetodiscontinuationoftheproject,orduetocostand access restrictions of closed-source commercial systems.
+In the field of logic programming, these problems have been overcomeandadvancedopen-sourcesystemssuchasClingo (Gebseretal.2019)areavailabletoresearchers,whereasthe situationinotherrulesystemcategoriesismoreprecarious.1 We therefore present Nemo, a new rule reasoning toolkit forapplicationsoftype(2)and(3),wherethecomputationof logicalentailments(orqueryresults)fromavarietyofinputs isthemainreasoningtask.Nemo’srulelanguageisanexten- sionofDatalogwithvariousdatatypes,negation,aggregates (both stratified), and many datatype-specific functions and operatorsknownfromquerylanguageslikeSPARQL.Atthe sametime,Nemoisanexistentialrulereasonerwithafastim- plementationoftherestricted(orstandard)chasealgorithm.
+Supported formats and types for data values conform to the RDF standard(Cyganiak, Wood, andLanthaler 2014).
+Nemo aims to combine robust performance with flexible and convenient use.
+Thanks to its modular architecture, we can provide command-line clients for all major platforms, a public Web application with built-in rule editor, an IDE plugin for rule editing in VSCode, and APIs for integration 1Among the mentioned systems of types (2) and (3), the only open-sourcetoolwithareleaseinthepasttwelvemonthsisSoufflé.
+Figure1:Rulereasoningin the browser with Nemo Web inseveralprogramminglanguages.Nemo’soptimisedmain- memorydatastoragecanhandlehundredsofmillionsoffacts onmodernlaptops,andseveralbillionsonmid-rangeservers.
+AllcomponentsofNemoarefreeandopensource,andtheir developmentrepositoriespublic.MostofNemoiswrittenin Rust, a language that emphasizes type and memory safety, and code quality isanexplicitconcern.
+In this system description, we present Nemo’s overall ar- chitecture(Section2)andrulelanguage(Section3).Wethen highlightthreeimportantapplicationareasinKRR,andshow howNemocanbeusedineachofthem(Section4).Ourper- formance evaluation and feature analyses position Nemo in thewiderspaceofmodernruleengines(Section5).Weclose withanoutlook onNemo’snext steps.
+2 SystemOverview Nemo comprises several applications and programming lib- raries.
+This section gives an overview of the main compon- ents, relatedfunctionality,and implementationaspects.2 Nemo’s main functionality is the materialisation of lo- gical consequences from input data using a given set of rules, called program in this context.
+Data in Nemo is re- lational, based on predicate names of fixed arities, over a domain that includes both abstract identifiers (“logical con- stants”, named nulls) and concrete data values (numbers, strings, dates, etc.).
+Graph data, e.g., in RDF format (Cy- ganiak, Wood, and Lanthaler 2014), is an important special case.
+As its rule language, Nemo supports an extension of Datalogwithmanyfeatures,discussedindetailinSection3.
+Inthesimplestcase,theprogramcanbeasetofDatalogrules, withthedatagivenaslogicfactsdirectlywithintheprogram.
+Elaboratecasesmayrealisecomplexdatatransformationsor reasoning tasks, asshown inSection 4.
+Nemo also supports tracing, i.e., it can provide a justific- ation for its inferences by producing a proof tree that shows the concrete rule applications and input facts used to obtain aconclusion.Incontrasttoexhaustiveprovenancecomputa- tion (Elhalawati, Krötzsch, and Mennicke 2022), tracing is very efficient andaddsno costto reasoning.
+Two distinct applications support the evaluation of pro- 2A detailed documentation is available online: https://knowsys.
+github.io/nemo-doc Nemo apps Nemo APIs Command line Nemo Web VSCode extension Language server JavaScript Python Nemo common Program parser Data import Data export Rust API Logical model Data model Nemo store Tracing engine Execution engine Query engine In-memory store Dictionary Figure 2:Main components of Nemo grams: the Nemo command-line client nmo3 and a browser- based application Nemo Web.
+4 Both applications are run entirelyontheuser’scomputer:thecommand-lineclientasa native binary, and Nemo Web as a WebAssembly executable that runs inbrowsers without priorinstallation.
+EaseofuseisamajordesigngoalforNemo,settingitapart from typical research prototypes.
+A key concern is to sup- portprogrammersinusingourcustomDatalogsyntaxandin modellingcomputationwithlogicalrules.NemoWebthere- fore includes a powerful rule editor component with syntax highlighting and auto-completion (see Figure 1).
+Advanced editingsupportisprovidedbytheNemoVSCodeextension, 5 which augments VSCode (and compatible IDEs) with ad- vanced features for rule development, such as highlighting, completion, error reporting, syntax-aware searching and re- naming,andrefactoring.AllNemoapplicationsprovidecon- venientparameters andmeaningful error messages.
+Architecture The main components of Nemo are illus- trated in Figure 2.
+Most parts are written in Rust, with the exception of Nemo Web, the VSCode extension (both TypeScript), and the JavaScript and Python APIs.
+Nemo consists of several libraries (Rust crates), most important of which is Nemo common which bundles all major func- tions,andNemostore,themainmemorystorageengine.For the Web application and JavaScript API, Rust is compiled into system-independent WebAssembly, which can be run inanymodernbrowser.TheVSCodeextensionbuildsonan APIthatusestheopenlanguageserverprotocol(LSP2024), which is alsoa basisforextensions in manyother IDEs.
+Rule Parsing and Representation Nemo’s program parser creates an abstract syntax tree (AST), which is the core of Nemo’s advanced rule language support.
+We use ParserExpressionGrammarsandfollowMedeirosandMas- carenhas (2018) for syntax error recovery.
+In a second step, the AST is converted into a logical model, which is a more traditional structural model that abstracts from most syn- tactic details.
+The logical reasoning community has often neglected the first stage, and established tools such as the OWL API (Horridge, Bechhofer, and Noppens 2007) only offerastructuralviewthatisnotusableforadvancedediting features.
+Nemo’s logical model is closely connected to the data model in Nemo store, which defines the structure and supported datatypesof domain elements.
+3WeavoidanamingconflictwiththeLinuxfilemanagernemo.
+Installation instructions and pre-compiled binaries are in our main repositoryhttps://github.com/knowsys/nemo.
+4Accessible at https://tools.iccl.inf.tu-dresden.de/nemo/.
+5See https://github.com/knowsys/nemo-vscode-extension DataImportandExport Inadditiontologicalfactsgiven in rules files, Nemo can also import (possibly large) data- sets that are encoded in CSV (and other forms of delimiter- separatedvalues)orRDF.ForRDF,triples(NTriples,Turtle, RDF/XML)andquads(TRiG,NQuads)aresupported.Data canbeloadedfromlocalfilesoronlineURLs.Allformatsare also available for export, and (on the command line) results can also be printed to the console.
+Import and export can be controlledbyvariousparameters,andsupportoptionalGZip (de)compression.
+Main-memory Data Store Data in Nemo store is organ- ised in tables, using data structures that are designed to be both fast and compact.
+Inspired by VLog, we use hierarch- ically sorted, column-based tables and compress columns using run-length encoding with increments (Urbani, Jacobs, and Krötzsch 2016).
+Unlike VLog, however, our columns contain domain elements of several types: fixed-size val- ues (e.g., 32bit floats or 64bit signed ints) are stored dir- ectly,whilevariable-sizeddata(e.g.,stringsandIRIs)isfirst mappedtointegeridsthroughadictionary.Columnsarefirst sortedbytype(e.g.,allintegersbeforeallfloats),sothatac- cess operations can process values of the same type in fast loops without checking the type ofeachvalue.
+Nemo store does not support rule reasoning, but can be usedtoachievetheeffectofasingleruleapplicationbyma- terialisingtheresultsofaquerythroughitsqueryengine.For this task, we mostly access tables as trie structures (Fredkin 1960),andweevaluateconjunctionsusingleapfrogtrie-join, a popular worst-case optimal multiway join algorithm with asymptotic advantages over binary join plans (Veldhuizen 2014).
+Operations like union or difference use analogous trie-based algorithms.
+For operations like projection and re- ordering, which cannot be implemented efficiently with trie iterators, Nemo usesrow-based temporarytables.
+ProgramExecution Theexecutionenginematerialisesin- ferences by semi-naive bottom-up evaluation (Abiteboul, Hull, and Vianu 1994), where existential quantifiers in con- clusions are handled with a 1-parallel restricted chase al- gorithm (Benedikt et al.
+2017).
+Like VLog, we avoid costly tableupdatesbystoringthefreshresultsofeachruleapplic- ation in separate delta tables (Urbani, Jacobs, and Krötzsch 2016).Thisisusefulforsemi-naiveevaluationandhelpsthe tracing engine to re-construct traces.
+The cost of combining many delta tablesismitigatedbycaching such unions.
+Rule dependencies are analysed by overestimating data- flow during materialisation (González et al.
+2022), and this information is used to stratify non-monotonic features (neg- ation,aggregates),andtoheuristicallyselectruleapplication orders withfewer rule applications overall.
+TheexecutionenginealsopreparesqueryplansforNemo store to execute.
+In our setting with its streaming multi-way operations, the order of variables (columns) largely determ- ines the query plan.
+We heuristically aim for variable orders which avoid inefficiencies (such as cross products) and re- orderings (e.g., for aggregation operations), and which pro- duce results in an order that is useful for subsequent rule applications.
+3 Language Features Nemo builds upon the declarative rule language Datalog (Abiteboul,Hull,andVianu1994),andextendsitwithmany features of modern query and rule languages.
+This section gives an overview of the most important such extensions: datatypes and related functions, existential rules, negation, andaggregation.
+A Datalog rule is a logical formula of the form 𝐻 ←𝐵, wherethehead 𝐻andbody 𝐵areconjunctionsoffirst-order atoms, and all variables are implicitly universally quanti- fied.
+Nemo combines traditional logic programming syntax withnotationfromthequerylanguageSPARQL(Harrisand Seaborne21March2013),whichencodesidentifiersinmore robust ways (supporting special characters and data types), as illustrated next: 1 parents(alice,carla,bob) .
+2 parents(<https://example.org/daphne>,carla,bob) .
+3 nameAndYearOfBirth(alice,"Alice Müller",2003) .
+4 % Two simple rules: 5 child(?C,?M), child(?C,?F) :- parents(?C,?M,?F) .
+6 sibling(?C,?D) :- child(?C,?P), 7 child(?D,?P), ?C != ?D .
+Lines1–3providethreefacts,illustratingsomebasicsyntax forvariouskindsofdata.Ingeneral,allsyntacticformsavail- ableinRDFandSPARQLcanbeused,e.g.,"論理学"@ja and "3.1"^^<http://www.w3.org/2001/XMLSchema#float>.
+To loadlargerdatasetsfromfiles,onemayusestatementssuchas @import parents :- csv{resource = "my-data.csv"} .
+Lines 5–7 show two simple rules, where ? marks variables (as in SPARQL) and != encodes inequality.
+Nemo supports non-monotonic negationusing the followingsyntax: 8 onlyChild(?C) :- child(?C,_), ~sibling(?C,_) .
+Asusualinlogicprogramming,_ denotesbodyvariablesthat occur only once, i.e., both_ in Line 8 denote distinct vari- ables.Moreover,Nemoconsidersvariablesthatoccuronlyin negatedbodyatomstobeexistentiallyquantifiedbeneaththe negation.
+Hence,~sibling(?C,_) requires that all sibling facts do not match this pattern, whereas child(?C,_) re- quiressomematchingfact.Asimilarconventionisusedinthe answer set programming, e.g., in current versions of Clingo (Gebser,Kaufmann, andSchaub 2012).
+Aggregate functions, which compute results from sets or multi-setsoftuples,havealonghistoryinlogicprogramming (Ross and Sagiv 1997; Alviano et al.
+2011; Zaniolo et al.
+2017).
+Nemo supports common aggregates such as #count, #sum,or#max,asshown next: 9 childCount(?P,#count(?C)) :- child(?C,?P) .
+Rule 9 counts, for each value of ?P, the number of distinct values of ?C that satisfy the rule body.
+In general, we distin- guish three kinds of variables: aggregate variables occur in aggregatefunctions(inthehead),group-byvariablesarethe head variables that are not aggregate variables; and body- onlyvariablesthatdonotappearinthehead.Aggregationin steps: (1) find all rule matches, (2) project away bindings of 10 11 12 13 body-only variables and remove duplicates that agree on all remaining variables, (3) group the set of projected matches by distinct values of group-by variables, and (4) apply the aggregationfunctiononeachgroup.Duplicateeliminationin (2)meansthatwealwaysaggregateoversets,corresponding to the keyword DISTINCT in many query languages.
+Users controlthesemanticsthroughtheuseofvariablesinthehead: sum1(?A,?B,#sum(?N)) :- p(?A,?B,?N) .
+sum2(?A,#sum(?N,?B)) :- p(?A,?B,?N) .
+sum3(?A, #sum(?N)) :- p(?A,?B,?N) .
+Rule 10 sums up the numbers N for each pair of As and Bs; rule11sumsuptheNsfromallpairsofNsandBsforeachA (where some pairs may have the same N value); and rule 12 sums up thedistinctNs foreach A.
+Nemosupportsexistentialrules,whichallowexistentially quantified variables in rule heads.
+We discuss this feature in more detail in Section 4.1.
+Syntactically, existentially quan- tified variables aredenotedby !: child(?C,!P), child(!P,?G) :- grandchild(?C,?G) .
+Foreachmatchofthebodyofrule13,Nemocreatesafresh value for !P, provided that the head is not satisfied for any existingvalueyet(restrictedchase).Freshvaluesarerepres- ented in Nemo by named nulls, which we treat as a separate typeofdomainelementdistinctfromotherelements.Named nullsareidentifiedwithRDFblanknodesindataimportand export, and denoted accordingly(usingnotationlike_:42).
+Finally, Nemo also supports many different datatypes – including integer, string, language-tagged string, single and double precision float, and boolean – and related functions.
+The latter include many functions known from SPARQL FILTER expressions,suchasSQRT (squarerootofanumber) orSTRLEN (lengthofastring),aswellasstandardarithmetic operators.Functionscanbenestedarbitrarilyandmayoccur anywhereinarule.Moreover,comparisonoperatorslike< or !=, can be used as atoms (see line 7), provided that variable bindings are sufficiently determined by other parts of the body (in particular, one cannot define body matches based onsystems of inequalities).
+Nemo is dynamically typed and allows any type of data to occur in any position, without requiring a fixed schema.6 Functions such as STRLEN are not defined for all types of inputs, and rules carry the implicit condition that they only applytovariablebindingsforwhichallfunctionsaredefined.
+ThesemanticsofNemofollowsfromthedeclarativecondi- tionsthatdefinehowsinglerulesareapplied.Doingsountila (possiblyinfinite)leastfixed-pointisreacheddefinesan(op- erational) semantics.
+For many fragments of our language, this semantics agrees with a well-understood model theory: leastHerbrandmodelsforDatalog,perfectmodelsforData- log with stratified negation, universal models for existential rules.
+However, existential rules are not always compatible with other Datalog extensions: even stratified negation can lead to situations where entailments depend on seemingly 6This is the standard choice in knowledge representation, also seen in OWL, RDF, SPARQL, Prolog, and ASP.
+14 arbitrary choices of the order of rule applications (Krötz- sch 2020).
+Only few cases have yet been found that to pre- vent such problems (Ellmauthaler, Krötzsch, and Mennicke 2022), so Nemo does not restrict to these limited cases, and rather warns users about the subtleties of existential rules in the documentation.
+4 ApplicationAreas Withitsmanylanguagefeatures,Nemocansupportusecases in various areas of knowledge representation and reasoning.
+In this section, we highlight existential rule reasoning, pro- cessing of (large) knowledge graphs, and the use of rules for implementing prototype reasoners for other logics.
+Our discussion also illustrates how various features of Nemo are relevantin these cases.
+4.1 ExistentialRule Reasoning As introduced in Section 3, Nemo can represent and reason withrulesthat feature existentialvariables.
+p(?Y,!Z), p(!Z,?Y) :- p(?X,?Y) .
+Running the restricted (a.k.a.
+standard) chase on such ex- istential rules (a.k.a.
+tuple-generating dependencies (tdgs)), yields a universal model that allows for conjunctive query answering (Deutsch, Nash, and Remmel 2008).
+Reasoners likeNemotypicallyimplementthechase,butreasoningover (fragmentsof)existentialrulescanalsobeachievedbyquery rewriting and combined methods, as supported in Vadalog (Bellomarini,Sallinger,andGottlob2018)andGraal(Baget et al.
+2015).
+In general, query answering over existential rules is un- decidable (Beeri and Vardi 1981), so no approach covers all cases.
+For the chase, undecidability is tied to the prob- lem of non-termination, which may occur due to the cre- ation of new values.
+Detecting this situation is also unde- cidable (Gogacz and Marcinkowski 2014; Grahne and Onet 2018), and much research has focused on identifying lan- guage fragments and methods to decide (non)termination (Gogacz, Marcinkowski, and Pieris 2020; Fagin et al.
+2005; Cuenca Grau et al.
+2012; Carral, Dragoste, and Krötzsch 2017;GerlachandCarral2023b;GerlachandCarral2023a; Hanisch and Krötzsch 2024).
+Nemo does not currently im- plementanysuchcheck,andreliesonusersforensuringter- mination.New,generalisedcriteriawouldbenecessarytodo so,sinceNemohasfurtherwaysofcreatingnewvaluesusing datatype functions.
+Even without such functions, recent res- ults showed that the fragment of existential rules for which the restricted chase terminates is not even semi-decidable, butispowerfulenoughtoexpressallhomomorphism-closed decidablequeries(Bourgauxetal.2021).Theseresultsapply to Nemoas well.
+Differentvariantsofthechasealgorithmterminateondif- ferent rule sets.
+The skolem chase, for example, terminates on strictly less rule sets compared to the restricted chase.
+In rule reasoners that do not allow for existential variables, but function symbols, such as Soufflé (Jordan, Scholz, and Su- botic 2016) or Gringo (Gebser et al.
+2019), one can replace existential variables by skolemisation, effectively executing a skolem chase.
+For example, rule 14 can be skolemised as follows.
+15 p(?Y,f(?Y)), p(f(?Y),?Y) :- p(?X,?Y).
+However, the skolem chase does not always terminate on rule 14.
+Consider for example the fact p(a,b).
+The skolem chase introduces infinitely many facts p(b,f(b)), p(f(b),b), p(f(b),f(f(b))), p(f(f(b)),f(b)), ....
+For the restricted chase, this is impossible as the facts p(a,b), p(b,n), p(n,b) already satisfy rule 14 (where 𝑛 is a fresh null).
+Therefore, Nemo has a termination advant- ageoverreasonersthatonlyallowrunning(orsimulating)the skolemchase.ThisisnotexclusiveforNemothoughasother reasoners, e.g., VLog (Carral et al.
+2019a), also implement the restricted chase.
+While thechaseisconceptuallysimple,largedatasetsde- mand efficient and sophisticated implementations.
+Practic- ally motivated research in this direction optimises, e.g., rule application orders or join algorithms (González et al.
+2022; Veldhuizen2014).Forempiricalevaluation,thereexistsaset of common benchmarks (Benedikt et al.
+2017)7.
+As Nemo nativelysupportsexistentialrules,itiseasytoimplementthe respective programs and compare to existing reasoners.
+We give a detailed evaluation in Section 5 together with more details on existing reasoning systems.
+4.2 KnowledgeGraphProcessing Reasoning with (large) knowledge graphs is an important task in KRR, semantic web, and data management, which alsodrivesdevelopmentofrulereasoningsystems(Nenovet al.2015;Abergeretal.2017;Seo,Guo,andLam2015).Rel- evantusecasesincludefreeandopenknowledgegraphssuch asWikidata(VrandečićandKrötzsch2014),DBpedia(Bizer et al.
+2009), YAGO (Suchanek et al.
+2024), or DBLP,8 but alsographs-baseddatamanagementandintegrationprojects incompanies.Mainchallengesforreasonersarefullsupport for data exchange standards such as RDF (Cyganiak, Wood, and Lanthaler 2014), and handling very large amounts of data,e.g.,billionsoffactsin the case ofWikidata.
+Since RDF entities are first-class citizens in Nemo, it is well-suited to interact with modern knowledge graphs, for which RDF is the most common exchange format today.
+Thanks to the efficient underlying implementations, Nemo canindeedhandleknowledgebaseswithhundredsofmillions or billions of facts, provided that sufficient main memory is available(see Section 5).
+As a concrete illustration of a practically relevant pro- cessing task on knowledge graphs, we consider the creation process of the recent YAGO 4.5 knowledge base (Suchanek et al.
+2024).
+YAGO is constructed as a curated subset of Wikidata with improved ontological models and additional links to external ontological vocabularies.
+The ontology modelling follows several design principles, including that ofavoidingredundancyindata.Aparticularcaseareinverse properties, which may store the same information in two 7https://github.com/knowsys/nemo-examples/tree/main/ chasebench 8https://dblp.org/rdf/ facts.
+For example, persons may have a nationality whereas countries may have citizens.
+To select which of two inverse properties to keep, YAGO proposes to prefer the property that, on average, has fewer values (in our example, nation- ality rather than citizen).
+While YAGO 4.5 was created by performing this analysis in ad hoc scripts, it is also an ex- cellent use case for aggregates and numeric data in Nemo, as shown in the following set of rules, where predToKeep denotes preferred properties.
+16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 @prefix wikibase: <http://wikiba.se/ontology#>.
+@prefix wdt: <http://www.wikidata.org/prop/direct/>.
+@import wikidata :- {resource="wikidata.nt.gz"}.
+inversePropEntities(?s,?o) :- wikidata(?s,wdt:P1696,?o), COMPARE(STR(?s),STR(?o)) = -1.
+inverse(?p1,?p2) :- inversePropEntities(?e1,?e2), wikidata(?e1,wikibase:directClaim,?p1), wikidata(?e2,wikibase:directClaim,?p2).
+pred(?s) :- inverse(?s,_).
+pred(?o) :- inverse(_,?o).
+objCountPerPredAndSource(?p,?s,#count(?o)) :- pred(?p), wikidata(?s,?p,?o).
+totalSubjCountPerPred(?p,#count(?s)) :- objCountPerPredAndSource(?p,?s,_).
+avgObjCountPerPredicate(?p, DOUBLE(#sum(?count,?s)) / ?totalSubj) :- objCountPerPredAndSource(?p,?s,?count), totalSubjCountPerPred(?p,?totalSubj).
+rightSmaller(?right) :- inverse(?left,?right), avgObjCountPerPredicate(?left,?countLeft), avgObjCountPerPredicate(?right,?countRight), ?countRight < ?countLeft.
+predToKeep(?right) :- rightSmaller(?right).
+predToKeep(?left) :- inverse(?left,?right), 51~rightSmaller(?right).
+In line 21, we load all Wikidata triples into the ternary wikidata predicate.
+Line 23 extracts property names that are inverses of each other (encoded in Wikidata through the propertywdt:P1696).Here,weignorepropertiesthatarethe inverses of themselves and we only pick the pairs of proper- ties where the left hand side is lexicographically smaller to avoidintroducingbothdirectionsofsymmetries.This,sofar, only marks property entities in Wikidata and notthe corres- pondingRDFproperties,whichweinturnlookupinrule26.
+Foraconvenientwayofaccessingallrelevantpredicates,we introduce pred in lines 30 and 31.
+Line 33 counts the num- berofobjectspersubjectandrelevantpredicatetobeableto computetheaveragenumberofobjectspersubjectinrule38.
+Inline43,foreverypairofinverseproperties,wemarkthose ontherightsideoftherelationwheretheaverageobjectper 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 subjectcountissmaller.Ifthisconditionisfulfilled,wewant to keep the respective property, which we indicate through rule 49.
+Otherwise, we keep the left property using rule 50.
+Then,predToKeep containsexactlythepropertiesdesiredby the YAGO 4.5 analysis.9 4.3 Reasoner Prototyping Thankstothevariouslanguagefeatures,particularlysupport for existentials, in Nemo, we can have (prototypical) imple- mentationsofreasoningalgorithmsformanyKRformalisms, e.g.
+for OWL (OWL Working Group 2009) (description lo- gic)ontologies,DatalogMTL(Brandtetal.2018),standpoint logic (Gómez Álvarez, Rudolph, and Strass 2023), Data- log(S) (Carral et al.
+2019b), and stream reasoning (Urbani, Krötzsch, and Eiter 2022).
+EL-Reasoning EL (Baader, Brandt, and Lutz 2005) is a rathersimpleclassofdescriptionlogicontologiesthatallows forefficientreasoningimplementations(Kazakov,Krötzsch, and Simančík 2013) based on only a few “rules”.
+To be pre- cise, we consider rules for EL+ ⊥.
+In fact, these rules can be represented in Datalog.
+Given an OWL ontology in RDF (NTriples) format, the necessary preprocessing can also be done directly within Nemo.10 The preprocessing yields the following tables: isMainClass, isSubClass, conj, exists, subClassOf, subPropChain, subProp.
+We can then exhaust- ivelycomputeall(implicit)subclassrelationswithintheon- tology and identify when two main classes are in a subclass relation by utilisingthefollowingNemorules.
+init(?C) :- isMainClass(?C) .
+init(?C) :- ex(?E,?R,?C) .
+subClassOf(?C,?C) :- init(?C) .
+subClassOf(?C,owl:Thing) :- isMainClass(?C) .
+subClassOf(?C,?D1), subClassOf(?C,?D2) :- subClassOf(?C,?Y), conj(?Y,?D1,?D2) .
+subClassOf(?C,?I) :- subClassOf(?C,?D1), subClassOf(?C,?D2), conj(?I,?D1,?D2), isSubClass(?I) .
+ex(?E,?R,?C) :- subClassOf(?E,?Y), exists(?Y,?R,?C) .
+subClassOf(?E,?Y) :- ex(?E,?R,?C), subClassOf(?C,?D), subProp(?R,?S), exists(?Y, ?S,?D), isSubClass(?Y) .
+ex(?E,?S,?D) :- ex(?E,?R1,?C), ex(?C,?R2,?D), subProp(?R1,?S1), subProp(?R2,?S2), subPropChain(?S1,?S2,?S) .
+subClassOf(?C,?E) :- subClassOf(?C,?D), subClassOf(?D,?E) .
+subClassOf(?E, owl:Nothing) :- ex(?E,?R,?C), subClassOf(?C,owl:Nothing) .
+mainSubClassOf(?A,?B) :- subClassOf(?A,?B), isMainClass(?A), isMainClass(?B) .
+9The Wikidata/Yago 4.5 example and the corresponding out- puts are available at https://github.com/knowsys/nemo-examples/ tree/main/examples/wikidata-yago-like-inverse-property-cleanup 10https://github.com/knowsys/nemo-examples/blob/main/ examples/owl-el/from-owl-rdf/owl-rdf-preprocessing.rls 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 The intuition of the predicates from the program is as follows: init(?C) contains all relevant OWL classes ?C; subClassOf(?X,?Y) expresses that ?X is a subclass of ?Y; ex(?X,?R,?Y) expresses that every element of class ?X is connected to an element of ?Y via an ?R property; and mainSubClassOf(?X,?Y) expresses a subclass relation between twomain classes ?X and ?Y.
+DatalogMTL DatalogMTL (Brandt et al.
+2018) extends Datalogwithmetrictemporallogicoperatorsthatindicateif a fact holds sometimes/always in the future/past, potentially restricted to the scope of a given interval.
+For DatalogMTL programs with closed intervals, we give a translation into a Nemo program by explicitely annotating time points at predicates.
+We illustrate this idea with an example from the MeTeoR DatalogMTL-reasoner(Wangetal.
+2022).11 Example 1.
+This example checks if two sensors indicate high temperatures for a long enough interval or with a high enough frequency.12 Overheat(𝑥)←⊟[0,10]HighTemp(𝑥) (1) Overheat(𝑥)←⊟[0,20]−[0,5.5]HighTemp(𝑥) (2) Alert ←Overheat(𝑥)∧Overheat(𝑦)∧NextTo(𝑥,𝑦) (3) Intuitively,asensorreportsOverheatifitreportsHighTemp constantly for an interval of 10 minutes (⊟[0,10]) or at least once every 5.5 minutes (−[0,5.5]) within the last 20 minutes (⊟[0,20]).AnAlertisraisediftwosensorsNextToeachother report Overheat.
+ThefollowingNemoprogramisarule-by-ruletranslation.
+Notethatwesplitthesecondruleintotwotodisentanglethe nested boxanddiamond operator.
+Overheat(?Sensor,?Start + 10.0,?End) :- HighTemp(?Sensor,?Start,?End), ?End - ?Start >= 10.0.
+HighTempSometimes(?Sensor,?Start,?End + 5.5) :- HighTemp(?Sensor,?Start,?End).
+Overheat(?Sensor,?Start + 20.0,?End) :- HighTempSometimes(?Sensor,?Start,?End), ?End - ?Start >= 20.0.
+Alert(?SensorA,MAX(?sA,?sB),MIN(?eA,?eB)), Alert(?SensorB,MAX(?sA,?sB),MIN(?eA,?eB)) :- Overheat(?SensorA,?sA,?eA), Overheat(?SensorB,?sB,?eB), SameLocation(?sA,?sB), ?sA <= ?eB, ?sB <= ?eA.
+Depending on the input facts, it can be vital to have aux- iliary rulesfor merging intervals,e.g.
+HighTempSometimes(?Sensor,?sA,?eB) :- HighTempSometimes(?Sensor,?sA,?eA), HighTempSometimes(?Sensor,?sB,?eB), ?sA <= ?eB, ?sB <= ?eA, ?sA <= ?sB, ?eA <= ?eB.
+11https://github.com/wdimmy/MeTeoR 12https://github.com/knowsys/nemo-examples/blob/main/ examples/datalogMtlSensor/datalogMtlSensor.rls Otherwise,wemaynotdetectOverheatforasensorlike: 99 100 101 102 103 HighTemp("sensor2",3.5,3.5).
+HighTemp("sensor2",5.1,5.1).
+HighTemp("sensor2",10.0,10.0).
+HighTemp("sensor2",14.7,14.7).
+HighTemp("sensor2",20.0,20.0).
+The translation has some limitations.
+Currently open in- tervals are not supported but could potentially be modelled withadditionalrules.Also,forprogramswithperiodicsolu- tions,Nemomightrunintoterminationissues.Non-recursive programswith closedintervalsarefullysupported.
+Other Translations into Existential Rules For many other KR formalisms, translations intoexistentialrules have alreadybeenstudied.Wecandirectlyusethesetorunthere- spective formalisms within Nemo.
+No (further) restrictions tofragmentsoftherespectiveformalismsarenecessary.This subsection lists a few suchideasfrom different KRareas.
+Stream reasoning is a temporal reasoning setting that re- ceivesitsnamefromsupportingstreamsofinputdata.Fora common stream reasoning framework, called LARS (Beck, Dao-Tran, and Eiter 2018), recent work shows a translation intoexistentialrules(Urbani,Krötzsch,andEiter2022)that preserves the semantics andcandirectlybe usedin Nemo.
+Standpoint logic is a multi-modal framework that allows reasoningwithdifferentinterprationsofthesameunderlying ontology.
+It is in itself applicable to many other KR form- alisms.
+For example, it allows the creation of the standpoint description logic standpoint EL (Gómez Álvarez, Rudolph, andStrass2023).SimilartotheEL reasoningideadiscussed earlierinthissection,wecanleverageatranslationintoexist- entialrulestosupportstandpointEL reasoningwithinNemo.
+Datalog(S) extends plain Datalog with a datatype for sets (Carral et al.
+2019b).
+The introducing paper also de- scribes a translation into existential rules.
+Thereby, a set datatype could be augmented in Nemo as well.
+In the fu- ture,westillplantohaveanativesetdatatypeforefficiency.
+5 Evaluation In this section, we compare Nemo to several state-of-the-art systems, and investigate the feasibility of using Nemo on very large knowledge graphs.
+The goal of our comparative evaluation is to position Nemo in relation to other highly advanced systems, with a particular focus on features that Nemoisaimedat.Inparticular,theevaluationshouldnotbe misunderstood as an absolute ranking of systems: each sys- tem has additional strengths beyond those considered here, which makeit superiorfor corresponding usecases.
+Toselectarepresentativesetofsystemstocompareto,we focusonactivelydeveloped,maturesystemsfromarangeof application areas.
+We havearrived atthe followinglist: Soufflé Originally developed for rule-based program ana- lysis (Jordan, Scholz, and Subotic 2016), Soufflé is one of most active and advanced open-source Datalog reasoners today,withmanyadditionalfeatures.Itistheonlytoolinour list that supports a special compiled mode, where rule sets are first transformed into C programs, which that are then compiled to obtain an optimisedreasoner.
+Gringo DevelopedasthegrounderfortheASPtoolclingo (Gebseretal.2019),thissystemisinfactahigh-performing Datalog engine in its own right.
+It also supports a variety of language featuresfrom ASP.
+RDFox Evolved from an academic open-source system (Nenov et al.
+2015), RDFox has been developed into a ma- turecommercialproductinrecentyears.Ithasastrongfocus on the RDF data model and knowledge graph processing.
+RDFoxis not open-source software.
+VLog Designed as a plain Datalog engine and existential rule reasoner, VLog also provides basic RDF compatibility andcanprocesslargeknowledgegraphs(Carraletal.2019a).
+SomeofthebasicimplementationapproachesinNemowere based on our earlier experience with VLog, making it espe- cially interesting for comparing performance.
+5.1 Feature Comparison We qualitatively compare the chosen systems with respect to their overall features, and have compiled the results in Table 1.
+The information in this table is taken from the on- linedocumentationoftheindividualtools.Somecommonas- pectswerenotmentioned,e.g.,allsystemsaremain-memory based and rely on materialisation (bottom-up reasoning) as their mainapproach.
+Most features listed in Table 1 should be self-explaining.
+All systems except VLog have had recent releases, and all providearangeofAPIsanduserinterfaces.Soufflémentions aWebinterfaceonitswebsite,buttheserverwasunreachable at the time of this writing.
+Besides Nemo, also Clingo and SouffléofferVSCodeextensions.Nemo,RDFox,andSoufflé all have tracing capabilitiesthat returnsingleprooftrees.
+We distinguish basic types for simple data literals from complex types, which represent structured data objects.
+We omit some details, e.g., the fact that some tools have several integer types.
+The row RDF types states if a tool can handle the rich set of types in the RDF standard, syntactically and semantically,VLogisspecialhereinthatitcanprocessRDF syntax faithfully, but internally treats all values as strings.
+The type model states if a tool accepts arbitrary data in all contexts (dynamic) or requires a fixed schema to be given withthe rules (static).
+All tools support negation, and all except VLog support someformofaggregation.Bothfeaturesdotypicallyrequire stratification, unless clingo is used for full ASP reasoning.
+RDFox has by far the largest list of supported aggregates, not fully listed in the table.
+Gringo supports a special sum+ aggregate that computes a monotonic sum by ignoring neg- ative values, which is useful with recursive, non-stratified aggregates(whichtheothertoolsdonotallow).Alltoolscan simulate existential rules, sometimes with effort on the user side,butonlyNemoandVLogseemtosupportthestandard (restricted) chase.
+Nemo and RDFox feature the largest sets of built-in functions, whereas Gringo and Soufflé provide extension points for defining own functions by custom im- plementations.AlltoolsexceptGringocanimportdatafrom Nemo Gringo/Clingo RDFox Soufflé VLog Latest version 0.5.1 (Jun2024) 5.7.1 (Feb 2024) 7.1b (Jul 2024) 2.4.1 (Nov 2023) 1.3.6 (Dec2022) License Apache2.0/MIT MIT proprietary UPL 1.0 Apache 2.0 Language Rust C++ C++ C++ C++ Further APIs Python, JavaScript Rust, Python, Java, Haskell, Prolog, JavaScript Java, HTTP, SPARQL Java, Python Java UIs command-line, Web (WASM) command-line, Web (WASM) command-line, shell, REST command-line, Web (unavailable) command-line IDEs VS Code VS Code — VS Code — Rule processing interpreted interpreted interpreted interpreted, compiled interpreted Explanation proof tree — proof tree proof tree — Basictypes int, str, float, bool int, str int, str, float, bool int, str, float, bool str Complex types— function terms dates/times records, function termsa— RDF types ✓— ✓ — (✓) only insyntax Data model relational relational triple/quad relational relational Typemodel dynamic dynamic dynamic static dynamic Negation stratified arbitrary stratified stratified stratified Aggregation stratified arbitrary stratified stratified — Aggregates sum, count, min, max sum(+), count, min, max sum, count, min, max, avg, sample, ...
+sum, count, min, max — Existentials ✓(standard) — (skolemb) — (skolemc) — (skolemb) ✓(standard,skolem) Functions arithmetic, string, SPARQL arithmetic, user-defined arithmetic, string, SPARQL arithmetic, string, user-defined — Imports DSV, RDF (all) — DSV,RDF (all) DSV, sqlite3 CSV, N-triples Exports DSV, RDF (all) facts, smodels facts, RDF (all), SPARQL DSV, sqlite3 CSV IOfeatures gzip, URL import — DBMS sources gzip gzip, SPARQLimport aFunctionterms can be emulated in Soufflé with user-declaredAlgebraicDataTypes.
+bUsers cansimulate a skolemchase by manually creating skolem function terms.
+cThe currentRDFoxmanual does not mention existentials, but the functionSKOLEM could be used to mint skolem terms manually.
+Table1: Feature Comparison of SeveralRelated Systems filesinotherformats,andRDFoxfurtherprovidesconnectors todatabasebackends.Intheserows,DSV denotesdelimiter- separated values (including CSV and TSV), whereas RDF (all)standsfor all RDFquadand triple syntaxes.
+In summary, we find that all analysed systems in- clude many application-oriented features, that support their claimedmaturityandillustratetheirdifferentapplicationfo- cus.
+VLog is the most limited, but we note that its Java API Rulewerk(formerlyVlog4j,(Carraletal.2019a))addsfurther features not mentionedhere,e.g., reading all RDF formats.
+5.2 Performance Evaluation Next,weevaluatetheoverallreasoningperformanceofNemo onmaterialisationtasksforDatalogandexistentialrules.Our measurements are performed on a regular notebook (Dell XPS 13; Ubuntu Linux 22.04; Intel i7-1165G7@2.80GHz; 16GB RAM; 512 GB SSD).
+For this evaluation, we con- sider the command-line clients of all open-source systems discussed in Section 5.1, and additionally Nemo Web (Fire- fox v125.0).
+For Soufflé, we evaluate the rule interpreter (i) andthecompiledmode(c).WedonotevaluateRDFoxhere, sinceourrequestforanacademiclicensehasnotbeengran- tedat the timewhen this research was conducted.13 For benchmarking plain Datalog, we consider the OWL reasoning implementation of Section 4.3 for medical onto- logies Galen (EL version by Kazakov, Krötzsch, and Si- mančík (2013)) and a version of SNOMED CT (a large proprietary ontology).
+The OWL EL reasoner is a versatile and challenging benchmark for plain Datalog, as it includes strongrecursive dependencies and longer rule bodies.
+For existential rules, we consider several tasks from the chase benchmark of Benedikt et al.
+(2017).
+Both Doctors- 13RDFox is a product of Oxford Semantic Technologies, which has been acquired by Samsung during the time of this writing (https://www.oxfordsemantic.tech/blog/samsung-electronics- announces-acquisition-of-oxford-semantic-technologies-uk-based- knowledge-graph-startup).Thismayexplainthepossiblytemporary disruption in the usual licensing process.
+Galen 12 143,480 1,881,946 5.4 8.8 22.0 13.7 10.4 42.7 Benchmark SNOMED CT Ont-256 Deep-100 Rules 12 529 1100 Input 1,554,340 2,146,490 1,000 Derivations Nemo 24,428,006 5,673,985 20,262 Nemo Web 76.4 14.2 3.1 Gringo 129.6 29.2 5.4 Soufflé (i) 95.4 23.9 0.3 Soufflé(c) 157.5 19.2 27.6 114.9 14.9 timeout VLog oom 22.2 23.2 Doctors-1M 5 9,515,900 792,500 3.3 5.8 7.1 2.4 2.0 2.9 LUBM-01k 136 133,573,854 186,742,694 167.6 oom oom 170.4 145.7 188.4 Deep-200 1200 1,000 982,501 8.0 13.9 timeout timeout timeout timeout Table2:Numberof rules, input facts, derivations,and materialisation times in seconds (timeout: 30min, oom: out of memory) 1M and Ont-256 are benchmarks for data integration; LUBM-01K is a widely used synthetic benchmark for se- mantic web reasoning; and Deep-100 and Deep-200 are two versions of a synthetic benchmark for existential rules de- signed to exhibit worst-case complexity.
+All of the bench- marks terminate underskolem and restricted chase.
+Rules and inputs have been adopted to the capabilities of the various systems.
+Data was provided in gzipped CSV files, except for Gringo, which received a list of facts.
+Ex- istential rules used the native restricted chase implement- ation for Nemo and VLog, and were manually skolemised for the other systems.
+In Soufflé, this required a new algeb- raic type with a case for each skolem function.
+In general, the skolem chase is easier to compute than the restricted chase, but can lead to more redundant results (Benedikt et al.2017).Programs,datasets(exceptSNOMED),andmeas- urements for each system are online at https://github.com/ knowsys/nemo-examples/tree/main/evaluations/kr2024.
+Table 2 shows statistics about the benchmarks, and total runtimes (averaged across three runs), including both load- ing and reasoning.
+Compilation time for Soufflé (c) is not included.
+Fastest times are highlighted in bold for each benchmark.
+With existential rules, the number of deriva- tions may vary depending on the used chase algorithms and internal choices regarding the application order of the rules, but were still very similar across systems (shown numbers are for Nemo).
+Command-line clients could use all system memory, whereas Nemo Web is restricted to less than 4GB (WebAssemblybeing32bit).
+All tested systems show very good performance on this limitedhardware.Whilesomebenchmarksseemparticularly difficult(SNOMED,LUBM,DEEP),eachsystemshowsspe- cific strengths and weaknesses, which illustrates the great variance of underlying implementation methods.
+Surpris- ing cases include Deep-100, where Gringo is extremely fast (andcorrect),andinterpretedSouffléissuperiortothecom- piled version.
+Gringo struggles with very large input data (LUBM-01K), but can still show excellent performance on big ontologies (SNOMED CT).
+Moreover, we observe that theperformanceadvantageofSoufflé’scompiledcodeisnot decisive.
+Nemo’sgenerallyfareswellinthecomparison,withsigni- ficantperformanceadvantagesonplainDatalogandcomplex existentialrulesets,andverygoodoverallconsistencyacross all tests.
+Nemo Web also performs very well for a system- independent,browser-basedapplication,andisjust1.6−2.0 times slowerthan the command-lineclient.
+5.3 Processing LargeKnowledgeGraphs TodemonstrateNemo’sabilitytohandleverylargedatasets, werantheprogramforselectinginversepropertiesdescribed in Section 4.2 on an RDF dump of Wikidata.
+We used the Wikidata “truthy” dump of 11 May 2024, which contains 8.1billionRDFtriples(61GBingzippedN-Triplesformat).
+A laptop does not suffice here, so we run on a mid-range server (Linux NixOS 23.11; 2×QuadCore Intel Xeon E5- 2637@3.5GHz; 768GiB RAM; 2x3.5TB SSD).
+Nemocouldcompletethereasoningtaskinabout8hours.
+Of this time, 475 min were spent on parsing the input RDF file and creating sorted index structures, and 9.6 min were used for the actual execution of rules.
+Nemo’s static query optimiser chose to index all data in two orders, and 93min of the 475min were used to build this (possibly avoidable) second ordering.
+The two indices required a total of 220GB of memory(notcounting the string dictionary).
+The overall performance makes the use of Nemo feasible inpractice,alsogiventhecomplexityoftherules(withjoins, string comparisons, arithmetic operations, and aggregates).
+Forcontext,processingofWikidataforYago4.5tookabout 12 hours (Suchanek et al.
+2024) (note that this is not the same computational task, but it shows the typical time scale of such analyses).
+We see a lot of potential in optimising furtherforsuchverylargedatasets,e.g.,byparallelisingIO.
+6 Conclusions Nemo is not just a single application, but a comprehensive frameworkforrulereasoning,whichincludesascalablerule engine, a feature-rich rule language, and advanced user in- terfaces with state-of-the-art developer support.
+We demon- strate how Nemo can be of use in a wide variety of applica- tions from the KR community.
+In spite of its many features, Nemo exhibits competitive and reliable performance on di- verse benchmarks.
+NextonNemo’sroadmapareimprovementsontheawide variety of aspects of the overall toolkit.
+Regarding express- ivepower,weplantoenhanceNemowithnativesupportfor complextypes,suchasfunctiontermsandsets.User-defined functions are considered as a way to add further flexibil- ity and unlock additional use cases.
+Moreover, we consider the support for non-stratified uses of aggregates, while still maintaining declarativity.
+Regarding performance, Nemo is currently running in a single thread, and multi-threaded reasoning is a natural step to boost performance further.
+Especially in developer tools and the Nemo Web application, highlighting static analysis resultsofprograms,suchasruledependencies,andimproved supportfortracingwillnotonlysimplifydebuggingbuthelp to achieve a more robust and explainable reasoning system.
+In this respect, we also see the incorporation of techniques for(non-)terminationdetectionwithinthescopeoftheNemo toolkit.
+We hope that our efforts in making Nemo as robust and convenient as possible will inspire further uses in the KRcommunity.Wewelcomefeedback,featurerequests,and code contributions inour public repositories.
+Acknowledgments This work is partly supported by Deutsche Forschungsge- meinschaft (DFG, German Research Foundation) in project number 389792660 (TRR 248, Center for Perspicuous Sys- tems),bytheBundesministeriumfürBildungundForschung (BMBF, Federal Ministry of Education and Research) un- der European ITEA project 01IS21084 (InnoSale, Innovat- ing Sales and Planning of Complex Industrial Products Ex- ploitingArtificalIntelligence)andintheCenterforScalable Data Analytics and Artificial Intelligence (ScaDS.AI), and by BMBF and DAAD (German Academic Exchange Ser- vice)inproject57616814(SECAI,SchoolofEmbeddedand Composite AI).
+References Aberger, C.
+R.; Tu, S.; Olukotun, K.; and Ré, C.
+2016.
+EmptyHeaded: A relational engine for graph processing.
+In Özcan, F.; Koutrika, G.; and Madden, S., eds., Proc.
+2016 ACMSIGMODInt.Conf.onManagementofData,431–446.
+ACM.
+Aberger, C.
+R.; Lamb, A.; Tu, S.; Nötzli, A.; Olukotun, K.; andRé,C.2017.Emptyheaded:Arelationalengineforgraph processing.
+ACM Trans.Database Syst.
+42(4):20:1–20:44.
+Abiteboul,S.;Hull,R.;andVianu,V.
+1994.
+Foundationsof Databases.
+AddisonWesley.
+Alviano, M., and Pieris, A., eds.
+2024.
+Selected Papers fromDatalog2.02022,volume24(2)ofTheoryPract.Log.
+Program.
+Cambridge UniversityPress.
+Alviano, M.; Calimeri, F.; Faber, W.; Leone, N.; and Perri, S.
+2011.
+Unfounded sets and well-founded semantics of answer set programs with aggregates.
+J.
+Artif.
+Intell.
+Res.
+42:487–527.
+Alviano, M.; Calimeri, F.; Dodaro, C.; Fuscà, D.; Leone, N.; Perri, S.; Ricca, F.; Veltri, P.; and Zangari, J.
+2017.
+The ASP system DLV2.
+In Balduccini, M., and Janhunen, T., eds., Proc.
+14th Int.
+Conf.
+on Logic Programming and Nonmonotonic Reasoning (LPNMR’17), volume 10377 of LNCS, 215–221.
+Springer.
+Aref, M.; ten Cate, B.; Green, T.
+J.; Kimelfeld, B.; Olteanu, D.; Pasalic, E.; Veldhuizen, T.
+L.; and Washburn, G.
+2015.
+Design and implementation of the LogicBlox system.
+In Sellis, T.; Davidson, S.; and Ives, Z., eds., Proc.
+2015 ACM SIGMOD Int.Conf.on Mngmt of Data, 1371–1382.
+Baader, F.; Brandt, S.; and Lutz, C.
+2005.
+Pushing the EL envelope.
+InKaelbling,L.,andSaffiotti,A.,eds.,Proc.19th Int.
+Joint Conf.
+on Artificial Intelligence (ĲCAI’05), 364– 369.
+Professional Book Center.
+Baget,J.;Leclère,M.;Mugnier,M.;Rocher,S.;andSipieter, C.2015.Graal:Atoolkitforqueryansweringwithexistential rules.
+InBassiliades,N.;Gottlob,G.;Sadri,F.;Paschke,A.; and Roman, D., eds., Proc.
+9th Int.
+Web Rule Symposium (RuleML’15),volume9202 of LNCS,328–344.
+Springer.
+Beck,H.;Dao-Tran,M.;andEiter,T.
+2018.
+LARS:Alogic- based framework for analytic reasoning over streams.
+Artif.
+Intell.
+261:16–70.
+Beeri, C., and Vardi, M.
+Y.
+1981.
+The implication problem fordatadependencies.
+InEven,S.,andKariv,O.,eds.,Proc.
+8thColloquiumonAutomata,LanguagesandProgramming (ICALP’81),volume 115ofLNCS,73–85.
+Springer.
+Bellomarini, L.; Sallinger, E.; and Gottlob, G.
+2018.
+The Vadalog system: Datalog-based reasoning for knowledge graphs.
+Proc.
+VLDB Endowment 11(9):975–987.
+Benedikt, M.; Konstantinidis, G.; Mecca, G.; Motik, B.;Pa- potti,P.;Santoro,D.;andTsamoura,E.
+2017.
+Benchmarking the chase.
+In Proc.
+36th Symp.
+on Principles of Database Systems(PODS’17),37–52.
+ACM.
+Bizer, C.; Lehmann, J.; Kobilarov, G.; Auer, S.; Becker, C.; Cyganiak, R.; and Hellmann, S.
+2009.
+DBpedia – A crys- tallization point for the Web of Data.
+J.
+of Web Semantics 7(3):154–165.
+Bourgaux, C.; Carral, D.; Krötzsch, M.; Rudolph, S.; and Thomazo, M.
+2021.
+Capturing homomorphism-closed de- cidablequerieswithexistentialrules.InBienvenu,M.;Lake- meyer, G.; and Erdem, E., eds., Proceedings of the 18th In- ternational Conference on Principles of Knowledge Repres- entation and Reasoning, KR 2021, Online event, November 3-12, 2021,141–150.
+Brandt, S.; Kalayci, E.
+G.; Ryzhikov, V.; Xiao, G.; and Za- kharyaschev, M.
+2018.
+Querying log data with metric tem- poral logic.
+J.Artif.
+Intell.
+Res.
+62:829–877.
+Calimeri, F.; Faber, W.; Gebser, M.; Ianni, G.; Kaminski, R.;Krennwallner,T.;Leone,N.;Maratea,M.;Ricca,F.;and Schaub,T.2020.ASP-Core-2inputlanguageformat.Theory Pract.
+Log.
+Program.20(2):294–309.
+Carral, D.; Dragoste, I.; González, L.; Jacobs, C.; Krötzsch, M.;andUrbani,J.2019a.VLog:Aruleengineforknowledge graphs.
+In Ghidini et al., C., ed., Proc.
+18th Int.
+Semantic Web Conf.
+(ISWC’19, Part II), volume 11779 of LNCS, 19– 35.
+Springer.
+Carral, D.; Dragoste, I.; Krötzsch, M.; and Lewe, C.
+2019b.
+Chasing sets: How to use existential rules for expressive reasoning.
+In Kraus, S., ed., Proc.
+28th Int.
+Joint Conf.
+on Artificial Intelligence (ĲCAI’19),1624–1631.
+ĳcai.org.
+Carral, D.; Dragoste, I.; and Krötzsch, M.
+2017.
+Restricted chase(non)terminationforexistentialruleswithdisjunctions.
+In Sierra, C., ed., Proc.
+26th Int.
+Joint Conf.
+on Artificial Intelligence (ĲCAI’17),922–928.
+ĳcai.org.
+Cuenca Grau, B.; Horrocks, I.; Krötzsch, M.; Kupke, C.; Magka,D.;Motik,B.;andWang,Z.
+2012.
+Acyclicitycondi- tionsandtheirapplicationtoqueryansweringindescription logics.
+In Brewka, G.; Eiter, T.; and McIlraith, S.
+A., eds., Proc.13thInt.Conf.onPrinciplesofKnowledgeRepresent- ation and Reasoning (KR’12),243–253.
+AAAI Press.
+Cyganiak,R.;Wood,D.;andLanthaler,M.,eds.
+2014.
+RDF 1.1 Concepts and Abstract Syntax.
+W3C Recommendation.
+Availableathttp://www.w3.org/TR/rdf11-concepts/.
+Deutsch, A.; Nash, A.; and Remmel, J.
+B.
+2008.
+The chase revisited.
+In Lenzerini, M., and Lembo, D., eds., Proc.
+27th Symp.
+on Principles of Database Systems (PODS’08), 149– 158.
+ACM.
+Elhalawati, A.; Krötzsch, M.; and Mennicke, S.
+2022.
+An existential rule framework for computing why-provenance on-demand for datalog.
+In Governatori, G., and Turhan, A., eds., Proc.
+2nd Int.
+Joint Conf.
+on Rules and Reason- ing (RuleML+RR’22), volume 13752 of LNCS, 146–163.
+Springer.
+Ellmauthaler, S.; Krötzsch, M.; and Mennicke, S.
+2022.
+Answering queries with negation over existential rules.
+In Proc.
+36th AAAI Conf.
+on Artificial Intelligence (AAAI’22), 5626–5633.
+Fagin, R.; Kolaitis, P.
+G.; Miller, R.
+J.; and Popa, L.
+2005.
+Dataexchange:semanticsandqueryanswering.
+Theoretical ComputerScience336(1):89–124.
+Fredkin, E.
+1960.
+Trie memory.
+Commun.
+ACM 3(9):490–499.
+Gebser, M.; Kaminski, R.; Kaufmann, B.; and Schaub, T.
+2019.
+Multi-shot ASP solving with clingo.
+Theory Pract.
+Log.
+Program.
+19(1):27–82.
+Gebser, M.; Kaufmann, B.; and Schaub, T.
+2012.
+Conflict- driven answer set solving: From theory to practice.
+Artif.
+Intell.
+187:52–89.
+Gerlach, L., and Carral, D.
+2023a.
+Do Repeat Yourself: Understanding Sufficient Conditions for Restricted Chase Non-Termination.
+In Proceedings of the 20th International Conference on Principles of Knowledge Representation and Reasoning, 301–310.
+Gerlach, L., and Carral, D.
+2023b.
+General acyclicity and cyclicity notions for the disjunctive skolem chase.
+In Willi- ams,B.;Chen,Y.;andNeville,J.,eds.,Thirty-SeventhAAAI Conference on Artificial Intelligence, AAAI 2023, Thirty- Fifth Conference on Innovative Applications of Artificial In- telligence,IAAI2023,ThirteenthSymposiumonEducational AdvancesinArtificialIntelligence, EAAI 2023,Washington, DC, USA, February 7-14,2023, 6372–6379.
+AAAIPress.
+Gogacz, T., and Marcinkowski, J.
+2014.
+All-instances ter- minationofchaseisundecidable.
+InEsparza,J.;Fraigniaud, P.;Husfeldt,T.;andKoutsoupias,E.,eds.,Proc.41stInt.Col- loquium on Automata, Languages, and Programming (IC- ALP’14);PartII,volume8573ofLNCS,293–304.
+Springer.
+Gogacz, T.; Marcinkowski, J.; and Pieris, A.
+2020.
+All- instancesrestrictedchasetermination.
+InProceedingsofthe 39th ACM SIGMOD-SIGACT-SIGAI Symposium on Prin- ciplesofDatabaseSystems,PODS’20,245–258.
+NewYork, NY, USA:AssociationforComputingMachinery.
+González, L.; Ivliev, A.; Krötzsch, M.; and Mennicke, S.
+2022.
+Efficient dependency analysis for rule-based onto- logies.
+In Sattler, U.; Hogan, A.; Keet, M.; Presutti, V.; Almeida, J.
+P.
+A.; Takeda, H.; Monnin, P.; Pirrò, G.; and d’Amato, C., eds., Proc.
+21st International Semantic Web Conference(ISWC2022),volume13489ofLNCS,267–283.
+Springer.
+Grahne, G., and Onet, A.
+2018.
+Anatomy of the chase.
+Fundam.
+Inform.
+157(3):221–270.
+GómezÁlvarez,L.;Rudolph,S.;andStrass,H.
+2023.
+Push- ing the boundaries of tractable multiperspective reasoning: A deduction calculus for standpoint EL+.
+In Marquis, P.; Son,T.C.;andKern-Isberner,G.,eds.,Proc.20thInt.Conf.
+on Principles of Knowledge Representation and Reasoning (KR’23),333–343.
+ĲCAI.
+Hanisch, P., and Krötzsch, M.
+2024.
+Chase termination beyond polynomialtime.
+Proc.
+ACM Manag.
+Data 2(2):93.
+Harris, S., and Seaborne, A.,eds.
+21March 2013.
+SPARQL 1.1 Query Language.
+W3C Recommendation.
+Available at http://www.w3.org/TR/sparql11-query/.
+Horridge,M.;Bechhofer,S.;andNoppens,O.
+2007.Igniting the OWL 1.1 touch paper: The OWL API.
+In Golbreich, C.; Kalyanpur, A.; and Parsia, B., eds., Proc.
+OWLED 2007 WorkshoponOWL:ExperiencesandDirections,volume258 of CEUR WorkshopProceedings.
+CEUR-WS.org.
+Ivliev,A.;Ellmauthaler,S.;Gerlach,L.;Marx,M.;Meißner, M.;Meusel,S.;andKrötzsch,M.
+2023.
+Nemo:Firstglimpse ofanewruleengine.
+InPontelli,E.;Costantini,S.;Dodaro, C.; Gaggl, S.
+A.; Calegari, R.; d’Avila Garcez, A.
+S.; Fabi- ano, F.; Mileo, A.; Russo, A.; and Toni, F., eds., Proc.
+39th Int.Conf.onLogicProgramming(ICLP’23),volume385of EPTCS,333–335.
+Jordan, H.; Scholz, B.; and Subotic, P.
+2016.
+Soufflé: On synthesisofprogramanalyzers.InChaudhuri,S.,andFarzan, A.,eds.,Proc.28thInt.Conf.onComputerAidedVerification (CAV’16),PartII,volume9780ofLNCS,422–430.Springer.
+Kazakov, Y.; Krötzsch, M.; and Simančík, F.
+2013.
+The incredible ELK: From polynomial procedures to efficient reasoning with EL ontologies.
+J.
+of Automated Reasoning 53:1–61.
+Körner,P.;Leuschel,M.;Barbosa,J.;Costa,V.S.;Dahl,V.; Hermenegildo, M.
+V.; Morales, J.
+F.; Wielemaker, J.; Diaz, D.; and Abreu, S.
+2022.
+Fifty years of Prolog and beyond.
+Theory Pract.Log.
+Program.
+22(6):776–858.
+Krötzsch, M.; Rudolph, S.; and Hitzler, P.
+2013.
+Complex- itiesofHorndescriptionlogics.
+ACMTrans.Comput.Logic 14(1):2:1–2:36.
+Krötzsch,M.2011.Efficientrule-basedinferencingforOWL EL.
+In Walsh(2011),2668–2673.
+Krötzsch, M.
+2020.
+Computing cores for existential rules with the standard chase and ASP.
+In Calvanese, D.; Erdem, E.; and Thielscher, M., eds., Proc.
+17th Int.
+Conf.
+on Prin- ciplesofKnowledgeRepresentationandReasoning(KR’20), 603–613.
+ĲCAI.
+Microsoft.
+2024.
+Official page for Language Server Pro- tocol.
+https://microsoft.github.io/language-server-protocol/, accessedMay2024.
+Medeiros, S., and Mascarenhas, F.
+2018.
+Syntax error re- covery in parsing expression grammars.
+In Haddad, H.
+M.; Wainwright, R.
+L.; and Chbeir, R., eds., Proc.
+33rd Annual ACM Symposium on Applied Computing (SAC’18), 1195– 1202.
+ACM.
+Motik, B.; Cuenca Grau, B.; Horrocks, I.; Wu, Z.; Fokoue, A.;andLutz,C.,eds.2009.OWL2WebOntologyLanguage: Profiles.
+W3C Recommendation.
+Available at http://www.
+w3.org/TR/owl2-profiles/.
+Mugnier, M., and Thomazo, M.
+2014.
+An introduction to ontology-based query answering with existential rules.
+In Koubarakis, M.; Stamou, G.
+B.; Stoilos, G.; Horrocks, I.; Kolaitis,P.G.;Lausen,G.;andWeikum,G.,eds.,Reasoning Web: Reasoning on the Web in the Big Data Era – 10th International Summer School, volume 8714 of LNCS, 245– 278.
+Springer.
+Nenov, Y.; Piro, R.; Motik, B.; Horrocks, I.; Wu, Z.; and Banerjee, J.
+2015.
+RDFox: A highly-scalable RDF store.
+In et al., M.
+A., ed., Proc.
+14th Int.
+Semantic Web Conf.
+(ISWC’15),Part II,volume 9367 ofLNCS, 3–20.
+Springer.
+OWL Working Group, W.
+2009.
+OWL 2 Web Ontology Language: Document Overview.
+W3C Recommendation.
+Availableathttp://www.w3.org/TR/owl2-overview/.
+Ross, K.
+A., and Sagiv, Y.
+1997.
+Monotonic aggregation in deductive database.
+J.
+Comput.
+Syst.Sci.
+54(1):79–97.
+Seo,J.;Guo,S.;andLam,M.S.2015.SociaLite:Anefficient graphquerylanguagebasedondatalog.
+IEEETrans.Knowl.
+Data Eng.
+27(7):1824–1837.
+Simančík, F.; Kazakov, Y.; and Horrocks, I.
+2011.
+Consequence-based reasoning beyond Horn ontologies.
+In Walsh (2011), 1093–1098.
+Suchanek, F.
+M.; Alam, M.; Bonald, T.; Chen, L.; Paris, P.; and Soria, J.
+2024.
+YAGO 4.5: A large and clean know- ledge base with a rich taxonomy.
+In Yang, G.
+H.; Wang, H.; Han, S.; Hauff, C.; Zuccon, G.; and Zhang, Y., eds., Proc.
+47thInt.ACMSIGIRConf.onResearchandDevelopmentin Information Retrieval (SIGIR’24), 131–140.
+ACM.
+ter Horst, H.
+J.
+2005.
+Completeness, decidability and com- plexity of entailment for RDF Schema and a semantic ex- tensioninvolvingtheOWLvocabulary.
+J.ofWebSemantics 3(2–3):79–115.
+Urbani, J.; Jacobs, C.; and Krötzsch, M.
+2016.
+Column- orientedDatalogmaterializationforlargeknowledgegraphs.
+In Schuurmans, D., and Wellman, M.
+P., eds., Proc.
+30th AAAI Conf.
+on Artificial Intelligence (AAAI’16), 258–264.
+AAAI Press.
+Urbani,J.;Krötzsch,M.;andEiter,T.2022.ChasingStreams with Existential Rules.
+In Proceedings of the 19th Interna- tional Conference on Principles of Knowledge Representa- tion and Reasoning, 415–419.
+Veldhuizen, T.
+L.
+2014.
+Triejoin: A simple, worst-case optimal join algorithm.
+In Schweikardt, N.; Christophides, V.; and Leroy, V., eds., Proc.
+17th Int.
+Conf.
+on Database Theory (ICDT’14), 96–106.
+Vrandečić, D., and Krötzsch, M.
+2014.
+Wikidata: A free collaborative knowledgebase.
+Commun.ACM 57(10).
+Walsh,T.,ed.
+2011.
+Proc.22ndInt.JointConf.onArtificial Intelligence (ĲCAI’11).
+AAAIPress/ĲCAI.
+Wang,D.;Hu,P.;Wałęga,P.A.;andCuencaGrau,B.
+2022.
+Meteor: Practical reasoning in datalog with metrictemporal operators.
+InProc.36thAAAIConf.onArtificialIntelligence (AAAI’22),5906–5913.
+Zaniolo,C.;Yang,M.;Das,A.;Shkapsky,A.;Condie,T.;and Interlandi,M.
+2017.
+Fixpointsemanticsandoptimizationof recursive datalog programs with aggregates.
+Theory Pract.
+Log.
+Program.
+17(5-6):1048–1065.

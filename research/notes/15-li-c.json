@@ -1,0 +1,428 @@
+{
+  "sources": [
+    {
+      "id": "c-willsey-egg-2021",
+      "url": "https://arxiv.org/abs/2004.03082",
+      "title": "egg: Fast and Extensible Equality Saturation",
+      "publisher": "Willsey, Tatlock, Zhang, Wang et al. (UW PLSE)",
+      "kind": "primary",
+      "published": 20210101
+    },
+    {
+      "id": "c-zhang-relational-ematching-2022",
+      "url": "https://arxiv.org/abs/2108.02290",
+      "title": "Relational E-Matching",
+      "publisher": "Willsey, Tatlock, Zhang, Wang et al. (UW PLSE)",
+      "kind": "primary",
+      "published": 20220101
+    },
+    {
+      "id": "c-nappa-eqrel-2019",
+      "url": "https://souffle-lang.github.io/pact19-eqrel.html",
+      "title": "Fast Parallel Equivalence Relations in a Datalog Compiler",
+      "publisher": "Nappa, Zhao, Subotić, Scholz (Univ. of Sydney, Soufflé)",
+      "kind": "primary",
+      "published": 20190923
+    },
+    {
+      "id": "c-motik-sameas-2015",
+      "url": "https://www.cs.ox.ac.uk/people/boris.motik/pubs/mnph15owl-sameAs-rewriting.pdf",
+      "title": "Handling owl:sameAs via Rewriting",
+      "publisher": "Motik, Nenov, Piro, Horrocks (Oxford, RDFox)",
+      "kind": "primary",
+      "published": 20150125
+    },
+    {
+      "id": "c-benedikt-chasebench-2017",
+      "url": "https://www.cs.ox.ac.uk/people/george.konstantinidis/chaseBench.pdf",
+      "title": "Benchmarking the Chase",
+      "publisher": "Benedikt, Konstantinidis, Mecca, Motik, Papotti, Santoro, Tsamoura (Oxford, Basilicata)",
+      "kind": "primary",
+      "published": 20170514
+    },
+    {
+      "id": "c-fagin-dataexchange-2005",
+      "url": "https://www.cs.cornell.edu/~mshong/DDG_Fall05/DataExchange.pdf",
+      "title": "Data Exchange: Semantics and Query Answering",
+      "publisher": "Fagin, Kolaitis, Miller, Popa (IBM Almaden)",
+      "kind": "primary",
+      "published": 20050501
+    },
+    {
+      "id": "c-cali-datalogpm-2010",
+      "url": "https://logicprogramming.org/2010/12/datalog-a-new-family-of-languages-for-ontology-querying/",
+      "title": "Datalog+/-: A New Family of Languages for Ontology Querying",
+      "publisher": "Calì, Gottlob, Lukasiewicz, Pieris (Oxford)",
+      "kind": "secondary",
+      "published": 20101231
+    },
+    {
+      "id": "c-ivliev-nemo-2024",
+      "url": "https://proceedings.kr.org/2024/70/",
+      "title": "Nemo: Your Friendly and Versatile Rule Reasoning Toolkit",
+      "publisher": "Ivliev, Gerlach, Meusel, Steinberg, Krötzsch (TU Dresden)",
+      "kind": "primary",
+      "published": 20241101
+    },
+    {
+      "id": "c-suciu-eqsat-chase-2025",
+      "url": "https://arxiv.org/abs/2501.02413",
+      "title": "Semantic foundations of equality saturation",
+      "publisher": "Suciu, Wang, Zhang (UW)",
+      "kind": "primary",
+      "published": 20250325
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-c1",
+      "source": "e-zhang-egglog-2023",
+      "quote": "Crucially, the map enforces the functional dependency from inputs to outputs.",
+      "says": {
+        "covers": "keys",
+        "by": "egglog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c2",
+      "source": "e-zhang-egglog-2023",
+      "quote": "egglog can simulate Flix programs by setting :merge to the lattice join operator.",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "egglog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c3",
+      "source": "e-zhang-egglog-2023",
+      "quote": "because the heads of rules can generate fresh ids.",
+      "says": {
+        "covers": "existential rules",
+        "by": "egglog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c4",
+      "source": "e-zhang-egglog-2023",
+      "quote": "egglog ensures that all ids appearing in the database are canonical.",
+      "says": {
+        "covers": "equality rules",
+        "by": "egglog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c5",
+      "source": "e-zhang-egglog-2023",
+      "quote": "egglog eliminates this join modulo equivalence",
+      "says": {
+        "covers": "joins modulo equality",
+        "by": "egglog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c6",
+      "source": "e-zhang-egglog-2023",
+      "quote": "but fail to interact with the rest of the rules efficiently.",
+      "says": {
+        "covers": "joins modulo equality",
+        "by": "souffle eqrel",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c7",
+      "source": "e-zhang-egglog-2023",
+      "quote": "the termination condition of egglog is quite open.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "egglog",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c8",
+      "source": "e-zhang-egglog-2023",
+      "quote": "A future direction is to study proof generations for egglog programs.",
+      "says": {
+        "covers": "why provenance",
+        "by": "egglog",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c9",
+      "source": "e-zhang-egglog-2023",
+      "quote": "we do not do this in egglog to be compatible with existing egg applications,",
+      "says": {
+        "covers": "monotonicity",
+        "by": "egglog",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c10",
+      "source": "e-zhang-egglog-2023",
+      "quote": "egglog achieves a 4.96 × \\times speedup over patched on average,",
+      "says": {
+        "result": "egglog",
+        "measure": "speedup over Soufflé (fastest sound Steensgaard encoding)",
+        "bound": "average",
+        "times": 4.96
+      }
+    },
+    {
+      "id": "li-c11",
+      "source": "e-zhang-egglog-2023",
+      "quote": "egglog grows a slightly larger e-graph than egg with a 9.27 × \\times speedup,",
+      "says": {
+        "result": "egglog",
+        "measure": "speedup over egg",
+        "bound": "exact",
+        "times": 9.27
+      }
+    },
+    {
+      "id": "li-c12",
+      "source": "e-zhang-egglog-2023",
+      "quote": "the relational e-matching technique from Zhang",
+      "says": {
+        "adopted": "relational e-matching",
+        "in": "egglog"
+      }
+    },
+    {
+      "id": "li-c13",
+      "source": "c-willsey-egg-2021",
+      "quote": "Overall, our experiments show an aggregate 88 × 88\\times speedup on congruence",
+      "says": {
+        "result": "egg rebuilding",
+        "measure": "speedup of congruence closure over upward merging",
+        "bound": "geometric mean",
+        "times": 88
+      }
+    },
+    {
+      "id": "li-c14",
+      "source": "c-willsey-egg-2021",
+      "quote": "The egg backend is over 3000 × 3000\\times faster than Herbie’s initial simplifier and",
+      "says": {
+        "result": "egg",
+        "measure": "speedup over Herbie's initial simplifier",
+        "bound": "at least",
+        "times": 3000
+      }
+    },
+    {
+      "id": "li-c15",
+      "source": "c-willsey-egg-2021",
+      "quote": "is now used by default as of Herbie 1.4.",
+      "says": {
+        "adopted": "egg",
+        "in": "Herbie"
+      }
+    },
+    {
+      "id": "li-c16",
+      "source": "c-zhang-relational-ematching-2022",
+      "quote": "we apply recent database query execution techniques to guarantee worst-case optimal run time",
+      "says": {
+        "covers": "worst-case optimal joins",
+        "by": "relational e-matching",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c17",
+      "source": "c-nappa-eqrel-2019",
+      "quote": "we introduce EQREL, a specialized parallel union-find data structure for scalable equivalence relations, and its integration into a Datalog compiler",
+      "says": {
+        "covers": "equality rules",
+        "by": "souffle eqrel",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c18",
+      "source": "c-nappa-eqrel-2019",
+      "quote": "We have implemented the EQREL data structure in the parallel Datalog compiler",
+      "says": {
+        "adopted": "souffle eqrel",
+        "in": "Soufflé"
+      }
+    },
+    {
+      "id": "li-c19",
+      "source": "c-motik-sameas-2015",
+      "quote": "rewriting consists of choosing one representative from each set of equal resources",
+      "says": {
+        "covers": "equality rules",
+        "by": "rdfox rewriting",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c20",
+      "source": "c-motik-sameas-2015",
+      "quote": "tion time by a factor of up to 31.1 on a single thread",
+      "says": {
+        "result": "rdfox rewriting",
+        "measure": "materialisation speedup over axiomatised equality",
+        "bound": "up to",
+        "times": 31.1
+      }
+    },
+    {
+      "id": "li-c21",
+      "source": "c-motik-sameas-2015",
+      "quote": "we have implemented our algorithms in the RDFox system",
+      "says": {
+        "adopted": "rdfox rewriting",
+        "in": "RDFox"
+      }
+    },
+    {
+      "id": "li-c22",
+      "source": "c-benedikt-chasebench-2017",
+      "quote": "Dependencies in Σ are weakly acyclic [15] so the restricted chase terminates on all finite instances",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "weak acyclicity",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c23",
+      "source": "c-benedikt-chasebench-2017",
+      "quote": "the unrestricted chase does not necessarily terminate even for weakly acyclic TGDs",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "oblivious chase",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c24",
+      "source": "c-benedikt-chasebench-2017",
+      "quote": "A drawback of the restricted chase is that the chase solution is not unique",
+      "says": {
+        "covers": "results independent of rule order",
+        "by": "restricted chase",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c25",
+      "source": "c-benedikt-chasebench-2017",
+      "quote": "The result of the Skolem chase is unique (if the EGD steps are determinized as in line 8).",
+      "says": {
+        "covers": "results independent of rule order",
+        "by": "skolem chase",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c26",
+      "source": "c-fagin-dataexchange-2005",
+      "quote": "any set of egds can be added to Σ without affecting the uniqueness of the result or the polynomial bound",
+      "says": {
+        "covers": "equality rules",
+        "by": "full tgds",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c27",
+      "source": "c-cali-datalogpm-2010",
+      "quote": "Datalog is extended by allowing features such as existential quantifiers, the equality predicate, and the truth constant false to appear in rule heads",
+      "says": {
+        "covers": "existential rules",
+        "by": "datalog±",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c28",
+      "source": "c-cali-datalogpm-2010",
+      "quote": "query answering becomes undecidable even when putting together some extremely week forms of TGDs and EGDs such as inclusion dependencies and functional dependencies",
+      "says": {
+        "covers": "decidable query answering",
+        "by": "unrestricted tgds with egds",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c29",
+      "source": "c-cali-datalogpm-2010",
+      "quote": "negative constraints can be added to TGDs without any increase of complexity",
+      "says": {
+        "covers": "invariants",
+        "by": "datalog±",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c30",
+      "source": "c-ivliev-nemo-2024",
+      "quote": "existential quantifiers in con- clusions are handled with a 1-parallel restricted chase al- gorithm",
+      "says": {
+        "adopted": "restricted chase",
+        "in": "Nemo"
+      }
+    },
+    {
+      "id": "li-c31",
+      "source": "c-ivliev-nemo-2024",
+      "quote": "the fragment of existential rules for which the restricted chase terminates is not even semi-decidable",
+      "says": {
+        "covers": "decidable termination",
+        "by": "restricted chase",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c32",
+      "source": "c-ivliev-nemo-2024",
+      "quote": "The skolem chase, for example, terminates on strictly less rule sets compared to the restricted chase.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "skolem chase",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c33",
+      "source": "c-suciu-eqsat-chase-2025",
+      "quote": "where EqSat produces an encoded result of the Skolem chase and has the same termination behavior.",
+      "says": {
+        "covers": "existential rules",
+        "by": "equality saturation",
+        "is": true
+      }
+    },
+    {
+      "id": "li-c34",
+      "source": "c-suciu-eqsat-chase-2025",
+      "quote": "The single-instance termination problems are R.E.-complete in all three cases",
+      "says": {
+        "covers": "decidable termination",
+        "by": "equality saturation",
+        "is": false
+      }
+    },
+    {
+      "id": "li-c35",
+      "source": "c-suciu-eqsat-chase-2025",
+      "quote": "we define a syntactic criterion based on acyclicity that implies equality saturation termination.",
+      "says": {
+        "covers": "guaranteed termination",
+        "by": "weak term acyclicity",
+        "is": true
+      }
+    }
+  ]
+}

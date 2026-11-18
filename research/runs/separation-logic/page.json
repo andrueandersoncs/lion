@@ -1,0 +1,1130 @@
+{
+  "title": "Separation logic for Lion",
+  "names": {
+    "rest": "Split a record into named keys and the rest",
+    "algebra": "Combine values in keyed columns, with validity",
+    "locality": "Check only what a change can reach",
+    "sepand": "A conjunction over different facts",
+    "linear": "Rules that use up facts",
+    "hypo": "Ask what would hold if facts were added",
+    "abduce": "Say which facts are missing"
+  },
+  "define": {
+    "title": [
+      "lambda",
+      ["c"],
+      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+    ],
+    "verdictOf": [
+      "lambda",
+      ["c"],
+      ["array/head", ["find", "?v", ["verdict", "c", "?v"]]]
+    ],
+    "withVerdict": [
+      "lambda",
+      ["v"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", "separation-logic"]
+          ]
+        ]
+      ]
+    ],
+    "quoteOf": [
+      "lambda",
+      ["id"],
+      ["array/head", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
+    ],
+    "count": [
+      "lambda",
+      ["what"],
+      [
+        "array/head",
+        [
+          "find",
+          "?n",
+          [
+            "stated",
+            {
+              "counted": "what"
+            },
+            "?n"
+          ]
+        ]
+      ]
+    ],
+    "cases": [
+      "lambda",
+      ["what"],
+      ["array/head", ["find", "?n", ["tried", "what", "?n"]]]
+    ],
+    "definers": [
+      "lambda",
+      ["term"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?p",
+          [
+            "and",
+            [
+              "answer",
+              {
+                "defines": "term"
+              },
+              true,
+              "?c"
+            ],
+            ["claim", "?c", "?s", "?_", "?_"],
+            ["source", "?s", "?_", "?_", "?p", "?_", "?_"]
+          ]
+        ]
+      ]
+    ],
+    "case": [
+      "lambda",
+      ["c"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["verdict", "c", "worth adopting"],
+            [
+              "string/concat",
+              "Worth building. It would give Lion what it lacks: ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?f", ["adds", "c", "?f", "?_"]]]
+              ],
+              ". ",
+              [
+                "cond",
+                [
+                  ["folds", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Checked in Lion, the same rule also covers ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?f", ["folds", "c", "?f", "?_"]]
+                      ]
+                    ],
+                    ", which Lion handles as separate cases today. "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion already has part of it: ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?f", ["already", "c", "?f"]]
+                      ]
+                    ],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["caveat", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "The cost: its sources say it lacks ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?f", ["caveat", "c", "?f", "?_"]]
+                      ]
+                    ],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Working systems: ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?s", ["precedent", "c", "?_", "?s"]]
+                      ]
+                    ],
+                    "."
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", "Lion does this already"],
+            [
+              "string/concat",
+              "Lion does this already: ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?f", ["already", "c", "?f"]]]
+              ],
+              "."
+            ]
+          ],
+          [
+            ["verdict", "c", "conflicts with what Lion guarantees"],
+            [
+              "string/concat",
+              "Does not fit Lion: ",
+              [
+                "words/listed",
+                [
+                  "aggregate/unique",
+                  ["find", "?t", ["blocks", "c", "?_", "?t"]]
+                ]
+              ],
+              " give up ",
+              [
+                "words/listed",
+                [
+                  "aggregate/unique",
+                  ["find", "?g", ["blocks", "c", "?g", "?_"]]
+                ]
+              ],
+              ", which Lion guarantees."
+            ]
+          ],
+          [
+            ["verdict", "c", "has nothing in Lion to work on"],
+            [
+              "string/concat",
+              "Has nothing in Lion to work on: it needs ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?x", ["moot", "c", "?x"]]]
+              ],
+              ", and Lion has none."
+            ]
+          ],
+          ["else", "Not judged yet: the model has too little evidence."]
+        ]
+      ]
+    ],
+    "evidenceOf": [
+      "lambda",
+      ["c"],
+      [
+        "query",
+        [
+          "or",
+          [
+            "and",
+            ["offers", "c", "?feature"],
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
+          ],
+          [
+            "and",
+            ["on", "c", "?feature"],
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
+          ],
+          [
+            "and",
+            ["uses", "c", "?technique"],
+            [
+              "answer",
+              {
+                "covers": "?feature",
+                "by": "?technique"
+              },
+              "?value",
+              "?statement"
+            ],
+            [
+              "or",
+              ["offers", "c", "?feature"],
+              ["guarantee", "?feature"],
+              ["concern", "?feature"],
+              ["folds", "c", "?feature", "?_"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    "Of the ",
+    [
+      "words/count",
+      [
+        "aggregate/count",
+        ["find", "?c", ["weighed_in", "?c", "separation-logic"]]
+      ],
+      "way",
+      "ways"
+    ],
+    " weighed to bring separation logic to Lion, ",
+    [
+      "cond",
+      [
+        ["rank", "?_", "?_"],
+        [
+          "string/concat",
+          ["words/number", ["array/length", ["withVerdict", "worth adopting"]]],
+          " are worth building: ",
+          [
+            "words/listed",
+            [
+              "array/map",
+              ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+              [
+                "lambda",
+                ["pair"],
+                [
+                  "string/concat",
+                  ["number/toString", ["array/head", "pair"]],
+                  ". ",
+                  ["title", ["array/head", ["array/tail", "pair"]]]
+                ]
+              ]
+            ]
+          ],
+          ". "
+        ]
+      ],
+      ["else", "none is left to build. "]
+    ],
+    "Lion does ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "Lion does this already"]]
+    ],
+    " already, ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "has nothing in Lion to work on"]]
+    ],
+    " has nothing in Lion to work on, and ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "conflicts with what Lion guarantees"]]
+    ],
+    " conflicts with what Lion guarantees."
+  ],
+  "views": [
+    {
+      "name": "The answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/count",
+                  ["find", "?c", ["weighed_in", "?c", "separation-logic"]]
+                ]
+              ]
+            },
+            {
+              "label": "Worth building",
+              "value": [
+                "words/number",
+                ["array/length", ["withVerdict", "worth adopting"]]
+              ]
+            },
+            {
+              "label": "Lion does already",
+              "value": [
+                "words/number",
+                ["array/length", ["withVerdict", "Lion does this already"]]
+              ]
+            },
+            {
+              "label": "Sources quoted",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  [
+                    "find",
+                    "?s",
+                    [
+                      "and",
+                      ["claim", "?c", "?s", "?_", "?_"],
+                      ["string/startsWith", "?c", "sl-"]
+                    ]
+                  ]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/count",
+                  [
+                    "aggregate/count",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["claim", "?c", "?_", "?_", "?_"],
+                        ["string/startsWith", "?c", "sl-"]
+                      ]
+                    ]
+                  ],
+                  "statement",
+                  "statements"
+                ],
+                " in their own words"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What from separation logic can Lion use?",
+          "answer": [
+            "cond",
+            [
+              ["rank", "?_", "?_"],
+              [
+                "string/join",
+                [
+                  "array/map",
+                  ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+                  [
+                    "lambda",
+                    ["pair"],
+                    [
+                      "string/concat",
+                      ["number/toString", ["array/head", "pair"]],
+                      ". ",
+                      ["title", ["array/head", ["array/tail", "pair"]]],
+                      ". ",
+                      ["case", ["array/head", ["array/tail", "pair"]]]
+                    ]
+                  ]
+                ],
+                " "
+              ]
+            ],
+            [
+              "else",
+              [
+                "string/concat",
+                "Nothing is left to build: Lion now does each idea the evidence favoured, as its own docs and programs show. ",
+                [
+                  "string/join",
+                  [
+                    "array/map",
+                    ["withVerdict", "Lion does this already"],
+                    [
+                      "lambda",
+                      ["c"],
+                      ["string/concat", ["title", "c"], ". ", ["case", "c"]]
+                    ]
+                  ],
+                  " "
+                ]
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["adds", "?idea", "?feature", "?technique"],
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
+                true,
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["idea", "feature"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What does Lion already do?",
+          "answer": [
+            "string/join",
+            [
+              "array/map",
+              ["withVerdict", "Lion does this already"],
+              [
+                "lambda",
+                ["c"],
+                ["string/concat", ["title", "c"], ". ", ["case", "c"]]
+              ]
+            ],
+            " "
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["already", "?idea", "?feature"],
+              [
+                "answer",
+                {
+                  "lion has": "?feature"
+                },
+                true,
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["idea", "feature"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What does not carry over, and why?",
+          "answer": [
+            "string/join",
+            [
+              "array/map",
+              [
+                "array/concat",
+                ["withVerdict", "has nothing in Lion to work on"],
+                ["withVerdict", "conflicts with what Lion guarantees"]
+              ],
+              [
+                "lambda",
+                ["c"],
+                ["string/concat", ["title", "c"], ". ", ["case", "c"]]
+              ]
+            ],
+            " "
+          ],
+          "evidence": [
+            "query",
+            [
+              "or",
+              [
+                "and",
+                ["moot", "?idea", "?feature"],
+                [
+                  "answer",
+                  {
+                    "lion has": "?feature"
+                  },
+                  false,
+                  "?statement"
+                ]
+              ],
+              [
+                "and",
+                ["moot", "?idea", "?_"],
+                [
+                  "answer",
+                  {
+                    "needs": "?feature",
+                    "by": "?technique"
+                  },
+                  true,
+                  "?statement"
+                ]
+              ],
+              [
+                "and",
+                ["blocks", "?idea", "?feature", "?technique"],
+                [
+                  "answer",
+                  {
+                    "covers": "?feature",
+                    "by": "?technique"
+                  },
+                  false,
+                  "?statement"
+                ]
+              ],
+              [
+                "and",
+                ["blocks", "?idea", "?feature", "?_"],
+                [
+                  "answer",
+                  {
+                    "lion has": "?feature"
+                  },
+                  true,
+                  "?statement"
+                ]
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "What the tweet asks",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "What is a separating conjunct?",
+          "answer": [
+            "string/concat",
+            "Reynolds, who introduced it: “",
+            ["quoteOf", "sl-a1"],
+            "” In Kiran's own words: “",
+            ["quoteOf", "sl-a63"],
+            "” Its unit is the empty state: “",
+            ["quoteOf", "sl-a17"],
+            "” Defined this way by ",
+            ["words/listed", ["definers", "separating conjunction"]],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "answer",
+              {
+                "defines": "separating conjunction"
+              },
+              true,
+              "?statement"
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Why does it matter? The frame rule",
+          "answer": [
+            "string/concat",
+            "“",
+            ["quoteOf", "sl-a12"],
+            "” So a proof about a command needs only the part of the state it touches, its footprint: “",
+            ["quoteOf", "sl-a9"],
+            "”"
+          ],
+          "evidence": [
+            "query",
+            [
+              "or",
+              [
+                "answer",
+                {
+                  "defines": "frame rule"
+                },
+                true,
+                "?statement"
+              ],
+              [
+                "answer",
+                {
+                  "covers": "checking only what a change can affect",
+                  "by": "frame rule"
+                },
+                true,
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What is a unital resource algebra?",
+          "answer": [
+            "string/concat",
+            "Iris generalizes the heap to any resource algebra: “",
+            ["quoteOf", "sl-a31"],
+            "” “",
+            ["quoteOf", "sl-a34"],
+            "” Iris needs one: “",
+            ["quoteOf", "sl-a36"],
+            "” and “",
+            ["quoteOf", "sl-a37"],
+            "” The heap is the standard example: “",
+            ["quoteOf", "sl-a50"],
+            "” Defined by ",
+            ["words/listed", ["definers", "unital resource algebra"]],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "or",
+              [
+                "answer",
+                {
+                  "defines": "unital resource algebra"
+                },
+                true,
+                "?statement"
+              ],
+              [
+                "answer",
+                {
+                  "defines": "resource algebra"
+                },
+                true,
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "How do these ideas line up with Lion?",
+          "answer": [
+            "string/concat",
+            "Each of these was written down as a belief before the literature was read, and checked against it. ",
+            [
+              "string/join",
+              [
+                "array/map",
+                [
+                  "find",
+                  "?a",
+                  [
+                    "and",
+                    ["confirmed", "?a"],
+                    ["string/startsWith", "?a", "sl-"]
+                  ]
+                ],
+                [
+                  "lambda",
+                  ["a"],
+                  [
+                    "string/concat",
+                    "Confirmed: ",
+                    ["array/head", ["find", "?s", ["assumption", "a", "?s"]]],
+                    "."
+                  ]
+                ]
+              ],
+              " "
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["violated", "?a", "?_"],
+                  ["string/startsWith", "?a", "sl-"]
+                ],
+                [
+                  "string/concat",
+                  " Overturned: ",
+                  [
+                    "words/listed",
+                    [
+                      "aggregate/unique",
+                      [
+                        "find",
+                        "?s",
+                        [
+                          "and",
+                          ["violated", "?a", "?_"],
+                          ["string/startsWith", "?a", "sl-"],
+                          ["assumption", "?a", "?s"]
+                        ]
+                      ]
+                    ]
+                  ],
+                  "."
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["expects", "?belief", "?question", "?expected"],
+              ["answer", "?question", "?value", "?statement"]
+            ],
+            {
+              "order": "belief"
+            }
+          ]
+        },
+        {
+          "type": "lookup",
+          "title": "What does each term mean?",
+          "choose": {
+            "term": {
+              "label": "Term",
+              "options": [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?t",
+                  [
+                    "answer",
+                    {
+                      "defines": "?t"
+                    },
+                    true,
+                    "?_"
+                  ]
+                ]
+              ]
+            }
+          },
+          "example": {
+            "term": "magic wand"
+          },
+          "answer": [
+            "lambda",
+            ["term"],
+            [
+              "string/concat",
+              "Defined by ",
+              ["words/listed", ["definers", "term"]],
+              "."
+            ]
+          ],
+          "query": [
+            "lambda",
+            ["term"],
+            [
+              "query",
+              [
+                "answer",
+                {
+                  "defines": "term"
+                },
+                true,
+                "?statement"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each idea for Lion",
+      "blocks": [
+        {
+          "type": "lookup",
+          "title": "What would this idea give Lion?",
+          "choose": {
+            "idea": {
+              "label": "Idea",
+              "options": [
+                "find",
+                "?c",
+                ["weighed_in", "?c", "separation-logic"]
+              ]
+            }
+          },
+          "example": {
+            "idea": "rest"
+          },
+          "answer": [
+            "lambda",
+            ["idea"],
+            [
+              "string/concat",
+              "From ",
+              ["words/listed", ["find", "?i", ["from", "idea", "?i"]]],
+              ". ",
+              ["case", "idea"]
+            ]
+          ],
+          "query": ["lambda", ["idea"], ["evidenceOf", "idea"]]
+        },
+        {
+          "type": "table",
+          "title": "Every idea and its verdict",
+          "query": [
+            "query",
+            [
+              "and",
+              ["candidate", "?idea", "?_"],
+              ["verdict", "?idea", "?verdict"],
+              ["from", "?idea", "?from_separation_logic"]
+            ],
+            {
+              "order": "verdict"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Splitting records",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Schema and record cases tried",
+              "value": ["words/number", ["cases", "a schema and a record"]],
+              "note": [
+                "string/concat",
+                ["words/number", ["count", "record schemas"]],
+                " schemas by ",
+                ["words/number", ["count", "records"]],
+                " records"
+              ]
+            },
+            {
+              "label": "Where a split differs from today's exact or open records",
+              "value": [
+                "words/number",
+                [
+                  "number/add",
+                  ["count", "exact records that differ from a split"],
+                  ["count", "open records that differ from a split"]
+                ]
+              ]
+            },
+            {
+              "label": "Cases of two exact schemas and a record",
+              "value": [
+                "words/number",
+                ["cases", "two exact schemas and a record"]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/number",
+                  ["count", "composed schemas that differ from a split"]
+                ],
+                " where a split differs from the combined schema"
+              ]
+            },
+            {
+              "label": "Records schema/allOf of the two parts accepts",
+              "value": [
+                "string/concat",
+                [
+                  "words/number",
+                  ["count", "records allOf of two exact parts accepts"]
+                ],
+                " of ",
+                [
+                  "words/number",
+                  ["count", "records the combined exact schema accepts"]
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Would one split rule change any program Lion runs today?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "=",
+                  0,
+                  [
+                    "number/add",
+                    ["count", "exact records that differ from a split"],
+                    ["count", "open records that differ from a split"]
+                  ]
+                ],
+                "No difference was found. "
+              ],
+              [
+                "else",
+                "It would: the check found cases where the split and today's records disagree. "
+              ]
+            ],
+            "Over ",
+            ["words/number", ["cases", "a schema and a record"]],
+            " cases of a small record schema and a record, an exact record and a split with an empty rest disagreed in ",
+            [
+              "words/count",
+              ["count", "exact records that differ from a split"],
+              ["quote", "case"],
+              ["quote", "cases"]
+            ],
+            ", and schema/open and a split with any record as the rest disagreed in ",
+            [
+              "words/count",
+              ["count", "open records that differ from a split"],
+              ["quote", "case"],
+              ["quote", "cases"]
+            ],
+            ". Over ",
+            ["words/number", ["cases", "two exact schemas and a record"]],
+            " cases of two exact schemas with no key in common, a split with an exact rest and the one combined schema disagreed in ",
+            [
+              "words/count",
+              ["count", "composed schemas that differ from a split"],
+              ["quote", "case"],
+              ["quote", "cases"]
+            ],
+            ", while schema/allOf of the two parts accepted ",
+            [
+              "words/number",
+              ["count", "records allOf of two exact parts accepts"]
+            ],
+            " of the ",
+            [
+              "words/number",
+              ["count", "records the combined exact schema accepts"]
+            ],
+            " records it should."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "answer",
+                {
+                  "counted": "?what"
+                },
+                "?n",
+                "?statement"
+              ],
+              ["string/startsWith", "?statement", "sl-"]
+            ]
+          ]
+        },
+        {
+          "type": "comparison",
+          "title": "Who can split a record or list, and compose closed shapes",
+          "note": "A row is a system or technique, a column a feature; yes or no is what its sources say.",
+          "query": [
+            "query",
+            [
+              "and",
+              [
+                "in",
+                "?feature",
+                [
+                  "array/make",
+                  "record patterns exact by default",
+                  "open record patterns",
+                  "record pattern that binds the rest",
+                  "rest of a record matched against a further pattern",
+                  "composing exact record schemas",
+                  "list pattern that binds the rest"
+                ]
+              ],
+              [
+                "or",
+                [
+                  "and",
+                  [
+                    "answer",
+                    {
+                      "covers": "?feature",
+                      "by": "?system"
+                    },
+                    "?v",
+                    "?_"
+                  ]
+                ],
+                [
+                  "and",
+                  [
+                    "answer",
+                    {
+                      "lion has": "?feature"
+                    },
+                    "?v",
+                    "?_"
+                  ],
+                  ["=", "?system", "Lion today"]
+                ]
+              ],
+              [
+                "=",
+                "?says",
+                ["cond", [["=", "?v", true], "yes"], ["else", "no"]]
+              ]
+            ]
+          ],
+          "rows": "system",
+          "columns": "feature",
+          "cell": "says"
+        },
+        {
+          "type": "answer",
+          "question": "Does Lion already need it?",
+          "answer": [
+            "string/concat",
+            "The lion-research skill's core computes a record's rest by hand: ",
+            ["quoteOf", "sl-s1"]
+          ],
+          "evidence": [
+            "query",
+            [
+              "answer",
+              {
+                "lion has": "the rest of a record as a value"
+              },
+              true,
+              "?statement"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

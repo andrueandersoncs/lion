@@ -2296,7 +2296,7 @@
     {
       "id": "doc-readme-204",
       "source": "doc-readme",
-      "quote": "Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.",
+      "quote": "Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns, key, and merge.",
       "says": {
         "behavior": "relation-redeclared-differently",
         "is": "error",
@@ -2772,7 +2772,7 @@
     {
       "id": "doc-readme-249",
       "source": "doc-readme",
-      "quote": "Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.",
+      "quote": "Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate.",
       "says": {
         "behavior": "aggregated-relation-rules-aggregate-differently",
         "is": "error",
@@ -2782,7 +2782,7 @@
     {
       "id": "doc-readme-250",
       "source": "doc-readme",
-      "quote": "Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.",
+      "quote": "Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate.",
       "says": {
         "behavior": "aggregated-relation-facts",
         "is": "error",

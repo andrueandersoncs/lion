@@ -63,8 +63,14 @@ const adornedName = (relation: string, adornment: Adornment) =>
 const magicName = (relation: string, adornment: Adornment) =>
   `${REWRITTEN}${MAGIC}${relation}^${adornmentKey(adornment)}`;
 
+const FACTS = `${REWRITTEN}facts^`;
+
 /** The name a rewritten rule reads a relation's facts under. */
-export const factsName = (relation: string) => `${REWRITTEN}facts^${relation}`;
+export const factsName = (relation: string) => `${FACTS}${relation}`;
+
+/** The relation whose facts a name from `factsName` reads, or undefined. */
+export const factsOf = (name: string) =>
+  name.startsWith(FACTS) ? name.slice(FACTS.length) : undefined;
 
 /** The relation a rewritten copy stands for, for messages. */
 export const originalName = (name: string) => {

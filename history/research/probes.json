@@ -20922,5 +20922,430 @@
       ["repo/read", "packages/core/src/modules/lib/guard.ts"],
       "export const guardOf = "
     ]
+  },
+  {
+    "case": "skill-eval-agent-folder",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", "packages/metrics/skill-eval.ts"],
+          "const WORK = join(tmpdir(), \"lion-skill-eval\");"
+        ],
+        ["quote", "outside-repository"]
+      ],
+      ["else", ["quote", "inside-repository"]]
+    ]
+  },
+  {
+    "case": "research-model-folder",
+    "area": "docs",
+    "program": [
+      "cond",
+      [
+        [
+          "number/greaterThan",
+          ["array/length", ["repo/files", "research/steps"]],
+          0
+        ],
+        "research"
+      ],
+      ["else", "none"]
+    ]
+  },
+  {
+    "feature": "research-probes-runner",
+    "kind": "tool",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/probes/run.mjs"]],
+      1
+    ]
+  },
+  {
+    "feature": "researching-guideline",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "guidelines/researching.md"]],
+      1
+    ]
+  },
+  {
+    "feature": "separation-logic-research",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      [
+        "array/length",
+        ["repo/files", "research/runs/separation-logic/report.md"]
+      ],
+      1
+    ]
+  },
+  {
+    "case": "research-extends-existing-model",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", "skills/lion-research/SKILL.md"],
+          "add the run to it instead of starting a new folder"
+        ],
+        "true"
+      ],
+      ["else", "false"]
+    ]
+  },
+  {
+    "case": "schema-open-rest-binds",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "query",
+            [
+              "schema/fits?",
+              [
+                "quote",
+                {
+                  "type": "order",
+                  "id": 1,
+                  "rush": true
+                }
+              ],
+              [
+                "schema/open",
+                {
+                  "type": "order"
+                },
+                "?rest"
+              ]
+            ]
+          ],
+          [
+            "quote",
+            [
+              {
+                "rest": {
+                  "id": 1,
+                  "rush": true
+                }
+              }
+            ]
+          ]
+        ],
+        ["quote", "the-other-keys"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "schema-open-composes-exact-schemas",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "Id",
+        {
+          "id": "value/integer?"
+        }
+      ],
+      [
+        "schema",
+        "Tagged",
+        {
+          "tag": "value/string?"
+        }
+      ],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            [
+              "quote",
+              {
+                "id": 1,
+                "tag": "new"
+              }
+            ],
+            ["schema/open", "Id", "Tagged"]
+          ],
+          ["quote", "fits"]
+        ],
+        ["else", ["quote", "does-not-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-open-list-rest",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "query",
+            [
+              "schema/fits?",
+              ["quote", ["a", "b", "c"]],
+              ["schema/open", ["array/make", "?first"], "?rest"]
+            ]
+          ],
+          [
+            "quote",
+            [
+              {
+                "first": "a",
+                "rest": ["b", "c"]
+              }
+            ]
+          ]
+        ],
+        ["quote", "the-other-items"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "feature": "schema-open-rest",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      [
+        "quote",
+        {
+          "id": 1,
+          "x": "y"
+        }
+      ],
+      [
+        "schema/open",
+        {
+          "id": "value/integer?"
+        },
+        ["schema/recordOf", "value/string?"]
+      ]
+    ]
+  },
+  {
+    "case": "merge-joins-facts-and-rules",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "offer", ["sku", "usd"]],
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/min"
+          }
+        }
+      ],
+      ["fact", ["offer", "a1", 5], ["offer", "a1", 4]],
+      ["rule", ["best", "?s", "?u"], ["offer", "?s", "?u"]],
+      ["fact", ["best", "a1", 3], ["best", "b2", 7]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "query",
+              ["best", "?s", "?u"],
+              {
+                "order": "s"
+              }
+            ],
+            [
+              "quote",
+              [
+                {
+                  "s": "a1",
+                  "u": 3
+                },
+                {
+                  "s": "b2",
+                  "u": 7
+                }
+              ]
+            ]
+          ],
+          ["quote", "join"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "merge-fact-retract",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/min"
+          }
+        }
+      ],
+      ["fact", ["best", "a1", 3], ["best", "a1", 5]],
+      ["retract", ["best", "a1", 3]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["query", ["best", "a1", "?u"]],
+            [
+              "quote",
+              [
+                {
+                  "u": 5
+                }
+              ]
+            ]
+          ],
+          ["quote", "candidate-removed"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "keyed-aggregated-rows-differ",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "tag",
+        ["id", "tags", "owner"],
+        {
+          "key": "id",
+          "merge": {
+            "tags": "aggregate/union"
+          }
+        }
+      ],
+      [
+        "fact",
+        ["tag", 1, ["quote", ["a"]], "ana"],
+        ["tag", 1, ["quote", ["b"]], "bo"]
+      ],
+      ["query", ["tag", "?i", "?t", "?o"]]
+    ]
+  },
+  {
+    "feature": "relation-merge-option",
+    "kind": "option",
+    "program": [
+      "begin",
+      [
+        "relation",
+        "best",
+        ["sku", "usd"],
+        {
+          "key": "sku",
+          "merge": {
+            "usd": "aggregate/max"
+          }
+        }
+      ],
+      ["fact", ["best", "a1", 3], ["best", "a1", 5]],
+      [
+        "=",
+        ["query", ["best", "a1", "?u"]],
+        [
+          "quote",
+          [
+            {
+              "u": 5
+            }
+          ]
+        ]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-leaves-database",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["fact", ["edge", "a", "b"]],
+      [
+        "define",
+        "seen",
+        [
+          "assuming",
+          ["fact", ["edge", "b", "c"]],
+          ["find", "?y", ["edge", "b", "?y"]]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            ["=", "seen", ["quote", ["c"]]],
+            ["=", ["find", "?y", ["edge", "b", "?y"]], ["quote", []]]
+          ],
+          ["quote", "unchanged"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-in-rule",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "node", ["n"]],
+      ["relation", "would", ["n"]],
+      ["fact", ["node", "a"], ["node", "b"]],
+      [
+        "rule",
+        ["would", "?n"],
+        ["node", "?n"],
+        ["assuming", ["fact", ["edge", "?n", "z"]], ["edge", "?n", "z"]]
+      ],
+      [
+        "cond",
+        [
+          ["=", ["find", "?n", ["would", "?n"]], ["quote", ["a", "b"]]],
+          ["quote", "asked-per-answer"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "feature": "assuming",
+    "kind": "special-form",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["assuming", ["fact", ["edge", "a", "b"]], ["edge", "a", "b"]]
+    ]
   }
 ]

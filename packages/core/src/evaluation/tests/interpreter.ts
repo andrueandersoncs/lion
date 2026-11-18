@@ -27,6 +27,7 @@ import {
   suspend as suspendIn,
 } from "@/evaluation/special-forms/lambda";
 import {
+  evaluateAssuming,
   evaluateExists,
   evaluateFact,
   evaluateFind,
@@ -369,6 +370,7 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
     retract: (form) => evaluateRetract(form, evaluate),
     query: (form) => evaluateQuery(form, evaluate),
     find: (form) => evaluateFind(form, evaluate),
+    assuming: (form) => evaluateAssuming(form, evaluate),
     exists: (form) => evaluateExists(form, evaluate),
     some: (form) => evaluateSome(form, evaluate),
     why: (form) => evaluateWhy(form, evaluate),

@@ -1,0 +1,1464 @@
+Skip to main content
+Search
+Submit
+Donate
+Log in
+Search arXiv
+Press Enter to search &middot; Advanced search
+Computer Science > Databases
+arXiv:2302.06246 (cs)
+[Submitted on 13 Feb 2023]
+Title: Incremental Consistent Updating of Incomplete Databases
+Authors: Jacques Chabin (Pamda, LIFO), Mirian Halfeld Ferrari (LIFO, Pamda), Nicolas Hiot (Pamda, LIFO), Dominique Laurent (ETIS - UMR 8051, ENSEA)
+View a PDF of the paper titled Incremental Consistent Updating of Incomplete Databases, by Jacques Chabin (Pamda and 7 other authors
+View PDF
+HTML (experimental)
+Abstract: Efficient consistency maintenance of incomplete and dynamic real-life databases is a quality label for further data analysis. In prior work, we tackled the generic problem of database updating in the presence of tuple generating constraints from a theoretical viewpoint. The current paper considers the usability of our approach by (a) introducing incremental update routines (instead of the previous from-scratch versions) and (b) removing the restriction that limits the contents of the database to fit in the main memory. In doing so, this paper offers new algorithms, proposes queries and data models inviting discussions on the representation of incompleteness on databases. We also propose implementations under a graph database model and the traditional relational database model. Our experiments show that computation times are similar globally but point to discrepancies in some steps.
+Subjects:
+Databases (cs.DB)
+Cite as:
+arXiv:2302.06246 [cs.DB]
+(or
+arXiv:2302.06246v1 [cs.DB] for this version)
+https://doi.org/10.48550/arXiv.2302.06246
+Focus to learn more
+arXiv-issued DOI via DataCite
+Related DOI :
+https://doi.org/10.1007/978-3-031-42914-9_13
+Focus to learn more
+DOI(s) linking to related resources
+Submission history
+From: Nicolas Hiot [ view email ] [via CCSD proxy]
+[v1]
+Mon, 13 Feb 2023 10:34:44 UTC (47 KB)
+Full-text links:
+Access Paper:
+View a PDF of the paper titled Incremental Consistent Updating of Incomplete Databases, by Jacques Chabin (Pamda and 7 other authors
+View PDF
+HTML (experimental)
+TeX Source
+view license
+Current browse context:
+cs.DB
+< prev
+|
+next >
+new
+|
+recent
+| 2023-02
+Change to browse by:
+cs
+References & Citations
+NASA ADS
+Google Scholar
+Semantic Scholar
+export BibTeX citation
+Loading...
+BibTeX formatted citation
+&times;
+loading...
+Data provided by:
+Bookmark
+Bibliographic Tools
+Bibliographic and Citation Tools
+Bibliographic Explorer Toggle
+Bibliographic Explorer ( What is the Explorer? )
+Connected Papers Toggle
+Connected Papers ( What is Connected Papers? )
+Litmaps Toggle
+Litmaps ( What is Litmaps? )
+scite.ai Toggle
+scite Smart Citations ( What are Smart Citations? )
+Code, Data, Media
+Code, Data and Media Associated with this Article
+alphaXiv Toggle
+alphaXiv ( What is alphaXiv? )
+Links to Code Toggle
+CatalyzeX Code Finder for Papers ( What is CatalyzeX? )
+DagsHub Toggle
+DagsHub ( What is DagsHub? )
+GotitPub Toggle
+Gotit.pub ( What is GotitPub? )
+Huggingface Toggle
+Hugging Face ( What is Huggingface? )
+ScienceCast Toggle
+ScienceCast ( What is ScienceCast? )
+Demos
+Demos
+Replicate Toggle
+Replicate ( What is Replicate? )
+Spaces Toggle
+Hugging Face Spaces ( What is Spaces? )
+Spaces Toggle
+TXYZ.AI ( What is TXYZ.AI? )
+Related Papers
+Recommenders and Search Tools
+Link to Influence Flower
+Influence Flower ( What are Influence Flowers? )
+Core recommender toggle
+CORE Recommender ( What is CORE? )
+Author
+Venue
+Institution
+Topic
+About arXivLabs
+arXivLabs: experimental projects with community collaborators
+arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+Which authors of this paper are endorsers? |
+Disable MathJax ( What is MathJax? )
+We gratefully acknowledge support from
+our major funders ,
+member institutions , ,
+and all contributors.
+About
+&middot;
+Help
+&middot;
+Contact
+&middot;
+Subscribe
+&middot;
+Copyright
+&middot;
+Privacy
+&middot;
+Accessibility
+&middot;
+Operational Status (opens in new tab)
+Major funding support from
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+2 Motivating Example
+From-scratch and incremental approaches at a glance.
+3 Preliminaries
+4 Simplification with Respect to Nulls: a Basic Operation
+5 Incremental Updating
+5.1 Insertion
+5.2 Deletion
+6 Queries for Incremental Processing
+6.1 Graph Data Model
+Query for chasing.
+Query to find LinkedNull sets.
+6.2 Relational Data Model
+6.3 Discussion
+7 Experimental Results
+Reproducibility.
+8 Related Works
+9 Conclusions
+References
+License: arXiv.org perpetual non-exclusive license
+arXiv:2302.06246v1 [cs.DB] 13 Feb 2023
+Incremental Consistent Updating of Incomplete Databases
+(Extended Version - Technical Report)
+Jacques Chabin
+Affiliation: LIFO – Université d’Orléans, INSA CVL – Orléans, France
+Affiliation:
+Affiliation: Nicolas Hiot
+Affiliation: LIFO – Université d’Orléans, INSA CVL – Orléans, France
+  
+Mirian Halfeld Ferrari
+Affiliation: EnnovLabs – Ennov – Paris, France
+Affiliation:
+Affiliation: Dominique Laurent
+Affiliation: ETIS – CNRS, ENSEA, CY Université – Cergy-Pontoise, France
+Abstract
+Efficient consistency maintenance of incomplete and dynamic real-life databases is a quality label for further data analysis.
+In prior work, we tackled the generic problem of database updating in the presence of tuple generating constraints from a theoretical viewpoint.
+The current paper considers the usability of our approach by (a) introducing incremental update routines (instead of the previous from-scratch versions) and (b) removing the restriction that limits the contents of the database to fit in the main memory.
+In doing so, this paper offers new algorithms, proposes queries and data models inviting discussions on the representation of incompleteness on databases.
+We also propose implementations under a graph database model and the traditional relational database model.
+Our experiments show that computation times are similar globally but point to discrepancies in some steps.
+1 Introduction
+Incremental update algorithms are essential for incomplete real-life databases, often large and constantly updated.
+Modern applications usually involve the analysis of large amounts of data with missing and changing values.
+The quality of this analysis depends on the consistency of the data, the maintenance of which requires calculations whose cost needs to be reduced.
+To address this problem, we build upon our prior work [ 9 ]
+where the generic problem of database updating in the presence of constraints was tackled from a theoretical point of view, and under the restriction that the database content was meant to fit in main memory.
+Hence, for missing values, we follow Reiter [ 28 ] who provides FOL (First-Order Logic) semantics to null values of type ‘value exists but is currently unknown’.
+Constraints are expressed as
+tuple-generating dependencies (tgd), i.e., implications of the form ( ∀ X , Y ) ​ ( B ⁡ ( X , Y ) ⇒ ( ∃ Z ) ​ L ​ ( X , Z ) ) (\forall X,Y)(B(X,Y)\Rightarrow(\exists Z)L(X,Z)) where X X , Y Y , Z Z are vectors of variables, B ⁡ ( X , Y ) B(X,Y) is the conjunction of atoms of the form L i ​ ( X i , Y i ) L_{i}(X_{i},Y_{i}) where X i X_{i} and Y i Y_{i} are sub-vectors of X X and Y Y , respectively, and L ⁡ ( X , Z ) L(X,Z) is an atom.
+In [ 9 ] , our purpose was to allow for the insertions or the deletions of sets of tuples under the following hypotheses:
+•
+A fixed set ℂ \mathbb{C} of constraints as specified just above is assumed over a given set of predicates.
+•
+The database 𝔇 \mathfrak{D} to be updated is a set of instantiated atoms, in which marked nulls may occur. Moreover, the database contains no redundancies caused by these nulls.
+•
+𝔇 \mathfrak{D} satisfies the constraints in ℂ \mathbb{C} , meaning that, for every c c in ℂ \mathbb{C} , whenever there exists an instantiation h h of X X and Y Y such that 𝔇 \mathfrak{D} contains all atoms in h ⁡ ( B ⁡ ( X , Y ) ) h(B(X,Y)) then h h can be extended to Z Z so as 𝔇 \mathfrak{D} also contains h ⁡ ( L ⁡ ( X , Z ) ) h(L(X,Z)) .
+•
+The updated database 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} satisfies the constraints in ℂ \mathbb{C} and is not redundant, while being such that the updates are performed, that is, all atoms to be inserted are present in 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} and no atoms to be deleted is present in 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} .
+In this paper, we improve our work in [ 9 ] in two main aspects:
+(1) we propose an incremental version of the approach and
+(2) we deal with data stored in database systems , contrary to the in-memory version of [ 9 ] .
+Given an update u u over a database instance 𝔇 \mathfrak{D} ,
+our approach consists in generating (by the activation of constraints in ℂ \mathbb{C} ) a set of new updates, U ′ U^{\prime} , as necessary side-effects to maintain the database consistent. Contrary to from scratch algorithms, whereby the whole database instance and the whole set ℂ \mathbb{C} are involved in the generation of U ′ U^{\prime} , incremental algorithms minimize the amount of data to be accessed and the constraints to be triggered.
+Paper Organisation.
+We overview our approach and its evolution ( from scratch towards an incremental approach)
+through a motivating example in Section 2 .
+Section 3 provides some background.
+Section 4 introduces the operations over which the incremental core computation is built.
+Incremental update algorithms, their implementation aspects and
+experimental results are introduced, respectively in
+Sections 5 , 6 and 7 .
+After presenting related work in Section 8 , Section 9 concludes the paper.
+2 Motivating Example
+Figure 1 shows a set of constraints in the context of a university, researchers and students. Although the intuitive meaning of these constraints should be clear, we point out that in the constraints c 6 c_{6} , c 9 c_{9} , c 10 c_{10} , c 11 c_{11} and c 12 c_{12} , the right hand-side involves a variable not present in the left hand-side. Due to such contraints, known in the literature as tuple generating dependencies (tgd), nulls values may appear in the database instance, as explained below. Their intuitive meaning is as follows:
+•
+the variable Z Z in P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( Y , P , Z ) PhDPaper(Y,P,Z) of c 6 c_{6} stands for the year the paper has been published;
+•
+the variable Y Y in C ​ i ​ t ​ e ​ s ​ ( X , Y ) Cites(X,Y) of c 9 c_{9} stands for a publication cited by publication X X ;
+•
+the variable Y Y in E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( X , Y ) Enrolled(X,Y) of c 10 c_{10} stands for a course student X X is enrolled in;
+•
+the variable Z Z in D ​ e ​ g ​ r ​ e ​ e ​ ( Y , Z ) Degree(Y,Z) of c 11 c_{11} stands for the degree course Y Y is part of;
+•
+the variable Z Z in L ​ a ​ n ​ g ​ u ​ a ​ g ​ e ​ ( X , Y , Z ) Language(X,Y,Z) of c 12 c_{12} stands for the language in which is taught course X X of degree Y Y .
+c 1 : c_{1}:
+S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( X , Y ) → R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( X ) Supervises(X,Y)\rightarrow Researcher(X)
+c 2 : c_{2}:
+S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( X , Y ) → S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( Y ) Supervises(X,Y)\rightarrow Student(Y)
+c 3 : c_{3}:
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( X , Y ) → R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( X ) Authors(X,Y)\rightarrow Researcher(X)
+c 4 : c_{4}:
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( X , Y ) → P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( Y ) Authors(X,Y)\rightarrow Publication(Y)
+c 5 : c_{5}:
+R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( X ) → A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( X , Y ) Researcher(X)\rightarrow Authors(X,Y)
+c 6 : c_{6}:
+S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( X , Y ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( X , P ) , Supervises(X,Y),Authors(X,P),
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( Y , P ) → P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( Y , P , Z ) Authors(Y,P)\rightarrow PhDPaper(Y,P,Z)
+c 7 : c_{7}:
+C ​ i ​ t ​ e ​ s ​ ( X , Y ) → P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( X ) Cites(X,Y)\rightarrow Publication(X)
+c 8 : c_{8}:
+C ​ i ​ t ​ e ​ s ​ ( X , Y ) → P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( Y ) Cites(X,Y)\rightarrow Publication(Y)
+c 9 : c_{9}:
+P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( X ) → C ​ i ​ t ​ e ​ s ​ ( X , Y ) Publication(X)\rightarrow Cites(X,Y)
+c 10 : c_{10}:
+S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( X ) → E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( X , Y ) Student(X)\rightarrow Enrolled(X,Y)
+c 11 : c_{11}:
+E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( X , Y ) → D ​ e ​ g ​ r ​ e ​ e ​ ( Y , Z ) Enrolled(X,Y)\rightarrow Degree(Y,Z)
+c 12 : c_{12}:
+D ​ e ​ g ​ r ​ e ​ e ​ ( X , Y ) → L ​ a ​ n ​ g ​ u ​ a ​ g ​ e ​ ( X , Y , Z ) Degree(X,Y)\rightarrow Language(X,Y,Z)
+c 13 : c_{13}:
+E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( X , Y ) → G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( X ) Enrolled(X,Y)\rightarrow GrantEligible(X)
+Figure 1: Set of (general) constraints
+Constraints from this set are used in subsequent examples to illustrate our proposes throughout the paper. Let us start with ℂ = { c 1 , … , c 6 } \hbox{$\mathbb{C}$}=\{c_{1},\ldots,c_{6}\} over the following database instance 𝔇 \mathfrak{D} :
+𝔇 = { \hbox{$\mathfrak{D}$}=\{
+R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( E ​ l ​ i ​ n ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 269 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 235 ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( S ​ t ​ e ​ n , P 269 ) , Researcher(Elin),Authors(Elin,P_{269}),Publication(P_{235}),Authors(Sten,P_{269}),
+P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 269 ) , S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) , S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( E ​ l ​ i ​ n , S ​ t ​ e ​ n ) , R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( N ​ i ​ l ​ s ) , Publication(P_{269}),Student(Sten),Supervises(Elin,Sten),Researcher(Nils),
+P h D P a p e r ( S t e n , P 269 , 2022 ) } PhDPaper(Sten,P_{269},2022)\penalty\ \}
+(A) Constraint satisfaction.
+First, constraints c 1 c_{1} and c 2 c_{2} are satisfied, because S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( E ​ l ​ i ​ n CLOSE , Supervises(Elin, OPEN S ​ t ​ e ​ n ) Sten) , R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( E ​ l ​ i ​ n ) Researcher(Elin) and S ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) Sudent(Sten) are in 𝔇 \mathfrak{D} . Constraint c 4 c_{4} is satisfied as well because P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 269 ) Publication(P_{269}) is in 𝔇 \mathfrak{D} .
+Similarly, c 6 c_{6} is satisfied because 𝔇 \mathfrak{D} contains P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n CLOSE , PhDPaper(Sten, OPEN P 269 , 2022 ) P_{269},2022) .
+However, c 3 c_{3} is not satisfied because A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( S ​ t ​ e ​ n , P 269 ) Authors(Sten,P_{269}) is in 𝔇 \mathfrak{D} and R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( S ​ t ​ e ​ n ) Researcher(Sten) is not. Similarly, c 5 c_{5} is not satisfied because R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( N ​ i ​ l ​ s ) Researcher(Nils) has no matching fact over A ​ u ​ t ​ h ​ o ​ r ​ s Authors in 𝔇 \mathfrak{D} .
+Constraint satisfaction is obtained by adding facts, generated by a process called chase :
+1.
+R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( S ​ t ​ e ​ n ) Researcher(Sten) is added to satisfy c 3 c_{3} .
+2.
+In order to satisfy c 5 c_{5} one fact over A ​ u ​ t ​ h ​ o ​ r ​ s Authors must be added, but the value of the second argument ( i.e.,  the publication) is unknown. Despite that publications are present in 𝔇 \mathfrak{D} , those authored by N ​ i ​ l ​ s Nils are unknown. Marked nulls are used to account for this situation: A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) Authors(Nils,N_{1}) is added, which is read as ‘ N ​ i ​ l ​ s Nils authored a publication, currently unknown but recognized as N 1 N_{1} ’. The atom P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 1 ) Publication(N_{1}) is then inserted in order to satisfy c 4 c_{4} .
+In this case, we obtain 𝔇 ′ = 𝔇 ∪ { R e s e a r c h e r ( S t e n ) , \hbox{$\mathfrak{D}$}^{\prime}=\hbox{$\mathfrak{D}$}\cup\{Researcher(Sten), A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) , Authors(Nils,N_{1}), P u b l i c a t i o n ( N 1 ) ) } Publication(N_{1}))\} .
+In the following items, we show differences between the from-scratch and incremental approaches to updates.
+(B) Updates.
+Updates are insertions or deletions.
+(B.1) Insertions. Given a database instance 𝔇 \mathfrak{D} satisfying a set of constraints ℂ \mathbb{C} , an updated database is the result of inserting facts in 𝔇 \mathfrak{D} while maintaining constraint satisfaction.
+Let ℂ 1 = { c 1 , c 6 , c 7 , c 8 } \hbox{$\mathbb{C}$}_{1}=\{c_{1},c_{6},c_{7},c_{8}\} , 𝔇 1 = { R e s e a r c h e r ( E l i n ) , \hbox{$\mathfrak{D}$}_{1}=\{Researcher(Elin), S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( E ​ l ​ i ​ n , S ​ t ​ e ​ n ) , Super\-vises(Elin,Sten), A u t h o r s ( E l i n , P 269 ) } Authors(Elin,P_{269})\} , and the set of required insertions iRequest = { A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( S ​ t ​ e ​ n , P 269 ) } \hbox{{iRequest}}=\{Authors(Sten,P_{269})\} .
+From-scratch approach. To reinforce constraints, side-effects are computed through a process called c ​ h ​ a ​ s ​ e chase , that applies the constraints in ℂ 1 \hbox{$\mathbb{C}$}_{1} on 𝔇 1 ∪ iRequest \hbox{$\mathfrak{D}$}_{1}\cup\hbox{{iRequest}} , to generate a new set c ​ h ​ a ​ s ​ e ​ ( 𝔇 1 ) chase(\hbox{$\mathfrak{D}$}_{1}) . In doing so, facts already in 𝔇 1 \hbox{$\mathfrak{D}$}_{1} might be generated again.
+Incremental approach. Side-effects for insertions are computed based on iRequest as follows. In our example,
+the only constraint to be triggered when inserting A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( S ​ t ​ e ​ n , P 269 ) Authors(Sten,P_{269}) is c 6 c_{6} because (i) a query on 𝔇 1 \hbox{$\mathfrak{D}$}_{1}
+informs that the atoms S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( E ​ l ​ i ​ n , S ​ t ​ e ​ n ) Supervises(Elin,Sten) and A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 269 ) Authors(Elin,P_{269}) already exist in 𝔇 1 \hbox{$\mathfrak{D}$}_{1} , and (ii) c 6 c_{6} is impacted by the insertion.
+Then, the result of the insertion is 𝔇 1 ′ = 𝔇 1 ∪ { A u t h o r s ( S t e n , P 269 ) , \hbox{$\mathfrak{D}$}_{1}^{\prime}=\hbox{$\mathfrak{D}$}_{1}\cup\{Authors(Sten,P_{269}), P h D P a p e r ( S t e n , P 269 , N 2 ) } PhDPaper(Sten,P_{269},N_{2})\} .
+(B.2) Deletions.
+Consider 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} (from item (A) above) along with the constraints in ℂ = { c 1 , … , c 6 } \hbox{$\mathbb{C}$}=\{c_{1},\ldots,c_{6}\} .
+From-scratch approach.
+After removing from 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} a given set of facts dRequest , the deletion process includes the computation of
+c ​ h ​ a ​ s ​ e ​ ( 𝔇 ′ ∖ dRequest ) chase(\hbox{$\mathfrak{D}$}^{\prime}\setminus\hbox{{dRequest}}) to check constraint satisfaction. Then, if one atom to be deleted is re-generated (up to null renaming),
+a backward chase is activated to identify the side-effects of the
+deletion. This is illustrated through the following two cases.
+Case 1. Let dRequest = { P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , 2022 ) } \hbox{{dRequest}}=\{PhDPaper(Sten,P_{269},2022)\} .
+First the fact P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , 2022 ) PhDPaper(Sten,P_{269},2022) is removed from 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} and then, constraint satisfaction is checked as done for insertions. Here, 𝔇 ′ ∖ { P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , 2022 ) } \hbox{$\mathfrak{D}$}^{\prime}\setminus\{PhDPaper(Sten,P_{269},2022)\} does not satisfy c 6 c_{6} because Sten is still present as an author of paper P 269 P_{269} .
+As above, consistency is restored by inserting P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , N 2 ) PhDPaper(Sten,P_{269},N_{2}) . The resulting database 𝔇 ′′ = ( 𝔇 ′ ∖ CLOSE \hbox{$\mathfrak{D}$}^{\prime\prime}=(\hbox{$\mathfrak{D}$}^{\prime}\setminus OPEN { P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , 2022 ) } ) ∪ \{PhDPaper(Sten,P_{269},2022)\})\penalty\ \cup
+{ P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , N 2 ) } \{PhDPaper(Sten,P_{269},N_{2})\}
+is consistent and implements the deletion because it does not contain the atom to be deleted.
+Case 2. Consider now dRequest = { P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , N 2 ) } \hbox{{dRequest}}=\{PhDPaper(Sten,P_{269},N_{2})\} on 𝔇 ′′ \hbox{$\mathfrak{D}$}^{\prime\prime} .
+A processing similar to the previous one would first remove the atom from 𝔇 ′′ \hbox{$\mathfrak{D}$}^{\prime\prime} and then,
+insert P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , N 3 ) PhDPaper(Sten,P_{269},N_{3}) to restore consistency with respect to the constraints.
+This result is not acceptable because the generated set is equal to 𝔇 ′′ \hbox{$\mathfrak{D}$}^{\prime\prime} (up to a null renaming), meaning that the deletion has not been implemented.
+In this case, the processing is carried on by deleting all atoms responsible of the generation of the atom to be deleted.
+This amounts to apply the constraints backward (from the head to the body), removing one atom from the body, to prevent the constraint from being triggered.
+To this end, for every constraint c c , a literal in its body is marked as the one to be deleted in such a situation
+(for the sake of simplicity, let the leftmost literal in be the marked one).
+Here, A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 269 ) Authors(Elin,P_{269}) has to be deleted, due to c 6 c_{6} .
+Then, we proceed following the ideas already presented:
+the latter deletion, because of c 5 c_{5} , requires the insertion of A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , N 4 ) Authors(Elin,N_{4}) which in turn,
+because of c 4 c_{4} , requires the insertion P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 4 ) Publication(N_{4}) , returning the database
+𝔇 2 = ( 𝔇 ′′ ∖ { P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( S ​ t ​ e ​ n , P 269 , N 2 ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 269 ) } ) ∪ \hbox{$\mathfrak{D}$}_{2}=(\hbox{$\mathfrak{D}$}^{\prime\prime}\setminus\{PhDPaper(Sten,P_{269},N_{2}),Authors(Elin,P_{269})\})\penalty\ \cup
+{ A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , N 4 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 4 ) } \{Authors(Elin,N_{4}),Publication(N_{4})\} .
+Incremental approach. First, a backward chase is used to find the constraints impacted by the required update.
+In our example, constraint c 6 , c_{6}, and then c 5 c_{5} are the only ones concerned by deletions.
+Second, the chase is applied only on the rules detected just above and its result is analyzed as done in the from-scratch approach.
+It is worth noting that, as data is stored in a database, queries are used to detect whether constraints can be applied for chasing (backward or forward).
+(C) Avoiding too many nulls.
+An important issue regarding side effects is making sure that the processing terminates. Considering the set of constraints ℂ 1 = ℂ ∪ { c 7 , c 8 , c 9 } \hbox{$\mathbb{C}$}_{1}=\hbox{$\mathbb{C}$}\cup\{c_{7},c_{8},c_{9}\} on 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} , it is clear that 𝔇 ′′ \hbox{$\mathfrak{D}$}^{\prime\prime} does not satisfy c 9 c_{9} , because P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 269 ) Publication(P_{269}) and P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 235 ) Publication(P_{235}) belong to 𝔇 ′′ \hbox{$\mathfrak{D}$}^{\prime\prime} with no associated citation.
+In order to satisfy c 9 c_{9} , C ​ i ​ t ​ e ​ s ​ ( P 269 , N 6 ) Cites(P_{269},N_{6}) and C ​ i ​ t ​ e ​ s ​ ( P 235 , N 7 ) Cites(P_{235},N_{7}) must be inserted, which triggers the insertions of P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 6 ) Publication(N_{6}) and of P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 7 ) Publication(N_{7}) , due to c 7 c_{7} . Then, to satisfy c 9 c_{9} , C ​ i ​ t ​ e ​ s ​ ( N 6 , N 8 ) Cites(N_{6},N_{8}) and C ​ i ​ t ​ e ​ s ​ ( N 7 , N 9 ) Cites(N_{7},N_{9}) have to be inserted, and we are clearly entering an infinite loop, which is not acceptable.
+To cope with this difficulty, every null N N is associated with an integer called the degree of N N and denoted by δ ⁡ ( N ) \delta(N) . At each insertion, the degree of all nulls occurring in 𝔇 \mathfrak{D} are set to 0 0 , and when a constraint c c is applied during the processing, all generated nulls are assigned a degree equal to δ + 1 \delta+1 where δ \delta is the maximal degree of the nulls in the atoms of the constraint body, or 0 0 if no null occurs in the constraint body. Moreover, assuming a fixed maximal null degree δ max \delta_{\max} , insertion processing is stopped as soon as a null N N is such that δ ⁡ ( N ) ≥ δ max \delta(N)\geq\delta_{\max} , and the insertion is rejected , that is 𝔇 \mathfrak{D} is not changed.
+For example, in the case just above, we have δ ⁡ ( N 6 ) = δ ⁡ ( N 7 ) = 0 \delta(N_{6})=\delta(N_{7})=0 , δ ⁡ ( N 8 ) = δ ⁡ ( N 6 ) + 1 = 1 \delta(N_{8})=\delta(N_{6})+1=1 and δ ⁡ ( N 9 ) = δ ⁡ ( N 7 ) + 1 = 1 \delta(N_{9})=\delta(N_{7})+1=1 , etc. If, for example δ max \delta_{\max} is set to 2 2 , the generation of nulls will stop at the next round and the insertion will be rejected .
+The verification of null degree is similar in both From-scratch and incremental approaches (it was proven in [ 9 ] that by using δ m ​ a ​ x \delta_{max} we accept only consistent insertions).
+(D) Avoiding redundancies (core).
+Side effects have to be computed in a minimal way to reflect as much as possible the so-called minimal change requirement.
+To illustrate this point consider the insertion in 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} of A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , P 235 ) Authors(Nils,P_{235}) . Adding this fact in 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} provokes redundancies, because the presence of A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) Authors(Nils,N_{1}) and of P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 1 ) Publication(N_{1}) is no longer required to ensure constraint satisfaction. The result of this insertion is the set 𝔇 ′′′ \hbox{$\mathfrak{D}$}^{\prime\prime\prime} defined by:
+𝔇 ′′′ = ( 𝔇 ′ ∖ { A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 1 ) } ) ∪ { A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , P 235 ) } \hbox{$\mathfrak{D}$}^{\prime\prime\prime}=(\hbox{$\mathfrak{D}$}^{\prime}\setminus\{Authors(Nils,N_{1}),Publication(N_{1})\})\cup\{Authors(Nils,P_{235})\}
+In our implementations, redundancies in 𝔇 \mathfrak{D} are eliminated through the computation of the core , seeking for mapping nulls to constants or nulls so as to detect redundant atoms. In our example, for h h such that h ⁡ ( N 1 ) = P 235 h(N_{1})=P_{235} , we have:
+− - h ⁡ ( A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) ) = A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , P 235 ) h(Authors(Nils,N_{1}))=Authors(Nils,P_{235}) and
+− - h ⁡ ( P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 1 ) ) = P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 235 ) h(Publication(N_{1}))=Publication(P_{235}) ,
+showing that A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N ​ i ​ l ​ s , N 1 ) Authors(Nils,N_{1}) and P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 1 ) Publication(N_{1}) are redundant.
+From-scratch approach. Once the updates are performed on the database, the whole instance is considered for simplifications.
+Incremental approach. This new proposal aims to retrieve only the facts involved in the update operation.
+For instance, for 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} as in our example, in the incremental approach a query detects that N 1 N_{1} is the only null value concerned by the update.
+No need to work with the whole instance 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} .
+From-scratch and incremental approaches at a glance.
+Consider the update process that includes the general ideas explained in items (B) and (C) above.
+Denote, respectively, by upd and u p d | U upd_{|U} , its from-scratch and incremental versions.
+More precisely, when using the u p d | U upd_{|U} policy, only the database portion impacted by U U is concerned, while the whole database is concerned by u ​ p ​ d upd policy.
+The expression 𝔇 ​ ♢ ​ U \hbox{$\mathfrak{D}$}\diamondsuit U indicates the insertion/deletion of the required updates U U in/from 𝔇 \mathfrak{D} .
+In the from-scratch approach the new instance is denoted by 𝔇 ′ = c ​ o ​ r ​ e ​ ( u ​ p ​ d ​ ( 𝔇 ​ ♢ ​ U ) ) \hbox{$\mathfrak{D}$}^{\prime}=core(upd(\hbox{$\mathfrak{D}$}\diamondsuit U)) ,
+while in the incremental approach, the new instance is denoted by 𝔇 ′ = c o r e | N u l l B u c k e t ( u p d | U ( 𝔇 ♢ U ) ) \hbox{$\mathfrak{D}$}^{\prime}=core_{|NullBucket}(upd_{|U}(\hbox{$\mathfrak{D}$}\diamondsuit U)) , where NullBucket , is the set of nulls impacted by the update policy ( u p d | U upd_{|U} ) applied to 𝔇 ​ ♢ ​ U \hbox{$\mathfrak{D}$}\diamondsuit U .
+3 Preliminaries
+We recall some formal definitions already used in [ 9 ] .
+We assume a standard FOL alphabet composed of three pairwise disjoint sets, namely: const , a set of constants, var , a set of variables and pred , a set of predicates, every predicate being associated with a positive integer called its arity.
+In this setting, a term is a constant or a variable and an atomic formula, or an atom, is a formula of the form P ⁡ ( t 1 , … , t n ) P(t_{1},\ldots,t_{n}) where P P is a predicate of arity n n and t 1 , … , t n t_{1},\ldots,t_{n} are terms. Every atom in which no variables occur is called a fact .
+A homomorphism from a set of atoms A 1 A_{1} to a set of atoms A 2 A_{2} is a mapping h h from the terms of A 1 A_{1} to the terms of A 2 A_{2} such that:
+( i ) (i) if t ∈ t\in const , then h ⁡ ( t ) = t h(t)=t , and ( i ​ i ) (ii) if P ⁡ ( t 1 , … , t n ) P(t_{1},...,t_{n}) is in A 1 A_{1} , then P ⁡ ( h ⁡ ( t 1 ) , … , h ⁡ ( t n ) ) P(h(t_{1}),...,h(t_{n})) is in A 2 A_{2} .
+The set A 1 A_{1} is isomorphic to the set A 2 A_{2} if there exists a homomorphism h 1 h_{1} from A 1 A_{1} to A 2 A_{2} which admits an inverse homomorphism (from A 2 A_{2} to A 1 A_{1} ).
+We denote by Φ \Phi the set of all formulas of the form ( ∃ X ) ​ ( φ 1 ​ ( X 1 ) ∧ … ∧ φ n ​ ( X n ) ) (\exists\hbox{{X}})(\varphi_{1}(\hbox{{X}}_{1})\wedge\ldots\wedge\varphi_{n}(\hbox{{X}}_{n})) where X is a vector of variables made of all variables occurring in X i \hbox{{X}}_{i} ( i = 1 , … , n i=1,\ldots,n ), and where for every i = 1 , … , n i=1,\ldots,n , φ i ​ ( X i ) \varphi_{i}(\hbox{{X}}_{i}) is an atomic formula in which the free variables are those in X i \hbox{{X}}_{i} . If ϕ \phi denotes such a formula in Φ \Phi , the set { φ 1 ​ ( X 1 ) , … , φ n ​ ( X n ) } \{\varphi_{1}(\hbox{{X}}_{1}),\ldots,\varphi_{n}(\hbox{{X}}_{n})\} is denoted by a ​ t ​ o ​ m ​ s ​ ( ϕ ) atoms(\phi) .
+Given ϕ \phi in Φ \Phi , a model M M of ϕ \phi is a set of facts such that there exists a homomorphism from a ​ t ​ o ​ m ​ s ​ ( ϕ ) atoms(\phi) to M M . In such a setting, for all ϕ 1 \phi_{1} and ϕ 2 \phi_{2} in Φ \Phi , ϕ 1 ⇒ ϕ 2 \phi_{1}\Rightarrow\phi_{2} holds if each model of ϕ 1 \phi_{1} is a model of ϕ 2 \phi_{2} , and as usual, ϕ 1 \phi_{1} and ϕ 2 \phi_{2} in Φ \Phi are said to be equivalent , denoted by ϕ 1 ⇔ ϕ 2 \phi_{1}\Leftrightarrow\phi_{2} , if ϕ 1 ⇒ ϕ 2 \phi_{1}\Rightarrow\phi_{2} and ϕ 2 ⇒ ϕ 1 \phi_{2}\Rightarrow\phi_{1} both hold, that is if ϕ 1 \phi_{1} and ϕ 2 \phi_{2} have the same models.
+For all ϕ 1 \phi_{1} and ϕ 2 \phi_{2} in Φ \Phi , ϕ 1 \phi_{1} is said to be simpler than ϕ 2 \phi_{2} , denoted by ϕ 1 ⪯ ϕ 2 \phi_{1}\preceq\phi_{2} , if
+( i ) (i) ϕ 1 ⇔ ϕ 2 \phi_{1}\Leftrightarrow\phi_{2} holds, and ( i ​ i ) (ii) a ​ t ​ o ​ m ​ s ​ ( ϕ 1 ) ⊆ a ​ t ​ o ​ m ​ s ​ ( ϕ 2 ) atoms(\phi_{1})\subseteq atoms(\phi_{2}) .
+ϕ 1 \phi_{1} is also said to be a simplification of ϕ 2 \phi_{2} . A simplification ϕ 1 \phi_{1} of ϕ 2 \phi_{2} is said to be minimal if ϕ 1 ⪯ ϕ 2 \phi_{1}\preceq\phi_{2} and there is no ϕ 1 ′ \phi^{\prime}_{1} such that ϕ 1 ′ ≺ ϕ 1 \phi^{\prime}_{1}\prec\phi_{1} .
+For instance, let ϕ \phi be the formula ( ∃ x , y ) ​ ( P ⁡ ( a , x ) ∧ P ⁡ ( a , y ) ) (\exists x,y)(P(a,x)\wedge P(a,y)) ; then ( ∃ x ) ​ ( P ​ ( a , x ) ) (\exists x)(P(a,x)) and ( ∃ y ) ​ ( P ​ ( a , y ) ) (\exists y)(P(a,y)) are two distinct but equivalent simplifications of ϕ \phi .
+It is shown in [ 9 ] that
+if ϕ \phi is in Φ \Phi and ϕ 1 \phi_{1} and ϕ 2 \phi_{2} two minimal simplifications of ϕ \phi , then a ​ t ​ o ​ m ​ s ​ ( ϕ 1 ) atoms(\phi_{1}) and a ​ t ​ o ​ m ​ s ​ ( ϕ 2 ) atoms(\phi_{2}) are isomorphic
+(in the literature, we find a similar result for graphs [ 22 ] ).
+Minimal simplifications are also called cores and the core of a given formula ϕ \phi is denoted by c ​ o ​ r ​ e ​ ( ϕ ) core(\phi) .
+Basically, a database instance is a formula ϕ \phi in Φ \Phi that cannot be simplified, i.e., such that c ​ o ​ r ​ e ​ ( ϕ ) = ϕ core(\phi)=\phi .
+Formulas in Φ \Phi are ‘skolemized’ by replacing the variables with specific constants referred to as Skolem constants or as (marked) nulls and by omitting the existential quantifier.
+We thus assume an additional set of symbols in our alphabet, denoted by null , disjoint from the sets const and var .
+Now a term can be of one of the following types: either a constant, or a null, or a variable.
+Any atom of the form P ⁡ ( t 1 , … , t n ) P(t_{1},\ldots,t_{n}) where for every i = 1 , … , n i=1,\ldots,n , t i t_{i} is in const ∪ null {\mbox{\sc const}}\cup{\mbox{\sc null}} , is called an instantiated atom .
+Given an instantiated atom A A , denote by n ​ u ​ l ​ l ​ ( A ) null(A) the set of nulls appearing in A A .
+Moreover, as usual, the transformed conjunctive formula is written as the set of its conjuncts. In other words, a database instance is a set of instantiated atoms that can be written as a ​ t ​ o ​ m ​ s ​ ( S ​ k ​ ( ϕ ) ) atoms(Sk(\phi)) where S ​ k ​ ( ϕ ) Sk(\phi) is the Skolem version of a formula ϕ \phi in Φ \Phi such that c ​ o ​ r ​ e ​ ( ϕ ) = ϕ core(\phi)=\phi .
+4 Simplification with Respect to Nulls: a Basic Operation
+In our approach, a database 𝔇 \mathfrak{D} is expected to be equal to its core to avoid data redundancy.
+It is thus of paramount importance to enforce this property when updating. To this end, we propose incremental algorithms, so as to deal with as few nulls as possible, based on those involved in the update processing.
+More formally, given a set of atoms I I and a set of nulls ν \nu occurring in I I , we look for a homomorphism h h
+such that for every N N not in ν \nu , h ⁡ ( N ) = N h(N)=N and h ⁡ ( I ) h(I) is minimal so as h ⁡ ( I ) ⊆ I h(I)\subseteq I . However, the following example shows that the choice of ν \nu cannot be arbitrary. Indeed, given a set of nulls ν 0 \nu_{0} , with respect to which I I is to be simplified, the set ν 0 \nu_{0} has to be expanded to the set ν \nu of all nulls ‘linked’ (directly or indirectly) to a null in ν 0 \nu_{0} in some atom of I I .
+Example 1
+Let ν 0 = { N 1 } \nu_{0}=\{N_{1}\} and I I defined by:
+I = { I=\{
+S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( A ​ l ​ i ​ c ​ e ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( A ​ l ​ i ​ c ​ e , N 1 ) , D ​ e ​ g ​ r ​ e ​ e ​ ( N 1 , N 2 ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( A ​ l ​ i ​ c ​ e , M ​ a ​ t ​ h ) , Student(Alice),Enrolled(Alice,N_{1}),Degree(N_{1},N_{2}),Enrolled(Alice,Math),
+D e g r e e ( M a t h , N 3 ) , D e g r e e ( C S , N 4 ) , D e g r e e ( C S , B S c ) } Degree(Math,N_{3}),Degree(CS,N_{4}),Degree(CS,BSc)\penalty\ \}
+To simplify I I with respect to ν 0 \nu_{0} , we should eliminate redundancies in I I involving N 1 N_{1} . As N 1 N_{1} occurs in D ​ e ​ g ​ r ​ e ​ e ​ ( N 1 , N 2 ) Degree(N_{1},N_{2}) with the other null N 2 N_{2} , the simplification should deal with N 1 N_{1} and N 2 N_{2} . Since N 1 N_{1} and N 2 N_{2} are not linked with any other null in the atoms of I I , we have ν = { N 1 , N 2 } \nu=\{N_{1},N_{2}\} . For h h such that h 1 ​ ( N 1 ) = M ​ a ​ t ​ h h_{1}(N_{1})=Math and h 1 ​ ( N 2 ) = N 3 h_{1}(N_{2})=N_{3} , we obtain a non-redundant instance I ′ = h ⁡ ( I ) I^{\prime}=h(I) defined by
+I ′ = { I^{\prime}=\{
+S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( A ​ l ​ i ​ c ​ e ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( A ​ l ​ i ​ c ​ e , M ​ a ​ t ​ h ) , D ​ e ​ g ​ r ​ e ​ e ​ ( M ​ a ​ t ​ h , N 3 ) , Student(Alice),Enrolled(Alice,Math),Degree(Math,N_{3}),
+D e g r e e ( C S , N 4 ) , D e g r e e ( C S , B S c ) } . Degree(CS,N_{4}),Degree(CS,BSc)\penalty\ \}.
+Notice however that simplifications involving N 3 N_{3} or N 4 N_{4} have not to be considered.
+□ \Box
+As shown by the above example, given I I and ν 0 \nu_{0} , nulls ‘linked’ in I I to nulls in ν 0 \nu_{0} have to identified. We do so through the computation for every N N in ν 0 \nu_{0} , of the set 𝖫𝗂𝗇𝗄𝖾𝖽𝖭𝗎𝗅𝗅 I , N {\sf LinkedNull}_{I,N} as explained next.
+We first define the sequence ( LinkedNull I , N k ) k ≥ 0 \left(\textsf{LinkedNull}^{k}_{I,N}\right)_{k\geq 0} by:
+(i)
+LinkedNull I , N 0 = { A i ∈ I ∣ N ∈ n ​ u ​ l ​ l ​ ( A i ) } \textsf{LinkedNull}^{0}_{I,N}=\{A_{i}\in I\mid N\in null(A_{i})\}
+(ii)
+LinkedNull I , N k = { A i ∈ I ∣ ( ∃ A j ∈ LinkedNull I , N k − 1 ) ​ ( n ​ u ​ l ​ l ​ ( A i ) ∩ n ​ u ​ l ​ l ​ ( A j ) ≠ ∅ ) } \textsf{LinkedNull}^{k}_{I,N}=\{A_{i}\in I\mid(\exists A_{j}\in\textsf{LinkedNull}^{k-1}_{I,N})(null(A_{i})\cap null(A_{j})\neq\emptyset)\} .
+It is easy to see that for every k ≥ 0 k\geq 0 , we have
+LinkedNull I , N k ⊆ LinkedNull I , N k + 1 \textsf{LinkedNull}^{k}_{I,N}\subseteq\textsf{LinkedNull}^{k+1}_{I,N} and
+LinkedNull I , N k ⊆ I \textsf{LinkedNull}^{k}_{I,N}\subseteq I .
+Thus, the sequence ( LinkedNull I , N k ) k ≥ 0 \left(\textsf{LinkedNull}^{k}_{I,N}\right)_{k\geq 0}
+is bounded by I I and is monotonic. As I I is finite, the sequence has a unique limit, which is precisely the sub-set of I I denoted by
+LinkedNull I , N \textsf{LinkedNull}_{I,N} .
+It therefore turns out that redundancy has only to be checked with respect to the atoms in ⋃ N ∈ ν 0 LinkedNull I , N \bigcup_{N\in\nu_{0}}\textsf{LinkedNull}_{I,N} and the set ν \nu of all nulls occurring in this set. Algorithm 1 shows how redundancies are dealt with in this context.
+Algorithm 1 S ​ i ​ m ​ p ​ l ​ i ​ f ​ y ​ ( I , ν 0 ) Simplify(I,\nu_{0})
+1:
+  P ​ S ​ e ​ t := { LinkedNull I , N ∣ N ∈ ν 0 } PSet:=\{\textsf{LinkedNull}_{I,N}\mid N\in\nu_{0}\}
+2:
+  for all P ∈ P ​ S ​ e ​ t P\in PSet do
+3:
+  Build the query q c ​ o ​ r ​ e q_{core} and compute its answer q c ​ o ​ r ​ e ​ ( I ) q_{core}(I)
+4:
+   if ∣ ( q c ​ o ​ r ​ e ​ ( I ) ) ∣ > 1 \mid(q_{core}(I))\mid>1 then
+5:
+      h m := h_{m}:= ChooseMostSpec ( q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) )
+6:
+      I := ( I ∖ P ) ∪ h m ​ ( P ) I:=(I\setminus P)\cup h_{m}(P)
+7:
+  return I I
+Algorithm 1 receives as input a set I I of instantiated atoms, and a set of nulls ν 0 \nu_{0} .
+For each N N in ν 0 \nu_{0} , the algorithm computes the set LinkedNull I , N \textsf{LinkedNull}_{I,N}
+(line 1 ), which is stored in a set called P ​ S ​ e ​ t PSet . Therefore, the nulls occurring in P ​ S ​ e ​ t PSet constitute the set ν \nu with respect to which I I is simplified.
+On line 3 , for each P P in P ​ S ​ e ​ t PSet , a query q c ​ o ​ r ​ e : a ​ n ​ s ​ ( X ) ← A 1 ​ ( X 1 ) , … , A n ​ ( X n ) q_{core}:ans(X)\leftarrow A_{1}(X_{1}),\dots,A_{n}(X_{n}) is built by replacing each occurrence of N i N_{i} in P P by x i x_{i} . That is, A i ​ ( X i ) A_{i}(X_{i}) is obtained from A i A_{i} in P P by replacing the nulls in A i A_{i} by the corresponding variables.
+Thus, assuming that p p nulls occur in P P , when evaluating the answer q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) of q c ​ o ​ r ​ e q_{core} , the tuple ( N 1 , … , N p ) (N_{1},\ldots,N_{p}) is obviously returned. However, it may happen that the answer contains other tuples, each of which define a possible instantiation of the nulls in P P . In this case, some atoms in P P are redundant, and thus can be removed.
+To implement these remarks, when the evaluation of q c ​ o ​ r ​ e q_{core} over I I returns more than one tuple (line 4 ),
+one most specific tuple is chosen (line 5 ), and denoting by h m h_{m} the associated homomorphism, I I is simplified (line 6 ) by replacing all atoms A A in P P by h m ​ ( A ) h_{m}(A) .
+Example 2
+Considering I I as in Example 1 and ν 0 = { N 1 } \nu_{0}=\{N_{1}\} , LinkedNull I , N 1 \textsf{LinkedNull}_{I,N_{1}} consists of the atoms
+E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( A ​ l ​ i ​ c ​ e , N 1 ) Enrolled(Alice,N_{1}) and D ​ e ​ g ​ r ​ e ​ e ​ ( N 1 , N 2 ) Degree(N_{1},N_{2}) .
+Thus, the query q c ​ o ​ r ​ e q_{core} is defined by:
+a ​ n ​ s ​ ( x 1 , x 2 ) ← E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( A ​ l ​ i ​ c ​ e , x 1 ) , D ​ e ​ g ​ r ​ e ​ e ​ ( x 1 , x 2 ) ans(x_{1},x_{2})\leftarrow Enrolled(Alice,x_{1}),Degree(x_{1},x_{2})
+returning the answer { ( N 1 , N 2 ) , ( M ​ a ​ t ​ h , N 3 ) } \{(N_{1},N_{2}),(Math,N_{3})\} with more than one tuple. Hence, h m h_{m} such that h m ​ ( N 1 ) = M ​ a ​ t ​ h h_{m}(N_{1})=Math and h m ​ ( N 2 ) = N 3 h_{m}(N_{2})=N_{3} is returned line 5 , and I I is simplified as illustrated in Example 1 . □ \Box
+To explain our method for computing the most specific homomorphism h m h_{m} we introduce the notion of P P -homomorphism.
+Definition 1
+Given I I a set of instantiated atoms and N N a null occurring in I I , let P = LinkedNull I , N P=\textsf{LinkedNull}_{I,N} . A P P -homomorphism is a homomorphism h h such that h ⁡ ( I ) ⊆ I h(I)\subseteq I and for every null N ′ N^{\prime} in n ​ u ​ l ​ l ​ ( I ) ∖ n ​ u ​ l ​ l ​ ( P ) null(I)\setminus null(P) , h ⁡ ( N ′ ) = N ′ h(N^{\prime})=N^{\prime} .
+I I is said to be P P -reducible if there exists a P P -homomorphism h h such that h ⁡ ( I ) h(I) is a strict subset of I I . □ \hfill\penalty\ \Box
+In the following proposition, given a set I I of instantiated atoms and a null N N in ν 0 \nu_{0} , we use the following notation:
+•
+P P denotes the set of atoms LinkedNull I , N \textsf{LinkedNull}_{I,N} , and n ​ u ​ l ​ l ​ ( P ) = { N 1 , … ​ N p } null(P)=\{N_{1},\ldots N_{p}\} denotes the set of nulls occurring in P P ;
+•
+q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) is the answer to q c ​ o ​ r ​ e q_{core} computed against I I . That is, q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) is the set { h 1 , … , h q } \{h_{1},\ldots,h_{q}\} of all possible P P -homomorphisms defined over n ​ u ​ l ​ l ​ ( P ) null(P) . We suppose that h 1 h_{1} is the identity, i.e., for every j = 1 , … , p j=1,\ldots,p , h 1 ​ ( N j ) = N j h_{1}(N_{j})=N_{j} ;
+•
+H P H_{P} denotes the table with p p columns and q q rows such that H P ​ [ i , j ] = h i ​ ( N j ) H_{P}[i,j]=h_{i}(N_{j}) .
+•
+Given a set of atoms Q Q , we denote by c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( Q ) cons\_null(Q) the set of all symbols σ \sigma such that σ \sigma is a constant or a null not in n ​ u ​ l ​ l ​ ( Q ) null(Q) .
+We recall that given two homomorphisms h 1 h_{1} and h 2 h_{2} over the same set of symbols Σ \Sigma , h 1 h_{1} is said to be less specific than h 2 h_{2} , denoted by h 1 ⪯ h 2 h_{1}\preceq h_{2} , if there exists a homomorphism h h over Σ \Sigma such that h ∘ h 1 = h 2 h\circ h_{1}=h_{2} . Using these notation, the following proposition holds.
+Proposition 1
+Given h i h_{i} and h i ′ h_{i^{\prime}} in q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) , h i ⪯ h i ′ h_{i}\preceq h_{i^{\prime}} holds if and only if, for every j = 1 , … , p j=1,\dots,p , we have:
+1.
+If H P ​ [ i , j ] H_{P}[i,j] is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) , then H P ​ [ i , j ] = H P ​ [ i ′ , j ] H_{P}[i,j]=H_{P}[i^{\prime},j] ;
+2.
+If H P ​ [ i , j ] H_{P}[i,j] is a null N N in n ​ u ​ l ​ l ​ ( P ) null(P) , then for every j ′ ≠ j j^{\prime}\neq j such that H P ​ [ i , j ] = H P ​ [ i , j ′ ] H_{P}[i,j]=H_{P}[i,j^{\prime}] it holds that H P ​ [ i ′ , j ] = H P ​ [ i ′ , j ′ ] H_{P}[i^{\prime},j]=H_{P}[i^{\prime},j^{\prime}] .
+Proof.
+Let us first assume that h i ⪯ h i ′ h_{i}\preceq h_{i^{\prime}} holds. In this case, there exists h h such that h ∘ h i = h i ′ h\circ h_{i}=h_{i^{\prime}} . If N j N_{j} is such that h i ​ ( N j ) h_{i}(N_{j}) is a constant or a null not in n ​ u ​ l ​ l ​ ( P ) null(P) , then for every P P -homomorphism h P h_{P} , h P ​ ( h i ​ ( N j ) ) = h i ​ ( N j ) h_{P}(h_{i}(N_{j}))=h_{i}(N_{j}) . Hence, h i ′ ​ ( N j ) = h ∘ h i ​ ( N j ) = h i ​ ( N j ) h_{i^{\prime}}(N_{j})=h\circ h_{i}(N_{j})=h_{i}(N_{j}) , which shows item (1). If j j and j ′ j^{\prime} are such that h i ​ ( N j ) = h i ​ ( N j ′ ) h_{i}(N_{j})=h_{i}(N_{j^{\prime}}) , then h i ′ ​ ( N j ) = h i ′ ​ ( N j ′ ) h_{i^{\prime}}(N_{j})=h_{i^{\prime}}(N_{j^{\prime}}) also holds, showing item (2).
+Conversely, assume that for h i h_{i} and h i ′ h_{i^{\prime}} , items (1) and (2) hold. Let h h be defined for every j = 1 , … , p j=1,\ldots,p as follows: if there exists N k N_{k} such that h i ​ ( N k ) = N j h_{i}(N_{k})=N_{j} then h ⁡ ( N j ) = h i ′ ​ ( N k ) h(N_{j})=h_{i^{\prime}}(N_{k}) , otherwise h ⁡ ( N j ) = N j h(N_{j})=N_{j} . We first notice that h h is well defined. Indeed, if k k and k ′ k^{\prime} are such that h i ​ ( N k ) = h i ​ ( N k ′ ) h_{i}(N_{k})=h_{i}(N_{k^{\prime}}) , then we have two expressions defining h ⁡ ( N j ) h(N_{j}) , namely h ⁡ ( N j ) = h i ′ ​ ( N k ) h(N_{j})=h_{i^{\prime}}(N_{k}) and h ⁡ ( N j ) = h i ′ ​ ( N k ′ ) h(N_{j})=h_{i^{\prime}}(N_{k^{\prime}}) . However, by item (2) we have h i ′ ​ ( N k ) = h i ′ ​ ( N k ′ ) h_{i^{\prime}}(N_{k})=h_{i^{\prime}}(N_{k^{\prime}}) , and thus, these two expressions yield the same value. We now prove that h i ⪯ h i ′ h_{i}\preceq h_{i^{\prime}} , that is, that for every k = 1 , … , p k=1,\ldots,p , then h i ′ ​ ( N k ) = h ⁡ ( h i ​ ( N k ) ) h_{i^{\prime}}(N_{k})=h(h_{i}(N_{k})) . If h i ​ ( N k ) h_{i}(N_{k}) is not in n ​ u ​ l ​ l ​ ( P ) null(P) , then, we have h i ​ ( N k ) = h i ′ ​ ( N k ) = N k h_{i}(N_{k})=h_{i^{\prime}}(N_{k})=N_{k} , and by construction of h h we also have h ⁡ ( N K ) = N k h(N_{K})=N_{k} . Therefore h i ′ ​ ( N k ) = h ⁡ ( h i ​ ( N k ) ) = N k h_{i^{\prime}}(N_{k})=h(h_{i}(N_{k}))=N_{k} . On the other hand, if h i ​ ( N k ) = N j h_{i}(N_{k})=N_{j} , by definition of h h , we have h i ′ ​ ( N k ) = h ⁡ ( N j ) h_{i^{\prime}}(N_{k})=h(N_{j}) . Hence, h i ′ ​ ( N k ) = h ⁡ ( N j ) = h ⁡ ( h i ​ ( N k ) ) h_{i^{\prime}}(N_{k})=h(N_{j})=h(h_{i}(N_{k})) . Since for every k = 1 , … , p k=1,\ldots,p , we have h i ′ ​ ( N k ) = h ⁡ ( N j ) = h ⁡ ( h i ​ ( N k ) ) h_{i^{\prime}}(N_{k})=h(N_{j})=h(h_{i}(N_{k})) , it follows that h i ⪯ h i ′ h_{i}\preceq h_{i^{\prime}} , and the proof is complete.
+□ \Box
+Example 3
+Let I = { B ( N 1 , N 2 ) , I=\{B(N_{1},N_{2}), B ⁡ ( N 2 , N 1 ) , B(N_{2},N_{1}), C ⁡ ( N 1 , a ) , C(N_{1},a), C ⁡ ( N 2 , a ) , C(N_{2},a), C ( N 3 , a ) } C(N_{3},a)\} and ν 0 = { N 1 } \nu_{0}=\{N_{1}\} .
+In this case, P = { { B ( N 1 , N 2 ) , P=\{\{B(N_{1},N_{2}), B ⁡ ( N 2 , N 1 ) , B(N_{2},N_{1}), C ⁡ ( N 1 , a ) , C(N_{1},a), C ( N 2 , a ) } } C(N_{2},a)\}\} and thus n ​ u ​ l ​ l ​ ( P ) = { N 1 , N 2 } null(P)=\{N_{1},N_{2}\} and c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) = { a , N 3 } cons\_null(P)=\{a,N_{3}\} .
+This implies that P P -homomorphisms should not change N 3 N_{3} , or in other words, N 3 N_{3} should be treated as constant. The query q c ​ o ​ r ​ e q_{core} is thus written as follows:
+q c ​ o ​ r ​ e : a ​ n ​ s ​ ( x 1 , x 2 ) ← B ⁡ ( x 1 , x 2 ) , B ⁡ ( x 2 , x 1 ) , C ⁡ ( x 1 , a ) , C ⁡ ( x 2 , a ) q_{core}:ans(x_{1},x_{2})\leftarrow B(x_{1},x_{2}),B(x_{2},x_{1}),C(x_{1},a),C(x_{2},a)
+and the table H P H_{P} representing the answer q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) is shown below.
+H P H_{P}
+x 1 x_{1}
+x 2 x_{2}
+1
+N 1 N_{1}
+N 2 N_{2}
+2
+N 2 N_{2}
+N 1 N_{1}
+H P H_{P} has 2 columns (because n ​ u ​ l ​ l ​ ( P ) null(P) contains two nulls), and 2 rows due to two answers in q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) .
+It is easy to see that h 1 ⪯ h 2 h_{1}\preceq h_{2} , and h 2 ⪯ h 1 h_{2}\preceq h_{1}
+meaning that there is no advantage in trying to simplify the database instance in this case.
+Indeed, we have h 1 ​ ( I ) = I h_{1}(I)=I , where h 1 h_{1} is the identity.
+We have h 2 ​ ( I ) = I h_{2}(I)=I as well, although h 2 h_{2} is not the identity.
+Remark that h 2 h_{2} does not satisfy h 2 = h 2 ∘ h 2 h_{2}=h_{2}\circ h_{2} ( i.e., h 2 h_{2} is not idempotent) because h 2 ​ ( h 2 ​ ( N 1 ) ) = h 2 ​ ( N 2 ) = N 1 h_{2}(h_{2}(N_{1}))=h_{2}(N_{2})=N_{1} , whereas h 2 ​ ( N 1 ) = N 2 h_{2}(N_{1})=N_{2} . As will be seen shortly, detecting such homomorphisms allows for computational optimizations.
+□ \Box
+The following corollary shows how to find one most specific homomorphism, based on Proposition 1 . To state the corollary, we use the following notation for i = 1 , … , q i=1,\ldots,q :
+•
+γ i \gamma_{i} is the number of nulls N N in n ​ u ​ l ​ l ​ ( P ) null(P) such that h i ​ ( N ) h_{i}(N) is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) ;
+•
+μ i = { k ∈ { 1 , … , q } | ( ∀ j = 1 , … , p ) ( h i ( N j ) ∈ c o n s _ n u l l ( P ) ⇒ h k ( N j ) = h i ( N j ) ) } \mu_{i}=\{k\in\{1,\ldots,q\}\penalty\ |\penalty\ (\forall j=1,\ldots,p)(h_{i}(N_{j})\in cons\_null(P)\Rightarrow h_{k}(N_{j})=h_{i}(N_{j}))\} ;
+•
+π i \pi_{i} is the number of distinct nulls in n ​ u ​ l ​ l ​ ( P ) null(P) in the set h i ​ ( n ​ u ​ l ​ l ​ ( P ) ) h_{i}(null(P)) .
+Intuitively speaking, considering that H P H_{P} is the tableau, then γ i \gamma_{i} is the number of columns that, at row i i , contain a symbol in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) . On the other hand, μ i \mu_{i} is the set of all rows in H P H_{P} containing the same symbols of c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) in the same columns as row i i does ( i.e.,   if h i ​ ( N j ) = c h_{i}(N_{j})=c then h k ​ ( N j ) = c h_{k}(N_{j})=c ). Then π i \pi_{i} is the number of distinct nulls in n ​ u ​ l ​ l ​ s ​ ( P ) nulls(P) occurring in row i i .
+The corollary below formalizes the following informal remarks:
+1.
+If h i ≠ h i ∘ h i h_{i}\neq h_{i}\circ h_{i} , then h i h_{i} cannot be one of the most specific homomorphisms, because in this case, h i ≺ h i ∘ h i h_{i}\prec h_{i}\circ h_{i} . For instance, in Example 3 , we have h 2 ≠ h 2 ∘ h 2 h_{2}\neq h_{2}\circ h_{2} .
+2.
+Most specific homomorphisms are among the rows of H P H_{P} with the largest number of symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) .
+Indeed, let h i h_{i} and h j h_{j} be such that row i i contains strictly more symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) than row j j and h i ≺ h j h_{i}\prec h_{j} . Then, there exists h h such that h ∘ h i = h j h\circ h_{i}=h_{j} , and so, if N N in n ​ u ​ l ​ l ​ ( P ) null(P) is such that h i ​ ( N ) h_{i}(N) is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) , we have h ⁡ ( h i ​ ( N ) ) = h i ​ ( N ) h(h_{i}(N))=h_{i}(N) , and so h i ​ ( N ) = h j ​ ( N ) h_{i}(N)=h_{j}(N) .
+Thus, row j j has at least as many symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) as row i i , which implies a contradiction. Hence, for every N N in n ​ u ​ l ​ l ​ ( P ) null(P) , h i ​ ( N ) h_{i}(N) is also in n ​ u ​ l ​ l ​ ( P ) null(P) , in which case rows i i and j j have no symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) , which is another contradiction.
+3.
+Considering one of the rows defined just above, say row i i , among all rows having the same symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) in the same columns as row i i , we argue that a row with as few distinct nulls in n ​ u ​ l ​ l ​ ( P ) null(P) defines one most specific homomorphism.
+Corollary 1
+Given I I and P P as above, denoting by { h 1 , … , h q } \{h_{1},\ldots,h_{q}\} the set q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) , the following holds:
+1.
+If h i h_{i} is one of the most specific P P -homomorphisms in q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) then h i h_{i} is idempotent, that is, h i ∘ h i = h i h_{i}\circ h_{i}=h_{i} .
+2.
+h i h_{i} is one of the most specific P P -homomorphisms in q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) if (a) γ i = max 1 ≤ j ≤ q ⁡ ( γ j ) \gamma_{i}=\max_{1\leq j\leq q}(\gamma_{j}) , and
+(b) π i = min k ∈ μ i ⁡ ( π k ) \pi_{i}=\min_{k\in\mu_{i}}(\pi_{k}) .
+Proof.
+First, Proposition 1 implies that h i ⪯ h i ∘ h i h_{i}\preceq h_{i}\circ h_{i} holds for every h i h_{i} . Moreover, as h i h_{i} is a P P -homomorphism, we have h i ​ ( I ) ⊆ I h_{i}(I)\subseteq I . Thus h i ∘ h i ​ ( I ) ⊆ I h_{i}\circ h_{i}(I)\subseteq I , which implies that h i ∘ h i h_{i}\circ h_{i} is a P P -homomorphism as well. The proof of item (1) is therefore complete.
+Assume that h i h_{i} satisfies (2) and let h k h_{k} be a P P -homomorphism such that h i ⪯ h k h_{i}\preceq h_{k} . By Proposition 1 , if h i ​ ( N j ) h_{i}(N_{j}) is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) , then h i ​ ( N j ) = h k ​ ( N j ) h_{i}(N_{j})=h_{k}(N_{j}) . Therefore, γ i ≤ γ k \gamma_{i}\leq\gamma_{k} , and as γ k ≤ γ i \gamma_{k}\leq\gamma_{i} , this implies γ i = γ k \gamma_{i}=\gamma_{k} . Thus, k k is in μ i \mu_{i} , which implies that h i ​ ( N j ) h_{i}(N_{j}) is in n ​ u ​ l ​ l ​ ( P ) null(P) if and only if so is h k ​ ( N j ) h_{k}(N_{j}) . By Proposition 1 , if j j and j ′ j^{\prime} are such that h i ​ ( N j ) = h i ​ ( N j ′ ) h_{i}(N_{j})=h_{i}(N_{j^{\prime}}) then we also have h k ​ ( N j ) = h k ​ ( N j ′ ) h_{k}(N_{j})=h_{k}(N_{j^{\prime}}) . It therefore follows that less nulls in n ​ u ​ l ​ l ​ ( P ) null(P) occur for h k h_{k} , that is π k ≤ π i \pi_{k}\leq\pi_{i} . As π i ≤ π k \pi_{i}\leq\pi_{k} must hold, we obtain that π i = π k \pi_{i}=\pi_{k} , meaning that h i h_{i} and h k h_{k} are equal up to a null renaming. The proof is therefore complete.
+□ \Box
+Algorithm 2 C ​ h ​ o ​ o ​ s ​ e ​ M ​ o ​ s ​ t ​ S ​ p ​ e ​ c ​ i ​ f ​ i ​ c ​ ( q c ​ o ​ r ​ e ​ ( I ) ) ChooseMostSpecific(q_{core}(I))
+1:
+ Build H P H_{P} as explained in Proposition 1
+{
+3
+H P H_{P} has q q rows and p p columns}
+2:
+  r ​ o ​ w ​ _ ​ m ​ a ​ x := 1 row\_max:=1 ; c ​ o ​ u ​ n ​ t ​ _ ​ m ​ a ​ x := 0 count\_max:=0 ; i := 2 i:=2
+3:
+  for all i = 2 , … , q i=2,\ldots,q do
+4:
+   i ​ d ​ e ​ m ​ P ​ o ​ t := 𝚝𝚛𝚞𝚎 idemPot:={\tt true}
+5:
+   c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r := 0 count\_curr:=0 ; j := 1 j:=1
+6:
+   while i ​ d ​ e ​ m ​ P ​ o ​ t = 𝚝𝚛𝚞𝚎 idemPot={\tt true} and j ≤ p j\leq p do
+7:
+      if H P ​ [ i , j ] H_{P}[i,j] is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) then
+8:
+       c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r := c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r + 1 count\_curr:=count\_curr+1
+9:
+      else
+10:
+      Let N k = H P ​ [ i , j ] N_{k}=H_{P}[i,j] { N k N_{k} is in n ​ u ​ l ​ l ​ ( P ) null(P) }
+11:
+       if H P ​ [ i , k ] ≠ N k H_{P}[i,k]\neq N_{k} then
+12:
+         i ​ d ​ e ​ m ​ P ​ o ​ t := 𝚏𝚊𝚕𝚜𝚎 idemPot:={\tt false} { h i h_{i} is not idem-potent}
+13:
+        Mark row H P ​ [ i ] H_{P}[i]
+14:
+      j := j + 1 j:=j+1
+15:
+   if i ​ d ​ e ​ m ​ P ​ o ​ t = 𝚝𝚛𝚞𝚎 idemPot={\tt true} then
+16:
+      if c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r > c ​ o ​ u ​ n ​ t ​ _ ​ m ​ a ​ x count\_curr>count\_max then
+17:
+       r ​ o ​ w ​ _ ​ m ​ a ​ x := i row\_max:=i
+18:
+       c ​ o ​ u ​ n ​ t ​ _ ​ m ​ a ​ x := c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r count\_max:=count\_curr
+19:
+  r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c := r ​ o ​ w ​ _ ​ m ​ a ​ x row\_spec:=row\_max
+20:
+ Let c ​ o ​ u ​ n ​ t ​ _ ​ m ​ i ​ n count\_min be the number of distinct nulls in n ​ u ​ l ​ l ​ ( P ) null(P) occurring in H P ​ [ r ​ o ​ w ​ _ ​ m ​ a ​ x ] H_{P}[row\_max]
+21:
+  for all i = 2 , … , q i=2,\ldots,q do
+22:
+   if row H P ​ [ i ] H_{P}[i] is not marked and i ≠ r ​ o ​ w ​ _ ​ m ​ a ​ x i\neq row\_max then
+23:
+      m ​ a ​ t ​ c ​ h := 𝚝𝚛𝚞𝚎 match:={\tt true} ; j := 1 j:=1
+24:
+      while m ​ a ​ t ​ c ​ h = 𝚝𝚛𝚞𝚎 match={\tt true} and j ≤ p j\leq p do
+25:
+       if H P ​ [ r ​ o ​ w ​ _ ​ m ​ a ​ x , j ] H_{P}[row\_max,j] is in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) and H P ​ [ r ​ o ​ w ​ _ ​ m ​ a ​ x , j ] ≠ H P ​ [ i , j ] H_{P}[row\_max,j]\neq H_{P}[i,j] then
+26:
+         m ​ a ​ t ​ c ​ h := 𝚏𝚊𝚕𝚜𝚎 match:={\tt false}
+27:
+       j := j + 1 j:=j+1
+28:
+      if m ​ a ​ t ​ c ​ h = 𝚝𝚛𝚞𝚎 match={\tt true} then
+29:
+      Let c ​ o ​ u ​ n ​ t ​ _ ​ n ​ u ​ l ​ l count\_null be the number of distinct nulls in n ​ u ​ l ​ l ​ ( P ) null(P) occurring in H P ​ [ i ] H_{P}[i]
+30:
+       if c ​ o ​ u ​ n ​ t ​ _ ​ n ​ u ​ l ​ l < c ​ o ​ u ​ n ​ t ​ _ ​ m ​ i ​ n count\_null<count\_min then
+31:
+         r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c := i row\_spec:=i
+32:
+         c ​ o ​ u ​ n ​ t ​ _ ​ m ​ i ​ n := c ​ o ​ u ​ n ​ t ​ _ ​ n ​ u ​ l ​ l count\_min:=count\_null
+33:
+  return h m h_{m} , the homomorphism defined by H P ​ [ r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c ] H_{P}[row\_spec]
+As a consequence, finding a most specific P P -homomorphism in q c ​ o ​ r ​ e ​ ( I ) q_{core}(I) amounts to ( i ) (i) discard any row not defining an idem-potent homomorphism and ( i ​ i ) (ii) among the remaining rows, identify one homomorphism satisfying item 2 of Corollary 1 . Algorithm 2 shows how to compute such a most specific homomorphism, and we notice that this does not require data access. To end the section, we illustrate Algorithm 2 as follows.
+Example 4
+We first consider the context of Example 3 , where I = { B ( N 1 , N 2 ) , I=\{B(N_{1},N_{2}), B ⁡ ( N 2 , N 1 ) , B(N_{2},N_{1}), C ⁡ ( N 1 , a ) , C(N_{1},a), C ⁡ ( N 2 , a ) , C(N_{2},a), C ( N 3 , a ) } C(N_{3},a)\} and
+P = { B ( N 1 , N 2 ) , P=\{B(N_{1},N_{2}), B ⁡ ( N 2 , N 1 ) , B(N_{2},N_{1}), C ⁡ ( N 1 , a ) , C(N_{1},a), C ( N 2 , a ) } C(N_{2},a)\} .
+In this case, n ​ u ​ l ​ l ​ ( P ) = { N 1 , N 2 } null(P)=\{N_{1},N_{2}\} , c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) = { N 3 } cons\_null(P)=\{N_{3}\} , and the associated table H P H_{P} has been shown already.
+Applying Algorithm 2 based on the table H P H_{P} , the following computations are achieved.
+The first loop line 7 aims at marking rows defining non idempotent P P -homomorphisms (that is, such that h ∘ h ≠ h h\circ h\neq h ) and mean-while to find one unmarked row with as many symbols in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) as possible, in reference to Corollary 1 (2). These computations return the following:
+•
+When processing row 2 2 of H P H_{P} , we have H P ​ [ 2 , 1 ] = N 2 H_{P}[2,1]=N_{2} where N 2 N_{2} is in n ​ u ​ l ​ l ​ ( P ) null(P) , and H P ​ [ i , 2 ] = N 1 H_{P}[i,2]=N_{1} . Since N 1 ≠ N 2 N_{1}\neq N_{2} , i ​ d ​ e ​ m ​ P ​ o ​ t idemPot is set to 𝚏𝚊𝚕𝚜𝚎 {\tt false} and row 2 2 is marked on line 27 .
+•
+Since there is no other row to process, the loop line 7 returns r ​ o ​ w ​ _ ​ m ​ a ​ x = 1 row\_max=1 and c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r = 0 count\_curr=0 .
+Hence, Algorithm 2 returns r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c = 1 row\_spec=1 and so, h m h_{m} is defined by h m ​ ( N 1 ) = N 1 h_{m}(N_{1})=N_{1} and h m ​ ( N 2 ) = N 2 h_{m}(N_{2})=N_{2} . In other words, I I is not simplified, which is indeed the expected result.
+We now illustrate further Algorithm 2 , using two more sophisticated cases.
+First, let ν 0 = { N 1 } \nu_{0}=\{N_{1}\} and I 1 = { B ( N 1 , N 2 ) , I_{1}=\{B(N_{1},N_{2}), B ⁡ ( a , N 2 ) , B(a,N_{2}), B ⁡ ( a , N 3 ) , B(a,N_{3}), B ⁡ ( N 4 , N 3 ) , B(N_{4},N_{3}), C ⁡ ( N 2 , N 2 ) , C(N_{2},N_{2}), C ( N 3 , N 3 ) } C(N_{3},N_{3})\} .
+In this case, LinkedNull I , N 1 = { N 1 , N 2 } \textsf{LinkedNull}_{I,N_{1}}=\{N_{1},N_{2}\} and thus, P ​ S ​ e ​ t = { P } PSet=\{P\} where P = { B ( N 1 , N 2 ) , P=\{B(N_{1},N_{2}), B ⁡ ( a , N 2 ) , B(a,N_{2}), C ( N 2 , N 2 ) } C(N_{2},N_{2})\} . Moreover, the query
+q c ​ o ​ r ​ e : a ​ n ​ s ​ ( x 1 , x 2 ) ← B ⁡ ( x 1 , x 2 ) , B ⁡ ( a , x 2 ) , C ⁡ ( x 2 , x 2 ) q_{core}:ans(x_{1},x_{2})\leftarrow B(x_{1},x_{2}),B(a,x_{2}),C(x_{2},x_{2})
+is generated and its answer against I 1 I_{1} , q c ​ o ​ r ​ e ​ ( I 1 ) q_{core}(I_{1}) , is defined in the following table H P 1 H^{1}_{P} :
+H P 1 H_{P}^{1}
+x 1 x_{1}
+x 2 x_{2}
+1
+N 1 N_{1}
+N 2 N_{2}
+2
+a a
+N 2 N_{2}
+3
+a a
+N 3 N_{3}
+4
+N 4 N_{4}
+N 3 N_{3}
+H P 1 H_{P}^{1} has 2 columns and 4 rows due to four possible answers in q c ​ o ​ r ​ e ​ ( I 1 ) q_{core}(I_{1}) . Moreover,
+h 1 ⪯ h 2 h_{1}\preceq h_{2} , h 2 ⪯ h 3 h_{2}\preceq h_{3} and h 2 ⪯ h 4 h_{2}\preceq h_{4} . Notice that
+h 3 h_{3} and h 4 h_{4} are not comparable because a , N 3 a,N_{3} and N 4 N_{4} are in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) .
+Applying Algorithm 2 based on the table H P 1 H_{P}^{1} , the first loop line 7 achieves the following:
+•
+No row is marked as non-idempotent on line 27 . This is so because for every i = 1 , … , 4 i=1,\ldots,4 , and every j = 1 , 2 j=1,2 , if H P 1 ​ [ i , j ] = N k H^{1}_{P}[i,j]=N_{k} where N k N_{k} is N 1 N_{1} or N 2 N_{2} , H P 1 ​ [ i , k ] = N k H^{1}_{P}[i,k]=N_{k} .
+•
+Regarding the value of c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r count\_curr , the computed value is 0 0 for the first row, 1 1 for row 2 2 , and 2 2 for rows 3 3 and 4 4 (because a , N 3 a,N_{3} and N 4 N_{4} are in c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l ​ ( P ) cons\_null(P) ). Thus, applying the test line 33 , c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r count\_curr to set to 2 2 , and on line 35 , r ​ o ​ w ​ _ ​ m ​ a ​ x row\_max is set to 3 3 . Indeed, although for row 4 4 , we have c ​ o ​ u ​ n ​ t ​ _ ​ c ​ u ​ r ​ r = 2 count\_curr=2 , the test line 33 fails, and thus the value of r ​ o ​ w ​ _ ​ m ​ a ​ x row\_max is not changed. Then, r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c row\_spec is set to 3 3 on line 39 and c ​ o ​ n ​ t ​ _ ​ m ​ i ​ n cont\_min is set to 0 0 on line 41 .
+Therefore, processing the loop line 43 yields no change and Algorithm 2 returns h m h_{m} defined by h m ​ ( N 1 ) = a h_{m}(N_{1})=a and h m ​ ( N 2 ) = N 3 h_{m}(N_{2})=N_{3} , in which case, h m ​ ( I 1 ) = { B ⁡ ( a , N 3 ) , B ⁡ ( N 4 , N 3 ) , C ⁡ ( N 3 , N 3 ) } h_{m}(I_{1})=\{B(a,N_{3}),B(N_{4},N_{3}),C(N_{3},N_{3})\} , which is not redundant, when considering N 3 N_{3} and N 4 N_{4} as particular ‘constants’.
+As a more sophisticated illustration of Algorithm 2 , let ν 0 = { N 1 } \nu_{0}=\{N_{1}\} and I 2 = { B ( N 1 , N 2 ) , I_{2}=\{B(N_{1},N_{2}), B ⁡ ( a , N 2 ) , B(a,N_{2}), C ⁡ ( N 2 , N 2 ) , C(N_{2},N_{2}), C ( N 2 , N 3 ) } C(N_{2},N_{3})\} .
+Here, LinkedNull I , N 1 = { N 1 , N 2 , N 3 } \textsf{LinkedNull}_{I,N_{1}}=\{N_{1},N_{2},N_{3}\} and thus, P ​ S ​ e ​ t = { P } PSet=\{P\} where P = { B ( N 1 , N 2 ) , P=\{B(N_{1},N_{2}), B ⁡ ( a , N 2 ) , B(a,N_{2}), C ⁡ ( N 2 , N 2 ) , C(N_{2},N_{2}), C ( N 2 , N 3 ) } C(N_{2},N_{3})\} .
+Moreover, the query:
+q c ​ o ​ r ​ e : a ​ n ​ s ​ ( x 1 , x 2 , x 3 ) ← B ⁡ ( x 1 , x 2 ) , B ⁡ ( a , x 2 ) , C ⁡ ( x 2 , x 2 ) , C ⁡ ( x 2 , x 3 ) q_{core}:ans(x_{1},x_{2},x_{3})\leftarrow B(x_{1},x_{2}),B(a,x_{2}),C(x_{2},x_{2}),C(x_{2},x_{3})
+is generated and q c ​ o ​ r ​ e ​ ( I 2 ) q_{core}(I_{2}) , is defined in the following table H P 2 H^{2}_{P} :
+H P 2 H_{P}^{2}
+x 1 x_{1}
+x 2 x_{2}
+x 3 x_{3}
+1
+N 1 N_{1}
+N 2 N_{2}
+N 3 N_{3}
+2
+N 1 N_{1}
+N 2 N_{2}
+N 2 N_{2}
+3
+a a
+N 2 N_{2}
+N 3 N_{3}
+4
+a a
+N 2 N_{2}
+N 2 N_{2}
+H P 2 H_{P}^{2} has 3 columns and 4 rows due to four possible answers in q c ​ o ​ r ​ e ​ ( I 2 ) q_{core}(I_{2}) . Moreover,
+h 1 ≺ h 2 h_{1}\prec h_{2} , h 1 ≺ h 3 h_{1}\prec h_{3} , h 2 ≺ h 4 h_{2}\prec h_{4} and h 3 ≺ h 4 h_{3}\prec h_{4} .
+Applying Algorithm 2 based on the table H P 2 H_{P}^{2} , the loop line 7 achieves the following:
+•
+As above, no row is marked as non idempotent on line 27 . This is so because for i = 1 , … , 4 i=1,\ldots,4 , and j = 1 , 2 , 3 j=1,2,3 , if H P 2 ​ [ i , j ] = N k H^{2}_{P}[i,j]=N_{k} where N k N_{k} is N 1 N_{1} , N 2 N_{2} or N 3 N_{3} , H P 2 ​ [ i , k ] = N k H^{2}_{P}[i,k]=N_{k} .
+•
+As above, on line 35 , r ​ o ​ w ​ _ ​ m ​ a ​ x row\_max is set to 3 3 and thus, r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c row\_spec is set to 3 3 on line 39 . Here, c ​ o ​ u ​ n ​ t ​ _ ​ m ​ i ​ n count\_min is set to 2 2 on line 41 because N 2 N_{2} and N 3 N_{3} are in n ​ u ​ l ​ l ​ ( P ) null(P) .
+When processing the loop line 43 , the only row to be considered is row 4 4 , for which m ​ a ​ t ​ c ​ h match is true , thus implying that the test on line 57 succeeds. Since for row 4 4 , the value of c ​ o ​ u ​ n ​ t ​ _ ​ n ​ u ​ l ​ l count\_null is 1 1 (because row 4 4 contains the only null N 2 N_{2} ), the value of r ​ o ​ w ​ _ ​ s ​ p ​ e ​ c row\_spec is set to 4 4 , line 63 . Hence, Algorithm 2 returns h m h_{m} defined by h m ​ ( N 1 ) = a h_{m}(N_{1})=a , h m ​ ( N 2 ) = N 2 h_{m}(N_{2})=N_{2} and h m ​ ( N 3 ) = N 2 h_{m}(N_{3})=N_{2} .
+In this case, h m ​ ( I 2 ) = { B ⁡ ( a , N 2 ) , C ⁡ ( N 2 , N 2 ) } h_{m}(I_{2})=\{B(a,N_{2}),C(N_{2},N_{2})\} , which is not redundant.
+□ \Box
+Homomorphisms have been used in database theory during the last decades, in the field of query optimization [ 4 , 10 ] (we refer to [ 2 ] for an overview). We notice in this respect that, in [ 4 ] , a partial pre-ordering between homomorphisms is defined using the same criteria as in Proposition 1 , showing that our approach to simplification is closely related to the field of query optimization.
+Roughly, in our approach, we compare all the answers ( h 1 , … ​ h q h_{1},\dots h_{q} ) for q c ​ o ​ r ​ e q_{core} and chose one ( h m h_{m} ) among the most specific ones
+(which are incomparable).
+From another point of view, if we consider queries Q 1 Q_{1} , Q 2 Q_{2} , … \dots , Q q Q_{q} as the instantiations of q c ​ o ​ r ​ e q_{core} by h 1 , … ​ h q h_{1},\dots h_{q} , respectively, then h m h_{m} is a homomorphism such that h m ​ ( b ​ o ​ d ​ y ​ ( Q i ) ) = b ​ o ​ d ​ y ​ ( Q ) h_{m}(body(Q_{i}))=body(Q) for all Q ⊆ Q i Q\subseteq Q_{i} .
+Actually, our simplification technique is based on tableau optimization, as done in [ 4 ] for query optimization, where the sets of variables and of distinguished variables are, respectively, called, in our approach, the n ​ u ​ l ​ l ​ ( P ) null(P) and c ​ o ​ n ​ s ​ _ ​ n ​ u ​ l ​ l cons\_null . However, the contexts and the expectations in our approach are fundamentally different from those summarized in [ 2 ] .
+Indeed:
+•
+In [ 2 ] , the tableau is built up from the query body , whereas in our approach, the tableau is built up from the answer to a given query.
+•
+Our approach generates one most specific homomorphism, where as the approach shown in [ 2 ] aims at discarding all non most specific.
+As a result, the problem we deal with can be seen as more specific than the general case considered in [ 2 , 4 ] , thus resulting in a specific algorithm.
+5 Incremental Updating
+In [ 9 ] , update algorithms work on in-memory data, using no DataBase Management System (DBMS).
+This version considers a DBMS, based on which data access is implemented through queries.
+In this section, we show how to implement updates by restricting data access as much as possible.
+Query
+Algo
+Purpose
+q b ​ u ​ c ​ k ​ e ​ t ​ ( I ) [ S ] q_{bucket}(I)_{[S]}
+3 , 5
+retrieves all nulls in I I appearing in an atom
+p ⁡ ( … ) p(...) such that p p is a predicate in a given set S S
+q d ​ e ​ g ​ r ​ e ​ e ​ ( I ) [ S , δ m ​ a ​ x ] q_{degree}(I)_{[S,\delta_{max}]}
+3
+for each N N in S S , checks if N N is in I I and if
+δ ⁡ ( N ) < δ m ​ a ​ x \delta(N)<\delta_{max}
+q δ ​ ( I ) [ S , d ] q_{\delta}(I)_{[S,d]}
+3
+for each N N in S S , if N N is in I I , sets δ ⁡ ( N ) \delta(N) to d d
+q I ​ s ​ o ​ ( I ) [ S ] q_{Iso}(I)_{[S]}
+5
+retrieves in I I all atoms isomorphic to those in S S
+Figure 2 :
+Queries used in our algorithms
+5.1 Insertion
+Algorithm 3 describes the insertion in 𝔇 \mathfrak{D} of the atoms in the set iRequest .
+On line 2 , the side-effects of the insertion are computed and stored in the set ToIns , and then the instance 𝔇 ′ = 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}^{\prime}=\hbox{$\mathfrak{D}$}\cup ToIns is simplified on line 6 through the computation of its core. If all nulls in the simplified instance have a degree less than the specified maximal degree δ m ​ a ​ x \delta_{max} (on line 8 ), null degrees are all set to 0 0 (on line 10 ) and 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} is returned since, as shown in [ 9 ] , it is always consistent; otherwise, the database is not modified.
+Algorithm 3 Insert( OPEN 𝔇 , ℂ , δ m ​ a ​ x , iRequest ) \hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{iRequest}})
+1:
+  T ​ o ​ I ​ n ​ s := C ​ h ​ a ​ s ​ e ​ 4 ​ I ​ n ​ s ​ e ​ r ​ t ​ ( 𝔇 , ℂ , δ m ​ a ​ x , iRequest ) ToIns:=Chase4Insert(\hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{iRequest}})
+2:
+  N u l l B u c k e t := { N j ∣ N j NullBucket:=\{N_{j}\mid N_{j} is a null obtained by q b ​ u ​ c ​ k ​ e ​ t ( 𝔇 ∪ T o I n s ) [ T ​ o ​ I ​ n ​ s ] } q_{bucket}(\hbox{$\mathfrak{D}$}\cup ToIns)_{[ToIns]}\}
+3:
+  𝔇 ′ := S ​ i ​ m ​ p ​ l ​ i ​ f ​ y ​ ( 𝔇 ∪ T ​ o ​ I ​ n ​ s , N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ) \hbox{$\mathfrak{D}$}^{\prime}:=Simplify(\hbox{$\mathfrak{D}$}\cup ToIns,NullBucket)
+4:
+  if q d ​ e ​ g ​ r ​ e ​ e ​ ( 𝔇 ′ ) [ N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t , δ m ​ a ​ x ] q_{degree}(\hbox{$\mathfrak{D}$}^{\prime})_{[NullBucket,\delta_{max}]} then
+5:
+   q δ ​ ( 𝔇 ′ ) [ N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t , 0 ] q_{\delta}(\hbox{$\mathfrak{D}$}^{\prime})_{[NullBucket,0]}
+6:
+   return 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime}
+7:
+  else
+8:
+   return 𝔇 \mathfrak{D}
+Contrary to the algorithms in [ 9 ] , the main steps in Algorithm 3 are designed in an incremental manner.
+First, to avoid generating any non necessary side effect atoms,
+an incremental version of the chase procedure considered. According to this procedure, a constraint c c is activated only when the following conditions hold:
+(i) b ​ o ​ d ​ y ​ ( c ) body(c) contains at least one atom that maps to one being inserted, and
+(ii) atoms in b ​ o ​ d ​ y ​ ( c ) body(c) that do not respect (i) map to atoms in the database instance 𝔇 \mathfrak{D} .
+This new chase differs from the one in [ 9 ] in the following aspects:
+(a) only the rules c c concerned by insertions are triggered and (b) queries are built to find in 𝔇 \mathfrak{D} instantiations for atoms in b ​ o ​ d ​ y ​ ( c ) body(c) .
+Algorithm 4 Chase4Insert( OPEN 𝔇 , ℂ , δ m ​ a ​ x , iRequest ) \hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{iRequest}})
+1:
+  T ​ o ​ I ​ n ​ s := iRequest ToIns:=\hbox{{iRequest}}
+2:
+  while ∃ c ∈ ℂ \exists c\in\hbox{$\mathbb{C}$} and ∃ h \exists h such that
+h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) ⊆ 𝔇 ∪ T ​ o ​ I ​ n ​ s h(body(c))\subseteq\hbox{$\mathfrak{D}$}\cup ToIns and h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) ∩ T ​ o ​ I ​ n ​ s ≠ ∅ h(body(c))\cap ToIns\neq\emptyset and
+δ ⁡ ( h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) ≤ δ m ​ a ​ x CLOSE \delta(h^{\prime}(head(c))\leq\delta_{max} , where h ′ ⊇ h h^{\prime}\supseteq h maps to new nulls all existential variables in h ​ e ​ a ​ d ​ ( c ) head(c) ,
+5
+and there does not exist h ′′ h^{\prime\prime} such that h ′′ ​ ( h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) ∈ 𝔇 ∪ T ​ o ​ I ​ n ​ s CLOSE h^{\prime\prime}(h^{\prime}(head(c))\in\hbox{$\mathfrak{D}$}\cup ToIns do
+3:
+   T ​ o ​ I ​ n ​ s := T ​ o ​ I ​ n ​ s ∪ { h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) } ToIns:=ToIns\cup\{h^{\prime}(head(c))\}
+{
+8
+Degrees of new nulls in h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) h^{\prime}(head(c)) are set to d max + 1 d_{\max}+1 , where d max d_{\max} is the maximal
+9
+degree in h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) h(body(c)) , or 0 0 if h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) h(body(c)) contains no null}
+4:
+  return T ​ o ​ I ​ n ​ s ToIns
+Algorithm 4 , called on line 2 , implements our incremental chase procedure.
+The set T ​ o ​ I ​ n ​ s ToIns initially stores iRequest (line 2 ) and then, stores the generated side-effects (line 7 )
+through the while loop on line 4 , defined by the following conditions:
+•
+A constraint c c is triggered only if at least one atom in b ​ o ​ d ​ y ​ ( c ) body(c) is instantiated to an atom in T ​ o ​ I ​ n ​ s ToIns .
+•
+The condition δ ⁡ ( h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) ≤ δ m ​ a ​ x CLOSE \delta(h^{\prime}(head(c))\leq\delta_{max} ensures that only (side-effect) atoms whose degree is less than the maximum null degree are kept.
+The instantiation h ′ h^{\prime} extends h h by assigning new null values to existential variables in h ​ e ​ a ​ d ​ ( c ) head(c) . When performing a chase step, the degree of new nulls are also computed.
+•
+The last condition ensures termination along with a simplification.
+Indeed, if an instantiation of h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) h^{\prime}(head(c)) , referred to as h ′′ ​ ( h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) ) h^{\prime\prime}(h^{\prime}(head(c))) , exists in 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}\cup ToIns , the constraint is satisfied, and no atom is inserted in T ​ o ​ I ​ n ​ s ToIns .
+For instance, suppose 𝔇 1 = { A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 2 ) } , \hbox{$\mathfrak{D}$}_{1}=\{Authors(Elin,P_{2})\}, ℂ = { c 5 } \hbox{$\mathbb{C}$}=\{c_{5}\} (Figure 1 ) and
+iRequest = { R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( E ​ l ​ i ​ n ) } \hbox{{iRequest}}=\{Researcher(Elin)\} .
+The atom A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , N 1 ) Authors(Elin,N_{1}) , generated by c 5 c_{5} , is not inserted since it maps to A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 2 ) Authors(Elin,P_{2}) .
+Another difference between the algorithm in [ 9 ] and Algorithm 3 , is the simplification step on line 6 to maintain the database instance irredundant. Indeed, based on our earlier discussion in Section 4 , 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}\cup ToIns is simplified
+with respect to the nulls in NullBucket , computed through the query q b ​ u ​ c ​ k ​ e ​ t q_{bucket} on line 4 . Thus, only the nulls in NullBucket and their ‘linked’ nulls are considered, thus optimizing the computation of the core of 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}\cup ToIns .
+Example 5
+Let ℂ = { c 1 , c 3 , c 4 , c 10 , c 11 , c 12 } \hbox{$\mathbb{C}$}=\{c_{1},c_{3},c_{4},c_{10},c_{11},c_{12}\} , δ m ​ a ​ x = 3 \delta_{max}=3 and
+the following database instance:
+𝔇 = { \hbox{$\mathfrak{D}$}=\{
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N 1 , P 2 ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( A ​ l ​ i ​ c ​ e , N 2 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 2 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( N 2 ) , Authors(N_{1},P_{2}),Authors(Alice,N_{2}),Publication(P_{2}),Publication(N_{2}),
+R e s e a r c h e r ( N 1 ) , R e s e a r c h e r ( A l i c e ) , S u p e r v i s e s ( N 1 , N 3 ) } Researcher(N_{1}),Researcher(Alice),Supervises(N_{1},N_{3})\penalty\ \}
+Let iRequest = { A u t h o r s ( A l i c e , P 5 ) , \hbox{{iRequest}}=\{Authors(Alice,P_{5}), S t u d e n t ( B o b ) } Stu\-dent(Bob)\} . Running Algorithm 3 in this case is as follows.
+Constraint c 4 c_{4} is triggered due to the insertion of A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( A ​ l ​ i ​ c ​ e CLOSE , Authors(Alice, OPEN P 5 ) P_{5})
+and constraints c 10 , c 11 , c 12 c_{10},c_{11},c_{12} are triggered due to the insertion of S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( B ​ o ​ b ) Student(Bob) .
+Line 2 returns the following set T ​ o ​ I ​ n ​ s ToIns , where null degrees are shown as exponents:
+T o I n s = { ToIns=\{
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( A ​ l ​ i ​ c ​ e , P 5 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 5 ) , S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( B ​ o ​ b ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( B ​ o ​ b , N 5 0 ) , Authors(Alice,P_{5}),Publication(P_{5}),Student(Bob),Enrolled(Bob,N_{5}^{0}),
+D e g r e e ( N 4 0 , N 5 1 ) , L a n g u a g e ( N 4 0 , N 5 1 , N 6 2 ) } Degree(N_{4}^{0},N_{5}^{1}),Language(N_{4}^{0},N_{5}^{1},N_{6}^{2})\penalty\ \} .
+To simplify 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}\cup ToIns , the query q B ​ u ​ c ​ k ​ e ​ t q_{Bucket}
+retrieves in 𝔇 \mathfrak{D} the nulls concerning A ​ u ​ t ​ h ​ o ​ r ​ s Authors ( i.e., N 1 N_{1} and N 2 N_{2} ),
+P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n Publication ( i.e., N 2 N_{2} ), E ​ n ​ r ​ o ​ l ​ l ​ e ​ d Enrolled ( i.e., N 4 N_{4} ), D ​ e ​ g ​ r ​ e ​ e Degree ( i.e., N 4 N_{4} , N 5 N_{5} ) and L ​ a ​ n ​ g ​ u ​ a ​ g ​ e Language ( i.e., N 4 N_{4} , N 5 N_{5} , N 6 N_{6} ).
+Therefore, N u l l B u c k e t = { N 1 , NullBucket=\{N_{1}, N 2 , N_{2}, N 4 , N_{4}, N 5 , N_{5}, N 6 } N_{6}\} , and by Algorithm 1 , we obtain that
+LinkedNulls 𝔇 , N 1 = { N 1 , N 3 } \textsf{LinkedNulls}_{\hbox{$\mathfrak{D}$},N_{1}}=\{N_{1},N_{3}\} ,
+LinkedNulls 𝔇 , N 2 = { N 2 } \textsf{LinkedNulls}_{\hbox{$\mathfrak{D}$},N_{2}}=\{N_{2}\} , and for i = 4 , 5 , 6 i=4,5,6 , LinkedNulls 𝔇 , N i = { N 4 , N 5 , N 6 } \textsf{LinkedNulls}_{\hbox{$\mathfrak{D}$},N_{i}}=\{N_{4},N_{5},N_{6}\} .
+The simplification of 𝔇 ∪ T ​ o ​ I ​ n ​ s \hbox{$\mathfrak{D}$}\cup ToIns
+(line 6 of Algorithm 3 )
+results in:
+𝔇 ′ = { \hbox{$\mathfrak{D}$}^{\prime}=\{
+A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( N 1 , P 2 ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( A ​ l ​ i ​ c ​ e , P 5 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 2 ) , P ​ u ​ b ​ l ​ i ​ c ​ a ​ t ​ i ​ o ​ n ​ ( P 5 ) , R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( N 1 ) , Authors(N_{1},P_{2}),Authors(Alice,P_{5}),Publication(P_{2}),Publication(P_{5}),Researcher(N_{1}),
+R ​ e ​ s ​ e ​ a ​ r ​ c ​ h ​ e ​ r ​ ( A ​ l ​ i ​ c ​ e ) , S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( N 1 , N 3 ) , S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( B ​ o ​ b ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( B ​ o ​ b , N 4 ) , Researcher(Alice),Supervises(N_{1},N_{3}),Student(Bob),Enrolled(Bob,N_{4}),
+D e g r e e ( N 4 , N 5 ) , L a n g u a g e ( N 4 , N 5 , N 6 ) } Degree(N_{4},N_{5}),Language(N_{4},N_{5},N_{6})\penalty\ \} .
+Notice also that, since the degree of nulls is checked only during the chase, before returning the updated instance,
+the degrees of all nulls are set to 0 0 on line 10 of Algorithm 3 . □ \Box
+5.2 Deletion
+Algorithm 5 D ​ e ​ l ​ e ​ t ​ e ​ ( 𝔇 , ℂ , δ m ​ a ​ x , dRequest ) Delete(\hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{dRequest}})
+1:
+  isoDel := q I ​ s ​ o ​ ( 𝔇 ) [ dRequest ] \hbox{{isoDel}}:=q_{Iso}(\hbox{$\mathfrak{D}$})_{[\hbox{{dRequest}}]}
+{ isoDel contains atoms
+in 𝔇 \mathfrak{D} that have to be deleted}
+2:
+  T ​ o ​ D ​ e ​ l , T ​ o ​ I ​ n ​ s := C ​ h ​ a ​ s ​ e ​ 4 ​ D ​ e ​ l ​ e ​ t ​ e ​ ( 𝔇 , ℂ , δ m ​ a ​ x , isoDel ) ToDel,ToIns:=Chase4Delete(\hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{isoDel}})
+3:
+  𝔇 ′ := ( 𝔇 ∪ T ​ o ​ I ​ n ​ s ) ∖ T ​ o ​ D ​ e ​ l \hbox{$\mathfrak{D}$}^{\prime}:=(\hbox{$\mathfrak{D}$}\cup ToIns)\setminus ToDel
+4:
+  N u l l B u c k e t := { N j ∣ N j NullBucket:=\{N_{j}\mid N_{j} is a null obtained by q b ​ u ​ c ​ k ​ e ​ t ( 𝔇 ′ ) [ T ​ o ​ I ​ n ​ s ∪ T ​ o ​ D ​ e ​ l ] } q_{bucket}(\hbox{$\mathfrak{D}$}^{\prime})_{[ToIns\cup ToDel]}\}
+5:
+  𝔇 ′ := S ​ i ​ m ​ p ​ l ​ i ​ f ​ y ​ ( 𝔇 ′ , N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ) \hbox{$\mathfrak{D}$}^{\prime}:=Simplify(\hbox{$\mathfrak{D}$}^{\prime},NullBucket)
+6:
+  return 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime}
+Our incremental algorithm for the deletion from 𝔇 \mathfrak{D} of atoms in dRequest is displayed as Algorithm 5 . On line 2 , all atoms in 𝔇 \mathfrak{D} isomorphic to one in the set dRequest are retrieved through the query q i ​ s ​ o q_{iso} .
+For instance, if dRequest = { P ⁡ ( a , N 1 ) } \hbox{{dRequest}}=\{P(a,N_{1})\} and 𝔇 1 = { P ⁡ ( a , N 5 ) } \hbox{$\mathfrak{D}$}_{1}=\{P(a,N_{5})\} , then query q i ​ s ​ o q_{iso} returns { P ⁡ ( a , N 5 ) } \{P(a,N_{5})\} .
+The side-effects are then computed on line 6 , recalling from Section 2 that the side effects involve not only atoms to be deleted, but also atoms to be inserted as side-effects. In Algorithm 5 , the corresponding sets are respectively denoted by T ​ o ​ D ​ e ​ l ToDel and T ​ o ​ I ​ n ​ s ToIns .
+Once these side-effects have been incorporated in 𝔇 \mathfrak{D} to produce 𝔇 ′ \hbox{$\mathfrak{D}$}^{\prime} (line 6 ), this new instance is simplified as in the case of insertion: impacted nulls are generated on line 8 and the simplified instance is computed on line 10 . We notice that, contrary to insertions, deletions are never rejected.
+As for insertions, side effects are computed incrementally through Algorithm 6 . First, it may happen that
+the deletion of an instantiated atom A A makes the database inconsistent when it is a consequence of a constraint c c .
+To find all such constraints c c , we reason backward on ℂ \mathbb{C} to find an instantiation h h such that h ⁡ ( h ​ e ​ a ​ d ​ ( c ) ) = A h(head(c))=A .
+Then h h is extended to verify, in a forward reasoning, whether b ​ o ​ d ​ y ​ ( c ) body(c) can be triggered and generate A A again.
+The idea is to check whether c c generates an atom isomorphic to an atom being deleted (Algorithm 6 , line 3 ).
+If so, at least one atom in h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) h(body(c)) should be deleted in order to prevent c c from being triggered. This atom is then inserted in T ​ o ​ D ​ e ​ l ToDel (line 4 ). Notice that, to avoid non-determinism, it is assumed that the atom to be deleted has been marked as ‘ − - ’ during rule design.
+If no atom isomorphic to an atom to be deleted is generated, a new set called N ​ e ​ w ​ T ​ o ​ I ​ n ​ s NewToIns is generated as the side-effects of inserting the new instance of h ​ e ​ a ​ d ​ ( c ) head(c) and all atoms in T ​ o ​ I ​ n ​ s ToIns (line 6 ). If no atom in N ​ e ​ w ​ T ​ o ​ I ​ n ​ s NewToIns meets an atom to be deleted and if the degrees of the involved nulls are less that δ m ​ a ​ x \delta_{max} , then these atoms are inserted in T ​ o ​ I ​ n ​ s ToIns (line 8 ). Otherwise, the marked atom from h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) h(body(c)) is inserted in T ​ o ​ D ​ e ​ l ToDel (line 10 ).
+Algorithm 6 Chase4Delete( OPEN 𝔇 , ℂ , δ m ​ a ​ x , isoDel ) \hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},\hbox{{isoDel}})
+1:
+  T ​ o ​ I ​ n ​ s := ∅ ToIns:=\emptyset and T ​ o ​ D ​ e ​ l := isoDel ToDel:=\hbox{{isoDel}}
+2:
+  while there exist c ∈ ℂ c\in\hbox{$\mathbb{C}$} and h h such that h ⁡ ( h ​ e ​ a ​ d ​ ( c ) ) ∈ T ​ o ​ D ​ e ​ l h(head(c))\in ToDel and h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) ⊂ ( 𝔇 ∖ T ​ o ​ D ​ e ​ l ) ∪ T ​ o ​ I ​ n ​ s h(body(c))\subset(\hbox{$\mathfrak{D}$}\setminus ToDel)\cup ToIns do
+3:
+   if ∃ h ′ \exists h^{\prime} such that h ′ ​ ( b ​ o ​ d ​ y ​ ( c ) ) = h ⁡ ( b ​ o ​ d ​ y ​ ( c ) ) h^{\prime}(body(c))=h(body(c)) and h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) h^{\prime}(head(c)) is isomorphic
+4
+to h ⁡ ( h ​ e ​ a ​ d ​ ( c ) ) h(head(c)) then
+4:
+      T ​ o ​ D ​ e ​ l := T ​ o ​ D ​ e ​ l ∪ { h ′ ​ ( b ​ o ​ d ​ y − ​ ( c ) ) } ToDel:=ToDel\cup\{h^{\prime}(body^{-}(c))\}
+5:
+   else
+6:
+      N ​ e ​ w ​ T ​ o ​ I ​ n ​ s := Chase4Insert ​ ( 𝔇 , ℂ , δ m ​ a ​ x , T ​ o ​ I ​ n ​ s ∪ { h ′ ​ ( h ​ e ​ a ​ d ​ ( c ) ) } ) NewToIns:=\textsf{Chase4Insert}(\hbox{$\mathfrak{D}$},\hbox{$\mathbb{C}$},\delta_{max},ToIns\cup\{h^{\prime}(head(c))\})
+7:
+      if N ​ e ​ w ​ T ​ o ​ I ​ n ​ s = D ​ e ​ l = ∅ NewToIns=Del=\emptyset and δ ⁡ ( N ) < δ m ​ a ​ x \delta(N)<\delta_{max} for all nulls N N in N ​ e ​ w ​ T ​ o ​ I ​ n ​ s NewToIns then
+8:
+       T ​ o ​ I ​ n ​ s = T ​ o ​ I ​ n ​ s ∪ N ​ e ​ w ​ T ​ o ​ I ​ n ​ s ToIns=ToIns\cup NewToIns
+9:
+      else
+10:
+       T ​ o ​ D ​ e ​ l := T ​ o ​ D ​ e ​ l ∪ { h ′ ​ ( b ​ o ​ d ​ y − ​ ( c ) ) } ToDel:=ToDel\cup\{h^{\prime}(body^{-}(c))\}
+11:
+  return T ​ o ​ D ​ e ​ l , T ​ o ​ I ​ n ​ s ToDel,ToIns
+Example 6
+Let 𝔇 0 = { G r a n t E l i g i b l e ( S t e n ) , \hbox{$\mathfrak{D}$}_{0}=\{GrantEligible(Sten), S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) , Student(Sten), E n r o l l e d ( S t e n , C S ) } Enrolled(Sten,CS)\} , ℂ = { c 10 , \hbox{$\mathbb{C}$}=\{c_{10}, c 13 } c_{13}\} and
+dRequest = { G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) } \hbox{{dRequest}}=\{Grant\-Eligible(Sten)\} .
+On line 4 , Algorithm 5 calls Algorithm 6 to perform an incremental chase.
+T ​ o ​ I ​ n ​ s ToIns and T ​ o ​ D ​ e ​ l ToDel are respectively initialized to ∅ \emptyset and { G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) } \{GrantEligible(Sten)\} , and a first iteration of the loop on line 2 is run.
+Constraint c 13 c_{13} is concerned by the deletion, because for h h such that
+h ⁡ ( h ​ e ​ a ​ d ​ ( c 13 ) ) = G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) h(head(c_{13}))=GrantEligible(Sten) , as E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , C ​ S ) Enrolled(Sten,CS) is in 𝔇 \mathfrak{D} , c 13 c_{13} generates G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) Grant\-Eligible(Sten) (line 3 ).
+Therefore, T ​ o ​ D ​ e ​ l ToDel is set to { G r a n t E l i g i b l e ( S t e n ) , \{GrantEligible(Sten), E ​ n ​ r ​ o ​ l ​ l ​ e ​ d Enrolled ( S t e n , C S ) } (Sten,CS)\} and T ​ o ​ I ​ n ​ s ToIns remains empty.
+In the second iteration of the loop, c 10 c_{10} is detected to be concerned by the deletion of the atom E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , C ​ S ) Enrolled(Sten,CS) .
+With S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) Student(Sten) in 𝔇 \mathfrak{D} , c 10 c_{10} generates E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , N 1 ) Enrolled(Sten,N_{1}) , which is not isomorphic to E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , C ​ S ) Enrolled(Sten,CS) (line 3 ).
+The next step consists in testing whether the atom E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , N 1 ) Enrolled(Sten,N_{1}) should be added to T ​ o ​ I ​ n ​ s ToIns .
+To this end, Algorithm 6 chases forward, starting with E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , N 1 ) Enrolled(Sten,N_{1}) (line 6 ) to generate
+G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) GrantEligible(Sten) . This atom being in T ​ o ​ D ​ e ​ l ToDel (line 7 ), S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) Student(Sten) is added to T ​ o ​ D ​ e ​ l ToDel , and nothing is added in T ​ o ​ I ​ n ​ s ToIns .
+Algorithm 6 returns T ​ o ​ D ​ e ​ l = { S ​ t ​ u ​ d ​ e ​ n ​ t ​ ( S ​ t ​ e ​ n ) , G ​ r ​ a ​ n ​ t ​ E ​ l ​ i ​ g ​ i ​ b ​ l ​ e ​ ( S ​ t ​ e ​ n ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ m , C ​ S ) , E ​ n ​ r ​ o ​ l ​ l ​ e ​ d ​ ( S ​ t ​ e ​ n , N 1 ) } ToDel=\{Student(Sten),Grant\-Eligible(Sten),Enrolled(Stem,CS),Enrolled(Sten,N_{1})\} , and T ​ o ​ I ​ n ​ s = ∅ ToIns=\emptyset .
+Algorithm 5 then performs the deletions and the resulting database instance is empty. □ \hfill\Box
+6 Queries for Incremental Processing
+By implementing our method using graph and relational database models, our goal is to study performance aspects, and to raise
+issues concerning the database design regarding queries.
+6.1 Graph Data Model
+The DBMS considered in this work is Neo4J, which deals with attributed graphs.
+Cypher is a well-established language for querying and updating property graph databases . As explained in [ 16 ] , ‘a Cypher query takes as input a property graph and outputs a table. These tables can be thought of as providing bindings for parameters that witness some patterns in a graph, with some additional processing done on them’.
+The central concept in Cypher queries is pattern matching. The MATCH clause searches for homomorphisms identifying a given pattern in the queried graph.
+The returned result is an instance over a table where attributes correspond to the variables in the Cypher query.
+Our approach involves managing null values that have to be retrieved based on their co-occurrences as arguments of atoms (Section 4 ).
+Given a null N 1 N_{1} we need to efficiently detect atoms having N 1 N_{1} as one of its arguments, and then for every N N occurring with N 1 N_{1} , to recursively access the atoms having N N as argument. In doing so, the set of nulls is partitioned into blocks whose elements are those nulls that have to be considered in the simplification steps.
+To make such retrieval efficient,
+we adopt a model close to the logical formalism used in our previous explanations, composed of three types of nodes.
+Given an atom P ⁡ ( t 1 , … , t n ) P(t_{1},\dots,t_{n}) our graph database represents P P as a node, linked to other nodes representing the terms
+t 1 , … , t n t_{1},\dots,t_{n} . In this context, nodes in our graph database are of three possible types distinguished by labels , and all nodes have properties , among which one is symbol . More precisely:
+•
+Nodes of type Atom have one label :Atom representing the predicate symbol in an atom. This predicate symbol is the value of property symbol of such a node.
+•
+Nodes of type Constant representing constant values. Such nodes have two labels, :Element and :Constant , and the value of their property symbol is the constant itself.
+•
+Nodes of type Null reprensenting nulls. Such nodes have two labels, :Element and :Null , and the value of their property symbol is the name of the null prefixed with ‘ _ \_ ’.
+An edge links nodes with label :Atom to nodes with label :Element .
+Moreover, an edge has the property rank , allowing to refer to the terms of an atom by their positions.
+Figure 3 illustrates the schema of the atom P ⁡ ( t 1 , … , t n ) P(t_{1},\dots,t_{n}) by representing
+constant terms by t i t_{i} and nulls by t j t_{j} .
+Notation below edges indicates the cardinality of the relationship between an atom and its terms:
+an element is connected to at least one atom and atoms may have no terms.
+Figure 4 illustrates part of our database instance (rectangular nodes are atoms and circular nodes are elements).
+Figure 3 : Graph database schema.
+As explained before, our model benefits certain operations.
+However, it increases the cost of conversions between the graph-format and the logic-format for an atom.
+Such conversions are essential for the communication between the database and the procedures performing some computations locally.
+To optimize these conversions and graph traversals, we introduce the following redundancies in our database model,
+which have significantly improved our implementation (see Section 7 ).
+•
+To avoid edge traversal.
+For each node :Atom , we store, as its attribute, an ordered list containing all its terms.
+In Figure 3 , the rectangular node shows this new attribute: terms .
+For example, to obtain atom A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n CLOSE , Authors(Elin, OPEN P 269 ) P_{269}) from the instance in Figure 4 starting with the node
+n 117 n_{117} , instead of traversing edges r 19 r_{19} and r 20 r_{20} , we just have to retrieve the attributes terms of node n 117 n_{117} .
+•
+To allow efficient access to nodes.
+(a)
+A uniqueness constraint is added on the Element symbol (implying, e.g. , that
+there is a unique node in the database to represent E ​ l ​ i ​ n Elin ).
+(b)
+An index is built on the symbol of each atom, and a uniqueness constraint is defined on the couple symbol/terms (implying, e.g. , that there is a unique node in the database to represent atom A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( E ​ l ​ i ​ n , P 269 CLOSE Authors(Elin,P_{269} ).
+The algorithms presented in the previous sections involve the construction of queries in Cypher to be evaluated on our Neo4J database.
+We now focus on two of them: one needed when chasing and one that computes the set LinkedNull .
+Query for chasing.
+Chasing means applying constraints. The application of a constraint happens when its body can be instantiated by facts in the database.
+Thus, to decide on the application of a constraint c c , we need a query capable of :
+(1)
+Verifying whether the database instance contains the facts necessary for the instantiation of b ​ o ​ d ​ y ​ ( c ) body(c) and
+(2)
+returning a non-empty answer only if a corresponding instantiation for h ​ e ​ a ​ d ​ ( c ) head(c) does not already exist in the database.
+In a logic formalism, if c c is of the form
+c : L 1 ​ ( α 1 ) , … , L m ​ ( α m ) → L 0 ​ ( α 0 ) c:L_{1}(\alpha_{1}),\dots,L_{m}(\alpha_{m})\rightarrow L_{0}(\alpha_{0}) ,
+we should write the query
+q c ​ h : Q ⁡ ( α ) ← L 1 ​ ( α 1 ) , … , L m ​ ( α m ) , n ​ o ​ t ​ L 0 ​ ( α 0 ) q_{ch}:Q(\alpha)\leftarrow L_{1}(\alpha_{1}),\dots,L_{m}(\alpha_{m}),not\penalty\ L_{0}(\alpha_{0}) , where α \alpha is the list of variables corresponding to variables in b ​ o ​ d ​ y ​ ( c ) body(c) , that is, variables universally quantified variables of c c .
+The idea here is: if h t h_{t} is an instantiation such that h t ​ ( b ​ o ​ d ​ y ​ ( c ) ) ⊆ 𝔇 h_{t}(body(c))\subseteq\hbox{$\mathfrak{D}$} , the query q c ​ h q_{ch} has a non empty answer only if
+h t ′ ​ ( L 0 ​ ( α 0 ) ) ∉ 𝔇 h^{\prime}_{t}(L_{0}(\alpha_{0}))\not\in\hbox{$\mathfrak{D}$} for any extension h t ′ h^{\prime}_{t} of h t h_{t} .
+Figure 4 : Graph database instance (extract). Optimization labels and attributes are omitted.
+⬇
+1
+MATCH ( x k x_{k} : Element { value : t i t_{i} })
+2
+MATCH ( a 1 a_{1} : Atom { symbol : ‘ L 1 L_{1} ‘}), …, ( a m a_{m} : Atom { symbol : ‘ L m L_{m} ‘})
+3
+WHERE expr1 and NOT EXISTS {
+4
+MATCH ( a a : Atom { symbol : ‘ L 0 L_{0} ‘})
+5
+WHERE expr2
+6
+} RETURN { α | 1 : x 1 , α | 2 : x 2 , … , α | k : x k \alpha|_{1}:x_{1},\alpha|_{2}:x_{2},\dots,\alpha|_{k}:x_{k} }}
+Figure 5 : Cypher template for chasing
+Figure 5 shows the Cypher template of query q c ​ h q_{ch} .
+We first look for atoms that match b ​ o ​ d ​ y ​ ( c ) body(c) .
+On the line 3 in Figure 5 , the WHERE NOT EXISTS clause is used to check that no instance of the h ​ e ​ a ​ d ​ ( c ) head(c) exists.
+Two expressions are built ( expr1 and expr2 ). Terms in α \alpha are treated orderly.
+Notice that expr1 is built for dealing with atoms in b ​ o ​ d ​ y ​ ( c ) body(c) and expr2 is built for dealing with the atom in h ​ e ​ a ​ d ​ ( c ) head(c) .
+The first MATCH acts as a starting point of the graph traversal. It is built with constants or nulls ( e.g. , ( x k x_{k} :Element:Constant {symbol: t i t_{i} }) ) as we usually consider constraints instantiated by insertions.
+Then the pattern, built with the second MATCH and the WHERE clause, links the constants to the positions in the atoms of the body.
+Separating the two MATCH allows us to guide the query planner to first search the constants (called node seeking) and then look for the connected nodes to find the atoms. This is important because, in doing so we drastically reduce the search space, because constants are unique values retrieved in O ⁡ ( 1 ) O(1) , and only :Atom connected nodes are searched, thus avoiding to visit all instance nodes of the predicate.
+Example 7
+Considering the insertion of A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( B ​ o ​ b , P 1 ) Authors(Bob,P_{1}) in the database instance
+𝔇 = { S u p e r v i s e s ( A l i c e , B o b ) , \hbox{$\mathfrak{D}$}=\{Supervises(Alice,Bob), A u t h o r s ( A l i c e , P 1 ) } Authors(Alice,P_{1})\}
+with the only constraint c 6 c_{6} defined by:
+c 6 : A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( X , P ) , A ​ u ​ t ​ h ​ o ​ r ​ s ​ ( Y , P ) , S ​ u ​ p ​ e ​ r ​ v ​ i ​ s ​ e ​ s ​ ( X , Y ) → P ​ h ​ D ​ P ​ a ​ p ​ e ​ r ​ ( Y , P , Z ) c_{6}:Authors(X,P),Authors(Y,P),Supervises(X,Y)\rightarrow PhDPaper(Y,P,Z)
+Two instantiations h h and h ′ h^{\prime} should be checked: one on the first atom A ​ u ​ t ​ h ​ o ​ r ​ s Authors ( h ⁡ ( X ) = B ​ o ​ b h(X)=Bob , h ⁡ ( P ) = P 1 h(P)=P_{1} ) and one for the second atom A ​ u ​ t ​ h ​ o ​ r ​ s Authors
+( h ′ ​ ( Y ) = B ​ o ​ b h^{\prime}(Y)=Bob , h ′ ​ ( P ) = P 1 h^{\prime}(P)=P_{1} ).
+Figure 6 shows the chase query for the instantiation h ′ h^{\prime} of the constraint
+c
+6
+. □ \Box
+⬇
+1
+MATCH ( x0 : Element : Constant { value : ’ Bob ’}),
+2
+( x1 : Element : Constant { value : ’ P_1 ’})
+3
+MATCH ( a0 : Atom { symbol : ’ Authors ’ }),
+4
+( a1 : Atom { symbol : ’ Authors ’ }),
+5
+( a2 : Atom { symbol : ’ Supervise ’})
+6
+WHERE ( a0 )-[: Authors { rank : 0}]->( x2 ),
+7
+( a0 )-[: Authors { rank : 1}]->( x1 ),
+8
+( a1 )-[: Authors { rank : 0}]->( x0 ),
+9
+( a1 )-[: Authors { rank : 1}]->( x1 ),
+10
+( a2 )-[: Supervise { rank : 0}]->( x2 ),
+11
+( a2 )-[: Supervise { rank : 1}]->( x0 )
+12
+and NOT EXISTS {
+13
+MATCH ( a : Atom { symbol : ’ PhDPaper ’})
+14
+WHERE ( a )-[: PhDPaper { rank : 0}]->( x0 ),
+15
+( a )-[: PhDPaper { rank : 1}]->( x1 )
+16
+} RETURN {‘ X ‘: x2 . value , ‘ Y ‘: x0 . value , ‘ P ‘: x1 . value } AS sub
+Figure 6 : Cypher template for Example 7
+Query to find LinkedNull sets.
+Figure 7 presents the Cypher query that implements the LinkedNull definition (Section 4 ) for building partitions of atoms.
+The clause UNWIND can transform any list into individual rows.
+For instance, if we consider a list ['Elin', 'Sten'] of constant symbols, the clause UNWIND over such a list gives
+a table with one column c c and two rows whose values are 'Elin' and 'Sten' .
+In Figure 7 , the clause UNWIND (line 1 ) is used to set nulls from a given list to our initial table
+with one row for each null.
+The goal of the first MATCH (line 2 ) is to select sub-graphs with atoms sharing the same null.
+On the line 3 , the range of the relationship ( *1.. ) indicates that node nullValueNode can be connected to a node endNode by a path
+pathP of arbitrary length.
+Moreover, the direction is ↔ \leftrightarrow indicates that pathP can be composed by edges having any orientation.
+The MATCH clause looks for paths starting with the null of the nullValueNode to any other node representing an atom which is not nullValueNode itself
+(condition imposed by the WHERE clause).
+On the line 6 , the WITH clause performs a ‘group by’.
+It allows to structure our working table with tuples where each null nullValueNode is associated to a list of endNode s (the nodes reached by paths pathP ).
+On the line 7 a new organisation is built: linkedNodes is divided into two lists, one containing nodes
+that represent predicate symbols ( linkedAtoms ) and one for those representing nulls ( linkedNulls ).
+Notice that we place the initial node nullValueNode in the first position of the latter.
+The resulting table partitions the atoms: each atom is associated to a list of nulls (those it is concerned by).
+In the worst case, the former list contains all atoms having a null in the database.
+⬇
+1
+UNWIND $nulls AS nullPredName
+2
+MATCH ( nullValueNode : Element : Null { value : nullPredName }),
+3
+pathP = ( nullValueNode )-[*1.. maxPathLength ]-( endNode )
+4
+WHERE endNode <> nullValueNode AND
+5
+ALL ( n IN nodes ( pathP ) WHERE NOT ( n : Constant ))
+6
+WITH COLLECT ( DISTINCT endNode ) AS linkedNodes , nullValueNode
+7
+WITH
+8
+[ n IN linkedNodes WHERE ( n : Atom )] AS linkedAtoms ,
+9
+[ nullValueNode ] + [ n IN linkedNodes WHERE ( n : Null )] AS linkedNulls
+10
+UNWIND linkedAtoms AS a
+11
+RETURN a . symbol as a , a . terms as e , linkedNulls
+Figure 7 : Cypher template to find LinkedNull sets
+Example 8
+Considering the graph of Figure 4 ,
+if we search for atoms whose nulls are linked to _ ​ N 1 \_N_{1} , i.e., $nulls = ['_N1'] , after the first MATCH in Figure 7 , we have:
+nullValueNode
+endNode
+pathP
+n 11 n_{11}
+n 111 n_{111}
+[ n 11 , r 11 , n 111 ] [n_{11},r_{11},n_{111}]
+n 11 n_{11}
+n 118 n_{118}
+[ n 11 , r 22 , n 118 ] [n_{11},r_{22},n_{118}]
+n 11 n_{11}
+n 124 n_{124}
+[ n 11 , r 33 , n 124 ] [n_{11},r_{33},n_{124}]
+n 11 n_{11}
+n 12 n_{12}
+[ n 11 , r 33 , n 124 , r 34 , n 12 ] [n_{11},r_{33},n_{124},r_{34},n_{12}]
+n 11 n_{11}
+n 112 n_{112}
+[ n 11 , r 33 , n 124 , r 34 , n 12 , r 12 , n 112 ] [n_{11},r_{33},n_{124},r_{34},n_{12},r_{12},n_{112}]
+After the first WITH line 6 , we have:
+nullValueNode
+linkedNodes
+n 11 n_{11}
+[ n 111 , n 118 , n 124 , n 12 , n 112 ] [n_{111},n_{118},n_{124},n_{12},n_{112}]
+After the second WITH line 7 , we have:
+linkedAtoms
+linkedNulls
+[ n 111 , n 118 , n 124 , n 112 ] [n_{111},n_{118},n_{124},n_{112}]
+[ n 11 , n 12 ] [n_{11},n_{12}]
+□ \Box
+6.2 Relational Data Model
+Given an instantiated atom P ⁡ ( t 1 , … , t n ) P(t_{1},\dots,t_{n}) in the logical representation oinf a database, our relational model consists in defining
+a table whose schema is R P ​ [ A 1 , … ​ A n ] R_{P}[A_{1},\dots A_{n}] where all attributes are of type text.
+Notice that P ⁡ ( t 1 , … , t n ) P(t_{1},\dots,t_{n}) represents a tuple on R P R_{P} and, thus,
+( t 1 , … , t n ) (t_{1},\dots,t_{n}) are values that can be constants or nulls (nulls have the symbol _ \_ as a prefix).
+The translation of logical queries into SQL is straightforward.
+However, some operations require the construction of procedures to implement recursive queries.
+Algorithm 7 shows the implementation of LinkedNull in the relational context.
+We argue in this respect that implementing Algorithm 7 using a recursive SQL query is not efficient. Indeed, to do so
+an additional table for storing the pairs of linked nulls is needed, and the following steps are necessary:
+(a) a recursive SQL query to compute the transitive closure and
+(b) a scan of the whole database to retrieve all corresponding atoms.
+Moreover, the additional table needs to be maintained up to date after each update, which requires further processing.
+Algorithm 7 FindLinkedNull( OPEN 𝔇 , N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ) \hbox{$\mathfrak{D}$},NullBucket)
+1:
+  n ​ e ​ w ​ N ​ u ​ l ​ l := ∅ newNull:=\emptyset , a ​ l ​ l ​ N ​ u ​ l ​ l ​ s := ∅ allNulls:=\emptyset , l ​ i ​ n ​ k ​ e ​ d ​ N ​ u ​ l ​ l ​ S ​ e ​ t := ∅ linkedNullSet:=\emptyset
+2:
+  while N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ≠ ∅ NullBucket\neq\emptyset do
+3:
+   a ​ l ​ l ​ N ​ u ​ l ​ l ​ s := a ​ l ​ l ​ N ​ u ​ l ​ l ​ s ∪ N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t allNulls:=allNulls\cup NullBucket
+4:
+   for all table R P R_{P} in the database schema do
+5:
+      for all tuple u u in ( s ​ e ​ l ​ e ​ c ​ t ∗ f ​ r ​ o ​ m ​ R P CLOSE (select\;\;*\;\;from\;\;R_{P} OPEN w ​ h ​ e ​ r ​ e ​ ( A 1 ​ i ​ n ​ N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ) ​ o ​ r ​ … o ​ r ​ ( A n ​ i ​ n ​ N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t ) ) where\;\;(A_{1}\;\;in\;\;NullBucket)\;\;or\;\;\dots\;\newline
+\hskip 13.87491pt\;or\;\;(A_{n}\;\;in\;\;NullBucket)) do
+6:
+      build atom P ⁡ ( u ) P(u) ; add P ⁡ ( u ) P(u) in l ​ i ​ n ​ k ​ e ​ d ​ N ​ u ​ l ​ l ​ S ​ e ​ t linkedNullSet
+7:
+       for all null value _ ​ N ∈ n ​ u ​ l ​ l ​ ( u ) \_N\in null(u) do
+8:
+         if _ ​ N ∉ a ​ l ​ l ​ N ​ u ​ l ​ l ​ s \_N\not\in allNulls then
+9:
+          a ​ d ​ d ​ _ ​ N ​ i ​ n ​ n ​ e ​ w ​ N ​ u ​ l ​ l \;\;add\;\;\_N\;\;in\;\;newNull
+10:
+   N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t := n ​ e ​ w ​ N ​ u ​ l ​ l NullBucket:=newNull
+11:
+   n ​ e ​ w ​ N ​ u ​ l ​ l := ∅ newNull:=\emptyset
+12:
+  return l ​ i ​ n ​ k ​ e ​ d ​ N ​ u ​ l ​ l ​ S ​ e ​ t linkedNullSet
+We also notice that the implementation of
+an incremental chase in the relational model follows the idea of setting up query q c ​ h q_{ch} (as explained in Section 6.1 ) which can be written as an SQL query involving a NOT EXISTS clause.
+6.3 Discussion
+Querying graph database is significantly impacted by graph schema design.
+The schema we have chosen transforms nulls into first-citizen elements and facilitates operations where, by ’picking’ a null, we can easily detect all atoms connected (directly or indirectly) to it.
+For instance, in Figure 4 , if we ’pick’ the null _ ​ N 1 \_N_{1} (the gray node n 11 n_{11} ), we detect the atoms connected to it together with other nulls ( i.e., _ ​ N 2 \_N_{2} , the blue node n 12 n_{12} ).
+In other words, this model optimizes queries looking for linked nulls.
+However, it may not be appropriate for other kinds of queries.
+For instance, in the chase query, our model generates complex patterns that can be costly.
+The relational model is less flexible than graph models, and thus its impact on querying is weaker.
+However, relational model is not appropriate for the implementation of recursion, and nulls cannot be set as first-citizen element (identical null values appear repeatedly in the database instance).
+Algorithm 7 shows that to implement LinkedNull we have to check null values for each table, compromising the idea of an incremental approach.
+On the other hand, the graph model is well suited for implementing incremental algorithms, because as seen in Section 6.1 , this model allows implementing LinkedNull by visiting only the atoms linked to nulls in N ​ u ​ l ​ l ​ B ​ u ​ c ​ k ​ e ​ t NullBucket , as expected when considering an incremental computation.
+7 Experimental Results
+We gauge the performance of our incremental updating approach by analysing experiment results over a benchmark working on a graph (Neo4J) and a relational (MySQL) DBMS.
+A benchmark run executes an update on a database instance.
+To build our database instances, we firstly view the original data sets from a FOL point of view.
+Roughly speaking, a node or a relationship in the original data sets corresponds to a predicate symbol, while their properties are the terms.
+The conversion to our database models is straightforward, as presented in Section 6 .
+Nulls are inferred from already missing properties.
+Constraints are hand-crafted, created from data observation and added to the databases we use for experiments.
+The following three data sets are the basis of our instances:
+•
+Movie 1 1
+1
+https://github.com/neo4j-graph-examples/movies , available as a Neo4J instance, is a collection of data concerning movies, actors, directors. This data set contains 7 predicate symbols (with arity 2-4).
+•
+GOT 2 2
+2
+https://github.com/neo4j-graph-examples/graph-data-science , available as a Neo4J instance, deals with the interactions between different characters in the book Game of Throne . This data set contains 19 predicate symbols (artiy 2-14).
+•
+LDBC 3 3
+3
+https://ldbcouncil.org/benchmarks/graphalytics/ , available as a data set of the Linked Data Benchmark Council, offers synthetic data sets for benchmarking. This data set contains 23 predicate symbols (artiy 1-2).
+From the LDBC data sets we build several instances, by varying their size or the number of nulls.
+To control the size of instances, their construction is the result of:
+(i) randomly selecting k k facts, respecting the distribution of the original data set and, then,
+(ii) applying the 39 39 hand-made constraints on them.
+The result is a consistent database instance with nulls.
+Figure 8 presents a summary of our database instances (or samples).
+It is worth noting that, for example, an instance denoted as LDBC 1K, comes from a random selection of
+1000 1000 facts which evolves to 2248 2248 after the chase and core processing.
+To control the number of nulls, we proceed as follows:
+we take the largest LDBC instance, i.e., with 10 000 10\,000 facts, and replace all nulls with constants.
+Then, we choose, randomly, some constants that are replaced by linked nulls.
+Figure 8 presents database instances used in our runs, eight having nulls, and one non-null instance.
+All the database instances are generated just once.
+By following this creation process, they are consistent and minimal.
+Database
+Nb of facts
+Nb of nulls
+Nb of rules
+Null/Facts ( τ \tau )
+Movie
+604
+340
+12
+0.56
+GameOfThrone
+24818
+17232
+32
+0.69
+LDBC 1K
+2248
+190
+39
+0.08
+LDBC 10K
+16559
+1183
+39
+0.07
+LDBC 10K 0N
+16559
+0
+39
+0.00
+LDBC 10K 50N
+16559
+50
+39
+0.00
+LDBC 10K 100N
+16559
+100
+39
+0.01
+LDBC 10K 500N
+16559
+500
+39
+0.03
+LDBC 10K 1000N
+16559
+1000
+39
+0.06
+Figure 8 : Database instances (our samples).
+Runs are built from instances in Figure 8 by
+(i) varying the update type (insertion or deletion);
+(ii) altering the size of the update ( 1 , 5 , 10 and 20 151020 atoms) and
+(iii) augmenting artificially the number of facts in an instance. This latter step is done through the duplication of data
+n n -times ( 1 , 2 and 5 125 ), together with the renaming of the constants and the null names at each copy.
+Each run performs 10 10 iterations plus 3 3 warm-up iterations ( i.e., an ordinary iteration used to preload the system and database cache) not counted in the execution time.
+Between each iteration, the original database instance is restored, and
+the Java garbage collector is triggered for consistent time measuring.
+The benchmarks are implemented in Java 16 with MySQL 8 and Neo4J 4.1 and
+executed on a Rocky Linux 8.7 virtual server with 4 4 vCPU and 16 GB 16\text{\,}\mathrm{GB} of memory ( 8 8 reserved for the database and 5 5 for the Java program) through docker 20.10.21.
+In the docker container of a database instance, the average of read/write on disk is 1 GB s − 1 1\text{\,}\mathrm{GB}\text{\,}{\mathrm{s}}^{-1} .
+The same server hosts:
+(i) one database server at the time and
+(ii) the benchmarks with only 4 4 vCPU.
+Notice that, even if this configuration allows us to assess our implementations over different DBMS, our experiment performances are not representative of real world situations, where more powerful and dedicated hardware is available.
+We first compare the incremental approach presented in this paper to the from-scratch in-memory approach in [ 9 ] . For this aspect, comparisons are performed only on the database Movie because
+the from-scratch in-memory version requires a huge amount of memory for its computation.
+We have an average of 9017 ms 9017\text{\,}\mathrm{ms} for an update with the in-memory version and scale of 1 (initial size of the instance).
+MySQL has an average of 151 ms 151\text{\,}\mathrm{ms} and Neo4J has 2380 ms 2380\text{\,}\mathrm{ms} .
+For this small instance, the incremental approach is comparable with the from-scratch approach.
+Considering an instance five times larger, we get an average of 888 966 ms 888\,966\text{\,}\mathrm{ms} for the in-memory version, 595 ms 595\text{\,}\mathrm{ms} for MySQL and 2706 ms 2706\text{\,}\mathrm{ms} for Neo4J.
+Thus, it should be clear that using a DBMS in which an incremental version of update processing is implemented, allows for efficiently updating large databases that do not fit in main memory.
+Next, we analyse the performance of incremental updating with respect to the number of atoms (database size) and nulls of an instance.
+We denote by incompleteness degree the number of distinct LinkedNull sets on a database.
+We also investigate the number of queries generated to interact with the DBMS.
+Figure 11 presents our experiment results.
+On each plot, the right axis, indicates the total number of facts in the instance. The curves show the average of resulting values for all runs corresponding to the displayed
+abscissa.
+Figure 9 : Average time of each operation per DBMS ( ms \mathrm{ms} ) removing outsiders with more than 30 s 30\text{\,}\mathrm{s} differences
+We first note that the update type (insertion or deletion) has no real impact on the performance of our approach.
+Figure 10(a) shows that the number of queries is linear on the number of nulls, except for three down spikes when the degree of incompleteness of the database instance is low.
+This is the case for the database Movies , and the down spikes coincide to a situation where only this database is concerned.
+Indeed, thanks to the use of multiple data sets, we observe here that the predicate arity ( i.e., the number of edges per node or the number of columns in a table) may have an impact on our results.
+Linearity with respect to the number of nulls is explained by the fact that
+consistency preservation implies the generation of new data linked by their nulls.
+Thus, due to our construction method, bigger databases imply more linked nulls ( i.e., bigger LinkedNull sets).
+Incremental updates generate q B ​ u ​ c ​ k ​ e ​ t q_{Bucket} queries to retrieve impacted nulls.
+Bigger databases likely have more impacted nulls willing to be simplified during the core computation, increasing the number of necessary q c ​ o ​ r ​ e q_{core} queries.
+Consequences of bigger LinkedNull sets are:
+(i)
+in MySQL, Algorithm 7 generates a large amount of queries and
+(ii)
+in Neo4J, the unique query needed to retrieve a LinkedNull set is more complex and, thus, more time-consuming.
+However, this augmentation is negligible as our model is designed to optimize such a query (Figure 11(b) ).
+Experimental results in terms of execution time of our updating approach is shown in Figures 10(b) and 11(a) .
+In MySQL (Figure 10(b) ), update execution time is linear in the number of nulls while the database size has little impact.
+Indeed, as the number of queries increases with the number of nulls, update execution time in MySQL increases accordingly.
+In Neo4J (Figure 11(a) ), update execution time is more significantly impacted by the size of the instance.
+The explanation of this discrepancy comes from the separate analysis of the performance of the main operations of our approach (Figures 9 and 11(b) ).
+The data model chosen in the Neo4J version optimizes the retrieval of LinkedNull , but is not appropriate to operations involving simplification
+(Section 4 ). Such operations involve complex pattern matching which are known to be expensive.
+The chase (Figure 9 ) is the most expensive operation for Neo4J, mainly due to the fact that it includes a simplification step
+( e.g. , if A ⁡ ( a , b ) ∈ 𝔇 A(a,b)\in\hbox{$\mathfrak{D}$} and A ⁡ ( a , N 1 ) A(a,N_{1}) is generated by a constraint, then the insertion of A ⁡ ( a , N 1 ) A(a,N_{1}) is canceled).
+For the sake of readability, plots do not show results on GOT instances with more than 17 000 17\,000 nulls. The results on this data set are similar: execution time evolves linearly with respect to nulls in MySQL and follows the size of the database in Neo4J.
+With the GOT runs, we achieve a mean execution time of 14 634 ms 14\,634\text{\,}\mathrm{ms} with MySQL and 5216 ms 5216\text{\,}\mathrm{ms} with Neo4J for 24 818 24\,818 facts and 17 232 17\,232 nulls.
+Increasing the size to 124 090 124\,090 facts and 86 160 86\,160 nulls rises run time to 156 132 ms 156\,132\text{\,}\mathrm{ms} with MySQL and to 203 140 ms 203\,140\text{\,}\mathrm{ms} with Neo4J.
+(a) Number of queries per null
+(b) Time per null for MySQL
+Figure 10 : Benchmarks results of 540 scenarios, average over 10 runs
+(a) Time per null for Neo4J
+(b) Time of operations per null
+Figure 11 : Benchmarks results of 540 scenarios, average over 10 runs
+Reproducibility.
+Results obtained by our experiments are reproducible through the use of the benchmarks and implementation available in https://gitlab.com/jacques-chabin/UpdateChase .
+8 Related Works
+Our work goals include four important features of modern applications: incompleteness, consistency as a measure of quality, incremental tools for efficient data processing and adaptability to graph data models.
+Solid basis have been established for treating incompleteness of relational databases [ 12 , 18 , 23 , 28 , 32 ] , particularly for querying.
+Much less attention has been given to updates on incomplete databases, although important work, such as [ 1 , 13 , 31 ] can be cited.
+Today, integrating and exchanging data are very common, leading to the proliferation of applications involving dynamic incomplete data
+on emerging data models that deal with more general graph-structured data. Incompleteness beyond the relational data model has received much less attention [ 30 ] , and, in this context, updating with respect to constraints is rarely considered.
+Indeed, consistency maintenance is usually left aside in favour of efficiency, which can prove costly when we are concerned with the quality of analytical results.
+Work such as [ 21 , 25 , 29 ] witnesses the complexity of the problem of keeping a database consistent with respect to constraints in a dynamic environment.
+In [ 15 , 19 , 20 ] we find newer proposals, adapted to the RDF world, that considers constraints in our traditional database viewpoint ( i.e., not in the web semantic standard way, where constraints are just inference rules [ 17 , 24 , 27 ] ).
+It is worth noting that the use of tuple generating constraints (TGD) increases expressiveness at the cost of difficulties
+that involve a chase procedure
+(cf. a survey in [ 26 ] , a benchmark in [ 7 ] )
+to compute semantics
+and
+the generation of side effects in an update context - imposing extra insertions or deletions (with respect to those required by the user) to preserve consistency.
+The literature offers sufficient conditions to avoid a non-terminating chase which consist in limiting the format of constraints.
+We instead introduce δ m ​ a ​ x \delta_{max} , keeping the possibility of dealing with any kind of constraints while avoiding infinite processing.
+Furthermore, we use simplifications to keep the database instance as small as possible and to avoid the presence of useless nulls, i.e., database maintenance consists in keeping its core (which follows the ideas in [ 11 ] ) whose implementation is ensured by a simplification routine performed
+in association to update routines.
+In brief, data analytic tools become essential in different application domains and their quality relies on data consistency.
+But in order to deal with huge scale applications, we must aim at efficient data processing solutions [ 30 ] , bringing incremental solutions to the front of the stage, particularly when working with new data models (as done in the XML context [ 3 , 6 , 8 ] ).
+In the context of graph databases, the approach in [ 14 ] proposes a method for ‘incrementalizing’ graph algorithms abstracted in a fix-point model.
+Our approach cannot be summarized by that proposal. As seen before, we can outline our method in the expression
+𝔇 ′ = c o r e | N u l l B u c k e t ( u p d | U ( ( 𝔇 ♢ U ) ) \hbox{$\mathfrak{D}$}^{\prime}=core_{|NullBucket}(upd_{|U}((\hbox{$\mathfrak{D}$}\diamondsuit U)) where U U is the set of user’s required updates - this set is increased through an inference process that generates side-effects. The proposal in [ 14 ] needs a ’complete’ set of updates as input.
+In other words, our fix-point operation involves changes on the update set while in [ 14 ] the update set is fixed. Their goal is to incrementally compute new answers on an updated graph and not to incrementally update the graph.
+As the core computation is not a fix-point one, it is not in the scope of [ 14 ] .
+Finally, our experiments reinforce the idea that graph schema design has a significant impact on query performance.
+Our graph schema is designed to optimize one type of query and performs badly to those that differ widely.
+Schema optimization may be a solution: as in [ 5 ] , in this paper, it is done through techniques that reduce edge transversal.
+9 Conclusions
+This paper contributes to improve the maintenance of consistent incomplete databases by proposing incremental routines that interact with database systems. It extends prior work in [ 9 ] where a from-scratch in-memory method was proposed.
+Two implementations of our approach, one under a graph database model and one under the traditional relational database model, are presented.
+Experiment results raise questions about the representation of nulls in a graph database.
+Indeed, this work is also a step towards incremental updating attributed graphs with incomplete data.
+It illustrates the impact of schema graph design in querying and, consequently, in the performance of an incremental updating approach that relies on two main queries:
+one that looks for linked nulls and another that looks for redundant atoms willing to be simplified.
+Property graph model has an increasingly important role today, the handling of nulls in such a model is related to schema definition and query optimization issues that need to be further explored.
+References
+[1]
+Abiteboul, S., and Grahne, G.
+Mise-à-jour des bases de données contenant de
+l’information incomplète.
+In Journées Bases de Données Avancés, 6-8 Mars
+1985, St. Pierre de Chartreuse (Informal Proceedings). (1985).
+[2]
+Abiteboul, S., Hull, R., and Vianu, V.
+Foundations of databases , vol. 8.
+Addison-Wesley Reading, 1995.
+[3]
+Abrão, M. A., Bouchou, B., Halfeld Ferrari, M., Laurent, D., and
+Musicante, M. A.
+Incremental constraint checking for XML documents.
+In XSym (2004), no. 3186 in LNCS, pp. 112–127.
+[4]
+Aho, A. V., Sagiv, Y., and Ullman, J. D.
+Efficient optimization of a class of relational expressions.
+ACM Trans. Database Syst. 4 , 4 (1979), 435–454.
+[5]
+Alotaibi, R., Lei, C., Quamar, A., Efthymiou, V., and Özcan, F.
+Property graph schema optimization for domain-specific knowledge
+graphs.
+In 37th IEEE International Conference on Data Engineering,
+ICDE 2021, Chania, Greece, April 19-22, 2021 (2021), IEEE,
+pp. 924–935.
+[6]
+Balmin, A., Papakonstantinou, Y., and Vianu, V.
+Incremental validation of xml documents.
+ACM Trans. Database Syst. 29 , 4 (2004), 710–751.
+[7]
+Benedikt, M., Konstantinidis, G., Mecca, G., Motik, B., Papotti, P.,
+Santoro, D., and Tsamoura, E.
+Benchmarking the chase.
+In Proceedings of the 36th ACM SIGMOD-SIGACT-SIGAI Symposium
+on Principles of Database Systems, PODS 2017, Chicago, IL, USA, May 14-19,
+2017 (2017), pp. 37–52.
+[8]
+Bouchou, B., and Halfeld Ferrari Alves, M.
+Updates and incremental validation of XML documents.
+In The 9th International Workshop on Data Base Programming
+Languages (DBPL) (2003), Springer, Ed., no. 2921 in LNCS.
+[9]
+Chabin, J., Halfeld Ferrari, M., and Laurent, D.
+Consistent updating of databases with marked nulls.
+Knowl. Inf. Syst. 62 , 4 (2020), 1571–1609.
+[10]
+Chandra, A. K., and Merlin, P. M.
+Optimal implementation of conjunctive queries in relational data
+bases.
+In Symposium on the Theory of Computing (1977).
+[11]
+Fagin, R., Kolaitis, P. G., and Popa, L.
+Data exchange: getting to the core.
+ACM Trans. Database Syst. 30 , 1 (2005), 174–210.
+[12]
+Fagin, R., Kuper, G. M., Ullman, J. D., and Vardi, M. Y.
+Updating logical databases.
+Advances in Computing Research 3 (1986), 1–18.
+[13]
+Fagin, R., Ullman, J. D., and Vardi, M. Y.
+On the semantics of updates in databases.
+In Proceedings of the Second ACM SIGACT-SIGMOD Symposium on
+Principles of Database Systems, Colony Square Hotel, Atlanta, Georgia,
+USA (1983), pp. 352–365.
+[14]
+Fan, W., Tian, C., Xu, R., Yin, Q., Yu, W., and Zhou, J.
+Incrementalizing graph algorithms.
+In SIGMOD ’21: International Conference on Management of Data,
+Virtual Event, China, June 20-25, 2021 (2021), G. Li, Z. Li, S. Idreos,
+and D. Srivastava, Eds., ACM, pp. 459–471.
+[15]
+Flouris, G., Konstantinidis, G., Antoniou, G., and Christophides, V.
+Formal foundations for RDF/S KB evolution.
+Knowl. Inf. Syst. 35 , 1 (2013), 153–191.
+[16]
+Francis, N., Green, A., Guagliardo, P., Libkin, L., Lindaaker, T.,
+Marsault, V., Plantikow, S., Rydberg, M., Selmer, P., and Taylor, A.
+Cypher: An evolving query language for property graphs.
+In Proceedings of the 2018 International Conference on
+Management of Data, SIGMOD Conference 2018, Houston, TX, USA, June 10-15,
+2018 (2018), G. Das, C. M. Jermaine, and P. A. Bernstein, Eds., ACM,
+pp. 1433–1445.
+[17]
+Gottlob, G., Orsi, G., and Pieris, A.
+Ontological queries: Rewriting and optimization.
+In Proceedings of the 27th International Conference on Data
+Engineering, ICDE, Germany (2011), pp. 2–13.
+[18]
+Grahne, G.
+The Problem of Incomplete Information in Relational Databases ,
+vol. 554 of Lecture Notes in Computer Science .
+Springer, 1991.
+[19]
+Halfeld Ferrari, M., Hara, C. S., and Uber, F. R.
+RDF updates with constraints.
+In Knowledge Engineering and Semantic Web - 8th International
+Conference, KESW, Szczecin, Poland, Proceedings (2017), pp. 229–245.
+[20]
+Halfeld Ferrari, M., and Laurent, D.
+Updating RDF/S databases under constraints.
+In Advances in Databases and Information Systems - 21st European
+Conference, ADBIS, Nicosia, Cyprus, Proceedings (2017), pp. 357–371.
+[21]
+Halfeld Ferrari Alves, M., Laurent, D., and Spyratos, N.
+Update rules in datalog programs.
+J. Log. Comput. 8 , 6 (1998), 745–775.
+[22]
+Hell, P., and Nesetril, J.
+The core of a graph.
+Discrete Mathematics 109 , 1-3 (1992), 117–126.
+[23]
+Imielinski, T., and Lipski Jr., W.
+Incomplete information in relational databases.
+J. ACM 31 , 4 (1984), 761–791.
+[24]
+Lausen, G., Meier, M., and Schmidt, M.
+Sparqling constraints for RDF.
+In EDBT, 11th International Conference on Extending Database
+Technology, France, Proceedings (2008), pp. 499–509.
+[25]
+Link, S., and Schewe, K.
+An arithmetic theory of consistency enforcement.
+Acta Cybern. 15 , 3 (2002), 379–416.
+[26]
+Onet, A.
+The chase procedure and its applications in data exchange.
+In Data Exchange, Integration, and Streams . 2013, pp. 1–37.
+[27]
+Patel-Schneider, P. F.
+Using description logics for RDF constraint checking and
+closed-world recognition.
+In Proceedings of the Twenty-Ninth AAAI Conference on
+Artificial Intelligence, USA. (2015), pp. 247–253.
+[28]
+Reiter, R.
+A sound and sometimes complete query evaluation algorithm for
+relational databases with null values.
+J. ACM 33 , 2 (1986), 349–370.
+[29]
+Schewe, K., and Thalheim, B.
+Limitations of rule triggering systems for integrity maintenance in
+the context of transition specifications.
+Acta Cybern. 13 , 3 (1998), 277–304.
+[30]
+Sirangelo, C.
+Representing and Querying Incomplete Information: a Data
+Interoperability Perspective .
+2014.
+[31]
+Winslett, M.
+Updating Logical Databases .
+Cambridge University Press, New York, NY, USA, 1990.
+[32]
+Zaniolo, C.
+Database relations with null values.
+J. Comput. Syst. Sci. 28 , 1 (1984), 142–166.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

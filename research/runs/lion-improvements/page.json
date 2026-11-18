@@ -1,0 +1,958 @@
+{
+  "title": "What to improve in Lion next",
+  "names": {
+    "compile": "Compile to direct-style closures",
+    "annotate": "Annotated relations (semirings and lattices)",
+    "merge": "Merge functions over a union-find (egglog)",
+    "incremental": "One algebra of changes (DBSP)",
+    "joins": "Worst-case optimal joins",
+    "agents": "Programs a model can't get wrong",
+    "testing": "Metamorphic engine tests"
+  },
+  "define": {
+    "name": [
+      "lambda",
+      ["d"],
+      ["array/head", ["find", "?t", ["short_title", "d", "?t"]]]
+    ],
+    "at": [
+      "lambda",
+      ["place"],
+      ["array/head", ["find", "?d", ["net_rank", "?d", "place"]]]
+    ],
+    "details": [
+      "lambda",
+      ["d", "kind"],
+      [
+        "words/listed",
+        ["array/head", ["find", "?x", ["reasons_of", "d", "kind", "?x"]]]
+      ]
+    ],
+    "case": [
+      "lambda",
+      ["d"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["reasons_of", "d", "folds in what Lion has", "?_"],
+            [
+              "string/concat",
+              "One mechanism would cover ",
+              ["details", "d", "folds in what Lion has"],
+              ", which Lion handles with separate code today. "
+            ]
+          ],
+          ["else", ""]
+        ],
+        [
+          "cond",
+          [
+            ["reasons_of", "d", "adds what Lion lacks", "?_"],
+            [
+              "string/concat",
+              "It would add ",
+              ["details", "d", "adds what Lion lacks"],
+              ", which Lion lacks. "
+            ]
+          ],
+          ["else", ""]
+        ],
+        [
+          "cond",
+          [
+            ["reasons_of", "d", "closes a measured gap", "?_"],
+            [
+              "string/concat",
+              "Published speedups of at least 2x apply to work Lion measured as slow: ",
+              ["details", "d", "closes a measured gap"],
+              ". "
+            ]
+          ],
+          ["else", ""]
+        ],
+        [
+          "cond",
+          [
+            ["against", "d", "?_"],
+            [
+              "string/concat",
+              "No source shows its techniques covering ",
+              ["words/listed", ["find", "?f", ["against", "d", "?f"]]],
+              ", which Lion has, so that part is new work. "
+            ]
+          ],
+          [
+            "else",
+            "No source reports anything Lion has that its techniques cannot cover. "
+          ]
+        ],
+        "The evidence comes from ",
+        [
+          "words/count",
+          [
+            "array/head",
+            ["find", "?n", ["tally", "d", "?_", "?_", "?_", "?n"]]
+          ],
+          "independent research group",
+          "independent research groups"
+        ],
+        "."
+      ]
+    ],
+    "third_tie": [
+      "array/head",
+      ["find", "?others", ["tied", ["at", 3], "?others"]]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    "The literature gave ",
+    [
+      "words/count",
+      [
+        "aggregate/count",
+        ["find", "?d", ["tally", "?d", "?_", "?_", "?_", "?_"]]
+      ],
+      "direction",
+      "directions"
+    ],
+    ", each weighed against what Lion has and what it measured. The three that rank highest are ",
+    [
+      "words/listed",
+      [
+        "array/make",
+        ["name", ["at", 1]],
+        ["name", ["at", 2]],
+        ["name", ["at", 3]]
+      ]
+    ],
+    ". ",
+    [
+      "cond",
+      [
+        ["array/length", "third_tie"],
+        [
+          "string/concat",
+          "Third place is a tie on net reasons with ",
+          ["words/listed", ["array/map", "third_tie", "name"]],
+          ", decided by how many independent research groups back each. "
+        ]
+      ],
+      ["else", ""]
+    ],
+    "Lion's plain code costs ",
+    [
+      "words/number",
+      [
+        "array/head",
+        [
+          "find",
+          "?us",
+          ["cost_each", "a tail-recursive loop of 100,000 steps", "?us"]
+        ]
+      ]
+    ],
+    " microseconds per loop step, and a triangle query on a graph with two hub nodes grows as n to the power ",
+    [
+      "words/number",
+      [
+        "array/head",
+        [
+          "find",
+          "?p",
+          [
+            "answer",
+            {
+              "lion grows": "triangles on a graph with two hubs"
+            },
+            "?p",
+            "?_"
+          ]
+        ]
+      ]
+    ],
+    "."
+  ],
+  "views": [
+    {
+      "name": "The top three",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "What ranks first, and why?",
+          "answer": [
+            "string/concat",
+            ["name", ["at", 1]],
+            ". ",
+            ["case", ["at", 1]]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["net_rank", "?d", 1],
+              ["reason", "?d", "?kind", "?detail"]
+            ],
+            {
+              "order": ["kind", "detail"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What ranks second, and why?",
+          "answer": [
+            "string/concat",
+            ["name", ["at", 2]],
+            ". ",
+            ["case", ["at", 2]]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["net_rank", "?d", 2],
+              ["reason", "?d", "?kind", "?detail"]
+            ],
+            {
+              "order": ["kind", "detail"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What ranks third, and why?",
+          "answer": [
+            "string/concat",
+            ["name", ["at", 3]],
+            ". ",
+            ["case", ["at", 3]]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["net_rank", "?d", 3],
+              ["reason", "?d", "?kind", "?detail"]
+            ],
+            {
+              "order": ["kind", "detail"]
+            }
+          ]
+        },
+        {
+          "type": "figures",
+          "title": "The measured gaps behind the ranking",
+          "items": [
+            {
+              "label": "Lion, microseconds per loop step",
+              "value": [
+                "words/number",
+                [
+                  "array/head",
+                  [
+                    "find",
+                    "?us",
+                    [
+                      "cost_each",
+                      "a tail-recursive loop of 100,000 steps",
+                      "?us"
+                    ]
+                  ]
+                ]
+              ],
+              "note": "a tail-recursive lambda counting down"
+            },
+            {
+              "label": "Lion, fib(17) in milliseconds",
+              "value": [
+                "words/number",
+                [
+                  "array/head",
+                  [
+                    "find",
+                    "?ms",
+                    [
+                      "answer",
+                      {
+                        "lion measured": "fib(17) through a recursive lambda"
+                      },
+                      "?ms",
+                      "?_"
+                    ]
+                  ]
+                ]
+              ]
+            },
+            {
+              "label": "Hub-graph triangles grow as n to the power",
+              "value": [
+                "words/number",
+                [
+                  "array/head",
+                  [
+                    "find",
+                    "?p",
+                    [
+                      "answer",
+                      {
+                        "lion grows": "triangles on a graph with two hubs"
+                      },
+                      "?p",
+                      "?_"
+                    ]
+                  ]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                "against ",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?p",
+                      [
+                        "answer",
+                        {
+                          "lion grows": "triangles among n edges over n/4 nodes"
+                        },
+                        "?p",
+                        "?_"
+                      ]
+                    ]
+                  ]
+                ],
+                " on a graph without hubs"
+              ]
+            },
+            {
+              "label": "Direct style over effect handlers, in JavaScript",
+              "value": [
+                "string/concat",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?x",
+                      [
+                        "stated",
+                        [
+                          "schema/open",
+                          {
+                            "result": "direct style without effect handlers"
+                          }
+                        ],
+                        "?x"
+                      ]
+                    ]
+                  ]
+                ],
+                "x"
+              ],
+              "note": "Koka's JavaScript backend, n-queens"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "In what order",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "Should one algebra of changes come before annotated relations?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  [
+                    "stated",
+                    {
+                      "covers": "annotated relations",
+                      "by": "dbsp"
+                    },
+                    true
+                  ],
+                  [
+                    "stated",
+                    {
+                      "covers": "annotated relations",
+                      "by": "semiring provenance"
+                    },
+                    true
+                  ]
+                ],
+                "One algebra of changes is annotated relations whose annotations are integers, so the two are one design and not two. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["handles", "incremental", "semi-naive evaluation", "?_"],
+                  ["handles", "incremental", "re-deriving and comparing", "?_"]
+                ],
+                "Its one rule would take the place of both Lion's semi-naive evaluation and its fall-back of deriving a relation again and comparing, which are separate code today. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                ["violated", "li-order", "?_"],
+                "But that rule needs annotations that can be subtracted, so building it first with integers alone would fix a choice the annotated relations need to make. "
+              ],
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "annotations without subtraction",
+                    "by": "candidate multisets"
+                  },
+                  true
+                ],
+                "Its rule needs values that can be subtracted, but annotations need not be: kept as columns that aggregates combine, only their candidates are ever added and removed, so integer weights are enough and annotated relations need no rework of it. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "min without the full set",
+                    "by": "dbsp"
+                  },
+                  false
+                ],
+                "Min and max cannot be subtracted: to survive deletions they must keep every candidate."
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "in",
+                "?f",
+                [
+                  "array/make",
+                  "annotated relations",
+                  "semi-naive evaluation",
+                  "re-deriving and comparing",
+                  "annotations without subtraction",
+                  "min without the full set"
+                ]
+              ],
+              [
+                "answer",
+                {
+                  "covers": "?f",
+                  "by": "?technique"
+                },
+                "?covers",
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["f", "technique"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknowns and equality",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "Does Lion's answer depend on the order its equality rules are written in?",
+          "answer": [
+            "cond",
+            [
+              [
+                "disputed",
+                {
+                  "lion has": "order-independent merges"
+                },
+                "?_"
+              ],
+              "Yes, today it can. Lion's README says the result does not depend on the order rules or facts were added in, but one program with its two equality rules swapped names every merged unknown differently. When two values are made one, Lion keeps one of them by a rule that is not transitive, so which one survives depends on which merge came first."
+            ],
+            [
+              [
+                "stated",
+                {
+                  "lion has": "order-independent merges"
+                },
+                false
+              ],
+              "Yes: a probe shows answers that change with the order of equality rules."
+            ],
+            [
+              "else",
+              "No probe found an answer that depends on the order of equality rules."
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "answer",
+              {
+                "lion has": "order-independent merges"
+              },
+              "?independent_of_order",
+              "?statement"
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Does keeping each class's least member, by an order that respects nesting, fix it without changing what Lion derives?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "order-independent merges",
+                    "by": "least-member classes"
+                  },
+                  true
+                ],
+                "It removes the dependence on order: across 10,000 random programs, no reordering of rules or facts changed an answer. "
+              ],
+              ["else", ""]
+            ],
+            "Of the random programs Lion accepts, ",
+            [
+              "words/number",
+              [
+                "array/head",
+                [
+                  "find",
+                  "?n",
+                  [
+                    "stated",
+                    {
+                      "result": "least-member classes",
+                      "measure": "random programs Lion accepts that give Lion's exact answer",
+                      "bound": "exact",
+                      "unit": "count"
+                    },
+                    "?n"
+                  ]
+                ]
+              ]
+            ],
+            " gave Lion's exact answer and ",
+            [
+              "words/number",
+              [
+                "array/head",
+                [
+                  "find",
+                  "?n",
+                  [
+                    "stated",
+                    {
+                      "result": "least-member classes",
+                      "measure": "random programs Lion accepts that give Lion's rows with another unknown naming a class",
+                      "bound": "exact",
+                      "unit": "count"
+                    },
+                    "?n"
+                  ]
+                ]
+              ]
+            ],
+            " gave the same rows with the same values shared, where only the unknown that names a class differs. ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "deletion of equalities",
+                    "by": "least-member classes"
+                  },
+                  true
+                ],
+                "Because a class's representative depends only on what is in the class, a removed equality can be followed by walking the one class it was in; in the test that stayed equal to rebuilding every class from scratch at every step."
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "answer",
+              [
+                "schema/open",
+                {
+                  "by": "least-member classes"
+                }
+              ],
+              "?covers",
+              "?statement"
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Has anyone kept invented unknowns and equality up to date together when facts are removed?",
+          "answer": [
+            "cond",
+            [
+              ["covers_all", "?_"],
+              [
+                "string/concat",
+                "Yes: ",
+                ["words/listed", ["find", "?t", ["covers_all", "?t"]]],
+                "."
+              ]
+            ],
+            [
+              "else",
+              [
+                "string/concat",
+                "No source in this research does all three. Separately, representatives chosen by a fixed order come from ",
+                [
+                  "words/listed",
+                  [
+                    "find",
+                    "?t",
+                    [
+                      "stated",
+                      {
+                        "covers": "deterministic representatives",
+                        "by": "?t"
+                      },
+                      true
+                    ]
+                  ]
+                ],
+                "; deleting equalities from ",
+                [
+                  "words/listed",
+                  [
+                    "find",
+                    "?t",
+                    [
+                      "stated",
+                      {
+                        "covers": "deletion of equalities",
+                        "by": "?t"
+                      },
+                      true
+                    ]
+                  ]
+                ],
+                "; and chases with invented values from ",
+                [
+                  "words/listed",
+                  [
+                    "find",
+                    "?t",
+                    [
+                      "stated",
+                      {
+                        "covers": "existential rules",
+                        "by": "?t"
+                      },
+                      true
+                    ]
+                  ]
+                ],
+                ". Congruence closure takes equalities back only in the reverse of the order they came, in ",
+                [
+                  "words/listed",
+                  [
+                    "find",
+                    "?t",
+                    [
+                      "stated",
+                      {
+                        "covers": "lifo retraction of equalities",
+                        "by": "?t"
+                      },
+                      true
+                    ]
+                  ]
+                ],
+                "."
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "in",
+                "?f",
+                [
+                  "array/make",
+                  "existential rules",
+                  "equality rules",
+                  "deletion of equalities",
+                  "deterministic representatives",
+                  "lifo retraction of equalities"
+                ]
+              ],
+              [
+                "answer",
+                {
+                  "covers": "?f",
+                  "by": "?technique"
+                },
+                "?covers",
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["f", "technique"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All directions compared",
+      "blocks": [
+        {
+          "type": "table",
+          "title": "How each direction stands",
+          "note": "Reasons are the Lion features one mechanism would take over, the capabilities it adds, and the measured gaps published speedups apply to. Not covered counts the features of Lion's that no source shows its techniques covering.",
+          "query": [
+            "query",
+            [
+              "and",
+              ["net_rank", "?direction", "?place"],
+              [
+                "tally",
+                "?direction",
+                "?reasons",
+                "?not_covered",
+                "?_",
+                "?research_groups"
+              ]
+            ],
+            {
+              "order": "place"
+            }
+          ]
+        },
+        {
+          "type": "comparison",
+          "title": "What each reason is",
+          "query": ["query", ["reasons_of", "?direction", "?kind", "?details"]],
+          "rows": "direction",
+          "columns": "kind",
+          "cell": "details"
+        }
+      ]
+    },
+    {
+      "name": "Look up a direction",
+      "blocks": [
+        {
+          "type": "lookup",
+          "title": "What does the evidence say about this direction?",
+          "choose": {
+            "d": {
+              "label": "Direction",
+              "options": [
+                "find",
+                "?d",
+                ["weighed_in", "?d", "lion-improvements"]
+              ]
+            }
+          },
+          "example": {
+            "d": "compile"
+          },
+          "answer": [
+            "lambda",
+            ["d"],
+            ["string/concat", ["name", "d"], ". ", ["case", "d"]]
+          ],
+          "query": [
+            "lambda",
+            ["d"],
+            {
+              "Published results": [
+                "query",
+                ["payoff", "d", "?technique", "?question", "?value"]
+              ],
+              "What its techniques cover": [
+                "query",
+                [
+                  "and",
+                  ["uses", "d", "?technique"],
+                  [
+                    "answer",
+                    {
+                      "covers": "?feature",
+                      "by": "?technique"
+                    },
+                    "?covers",
+                    "?statement"
+                  ]
+                ],
+                {
+                  "order": ["feature", "technique"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "What the evidence overturned",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "Which beliefs going in did the evidence break?",
+          "answer": [
+            "string/concat",
+            [
+              "words/count",
+              [
+                "aggregate/countUnique",
+                [
+                  "find",
+                  "?a",
+                  [
+                    "and",
+                    ["violated", "?a", "?_"],
+                    ["string/startsWith", "?a", "li-"]
+                  ]
+                ]
+              ],
+              "belief",
+              "beliefs"
+            ],
+            " of ",
+            [
+              "words/number",
+              [
+                "aggregate/countUnique",
+                [
+                  "find",
+                  "?a",
+                  [
+                    "and",
+                    ["assumption", "?a", "?_"],
+                    ["string/startsWith", "?a", "li-"]
+                  ]
+                ]
+              ]
+            ],
+            " failed: ",
+            [
+              "words/listed",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?b",
+                  [
+                    "and",
+                    [
+                      "and",
+                      ["violated", "?a", "?_"],
+                      ["string/startsWith", "?a", "li-"]
+                    ],
+                    ["assumption", "?a", "?b"]
+                  ]
+                ]
+              ]
+            ],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["violated", "?a", "?statement"],
+              ["assumption", "?a", "?belief"],
+              ["claim", "?statement", "?_", "?_", "?_"],
+              ["string/startsWith", "?a", "li-"]
+            ],
+            {
+              "order": "belief"
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Which beliefs held?",
+          "answer": [
+            "string/concat",
+            [
+              "words/listed",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?b",
+                  [
+                    "and",
+                    ["holds", "?a"],
+                    ["assumption", "?a", "?b"],
+                    ["string/startsWith", "?a", "li-"]
+                  ]
+                ]
+              ]
+            ],
+            "."
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["holds", "?a"],
+              ["assumption", "?a", "?belief"],
+              ["string/startsWith", "?a", "li-"]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

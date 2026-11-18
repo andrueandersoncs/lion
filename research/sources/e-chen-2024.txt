@@ -1,0 +1,939 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+2 Prompting for Code Generation
+3 Self-Debugging Framework
+4 Applications
+4.1 Text-to-SQL Generation
+4.2 Code Translation
+4.3 Text-to-Python Generation
+5 Experiments
+5.1 Main Results
+5.2 Ablation studies
+5.2.1 Self-Debugging Improves the Sample Efficiency
+5.2.2 Importance of Code Execution
+5.2.3 Error Types Fixed by Self-Debugging
+6 Related Work
+Language models for code.
+Prompting techniques.
+Training with feedback.
+7 Conclusion
+References
+A Self-Debugging with initial samples from different LLMs
+B Transcoder comparison to baseline models
+C More discussion of Self-Debugging results
+C.1 Code translation
+C.2 Text-to-Python Generation
+D Examples of Model Predictions with Self-Debugging
+E Text-to-SQL Generation
+E.1 Baseline Prompt (5-shot)
+E.2 Simple Feedback Prompt (9-shot)
+E.3 Explanation Feedback Prompt (9-shot)
+E.4 Prompt for Question Explanation
+E.5 Prompt for SQL Explanation
+E.6 Chat Simple Feedback Prompt (0-shot)
+E.7 Chat Explanation Feedback Prompt (0-shot)
+F Code Translation
+F.1 Baseline Prompt (3-shot)
+F.2 Baseline + Expl. Prompt (3-shot)
+F.3 Simple Feedback Prompt (2-shot)
+F.4 Unit Test Feedback Prompt (2-shot)
+F.5 Unit Test + Expl. Feedback Prompt (2-shot)
+F.6 Unit Test + Trace Feedback Prompt (2-shot)
+F.7 Chat Simple Feedback Prompt (0-shot)
+F.8 Chat Unit Test Feedback Prompt (0-shot)
+F.9 Chat Unit Test + Expl. Feedback Prompt (0-shot)
+F.10 Chat Unit Test + Trace Feedback Prompt (0-shot)
+G Text-to-Python Generation
+G.1 Baseline Prompt (3-shot)
+G.2 Simple Feedback Prompt (6-shot)
+G.3 Unit Test Feedback Prompt (6-shot)
+G.4 Unit Test + Expl. Feedback Prompt (3-shot)
+G.5 Chat Simple Feedback Prompt (0-shot)
+G.6 Chat Unit Test Feedback Prompt (0-shot)
+G.7 Chat Unit Test + Expl. Feedback Prompt (0-shot)
+G.8 Chat Unit Test + Trace Feedback Prompt (0-shot)
+License: CC BY 4.0
+arXiv:2304.05128v2 [cs.CL] 05 Oct 2023
+Teaching Large Language Models to Self-Debug
+Xinyun Chen
+  
+Maxwell Lin
+  
+Nathanael Schärli
+  
+Denny Zhou
+Affiliation:  Google DeepMind
+Affiliation:  UC Berkeley
+{xinyunchen,schaerli,dennyzhou}@google.com, mxlin@berkeley.edu
+Abstract
+Large language models (LLMs) have achieved impressive performance on code generation. However, for complex programming tasks, generating the correct solution in one go becomes challenging, thus some prior works have designed program repair approaches to improve code generation performance. In this work, we propose Self-Debugging , which teaches a large language model to debug its predicted program via few-shot demonstrations. In particular, we demonstrate that Self-Debugging can teach the large language model to perform rubber duck debugging ; i.e., without any human feedback on the code correctness or error messages, the model is able to identify its mistakes by investigating the execution results and explaining the generated code in natural language. Self-Debugging achieves the state-of-the-art performance on several code generation benchmarks, including the Spider dataset for text-to-SQL generation, TransCoder for C++-to-Python translation, and MBPP for text-to-Python generation. On the Spider benchmark where there are no unit tests to verify the correctness of predictions, Self-Debugging with code explanation consistently improves the baseline by 2 − 3 % 2-3\% , and improves the prediction accuracy on problems of the hardest level by 9 % 9\% . On TransCoder and MBPP where unit tests are available, Self-Debugging improves the baseline accuracy by up to 12 % 12\% . Meanwhile, by leveraging feedback messages and reusing failed predictions, Self-Debugging notably improves sample efficiency, and can match or outperform baseline models that generate more than 10 × \times candidate programs.
+1 Introduction
+Code generation has been a long-standing challenge with a variety of applications, such as code synthesis from natural languages ( Yu et al., 2018 ; Chen et al., 2021a ; Austin et al., 2021 ; Li et al., 2022 ) , programming by examples ( Devlin et al., 2017 ; Bunel et al., 2018 ; Chen et al., 2019 ) , and code translation ( Roziere et al., 2020 ; Chen et al., 2018 ) . In particular, recent large language models have demonstrated a significant leap in improvement over prior deep neural networks ( Chen et al., 2021a ; Nijkamp et al., 2023 ; Zheng et al., 2023 ; Xu et al., 2022 ) . However, for many programming tasks, generating correct code with a single attempt is challenging. Inspired by observations that correct code is much more likely to be predicted when multiple programs are sampled from the model ( Chen et al., 2021a ; Chowdhery et al., 2022 ; Li et al., 2022 ) , one line of work has designed reranking techniques to select the best candidate from multiple samples, which typically requires tens of samples to start with ( Shi et al., 2022 ; Zhang et al., 2022 ; Ni et al., 2023 ; Li et al., 2022 ) .
+Intuitively, even for human programmers, there is no guarantee that the code written on the first try is always accurate. Instead of completely discarding the incorrect code, humans typically look into the code and investigate execution results, then make changes to resolve the implementation errors. Therefore, prior works propose deep learning techniques to repair the predicted code, which demonstrate notable performance gains on various coding tasks ( Gupta et al., 2020 ; Wang et al., 2018 ; Fu et al., 2019 ; Chen et al., 2023a ) . However, these approaches require additional training for the code repair model. While some recent works show that large language models have potential for generating feedback messages to critique and refine their outputs for some natural language and reasoning domains ( Shinn et al., 2023 ; Madaan et al., 2023b ; Kim et al., 2023 ; Bai et al., 2022 ) , prior works suggest that such large language models are not yet capable of correcting code when lacking external feedback, such as unit tests or human instructions ( Chen et al., 2023a ) .
+In this work, we propose Self-Debugging , where we teach the large language model to debug its own predicted code via few-shot prompting. Without any additional model training, Self-Debugging instructs the model to execute the code, then generate a feedback message based on the code and its execution result. Different from prior works on utilizing human feedback for code repair, where the feedback message explains the code errors and how to fix them ( Chen et al., 2023a ; Austin et al., 2021 ) , Self-Debugging teaches the model to identify the implementation errors via investigating into execution results and explaining the code by itself. This debugging process is reminiscent of rubber duck debugging for human programmers, where explaining the code line-by-line in natural language to a rubber duck significantly boosts debugging efficiency without expert guidance ( Hunt & Thomas, 2000 ) . Figure 1 illustrates the full procedure of Self-Debugging .
+We evaluate Self-Debugging on a variety of models, including code-davinci-002 ( Chen et al., 2021a ) , gpt-3.5-turbo , gpt-4 ( OpenAI, 2023 ) in the GPT model family, as well as StarCoder ( Li et al., 2023b ) , a strong open-source LLM for code generation. Self-Debugging achieves the state-of-the-art performance on different types of code generation tasks, including text-to-SQL generation, code translation and text-to-Python generation. On the Spider benchmark ( Yu et al., 2018 ) for text-to-SQL generation where there are no unit tests in the problem description, with code explanation, Self-Debugging consistently improves the baseline by 2 − 3 % 2-3\% with different numbers of initial programs, and improves the prediction accuracy on the most complicated SQL queries by 9 % 9\% . On both TransCoder for code translation ( Roziere et al., 2020 ) and MBPP for text-to-Python generation ( Austin et al., 2021 ) , utilizing unit tests along with code explanation boosts the accuracy by up to 12 % 12\% , and code explanation alone without debugging also consistently improves the code translation performance by 2 − 3 % 2-3\% . Meanwhile, Self-Debugging improves sample efficiency, and can match or outperform baseline models that sample more than 10 × \times predictions. Our work indicates that besides improving their ability to generate code from scratch, teaching large language models to perform Self-Debugging without human guidance is another promising path to enhance coding capability and reduce the sampling cost required to accomplish challenging tasks.
+Figure 1: Self-Debugging for iterative debugging using a large language model. At each debugging step, the model first generates new code, then the code is executed and the model explains the code. The code explanation along with the execution results constitute the feedback message, based on which the model infers the code correctness and then adds this message to the feedback. The feedback message is then sent back to the model to perform more debugging steps.
+When unit tests are not available, the feedback can be purely based on code explanation.
+2 Prompting for Code Generation
+In this section, we discuss the background on prompting for code generation using large language models. We first introduce few-shot prompting, then discuss how to select the final prediction from multiple samples based on code execution.
+Few-shot prompting. Few-shot prompting instructs the language model to solve a task with several input-output demonstrations ( Brown et al., 2020 ) . Taking text-to-SQL generation as an example, the few-shot prompt prepends the question of interest with a list of (question, SQL) pairs, so that when the model is asked to predict subsequent tokens of the given prompt, it will follow the prompt format to generate the SQL query. Figure 2 presents one exemplar for the prompt. Besides input-output demonstrations, we can optionally add an instruction in the prompt to provide a high-level task description ( Ouyang et al., 2022 ; Sanh et al., 2022 ; Suzgun et al., 2022 ) . For example, in the first two steps of our Self-Debugging prompt shown in Figure 3 , both prompts start with instructions that ask the model to generate explanations. We provide the full few-shot prompts in the appendix.
+Execution-based code selection. Prior works demonstrate that decoding multiple samples can significantly improve the performance of large language models ( Wang et al., 2023 ; Shi et al., 2022 ) . In particular, for code generation tasks, we can utilize code execution to select the final prediction ( Chen et al., 2019 ; Li et al., 2022 ; Shi et al., 2022 ; Zhang et al., 2022 ; Ni et al., 2023 ) . One line of work selects the final prediction using the majority vote of execution results ( Chen et al., 2019 ; Li et al., 2022 ; Shi et al., 2022 ) , while other works design reranking schemes to improve the performance ( Zhang et al., 2022 ; Ni et al., 2023 ; Yin & Neubig, 2019 ; Zeng et al., 2022 ) . In this work, when there are multiple predictions, we follow the first line of work to select the predicted code with the most frequent execution result among those that do not encounter execution errors, then apply Self-Debugging to the code.
+Some code generation tasks are accompanied with unit tests to specify the program execution behavior ( Chen et al., 2021a ; Austin et al., 2021 ; Li et al., 2022 ; Hendrycks et al., 2021 ) . Specifically, the unit tests are a set of input-output pairs { ( i k , o k ) } k = 1 K \{(i_{k},o_{k})\}_{k=1}^{K} , and a program P P passes unit tests when P ⁡ ( i k ) = o k , ∀ k ∈ { 1 , … , K } P(i_{k})=o_{k},\forall k\in\{1,...,K\} . When unit tests are presented in the problem description, we filter out programs that do not pass the unit tests before performing the execution-based majority vote.
+3 Self-Debugging Framework
+Figure 1 illustrates our Self-Debugging framework for iterative debugging, where we utilize a pretrained large language model without finetuning it. One turn of Self-Debugging consists of 3 steps: Generation, Explanation, and Feedback.
+•
+For the Generation step, given the problem description, the model predicts candidate programs.
+•
+During the Explanation step, the model is prompted to process the predictions in a semantically useful way, such as explaining the prediction in natural language, or creating an execution trace of the predicted code for a sample input.
+•
+Finally, for the Feedback step, a feedback message concerning the correctness of the predicted code is generated. This can be determined by asking the model itself, or can be generated externally from unit tests.
+The debugging process terminates when the feedback message states that the prediction is correct, or a maximum allowed number of debugging turns is reached.
+In practice, a Self-Debugging turn does not always include all steps above. We discuss different types of feedback that can be automatically acquired and generated for Self-Debugging below.
+Simple feedback. The simplest form of automatic feedback is a sentence that just indicates the code correctness without more detailed information, which omits the Explanation step in a full Self-Debugging turn. For instance, in text-to-SQL generation, the few-shot prompt provides the feedback message “The SQL prediction above is correct!” for all correct SQL queries, and “The SQL prediction above is wrong. Please fix the SQL.” for wrong predictions.
+Unit test feedback (UT). For code generation tasks where the problem description includes unit tests, besides utilizing code execution to check code correctness, we can also incorporate the execution results in the feedback, which provides richer information for debugging. Figure 5 presents a sample unit test feedback message. Intuitively, inspecting runtime errors and execution results of failed unit tests also helps human programmers debug more effectively. In our experiments, we will demonstrate that leveraging unit tests whenever available consistently boosts the Self-Debugging performance.
+Code Explanation feedback (Expl). Despite recent promising progress showing that large language models can generate critiques to avoid harmful model outputs ( Ganguli et al., 2023 ; Bai et al., 2022 ) and improve their performance on some natural language tasks ( Shinn et al., 2023 ; Kim et al., 2023 ; Saunders et al., 2022 ) , prior work has yet to show the effectiveness of model-generated feedback on code generation ( Chen et al., 2023a ) . On the other hand, large language models have been shown to be capable of describing their generated problem solutions in both text ( Wei et al., 2022 ; Kojima et al., 2022 ; Zhou et al., 2023 ) and code ( Gao et al., 2022 ; Chen et al., 2022 ) formats.
+Inspired by these observations, instead of teaching the large language model to predict error messages, we propose Self-Debugging via explaining the generated code. This debugging process is reminiscent of rubber duck debugging , where a programmer debugs code by explaining it line-by-line to a rubber duck ( Hunt & Thomas, 2000 ) . By describing the code implementation and comparing it to the problem description, human programmers are usually able to identify the bugs without extra guidance. Empirically, we observe that a large language model can also benefit from rubber duck debugging, especially when unit tests are not available.
+Execution trace feedback (Trace). Besides explaining the code itself, human programmers also often understand the code semantic meaning by simulating the execution process. Prior work on code repair has demonstrated that training the repair model on execution traces improves the debugging performance ( Wang et al., 2018 ; Gupta et al., 2020 ) . Therefore, when unit tests are available, we examine another explanation feedback format where the LLM is instructed to explain the intermediate execution steps line-by-line. Note that both the execution trace and the line-by-line explanation come from model generation instead of code execution, thus the trace feedback does not require more information than the pure code explanation feedback; i.e., no access to intermediate execution states.
+4 Applications
+In our evaluation, we showcase applications of Self-Debugging to different code generation domains: text-to-SQL generation, code translation, and text-to-Python generation. First, text-to-SQL generation represents the scenario where no unit tests are available, where Self-Debugging enables the model to identify errors and justify code correctness by explaining the predicted code. In code translation, we demonstrate how to utilize the execution of unit tests to provide feedback messages. Finally, the text-to-Python domain requires the model to infer prediction correctness when only a subset of unit tests are presented in the problem description.
+Figure 2: An exemplar for text-to-SQL generation. The problem is taken from the Spider dataset ( Yu et al., 2018 ) . The problem description contains the database schema, and the model is required to predict the SQL query. The prompt includes the contents of one row from each table.
+Figure 3: An example of Self-Debugging prompting for text-to-SQL generation. The SQL query, explanation and feedback are all predicted by the model. When the returned table has more than 2 rows, only the first 2 rows are included in the prompt. Database information is omitted in the figure for clarity, and we present the full prompts in Appendix E .
+4.1 Text-to-SQL Generation
+The goal of text-to-SQL tasks is to generate the corresponding SQL query given a question and the database information, and Figure 2 presents an exemplar in our prompt for generating the SQL query. Following prior work evaluating large language models for text-to-SQL generation ( Rajkumar et al., 2022 ; Shi et al., 2022 ; Ni et al., 2023 ) , we evaluate Self-Debugging on the development set of the Spider benchmark ( Yu et al., 2018 ) . Since the unit tests are not available, it becomes more challenging for the model to infer the correctness of the predicted SQL queries. As will be shown in Section 5 , it is insufficient for accurately predicting SQL correctness when the few-shot prompt only contains simple feedback.
+Figure 3 demonstrates an exemplar in our Self-Debugging prompt for text-to-SQL generation, and we present the full few-shot prompts for each step in Appendix E . At a high level, the debugging process contains 3 steps. First, we prompt the model to summarize the question and infer the return type required by the question; i.e., the number of table columns of the corresponding SQL query. In the second step, we execute the SQL query and add the returned table to the model input for code explanation. The generated SQL explanation includes a detailed description of each clause, the number of columns included in the returned table, and the high-level meaning of the full SQL query. When the returned table has more than 2 rows, only the first 2 rows are included in the prompt. Finally, the model compares the inferred SQL explanation and question description, and then predicts the correctness of the current SQL query. The Self-Debugging process terminates when the SQL query is considered correct in step 3, or when it reaches the maximum number of debugging turns.
+4.2 Code Translation
+Figure 4: An example from the TransCoder dataset. The problem description contains the C++ program and unit tests, and the model is required to predict the Python program.
+Figure 5: Examples of Self-Debugging prompts for code translation. Left-aligned blocks are model predictions, and right-aligned blocks contain the input C++ code and feedback messages based on code execution. The full prompts are in Appendix F .
+Next, we apply Self-Debugging to code translation, where the goal is to translate code in one programming language into another language. We use the TransCoder dataset ( Roziere et al., 2020 ) for experiments, which includes a test set of parallel functions in different programming languages along with unit tests. Following ( Chowdhery et al., 2022 ) , we evaluate Self-Debugging on C++-to-Python translation, and we utilize the same test set with 560 problems and 10 unit tests per problem. The problem description includes both the C++ code and all unit tests, as shown in Figure 4 .
+Given the availability of unit tests, we apply Self-Debugging only when the predicted Python code does not pass all the unit tests, and thus the model does not need to predict the feedback messages. Figure 5 provides sample Self-Debugging prompts with unit test feedback and code explanation. We iteratively apply Self-Debugging until the predicted Python code passes all unit tests, or the model reaches a maximum number of debugging turns.
+4.3 Text-to-Python Generation
+In addition, we evaluate Self-Debugging in the setting where only a subset of unit tests are presented in the problem description, which is a common setup in coding assignments and competitions ( Austin et al., 2021 ; Li et al., 2022 ) . Specifically, we evaluate on the MBPP test set ( Austin et al., 2021 ) , which contains 500 Python problems with text descriptions, where each problem has 3 unit tests. We follow prior work ( Shi et al., 2022 ; Ni et al., 2023 ) in including the first unit test in the prompt as part of the problem description, and keeping the remaining 2 unit tests hidden for full evaluation. Similar to code translation, we can also incorporate unit test execution results in the feedback message, but the main difference is that the model still needs to infer the code correctness even if the predicted code passes the given unit test. We present the full prompts in Appendix G .
+5 Experiments
+We evaluate Self-Debugging on code-davinci-002 ( Chen et al. (2021a) , referred to as Codex), gpt-3.5-turbo , gpt-4 ( OpenAI, 2023 ) , and StarCoder ( Li et al., 2023b ) with 15.5B parameters.
+For initial code generation, when starting from one program, we perform greedy decoding with temperature τ = 0 \tau=0 . When sampling multiple programs for a problem, we set temperature τ = 0.7 \tau=0.7 , then we perform execution-based selection described in Section 2 . All experiments for Self-Debugging use greedy decoding to generate code explanations, feedback messages and new programs. We set the maximum number of debugging turns to be 10, though empirically the successful debugging processes mostly end within 3 turns. We present the full prompts for experiments in the appendix.
+We evaluate Self-Debugging against two types of code reranking baselines as follows.
+Models trained for the given task. The Spider benchmark contains a training set of over 10K samples, and the state-of-the-art models are mostly finetuned on this training set. We compare Self-Debugging to T5-3B + N-best Reranking ( Zeng et al., 2022 ) , where the T5-3B model is specially trained for text-to-SQL generation. Although LEVER ( Ni et al., 2023 ) also utilizes code-davinci-002 to generate candidate SQL queries, they train a verifier to select the final prediction based on execution, and thus this approach also requires extra training. For both TransCoder and MBPP benchmarks, the state-of-the-art results are all accomplished by large language models for code, thus we defer the comparison to Appendix B .
+Prompting-based approaches. We compare Self-Debugging against recent approaches that also only perform prompting without any additional training. Specifically, Both MBR-Exec ( Shi et al., 2022 ) and Coder-Reviewer ( Zhang et al., 2022 ) first generate multiple candidate programs by prompting the pretrained model. Afterward, MBR-Exec ( Shi et al., 2022 ) selects the program with the most common execution output, while Coder-Reviewer ( Zhang et al., 2022 ) selects the program by utilizing both the likelihood of the predicted code given the problem description (Coder score) and the likelihood of the problem description given the predicted code (Reviewer score).
+5.1 Main Results
+Table 1: Comparing Self-Debugging to prior ranking techniques.
+(a) Results on the Spider development set.
+Spider (Dev)
+w/ training
+T5-3B + N-best Reranking
+80.6
+LEVER ( Ni et al., 2023 )
+81.9
+Prompting only w/o debugging
+Coder-Reviewer
+74.5
+MBR-Exec
+75.2
+Self-Debugging (this work)
+Codex
+81.3
++ Expl.
+84.1
+(b) Results on MBPP dataset.
+n n samples
+Prior work
+MBR-Exec
+63.0 ( n = 25 n=25 )
+Reviewer
+66.9 ( n = 25 n=25 )
+LEVER
+68.9 ( n = 100 n=100 )
+Self-Debugging (this work)
+Codex
+72.2 ( n = 10 n=10 )
+Simple
+73.6
+UT
+75.2
+UT + Expl.
+75.6
+First, we compare Self-Debugging to prior code reranking approaches in Table 1 , where both Self-Debugging and prior prompting-based approaches use Codex. We demonstrate that Self-Debugging consistently improves the performance.
+Table 2: Results of Self-Debugging with different feedback formats.
+(a) Results on the Spider development set.
+Spider
+Codex
+GPT-3.5
+GPT-4
+StarCoder
+Baseline
+81.3
+71.1
+73.2
+64.7
+Simple
+81.3
+72.2
+73.4
+64.9
++Expl.
+84.1
+72.2
+73.6
+64.9
+(b) Results on TransCoder.
+TransCoder
+Codex
+GPT-3.5
+GPT-4
+StarCoder
+Baseline
+80.4
+89.1
+77.3
+70.0
+Simple
+89.3
+91.6
+80.9
+72.9
+UT
+91.6
+92.7
+88.8
+76.4
++ Expl.
+92.5
+92.7
+90.4
+76.6
++ Trace.
+87.9
+92.3
+89.5
+73.6
+(c) Results on MBPP.
+MBPP
+Codex
+GPT-3.5
+GPT-4
+StarCoder
+Baseline
+61.4
+67.6
+72.8
+47.2
+Simple
+68.2
+70.8
+78.8
+50.6
+UT
+69.4
+72.2
+80.6
+52.2
++ Expl.
+69.8
+74.2
+80.4
+52.2
++ Trace.
+70.8
+72.8
+80.2
+53.2
+Next, we compare different feedback formats for Self-Debugging with different LLMs in Table 2 . On the Spider benchmark where unit tests are not available, simple feedback alone does not notably improve the performance, because the model typically struggles to distinguish between correct and wrong SQL queries without explanation, and does not produce meaningful changes to the initial predicted SQL queries. Note that on TransCoder and MBPP benchmarks where at least one unit test is available for Self-Debugging , simple feedback also utilizes the execution result to infer the code correctness even if the execution information is not presented in the feedback message, thus simple feedback still improves the model prediction for both applications. In Section 5.2.2 , we further present an ablation study showing that leveraging code execution is crucial for enabling a performance leap with Self-Debugging . For all tasks, models generally benefit from richer feedback for Self-Debugging , especially when the execution information is present in the feedback.
+By comparing different LLMs, we observe that:
+•
+Although GPT-4 is shown to be much stronger than previous GPT models on many tasks ( OpenAI, 2023 ) , on Spider, both its initial SQL generation and Self-Debugging performance are much worse than Codex. One possible reason is that GPT-4 is tuned for zero-shot prompting, and thus it does not follow few-shot exemplars as well as Codex. Meanwhile, both GPT-3.5 and GPT-4 might not be optimized for SQL generation, and thus their zero-shot results are more than 10% worse than their few-shot counterparts.
+•
+GPT-4 is significantly better than Codex and GPT-3.5 for initial Python code generation on MBPP. Meanwhile, its self-debugging performance gain is on par with Codex: over 12% improvement on Transcoder, and 8% improvement on MBPP.
+•
+Despite that the baseline performance of StarCoder is considerably worse than GPT models, Self-Debugging with unit test execution also offers a significant performance gain, i.e., 6% on MBPP with the execution trace feedback.
+5.2 Ablation studies
+In this section, we present ablation studies to understand the effectiveness of Self-Debugging from different perspectives.
+5.2.1 Self-Debugging Improves the Sample Efficiency
+(a)
+(b)
+Figure 6: Ablation studies on the Spider development set with Codex. (a) Accuracies with different numbers of initial samples. (b) Breakdown accuracies on problems with different hardness levels.
+Figure 6(a) demonstrates the effectiveness of Self-Debugging when applied to different numbers of initial samples, where Self-Debugging notably improves the sample efficiency. In particular, on Spider, applying Self-Debugging to predictions generated with greedy decoding matches the baseline accuracy using 16 samples, and Self-Debugging from 8 samples outperforms the baseline accuracy using 32 samples. Note that typically one debugging turn is sufficient, and the accuracy improvement after one turn is within 0.1 % 0.1\% . We observe similar sample efficiency improvement on other benchmarks, and we defer the discussion to Appendix C .
+5.2.2 Importance of Code Execution
+Table 3: Results of Self-Debugging without unit test execution.
+(a) Results on Transcoder.
+TransCoder
+Codex
+GPT-3.5
+GPT-4
+Baseline
+80.4
+89.1
+77.3
+Simple
+83.4
+89.1
+78.2
++ Expl.
+83.9
+89.1
+78.0
++ Trace.
+83.9
+89.1
+78.4
+(b) Results on MBPP
+MBPP
+Codex
+GPT-3.5
+GPT-4
+Baseline
+61.4
+67.6
+72.8
+Simple
+57.6
+68.2
+76.0
++ Expl.
+64.4
+68.2
+76.0
++ Trace.
+66.2
+69.2
+76.4
+By default, we leverage unit test execution for Self-Debugging when applicable. In Table 3 , we examine the scenario where the Self-Debugging process does not involve code execution on Transcoder and MBPP, thus models need to fully rely on themselves to infer the code correctness as in Spider experiments. Our main findings are as follows:
+•
+With Codex, Self-Debugging still improves the performance by up to 5%, and the execution trace feedback consistently improves over the simple feedback performance.
+•
+GPT-4 without unit test execution improves the MBPP accuracy by 3.6%, and the improvement on other benchmarks is up to around 1%.
+•
+Compared to Codex, few-shot prompting does not notably improve the Self-Debugging performance of GPT-3.5 and GPT-4, and thus their Self-Debugging procedures fully rely on their internal code knowledge. Without unit test execution, both models tend to be overconfident in their own initial predictions, while GPT-4 is better than GPT-3.5 on Python generation.
+In summary, code execution plays an important role in Self-Debugging ; however, sometimes LLMs can still improve their performance purely with self-generated feedback. In particular, execution trace feedback offers consistent improvement.
+5.2.3 Error Types Fixed by Self-Debugging
+Figure 7: An example on the Spider benchmark, where Self-Debugging fixes the prediction for an extra hard problem. Database information is omitted in the figure for clarity.
+To further understand how Self-Debugging improves performance, we first measure the breakdown accuracies on Spider problems with different difficulty levels, where the difficulty of each problem is annotated in the Spider benchmark based on the complexity of the ground truth SQL queries. Figure 6(b) demonstrates that the improvement achieved by Self-Debugging is more significant on hard problems. In particular, on extra hard problems, Self-Debugging increases the accuracy by 9 % 9\% . Table 4(a) presents a categorization on error types that are successfully fixed by Self-Debugging . In general, we observe that the initial SQL queries generated by LLMs are usually not completely wrong, but they tend to make small mistakes when the questions require more complex SQL queries, e.g., missing a few WHERE conditions or SELECT columns. In this case, Self-Debugging with code explanation facilitates the LLM to identify the discrepancy between the question and the predicted SQL query, resulting in an accuracy boost for more complex tasks. Figure 7 presents an example where Self-Debugging fixes the prediction for an extra hard problem.
+On the other hand, on Transcoder and MBPP, 60%-70% successful cases fix the output mismatch error when the initial wrong code is very close to a correct one, as shown in Table 4(b) . Specifically, on Transcoder, over 30% of successful fixes address implementation differences between different programming languages, where the issue is made more obvious with code execution. On MBPP, while 2 / 3 2/3 of the initial programs have problem-specific semantic errors, over 10% of the initial programs can be fixed by switching the order of function arguments and matching the argument types. We defer more discussion to Appendix C .
+Table 4: Breakdown on percentages of error types fixed by Self-Debugging .
+(a) Breakdown on Spider with code-davinci-002 .
+Error type
+%
+Wrong WHERE conditions
+25.7
+Missing the DISTINCT keyword
+17.1
+Wrong JOIN clauses
+14.3
+Wrong number of SELECT columns
+11.4
+Wrong INTERSECT/UNION clauses
+8.6
+Wrong aggregate functions and keywords
+5.8
+Wrong COUNT columns
+5.7
+Wrong column selection
+5.7
+Missing nested conditions
+5.7
+(b) Breakdown on Transcoder with gpt-3.5-turbo , and MBPP with gpt-4 .
+Error type
+Transcoder
+MBPP
+Output mismatch
+61.9
+69.2
+Runtime errors
+38.1
+30.8
+6 Related Work
+Language models for code.
+Recent years have witnessed rapid progress in deep neural networks for code generation ( Devlin et al., 2017 ; Chen et al., 2019 ; Yu et al., 2018 ; Roziere et al., 2020 ) . While models designed and trained for specialized domains have achieved impressive performance in various applications such as text-to-code generation ( Li et al., 2023a ; Wang et al., 2020 ; Scholak et al., 2021 ; Dong & Lapata, 2016 ; Iyer et al., 2018 ) and code translation ( Chen et al., 2018 ; Roziere et al., 2020 ; Roziere et al., 2022 ) , latest work on large language models demonstrate that a single pretrained model can achieve the state-of-the-art performance across a wide variety of coding tasks without specialized finetuning ( Chen et al., 2021a ; Chowdhery et al., 2022 ; Nijkamp et al., 2023 ; Zheng et al., 2023 ; Xu et al., 2022 ; Athiwaratkun et al., 2023 ; Orlanski et al., 2023 ) .
+Despite showing the remarkable ability to follow natural language instructions, large language models still exhibit limited understanding of code execution ( Austin et al., 2021 ; Li et al., 2022 ) . Specifically, even when the unit tests are provided in the problem description, the generated programs may still violate them ( Li et al., 2022 ; Shi et al., 2022 ; Ni et al., 2023 ) . Therefore, several approaches have been proposed to leverage code execution to choose the final prediction from multiple candidates, such as utilizing or training a language model for reranking ( Zhang et al., 2022 ; Ni et al., 2023 ) , and performing selection based on the consensus on unit test execution outputs among samples ( Chen et al., 2019 ; Chen et al., 2021b ; Roziere et al., 2022 ; Shi et al., 2022 ; Li et al., 2022 ; Chen et al., 2023b ) . In this work, our main focus is to utilize and explain code execution for Self-Debugging , which improves the sample efficiency compared to utilizing execution solely for initial code generation.
+Prompting techniques.
+Several prompting methods have been proposed to unlock latent abilities of large language models ( Wei et al., 2022 ; Nye et al., 2021 ; Kojima et al., 2022 ; Zhou et al., 2023 ; Khot et al., 2022 ; Zhou et al., 2022 ; Gao et al., 2022 ; Chen et al., 2022 ) . Rather than prompting a model to directly produce the desired result, these methods have the model first produce useful intermediate outputs. For example, chain-of-thought prompting asks the model to produce intermediate reasoning steps in natural language, which can be accomplished either with few-shot exemplars ( Wei et al., 2022 ) or in a zero-shot manner ( Kojima et al., 2022 ) . Meanwhile, several prompting techniques explicitly direct the model to break down a problem into subproblems ( Zhou et al., 2023 ; Khot et al., 2022 ) . For example, decomposed prompting ( Khot et al., 2022 ) delegates subproblems to other LLM instances that are prompted to specialize in specific tasks. Our prompting format of code explanation is relevant in spirit to chain-of-thought prompting, as the line-by-line code explanation in natural language facilitates analysis of the code that is useful for the debugging task. On the other hand, Self-Debugging also decomposes the debugging process into several stages, and triggers separate prompts for code explanation and feedback generation.
+Code repair. Program repair is an area of research concerned with fixing bugs in code, where several neural network models have been developed to handle different types of bugs ( Gupta et al., 2017 ; Yasunaga & Liang, 2021 ; Gupta et al., 2020 ; Wang et al., 2018 ; Le et al., 2022 ) . While some methods train repair models that only take the code as input ( Gupta et al., 2017 ; Yasunaga & Liang, 2021 ) , other approaches incorporate additional information including execution traces ( Gupta et al., 2020 ; Wang et al., 2018 ) as well as compiler and execution errors ( Yasunaga & Liang, 2020 ; Le et al., 2022 ) . Our Self-Debugging also uses additional information to aid in code repair, including execution results and self-generated code explanations. In contrast to prior work on training a separate model for code repair, Self-Debugging utilizes pretrained large language models for code, and teaches the model to debug via few-shot prompting.
+Training with feedback.
+Training with feedback to improve the outputs of large language models, both in terms of correctness and alignment with human preferences, is an active research direction nowadays ( Ziegler et al., 2019 ; Korbak et al., 2023 ; Ganguli et al., 2023 ; Bai et al., 2022 ) . One popular technique is reinforcement learning from human feedback (RLHF) ( Ziegler et al., 2019 ; Ouyang et al., 2022 ) , and RLHF-trained models have demonstrated the ability to avoid harmful outputs when instructed to do so in the prompt ( Ganguli et al., 2023 ) . Constitutional AI ( Bai et al., 2022 ) introduces another path toward training harmless models, where they use the pretrained model itself to create automated feedback for both supervised learning and RLHF: for the former, a set of principles are used to guide a language model in creating revisions of its own responses that it is then trained on, and for the latter the same principles are used to prompt a separate model for the feedback needed for RLHF.
+Another line of work trains a language model to refine the initial model outputs based on external feedback on prediction quality ( Welleck et al., 2023 ; Liu et al., 2023 ) , which improves the performance on several natural language and reasoning tasks. For code generation, a number of works have trained models to perform code optimization ( Madaan et al., 2023a ) , interact with users for multi-turn code generation ( Yu et al., 2019 ; Yao et al., 2019 ; Nijkamp et al., 2023 ) , and fix generated programs based on human feedback ( Iyer et al., 2017 ; Elgohary et al., 2020 ; Chen et al., 2023a ; Le et al., 2022 ) . On the other hand, Self-Debugging enables the model to generate feedback messages on its own at test time, and does not require extra training.
+Prompting with feedback. Recent works have shown the great promise of RLHF-trained models to generate critiques with prompting, which reduces harmful model outputs ( Bai et al., 2022 ; Ganguli et al., 2023 ) and improves the performance on some reasoning tasks ( Shinn et al., 2023 ; Madaan et al., 2023b ; Kim et al., 2023 ; Nair et al., 2023 ) . Reflexion ( Shinn et al., 2023 ) prompts an agent powered with a large language model to reflect on its actions under certain situations (such as when its actions become repetitive) and stores these reflections in its memory, leading to reduced hallucination and more effective plans. Self-Refine ( Madaan et al., 2023b ) shows that having a language model iteratively generate feedback and revisions of its outputs can greatly improve the final output quality on several tasks, such as text generation and math reasoning. RCI ( Kim et al., 2023 ) demonstrates a related method combined with state and agent grounding that allows a large language model to accomplish computer control tasks in the MiniWoB++ benchmark ( Humphreys et al., 2022 ) , and improves zero-shot performance on several math and commonsense reasoning benchmarks. Finally, DERA ( Nair et al., 2023 ) simulates a dialogue between two agents to improve the model’s predictions in the clinical domain, with one agent providing feedback about important elements of the problem, and the other using the feedback to produce a final output. In this work, we focus on code generation applications, and Self-Debugging demonstrates the effectiveness of both self-generated feedback and unit test feedback acquired by code execution. In particular, Self-Debugging teaches the large language model to notice prediction errors via code explanation in the style of rubber duck debugging, which does not require the feedback message to explicitly explain the implementation errors and how to fix them.
+7 Conclusion
+In this work, we presented Self-Debugging , which enables a large language model to debug code generated by itself. In particular, we demonstrate that Self-Debugging empowers the model to perform rubber duck debugging , so that the model can identify and fix bugs without human instructions. Self-Debugging achieves the state-of-the-art performance across several code generation domains, and notably improves sample efficiency. On text-to-SQL generation where there are no unit tests specified for the task, leveraging code explanation for Self-Debugging consistently improves the baseline by 2 − 3 % 2-3\% , and provides a performance gain of 9 % 9\% on the hardest problems. For code translation and text-to-Python generation tasks where unit tests are available, Self-Debugging significantly increases the baseline accuracy by up to 12 % 12\% .
+Our work highlights the promise of improving the coding performance of large language models by teaching them to iteratively debug their own predictions, instead of requiring the model to generate the correct code from scratch. Self-Debugging instructs the model to understand the code, identify the errors, and follow the error messages to fix the bugs. We consider improving the model’s ability to conduct all these steps as important future work. In particular, we hypothesize that better code explanation ability leads to better debugging performance. One direction is to instruct the model to better describe the high-level semantic meaning of code along with the implementation details in its explanation. Another direction is to include additional debugging information in the model feedback, such as a description of potential bugs. Our preliminary results suggest that model-generated feedback messages about semantic errors do not provide additional benefits on top of line-by-line code explanation, and future work can explore techniques to predict more informative error messages.
+Acknowledgement
+We would like to thank Jacob Austin, Quoc V. Le, Charles Sutton, Hanjun Dai, and Olivier Bousquet for helpful discussion and feedback.
+References
+Athiwaratkun et al. (2023)
+Ben Athiwaratkun, Sanjay Krishna Gouda, Zijian Wang, Xiaopeng Li, Yuchen Tian,
+Ming Tan, Wasi Uddin Ahmad, Shiqi Wang, Qing Sun, Mingyue Shang, Sujan Kumar
+Gonugondla, Hantian Ding, Varun Kumar, Nathan Fulton, Arash Farahani,
+Siddhartha Jain, Robert Giaquinto, Haifeng Qian, Murali Krishna Ramanathan,
+Ramesh Nallapati, Baishakhi Ray, Parminder Bhatia, Sudipta Sengupta, Dan
+Roth, and Bing Xiang.
+Multi-lingual evaluation of code generation models.
+In The Eleventh International Conference on Learning
+Representations , 2023.
+URL https://openreview.net/forum?id=Bo7eeXm6An8 .
+Austin et al. (2021)
+Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski,
+David Dohan, Ellen Jiang, Carrie Cai, Michael Terry, Quoc Le, et al.
+Program synthesis with large language models.
+arXiv preprint arXiv:2108.07732 , 2021.
+Bai et al. (2022)
+Yuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion,
+Andy Jones, Anna Chen, Anna Goldie, Azalia Mirhoseini, Cameron McKinnon,
+et al.
+Constitutional ai: Harmlessness from ai feedback.
+arXiv preprint arXiv:2212.08073 , 2022.
+Brown et al. (2020)
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla
+Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell,
+et al.
+Language models are few-shot learners.
+Advances in neural information processing systems ,
+33:1877–1901, 2020.
+Bunel et al. (2018)
+Rudy Bunel, Matthew Hausknecht, Jacob Devlin, Rishabh Singh, and Pushmeet
+Kohli.
+Leveraging grammar and reinforcement learning for neural program
+synthesis.
+In International Conference on Learning Representations , 2018.
+URL https://openreview.net/forum?id=H1Xw62kRZ .
+Chen et al. (2023a)
+Angelica Chen, Jérémy Scheurer, Tomasz Korbak, Jon Ander Campos,
+Jun Shern Chan, Samuel R Bowman, Kyunghyun Cho, and Ethan Perez.
+Improving code generation by training with natural language feedback.
+arXiv preprint arXiv:2303.16749 , 2023a.
+Chen et al. (2023b)
+Bei Chen, Fengji Zhang, Anh Nguyen, Daoguang Zan, Zeqi Lin, Jian-Guang Lou, and
+Weizhu Chen.
+Codet: Code generation with generated tests.
+In The Eleventh International Conference on Learning
+Representations , 2023b.
+URL https://openreview.net/forum?id=ktrw68Cmu9c .
+Chen et al. (2021a)
+Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de Oliveira
+Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg
+Brockman, et al.
+Evaluating large language models trained on code.
+arXiv preprint arXiv:2107.03374 , 2021a.
+Chen et al. (2022)
+Wenhu Chen, Xueguang Ma, Xinyi Wang, and William W Cohen.
+Program of thoughts prompting: Disentangling computation from
+reasoning for numerical reasoning tasks.
+arXiv preprint arXiv:2211.12588 , 2022.
+Chen et al. (2018)
+Xinyun Chen, Chang Liu, and Dawn Song.
+Tree-to-tree neural networks for program translation.
+Advances in neural information processing systems , 31, 2018.
+Chen et al. (2019)
+Xinyun Chen, Chang Liu, and Dawn Song.
+Execution-guided neural program synthesis.
+In International Conference on Learning Representations , 2019.
+Chen et al. (2021b)
+Xinyun Chen, Dawn Song, and Yuandong Tian.
+Latent execution for neural program synthesis beyond domain-specific
+languages.
+Advances in Neural Information Processing Systems ,
+34:22196–22208, 2021b.
+Chowdhery et al. (2022)
+Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra,
+Adam Roberts, Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian
+Gehrmann, et al.
+Palm: Scaling language modeling with pathways.
+arXiv preprint arXiv:2204.02311 , 2022.
+Devlin et al. (2017)
+Jacob Devlin, Jonathan Uesato, Surya Bhupatiraju, Rishabh Singh, Abdel-rahman
+Mohamed, and Pushmeet Kohli.
+Robustfill: Neural program learning under noisy i/o.
+In International conference on machine learning , pp. 990–998. PMLR, 2017.
+Dong & Lapata (2016)
+Li Dong and Mirella Lapata.
+Language to logical form with neural attention.
+In Proceedings of the 54th Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Papers) , 2016.
+Elgohary et al. (2020)
+Ahmed Elgohary, Saghar Hosseini, and Ahmed Hassan Awadallah.
+Speak to your parser: Interactive text-to-SQL with natural language
+feedback.
+In Proceedings of the 58th Annual Meeting of the Association
+for Computational Linguistics , 2020.
+Fu et al. (2019)
+Cheng Fu, Huili Chen, Haolan Liu, Xinyun Chen, Yuandong Tian, Farinaz
+Koushanfar, and Jishen Zhao.
+Coda: An end-to-end neural program decompiler.
+In NeurIPS , 2019.
+Ganguli et al. (2023)
+Deep Ganguli, Amanda Askell, Nicholas Schiefer, Thomas Liao, Kamilė
+Lukošiūtė, Anna Chen, Anna Goldie, Azalia Mirhoseini, Catherine
+Olsson, Danny Hernandez, et al.
+The capacity for moral self-correction in large language models.
+arXiv preprint arXiv:2302.07459 , 2023.
+Gao et al. (2022)
+Luyu Gao, Aman Madaan, Shuyan Zhou, Uri Alon, Pengfei Liu, Yiming Yang, Jamie
+Callan, and Graham Neubig.
+Pal: Program-aided language models.
+arXiv preprint arXiv:2211.10435 , 2022.
+Gupta et al. (2020)
+Kavi Gupta, Peter Ebert Christensen, Xinyun Chen, and Dawn Song.
+Synthesize, execute and debug: Learning to repair for neural program
+synthesis.
+Advances in Neural Information Processing Systems ,
+33:17685–17695, 2020.
+Gupta et al. (2017)
+Rahul Gupta, Soham Pal, Aditya Kanade, and Shirish Shevade.
+Deepfix: Fixing common c language errors by deep learning.
+In Proceedings of the aaai conference on artificial
+intelligence , 2017.
+Hendrycks et al. (2021)
+Dan Hendrycks, Steven Basart, Saurav Kadavath, Mantas Mazeika, Akul Arora,
+Ethan Guo, Collin Burns, Samir Puranik, Horace He, Dawn Song, and Jacob
+Steinhardt.
+Measuring coding challenge competence with APPS.
+In Thirty-fifth Conference on Neural Information Processing
+Systems Datasets and Benchmarks Track (Round 2) , 2021.
+URL https://openreview.net/forum?id=sD93GOzH3i5 .
+Humphreys et al. (2022)
+Peter C Humphreys, David Raposo, Tobias Pohlen, Gregory Thornton, Rachita
+Chhaparia, Alistair Muldal, Josh Abramson, Petko Georgiev, Adam Santoro, and
+Timothy Lillicrap.
+A data-driven approach for learning to control computers.
+In International Conference on Machine Learning , pp. 9466–9482. PMLR, 2022.
+Hunt & Thomas (2000)
+Andrew Hunt and David Thomas.
+The pragmatic programmer: from journeyman to master, 2000.
+Iyer et al. (2017)
+Srinivasan Iyer, Ioannis Konstas, Alvin Cheung, Jayant Krishnamurthy, and Luke
+Zettlemoyer.
+Learning a neural semantic parser from user feedback.
+In Proceedings of the 55th Annual Meeting of the Association
+for Computational Linguistics (Volume 1: Long Papers) , 2017.
+Iyer et al. (2018)
+Srinivasan Iyer, Ioannis Konstas, Alvin Cheung, and Luke Zettlemoyer.
+Mapping language to code in programmatic context.
+In Proceedings of the 2018 Conference on Empirical Methods in
+Natural Language Processing , 2018.
+Khot et al. (2022)
+Tushar Khot, Harsh Trivedi, Matthew Finlayson, Yao Fu, Kyle Richardson, Peter
+Clark, and Ashish Sabharwal.
+Decomposed prompting: A modular approach for solving complex tasks.
+arXiv preprint arXiv:2210.02406 , 2022.
+Kim et al. (2023)
+Geunwoo Kim, Pierre Baldi, and Stephen McAleer.
+Language models can solve computer tasks.
+arXiv preprint arXiv:2303.17491 , 2023.
+Kojima et al. (2022)
+Takeshi Kojima, Shixiang Shane Gu, Machel Reid, Yutaka Matsuo, and Yusuke
+Iwasawa.
+Large language models are zero-shot reasoners.
+In Alice H. Oh, Alekh Agarwal, Danielle Belgrave, and Kyunghyun Cho
+(eds.), Advances in Neural Information Processing Systems , 2022.
+URL https://openreview.net/forum?id=e2TBb5y0yFf .
+Korbak et al. (2023)
+Tomasz Korbak, Kejian Shi, Angelica Chen, Rasika Bhalerao, Christopher L
+Buckley, Jason Phang, Samuel R Bowman, and Ethan Perez.
+Pretraining language models with human preferences.
+arXiv preprint arXiv:2302.08582 , 2023.
+Le et al. (2022)
+Hung Le, Yue Wang, Akhilesh Deepak Gotmare, Silvio Savarese, and Steven
+Chu Hong Hoi.
+Coderl: Mastering code generation through pretrained models and deep
+reinforcement learning.
+Advances in Neural Information Processing Systems ,
+35:21314–21328, 2022.
+Li et al. (2023a)
+Jinyang Li, Binyuan Hui, Reynold Cheng, Bowen Qin, Chenhao Ma, Nan Huo, Fei
+Huang, Wenyu Du, Luo Si, and Yongbin Li.
+Graphix-t5: Mixing pre-trained transformers with graph-aware layers
+for text-to-sql parsing.
+arXiv preprint arXiv:2301.07507 , 2023a.
+Li et al. (2023b)
+Raymond Li, Loubna Ben Allal, Yangtian Zi, Niklas Muennighoff, Denis Kocetkov,
+Chenghao Mou, Marc Marone, Christopher Akiki, Jia Li, Jenny Chim, et al.
+Starcoder: may the source be with you!
+arXiv preprint arXiv:2305.06161 , 2023b.
+Li et al. (2022)
+Yujia Li, David Choi, Junyoung Chung, Nate Kushman, Julian Schrittwieser,
+Rémi Leblond, Tom Eccles, James Keeling, Felix Gimeno, Agustin Dal Lago,
+et al.
+Competition-level code generation with alphacode.
+Science , 378(6624):1092–1097, 2022.
+Liu et al. (2023)
+Hao Liu, Carmelo Sferrazza, and Pieter Abbeel.
+Chain of hindsight aligns language models with feedback.
+arXiv preprint arXiv:2302.02676 , 2023.
+Madaan et al. (2023a)
+Aman Madaan, Alexander Shypula, Uri Alon, Milad Hashemi, Parthasarathy
+Ranganathan, Yiming Yang, Graham Neubig, and Amir Yazdanbakhsh.
+Learning performance-improving code edits.
+arXiv preprint arXiv:2302.07867 , 2023a.
+Madaan et al. (2023b)
+Aman Madaan, Niket Tandon, Prakhar Gupta, Skyler Hallinan, Luyu Gao, Sarah
+Wiegreffe, Uri Alon, Nouha Dziri, Shrimai Prabhumoye, Yiming Yang, et al.
+Self-refine: Iterative refinement with self-feedback.
+arXiv preprint arXiv:2303.17651 , 2023b.
+Nair et al. (2023)
+Varun Nair, Elliot Schumacher, Geoffrey Tso, and Anitha Kannan.
+Dera: Enhancing large language model completions with dialog-enabled
+resolving agents.
+arXiv preprint arXiv:2303.17071 , 2023.
+Ni et al. (2023)
+Ansong Ni, Srini Iyer, Dragomir Radev, Ves Stoyanov, Wen-tau Yih, Sida I Wang,
+and Xi Victoria Lin.
+Lever: Learning to verify language-to-code generation with execution.
+arXiv preprint arXiv:2302.08468 , 2023.
+Nijkamp et al. (2023)
+Erik Nijkamp, Bo Pang, Hiroaki Hayashi, Lifu Tu, Huan Wang, Yingbo Zhou, Silvio
+Savarese, and Caiming Xiong.
+Codegen: An open large language model for code with multi-turn
+program synthesis.
+In The Eleventh International Conference on Learning
+Representations , 2023.
+URL https://openreview.net/forum?id=iaYcJKpY2B_ .
+Nye et al. (2021)
+Maxwell Nye, Anders Johan Andreassen, Guy Gur-Ari, Henryk Michalewski, Jacob
+Austin, David Bieber, David Dohan, Aitor Lewkowycz, Maarten Bosma, David
+Luan, et al.
+Show your work: Scratchpads for intermediate computation with
+language models.
+arXiv preprint arXiv:2112.00114 , 2021.
+OpenAI (2023)
+OpenAI.
+Gpt-4 technical report.
+arXiv preprint arXiv:2303.08774 , 2023.
+Orlanski et al. (2023)
+Gabriel Orlanski, Kefan Xiao, Xavier Garcia, Jeffrey Hui, Joshua Howland,
+Jonathan Malmaud, Jacob Austin, Rishah Singh, and Michele Catasta.
+Measuring the impact of programming language distribution.
+arXiv preprint arXiv:2302.01973 , 2023.
+Ouyang et al. (2022)
+Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela
+Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Gray, John
+Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda
+Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe.
+Training language models to follow instructions with human feedback.
+In Alice H. Oh, Alekh Agarwal, Danielle Belgrave, and Kyunghyun Cho
+(eds.), Advances in Neural Information Processing Systems , 2022.
+URL https://openreview.net/forum?id=TG8KACxEON .
+Rajkumar et al. (2022)
+Nitarshan Rajkumar, Raymond Li, and Dzmitry Bahdanau.
+Evaluating the text-to-sql capabilities of large language models.
+arXiv preprint arXiv:2204.00498 , 2022.
+Roziere et al. (2020)
+Baptiste Roziere, Marie-Anne Lachaux, Lowik Chanussot, and Guillaume Lample.
+Unsupervised translation of programming languages.
+Advances in Neural Information Processing Systems ,
+33:20601–20611, 2020.
+Roziere et al. (2022)
+Baptiste Roziere, Jie Zhang, Francois Charton, Mark Harman, Gabriel Synnaeve,
+and Guillaume Lample.
+Leveraging automated unit tests for unsupervised code translation.
+In International Conference on Learning Representations , 2022.
+URL https://openreview.net/forum?id=cmt-6KtR4c4 .
+Sanh et al. (2022)
+Victor Sanh, Albert Webson, Colin Raffel, Stephen Bach, Lintang Sutawika, Zaid
+Alyafeai, Antoine Chaffin, Arnaud Stiegler, Arun Raja, Manan Dey, M Saiful
+Bari, Canwen Xu, Urmish Thakker, Shanya Sharma Sharma, Eliza Szczechla,
+Taewoon Kim, Gunjan Chhablani, Nihal Nayak, Debajyoti Datta, Jonathan Chang,
+Mike Tian-Jian Jiang, Han Wang, Matteo Manica, Sheng Shen, Zheng Xin Yong,
+Harshit Pandey, Rachel Bawden, Thomas Wang, Trishala Neeraj, Jos Rozen,
+Abheesht Sharma, Andrea Santilli, Thibault Fevry, Jason Alan Fries, Ryan
+Teehan, Teven Le Scao, Stella Biderman, Leo Gao, Thomas Wolf, and Alexander M
+Rush.
+Multitask prompted training enables zero-shot task generalization.
+In International Conference on Learning Representations , 2022.
+URL https://openreview.net/forum?id=9Vrb9D0WI4 .
+Saunders et al. (2022)
+William Saunders, Catherine Yeh, Jeff Wu, Steven Bills, Long Ouyang, Jonathan
+Ward, and Jan Leike.
+Self-critiquing models for assisting human evaluators.
+arXiv preprint arXiv:2206.05802 , 2022.
+Scholak et al. (2021)
+Torsten Scholak, Nathan Schucher, and Dzmitry Bahdanau.
+PICARD: Parsing incrementally for constrained auto-regressive
+decoding from language models.
+In Proceedings of the 2021 Conference on Empirical Methods in
+Natural Language Processing , 2021.
+Shi et al. (2022)
+Freda Shi, Daniel Fried, Marjan Ghazvininejad, Luke Zettlemoyer, and Sida I.
+Wang.
+Natural language to code translation with execution.
+In Proceedings of the 2022 Conference on Empirical Methods in
+Natural Language Processing , 2022.
+Shinn et al. (2023)
+Noah Shinn, Beck Labash, and Ashwin Gopinath.
+Reflexion: an autonomous agent with dynamic memory and
+self-reflection.
+arXiv preprint arXiv:2303.11366 , 2023.
+Suzgun et al. (2022)
+Mirac Suzgun, Nathan Scales, Nathanael Schärli, Sebastian Gehrmann, Yi Tay,
+Hyung Won Chung, Aakanksha Chowdhery, Quoc V Le, Ed H Chi, Denny Zhou, and
+Jason Wei.
+Challenging big-bench tasks and whether chain-of-thought can solve
+them.
+arXiv preprint arXiv:2210.09261 , 2022.
+Wang et al. (2020)
+Bailin Wang, Richard Shin, Xiaodong Liu, Oleksandr Polozov, and Matthew
+Richardson.
+RAT-SQL: Relation-aware schema encoding and linking for
+text-to-SQL parsers.
+In Proceedings of the 58th Annual Meeting of the Association
+for Computational Linguistics , 2020.
+Wang et al. (2018)
+Ke Wang, Rishabh Singh, and Zhendong Su.
+Dynamic neural program embedding for program repair.
+In International Conference on Learning Representations , 2018.
+Wang et al. (2023)
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc V Le, Ed H. Chi, Sharan Narang,
+Aakanksha Chowdhery, and Denny Zhou.
+Self-consistency improves chain of thought reasoning in language
+models.
+In The Eleventh International Conference on Learning
+Representations , 2023.
+URL https://openreview.net/forum?id=1PL1NIMMrw .
+Wei et al. (2022)
+Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Ed Chi, Quoc Le, and
+Denny Zhou.
+Chain of thought prompting elicits reasoning in large language
+models.
+In NeurIPS , 2022.
+URL https://openreview.net/pdf?id=_VjQlMeSB_J .
+Welleck et al. (2023)
+Sean Welleck, Ximing Lu, Peter West, Faeze Brahman, Tianxiao Shen, Daniel
+Khashabi, and Yejin Choi.
+Generating sequences by learning to self-correct.
+In The Eleventh International Conference on Learning
+Representations , 2023.
+Xu et al. (2022)
+Frank F Xu, Uri Alon, Graham Neubig, and Vincent Josua Hellendoorn.
+A systematic evaluation of large language models of code.
+In Proceedings of the 6th ACM SIGPLAN International Symposium
+on Machine Programming , pp. 1–10, 2022.
+Yao et al. (2019)
+Ziyu Yao, Yu Su, Huan Sun, and Wen-tau Yih.
+Model-based interactive semantic parsing: A unified framework and a
+text-to-SQL case study.
+In Proceedings of the 2019 Conference on Empirical Methods in
+Natural Language Processing and the 9th International Joint Conference on
+Natural Language Processing (EMNLP-IJCNLP) , 2019.
+Yasunaga & Liang (2020)
+Michihiro Yasunaga and Percy Liang.
+Graph-based, self-supervised program repair from diagnostic feedback.
+In International Conference on Machine Learning , pp. 10799–10808. PMLR, 2020.
+Yasunaga & Liang (2021)
+Michihiro Yasunaga and Percy Liang.
+Break-it-fix-it: Unsupervised learning for program repair.
+In International Conference on Machine Learning , pp. 11941–11952. PMLR, 2021.
+Yin & Neubig (2019)
+Pengcheng Yin and Graham Neubig.
+Reranking for neural semantic parsing.
+In Proceedings of the 57th Annual Meeting of the Association
+for Computational Linguistics , 2019.
+Yu et al. (2018)
+Tao Yu, Rui Zhang, Kai Yang, Michihiro Yasunaga, Dongxu Wang, Zifan Li, James
+Ma, Irene Li, Qingning Yao, Shanelle Roman, Zilin Zhang, and Dragomir Radev.
+Spider: A large-scale human-labeled dataset for complex and
+cross-domain semantic parsing and text-to-SQL task.
+In Proceedings of the 2018 Conference on Empirical Methods in
+Natural Language Processing , 2018.
+Yu et al. (2019)
+Tao Yu, Rui Zhang, Heyang Er, Suyi Li, Eric Xue, Bo Pang, Xi Victoria Lin,
+Yi Chern Tan, Tianze Shi, Zihan Li, Youxuan Jiang, Michihiro Yasunaga,
+Sungrok Shim, Tao Chen, Alexander Fabbri, Zifan Li, Luyao Chen, Yuwen Zhang,
+Shreya Dixit, Vincent Zhang, Caiming Xiong, Richard Socher, Walter Lasecki,
+and Dragomir Radev.
+CoSQL: A conversational text-to-SQL challenge towards
+cross-domain natural language interfaces to databases.
+In Proceedings of the 2019 Conference on Empirical Methods in
+Natural Language Processing and the 9th International Joint Conference on
+Natural Language Processing (EMNLP-IJCNLP) , 2019.
+Zeng et al. (2022)
+Lu Zeng, Sree Hari Krishnan Parthasarathi, and Dilek Hakkani-Tur.
+N-best hypotheses reranking for text-to-sql systems.
+arXiv preprint arXiv:2210.10668 , 2022.
+Zhang et al. (2022)
+Tianyi Zhang, Tao Yu, Tatsunori B Hashimoto, Mike Lewis, Wen-tau Yih, Daniel
+Fried, and Sida I Wang.
+Coder reviewer reranking for code generation.
+arXiv preprint arXiv:2211.16490 , 2022.
+Zheng et al. (2023)
+Qinkai Zheng, Xiao Xia, Xu Zou, Yuxiao Dong, Shan Wang, Yufei Xue, Zihan Wang,
+Lei Shen, Andi Wang, Yang Li, Teng Su, Zhilin Yang, and Jie Tang.
+Codegeex: A pre-trained model for code generation with multilingual
+evaluations on humaneval-x, 2023.
+Zhou et al. (2023)
+Denny Zhou, Nathanael Schärli, Le Hou, Jason Wei, Nathan Scales, Xuezhi
+Wang, Dale Schuurmans, Claire Cui, Olivier Bousquet, Quoc V Le, and Ed H.
+Chi.
+Least-to-most prompting enables complex reasoning in large language
+models.
+In The Eleventh International Conference on Learning
+Representations , 2023.
+URL https://openreview.net/forum?id=WZH7099tgfM .
+Zhou et al. (2022)
+Hattie Zhou, Azade Nova, Hugo Larochelle, Aaron Courville, Behnam Neyshabur,
+and Hanie Sedghi.
+Teaching algorithmic reasoning via in-context learning.
+arXiv preprint arXiv:2211.09066 , 2022.
+Ziegler et al. (2019)
+Daniel M Ziegler, Nisan Stiennon, Jeffrey Wu, Tom B Brown, Alec Radford, Dario
+Amodei, Paul Christiano, and Geoffrey Irving.
+Fine-tuning language models from human preferences.
+arXiv preprint arXiv:1909.08593 , 2019.
+Appendix A Self-Debugging with initial samples from different LLMs
+Table 5: Results of Self-Debugging using gpt-3.5-turbo (GPT-3.5) and code-davinci-002 (Codex) on (a) Spider; (b) Transcoder and (c) MBPP. The baseline results are the highest accuracies before Self-Debugging , which are obtained by Codex for Spider, and GPT-3.5 for Transcoder and MBPP.
+Spider
+Codex
+GPT-3.5
+Baseline
+81.3
+Simple
+81.3
+81.7
++Expl.
+84.1
+83.0
+(a)
+TransCoder
+Codex
+GPT-3.5
+Baseline
+89.1
+Simple
+90.2
+91.6
+UT
+92.1
+92.7
+UT + Expl.
+92.7
+92.7
+(b)
+MBPP
+Codex
+GPT-3.5
+Baseline
+67.6
+Simple
+72.4
+70.8
+UT
+73.2
+72.2
+UT + Expl.
+73.6
+74.2
+(c)
+In Table 5(b) we compare the results of Self-Debugging using Codex and GPT-3.5 respectively. For each benchmark, the baseline accuracy presents the best code generation performance obtained by Codex and GPT-3.5. On TransCoder and MBPP, the baseline uses GPT-3.5 with zero-shot prompting. On Spider, we observe that the performance of GPT-3.5 is significantly worse than Codex. For example, when using greedy decoding, GPT-3.5 achieves an accuracy of 59.9 % 59.9\% with zero-shot prompting, and 71.1 % 71.1\% with few-shot prompting, which is over 6 % 6\% lower than Codex. On Spider, we utilize the initial code generation from Codex. We present GPT-3.5 Self-Debugging results using zero-shot prompting, as we observe that the performance with few-shot exemplars is similar. Specifically, we used zero-shot Self-Debugging prompts which removed exemplars and adapted the instructions from our few-shot prompts to fit the conversation format of GPT-3.5. For example, the instruction included in the simple feedback is “Does the SQL match the question? If not, generate the fixed SQL.” for Spider.
+From Tables 5(b) and 5(c) , we show that while GPT-3.5 notably outperforms Codex on generating initial code in Python, the Self-Debugging performance of Codex is on par with GPT-3.5 on Transcoder. It also performs close to GPT-3.5 on MBPP, and outperforms it for both Simple and UT. In Table 5(a) , we observe that Codex also outperforms GPT-3.5 on Self-Debugging for text-to-SQL generation, and code explanation again improves the performance for GPT-3.5. These results demonstrate the effectiveness of our Self-Debugging prompt with few-shot exemplars, while suggesting that Codex is better than GPT-3.5 at learning from few-shot exemplars with long context.
+Appendix B Transcoder comparison to baseline models
+Table 6 compares Self-Debugging to baseline models without debugging.
+Table 6: TransCoder dataset ( Roziere et al., 2020 ) for C++ to Python translation.
+TransCoder (pass@1)
+w/o debugging
+TransCoder
+44.5
+PaLM
+51.8
+PaLM-Coder
+55.1
+Self-Debugging (this work)
+Codex
+80.4
+UT + Expl.
+92.5
+Appendix C More discussion of Self-Debugging results
+C.1 Code translation
+For generating initial Python translation, we apply the same few-shot prompt for TransCoder as ( Chowdhery et al., 2022 ) , which consists of 3 exemplars (Appendix F.1 ). From Figure 8(a) , we again observe that the major improvement comes from the first debugging turn. Specifically, a single debugging turn with the full feedback improves over the greedy decoding accuracy by around 12 % 12\% . Compared to Figure 8(b) , applying Self-Debugging to greedy decoding outperforms the baseline accuracy with 5 samples, and is close to the baseline accuracy with 10 samples.
+Meanwhile, incorporating both unit test execution and code explanation improves the debugging performance, and we present some examples in Figures 9 and 10 in Appendix D . In addition, we demonstrate that leveraging code explanation alone without Self-Debugging also provides a consistent performance gain of 2 − 3 % 2-3\% for different numbers of samples, as shown in Figure 8(b) .
+(a)
+(b)
+Figure 8: Ablation studies on TransCoder. (a) The accuracy of Self-Debugging prompts with different numbers of debugging turns. (b) The accuracy with different numbers of initial samples. Note that Codex+Expl. only prompts the model to generate explanations for the input C++ code, and does not perform Self-Debugging .
+C.2 Text-to-Python Generation
+For initial Python code generation on MBPP, we apply the same 3-shot prompt as ( Ni et al., 2023 ) . With greedy decoding, Self-Debugging increases the accuracy by over 8 % 8\% , and leveraging both unit test execution and code explanation again consistently improves the performance.
+We observe that the improvement using code explanation is less significant on MBPP. First, due to the availability of unit tests, it is much easier to recognize wrong predictions from unit test feedback. Second, due to the context length limit, the number of exemplars in the prompt for Self-Debugging is smaller when adding code explanation in the feedback message. Specifically, prompts with both simple and unit test feedback messages include 6 exemplars, while the prompt with both the unit test execution and code explanation has 3 exemplars. Third, we find that code explanation plays a smaller role when the initial predicted code is far from the correct solution, in which case the model simply generates a new program and does not rely on code snippets in the initial prediction. See Figure 11 in Appendix D for an example where Self-Debugging makes major changes to the initial code.
+Appendix D Examples of Model Predictions with Self-Debugging
+See Figures 9 , 10 and 11 for examples of model predictions with Self-Debugging .
+Figure 9: An example where Self-Debugging with unit test feedback fixes the code translation error, while the simple feedback fails.
+Figure 10: An example where adding code explanation results in the correct code translation, while the baseline prompt does not. Specifically, the translation with code explanation correctly checks for the end of a string.
+Figure 11: An example on MBPP where the prediction after Self-Debugging is very different from the initial code.
+Appendix E Text-to-SQL Generation
+E.1 Baseline Prompt (5-shot)
+E.2 Simple Feedback Prompt (9-shot)
+E.3 Explanation Feedback Prompt (9-shot)
+E.4 Prompt for Question Explanation
+E.5 Prompt for SQL Explanation
+E.6 Chat Simple Feedback Prompt (0-shot)
+E.7 Chat Explanation Feedback Prompt (0-shot)
+Appendix F Code Translation
+F.1 Baseline Prompt (3-shot)
+The prompt for generating the initial Python translation is taken from ( Chowdhery et al., 2022 ) . We set temperature τ = 0.8 \tau=0.8 as in ( Chowdhery et al., 2022 ) .
+F.2 Baseline + Expl. Prompt (3-shot)
+F.3 Simple Feedback Prompt (2-shot)
+F.4 Unit Test Feedback Prompt (2-shot)
+F.5 Unit Test + Expl. Feedback Prompt (2-shot)
+F.6 Unit Test + Trace Feedback Prompt (2-shot)
+F.7 Chat Simple Feedback Prompt (0-shot)
+F.8 Chat Unit Test Feedback Prompt (0-shot)
+The initial part of the prompt is the same as that of the TransCoder Chat Simple Feedback prompt in Appendix F.7 . The only difference is the feedback message.
+F.9 Chat Unit Test + Expl. Feedback Prompt (0-shot)
+F.10 Chat Unit Test + Trace Feedback Prompt (0-shot)
+Appendix G Text-to-Python Generation
+G.1 Baseline Prompt (3-shot)
+The prompt for generating initial Python code is taken from ( Ni et al., 2023 ) .
+G.2 Simple Feedback Prompt (6-shot)
+G.3 Unit Test Feedback Prompt (6-shot)
+G.4 Unit Test + Expl. Feedback Prompt (3-shot)
+G.5 Chat Simple Feedback Prompt (0-shot)
+Feedback for failure: If the model’s prediction fails the given unit test, the next part of the prompt is:
+Feedback for success: When the model produces a prediction that passes the given unit test (which could take place after several turns of failing the unit test), the prompt continues with a single round of feedback that allows it to make further changes to its code:
+The new code prediction is used only if it also passes the unit test, otherwise the original prediction which passes will be used for evaluation. (Note that after this kind of feedback, we finish Self-Debugging and do not continue with "Feedback for failure" messages even if the new prediction is incorrect.)
+G.6 Chat Unit Test Feedback Prompt (0-shot)
+The initial part of the prompt is the same as that of the MBPP Chat Simple Feedback prompt in Appendix G.5 . The only difference is the feedback message.
+Feedback for failure: If the model’s prediction fails the given unit test, the next part of the prompt is:
+Feedback for success: Just as in the MBPP Chat Simple Feedback Prompt (0-shot) in Appendix G.5 , when the model produces a prediction that passes the given unit test, the prompt continues with:
+The new code prediction is used only if it also passes the unit test, otherwise the original code will be used for evaluation.
+G.7 Chat Unit Test + Expl. Feedback Prompt (0-shot)
+Feedback for failure: If the model’s prediction fails the given unit test, the next part of the prompt is:
+Feedback for success: Just as in the Chat Simple Feedback Prompt (0-shot) in Appendix G.5 , when the model produces a prediction that passes, the prompt continues with:
+The new code prediction is used only if it also passes the unit test, otherwise the original code will be used for evaluation.
+G.8 Chat Unit Test + Trace Feedback Prompt (0-shot)
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

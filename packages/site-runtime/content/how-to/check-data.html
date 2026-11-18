@@ -30,6 +30,20 @@
       "note": ["schema/optional", "value/string?"]}]}]
 </lion-example>
 
+<h2>Build one schema from two</h2>
+<p>A record schema is exact, so <code>schema/allOf</code> of two record schemas with different keys fits nothing: each refuses the other's keys. Give <code>schema/open</code> the second as the schema of the rest instead. The keys the first names are checked against it, and the record of the other keys against the second, so the two make one exact schema. Any schema can check the rest, such as <code>schema/recordOf</code> for keys you cannot name in advance:</p>
+<lion-example name="Composed schemas">
+["begin",
+  ["schema", "Entity", {"id": "value/integer?", "created": "value/string?"}],
+  ["schema", "Line", {"sku": "value/string?", "qty": "value/integer?"}],
+  ["schema", "Stock", ["schema/open", "Entity", "Line"]],
+  ["define", "incoming", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2, "rush": true}]],
+  {"allOf": ["schema/fits?", "incoming", ["schema/allOf", "Entity", "Line"]],
+   "composed": ["schema/problems", "incoming", "Stock"],
+   "string extras": ["schema/fits?", "incoming",
+     ["schema/open", "Entity", ["schema/recordOf", "value/string?"]]]}]
+</lion-example>
+
 <h2>Check lists and plain values</h2>
 <p>A list of schemas fits a list of the same length, item by item, which suits a pair or a triple. <code>schema/arrayOf</code> fits a list of any length whose items all fit, and <code>schema/recordOf</code> a record whose values all fit. Any value that is not a function, a record, or a list fits a value equal to it, so data is a schema for itself:</p>
 <lion-example name="Lists and values">

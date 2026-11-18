@@ -3,7 +3,7 @@
  * such as a count or a sum. The same functions back the `aggregate` module,
  * so `["aggregate/sum", list]` also works on a plain list.
  */
-import { compareValues, render, valueKey } from "@/logic/terms";
+import { compareValues, DeferredCall, render, valueKey } from "@/logic/terms";
 
 export interface Aggregator {
   /** Describes why the values cannot be combined, or undefined when they can. */
@@ -144,6 +144,20 @@ export const AGGREGATORS: Readonly<Record<string, Aggregator>> = {
     selects: false,
   },
 };
+
+const ON_LIST = new Map<string, unknown>();
+
+/** Registers the function an aggregate of a kind calls on a list. */
+export const registerAggregate = (kind: string, onList: unknown) => {
+  ON_LIST.set(kind, onList);
+};
+
+/**
+ * An aggregate of a kind over a term, as a rule head holds one, such as
+ * `["aggregate/min", "?d"]`.
+ */
+export const aggregateCall = (kind: string, term: unknown) =>
+  new DeferredCall(ON_LIST.get(kind), `aggregate/${kind}`, [term], kind);
 
 /** Aggregates that can go through recursion. */
 export const LATTICE_AGGREGATES = Object.keys(AGGREGATORS).filter(

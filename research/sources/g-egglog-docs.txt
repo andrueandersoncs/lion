@@ -1,0 +1,746 @@
+=== egglog-ast 1.0.0 source docs (https://docs.rs/egglog-ast/1.0.0/src/egglog_ast/generic_ast.rs.html) ===
+Docs.rs
+egglog-ast-1.0.0
+egglog-ast 1.0.0
+Docs.rs crate page
+MIT
+19 October 2025
+Links
+Repository
+crates.io
+Source
+Owners
+oflatt
+yihozhang
+Dependencies
+ordered-float ^5.0
+normal
+Versions
+16.67%
+of the crate is documented
+Go to latest version
+Platform
+aarch64-apple-darwin
+aarch64-unknown-linux-gnu
+i686-pc-windows-msvc
+x86_64-pc-windows-msvc
+x86_64-unknown-linux-gnu
+Feature flags
+docs.rs
+About docs.rs
+Badges
+Builds
+Metadata
+Shorthand URLs
+Download
+Rustdoc JSON
+Build queue
+Privacy policy
+Rust
+Rust website
+The Book
+Standard Library API Reference
+Rust by Example
+The Cargo Guide
+Clippy Documentation
+Files
+egglog_ast/
+generic_ast.rs
+1 use std::fmt::Display;
+2 use std::hash::Hash;
+3
+4 use ordered_float::OrderedFloat;
+5
+6 use crate ::span::Span;
+7
+8 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+9 pub enum Literal {
+10 Int(i64),
+11 Float(OrderedFloat<f64>),
+12 String(String),
+13 Bool(bool),
+14 Unit,
+15 }
+16
+17 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+18 pub enum GenericExpr<Head, Leaf> {
+19 Var(Span, Leaf),
+20 Call(Span, Head, Vec<GenericExpr<Head, Leaf>>),
+21 Lit(Span, Literal),
+22 }
+23
+24 /// Facts are the left-hand side of a [`Command::Rule`].
+25 /// They represent a part of a database query.
+26 /// Facts can be expressions or equality constraints between expressions.
+27 ///
+28 /// Note that primitives such as `!=` are partial.
+29 /// When two things are equal, it returns nothing and the query does not match.
+30 /// For example, the following egglog code runs:
+31 /// ```text
+32 /// (fail (check (!= 1 1)))
+33 /// ```
+34 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+35 pub enum GenericFact<Head, Leaf> {
+36 Eq(Span, GenericExpr<Head, Leaf>, GenericExpr<Head, Leaf>),
+37 Fact(GenericExpr<Head, Leaf>),
+38 }
+39
+40 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+41 pub struct GenericActions<Head: Clone + Display, Leaf: Clone + PartialEq + Eq + Display + Hash>(
+42 pub Vec<GenericAction<Head, Leaf>>,
+43 );
+44
+45 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+46 pub enum GenericAction<Head, Leaf>
+47 where
+48 Head: Clone + Display,
+49 Leaf: Clone + PartialEq + Eq + Display + Hash,
+50 {
+51 /// Bind a variable to a particular datatype or primitive.
+52 /// At the top level (in a [`Command::Action`]), this defines a global variable.
+53 /// In a [`Command::Rule`], this defines a local variable in the actions.
+54 Let(Span, Leaf, GenericExpr<Head, Leaf>),
+55 /// `set` a function to a particular result.
+56 /// `set` should not be used on datatypes-
+57 /// instead, use `union`.
+58 Set(
+59 Span,
+60 Head,
+61 Vec<GenericExpr<Head, Leaf>>,
+62 GenericExpr<Head, Leaf>,
+63 ),
+64 /// Delete or subsume (mark as hidden from future rewrites and unextractable) an entry from a function.
+65 Change(Span, Change, Head, Vec<GenericExpr<Head, Leaf>>),
+66 /// `union` two datatypes, making them equal
+67 /// in the implicit, global equality relation
+68 /// of egglog.
+69 /// All rules match modulo this equality relation.
+70 ///
+71 /// Example:
+72 /// ```text
+73 /// (datatype Math (Num i64))
+74 /// (union (Num 1) (Num 2)); Define that Num 1 and Num 2 are equivalent
+75 /// (extract (Num 1)); Extracts Num 1
+76 /// (extract (Num 2)); Extracts Num 1
+77 /// ```
+78 Union(Span, GenericExpr<Head, Leaf>, GenericExpr<Head, Leaf>),
+79 Panic(Span, String),
+80 Expr(Span, GenericExpr<Head, Leaf>),
+81 }
+82
+83 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+84 pub struct GenericRule<Head, Leaf>
+85 where
+86 Head: Clone + Display,
+87 Leaf: Clone + PartialEq + Eq + Display + Hash,
+88 {
+89 pub span: Span,
+90 pub head: GenericActions<Head, Leaf>,
+91 pub body: Vec<GenericFact<Head, Leaf>>,
+92 /// A globally unique name for this rule in the EGraph.
+93 pub name: String,
+94 /// The ruleset this rule belongs to. Defaults to `""`.
+95 pub ruleset: String,
+96 }
+97
+98 /// Change a function entry.
+99 #[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
+100 pub enum Change {
+101 /// `delete` this entry from a function.
+102 /// Be wary! Only delete entries that are guaranteed to be not useful.
+103 Delete,
+104 /// `subsume` this entry so that it cannot be queried or extracted, but still can be checked.
+105 /// Note that this is currently forbidden for functions with custom merges.
+106 Subsume,
+107 }
+
+=== egglog GenericCommand docs (https://egraphs-good.github.io/egglog/docs/egglog/ast/enum.GenericCommand.html) ===
+GenericCommand
+egglog 3.0.0
+Generic Command
+Sections
+Binding naming convention
+Variants
+Action
+AddRuleset
+BiRewrite
+Check
+Constructor
+Datatype
+Datatypes
+Extract
+Fail
+Function
+Include
+Input
+Output
+Pop
+PrintFunction
+PrintOverallStatistics
+PrintSize
+Prove
+ProveExists
+Push
+Relation
+Rewrite
+Rule
+RunSchedule
+Sort
+UnstableCombinedRuleset
+UserDefined
+Methods
+make_unresolved
+map_string_symbols
+map_symbols
+visit_actions
+visit_exprs
+Trait Implementations
+Clone
+Debug
+Display
+Auto Trait Implementations
+Freeze
+RefUnwindSafe
+Send
+Sync
+Unpin
+UnwindSafe
+Blanket Implementations
+Any
+Borrow<T>
+BorrowMut<T>
+CloneToUninit
+DynClone
+From<T>
+Into<U>
+Pointable
+Same
+ToOwned
+ToString
+TryFrom<U>
+TryInto<U>
+UserDefinedCommandOutput
+VZip<V>
+In egglog:: ast
+egglog :: ast
+Enum Generic Command Copy item path
+Source
+pub enum GenericCommand<Head, Leaf> where
+Head: Clone + Display ,
+Leaf: Clone + PartialEq + Eq + Display + Hash ,
+{
+Show 27 variants Sort {
+span: Span ,
+name: String ,
+presort_and_args: Option <( String , Vec < Expr >)>,
+uf: Option <( String , Option < String >)>,
+proof_func: Option < String >,
+container_rebuild: Option < ContainerRebuildSpec >,
+proof_constructors: Option < ProofConstructorNames >,
+unionable: bool ,
+},
+Datatype {
+span: Span ,
+name: String ,
+variants: Vec < Variant >,
+},
+Datatypes {
+span: Span ,
+datatypes: Vec <( Span , String , Subdatatypes )>,
+},
+Constructor {
+span: Span ,
+name: String ,
+schema: Schema ,
+cost: Option < DefaultCost >,
+unextractable: bool ,
+hidden: bool ,
+let_binding: bool ,
+term_constructor: Option < String >,
+},
+Relation {
+span: Span ,
+name: String ,
+inputs: Vec < String >,
+},
+Function {
+span: Span ,
+name: String ,
+schema: Schema ,
+merge: Option < GenericExpr <Head, Leaf>>,
+hidden: bool ,
+let_binding: bool ,
+term_constructor: Option < String >,
+unextractable: bool ,
+},
+AddRuleset( Span , String ),
+UnstableCombinedRuleset( Span , String , Vec < String >),
+Rule {
+rule: GenericRule <Head, Leaf>,
+},
+Rewrite( String , GenericRewrite <Head, Leaf>, Subsume ),
+BiRewrite( String , GenericRewrite <Head, Leaf>),
+Action( GenericAction <Head, Leaf>),
+Extract( Span , GenericExpr <Head, Leaf>, GenericExpr <Head, Leaf>),
+RunSchedule( GenericSchedule <Head, Leaf>),
+PrintOverallStatistics( Span , Option < String >),
+Check( Span , Vec < GenericFact <Head, Leaf>>),
+Prove( Span , Vec < GenericFact <Head, Leaf>>),
+ProveExists( Span , Head),
+PrintFunction( Span , String , Option < usize >, Option < String >, PrintFunctionMode ),
+PrintSize( Span , Option < String >),
+Input {
+span: Span ,
+name: String ,
+file: String ,
+},
+Output {
+span: Span ,
+file: String ,
+exprs: Vec < GenericExpr <Head, Leaf>>,
+},
+Push( usize ),
+Pop( Span , usize ),
+Fail( Span , Box < GenericCommand <Head, Leaf>>),
+Include( Span , String ),
+UserDefined( Span , String , Vec < Expr >),
+}
+Expand description A Command is the top-level construct in egglog.
+It includes defining rules, declaring functions,
+adding to tables, and running rules (via a Schedule ).
+§ Binding naming convention
+Bindings introduced by commands fall into two categories:
+Global bindings must start with $ .
+Non-global bindings must not start with $ .
+When --strict-mode is enabled, violating these conventions is a type error;
+otherwise, egglog emits a single warning per program.
+Variants §
+§ Sort
+Create a new user-defined sort, which can then
+be used in new Command::Function declarations.
+The Command::Datatype command desugars directly to this command, with one Command::Function
+per constructor.
+The main use of this command (as opposed to using Command::Datatype ) is for forward-declaring a sort for mutually-recursive datatypes.
+It can also be used to create
+a container sort.
+For example, here’s how to make a sort for vectors
+of some user-defined sort Math :
+(sort MathVec (Vec Math))
+Now MathVec can be used as an input or output sort.
+Fields
+§ span: Span
+§ name: String
+§ presort_and_args: Option <( String , Vec < Expr >)>
+§ uf: Option <( String , Option < String >)> The union-find (constructor, optional function-index) table names
+for this sort (see GenericNCommand::Sort ).
+§ proof_func: Option < String > The name of the proof function for this sort.
+Set by proof desugaring to record where proofs are stored for this sort.
+§ container_rebuild: Option < ContainerRebuildSpec > For container sorts under the term/proof encoding: the spec for the
+container’s rebuild primitives (see ContainerRebuildSpec ), carried
+as the :internal-container-rebuild annotation.
+§ proof_constructors: Option < ProofConstructorNames > The global proof constructor names (see ProofConstructorNames ),
+recorded once on the Proof sort as :internal-proof-names .
+§ unionable: bool Whether values of this sort can be unioned.
+Defaults to true for user-defined sorts.
+Set to false for relations and term tables that should not allow union.
+§ Datatype
+Egglog supports three types of functions
+A constructor models an egg-style user-defined datatype
+It can only be defined through the datatype / datatype* command
+or the constructor command
+A relation models a datalog-style mathematical relation
+It can only be defined through the relation command
+A custom function is a dictionary
+It can only be defined through the function command
+The datatype command declares a user-defined datatype.
+Datatypes can be unioned with Action::Union either
+at the top level or in the actions of a rule.
+This makes them equal in the implicit, global equality relation.
+Example:
+(datatype Math
+(Num i64)
+(Var String)
+(Add Math Math)
+(Mul Math Math))
+defines a simple Math datatype with variants for numbers, named variables, addition and multiplication.
+Datatypes desugar directly to a Command::Sort and a Command::Constructor for each constructor.
+The code above becomes:
+(sort Math)
+(constructor Num (i64) Math)
+(constructor Var (String) Math)
+(constructor Add (Math Math) Math)
+(constructor Mul (Math Math) Math)
+Datatypes are also known as algebraic data types, tagged unions and sum types.
+Fields
+§ span: Span
+§ name: String
+§ variants: Vec < Variant >
+§ Datatypes
+Fields
+§ span: Span
+§ datatypes: Vec <( Span , String , Subdatatypes )>
+§ Constructor
+The constructor command defines a new constructor for a user-defined datatype
+Example:
+(constructor Add (i64 i64) Math)
+A constructor can be :unextractable , in which case extraction skip this constructor entirely.
+(constructor UnextractableNode (i64) Math :unextractable)
+A constructor can also have a cost for extraction, which is used in the cost model for extraction. It defaults to 1 if not specified.
+(constructor ExpensiveNode (i64) Math :cost 10)
+Fields
+§ span: Span
+§ name: String
+§ schema: Schema
+§ cost: Option < DefaultCost >
+§ unextractable: bool
+§ hidden: bool Internal-hidden constructors are excluded from print-size output and extraction.
+Used for internal tables generated by proof production.
+§ let_binding: bool Internal-let constructors are let bindings, excluded from print-size output.
+Used for global let bindings that are converted to constructors.
+§ term_constructor: Option < String > Internal-only metadata for proof-encoding view tables.
+Parsed user syntax only supports :internal-term-constructor on function .
+§ Relation
+The relation command declares a named relation
+Example:
+(relation path (i64 i64))
+(relation edge (i64 i64))
+Fields
+§ span: Span
+§ name: String
+§ inputs: Vec < String >
+§ Function
+The function command declare an egglog custom function, which is a database table with a
+a functional dependency (also called a primary key) on its inputs to one output.
+(function <name:Ident> <schema:Schema> <cost:Cost>
+(:on_merge <List<Action>>)?
+(:merge <Expr>)?)
+A function can have a cost for extraction.
+Finally, it can have a merge and on_merge , which are triggered when
+the function dependency is violated.
+In this case, the merge expression determines which of the two outputs
+for the same input is used.
+The on_merge actions are run after the merge expression is evaluated.
+Note that the :merge expression must be monotonic
+for the behavior of the egglog program to be consistent and defined.
+In other words, the merge function must define a lattice on the output of the function.
+If values are merged in different orders, they should still result in the same output.
+If the merge expression is not monotonic, the behavior can vary as
+actions may be applied more than once with different results.
+(function LowerBound (Math) i64 :merge (max old new))
+Specifically, a custom function can also have an EqSort output type:
+(function Add (i64 i64) Math)
+All functions can be set
+with Action::Set .
+Output of a function, if being the EqSort type, can be unioned with Action::Union
+with another datatype of the same sort .
+Fields
+§ span: Span
+§ name: String
+§ schema: Schema
+§ merge: Option < GenericExpr <Head, Leaf>>
+§ hidden: bool
+§ let_binding: bool
+§ term_constructor: Option < String >
+§ unextractable: bool
+§ AddRuleset( Span , String )
+Using the ruleset command, defines a new
+ruleset that can be added to in Command::Rule s.
+Rulesets are used to group rules together
+so that they can be run together in a Schedule .
+Example:
+Ruleset allows users to define a ruleset- a set of rules
+(ruleset myrules)
+(rule ((edge x y))
+((path x y))
+:ruleset myrules)
+(run myrules 2)
+§ UnstableCombinedRuleset( Span , String , Vec < String >)
+Using the combined-ruleset command, construct another ruleset
+which runs all the rules in the given rulesets.
+This is useful for running multiple rulesets together.
+The combined ruleset also inherits any rules added to the individual rulesets
+after the combined ruleset is declared.
+Example:
+(ruleset myrules1)
+(rule ((edge x y))
+((path x y))
+:ruleset myrules1)
+(ruleset myrules2)
+(rule ((path x y) (edge y z))
+((path x z))
+:ruleset myrules2)
+(combined-ruleset myrules-combined myrules1 myrules2)
+§ Rule
+(rule <body:List<Fact>> <head:List<Action>>)
+defines an egglog rule.
+The rule matches a list of facts with respect to
+the global database, and runs the list of actions
+for each match.
+The matches are done modulo equality , meaning
+equal datatypes in the database are considered
+equal.
+Example:
+(rule ((edge x y))
+((path x y)))
+(rule ((path x y) (edge y z))
+((path x z)))
+Fields
+§ rule: GenericRule <Head, Leaf>
+§ Rewrite( String , GenericRewrite <Head, Leaf>, Subsume )
+rewrite is syntactic sugar for a specific form of rule
+which simply unions the left and right hand sides.
+Example:
+(rewrite (Add a b)
+(Add b a))
+Desugars to:
+(rule ((= lhs (Add a b)))
+((union lhs (Add b a))))
+Additionally, additional facts can be specified
+using a :when clause.
+For example, the same rule can be run only
+when a is zero:
+(rewrite (Add a b)
+(Add b a)
+:when ((= a (Num 0)))
+Add the :subsume flag to cause the left hand side to be subsumed after matching, which means it can
+no longer be matched in a rule, but can still be checked against (See Change for more details.)
+(rewrite (Mul a 2) (bitshift-left a 1) :subsume)
+Desugars to:
+(rule ((= lhs (Mul a 2)))
+((union lhs (bitshift-left a 1))
+(subsume (Mul a 2))))
+§ BiRewrite( String , GenericRewrite <Head, Leaf>)
+Similar to Command::Rewrite , but
+generates two rules, one for each direction.
+Example:
+(bi-rewrite (Mul (Var x) (Num 0))
+(Var x))
+Becomes:
+(rule ((= lhs (Mul (Var x) (Num 0))))
+((union lhs (Var x))))
+(rule ((= lhs (Var x)))
+((union lhs (Mul (Var x) (Num 0)))))
+§ Action( GenericAction <Head, Leaf>)
+Perform an Action on the global database
+(see documentation for Action for more details).
+Example:
+(let xplusone (Add (Var "x") (Num 1)))
+§ Extract( Span , GenericExpr <Head, Leaf>, GenericExpr <Head, Leaf>)
+extract a datatype from the egraph, choosing
+the smallest representative.
+By default, each constructor costs 1 to extract
+(common subexpressions are not shared in the cost
+model).
+§ RunSchedule( GenericSchedule <Head, Leaf>)
+Runs a Schedule , which specifies
+rulesets and the number of times to run them.
+Example:
+(run-schedule
+(saturate my-ruleset-1)
+(run my-ruleset-2 4))
+Runs my-ruleset-1 until saturation,
+then runs my-ruleset-2 four times.
+See Schedule for more details.
+§ PrintOverallStatistics( Span , Option < String >)
+Print runtime statistics about rules
+and rulesets so far.
+§ Check( Span , Vec < GenericFact <Head, Leaf>>)
+The check command checks that the given facts
+match at least once in the current database.
+The list of facts is matched in the same way a Command::Rule is matched.
+Example:
+(check (= (+ 1 2) 3))
+(check (<= 0 3) (>= 3 0))
+(fail (check (= 1 2)))
+prints
+[INFO ] Checked.
+[INFO ] Checked.
+[ERROR] Check failed
+[INFO ] Command failed as expected.
+§ Prove( Span , Vec < GenericFact <Head, Leaf>>)
+§ ProveExists( Span , Head)
+§ PrintFunction( Span , String , Option < usize >, Option < String >, PrintFunctionMode )
+Print out rows of a given function, extracting each of the elements of the function.
+Example:
+(print-function Add 20)
+prints the first 20 rows of the Add function.
+(print-function Add)
+prints all rows of the Add function.
+(print-function Add :file "add.csv")
+prints all rows of the Add function to a CSV file.
+§ PrintSize( Span , Option < String >)
+Print out the number of rows in a function or all functions.
+§ Input
+Input a CSV file directly into a function.
+Fields
+§ span: Span
+§ name: String
+§ file: String
+§ Output
+Extract and output a set of expressions to a file.
+Fields
+§ span: Span
+§ file: String
+§ exprs: Vec < GenericExpr <Head, Leaf>>
+§ Push( usize )
+push the current egraph n times so that it is saved.
+Later, the current database and rules can be restored using pop .
+§ Pop( Span , usize )
+pop the current egraph, restoring the previous one.
+The argument specifies how many egraphs to pop.
+§ Fail( Span , Box < GenericCommand <Head, Leaf>>)
+Assert that a command fails with an error.
+This catches an egglog error but does not roll back effects completed
+before it. If recovery from a rule-action error rebuilds successfully,
+later commands see a canonical partial state. A Rust panic in extension
+code unwinds normally and is not caught.
+§ Include( Span , String )
+Include another egglog file directly as text and run it.
+§ UserDefined( Span , String , Vec < Expr >)
+User-defined command.
+Implementations §
+Source § impl<Head, Leaf> GenericCommand <Head, Leaf> where
+Head: Clone + Display ,
+Leaf: Clone + PartialEq + Eq + Display + Hash ,
+Source pub fn map_string_symbols (
+self,
+fun: &mut impl FnMut ( String ) -> String ,
+) -> GenericCommand <Head, Leaf> where
+Head: Clone + Display ,
+Leaf: Clone + PartialEq + Eq + Display + Hash ,
+The current egglog AST has strings even when resolved.
+We map over those strings with this function, used by sanitize_internal_symbols.
+Source pub fn visit_exprs (
+self,
+f: &mut impl FnMut ( GenericExpr <Head, Leaf>) -> GenericExpr <Head, Leaf>,
+) -> Self
+Applies f to all expressions in the command, bottom-up.
+Source pub fn map_symbols <Head2, Leaf2>(
+self,
+head: &mut impl FnMut (Head) -> Head2,
+leaf: &mut impl FnMut (Leaf) -> Leaf2,
+) -> GenericCommand <Head2, Leaf2> where
+Head2: Clone + Display ,
+Leaf2: Clone + PartialEq + Eq + Display + Hash ,
+Remaps every head and leaf symbol contained in the command.
+Source pub fn make_unresolved (self) -> GenericCommand < String , String >
+Makes the command unresolved by converting all Head and Leaf types to String.
+Source pub fn visit_actions (
+self,
+f: &mut impl FnMut ( GenericAction <Head, Leaf>) -> GenericAction <Head, Leaf>,
+) -> Self
+Trait Implementations §
+Source § impl<Head, Leaf> Clone for GenericCommand <Head, Leaf> where
+Head: Clone + Display + Clone ,
+Leaf: Clone + PartialEq + Eq + Display + Hash + Clone ,
+Source § fn clone (&self) -> GenericCommand <Head, Leaf>
+Returns a duplicate of the value. Read more
+1.0.0 · Source § fn clone_from (&mut self, source: &Self)
+Performs copy-assignment from source . Read more
+Source § impl<Head, Leaf> Debug for GenericCommand <Head, Leaf> where
+Head: Clone + Display + Debug ,
+Leaf: Clone + PartialEq + Eq + Display + Hash + Debug ,
+Source § fn fmt (&self, f: &mut Formatter <'_>) -> Result
+Formats the value using the given formatter. Read more
+Source § impl<Head, Leaf> Display for GenericCommand <Head, Leaf> where
+Head: Clone + Display ,
+Leaf: Clone + PartialEq + Eq + Display + Hash ,
+Source § fn fmt (&self, f: &mut Formatter <'_>) -> Result
+Formats the value using the given formatter. Read more
+Auto Trait Implementations §
+§ impl<Head, Leaf> Freeze for GenericCommand <Head, Leaf> where
+Head: Freeze ,
+Leaf: Freeze ,
+§ impl<Head, Leaf> RefUnwindSafe for GenericCommand <Head, Leaf> where
+Head: RefUnwindSafe ,
+Leaf: RefUnwindSafe ,
+§ impl<Head, Leaf> Send for GenericCommand <Head, Leaf> where
+Head: Send ,
+Leaf: Send ,
+§ impl<Head, Leaf> Sync for GenericCommand <Head, Leaf> where
+Head: Sync ,
+Leaf: Sync ,
+§ impl<Head, Leaf> Unpin for GenericCommand <Head, Leaf> where
+Head: Unpin ,
+Leaf: Unpin ,
+§ impl<Head, Leaf> UnwindSafe for GenericCommand <Head, Leaf> where
+Head: UnwindSafe ,
+Leaf: UnwindSafe ,
+Blanket Implementations §
+Source § impl<T> Any for T where
+T: 'static + ? Sized ,
+Source § fn type_id (&self) -> TypeId
+Gets the TypeId of self . Read more
+Source § impl<T> Borrow <T> for T where
+T: ? Sized ,
+Source § fn borrow (&self) -> &T
+Immutably borrows from an owned value. Read more
+Source § impl<T> BorrowMut <T> for T where
+T: ? Sized ,
+Source § fn borrow_mut (&mut self) -> &mut T
+Mutably borrows from an owned value. Read more
+Source § impl<T> CloneToUninit for T where
+T: Clone ,
+Source § unsafe fn clone_to_uninit (&self, dest: *mut u8 )
+🔬 This is a nightly-only experimental API. ( clone_to_uninit )
+Performs copy-assignment from self to dest . Read more
+Source § impl<T> DynClone for T where
+T: Clone ,
+Source § fn __clone_box (&self, _: Private) -> *mut ()
+Source § impl<T> From <T> for T
+Source § fn from (t: T) -> T
+Returns the argument unchanged.
+Source § impl<T, U> Into <U> for T where
+U: From <T>,
+Source § fn into (self) -> U
+Calls U::from(self) .
+That is, this conversion is whatever the implementation of
+From <T> for U chooses to do.
+§ impl<T> Pointable for T
+§ const ALIGN : usize
+The alignment of pointer.
+§ type Init = T
+The type for initializers.
+§ unsafe fn init (init: <T as Pointable>::Init) -> usize
+Initializes a with the given initializer. Read more
+§ unsafe fn deref <'a>(ptr: usize ) -> &'a T
+Dereferences the given pointer. Read more
+§ unsafe fn deref_mut <'a>(ptr: usize ) -> &'a mut T
+Mutably dereferences the given pointer. Read more
+§ unsafe fn drop (ptr: usize )
+Drops the object pointed to by the given pointer. Read more
+Source § impl<T> Same for T
+Source § type Output = T
+Should always be Self
+Source § impl<T> ToOwned for T where
+T: Clone ,
+Source § type Owned = T
+The resulting type after obtaining ownership.
+Source § fn to_owned (&self) -> T
+Creates owned data from borrowed data, usually by cloning. Read more
+Source § fn clone_into (&self, target: &mut T )
+Uses borrowed data to replace owned data, usually by cloning. Read more
+Source § impl<T> ToString for T where
+T: Display + ? Sized ,
+Source § fn to_string (&self) -> String
+Converts the given value to a String . Read more
+Source § impl<T, U> TryFrom <U> for T where
+U: Into <T>,
+Source § type Error = Infallible
+The type returned in the event of a conversion error.
+Source § fn try_from (value: U) -> Result <T, <T as TryFrom <U>>:: Error >
+Performs the conversion.
+Source § impl<T, U> TryInto <U> for T where
+U: TryFrom <T>,
+Source § type Error = <U as TryFrom <T>>:: Error
+The type returned in the event of a conversion error.
+Source § fn try_into (self) -> Result <U, <U as TryFrom <T>>:: Error >
+Performs the conversion.
+Source § impl<T> UserDefinedCommandOutput for T where
+T: Debug + Display + Send + Sync ,
+Source § fn as_any (&self) -> &(dyn Any + 'static) where
+T: 'static,
+Views a stored output as Any so consumers can safely downcast it. Read more
+§ impl<V, T> VZip<V> for T where
+V: MultiLane<T>,
+§ fn vzip (self) -> V

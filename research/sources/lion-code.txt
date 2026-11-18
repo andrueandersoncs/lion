@@ -1,0 +1,15 @@
+$ wc -l packages/core/src/logic/*.ts   (the logic layer, commit f49b97a)
+     159 logic/aggregates.ts
+     122 logic/algorithms.ts
+     914 logic/compile.ts
+    1500 logic/database.ts
+     713 logic/explain.ts
+     735 logic/fit.ts
+     340 logic/magic.ts
+     957 logic/maintain.ts
+    2545 logic/model.ts
+     194 logic/query-options.ts
+     144 logic/snapshot.ts
+     484 logic/strata.ts
+    1070 logic/terms.ts
+    9877 total

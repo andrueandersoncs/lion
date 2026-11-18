@@ -1,0 +1,43 @@
+{
+  "sources": [
+    {
+      "id": "algebra-model-tests",
+      "url": "research/probes/algebra-model",
+      "title": "Property tests of rows with integer weights and annotations as aggregated columns",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-w1",
+      "source": "algebra-model-tests",
+      "quote": "T1  each of 10 aggregates kept by counted candidates equals Lion's fold after each of 5730 insertions and deletions",
+      "says": {
+        "covers": "annotations without subtraction",
+        "by": "candidate multisets",
+        "is": true
+      }
+    },
+    {
+      "id": "li-w2",
+      "source": "algebra-model-tests",
+      "quote": "T2  Lion's aggregated relations equal the fold of each group's distinct matches after each of 2238 fact changes",
+      "says": {
+        "covers": "annotated relations",
+        "by": "lion aggregated relations",
+        "is": true
+      }
+    },
+    {
+      "id": "li-w3",
+      "source": "algebra-model-tests",
+      "quote": "T3  best-proof probabilities through recursion equal a max-product model after each of 2467 edge changes, retractions included",
+      "says": {
+        "lion": "best-proof probabilities",
+        "has": true
+      }
+    }
+  ]
+}

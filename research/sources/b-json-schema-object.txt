@@ -1,0 +1,340 @@
+The JSON Schema Office Hours Now Runs Weekly! Join Us! ✕
+Specification Docs Tools Blog Community Search
+System
+Light
+Dark
+Star on GitHub
+Reference
+Introduction
+Get Started
+Guides
+Reference
+Specification
+Introduction
+Get Started
+Guides
+Reference
+Specification
+object
+Objects are the mapping type in JSON. They map "keys" to "values".
+In JSON, the "keys" must always be strings. Each of these pairs is
+conventionally referred to as a "property".
+Language-specific info :
+Python
+Ruby
+Objective-C
+Swift
+In Python, "objects" are analogous to the dict type. An
+important difference, however, is that while Python dictionaries
+may use anything hashable as a key, in JSON all the keys
+must be strings.
+Try not to be confused by the two uses of the word "object" here:
+Python uses the word object to mean the generic base class for
+everything, whereas in JSON it is used only to mean a mapping from
+string keys to values.
+schema
+{ " type " : "object" } ﻿
+data
+{ " key " : "value" , " another_key " : "another_value" } ﻿
+compliant to schema
+data
+{ " Sun " : 1.9891e30 , " Jupiter " : 1.8986e27 , " Saturn " : 5.6846e26 , " Neptune " : 10.243e25 , " Uranus " : 8.6810e25 , " Earth " : 5.9736e24 , " Venus " : 4.8685e24 , " Mars " : 6.4185e23 , " Mercury " : 3.3022e23 , " Moon " : 7.349e22 , " Pluto " : 1.25e22 } ﻿
+compliant to schema
+Using non-strings as keys is invalid JSON:
+data
+{ 0.01: " cm " , 1: " m " , 1000: " km " } ﻿
+not compliant to schema
+data
+"Not an object" ﻿
+not compliant to schema
+data
+[ "An" , "array" , "not" , "an" , "object" ] ﻿
+not compliant to schema
+Properties
+The properties (key-value pairs) on an object are defined using the
+properties keyword . The value of properties is an object, where each
+key is the name of a property and each value is a schema used to
+validate that property. Any property that doesn't match any of the
+property names in the properties keyword is ignored by this keyword.
+See Additional Properties and
+Unevaluated Properties for how to disallow properties that
+don't match any of the property names in properties .
+For example, let's say we want to define a simple schema for an address
+made up of a number, street name and street type:
+schema
+{ " type " : "object" , " properties " : { " number " : { " type " : "number" } , " street_name " : { " type " : "string" } , " street_type " : { " enum " : [ "Street" , "Avenue" , "Boulevard" ] } } } ﻿
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" } ﻿
+compliant to schema
+// If we provide the number in the wrong type, it is invalid:
+data
+{ " number " : "1600" , " street_name " : "Pennsylvania" , " street_type " : "Avenue" } ﻿
+not compliant to schema
+By default, leaving out properties is valid. See Required Properties .
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" } ﻿
+compliant to schema
+By extension, even an empty object is valid:
+data
+{ } ﻿
+compliant to schema
+By default, providing additional properties is valid:
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" , " direction " : "NW" } ﻿
+compliant to schema
+Pattern Properties
+Sometimes you want to say that, given a particular kind of property
+name, the value should match a particular schema. That's where
+patternProperties comes in: it maps regular expressions to schemas. If
+a property name matches the given regular expression, the property value
+must validate against the corresponding schema.
+Regular expressions are not anchored. This means that when defining the
+regular expressions for patternProperties , it's important to note
+that the expression may match anywhere within the property name. For
+example, the regular expression "p" will match any property name with
+a p in it, such as "apple" , not just a property whose name is simply
+"p" . It's therefore usually less confusing to surround the regular
+expression in ^...$ , for example, "^p$" .
+In this example, any properties whose names start with the prefix S_
+must be strings, and any with the prefix I_ must be integers. Any
+properties that do not match either regular expression are ignored.
+schema
+{ " type " : "object" , " patternProperties " : { " ^S_ " : { " type " : "string" } , " ^I_ " : { " type " : "integer" } } } ﻿
+data
+{ " S_25 " : "This is a string" } ﻿
+compliant to schema
+data
+{ " I_0 " : 42 } ﻿
+compliant to schema
+If the name starts with S_ , it must be a string
+data
+{ " S_0 " : 42 } ﻿
+not compliant to schema
+If the name starts with I_ , it must be an integer
+data
+{ " I_42 " : "This is a string" } ﻿
+not compliant to schema
+This is a key that doesn't match any of the regular expressions:
+data
+{ " keyword " : "value" } ﻿
+compliant to schema
+Additional Properties
+The additionalProperties keyword is used to control the handling of
+extra stuff, that is, properties whose names are not listed in the
+properties keyword or match any of the regular expressions in the
+patternProperties keyword. By default any additional properties are
+allowed.
+The value of the additionalProperties keyword is a schema that will be
+used to validate any properties in the instance that are not matched by
+properties or patternProperties . Setting the additionalProperties
+schema to false means no additional properties will be allowed.
+Reusing the example from Properties , but this time setting
+additionalProperties to false .
+schema
+{ " type " : "object" , " properties " : { " number " : { " type " : "number" } , " street_name " : { " type " : "string" } , " street_type " : { " enum " : [ "Street" , "Avenue" , "Boulevard" ] } } , " additionalProperties " : false } ﻿
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" } ﻿
+compliant to schema
+Since additionalProperties is false , this extra property "direction" makes the object invalid:
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" , " direction " : "NW" } ﻿
+not compliant to schema
+You can use non-boolean schemas to put more complex constraints on the
+additional properties of an instance. For example, one can allow
+additional properties, but only if their values are each a string:
+schema
+{ " type " : "object" , " properties " : { " number " : { " type " : "number" } , " street_name " : { " type " : "string" } , " street_type " : { " enum " : [ "Street" , "Avenue" , "Boulevard" ] } } , " additionalProperties " : { " type " : "string" } } ﻿
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" } ﻿
+compliant to schema
+This is valid, since the additional property's value is a string:
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" , " direction " : "NW" } ﻿
+compliant to schema
+This is invalid, since the additional property's value is not a string:
+data
+{ " number " : 1600 , " street_name " : "Pennsylvania" , " street_type " : "Avenue" , " office_number " : 201 } ﻿
+not compliant to schema
+You can use additionalProperties with a combination of properties
+and patternProperties . In the following example, based on the example
+from patternProperties , we add a "builtin" property,
+which must be a number, and declare that all additional properties (that
+are neither defined by properties nor matched by patternProperties )
+must be strings:
+schema
+{ " type " : "object" , " properties " : { " builtin " : { " type " : "number" } } , " patternProperties " : { " ^S_ " : { " type " : "string" } , " ^I_ " : { " type " : "integer" } } , " additionalProperties " : { " type " : "string" } } ﻿
+data
+{ " builtin " : 42 } ﻿
+compliant to schema
+This is a key that doesn't match any of the regular expressions:
+data
+{ " keyword " : "value" } ﻿
+compliant to schema
+It must be a string:
+data
+{ " keyword " : 42 } ﻿
+not compliant to schema
+Extending Closed Schemas
+It's important to note that additionalProperties only recognizes
+properties declared in the same subschema as itself. So,
+additionalProperties can restrict you from "extending" a schema
+using combining keywords such as allOf . In
+the following example, we can see how the additionalProperties can
+cause attempts to extend the address schema example to fail.
+schema
+{ " allOf " : [ { " type " : "object" , " properties " : { " street_address " : { " type " : "string" } , " city " : { " type " : "string" } , " state " : { " type " : "string" } } , " required " : [ "street_address" , "city" , "state" ] , " additionalProperties " : false } ] , ﻿
+" properties " : { " type " : { " enum " : [ "residential" , "business" ] } } , " required " : [ "type" ] } ﻿
+Fails additionalProperties . "type" is considered additional.
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" } ﻿
+not compliant to schema
+Fails required . "type" is required.
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" } ﻿
+not compliant to schema
+Because additionalProperties only recognizes properties declared in
+the same subschema, it considers anything other than
+"street_address", "city", and "state" to be additional. Combining
+the schemas with allOf doesn't change that. A workaround
+you can use is to move additionalProperties to the extending schema
+and redeclare the properties from the extended schema.
+schema
+{ " allOf " : [ { " type " : "object" , " properties " : { " street_address " : { " type " : "string" } , " city " : { " type " : "string" } , " state " : { " type " : "string" } } , " required " : [ "street_address" , "city" , "state" ] } ] , ﻿
+" properties " : { " street_address " : true , " city " : true , " state " : true , " type " : { " enum " : [ "residential" , "business" ] } } , " required " : [ "type" ] , " additionalProperties " : false } ﻿
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" } ﻿
+compliant to schema
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" , " something that doesn't belong " : "hi!" } ﻿
+not compliant to schema
+Now the additionalProperties keyword is able to recognize all the
+necessary properties and the schema works as expected. Keep reading to
+see how the unevaluatedProperties keyword solves this problem without
+needing to redeclare properties.
+Unevaluated Properties
+New in draft 2019-09
+In the previous section we saw the challenges with using
+additionalProperties when "extending" a schema using
+combining . The unevaluatedProperties keyword is similar
+to additionalProperties except that it can recognize properties
+declared in subschemas. So, the example from the previous section can be
+rewritten without the need to redeclare properties.
+schema
+{ " allOf " : [ { " type " : "object" , " properties " : { " street_address " : { " type " : "string" } , " city " : { " type " : "string" } , " state " : { " type " : "string" } } , " required " : [ "street_address" , "city" , "state" ] } ] , ﻿
+" properties " : { " type " : { " enum " : [ "residential" , "business" ] } } , " required " : [ "type" ] , " unevaluatedProperties " : false } ﻿
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" } ﻿
+compliant to schema
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" , " something that doesn't belong " : "hi!" } ﻿
+not compliant to schema
+unevaluatedProperties works by collecting any properties that are
+successfully validated when processing the schemas and using those as
+the allowed list of properties. This allows you to do more complex
+things like conditionally adding properties. The following example
+allows the "department" property only if the "type" of address is
+"business".
+schema
+{ " type " : "object" , " properties " : { " street_address " : { " type " : "string" } , " city " : { " type " : "string" } , " state " : { " type " : "string" } , " type " : { " enum " : [ "residential" , "business" ] } } , " required " : [ "street_address" , "city" , "state" , "type" ] , ﻿
+" if " : { " type " : "object" , " properties " : { " type " : { " const " : "business" } } , " required " : [ "type" ] } , " then " : { " properties " : { " department " : { " type " : "string" } } } , ﻿
+" unevaluatedProperties " : false } ﻿
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "business" , " department " : "HR" } ﻿
+compliant to schema
+data
+{ " street_address " : "1600 Pennsylvania Avenue NW" , " city " : "Washington" , " state " : "DC" , " type " : "residential" , " department " : "HR" } ﻿
+not compliant to schema
+In this schema, the properties declared in the then schema only count
+as "evaluated" properties if the "type" of the address is
+"business".
+Required Properties
+By default, the properties defined by the properties keyword are not
+required. However, one can provide a list of required properties using
+the required keyword.
+The required keyword takes an array of zero or more strings. Each of
+these strings must be unique.
+Draft-specific info
+In Draft 4, required must contain at least one string.
+In the following example schema defining a user record, we require that
+each user has a name and e-mail address, but we don't mind if they
+don't provide their address or telephone number:
+schema
+{ " type " : "object" , " properties " : { " name " : { " type " : "string" } , " email " : { " type " : "string" } , " address " : { " type " : "string" } , " telephone " : { " type " : "string" } } , " required " : [ "name" , "email" ] } ﻿
+data
+{ " name " : "William Shakespeare" , " email " : " [email protected] " } ﻿
+compliant to schema
+Providing extra properties is fine, even properties not defined in the schema:
+data
+{ " name " : "William Shakespeare" , " email " : " [email protected] " , " address " : "Henley Street, Stratford-upon-Avon, Warwickshire, England" , " authorship " : "in question" } ﻿
+compliant to schema
+Missing the required "email" property makes the JSON document invalid:
+data
+{ " name " : "William Shakespeare" , " address " : "Henley Street, Stratford-upon-Avon, Warwickshire, England" , } ﻿
+not compliant to schema
+In JSON a property with value null is not equivalent to the property not being present. This fails because null is not of type "string", it's of type "null"
+data
+{ " name " : "William Shakespeare" , " address " : "Henley Street, Stratford-upon-Avon, Warwickshire, England" , " email " : null } ﻿
+not compliant to schema
+Property names
+New in draft 6
+The names of properties can be validated against a schema, irrespective
+of their values. This can be useful if you don't want to enforce
+specific properties, but you want to make sure that the names of those
+properties follow a specific convention. You might, for example, want to
+enforce that all names are valid ASCII tokens so they can be used as
+attributes in a particular programming language.
+schema
+{ " type " : "object" , " propertyNames " : { " pattern " : "^[A-Za-z_][A-Za-z0-9_]*$" } } ﻿
+data
+{ " _a_proper_token_001 " : "value" } ﻿
+compliant to schema
+data
+{ " 001 invalid " : "value" } ﻿
+not compliant to schema
+Since object keys must always be strings anyway, it is implied that the
+schema given to propertyNames is always at least:
+schema
+{ " type " : "string" } ﻿
+Size
+The number of properties on an object can be restricted using the
+minProperties and maxProperties keywords. Each of these must be a
+non-negative integer.
+schema
+{ " type " : "object" , " minProperties " : 2 , " maxProperties " : 3 } ﻿
+data
+{ } ﻿
+not compliant to schema
+data
+{ " a " : 0 } ﻿
+not compliant to schema
+data
+{ " a " : 0 , " b " : 1 } ﻿
+compliant to schema
+data
+{ " a " : 0 , " b " : 1 , " c " : 2 } ﻿
+compliant to schema
+data
+{ " a " : 0 , " b " : 1 , " c " : 2 , " d " : 3 } ﻿
+not compliant to schema
+Go Back
+Numeric Types
+Up Next
+Regular expressions
+Need Help?
+Did you find these docs helpful?
+Help us make our docs great!
+At JSON Schema, we value docs contributions as much as every other type of contribution!
+Edit this page on Github
+Learn how to contribute
+Still Need Help?
+Learning JSON Schema is often confusing, but don't worry, we are here to help!
+Ask the community on GitHub
+Ask the community on Slack
+Open Collective
+Code of Conduct
+Slack
+X
+LinkedIn
+Youtube
+GitHub
+Copyright © 2026 JSON Schema. All rights reserved.

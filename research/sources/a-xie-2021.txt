@@ -1,0 +1,3454 @@
+Generalized Evidence Passing for Effect Handlers
+Microsoft Technical Report, MSR-TR-2021-5, Apr 2021, v2
+NINGNING XIE, University of Hong Kong, China
+DAAN LEIJEN, Microsoft Research, USA
+This paper studies compilation techniques for algebraic effect handlers. In particular, we present a sequence
+of refinements of algebraic effects, going via multi-prompt delimited control, generalized evidence passing,
+yield bubbling, and finally a monadic translation into plain lambda calculus which can be compiled efficiently
+to many target platforms. Along the way we explore various interesting points in the design space. We
+provide two implementations of our techniques, one as a library in Haskell, and one as a C backend for
+the Koka programming language. We show that our techniques are effective, by comparing against three
+other best-in-class implementations of effect handlers: multi-core OCaml, the Ev.Eff Haskell library, and
+the libhandler C library. We hope this work can serve as a basis for future designs and implementations of
+algebraic effects.
+1 INTRODUCTION
+Algebraic effects and handlers [Plotkin and Power 2003; Plotkin and Pretnar 2013] provide a
+powerful and flexible way to add structured control-flow abstraction to programming languages.
+Unfortunately, it is not straightforward to compile effect handlers into efficient code: effect opera-
+tions are generally able to capture- and resume a delimited continuation, which usually requires
+special runtime support to do efficiently. For example, the effect handler implementation in multi-
+core OCaml [Dolan et al. 2017; Sivaramakrishnan et al. 2021] relies on a runtime system that
+uses segmented stacks which can be captured efficiently. Then, a natural question that arises is
+whether it is possible to compile effect handlers efficiently where the target platform does not
+directly support delimited continuations, for example, when compiling to C/LLVM, WASM [Haas
+et al. 2017], JavaScript, Java VM, .NET, etc.
+In this paper we give a formalized translation and evaluation semantics from a typed effect
+handler calculus into a plain typed lambda calculus as a sequence of refinements:
+(1) First we show how effect handler semantics can be expressed using standard multi-prompt
+delimited control semantics [Forster et al. 2019; Gunter et al. 1995] (Section 2.3).
+(2) We refine this semantics further to evidence passing semantics (EPS) where the evidence for
+a handler prompt in the evaluation context is pushed down to each effect operation as an
+evidence vector (Section 2.4 and 3.1). This makes performing an operation a local transition
+that no longer needs to search through the evaluation context (Section 2.5 and 3.2).
+(3) Next we also localize yielding to a handler prompt by bubbling each yield through the
+evaluation context instead of capturing in one step (Section 2.6 and 4.1). This closely follows
+the effect handler semantics as given by Pretnar [2015].
+(4) With all evaluation transitions localized, we can now define a direct monadic translation of
+effect handlers into a plain typed lambda calculus using a multi-prompt monad (Section 2.7,
+2.8, and 4). Such program can be directly compiled to any target platform (including C/LLVM,
+WASM, JavaScript, Java VM, .NET, etc) without requiring special runtime mechanisms .
+Aside from the novel evidence passing semantics, many parts of the refinements are known
+compilation techniques for effect handlers – but we believe we are the first to formalize each
+within a single polymorphically typed framework (combined with evidence passing semantics).
+Specifically, we make the following contributions:
+1
+Xie and Leijen MSR-TR-2021-5
+•We formalize each refinement and translation, and show they are sound and semantics
+preserving (Section 3 and 4). Along the way, we explore various interesting points in the
+design space:
+– The use of segmented stacks for implementing effect handlers in a direct way (as used by
+multi-core OCaml [Sivaramakrishnan et al. 2021]) versus translation into a multi-prompt
+monad (Section 2.3): segmented stacks need a dedicated runtime system but can capture
+and resume an operation in constant time (for one-shot resumptions), while a multi-prompt
+monad is linear in the continuation points.
+– Using insertion- versus canonical ordered evidence vectors (Section 2.4): the former is
+efficient to construct but needs a linear lookup for each operation, while a canonical vector
+is more expensive to construct upfront but can use constant time lookup for operations.
+– Using short-cut resumptions to minimize the stack usage of a resumption while increasing
+sharing of continuation points (Section 2.6.1); a similar technique is used in [Kiselyov and
+Ishii 2015] to compose monadic binds in an effect monad.
+– Using bind-inlining and join-point sharing for improved efficiency when translating into
+the multi-prompt monad (Section 2.7.1).
+•Our evidence passing semantics (EPS) is a generalization of the work on evidence passing
+translation (EPT) [Xie et al. 2020]. In particular, EPT can only express a subset of full effect
+handlers that are restricted to scoped resumptions only, whereas EPS lifts the restriction and
+can fully express effect handlers (Section 2.9 and 3.1).
+•We give the first formal account of optimized tail-resumptive operation semantics and show
+how this can evaluate an operation in-place and avoid performing an expensive yield-and-
+resume cycle in the majority of effect operations (Section 2.5 and 3.2). The tail-resumptive
+optimization is surprisingly subtle to get correct – in particular in combination with un-
+scoped resumptions which we illustrate in Section 2.9.2. We prove the correctness of the
+tail-resumptive optimization by showing that an optimized program is contextually equiva-
+lent to the original one.
+•We have implemented our techniques as a monadic library for effect handlers in Haskell, called
+Mp.Eff (for “multi-prompt effect”), generalizing the Ev.Eff library based on EPT provided
+by Xie and Leijen [2020]. Our implementation is based on insertion-ordered evidence vectors.
+•We have also implemented our techniques in the Koka programming language [Koka 2019]
+compiling to standard C code (Section 2.8). The implementation uses canonical evidence
+vectors, short-cut resumptions, bind-inlining, and join-point sharing.
+•We benchmarked the Koka implementation against four other implementations of effect
+handlers that compile to native code: the current state-of-the-art direct implementation
+of effect handlers in multi-core OCaml which uses a dedicated runtime system based on
+segmented stacks; our Mp.Eff Haskell library; the Ev.Eff Haskell library which has been
+shown by Xie and Leijen [2020] to perform very well compared to other Haskell effect
+handler libraries [Schrijvers et al. 2019; Wu and Schrijvers 2015; Wu et al. 2014]; and finally
+the libhandler C library which implements effect handlers directly in C by copying fragments
+of the stack [Leijen 2017a]. Comparing across systems and languages is always tricky but the
+results clearly indicate that our approach can have competitive performance (Section 5).
+2 OVERVIEW
+We start with a short discussion and examples of basic effect handlers and follow with an overview
+of each of our semantic refinements and translation techniques.
+2
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+2.1 Algebraic Effects
+With algebraic effect handlers, an effect l defines a set of operations op. For example, we can have a
+reader effect with an ask operation
+read {ask : ()→int }
+and we can perform the ask operation writing perform ask (). A handler (handler h v)takes a list
+of operation clauses in h, and a computation v to be handled. Each operation clause in h takes
+the form op ↦→f , providing the implementation f for the operation op from the handled effect
+where the implementation f is of form 𝜆x. 𝜆k. e: x binds the operation argument, and k binds the
+captured resumption that can be used to resume to the original call-site with the operation result.
+For example, we can handle the reader effect by always resuming with the constant 1:
+hread = {ask ↦→𝜆x. 𝜆k. k 1 }
+where the expression handler hread (𝜆
+_
+. perform ask () +perform ask ())evaluates to 2. The fol-
+lowing evaluation rules give the essence of the untyped semantics for algebraic effect handlers [Xie
+and Leijen 2020]:
+(app) (𝜆x. e)v −→ e[x:=v]
+(handler) handler h f −→ handle h (f ())
+(return) handle h v −→ v
+(perform) handle h E[perform op v] −→ f v (𝜆x. handle h E[x])
+iff op ̸∈bop(E)∧(op ↦→f )∈h
+Rule (app)is standard 𝛽-reduction and applies a function to a value v by substituting x for the
+argument v in the function body. The (handler)takes a computation f , and applies the computation
+to a unit value under a new frame handle h. The computation to be handled (f ) is always a unit-
+taking function as in [Xie et al. 2020], which essentially corresponds to a suspended computation as
+in the call-by-push-value approach [Levy 2006] used in several algebraic effect systems [Kammar
+and Pretnar 2017; Plotkin and Pretnar 2013].
+The handle frame is only generated by handler, and treated as a strictly internal frame. When
+handling a computation under a handle h frame, there are two possible situations. In the first
+case, the computation evaluates to a value and the (return)transition discards the handle h frame
+and propagates the value. The second case captures the essence of algebraic effects handlers
+where an operation is handled. In rule (perform), perform op v calls an effect operation op by
+providing the operation argument v. The handle h frame handles the operation by applying the
+operation implementation f to the operation argument v, and the resumption (𝜆x. handle h E[x]).
+The resumption captures the original handle, as well as the whole evaluation context E between
+handle and the operation call.
+An evaluation context E is essentially an expression with a hole (□) in it, and the notation E[e]
+represents the expression obtained by plugging e into the hole of E (e.g., (f (g □))[x]= f (g x)).
+In this rule, the condition op ̸∈bop(E)indicates that op is not in the bound operations of E, i.e. not
+handled by any handle frames in E, ensuring that it is always the innermost handle frame for the
+effect that handles the operation.
+2.1.1 Examples. Here we consider some standard examples of algebraic effects, and we refer the
+reader to other work for more examples as well as practical uses of effect handlers [Bauer and
+Pretnar 2015; Hillerström and Lindley 2016; Kammar et al. 2013; Leijen 2017b; Pretnar 2015; Xie
+et al. 2020]. In the examples, we use x ←e1; e2 as a shorthand for (𝜆x. e2)e1, and use e1; e2 for
+(𝜆
+_
+. e2)e1, where 𝜆_ denotes a lambda whose binding is not used in the body.
+3
+Xie and Leijen MSR-TR-2021-5
+Exceptions. The following definition defines an effect exn with one operation throw.
+exn {throw : ∀𝛼. ()→𝛼 }
+Given a datatype Maybe with two constructors Just and Nothing, we can define a handler for
+exceptions that reifies any exceptional computation with a Maybe result to return Nothing on an
+exception:
+hexn = {throw ↦→𝜆x. 𝜆k. Nothing }
+For example, suppose we define safe division as:
+safediv= 𝜆x y. if (y== 0)then perform throw ()else x/y
+then we have
+handler hexn (𝜆
+_
+. Just (safediv 42 2)) handler hexn (𝜆
+_
+. Just (safediv 42 0))
+↦−→∗handle hexn (Just (42/2)) ↦−→∗handle hexn (Just (perform throw ()))
+↦−→ handle hexn (Just 21) ↦−→ (𝜆x. 𝜆k. Nothing)()(𝜆x. handle hexn (Just x))
+↦−→ Just 21 ↦−→∗Nothing
+We use the notation ↦−→to allow expressions to take steps (−→) inside evaluation contexts where
+↦−→∗is the transitive closure of ↦−→.
+Reader. In the previous example we did not make use of the operation argument (x) or the
+resumption (k). Let’s consider this time the evaluation of our first example with the reader effect:
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+↦−→∗handle hread (perform ask () +perform ask ())
+↦−→ (𝜆x. 𝜆k. k 1)()(𝜆x. handle hread (x +perform ask ()))
+↦−→∗(𝜆x. handle hread (x +perform ask ()))1
+↦−→ handle hread (1 +perform ask ()) ↦−→∗(𝜆x. handle hread (1 +x))1 ↦−→∗2
+where both ask operations resume back to the original calling context with a result.
+State. We can define a state handler using the monadic encoding [Kammar and Pretnar 2017],
+where performing an operation returns a function that takes in the current state.
+st {get : ()→𝛼, hst = {get ↦→𝜆x. 𝜆k. (𝜆y. k y y),
+set : 𝛼 →()} set ↦→𝜆x. 𝜆k. (𝜆y. k ()x)}
+The following program starts with an initial state 0.
+(handler hst (𝜆
+_
+. perform set 21; w ←perform get (); (𝜆z. w +w)))0
+↦−→(handle hst (perform set 21; w ←perform get (); (𝜆z. w +w)))0
+In the following derivation, we make use of the dot notation [Xie and Leijen 2020]. Specifically, the
+notation E1 •E2 composes two evaluation contexts by plugging E2 into the hole of E1, resulting
+in a new evaluation context. The (•)notation is right-associative and has the lowest precedence,
+so we often write E1 •E2 instead of (E1) •E2. The notation E •e has the same meaning as
+E[e], which plugs e into the hole of E, resulting in a new expression. Using the dot notation, the
+evaluation order of expressions becomes more apparent, and it is now easier to discuss one specific
+frame in the chain of evaluation contexts. We start by rewriting the last expression using the dot
+notation as:
+= □ 0 •handle hst □ • (□; w ←perform get (); (𝜆z. w +w)) •perform set 21
+For conciseness, we also often omit a trailing □ in an application context e □ •E and write instead
+e •E; this is usually the case for handle expressions:
+= □ 0 •handle hst • (□; w ←perform get (); (𝜆z. w +w)) •perform set 21
+4
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Writing contexts this way, it shows more clearly the stack of evaluation frames with the expression
+under evaluation at the end. We can now continue evaluating as:
+↦−→∗□ 0 • (𝜆y. k ()21) with k= 𝜆x. handle hst • (□; w ←perform get (); (𝜆z. w +w)) •x
+= (𝜆y. k ()21)0 ↦−→k ()21
+↦−→ □ 21 •handle hst • (□; w ←perform get (); (𝜆z. w +w)) • ()
+= □ 21 •handle hst • ((); w ←perform get (); (𝜆z. w +w))
+↦−→ □ 21 •handle hst • (w ←□; (𝜆z. w +w)) •perform get () ↦−→∗42
+While this is a nice example of the expressiveness of effect handlers, it is clearly not the most
+efficient way to express mutable state. In practice, state can be implemented more efficiently using
+parameterized handlers [Plotkin and Pretnar 2009] or a primitive state handler [Xie and Leijen 2020].
+Non-determinism. By having the resumption k available when handling, we can actually resume
+more than once. In the handler of amb, we implement non-determinism by collecting all possible
+results in a list by resuming the resumption twice, each time with one boolean result.
+amb {flip : ()→bool } handler hamb (𝜆
+_
+. x ←perform flip ();
+hamb = {flip ↦→𝜆
+_
+k. xs ←k True; y ←perform flip ();
+ys ←k False; [x && y])
+xs ++ys } ↦−→∗[True, False, False, False]
+2.2 Compiling Effect Handlers
+As the examples show, algebraic effect handlers can be very expressive. Unfortunately, their
+expressive power also makes it not easy to compile them efficiently. The main culprit is the
+(perform)rule:
+handle h E[perform op v]−→f v (𝜆x. handle h E[x]) iff op ̸∈bop(E) ∧ (op ↦→f )∈h
+This single rule combines two potentially expensive runtime operations:
+(1) Searching: The innermost handler for op must be found which usually requires a linear search
+through the current handlers in the evaluation context (i.e. search up through the stack
+frames).
+(2) Capturing: After finding the handler clause f , we need to capture the evaluation con-
+text (i.e. stack and registers) up to the found handler, and create a resumption function
+(𝜆x. handle h E[x]) which restores the captured context when invoked with a result. An
+added complication is that in the general case such resumption may never be called (as in
+hexn), or invoked more than once (as in hamb), which can present difficulties in the runtime
+(for scanning GC roots for example).
+Capturing and restoring resumptions can be done relatively efficiently if the target runtime system
+implements segmented stacks (as in multi-core OCaml [Dolan et al. 2015] for example). However,
+many target platforms do not support directly capturing parts of the stack at all, like compilation to
+C (as in Koka), WASM, .NET, the Java VM, JavaScript, etc, and in these cases it is not even possible
+to implement (perform)in any direct way.
+In this paper we address these compilation and runtime challenges by presenting various refine-
+ments of the operational semantics in combination with source translations. Each of these steps
+enables further optimizations and implementations, and we explore various interesting points in
+the design space along the way.
+2.3 Multi-Prompt Semantics
+As a first step, we are going to split the (perform)operation into two parts where we separate
+the searching for a handler from capturing and restoring a resumption. To capture and restore
+5
+Xie and Leijen MSR-TR-2021-5
+a resumption we are going to use standard (typed) multi-prompt delimited control [Gunter et
+al. 1995]: instead of a handle h frame, we install a prompt m h frame that is uniquely identified
+with a marker m, and performing an operation will use a yield m f frame to yield to such prompt.
+As an example, consider again the reader effect handler hread = {ask ↦→𝜆x. 𝜆k. 1 }, where we
+have the following evaluation (rewritten using the dot notation):
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+↦−→∗handle hread • (□ +perform ask ()) •perform ask ()
+↦−→ f ()(𝜆x. handle hread • (□ +perform ask ()) •x) where f= 𝜆x. 𝜆k. 1
+. . .
+When using multi-prompt semantics, the first transition now installs a prompt m hread frame instead
+of a handle frame, where m is a unique marker identifying the prompt:
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+↦−→∗prompt m hread (perform ask +perform ask ())
+= prompt m hread • (□ +perform ask ()) •perform ask ()
+The next transition shows how we separate searching from capturing – perform ask ()only finds
+the handler clause f but defers yielding to the prompt by using an explicit yield frame:
+↦−→prompt m hread • (□ +perform ask ()) •yield m (𝜆k. f ()k)
+The yield m g has two arguments: the marker m that uniquely identifies the prompt to yield to,
+and a function g that is applied to the resumption when reaching the prompt. Through the marker
+m, we can yield directly to the prompt which captures and applies the resumption:
+↦−→(𝜆k. f ()k)(𝜆x. prompt m hread • (□ +perform ask ()) •x)
+↦−→f ()(𝜆x. prompt m hread • (□ +perform ask ()) •x)
+. . .
+This separation of concerns does not immediately buy us much but, as we will see, it opens up the
+way for optimizing each part individually by (1) using evidence passing semantics to avoid searching,
+and (2) using a monadic translation to enable capturing without requiring a special runtime system.
+Moreover, multi-prompt delimited control is one of the lowest level control operations that can be
+typed in the simply typed lambda calculus.
+If one controls the target platform, it is possible to efficiently implement multi-prompt delimited
+control directly. This is done for example in multi-core OCaml using segmented stacks: here the
+call stack is split in segments where each prompt frame starts a fresh segment. The marker m
+can be implemented directly as the runtime pointer to that frame. Yielding up to a parent stack
+segment is now a constant time operation as only the stack segment pointer needs to be adjusted.
+Resuming once can also be done in constant time this way, but supporting multi-shot resumptions
+still requires a linear copy of the resumption stack segments (and this is one of the reasons why
+this is not directly supported in multi-core OCaml).
+2.4 Evidence Passing Semantics
+The (perform)operation is still a non-local transition as it searches through the evaluation context
+to find the innermost handler. We can make it local using evidence passing semantics, where we
+pass the current handlers in the evaluation context explicitly as an extra evidence vector w down to
+the perform operations. Instead of searching through the context, we can now look up the handler
+locally. Essentially, if the current evidence vector is w, then the (perform)rule becomes:
+perform op v −→yield m (𝜆k. f v k) where (m, h)= w.l ∧(op ↦→f )∈h
+6
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+The expression w.l directly looks up the marker and handler (called evidence) for effect l from the
+evidence vector w. We apply the idea to our example, where we use the notation to indicate
+the current evidence vector and we sometimes omit the notation when it is irrelevant or obvious
+from the context. Evaluation always starts with an empty evidence vector ⟨⟩:
+⟨⟩
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+which evaluates into:
+↦−→∗
+⟨⟩
+w = ⟨read : (m,hread )⟩
+prompt m hread •
+(□ +perform ask ()) •perform ask ()
+where the prompt frame modifies the evidence for rest of the evaluation context. At this point
+perform evaluates under an evidence vector ⟨read : (m, hread )⟩, and we get:
+↦−→prompt m hread • (□ +perform ask ()) •yield m (𝜆k. f ()k) where (m, hread )= w.read
+↦−→(𝜆k. f ()k)(𝜆x. prompt m hread • (□ +perform ask ()) •x)
+↦−→f ()(𝜆x. prompt m hread • (□ +perform ask ()) •x)
+. . .
+Using evidence passing semantics makes the (perform)transition localized which can potentially be
+more efficient than searching through the evaluation context. When we treat the evidence vector as
+an abstract datatype there are two interesting variants depending on how the vectors are ordered:
+(1) Insertion order: Insert handler evidence in the order of the actual handlers in the evaluation
+context. This is straightforward and also the approach we take in the associated Haskell
+library. However, it means that the lookup operation w.l still needs to search linearly through
+the vector for the “innermost” handler. One way to implement such vector is as a linked list
+where each handler pushes itself on the list. Since evidence vectors are not first-class values,
+we can actually allocate this list on the evaluation stack directly and as such it becomes a
+linked list of handlers at runtime – this is exactly how many languages implement exception
+handlers where the w parameter is a pointer to the head of the exception handler list.
+(2) Canonical order: Use a lexicographic order of the handler evidence based on their effect label.
+This requires a strongly typed calculus but it means that if the effect type is fully known
+at compile time, we can statically determine the index for a particular effect in the runtime
+evidence vector. For example, in systems that keep track of the effect type of expressions
+using row types [Hillerström and Lindley 2016; Leijen 2017b], the effect type of our example
+perform ask ()is the singleton effect row ⟨read⟩, and we know statically that the dynamic
+runtime evidence vector will have the form ⟨read :
+_⟩. We can thus replace the linear runtime
+lookup w.read with a constant-time array access w[0]instead. This is the approach used in
+the Koka compiler.
+2.5 Tail-Resumptive Operations
+With evidence semantics in place, the only expensive operation left is yielding and capturing a
+resumption. Fortunately, we can often avoid doing a full yield: almost all common operations in
+practice happen to be tail resumptive where the operation clause has the form:
+op ↦→𝜆x. 𝜆k. k e where k ̸∈fv(e)
+7
+Xie and Leijen MSR-TR-2021-5
+For example, the ask operation in our hread handler is of this form2. It turns out we can perform
+such operations in place: instead of yielding up and eventually resuming with the final result, we
+can directly evaluate e on the current stack without doing an expensive yield followed by a resume.
+To this end, we extend each evidence in the evidence vector to store a triple (m, h, w)(instead of a
+tuple (m, h)), where the third component w is the evidence context: this is the evidence vector under
+which the handler h is defined and is used for the evaluated-in-place expression. We illustrate the
+use of this in our running example:
+⟨⟩
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+⟨⟩
+⟨read : (m,hread
+,⟨⟩)⟩
+↦−→∗
+prompt m hread •
+(□ +perform ask ()) •perform ask ()
+Here, the evidence vector for perform is ⟨read : (m, hread
+, ⟨⟩)⟩and we can locally find the operation
+clause ask →𝜆x k. k 1 ∈hread and determine that it is tail-resumptive. Instead of generating yield
+as before, we instead evaluate e (as in 𝜆x. 𝜆k. k e, with e being 1 in this case) in-place:
+↦−→prompt m hread • (□ +perform ask ()) •under read •1
+↦−→prompt m hread • (□ +perform ask ()) •1
+↦−→prompt m hread (1 +perform ask ())
+. . .
+The operation clause is now evaluated in-place – but note it needs to be evaluated under an under l
+frame. Such frame ensures that if the operation clause e itself performs operations, these are
+resolved correctly with respect to the actual handler up in the evaluation context. Consider for
+example the following reader handler:
+h2 = {ask ↦→𝜆x.𝜆k. k (perform ask () +1)}
+Here the operation clause is tail-resumptive, and itself performs an ask operation. Now consider:
+handler hread (𝜆
+_
+. handler h2 (𝜆
+_
+. perform ask()))
+⟨⟩
+w1 = ⟨read : (m1,hread
+,⟨⟩)⟩
+w2 = ⟨read : (m2,h2,w1), read : (m1,hread
+,⟨⟩)⟩
+↦−→∗
+prompt m1 hread •
+prompt m2 h2 •
+perform ask ()
+At this point, the evidence vector at the second prompt is w1 = ⟨read : (m1, hread
+, ⟨⟩)⟩, but the ev-
+idence vector at the perform contains two entries: w2 = ⟨read : (m2, h2, w1), read : (m1, hread
+, ⟨⟩)⟩.
+Here we see how the third member of the evidence always points to the “previous” evidence vector
+(e.g., w1) under which a particular hander (e.g., h2) is defined. If using insertion-ordered evidence
+vectors as a linked list, this is always just the tail of the list, but for canonical evidence vectors the
+previous vector must be kept explicitly. Since the operation clause is tail-resumptive, we get:
+⟨⟩
+w1
+w2
+w1
+↦−→
+prompt m1 hread •
+prompt m2 h2 •
+under read •
+perform ask () +1
+= prompt m1 hread •prompt m2 h2 •under read • (□ +1) •perform ask ()
+The evidence vector for the perform ask () +1 is now w1 and not the unchanged w2. Indeed, it
+would be incorrect to use w2 or we would invoke the operation clause of h2 again! The under read
+frame prevents this from happening and adjusts the evidence vector to the one under which the
+2While hstate is not tail-resumptive, implementations of state based on parameterized handlers or primitive state are both
+tail-resumptive. hexn and hamb are not tail-resumptive because of their special nature (aborting the computation and
+non-determinism, respectively).
+8
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+read handler is itself defined: this is exactly the third component of the evidence, w2.read.thd,
+which is w1 in our example. We now continue as:
+⟨⟩
+w1
+w2
+w1
+↦−→
+prompt m1 hread •
+prompt m2 h2 •
+under read •
+(□ +1) •under read •
+⟨⟩
+1
+↦−→prompt m1 hread •prompt m2 h2 •under read • (□ +1) •1
+↦−→prompt m1 hread •prompt m2 h2 •under read •2 ↦−→∗2
+Note how the second under read frame adjusts the evidence further to ⟨⟩(which is w1.read.thd).
+The correct formalization of under is subtle, and we will come back to this in Section 2.9.
+2.6 Bubbling Yields
+Using evidence semantics, perform is a local transition which only leaves yields as a non-local
+transition for non-tail-resumptive operations. We can further make yield m local by bubbling it
+up until it meets its corresponding prompt m frame in the evaluation context. That is, instead
+of capturing the delimited evaluation context E wholesale, we are going to build a resumption
+function piecemeal while bubbling up. To this end, we extend yield m v with an extra argument as
+yield m v k where k is the current partially built up continuation (starting out as identity).
+Consider our earlier exception effect in Section 2.1.1 where:
+handler hexn (𝜆
+_
+. safediv 42 0)
+↦−→∗ handle hexn •Just □ •perform throw ()
+↦−→ (𝜆x k. Nothing)()(𝜆x. handle hexn (Just x))
+When using yield bubbling we evaluate instead as (writing f for 𝜆x k. Nothing):
+handler hexn (𝜆
+_
+. safediv 42 0)
+↦−→∗ prompt m hexn •Just □ •perform throw ()
+↦−→ prompt m hexn •Just □ •yield m (f ())id
+At this point, the yield does a local transition and bubbles up only one step through the Just
+application, resulting in
+↦−→prompt m hexn •yield m (f ())(Just ◦id)
+Note how the resumption function changed from the initial identity id to the composition Just ◦id.
+Generally, yields keep bubbling up this way extending their current resumption until they meet
+their target prompt:
+↦−→f ()(𝜆x. prompt m hexn ((Just ◦id)x)) ↦−→∗Nothing
+Using bubbling removes any direct manipulation of the evaluation context E and only regular
+functions are used instead. The bubbling technique for implementing delimited continuations is
+well known and also used for example to give direct semantics to effect handlers [Kiselyov and
+Sivaramakrishnan 2017; Pretnar 2015].
+2.6.1 Short-cut Resumptions. When bubbling up, a resumption is built up as a composition of
+continuations, f1 ◦. . . ◦fn ◦id, and when resuming it is applied as (f1 ◦. . . ◦fn ◦id)x which will
+recreate all f1 to fn application frames on the evaluation stack which can be expensive. Instead, in
+an implementation we can represent the composition as a list [f1, . . ., fn], and resume instead as
+resume [f1, . . ., fn]x where resume folds through the list from the end:
+resume []x = x resume (fs + [f ])x = resume fs (f x)
+This can be done efficiently by using a queue or array representation (as done in Koka) and also
+uses minimal stack space by evaluating just one f continuation at a time. Moreover, any further
+yields in a frame fi will bubble up directly through the current resume and thus capture all f1 to fi−1
+9
+Xie and Leijen MSR-TR-2021-5
+continuations in one go (and will itself share those continuations through the various yields). We
+call these short-cut resumptions as these can be resumed by immediately starting at the deepest
+continuation point. This uses minimal stack space while increasing the use of shared continuations.
+Note that while bubbling up we can also encounter prompt and under frames besides regular appli-
+cations; for example, the final resumption may be of the form f1 ◦. . . ◦fi ◦prompt m h ◦fi+1 ◦. . . ◦fn.
+When resuming, we need to ensure that such prompt and under frames are properly restored and
+cannot use short-cut’s for those. Of course we can still use resume for the application fragments
+surrounding the prompt/under frames, e.g. resume [f1, . . ., fi]◦prompt m h ◦resume [fi+1, . . ., fn].
+2.7 Monadic Translation
+At this point all transitions are local and no longer capture the evaluation context explicitly. This
+means we are now able to translate our core calculus into a pure lambda calculus together with
+a multi-prompt delimited control monad. This is a straightforward transformation where every
+(effectful) expression is sequenced through a monadic bind. Our running example:
+handler hread (𝜆
+_
+. perform ask () +perform ask ())
+translates to the following monadic expression:
+handler hread (𝜆
+_
+. perform ask ()▷(𝜆x. perform ask ()▷(𝜆y. Pure (x +y))))
+where we write (▷)for monadic binding, and Pure for lifting pure expressions into the monad.
+Through the bind operation, the current continuation becomes explicit (as a function argument)
+and can be captured and resumed using regular function application, where bind is implemented
+essentially3 as:
+e ▷g= case e of Pure x →g x
+Yield m f k →Yield m f (𝜆x. k x ▷g)
+Pure values are directly propagated while a yield bubbles up (upto its matching prompt) and
+appends each explicit continuation g to the built up resumption. Since all of this can be expressed
+in plain typed lambda calculus, this can be directly translated to almost any target platform – all
+control flow is now fully explicit.
+2.7.1 Bind-Inlining and Join-Point Sharing. However, if done naively there may be a high cost to
+this translation: since every bind operation takes a lambda as its second argument this may lead to
+many closure allocations even for non-yielding code. Moreover, any direct tail-recursive calls are
+no longer directly tail-recursive as they occur under a lambda now!
+To improve this we need two techniques: bind-inlining and join-point sharing. To avoid always
+allocating a lambda, we can use bind-inlining to simply inline every bind operation, expanding our
+example expression to:
+handler hread (𝜆
+_
+. case perform ask ()of
+Yield m f k →Yield m f (𝜆z. k z ▷(𝜆x. perform ask ()▷(𝜆y. Pure (x +y))))
+Pure x →case perform ask ()of Yield m f k →Yield m f (𝜆z. k z ▷(𝜆y. Pure (x +y)))
+Pure y →Pure (x +y))
+For clarity, we did not inline the bind operations in an expansion itself. Nevertheless, we can already
+see that at every original bind operation, we duplicated the g argument in the expansion. This
+means that if we have a sequence of N statements, we may end up with N! duplications.
+3As shown in Section 4 the actual definition also propagates the current evidence vector as part of the monad.
+10
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+To avoid such expansion, we need to use join-point sharing: we consider every g argument as a
+join point, and rewrite the initial translation to make this sharing explicit:
+join1 = 𝜆x y. Pure (x +y) join2 = 𝜆x. perform ask ()▷(𝜆y. join1 x y)
+hander hread (𝜆
+_
+. perform ask ()▷join2)
+From there, we perform bind-inlining only for non-join definitions, but also aggressively inline
+join-definitions for the Pure branches. This results effectively in a fully inlined fast path along the
+Pure branches:
+handler hread (𝜆
+_
+. case perform ask ()of
+Yield m f k →Yield m f (𝜆z. k z ▷join2)
+Pure x →case perform ask ()of Yield m f k →Yield m f (𝜆z. k z ▷join1 x)
+Pure y →Pure (x +y))
+Note how the join1 join point is shared by the join2 definition as well, and the code expansion for
+N statements is now 2N which is much more manageable. In practice, the Koka compiler does a
+type-selective transformation and leaves out monadic binds for functions that are total (since those
+will never yield) which further reduces code expansion by a large factor.
+This strategy ensures that we have a fast path along each Pure branch: if no operation performs
+a full yield, no allocation happens along this path and tail-recursive calls are preserved (and as
+such, this optimization works best when used together with tail-resumptive optimization). Only in
+the (hopefully rare) case that full yield is needed, the slow path along the Yield case is taken and a
+resumption is constructed on demand. When such a resumption is resumed, the execution is a bit
+slower as well as it takes the code path along the joinn definitions where the binds are not inlined –
+this is the price we pay for limiting the expansion. Note though that if the function is recursive,
+any further recursive calls will again start at the fast path.
+Another possible approach to implementing delimited control primitives is by using continuation
+passing style (CPS) instead of the monadic approach. Using CPS, we would instead translate our
+example essentially as:
+handler hread (𝜆
+_
+k. perform ask ()(𝜆x. perform ask ()(𝜆y. k (x +y))))
+This looks similar to the monadic approach, where instead of explicitly using a monadic bind (▷)
+we pass the current continuation as the last argument k to every effectful function. Unfortunately,
+since we now pass the continuation as an argument, we always need to allocate the lambda in
+advance. In contrast, in the monadic approach with bind-inlining we can immediately call the
+function and inspect its result without doing any allocation; only if it happens to return a Yield we
+actually need to allocate the continuation.
+2.8 Compiling to C
+At this point we can use regular compilation techniques to compile the plain lambda calculus to a
+target platform. As an example, we show here how Koka compiles to standard C. In our final calculus
+all effectful functions return a monadic result, either Pure or Yield. Since this monad is internal to
+the compiler we can optimize its representation: we always return results normally assuming Pure,
+and set a (thread-local) flag to indicate yielding (in which case the actual returned value is ignored).
+Moreover, every function has one extra parameter that holds the (thread-local) context ctx which
+contains the current evidence vector (ctx→w), and the yielding flag (ctx→is_yielding). For
+example, the expression 𝜆
+_
+. perform ask () +perform ask ()translates essentially as:
+int expr( unit_t u, context_t* ctx) {
+int x = perform_ask( ctx→w[0], unit, ctx );
+if (ctx→is_yielding) { yield_extend(&join2,ctx); return 0; }
+int y = perform_ask( ctx→w[0], unit, ctx );
+11
+Xie and Leijen MSR-TR-2021-5
+if (ctx→is_yielding) { yield_extend(alloc_closure_join1(x,ctx),ctx); return 0; }
+return (x+y); }
+Here we see how the evidence for the read handler is selected from the current evidence vector as
+ctx→w[0]. Here the offset 0 is known as the effect type is ⟨read⟩and Koka uses canonical evidence
+vectors. If the effect row type was not fully known, e.g., a polymorphic row type ⟨read |𝜇⟩, the code
+would instead be find_ev(ctx→w,tag_read) to find the evidence dynamically. When yielding,
+the yield_extend calls are used to extend the currently build up resumption (as part of the ctx)
+with the current continuation (which is usually a join point).
+There is still an overhead in always needing to check after every effectful call if we are yielding or
+not. Fortunately, this seems quite cheap on modern processors and the condition can be predicted
+well. In the future we would like to leverage C compiler primitives to implement the is_yielding
+flag in the processor carry flag as suggested by recent C++ proposals for error handling [Sutter 2019].
+2.9 Generalized Evidence Passing
+The closest related work to our approach is [Xie et al. 2020], which uses evidence-passing translation
+(EPT). Even though similar in its purpose, EPT differs fundamentally from our approach. First, while
+our evidence-passing semantics provides a set of direct evaluation rules for the algebraic effect
+calculus, EPT is defined via elaboration from the algebraic effect calculus into an evidence calculus.
+Second, our generalized evidence-passing semantics works for all algebraic effect handler programs,
+whereas in EPT resumptions are limited to scoped resumptions only – that is, resumptions can only
+be used under the same handler context as captured by the handler.
+Specifically, in EPT, as the evidence vector is passed statically during elaboration, it is determined
+before running the program. However, the statically passed-in evidence vector may, as the program
+evaluates, no longer match the handlers in the current dynamic evaluation context (and in such
+case, EPT raises a runtime error). Scoped resumptions restrict the expressiveness of algebraic
+effects, including the use of shallow handlers [Hillerström and Lindley 2018] and code migration
+that resumes continuations on a different host [Kiselyov et al. 2006].
+2.9.1 Non-Scoped Resumptions. We illustrate the problem of non-scoped resumptions using the
+following evil effect as shown by Xie et al. [2020]:
+evil {evil : ()→()} hevil = {evil ↦→𝜆x k. k }
+The handler hevil illustrates again the expressiveness of effect handlers: the captured resumption is
+a first-class value and thus can be returned directly, and in this example we are going to resume
+it later under a changed handler context. Suppose we have another reader handler that always
+returns 2:
+hread2 = {ask ↦→𝜆x k. k 2 }
+Consider the following program, where f= (𝜆k. handler hread2 (𝜆
+_
+. k ())), which takes a contin-
+uation and resumes it under a new handler (ignoring tail-resumptive optimization for now):
+f (handler hread (𝜆
+_
+. handler hevil (𝜆
+_
+. perform ask (); perform evil (); perform ask ())))
+⟨⟩
+w1 = ⟨read : (m1, hread )⟩
+w2 = ⟨evil : (m2, hevil ), read : (m1,hread )⟩
+↦−→
+f•prompt m1 hread •
+prompt m2 hevil •
+(□ ; perform evil (); perform ask ()) •perform ask ()
+It may seem that both ask operations will return 1 as they both have read : (m1, hread )in the evidence
+vector w2 but, as we will see, that is not the case! The first ask returns 1 as expected though:
+↦−→f•prompt m1 hread •prompt m2 hevil • (□ ; perform evil (); perform ask ()) •1
+12
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+However, before we can handle the second ask, the operation evil is performed, which captures the
+second ask in the resumption k:
+↦−→f•prompt m1 hread •prompt m2 hevil • (□ ; perform ask ()) •perform evil ()
+⟨⟩
+w1
+↦−→
+f•prompt m1 hread •
+k where k= 𝜆x. prompt m2 hevil • (□ ; perform ask ()) •x (1)
+As k is a value, it is propagated through the prompt m1 frame:
+↦−→f k ↦−→handler hread2 (𝜆
+_
+. k ())
+At this point, the reader handler in the context is now changed to hread2 :
+⟨⟩
+w3 = ⟨read : (m0, hread2 )⟩
+↦−→
+prompt m0 hread2 •
+k () (2)
+⟨⟩
+w3
+w4 = ⟨evil : (m2, hevil ), read : (m0, hread2 )⟩
+↦−→
+prompt m0 hread2 •
+prompt m2 hevil •
+(□ ; perform ask ()) • ()
+and the ask operation is performed under w4 using the new hread2 and thus evaluates to 2 (and not
+1)!
+EPT rejects this program at runtime by detecting the non-scoped resumption k: k is captured
+under w1 at (1), but is later applied under w3 at (2). In particular, in EPT, both ask operations
+statically receive w2 as the evidence vector during elaboration to the evidence calculus. As such
+resuming k under a changed evidence vector means the statically received evidence vector does no
+longer match the dynamic handler context anymore, and is thus not allowed in their system. In
+contrast, our generalized evidence passing semantics correctly models the dynamic behavior of the
+evidence vector, and can express the full semantics of algebraic effect handlers.
+2.9.2 Non-Scoped Resumptions with Tail-Resumptive Optimization. Xie et al. [2020] also describe
+the tail-resumptive optimization, and argue that tail-resumptive operations are examples of scoped
+resumptions, but do not provide any formalization of the optimization.
+It turns out that the tail-resumptive optimization is more challenging with generalized evidence
+passing semantics, and our formalization goes beyond what is sketched in [Xie et al. 2020]. In
+particular, the interaction between non-scoped resumptions and tail-resumptive operations is subtle
+and the formalization of under is tricky to get right. We illustrate this by performing the previous
+evil example from inside a tail-resumptive operation:
+tl {tl : ()→Int } htl = {tl ↦→𝜆x k. k (perform ask (); perform evil (); perform ask ())}
+Here we have the same sequence of operations as before, but this time these happen from inside an
+operation. Note that this operation is tail-resumptive, despite all effects performed before resuming.
+Now consider the following program, which performs tl under three handlers, and passes the result
+to f.
+f (handler hread (𝜆
+_
+. handler hevil (𝜆
+_
+. handler htl (𝜆
+_
+. perform tl ()))))
+−→∗f•prompt m1 hread • prompt m2 hevil •prompt m3 htl •perform tl ()
+We evaluate tl in-place under w2, as htl is itself defined under w2.
+⟨⟩
+w1=⟨read : (m1,hread
+,⟨⟩)⟩
+w2=⟨evil : (m2, hevil
+,w1),read : (m1,hread
+,⟨⟩)⟩
+−→∗
+f•prompt m1 hread •
+prompt m2 hevil •
+prompt m3 htl
+w3=⟨tl : (m3, htl
+,w2), evil : (m2, hevil
+,w1), read : (m1,hread
+,⟨⟩)⟩
+w2
+•
+under tl •
+(□ ; perform evil (); perform ask ()) •perform ask ()
+13
+Xie and Leijen MSR-TR-2021-5
+ask is also tail-resumptive and gets evaluated in-place.
+−→f•prompt m1 hread • prompt m2 hevil •prompt m3 htl
+•under tl • (□ ; perform evil (); perform ask ()) •under read •1 (3)
+We then perform evil, which again captures the resumption and passes it to f.
+−→∗f•prompt m1 hread • prompt m2 hevil •prompt m3 htl
+•under tl • (□; perform ask ()) •perform evil
+−→∗f k where k= 𝜆x. prompt m2 hevil •prompt m3 htl •under tl • (□; perform ask ()) •x (4)
+f applies k under a reader handler hread2 :
+⟨⟩
+w4=⟨read : (m0, hread2
+, ⟨⟩⟩
+−→∗
+prompt m0 hread2 •
+prompt m2 hevil •
+w6=⟨tl : (m3, htl
+,w5), evil : (m2, hevil
+,w4), read : (m0,hread2
+,⟨⟩)⟩
+•
+under tl •
+w5=⟨evil : (m1,hevil
+,w4), read : (m0, hread2
+, ⟨⟩)⟩
+prompt m3 htl
+w5
+perform ask () (5)
+−→∗2
+The evaluation is quite subtle in several places. First, at (3)we introduced under tl. As shown at
+(4), the under frame can itself be captured by a resumption. This explains why we cannot directly
+apply the optimization but require an extra under frame: inside the resumption we still need to
+remember that operations happening after under tl can only reach handlers beyond htl
+.
+However, at (3), it might be tempting to introduce the frame as under w2 instead of under tl, as
+that would be enough to ensure that all operations afterwards are evaluated under w2. By doing so,
+under could be formalized in a simpler way: under w2 could simply ignore the current evidence
+vector and always pass w2 to future operations. Our initial formalization did this but unfortunately
+this turns out to be unsound.
+As shown at (5), the evidence vector for under tl itself has changed, from w3 to w6, and thus the
+evidence vector passed by under tl has also changed from w2 to w5, so that the last ask is handled
+by hread2 and returns 2. The reader could check that 2 is indeed the desired result of the program if
+without tail-resumptive optimization. If we had used under w2, the ask would wrongly return 1!
+Proving the correctness of under is also challenging, as it essentially requires us to show that a
+program with tail-resumptive optimization will produce the same result as of the same program
+without the optimization. To this end, we show that the optimized program is contextual equivalent
+to the original program.
+3 SEMANTICS
+This section presents System Fpw, which features algebraic effects using multi-prompt and evidence
+passing semantics. The system is designed based on System F𝜖 [Xie et al. 2020], a plain polymorphic
+algebraic effect calculus.
+3.1 Multi-Prompt with Evidence Passing Semantics
+3.1.1 Syntax. Figure 1 defines the syntax. Expressions e include values v, applications e e, type
+applications e 𝜎 and the internal frame prompt m h and yield m v. Values include variables x,
+lambdas 𝜆𝜖 x : 𝜎.e, which is annotated with the effect 𝜖 that may be performed when the lambda
+is applied, type lambdas Λ𝛼k
+. v, and handler h and perform op 𝜖 𝜎. Since the calculus is explicitly
+typed and an operation signature can be polymorphic, performing an operation perform op 𝜖 𝜎
+needs to indicate its context effect 𝜖, as well as to explicitly pass the type arguments 𝜎. A handler h
+contains a list of operation clauses op ↦→f , where f denotes a function expression. As we have
+14
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Expression e ::= v | e e | e 𝜎
+| prompt m h e
+| yield m v
+Value v ::= x | 𝜆𝜖 x : 𝜎. e | Λ𝛼𝜅
+. v
+| handler h
+| perform op 𝜖 𝜎
+Handler h ::= {opi ↦→fi }
+Evaluation ctx. E ::= □ |E e |v E |E 𝜎
+| prompt m h E
+F ::= □ |F e |v F |F 𝜎
+Type 𝜎 ::= 𝛼𝜅 | c𝜅 𝜎 | 𝜎 →𝜖 𝜎
+| ∀𝛼𝜅 . 𝜎
+Effect row 𝜖 ::= ⟨⟩| ⟨l |𝜖⟩
+Kind 𝜅 ::= ∗| 𝜅 →𝜅 | lab | eff
+Type env. Γ ::= ∅ | Γ, x : 𝜎
+Effect ctx. Σ ::= {li : sigi }
+Effect sig. sig ::= {opi : ∀𝛼𝜅 . 𝜎i →𝜎′
+i }
+Evidence ev ::= (m, h, w)
+Evidence vec. w ::= ⟨⟩| ⟨l : ev |w⟩
+(app) (𝜆𝜖 x : 𝜎. e)v −→ e[x:=v]
+(tapp) (Λ𝛼𝜅
+. v)𝜎 −→ v[𝛼:=𝜎]
+(handler) handler h v −→ prompt m h (v ()) with unique m
+(promptv) prompt m h v −→ v
+(prompt) prompt m h E[yield m f ] −→ f (𝜆𝜖 x : 𝜎2. prompt m h E[x])
+with ∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎
+(perform) w ⊢ perform op 𝜖0 𝜎 v −→ yield m (𝜆𝜖 k : 𝜎2 [𝛼:=𝜎]→𝜖 𝜎. f 𝜎 v k)
+with (m, h, _)= w.l ∧ (op ↦→f ) ∈h
+(op : ∀𝛼. 𝜎1 →𝜎2)∈Σ(l) ∧∅ ⊢ h : 𝜎 |l |𝜖
+w ⊢ e −→e′
+w ⊢ F[e]↦−→F[e′] (stepw)
+e −→e′
+w ⊢ F[e]↦−→F[e′] (step)
+⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′
+w ⊢ F[prompt m h e]↦−→F[prompt m h e′] (promptw)
+w ⊢ e ↦−→∗e
+w ⊢ e ↦−→∗e′ w ⊢ e′↦−→e′′
+w ⊢ e ↦−→∗e′′
+Fig. 1. Fpw: multi-prompt with evidence-passing semantics.
+seen before, an evaluation context E is essentially an expression with a hole in it, which indicates
+explicitly the evaluation order of an expression. A pure evaluation context F has no prompt frame.
+Types. Types 𝜎 include type variables 𝛼𝜅 of kind 𝜅, type constructors c𝜅 𝜎 where c𝜅 of kind 𝜅
+is applied to the arguments 𝜎, function types 𝜎 →𝜖 𝜎 annotated with the effect 𝜖 that may be
+performed when the function is applied, and polymorphic types ∀𝛼𝜅 . 𝜎. An effect row 𝜖 can be
+either empty ⟨⟩which denotes the total effect, or an extension ⟨l |𝜖⟩which extends 𝜖 with effect
+label l. We often leave out the effect annotation if it is total. For convenience, we use 𝜇 to denote
+effect variables (i.e., 𝛼eff). An effect may end up with an effect variable (e.g., ⟨l |𝜇⟩). We call those
+effects open, and effects that end in an empty effect (e.g., ⟨l |⟨⟩⟩) closed.
+Equivalence between row types (≡) is defined as follows. Row equivalence is reflexive, transitive,
+and can freely reorder distinct labels.
+𝜖1 ≡𝜖2 𝜖2 ≡𝜖3
+𝜖1 ≡𝜖2
+l1 ≠ l2 𝜖1 ≡𝜖2
+𝜖 ≡𝜖
+𝜖1 ≡𝜖3
+⟨l |𝜖1⟩≡⟨l |𝜖2⟩
+⟨l1, l2 |𝜖1⟩≡⟨l2, l1 |𝜖2⟩
+To distinguish among types, System Fpw uses a basic kind system. Kinds 𝜅 include the basic kind
+(∗), functions (𝜅 →𝜅), the kind of labels (lab), and the kind of effects (eff). The judgment⊢wf 𝜎 : 𝜅
+checks the kind of types, whose definition is standard and is given in the appendix.
+15
+Xie and Leijen MSR-TR-2021-5
+The term context Γ is standard. A global effect context Σ maps each effect l to its signature sigl
+,
+which gives every operation its input and output types, i.e., opi : ∀𝛼i. 𝜎i →𝜎′
+i . We assume each op
+is uniquely named, and we use the notation op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)to denote the type of op that
+belongs to effect l.
+Evidence Vectors. System Fpw incorporates evidence passing semantics. In particular, evidence ev
+is a triple consisting of a marker m, its corresponding handler h and the evidence vector w where
+h is defined. An evidence vector w is a map from effect labels to evidence. It can be either empty
+⟨⟩, or an extension ⟨ev |w⟩which extends w with evidence ev. We use the notation w.l to select
+evidence of label l from w. As we have discussed in Section 2.4, we treat the evidence vector as
+an abstract datatype, as it can be either canonical or insertion ordered, depending on how the
+extension operation ⟨ev |w⟩is implemented. Importantly though, for correctness of the evidence
+passing semantics, selection and extension should satisfy the following laws, so that w.l always
+finds the most recent evidence of l, which corresponds to the dynamic semantics of algebraic effects
+where an operation is handled by its innermost handler.
+⟨l : ev |w⟩.l= ev ⟨l′: ev |w⟩.l= w.l iff l ≠ l′
+3.1.2 Operational Semantics. The operational semantics rules of System Fpw (Figure 1) include three
+definitions: −→provides a primitive evaluation step, ↦−→evaluates expressions under evaluation
+contexts, and ↦−→∗defines the transitive closure of ↦−→. In practice, evaluating an expression always
+start with an empty evidence vector. For clarify, we use a lighter color for all type information,
+which is needed for type soundness, but not directly for the dynamic semantics of algebraic effects.
+(−→). During evaluation, we pass the current handlers down as an evidence vector. However,
+the evidence vector only matters when performing an operation, and many evaluation steps do not
+need to inspect the evidence vector. To make the difference clear, we separate the evaluation step
+into two categories: plain e1 −→e2, and evaluation under an evidence vector w ⊢ e1 −→e2.
+Rule (app)and (tapp)are standard. In rule (handler), handler installs a prompt m frame, with a
+fresh unique marker m, so that the marker can later be used to find the specific prompt. Values are
+propagated through the prompt frame (rule (promptv)).
+As this system models the multi-prompt semantics, we split performing an operation into two
+parts: searching for a handler (rule (perform)), and capturing and restoring a resumption (rule
+(prompt)). Rule (perform)captures the essence of evidence passing semantics. Specifically, given
+the evidence vector w, performing an operation directly gets the handler h by selecting out the
+corresponding evidence by w.l. The operation implementation f from h is then used to handle the
+operation. As we will see shortly, the notation ∅ ⊢ops h : 𝜎 |l |𝜖 says that h is a handler for effect
+l, which has result type 𝜎 and may itself perform effect 𝜖. Notice the difference between 𝜖0 and 𝜖–
+𝜖0 is the effect where perform is defined, and 𝜖 is the effect where prompt h is defined. Finally, in
+rule (prompt), yield captures the resumption (𝜆𝜖 x : 𝜎2. prompt m h E[x]), to which f is applied.
+(↦−→). When evaluating expressions under evaluation contexts, each rule is given the current
+evidence vector w. Rule (step)and (stepw)correspond respectively to a plain −→and a w ⊢ −→
+step. Both rules evaluate under an F. That is because as shown in rule (promptw), the prompt m h e
+frame modifies the evidence vector by inserting the new evidence l : (m, h, w)and uses the evidence
+vector ⟨l : (m, h, w)|w⟩for evaluating e. Here the evaluation context is again an F ensuring that
+the evidence vectors always match the prompt frames in the context.
+16
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Γ ⊢ e : 𝜎 |𝜖 Γ ⊢val v : 𝜎 Γ ⊢ops h : 𝜎 |l |𝜖
+x : 𝜎 ∈Γ
+Γ ⊢val v : 𝜎
+var
+Γ ⊢val x : 𝜎
+Γ, x : 𝜎1 ⊢ e : 𝜎2 |𝜖
+val
+Γ ⊢ v : 𝜎 |𝜖
+Γ ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 Γ ⊢ e2 : 𝜎1 |𝜖
+Γ ⊢val 𝜆𝜖 x : 𝜎1. e : 𝜎1 →𝜖 𝜎2
+Γ ⊢val v : 𝜎 𝜅 ≠ lab
+Γ ⊢val Λ𝛼𝜅
+. v : ∀𝛼𝜅 . 𝜎
+abs
+tabs
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+Γ ⊢ e1 e2 : 𝜎 |𝜖
+Γ ⊢ e : ∀𝛼𝜅 . 𝜎1 |𝜖 ⊢wf 𝜎 : 𝜅
+app
+tapp
+Γ ⊢ e 𝜎 : 𝜎1 [𝛼:=𝜎]|𝜖
+perform
+Γ ⊢val perform op 𝜖 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]
+Γ ⊢ops h : 𝜎 |l |𝜖
+handler
+Γ ⊢val handler h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎
+Γ ⊢ops h : 𝜎 |l |𝜖 Γ ⊢ e : 𝜎 |⟨l |𝜖⟩
+Γ ⊢val f : (𝜎 →𝜖′𝜎′)→𝜖′𝜎′
+prompt
+Γ ⊢ prompt m h e : 𝜎 |𝜖
+Γ ⊢ yield m f : 𝜎 |𝜖
+opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∩ftv(𝜖, 𝜎) Γ ⊢val fi : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎)
+yield
+ops
+Γ ⊢ops {op1 ↦→f1, . . ., opn
+↦→fn }: 𝜎 |l |𝜖
+e5 −→e6
+⟨⟩ ⊢ e1 ↦−→∗e5
+⟨⟩ ⊢ e5 ↦−→e6
+···
+⟨⟩ ⊢ e1 ↦−→∗e6
+Fig. 2. Typing Rules for System Fpw
+.
+Example. In Section 2, for better illustration, we have used thew
+notation to indicate the current
+evidence vector. In the formal system, we always use w ⊢. The following example shows the eval-
+uation derivation of handler hread (𝜆
+_
+. perform ask ())↦−→∗1. We have omitted type annotations,
+and details regarding ⟨⟩ ⊢ e1 ↦−→e3 and ⟨⟩ ⊢ e6 ↦−→∗1.
+(1) e1 = handler hread (𝜆
+_
+. perform ask ())
+(2) e2 = perform ask ()
+···
+⟨⟩ ⊢ e1 ↦−→∗e3
+⟨m, hread
+, ⟨⟩⟩ ⊢ e2 −→e4
+⟨⟩⊢ e3 ↦−→e5
+(3) e3 = prompt m hread e2
+(4) e4 = yield m (𝜆k. (𝜆x k. 1)()k)
+(5) e5 = prompt m hread e4
+⟨⟩ ⊢ e1 ↦−→∗1
+(6) e6 = (𝜆k. (𝜆x k. 1)()k)(𝜆x. prompt m hread x)
+3.1.3 Typing Rules. Figure 2 defines the typing rules for System Fpw. The judgment Γ ⊢ e : 𝜎 |𝜖
+reads that, under the typing context Γ, the expression e has type 𝜎 and may perform effect 𝜖.
+Values are not effectful and thus the typing judgment takes the form Γ ⊢val v : 𝜎. The judgment
+Γ ⊢ops h : 𝜎 |l |𝜖 type-checks a handler h for effect l, with result type 𝜎 and effect 𝜖.
+Most rules are standard. Rule val can take in any effect. In rule abs, the effect annotation from the
+lambda is passed to the body derivation, and the rule produces type 𝜎1 →𝜖 𝜎2, where 𝜖 indicates
+the effect that may be performed by the lambda body. In rule app, we require three effects to match:
+the effect 𝜖 in the function 𝜎1 →𝜖 𝜎2, the effect 𝜖 of e1 and of e2.
+Performing an operation introduces effects. In rule perform, perform op 𝜖 𝜎 first gets the type
+of the operation from Σ(l), and adds l to the context effect 𝜖, generating ⟨l |𝜖⟩. Dually, handling
+eliminates effects. In rule handler, given a handler h for l, the rule takes an action with effect ⟨l |𝜖⟩,
+and produces the result effect 𝜖. Rule prompt is similar, but directly takes an expression e of effect
+⟨l |𝜖⟩. Rule ops types a handler, where we assume {op1, . . ., opn}= Σ(l). Note that all operation
+implementations must have the same effect (𝜖) and type result (𝜎).
+17
+Xie and Leijen MSR-TR-2021-5
+Rule yield is more subtle. Recall that the operational rule (perform)(in Figure 1) turns perform
+into yield, So we expect the result type of yield to match that of perform. Note that the result type
+of perform is the same as the argument type of the resumption k, and the type of the resumption k
+itself is the argument type of f in yield m f . Therefore, in rule yield, we directly get the result type
+from the type of f . To be more precise, we could also set the result effect of yield to match that of
+perform. But since yield is an internal frame, the current form is sufficient for type soundness.
+3.1.4 Correctness, Preservation and Progress. In rule (perform), we refer to w as the current evidence
+vector, and we select out the handler from the evidence vector (instead of searching for it in the
+evaluation context). This means that for the correctness of evidence passing semantics, the current
+evidence vector w must correspond exactly to the actual handlers in the dynamic evaluation context–
+so that the handler selected from the evidence vector is indeed exactly the innermost handler that
+would be found with the original semantics of algebraic effects.
+We use the notation ⌈E⌉to extract all evidence from an evaluation context E. Specifically, if E is
+F0 •prompt m1 h1 •F1 • . . . •prompt mn hn •Fn, where each hi is a handler for li, we have
+⌈E⌉= ⟨ln : (mn, hn, _)|. . . |l1 : (m1, h1, _)⟩(we ignore the third component as it is not used). In
+order to prove correctness, we show that a ↦−→step can be reasoned in terms of a −→step, where
+for a w ⊢ −→step, the evidence vector is the original evidence vector extended by all evidence
+from the evaluation context:
+Lemma 1. (Inversion of ↦−→). If w ⊢ e1 ↦−→e2, then either
+•e1 = E[e′
+1], e2 = E[e′
+2], and e′
+1 −→e′
+2; or
+•e1 = E[e′
+1], e2 = E[e′
+2], and ⟨⌈E⌉|w⟩ ⊢ e′
+1 −→e′
+2.
+Based on Lemma 1, we can now show that the marker m and the handler h found by evidence-
+passing semantics is indeed the innermost handler found dynamically from the evaluation context.
+The following theorem establishes the correctness of evidence passing semantics.
+Theorem 1. (Evidence corresponds to the evaluation context).
+If ⟨⟩ ⊢ E[perform opl 𝜎 v]↦−→E[yield m (𝜆k. f 𝜎 v k)], then ⌈E⌉.l= (m, h, _), and (op ↦→f ) ∈h.
+Preservation and progress do not hold immediately for our system; instead we need to consider
+both prompt and yield as strictly internal frames that cannot be written directly by the programmer
+(and only occur during evaluation). For example, if we can write yield m ourselves, we can use an
+arbitrary m that does not match with any prompt in the context (and thus lose progress); similarly,
+we can write a yield m f where the result type of f does not match the type expected by the prompt
+m in the context (and lose preservation).
+By treating both prompt and yield as strictly internal frames we can ensure by construction
+that the previous problematic examples cannot occur, and can prove progress and preservation. In
+particular, we use a similar definition as the handle-safe definition from [Xie et al. 2020]:
+Definition 1. (Internal expressions). An internal-safe expression is a well-typed closed expression
+that either (1) contains no internal construct; or (2) is itself reduced from an internal-safe expression.
+Internal-safe expressions maintain two important invariants: (1) each prompt owns a unique m
+generated at rule (handler); and (2) when perform generates yield m in (perform), it has found the
+handler with the right type (and therefore, yield m will find the right prompt m in rule (prompt)).
+We prove that internal-safe System Fpw enjoys preservation and progress.
+Theorem 2. (Preservation of Internal-safe System Fpw). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-safe,
+and ⟨⟩ ⊢ e1 ↦−→e2, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+18
+e ::= . . . | under𝜖,𝜖 l e
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Expression Evaluation context E ::= . . . | under𝜖,𝜖 l E
+(performt) w ⊢ perform op 𝜖0 𝜎 v −→ (Λ𝛼. 𝜆⟨l |𝜖0⟩x : 𝜎1. under𝜖0,𝜖 l e)𝜎 v
+with (m, h, w′)= w.l
+(op ↦→Λ𝛼. 𝜆𝜖 x : 𝜎1. k : 𝜎2→𝜖 𝜎. k e)∈h ∧k ̸∈fv(e)
+(underv) under𝜖0,𝜖 l v −→ v
+w′ ⊢ e ↦−→e′ (m, h, w′)= w.l
+w ⊢ F[under𝜖0,𝜖 l e]↦−→F[under𝜖0,𝜖 l e′] (underw)
+Γ ⊢ e : 𝜎 |𝜖
+under
+Γ ⊢ under𝜖0,𝜖 l e : 𝜎 |⟨l |𝜖0⟩
+Fig. 3. Tail resumptive operations
+The progress theorem is more tricky, as perform does not find the handler from the evaluation
+context but instead from the evidence vector. Fortunately, from Lemma 1, we can show that the
+handler found from the evidence vector is always available in the evaluation context.
+Theorem 3. (Progress of Internal-safe System Fpw). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-safe,
+then either e1 is a value, or ⟨⟩ ⊢ e1 ↦−→e2.
+We can further prove that markers cannot be duplicated in the evaluation context.
+Theorem 4. (Uniqueness of Handlers for Internal-safe System Fpw). For any internal-safe Fpw
+expression prompt m1 h1 (E2 [prompt m2 h2 e]), we have m1 ≠ m2.
+3.2 Tail-Resumptive Optimization
+With evidence passing semantics, we are now ready to formalize the tail-resumptive optimization,
+which is given in Figure 3. We extend the definition of expressions with under𝜖,𝜖 l e, and the
+definition of evaluation contexts with under𝜖,𝜖 l E.
+3.2.1 Operational Semantics. Rule (performt)is the key to apply the tail-resumptive optimization.
+First, it gets the handler h from the evidence vector as before. But it then detects that the operation
+implementation (Λ𝛼. 𝜆𝜖 x : 𝜎1. 𝜆.k : 𝜎2→𝜖𝜎. k e) is tail-resumptive (with k ̸∈fv(e)), and so instead
+of yielding up, it generates under𝜖0,𝜖 l e, which directly evaluates e in-place with the type arguments
+𝜎 and value argument v. When the expression evaluates to a value, the value is propagated through
+the under frame (rule (underv)).
+Importantly, under needs to modify the evidence vector, so that operations happening after it
+can find the right handler. In rule (underw), given the current evidence vector w, under first finds
+the innermost evidence for l in the evidence vector, i.e., (m, h, w′), and then passes the evidence
+vector w′, under which h is defined, to e. In other words, under skips the whole evidence fragment
+between h to itself, which should not be accessible to e.
+3.2.2 Typing. Rule under types an under𝜖0,𝜖 l e expression. Note that the effect 𝜖 corresponds to
+the effect of e, while under itself produces ⟨l |𝜖0⟩. As with yield, in a more refined system, we can
+further state that 𝜖0 contains 𝜖 (as when generated in (performt)), but as under is internal, the
+current typing rule is sufficient for establishing soundness.
+3.2.3 Correctness, Preservation and Progress. In what sense is the tail-resumptive optimization
+correct? If only the optimized expression could produce an equivalent result as of the original
+expression. However, the equivalence is not so obvious. To illustrate the subtlety, consider evaluating
+the expression (prompt m h •E •perform op 𝜎 v)under the evidence vector w. Assume that
+19
+Xie and Leijen MSR-TR-2021-5
+the op operation is handled by prompt m h, where (op ↦→Λ𝛼. 𝜆x k. k e) ∈h with k ̸∈fv(e), i.e.,
+the implementation is tail-resumptive. If we evaluate the expression without tail-resumptive
+optimization, we get (for clarify we omit w in the derivation):
+prompt m h •E •perform op 𝜖0 𝜎 v
+↦−→ prompt m h •E •yield m (𝜆k. (Λ𝛼. 𝜆x k. k e)𝜎 v k)
+↦−→∗(Λ𝛼. 𝜆x k. k e)𝜎 v (𝜆x. prompt m h E[x])
+↦−→∗(𝜆x. prompt m h E[x])e[𝛼:=𝜎, x:=v]
+while with tail optimization we end up with:
+prompt m h •E •perform opl 𝜖0 𝜎 v
+↦−→ prompt m h •E • (Λ𝛼. 𝜆x. under𝜖0,𝜖 l •e)[𝜎]v
+↦−→∗prompt m h •E •under𝜖0,𝜖 l •e[𝛼:=𝜎, x:=v]
+The two expressions are now quite different. Nevertheless, intuitively these two result expressions
+are equivalent: they both first evaluate e[𝛼:=𝜎, x:=v], and then pass the result to prompt m h E, via
+beta-reduction and via propagation through under, respectively. The situation is a bit more tricky
+though as e[𝛼:=𝜎, x:=v]may perform an operation. However, even in that case, the operation will
+find the same handler: in the first case, it is obvious that the evidence vector passed to e[𝛼:=𝜎, x:=v]
+is w; in the second case, w is first extended by evidence from prompt m h •E, but then under𝜖 l
+changes the evidence vector back to w! To capture the observation, we formalize an equivalent
+relation e1 e2 between expressions (and evaluation contexts respectively) where e1 has no under,
+and e2 may have under. The relation is mostly structural, up to renaming of fresh markers, with
+the following rule:
+e1 e2 E1 E2 l ̸∈bl(E1) ∅ ⊢ops h : 𝜎 |l |𝜖
+(𝜆x. prompt m h E1 [x])e1 prompt m h •E2 •under𝜖0,𝜖 l e2
+We can prove that evaluation preserves the equivalent relation, except that expressions need to take
+several reduction steps to become equivalent again, as evaluating prompt under the two semantics
+takes different number of steps to reach the desired equivalent form.
+Lemma 2. (Evaluation Preserves ). Given two closed internal-safe expressions ∅ ⊢ e1 : 𝜎 |⟨⟩
+and ∅ ⊢ e2 : 𝜎 |⟨⟩, if e1 e2, then either e1 and e2 are values, or there exist e′
+1, e′
+2 such that
+⟨⟩ ⊢ e1 ↦−→+e′
+1, ⟨⟩ ⊢ e2 ↦−→+e′
+2, and e′
+1 e′
+2.
+Based on Lemma 2, we show that the optimized and unoptimized expressions are contextual
+equivalent, with the intuition that we cannot tell them apart in any context.
+Definition 2. (Contextual Equivalence).
+e1 ctx e2 ≜ ∅ ⊢ e1 : 𝜎 |𝜖 ∧∅ ⊢ e2 : 𝜎 |𝜖
+∧∀C. ∅ ⊢ C: (𝜎 |𝜖)→(Int |⟨⟩)=⇒(∀n. C[e1]↦−→∗n ⇐⇒C[e2]↦−→∗n)
+where Cis the standard definition of a program context that is under-free, and C[e1]is evalu-
+ated under the original semantics while C[e2]is with tail-resumptive optimization. The notation
+∅ ⊢ C: (𝜎1 |𝜖1)→(𝜎2 |𝜖2)type-checks an program context, so that if ∅ ⊢ e : 𝜎1 |𝜖1, we have
+∅ ⊢ C[e]: 𝜎2 |𝜖2.
+Theorem 5. (Tail-resumptive Optimization is Sound). If ∅ ⊢ e : 𝜎 |𝜖, then e ctx e.
+The theorem may seem trivial, but given that ctx uses different evaluation strategies for the left
+expression and the right one, the theorem states exactly what we want: starting from the same
+expression e, evaluating without and with tail-resumptive optimization produces the same result.
+We have also proved that Theorem 2 (Preservation) and Theorem 3 (Progress) remain valid for
+internal-safe System Fpw extended with under.
+20
+MSR-TR-2021-5
+| yield m v v
+Generalized Evidence Passing for Effect Handlers Expressions e ::= v | e e | e 𝜎 | prompt m h e (app1) v □ •yield m f k −→yield m f (𝜆x. v (k x))
+(app2) □ e •yield m f k −→yield m f (𝜆x. (k x)e)
+(under) under l □ •yield m f k −→yield m f (𝜆x. under l (k x))
+(prompt1) prompt m h □ •yield m f k −→f (𝜆x. prompt m h (k x))
+(prompt2) prompt n h □ •yield m f k −→yield m f (𝜆x. prompt n h (k x)) (perform) w ⊢ perform op 𝜖0 𝜎 v −→yield m (𝜆k. f 𝜎 v k)(𝜆x. x)
+with (m, h, _)= w.l ∧ (op ↦→f ) ∈h
+iff n ≠ m
+Fig. 4. Fpb: Multi-prompt with bubble semantics.
+4 TRANSLATION TO POLYMORPHIC LAMBDA CALCULUS
+In order to compile to standard lambda calculus from our evidence passing effect handler calculus,
+we first need to ensure that all transitions are local and no longer manipulate evaluation contexts
+explicitly. The only operation that it is non-local with evidence passing semantics is the yield. As
+discussed in Section 2.6 we can make this local by bubbling up the yields step-by-step through the
+context while constructing a resumption.
+4.1 Bubbling Yields
+We briefly introduce System Fpb (Figure 4), which extends the semantics of Fpw where yield builds
+the resumption locally and bubbles up to its corresponding prompt frame. In this section, we focus
+on the dynamic semantics of System Fpb, with its full typed formalization and preservation and
+progress theorems given in Appendix C.
+First, expressions now include a new form of yielding expression yield m v v that takes an extra
+argument: first v is a continuation that waits for the resumption (like before), while the second v
+is the current resumption that is extended while bubbling up. We then replace the original rule
+(prompt)and (perform)in System Fpw (Figure 1) with rules in Figure 4. The new rule (perform)
+builds the continuation and the initial resumption, which is then bubbled up by the rest of the rules.
+In rule (perform)the yield now gets an extra argument (𝜆x. x)which is the initial partially built
+resumption – at this time just an identity function. We can now gradually extend the resumption as
+yield bubbles up through every evaluation frame, as in rule (app1), (app2)and (prompt2). In rule
+(app1), the frame v □ is added to the current partially built resumption k, generating (𝜆x. v (k x)).
+Rule (app2)is similar. Rule (prompt2)compares markers and finds that n ≠ m and adds the prompt
+frame to the resumption. The yield keeps bubbling up until it finds its matching handler in rule
+(prompt1), where we finally apply the continuation f to now completed resumption.
+4.2 A Multi-prompt Delimited Control Monad
+All transitions in the bubbling semantics are now local transitions, and we can implement these
+semantics using a multi-prompt delimited control monad, where each algebraic effect specific
+construct can be implemented directly as a regular function. In this section, we first establish
+the multi-prompt delimited control monad and then discuss the type directed translation from
+System Fpb into a polymorphic lambda calculus. We use standard techniques [Dyvbig et al. 2007]
+to implement delimited control as a monad. For better readability, throughout this section we use
+Haskell-like syntax. First, we define our monad Mon as:
+type Mon 𝜇 𝛼= Evv 𝜇 →Ctl 𝜇 𝛼
+21
+Xie and Leijen MSR-TR-2021-5
+The evidence-passing semantics is established by taking an argument of type Evv 𝜇, which corre-
+sponds to the current evidence vector for an effect 𝜇, and returning in the control monad Ctl. The
+control monad is defined as4:
+data Ctl 𝜇 𝛼=
+|Pure : 𝛼 →Ctl 𝜇 𝛼
+|Yield : ∀𝛽 𝜇′r. Marker 𝜇′r →((𝛽 →Mon 𝜇′r)→Mon 𝜇′r)→(𝛽 →Mon 𝜇 𝛼)→Ctl 𝜇 𝛼
+The Pure case returns a value result, while Yield implements yielding to a prompt (corresponding
+to yield m f k in System Fpb). Markers carry explicit types and can later serve as the witness to
+type equality. When binding a yield, the resumption keeps being extended:
+(f◦g)x = f (g x) (f ★ g)x = g x ▷f e ▷g= 𝜆w. case e w of Pure x →g x w (function composition)
+(Kleisli composition)
+(monadic bind)
+Yield m f k →Yield m f (g ★ k)
+With the multi-prompt monad, we can now define the monadic translation of types from System
+Fpb, where all effectful functions are made monadic:
+⌊∀𝛼𝜅 . 𝜎⌋= ∀𝛼𝜅
+. ⌊𝜎⌋ ⌊𝜎1 →𝜖 𝜎2⌋= ⌊𝜎1⌋→Mon 𝜖 ⌊𝜎2⌋
+⌊𝛼⌋= 𝛼 ⌊c𝜅 𝜎1 . . . 𝜎n⌋= c𝜅 ⌊𝜎1⌋. . . ⌊𝜎n⌋
+We then implement prompt as a family of promptl functions for each effect l:
+promptl : ∀𝜇 𝛼. Marker 𝜇 𝛼 →Hndl 𝜇 𝛼 →Mon ⟨l |𝜇⟩𝛼 →Mon 𝜇 𝛼
+promptl m h e= 𝜆w. case e ⟨l : (m, h, w) |w⟩of
+Pure x →Pure x ((promptv)in Fig. 1)
+Yield m′f k |m ≠ m′→Yield m′f (promptl m h ◦k) ((prompt2) in Fig. 4)
+Yield m′f k |m = m′→f (promptl m h ◦k)w ((prompt1)in Fig. 4)
+Note how the evidence vector is passed as an explicit argument in the monad. The Pure case returns
+the value as is. For Yield, if it yields to another prompt, we keep building the resumption. In the
+third case, Yield meets the target prompt and we apply f to the built-up resumption (composed
+with promptl m h as we use deep resumptions). Note that to type check this case, the equality of the
+markers m = m′implies that 𝜇= 𝜇′and 𝛼 = r (as in the definition of Yield). For example, this
+can be encoded using explicit equality witnesses [Baars and Swierstra 2002] or equality constraints
+in Haskell [Sulzmann et al. 2007].
+The handler function generates prompt with a fresh marker created by a utility function freshm.
+handlerl
+: ∀𝜇 𝛼. Hndl 𝜇 𝛼 →(()→Mon ⟨l |𝜇⟩𝛼)→Mon 𝜇 𝛼
+handlerl h f= freshm (𝜆m →promptl m h (f ()) ((handler)in Fig. 1)
+The type of a handler Hndl is generated for every effect signature l : {op1 : ∀𝛼1. 𝜎1 →𝜎′
+1, . . ., opn :
+∀𝛼n. 𝜎n →𝜎′
+n } ∈Σ and is a record of operation definitions:
+data Hndl 𝜇 r = Hndl (∀𝛼1. Op ⌊𝜎1⌋⌊𝜎′
+1⌋𝜇 r). . . (∀𝛼n. Op ⌊𝜎n⌋⌊𝜎′
+n⌋𝜇 r)
+together with a selector for each operation opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l):
+selectopi : ∀𝛼 𝜇 r. Hndl 𝜇 r →Op ⌊𝜎1⌋⌊𝜎2⌋𝜇 r
+selectopi (Hndl op1. . . opn)= opi
+4Our Ctl is different from that of [Xie et al. 2020] as the continuation and resumption in Yield both return in Mon, whereas
+they only need to return in Ctl (again because in their system the evidence vector is statically determined).
+22
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+val
+app
+Γ ⊢val v : 𝜎 ⇝v′
+Γ ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 ⇝e′
+1 Γ ⊢ e2 : 𝜎1 |𝜖 ⇝e′
+2
+Γ ⊢ v : 𝜎 |𝜖 ⇝𝜆w : Evv 𝜖. Pure 𝜖 ⌊𝜎⌋v′
+Γ ⊢ e1 e2 : 𝜎 |𝜖 ⇝e′
+1 ▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. e′
+2 ▷f )
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+perform
+Γ ⊢val perform op 𝜖 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]
+⇝performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)
+Fig. 5. Monadic translation of Fpb (excerpt).
+Where the Op 𝛼 𝛽 𝜇 r type represents operations from 𝛼 to 𝛽 defined in a handler with effect 𝜇 and
+result type r (the answer type). For example for a reader effect we have:
+data Hndread 𝜇 r = Hndread (Op ()int 𝜇 r)
+selectask (Hndread ask)= ask
+For operations we distinguish between tail-resumptive operation implementations and normal
+implementations in order to do the tail-resumptive optimization:
+data Op 𝛼 𝛽 𝜇 r = Tail : (𝛼 →Mon 𝜇 𝛽)→Op 𝛼 𝛽 𝜇 r
+| Normal : (𝛼 →Mon 𝜇 ((𝛽 →Mon 𝜇 r)→Mon 𝜇 r))→Op 𝛼 𝛽 𝜇 r
+We can now perform an operation by getting the handler from the evidence vector, and selecting
+the right operation from the handler record (e.g. ask). Depending on the operation constructor, we
+use underl for tail-resumptive operations or otherwise generate a Yield.
+performl
+: ∀𝜇 𝛼 𝛽. (∀𝜇′r. Hndl 𝜇′r →Op 𝛼 𝛽 𝜇′r)→𝛼 →Mon ⟨l |𝜇⟩𝛽
+performl select x= 𝜆w : Evv ⟨l |𝜇⟩. let (m, h, w′)= w.l in
+case select h of Tail f →underl m w′(f x) Normal f →Yield m (𝜆y. f x ▷(𝜆g. g y))(𝜆x. 𝜆w. Pure x) Finally, under can be implemented with two mutually recursive definitions:
+underl
+: ∀𝜇 𝛽 𝜇′r. Marker 𝜇′r →Evv 𝜇′→Mon 𝜇′𝛽 →Mon 𝜇 𝛽
+underkl
+: ∀𝜇 𝛽 𝜇′r. Marker 𝜇′r →(𝛽 →Mon 𝜇′r)→𝛽 →Mon 𝜇 r
+The under function runs the action e under another evidence vector w′, and ensures any resumption
+is itself continued under the right evidence through underk:
+underl m w′e = 𝜆w : Evv 𝜇. case e w′of ((underw)in Fig. 3)
+Pure x →Pure x ((underv)in Fig. 3)
+Yield n f k→Yield n f (underkl m k) ((under)in Fig. 4)
+Note that it easy to make a mistake here: a well-typed (!) but semantically wrong implementation of
+underl is to return in the Yield case Yield n f (𝜆x. underl m w′(k x))– as described in Section 2.9.2
+this wrongly fixes the evidence vector to w′. Instead, we need to use the underk function which
+re-finds the correct evidence vector w′from the current evidence vector w to resume under:
+underkl m k x= 𝜆w : evv 𝜇. let (m′
+, h, w′: evv 𝜖)= w.l in
+if (m = m′)then under m w′(k x)w The marker is passed to underl and underkl in order to get the type equality from m should always hold for internal-safe expressions).
+4.3 Monadic Translation
+Using the multi-prompt monad definition, we can define a type-directed translation of System Fpb
+into a polymorphic lambda calculus. The translation takes the form Γ ⊢ e : 𝜎 |𝜖 ⇝e′, where
+((performt)in Fig. 3)
+((perform)in Fig. 4)
+((underw)in Fig. 3)
+= m′(which
+23
+Xie and Leijen MSR-TR-2021-5
+under Γ, the expression e with type 𝜎 and effect 𝜖 is translated to e′. Based on the multi-prompt
+monad, the translation is mostly straightforward where each construct translates directly to its
+corresponding function: prompt translates to prompt, handler translates to handler, etc. Figure 5
+shows an excerpt of the translation rules, while the full translation is shown in Appendix C.
+During translation, we have made type applications explicit. Rule val simply wraps the value
+translation inside Pure. Rule app first evaluates e′
+1, binds the result to f , and then evaluates e′
+2
+and passes the result to f . If any of the expressions evaluates to Yield, the monadic binding (▷)
+will bubble it up (according to the rules (app1)and (app2)in Figure 4). Rule perform shows how
+perform is translated using our monadic implementation of performl and selectop
+.
+We prove that our translation is sound, where we use the notation ⊢F for the typing judgment in
+the target polymorphic lambda calculus, whose full definition can be found in the appendix.
+Theorem 6. (Monadic Translation is Sound). If ∅ ⊢ e : 𝜎 |⟨⟩⇝e′, then ∅ ⊢F e′ : Mon ⟨⟩⌊𝜎⌋.
+We can now show that our final monadic translation preserves the original semantics of algebraic
+effects in System F𝜖 [Xie et al. 2020]. In particular, we prove that given an user-provided expression
+e, we can apply the monadic translation to get an expression e′in the polymorphic lambda calculus,
+and evaluating e′preserves the original algebraic effects semantics. We use e ⇑to denote that e
+diverges.
+Theorem 7. (Semantics Preserving). Given ∅ ⊢ e : int |⟨⟩⇝e′, if e ↦−→∗n in F𝜖 , then e′⟨⟩↦−→∗
+Pure ⟨⟩int n in the polymorphic lambda calculus. If e ⇑in F𝜖 , then e′⟨⟩⇑in the polymorphic
+lambda calculus.
+5 BENCHMARKS
+In this section we benchmark five implementations of effect handlers.
+(1) Koka: We have a full implementation of our techniques in the Koka compiler [Koka 2019]
+which compiles via standard C code. This uses generalized evidence passing with canonical
+evidence vectors, short-cut resumptions, bind-inlining and join-point sharing.
+(2) multi-core OCaml: This is a fork of standard OCaml with the current state-of-the-art direct
+implementation of effect handlers based on segmented stacks [Sivaramakrishnan et al. 2021]
+(but without direct support for multi-shot resumptions).
+(3) Mp.Eff : This is our implementation of generalized evidence passing effect handlers as a
+monadic library in Haskell. The library uses insertion-ordered evidence vectors and does not
+use short-cut resumptions. The implementation is closely based on the Ev.Eff library.
+(4) Ev.Eff : A Haskell monadic effect handler library by Xie and Leijen [2020] based on evi-
+dence translation (and cannot handle non-scoped resumptions). They have shown that this
+library performs very well with respect to other effect handler implementations [Kiselyov
+and Ishii 2015; Schrijvers et al. 2019; Wu and Schrijvers 2015; Wu et al. 2014] and monad
+transformers.
+(5) libhandler: a C library that implements effect handlers on top of the regular C stack and uses
+longjmp to transfer control [Leijen 2017a]. This is a direct implementation where capturing-
+and resuming is linear in the stack size as it copies and restores pieces of the C stack directly.
+It uses the tail-resumptive optimization and insertion ordered “evidence” where it searches
+through the handler frames on the stack.
+(6) libmprompt: a C library that implements effect handlers using in-place growable stacks
+using virtual memory. This is a direct implementation with constant time stack switching
+without need to copy fragments of the stack. Implements tail-resumptive optimization and
+24
+MSR-TR-2021-5
+5.58s
+···44.44s
+4.65s
+4.56s
+Generalized Evidence Passing for Effect Handlers elapsed time (lower is better)
+···11.70s
+···16.11s
+···7.56s
+6s
+5s
+4s
+3s
+2s
+1s
+0s
+4.51s
+2.88s
+3.17s
+2.72s
+2.20s
+1.75s
+1.94s
+1.83s
+1.83s
+1.13s
+1.03s
+1.15s
+1.44s
+1.17s
+0.71s
+0.26s
+0.30s
+0.80s
+0.34s
+1.13s
+0.38s
+0.56s
+0.75s
+1.26s
+0.54s
+1.44s
+0.60s
+0.75s
+Koka
+multi-core OCaml
+Mp.Eff (Haskell)
+Ev.Eff (Haskell)
+libhandler (C)
+libmprompt (C)
+Koka, no-tail-opt
+counter counter1 counter10 mstate nqueens
+Fig. 6. Execution time averaged over 10 runs
+uses insertion ordered “evidence” where it searches through the handler frames on the stack.
+[Leijen and Sivaramakrishnan 2021]
+Comparing across systems is always difficult as many parts differ – for example, Koka uses compiler
+guided reference while multi-core OCaml and Haskell use a generational tracing collector, Koka has
+few standard optimizations while both OCaml and Haskell are sophisticated compilers with decades
+of development, etc. We selected current best-in-class implementations that compile to native
+code5 so execution times are somewhat comparable, and we selected benchmarks that probe effect
+handling in particular, with minimal other computation and allocation overheads. As such, the
+results are meant to establish if the effect handler compilation strategies described in this paper are
+viable and can be competitive, but should not be interpreted as a measure of absolute performance
+between systems and languages. Execution times are shown in Figure 6. The execution times are
+averaged over 10 runs, on an AMD 5950X at 3.4Ghz with 32GiB memory running Ubuntu 20.04,
+with Koka v2.0.16, multi-core OCaml 4.10, libhandler v0.5, and GHC 8.6.5.
+counter. This benchmark implements a state effect using a mutable reference such that both get
+and set operations are tail-resumptive. It then performs 200M get and set operations in a tight loop.
+The tail-resumptive optimization in Koka and the fast stack switching in OCaml seem to perform
+similarly and the execution times are very close. The libhandler C implementation is 1.5×faster
+than Koka – we believe this is because it does no allocation at all. In contrast, both Koka and OCaml
+allocate at each operation: OCaml allocates a continuation object per resumption [Sivaramakrishnan
+et al. 2021], and Koka allocates a resumption result function to support finally clauses (which are
+not used in any benchmark here) [Leijen 2018].
+Mp.Eff is about 4×slower as Koka, but Ev.Eff is 4×faster! This is because GHC is able to fully
+inline the handler and operations and optimizes almost all effect handling code away. When we
+remove the inline pragma on the state handler definition, the benchmark takes about 2.02s which
+is more in line with the results seen in counter1 and counter10. We also ran this benchmark with
+the tail-resumption optimization turned off; this causes Koka to always allocate a resumption and
+take the slow path through the monadic bindings making it 10×slower than the optimized version.
+counter1. This is the same as counter but with one (unused) reader effect handler in between.
+This time Koka is 1.5×faster than OCaml: due to evidence passing, the execution times of the
+tail-resumptive get and set operations are independent of any other handlers that are in the context
+(as the handler is found at a constant offset in the canonical evidence vectors). In contrast, multi-core
+25
+5As opposed to using an interpreter, or using JavaScript as a target for example.
+Xie and Leijen MSR-TR-2021-5
+OCaml always yields up one handler stack segment at a time and thus each get and set operation
+needs to pass through the reader handler incurring a runtime cost.
+counter10. Same as counter1 but now with 10 reader handlers under the state handler. Again Koka
+execution is (almost) the same as for counter1 but we can see that all implementations without
+tail-resumptive optimization or evidence-passing get slower with each added handler due to the
+linear search at each operation call.
+The counter10 benchmark may seem artificial but we believe this pattern to be common in practice.
+Many uses of effect handlers are to provide contextual state and environments; for example, a type
+checker may have a current substitution, the type environment, a unique identifier generator, etc.
+Such nested handlers may thus be quite common in general.
+mstate. This is the same as counter but now implements the state effect in a monadic way as
+shown in Section 2.1.1. This means that the operations are no longer tail-resumptive since the
+resumption is captured under a lambda. To reduce the execution time, mstate only performs 20M
+get and set operations (versus 200M in the tail-resumptive counter benchmark). This is a worst-case
+for Koka as it needs to allocate a fresh resumption for each operation call, and it is about 5×slower
+than multi-core OCaml here. Surprisingly, both Mp.Eff and Ev.Eff are faster than Koka here – again,
+the small benchmark can be optimized impressively well by GHC.
+nqueens. Calculates all solutions to the queens problem of size 12 using a choice effect to elegantly
+express backtracking similar to the non-determinism example in Section 2.1.1. Multiple resumptions
+are not directly supported in multi-core OCaml but we can use Obj.clone_continuation to
+manually copy resumptions6. Here OCaml is about 5×slower than Koka. We think that this is
+partly due to the short-cut resumptions (Section 2.6.1): in Koka when the call stack is 12 calls deep,
+each choice operation resumes 12 times, each time sharing all continuations; in contrast, OCaml
+and libhandler need to linearly copy the stack on each resumption. Similarly, the Haskell libraries
+also do very well here as these also share the resumption functions over multiple resumes.
+Overall, the results look promising and show our compilation strategy can be competitive with
+specialized runtime implementations. With respect to evidence translation versus evidence passing,
+it seems evidence translation can have the advantage in performance: even though Mp.Eff and
+Ev.Eff have very similar implementations, the generalized evidence passing library is about twice
+as slow as the Ev.Eff library over our benchmarks. We believe this is partly caused by the more
+static nature of evidence in Ev.Eff and which makes it more amenable to compiler optimizations.
+6 RELATED WORK
+Throughout the paper, we compare with the most directly related work [Sivaramakrishnan et
+al. 2021; Xie et al. 2020; Xie and Leijen 2020] inline. Here we briefly discuss other related work.
+In contrast to the monadic translation, Hillerström et al. [2017] describe a CPS based translation
+of effect handlers. Similar to bubbling and evidence passing, this avoids capturing the evaluation
+context by making all continuations explicit. Forster et al. [2019] show how delimited control,
+monads, and effect handlers can all be expressed in terms of each other in an untyped setting.
+However, their encoding of effect handlers in terms of shift-reset does not preserve typeability (due
+to the lack of answer type polymorphism). In our work typing is preserved by using multi-prompt
+delimited control with explicitly typed markers. Kiselyov and Sivaramakrishnan [2017] present
+a direct embedding of effect handlers in OCaml based on shift-reset (using the delimcc library),
+where they use an out-of-band technique [Kiselyov et al. 2006] to work around the lack of answer
+6It works for our particular benchmark, but generally multiple resumptions do not work reliably (as currently implemented)
+for two reasons: the optimizer is not aware of multiple resumptions and may generate invalid code when optimizing across
+function calls (this is a problem for libhandler as well [Leijen 2017a]), and cloning a continuation does not compose with
+other operations that may not clone their own continuation (leading to a runtime crash).
+26
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+type polymorphism. Kammar et al. [2013] also embed effect handlers in OCaml using shift-reset
+where they use a global mutable variable to hold the stack of handlers in the current dynamic scope
+(which can be considered as the current insertion-ordered evidence vector).
+Brachthäuser et al. [2020] use capability passing to perform operations directly on a specific
+handler. This is also similar to the work of Zhang and Myers [2019] where handlers are passed
+by name as well. While they pass a capability individually for each handler, we uniformly pass a
+vector of handlers. Both of these approaches can be viewed as programming within an explicit
+evidence passing calculus.
+7 CONCLUSION
+Generalized evidence passing is a promising technique for compiling effect handlers to standard
+target platforms, and can offer competitive performance relative to specialized runtimes. Moreover,
+our formalization explores the design space of implementation techniques and their trade-offs. We
+hope our study will lead to further improvements of effect handlers implementations in the future.
+REFERENCES
+Arthur I. Baars, and S. Doaitse Swierstra. 2002. Typing Dynamic Typing. In Proceedings of the Seventh ACM SIGPLAN
+International Conference on Functional Programming, 157–166. ICFP’02. Pittsburgh, PA, USA. doi:10.1145/581478.581494.
+Andrej Bauer, and Matija Pretnar. 2015. Programming with Algebraic Effects and Handlers. J. Log. Algebr. Meth. Program. 84
+(1): 108–123. doi:10.1016/j.jlamp.2014.02.001.
+Jonathan Immanuel Brachthäuser, Philipp Schuster, and Klaus Ostermann. 2020. Effekt: Capability-Passing Style for Type-
+and Effect-Safe, Extensible Effect Handlers in Scala. Journal of Functional Programming, number 30. Cambridge University
+Press.
+Stephen Dolan, Spiros Eliopoulos, Daniel Hillerström, Anil Madhavapeddy, KC Sivaramakrishnan, and Leo White. 2017.
+Effectively Tackling the Awkward Squad. In ML Workshop.
+Stephen Dolan, Leo White, KC Sivaramakrishnan, Jeremy Yallop, and Anil Madhavapeddy. Sep. 2015. Effective Concurrency
+through Algebraic Effects. In OCaml Workshop.
+R Kent Dyvbig, Simon Peyton Jones, and Amr Sabry. 2007. A Monadic Framework for Delimited Continuations. Journal of
+Functional Programming 17 (6). Cambridge University Press: 687–730. doi:10.1017/S0956796807006259.
+Yannick Forster, Ohad Kammar, Sam Lindley, and Matija Pretnar. 2019. On the Expressive Power of User-Defined Effects:
+Effect Handlers, Monadic Reflection, Delimited Control. Journal of Functional Programming 29. Cambridge University
+Press: 15. doi:10.1017/S0956796819000121.
+Carl A. Gunter, Didier Rémy, and Jon G. Riecke. 1995. A Generalization of Exceptions and Control in ML-like Languages. In
+Proceedings of the Seventh International Conference on Functional Programming Languages and Computer Architecture,
+12–23. FPCA ’95. ACM, La Jolla, California, USA. doi:10.1145/224164.224173.
+Andreas Haas, Andreas Rossberg, Derek L. Schuff, Ben L. Titzer, Michael Holman, Dan Gohman, Luke Wagner, Alon
+Zakai, and JF Bastien. 2017. Bringing the Web up to Speed with WebAssembly. In Proceedings of the 38th ACM SIGPLAN
+Conference on Programming Language Design and Implementation, 185–200. PLDI 2017. Association for Computing
+Machinery, New York, NY, USA. doi:10.1145/3062341.3062363.
+Daniel Hillerström, and Sam Lindley. 2016. Liberating Effects with Rows and Handlers. In Proceedings of the 1st International
+Workshop on Type-Driven Development, 15–27. TyDe 2016. Nara, Japan. doi:10.1145/2976022.2976033.
+Daniel Hillerström, and Sam Lindley. 2018. Shallow Effect Handlers. In 16th Asian Symposium on Programming Languages
+and Systems (APLAS’18), 415–435. Springer.
+Daniel Hillerström, Sam Lindley, Bob Atkey, and KC Sivaramakrishnan. Sep. 2017. Continuation Passing Style for Effect
+Handlers. In Proceedings of the Second International Conference on Formal Structures for Computation and Deduction.
+FSCD’17.
+Ohad Kammar, Sam Lindley, and Nicolas Oury. 2013. Handlers in Action. In Proceedings of the 18th ACM SIGPLAN International
+Conference on Functional Programming, 145–158. ICFP ’13. ACM, New York, NY, USA. doi:10.1145/2500365.2500590.
+Ohad Kammar, and Matija Pretnar. Jan. 2017. No Value Restriction Is Needed for Algebraic Effects and Handlers. Journal of
+Functional Programming 27 (1). Cambridge University Press. doi:10.1017/S0956796816000320.
+Oleg Kiselyov, and Hiromi Ishii. 2015. Freer Monads, More Extensible Effects. In Proceedings of the 2015 ACM SIGPLAN
+Symposium on Haskell, 94–105. Haskell ’15. Vancouver, BC, Canada. doi:10.1145/2804302.2804319.
+Oleg Kiselyov, Chung-chieh Shan, and Amr Sabry. 2006. Delimited Dynamic Binding. In Proceedings of the Eleventh ACM
+SIGPLAN International Conference on Functional Programming, 26–37. ICFP ’06. Association for Computing Machinery,
+27
+Xie and Leijen MSR-TR-2021-5
+New York, NY, USA. doi:10.1145/1159803.1159808.
+Oleg Kiselyov, and KC Sivaramakrishnan. Dec. 2017. Eff Directly in OCaml. In ML Workshop 2016. http://kcsrk.info/
+papers/caml-eff17.pdf. Extended version.
+Koka. 2019. https://github.com/koka-lang/koka.
+Daan Leijen. 2017. Implementing Algebraic Effects in C: Or Monads for Free in C. Edited by Bor-Yuh Evan Chang. Program-
+ming Languages and Systems, LNCS, 10695 (1). Springer International Publishing, Suzhou, China: 339–363. APLAS’17.
+Daan Leijen. Jan. 2017. Type Directed Compilation of Row-Typed Algebraic Effects. In Proceedings of the 44th ACM SIGPLAN
+Symposium on Principles of Programming Languages (POPL’17), 486–499. Paris, France. doi:10.1145/3009837.3009872.
+Daan Leijen. Apr. 2018. Algebraic Effect Handlers with Resources and Deep Finalization. MSR-TR-2018-10. Microsoft Research.
+Daan Leijen, and KC Sivaramakrishnan. Apr. 2021. Libmprompt. https://github.com/koka-lang/libmprompt.
+Paul Blain Levy. 2006. Call-by-Push-Value: Decomposing Call-by-Value and Call-by-Name. Higher-Order and Symbolic
+Computation 19 (4). Springer: 377–414.
+Gordon D. Plotkin, and John Power. 2003. Algebraic Operations and Generic Effects. Applied Categorical Structures 11 (1):
+69–94. doi:10.1023/A:1023064908962.
+Gordon D. Plotkin, and Matija Pretnar. Mar. 2009. Handlers of Algebraic Effects. In 18th European Symposium on Programming
+Languages and Systems, 80–94. ESOP’09. York, UK. doi:10.1007/978-3-642-00590-9_7.
+Gordon D. Plotkin, and Matija Pretnar. 2013. Handling Algebraic Effects. In Logical Methods in Computer Science, volume 9.
+4. doi:10.2168/LMCS-9(4:23)2013.
+Matija Pretnar. Dec. 2015. An Introduction to Algebraic Effects and Handlers. Invited Tutorial Paper. Electron. Notes Theor.
+Comput. Sci. 319 (C). Elsevier Science Publishers: 19–35. doi:10.1016/j.entcs.2015.12.003.
+Tom Schrijvers, Maciej Piróg, Nicolas Wu, and Mauro Jaskelioff. 2019. Monad Transformers and Modular Algebraic Effects:
+What Binds Them Together. In Proceedings of the 12th ACM SIGPLAN International Symposium on Haskell, 98–113. Haskell
+2019. Association for Computing Machinery, New York, NY, USA. doi:10.1145/3331545.3342595.
+KC Sivaramakrishnan, Stephen Dolan, Leo White, Tom Kelly, Sadiq Jaffer, and Anil Madhavapeddy. 2021. Retrofitting Effect
+Handlers onto OCaml. In Conditionally Accepted by the 42rd ACM SIGPLAN Conference on Programming Language Design
+and Implementation. PLDI ’21.
+Martin Sulzmann, Manuel Chakravarty, Simon Peyton Jones, and Kevin Donnelly. Jan. 2007. System F with Type Equality
+Coercions. In ACM SIGPLAN International Workshop on Types in Language Design and Implementation (TLDI’07), 53–66.
+ACM press.
+Herb Sutter. 2019. Zero-Overhead Deterministic Exceptions: Throwing Values. http://www.open-std.org/jtc1/sc22/
+wg21/docs/papers/2019/p0709r4.pdf. ISO/IEC WG2.1, P0709R4.
+Nicolas Wu, and Tom Schrijvers. 2015. Fusion for Free: Efficient Algebraic Effect Handlers. In Proceedings of the 12th
+International Conference on Mathematics of Program Construction, 9129:302. Springer, Königswinter, Germany.
+Nicolas Wu, Tom Schrijvers, and Ralf Hinze. 2014. Effect Handlers in Scope. In Proceedings of the 2014 ACM SIGPLAN
+Symposium on Haskell, 1–12. Haskell ’14. Göthenburg, Sweden. doi:10.1145/2633357.2633358.
+Ningning Xie, Jonathan Brachthäuser, Phillip Schuster, Daniel Hillerström, and Daan Leijen. Aug. 2020. Effect Han-
+dlers, Evidently. In 25th ACM SIGPLAN International Conference on Functional Programming (ICFP’2020). Jersey City,
+NJ. doi:10.1145/3408981.
+Ningning Xie, and Daan Leijen. Aug. 2020. Effect Handlers in Haskell, Evidently. In Proceedings of the 2020 ACM SIGPLAN
+Symposium on Haskell. Haskell’20. Jersey City, NJ. doi:10.1145/3406088.3409022.
+Yizhou Zhang, and Andrew C. Myers. Jan. 2019. Abstraction-Safe Effect Handlers via Tunneling. Proc. ACM Program. Lang.
+3 (POPL). ACM. doi:10.1145/3290318.
+28
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Term context Γ ::= ∅ | Γ, x : 𝜎
+Effect context Σ ::= {li : sigli }
+Expression e ::= v | e e | e 𝜎 | handle h e
+Value v ::= x | 𝜆𝜖 x : 𝜎. e | Λ𝛼𝜅
+. v
+| handler h | perform op 𝜖 𝜎
+Handler h ::= {opi ↦→fi }
+Type 𝜎 ::= 𝛼𝜅 | c𝜅 𝜎 | 𝜎 →𝜖 𝜎 | ∀𝛼𝜅 . 𝜎
+Effect row 𝜖 ::= ⟨⟩| ⟨l |𝜖⟩
+Kind 𝜅 ::= ∗| 𝜅 →𝜅 | lab | eff
+(app) (𝜆𝜖 x : 𝜎. e)v −→ e[x:=v]
+(tapp) (Λ𝛼𝜅
+. v)𝜎 −→ v[𝛼:=𝜎]
+(handler) handler h v −→ handle h (v ())
+(return) handle h v −→ v
+(perform) handle h E[perform op 𝜖0 𝜎 v] −→ f 𝜎 v (𝜆𝜖 x : 𝜎2 [𝛼:=𝜎]. handle h E[x]) ∧(op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖
+e1 −→e2
+E[e1]↦−→E[e2] (step)
+Effect sig. sigl ::= {opi : ∀𝛼
+𝜅i
+i . 𝜎i →𝜎′
+i }
+Evaluation ctx. E ::= □ |E e |v E |E 𝜎
+| handle h E
+F ::= □ |F e |v F |F 𝜎
+iff op ̸∈bop(E)
+Fig. 7. System F𝜖 : explicitly typed algebraic effect handlers.
+APPENDICES
+A BACKGROUND: POLYMORPHIC ALGEBRAIC EFFECT CALCULUS F𝜖
+This section briefly introduces System F𝜖 [Xie et al. 2020], a polymorphic algebraic effect calculus,
+which essentially extends the polymorphic lambda calculus with algebraic effects and row-based
+effect types. The system is used for later transformation and optimization.
+A.1 Syntax
+Figure 7 defines the syntax of System F𝜖 . Expressions include algebraic effects specific expressions
+handler h, perform op 𝜖 𝜎, and handle h e.
+A.2 Operational Semantics
+The operational semantics of System F𝜖 is given at the bottom of Figure 7. Rule (app)is the
+standard call-by-value beta reduction rule, and rule (tapp)is the standard type reduction rule.
+We have seen rule (handler), (return), and (perform)at the beginning of Section 2.1. The main
+difference here is that rule (perform)is explicitly typed. In particular, perform passes to the operation
+implementation f the type arguments 𝜎 along with the value argument v and the resumption
+(𝜆𝜖 x : 𝜎2 [𝛼:=𝜎]. handle h E[x]), which is explicitly annotated with the type and effect annotation.
+The notation (op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖 is a syntactic sugar for three conditions: (1)
+(op →f ) ∈h, which gets the operation implementation f from h; (2) op : (∀𝛼. 𝜎1 →𝜎2)∈Σ(l),
+which gets the type of the operation op from the global effect context Σ; and (3) ∅ ⊢ops h : 𝜎 |l |𝜖.
+A.3 Typing Rules
+Figure 8 defines the typing rules for System F𝜖
+.
+Most rules are standard. In rule handler, given a handler h for l, the rule takes an action with
+effect ⟨l |𝜖⟩, and handles l, leaving effect 𝜖. Rule handle is similar, but directly takes an expression
+e of effect ⟨l |𝜖⟩.
+29
+Xie and Leijen MSR-TR-2021-5
+Γ ⊢ e : 𝜎 |𝜖 Γ ⊢val v : 𝜎 Γ ⊢ops h : 𝜎 |l |𝜖
+x : 𝜎 ∈Γ
+Γ ⊢val v : 𝜎
+var
+Γ ⊢val x : 𝜎
+Γ, x : 𝜎1 ⊢ e : 𝜎2 |𝜖
+val
+Γ ⊢ v : 𝜎 |𝜖
+Γ ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 Γ ⊢ e2 : 𝜎1 |𝜖
+abs
+Γ ⊢val 𝜆𝜖 x : 𝜎1. e : 𝜎1 →𝜖 𝜎2
+Γ ⊢val v : 𝜎 𝜅 ≠ lab
+Γ ⊢ e1 e2 : 𝜎 |𝜖
+Γ ⊢ e : ∀𝛼𝜅 . 𝜎1 |𝜖 ⊢wf 𝜎 : 𝜅
+app
+tapp
+Γ ⊢val Λ𝛼𝜅
+. v : ∀𝛼𝜅 . 𝜎
+tabs
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+Γ ⊢ e 𝜎 : 𝜎1 [𝛼:=𝜎]|𝜖
+perform
+Γ ⊢ops h : 𝜎 |l |𝜖 Γ ⊢ e : 𝜎 |⟨l |𝜖⟩
+Γ ⊢val perform op 𝜖 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]
+Γ ⊢ops h : 𝜎 |l |𝜖
+handler
+Γ ⊢val handler h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎
+Γ ⊢ handle h e : 𝜎 |𝜖
+opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∩ftv(𝜖, 𝜎) Γ ⊢val fi : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎)
+handle
+ops
+Γ ⊢ops {op1 →f1, . . ., opn
+→fn }: 𝜎 |l |𝜖
+Fig. 8. Typing Rules for System F𝜖
+.
+A.4 Preservation and Progress
+Xie et al. [2020] have proved that System F𝜖 enjoys progress and preservation. Progress implies
+that in any well-typed total expression, all operations are handled properly.
+Theorem 8. (Progress). If ∅ ⊢ e1 : 𝜎 |⟨⟩then either e1 is a value, or e1 ↦−→e2.
+Theorem 9. (Preservation). If ∅ ⊢ e1 : 𝜎 |⟨⟩and e1 ↦−→e2, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+B MULTI-PROMPT
+Figure 9 presents System Fp, which applies the multi-prompt semantics to algebraic effects.
+B.1 Syntax
+Expressions e include all expressions from System F𝜖 , except for handle, which is replaced by two
+internal multi-prompt constructs, prompt m h e and yield m v. Similarly, the evaluation context
+frame handle is replaced by prompt. Notably, prompt and yield both carry a marker: a marker
+identifies a specific prompt, which can be used for searching as in yield. yield further carries a
+value v, which is a continuation that waits for the resumption, as we will see in the operational
+semantics rules.
+B.2 Operational Semantics
+Figure 9b defines the operational semantics rules. In rule (handler), handler this time installs a
+prompt m frame, with a fresh unique marker m, so that the marker can later be used to find the
+specific prompt. As before, values are propagated through the prompt frame (rule (promptv)).
+As this system models the multi-prompt semantics, we split performing an operation into two
+parts: searching for a handler (rule (perform)), and capturing and restoring a resumption (rule
+(prompt)). In rule (perform), perform finds the corresponding prompt. But instead of directly
+30
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+e ::= v |e e |e 𝜎
+| prompt m h e | yield m v
+Expression Evaluation context E ::= □ |E e |v E | prompt m h E
+(a) Syntax
+(handler) handler h v (promptv) prompt m h v (prompt) prompt m h E[yield m f ] −→ prompt m h (v ()) with unique m
+−→ v
+−→ f (𝜆𝜖 x : 𝜎2. prompt m h E[x])
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎
+(perform) prompt m h E[perform op 𝜖0 𝜎 v] −→ prompt m h E[yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)]
+iff op ̸∈bop(E)
+(op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖
+𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎
+(b) Operational semantics
+Γ ⊢ops h : 𝜎 |l |𝜖 Γ ⊢ e : 𝜎 |⟨l |𝜖⟩
+Γ ⊢val f : (𝜎 →𝜖′𝜎′)→𝜖′𝜎′
+Γ ⊢ prompt m h e : 𝜎 |𝜖
+prompt
+(c) Typing rules
+yield
+Γ ⊢ yield m f : 𝜎 |𝜖
+Fig. 9. Fp: Explicitly typed with multi-prompt delimited control.
+capturing the resumption, the rule produces yield m, with a continuation (𝜆𝜖 k : 𝜎k. f 𝜎 v k), which,
+when applied to the resumption k, applies the operation implementation f to the type arguments
+𝜎, value argument v and the resumption k. Then, in rule (prompt), yield captures the resumption
+(𝜆𝜖 x : 𝜎2. prompt m hE[x]), to which f is applied.
+B.3 Typing Rules
+Figure 9c gives the typing rules for the two multi-prompt constructs. Rule prompt is similar as rule
+handle, which handles l from the effect ⟨l |𝜖⟩. Rule yield is more subtle. Recall that the operational
+rule (perform)(in Figure 9b) turns perform op 𝜖0𝜎 v into yield, so the type of yield should match
+the result type of perform op 𝜖0 𝜎 v. According to the typing rule for perform, the result type of
+perform op 𝜖0 𝜎 v is 𝜎2 [𝛼:=𝜎](as in rule (perform)), which is the argument type of the resumption
+k. Thus in yield, we get the result type from the argument type of f ’s argument. To be more precise,
+we could also set the result effect of yield to match that of perform op 𝜖0 𝜎 v. But since yield is an
+internal frame, as we will see in the next section, the current form is sufficient for type soundness.
+B.4 Preservation and Progress
+Theorem 10. (Preservation of Internal-safe System Fp). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-safe,
+and e1 ↦−→e2, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+Theorem 11. (Progress of Internal-safe System Fp). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-safe,
+then either e1 is a value, or e1 ↦−→e2.
+C TYPED BUBBLE SEMANTICS
+31
+Xie and Leijen MSR-TR-2021-5
+Expressions e ::= . . . (non-yield expressions from Fp (Fig. 1))
+| yield m v v (yield with bubbling)
+(a) Expressions
+(app1) (app2) (under) v □ •yield m f k −→yield m f (𝜆𝜖 x : 𝜎2. v (k x)) ∅ ⊢val k : 𝜎2 →𝜖 𝜎
+□ e •yield m f k −→yield m f (𝜆𝜖 x : 𝜎2. (k x)e) ∅ ⊢val k : 𝜎2 →𝜖 𝜎
+under𝜖0,𝜖 l □ •yield m f k −→yield m f (𝜆𝜖0 x : 𝜎2. under𝜖0,𝜖 l (k x))
+∅ ⊢val k : 𝜎2 →𝜖 𝜎
+(prompt1) prompt m h □ •yield m f k −→f (𝜆𝜖 x : 𝜎2. prompt m h (k x)) ∅ ⊢val k : 𝜎2 →⟨l |𝜖⟩𝜎
+(prompt2) prompt n h □ •yield m f k −→yield m f (𝜆𝜖 x : 𝜎2. prompt n h (k x)) iff n ≠ m
+∅ ⊢val k : 𝜎2 →⟨l |𝜖⟩𝜎
+(perform) −→yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)(𝜆⟨l |𝜖0⟩x : 𝜎2 [𝛼:=𝜎]. x)
+with (m, h, _)= w.l ∧ (op →f ) ∈h
+𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎
+∅ ⊢ h : 𝜎 |l |𝜖 (op : ∀𝛼. 𝜎1 →𝜎2)∈Σ(l)
+(b) Operational Semantics
+Γ ⊢val f : (𝜎2 →𝜖′𝜎′)→𝜖′𝜎′ Γ ⊢val k : 𝜎2 →𝜖 𝜎
+w ⊢ perform op 𝜖0 𝜎 v yieldb
+Γ ⊢ yield m f k : 𝜎 |𝜖
+(c) Typing rule
+Fig. 10. Fpb: Multi-prompt with bubble semantics.
+Figure 10 gives the full typed formalization of the bubble semantics given in Section 4.1.
+C.1 Typing
+The rule yieldb type-checks the new yield form where the argument type 𝜎2 of k always matches
+the expected operation result type 𝜎2 in f . The result type and effect of yield are the same as that of
+k. Note how the result type and effect of the partially built resumption change during each bubbling
+step in the operational semantics.
+C.2 Preservation and Progress
+Like before, we prove the preservation and the progress theorem of internal-safe System Fpb. The
+main challenge in the proof is to show that when the continuation f is applied to the complete
+resumption k, the type of k matches the argument type of f ; that is, at that moment, we have
+𝜎 = 𝜎′and 𝜖 = 𝜖′(as in rule yieldb).
+Theorem 12. (Preservation of Internal-safe System Fpb). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-
+safe, and ⟨⟩|e1 ↦−→e2, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+Theorem 13. (Progress of Internal-safe System Fpb). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is internal-safe,
+then either e1 is a value, or ⟨⟩ ⊢ e1 ↦−→e2.
+C.3 Monadic Translation
+The full monadic translation is given in Figure 11.
+32
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Γ
+↑
+⊢ e
+↑
+Fpb
+: 𝜎
+↓ |𝜖
+↑
+⇝e′
+↓
+Fv
+Γ
+↑
+⊢val v
+↑
+Fpb
+: 𝜎
+↓
+⇝v′
+↓
+Fv
+Γ
+↑
+⊢ops h
+↑
+Fpb
+: 𝜎
+↓ |l
+↓|𝜖
+↓
+⇝h′
+↓
+Fv
+x : 𝜎 ∈Γ
+Γ, x : 𝜎1 ⊢ e : 𝜎2 |𝜖 ⇝e′
+var
+abs
+Γ ⊢val x : 𝜎 ⇝x
+Γ ⊢val 𝜆𝜖 x : 𝜎1. e : 𝜎1 →𝜖 𝜎2 ⇝𝜆x : ⌊𝜎1⌋. e′
+Γ ⊢val v : 𝜎 ⇝v′
+Γ ⊢val v : 𝜎 ⇝v′ 𝜅 ≠ lab
+Γ ⊢ v : 𝜎 |𝜖 ⇝pure 𝜖 ⌊𝜎⌋v′
+val
+Γ ⊢val Λ𝛼𝜅
+. v : ∀𝛼𝜅 . 𝜎 ⇝Λ𝛼𝜅
+. v′
+Γ ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 ⇝e′
+1 Γ ⊢ e2 : 𝜎1 |𝜖 ⇝e′
+2
+tabs
+app
+Γ ⊢ e1 e2 : 𝜎 |𝜖 ⇝e′
+1 ▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. e′
+2 ▷f )
+Γ ⊢ e : ∀𝛼𝜅 . 𝜎1 |𝜖 ⇝e′ ⊢wf 𝜎 : 𝜅
+tapp
+Γ ⊢ e 𝜎 : 𝜎1 [𝛼:=𝜎]|𝜖 ⇝e′▷(𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+perform
+Γ ⊢val perform op 𝜖 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]
+⇝performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)
+opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∩ftv(𝜖 𝜎)
+Γ ⊢val fi : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎)⇝f′
+i
+ops
+Γ ⊢ops {op1 →f1, . . ., opn
+→fn }: 𝜎 |l |𝜖 ⇝Hndl (∀𝛼. Normal ⌊𝜎1⌋⌊𝜎2⌋𝜖 ⌊𝜎⌋f′
+i )}
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′
+handler
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′ Γ ⊢ e : 𝜎 |⟨l |𝜖⟩⇝e′
+prompt
+Γ ⊢val handler h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎 ⇝handlerl 𝜖 ⌊𝜎⌋h′
+Γ ⊢ prompt m h e : 𝜎 |𝜖 ⇝promptl 𝜖 ⌊𝜎⌋m h′e′
+Γ ⊢val f : (𝜎2 →𝜖′𝜎′)→𝜖′𝜎′ ⇝f′ Γ ⊢val k : 𝜎2 →𝜖 𝜎 ⇝k′
+yieldb
+Γ ⊢ yield m f k : 𝜎 |𝜖 ⇝yield 𝜖 ⌊𝜎⌋⌊𝜎2⌋𝜖′⌊𝜎′⌋m f′k′
+Γ ⊢ e : 𝜎 |𝜖 ⇝e′
+under
+Γ ⊢ under𝜖0,𝜖 l e : 𝜎 |⟨l |𝜖0⟩⇝𝜆w : Evv ⟨l |𝜖0⟩. let (m, _, w′): Ev 𝜖 r = w.l
+in underl ⟨l |𝜖0⟩⌊𝜎⌋𝜖 r m w′e′w
+Fig. 11. Monadic translation of Fpb
+.
+The translation makes use of the following helper functions:
+pure : ∀𝜇 𝛼. 𝛼 →Mon 𝜇 𝛼
+pure x= 𝜆w : Evv 𝜇. Pure 𝜇 𝛼 x
+yield : ∀𝜇 𝛼 𝛽 𝜇′r. Marker 𝜇′r →((𝛽 →Mon 𝜇′r)→Mon 𝜇′r)→(𝛽 →Mon 𝜇 𝛼)→Mon 𝜇 𝛼
+yield m clause k= 𝜆w : Evv 𝜇. Yield 𝜇 𝛼 𝛽 𝜇′r m clause k
+33
+Xie and Leijen MSR-TR-2021-5
+Expression Values e ::= v |e e |e[𝜎]
+v ::= x |𝜆x : 𝜎. e |Λ𝛼𝜅
+. v
+Evaluation context F ::= □ |F e |v F |F [𝜎]
+E ::= F
+(fapp) (𝜆𝜖 x : 𝜎. e)v −→e[x:=v]
+(ftapp) (Λ𝛼𝜅
+. v)[𝜎]−→v[𝛼:=𝜎]
+x : 𝜎 ∈Γ
+Γ ⊢F v : 𝜎
+Γ, x : 𝜎1 ⊢F e : 𝜎2
+fvar
+ftabs
+fabs
+Γ ⊢F Λ𝛼𝜅
+. v : ∀𝛼𝜅 . 𝜎
+Γ ⊢F e1 : 𝜎1 →𝜎 Γ ⊢ e2 : 𝜎
+fapp
+Γ ⊢F x : 𝜎
+Γ ⊢F 𝜆x : 𝜎1. e : 𝜎1 →𝜎2
+Γ ⊢F e : ∀𝛼𝜅 . 𝜎1 ⊢wf 𝜎 : 𝜅
+ftapp
+Γ ⊢F e1 e2 : 𝜎
+Γ ⊢F e[𝜎]: 𝜎1 [𝛼:=𝜎]
+Fig. 12. System Fv: explicitly typed (higher kinded) polymorphic lambda calculus.
+⊢wf 𝜎 : ∗ 𝜅 ≠ lab
+kind-var
+kind-qant
+⊢wf 𝛼𝜅 : 𝜅
+⊢wf ∀𝛼𝜅 . 𝜎 : ∗
+⊢wf 𝜎1 : 𝜅2 →𝜅 ⊢wf 𝜎2 : 𝜅2
+kind-con
+kind-app
+⊢wf c𝜅 : 𝜅
+⊢wf 𝜎1 𝜎2 : 𝜅
+⊢wf 𝜖 : eff ⊢wf l : lab
+⊢wf ⟨⟩: eff
+kind-total
+⊢wf ⟨l |𝜖⟩: eff
+⊢wf 𝜎1 : ∗ ⊢wf 𝜎2 : ∗ ⊢wf 𝜖 : eff
+kind-arrow
+⊢wf 𝜎1 →𝜖 𝜎2
+kind-row
+Fig. 13. Well-formedness of types.
+We assume the type for evidence is Ev, and we use let x : 𝜎 = e1 in e2 as the syntactic sugar for
+(𝜆x : 𝜎. e2)e1.
+D POLYMORPHIC LAMBDA CALCULUS
+Figure 12 presents System Fv, an explicitly typed (higher kinded) polymorphic lambda calculus
+with strict evaluation [Xie et al. 2020]. Types as in Figure 7 with no effects on the arrows.
+E FULL RULES
+E.1 Well-formed Types
+The kinding rules for types are shown in Figure 13. The rules are standard mostly standard except
+we do not allow type abstraction over effect labels – or otherwise equivalence between types cannot
+be decided statically. The rules kind-total, kind-row, and kind-arrow are not strictly necessary
+and can be derived from kind-app.
+34
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Γ ⊢ec E : 𝜎 →𝜎′|𝜖
+cempty
+Γ ⊢ec □: 𝜎 →𝜎 |𝜖 ⇝𝜆x : Mon 𝜖 ⌊𝜎⌋. x
+Γ ⊢ e : 𝜎2 |𝜖 ⇝e′
+Γ ⊢ec E : 𝜎1 →(𝜎2 →𝜖 𝜎3)|𝜖 ⇝g
+capp1
+Γ ⊢ec E e : 𝜎1 →𝜎3 |𝜖 ⇝(𝜆f. e′▷f )★ g
+Γ ⊢val v : 𝜎2 →𝜖 𝜎3 ⇝v′
+Γ ⊢ec E : 𝜎1 →𝜎2 |𝜖 ⇝g
+capp2
+Γ ⊢ec v E : 𝜎1 →𝜎3 |𝜖 ⇝v ★ g
+Γ ⊢ec E : 𝜎1 →∀𝛼. 𝜎2 |𝜖 ⇝g
+ctapp
+Γ ⊢ec E 𝜎 : 𝜎1 →𝜎2 [𝛼:=𝜎]|𝜖 ⇝(𝜆x : ⌊∀𝛼. 𝜎2⌋. pure 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))★ g
+Γ ⊢ops h : 𝜎 |l |𝜖
+Γ ⊢ec E : 𝜎1 →𝜎 |⟨l |𝜖⟩
+chandle
+Γ ⊢ec handle h E : 𝜎1 →𝜎 |𝜖
+For System Fp
+,Fpw
+,Fpb
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′
+Γ ⊢ec E : 𝜎1 →𝜎 |⟨l |𝜖⟩⇝g
+cprompt
+Γ ⊢ec prompt m h E : 𝜎1 →𝜎 |𝜖 promptl 𝜖 ⌊𝜎⌋m h′◦g
+Γ ⊢ec E : 𝜎1 →𝜎 |𝜖 ⇝g
+cunder
+Γ ⊢ec under⟨𝜖′,𝜖⟩l E : 𝜎1 →𝜎 |⟨l |𝜖′⟩⇝𝜆x : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋. 𝜆w : Evv ⟨l |𝜖′⟩.
+let (m, h′
+, w′): Ev 𝜖 r = w.l in underl ⟨l |𝜖′⟩⌊𝜎⌋𝜖 r m w′(g x)w
+Fig. 14. Evaluation context typing
+E.2 Evaluation Context Typing
+The evaluation context typing rules is given in Figure 14.
+E.3 Program Context Typing
+The definition of the program context in System Fpw is defined as follows, with its typing rules
+given in Figure 15. The notation ∅ ⊢ C: (𝜎 |𝜖)→(Int |⟨⟩)used in the paper can be expressed
+as ∅ ⊢ C: 𝜎 →Int |⟨⟩and ⌈E⌉= 𝜖, where ⌈C⌉gets all labels of the handlers in C.
+Program ctx. C ::= □ |Ce |e C |C𝜎
+| prompt m h C |yield m C
+| 𝜆𝜖 x : 𝜎. C |Λ𝛼𝜅
+. C
+35
+Xie and Leijen MSR-TR-2021-5
+Γ ⊢ C: 𝜎 →𝜎′|𝜖
+pempty
+Γ ⊢ □: 𝜎 →𝜎 |𝜖
+Γ ⊢ e : 𝜎2 |𝜖
+Γ ⊢ C: 𝜎1 →(𝜎2 →𝜖 𝜎3)|𝜖
+papp1
+Γ ⊢ Ce : 𝜎1 →𝜎3 |𝜖
+Γ ⊢val e : 𝜎2 →𝜖 𝜎3
+Γ ⊢ C: 𝜎1 →𝜎2 |𝜖
+papp2
+Γ ⊢ e C: 𝜎1 →𝜎3 |𝜖
+Γ ⊢ C: 𝜎1 →∀𝛼. 𝜎2 |𝜖
+ptapp
+Γ ⊢ C𝜎 : 𝜎1 →𝜎2 [𝛼:=𝜎]|𝜖
+Γ ⊢ops h : 𝜎 |l |𝜖
+Γ ⊢ C: 𝜎1 →𝜎 |⟨l |𝜖⟩
+pprompt
+Γ ⊢ prompt m h C: 𝜎1 →𝜎 |𝜖
+Γ ⊢ C: 𝜎1 →(𝜎 →𝜖′𝜎′)→𝜖′𝜎′
+pyield
+Γ ⊢ yield m C: 𝜎1 →𝜎 |𝜖
+Γ, x : 𝜎 ⊢ C: 𝜎1 →𝜎2 |𝜖
+pabs
+Γ ⊢ 𝜆𝜖 x : 𝜎. C: 𝜎1 →(𝜎 →𝜖 𝜎2)|𝜖′
+Γ, x : 𝜎 ⊢ C: 𝜎1 →𝜎2 |𝜖 𝜅 ≠ lab
+ptabs
+Γ ⊢ Λ𝛼𝜅
+. C: 𝜎1 →∀𝛼𝜅 . 𝜎2 |𝜖′
+Fig. 15. Program context typing
+F PROOFS
+F.1 System F𝜖
+Here we show a list of lemmas of System F𝜖 from [Xie et al. 2020] that will be used in later proofs.
+Most of the lemmas can be extended trivially to support the new forms.
+Lemma 3. (Evaluation context typing). If ∅⊢ec E : 𝜎1 →𝜎 |𝜖 and ∅ ⊢ e : 𝜎1 |⟨⌈E⌉|𝜖⟩, then
+∅ ⊢ E[e]: 𝜎 |𝜖 .
+Lemma 4. (Effect corresponds to the evaluation context). If ∅ ⊢ E[e]: 𝜎 |𝜖 then there exists 𝜎1
+such that ∅ ⊢ec E : 𝜎1 →𝜎 |𝜖, and ∅ ⊢ e : 𝜎1 |⟨⌈E⌉|𝜖⟩.
+The following two lemmas are corollaries.
+Lemma 5. (Well typed operations are handled). If ∅ ⊢ E[perform op 𝜎 v]: 𝜎 |⟨⟩then E has the
+form E1 •handle h •E2 with op ̸∈bop(E2)and op →f ∈h.
+36
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Lemma 6. (Effects types are meaningful). If ∅ ⊢ E[perform op 𝜎 v]: 𝜎 |𝜖 with op ̸∈bop(E),
+then op ∈Σ(l)and l ∈𝜖, i.e. effect types cannot be discarded without a handler.
+F.2 System Fp: Multi-prompt Semantics
+F.2.1 Preservation.
+Lemma 7. (Values can have any effect). If Γ ⊢ v : 𝜎 |𝜖1 , then Γ ⊢ v : 𝜎 |𝜖2.
+Proof. (Of Lemma 7) Follows directly by val. □
+Definition 3. (m-mapping). determine its h.
+We say an expression e is m-mapping, if every m in e can uniquely
+Lemma 8. (Internal-safe expressions are m-mapping). Any internal-safe expression e is m-mapping.
+Proof. (Of Lemma 8) For the base case, there is no internal construct in the expression, and so
+the goal is trivially true. In the inductive case, the expression is evaluated from an m-mapping
+internal-safe expressions. As every time a new prompt is generated, it owns a unique marker, and
+in any other reduction rules we cannot change existing markers, the goal holds. □.
+Lemma 9. (Small Step Preservation). If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and e1 −→e2,
+then ∅ ⊢ e2 : 𝜎 |𝜖.
+Proof. (Of Lemma 9) By induction on e1 −→e2. We only discuss new case.
+case (handler)handler h v −→prompt m h (v ()) with unique m with ∅ ⊢ h : 𝜎 |l |𝜖.
+∅ ⊢ handler h v : 𝜎 |⟨⟩ given
+∅ ⊢val handler h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎 (app)and (val)
+∅ ⊢ v : (()→⟨l |𝜖⟩𝜎) (app)
+∅ ⊢ops h : 𝜎 |l |𝜖 (handler)
+∅ ⊢ v (): 𝜎 |⟨l |𝜖⟩ (app)
+∅ ⊢ prompt m h (v ()): 𝜎 |𝜖 (prompt)
+case (promptv)prompt m h v −→v.
+∅ ⊢ prompt m h v : 𝜎 |𝜖 given
+∅ ⊢ v : 𝜎 |⟨l |𝜖⟩ (app)
+∅ ⊢ v : 𝜎 |𝜖 Lemma 7
+case (prompt)prompt m h E[yield m f ]−→f (𝜆x𝜖 : 𝜎2. prompt m h E[x])
+with ∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎.
+By Lemma 8, we know that each m maps to a unique handler, so the handler h is indeed what
+yield m is looking for. So h must be of the right type.
+37
+Xie and Leijen MSR-TR-2021-5
+∅ ⊢ prompt m h E[yield m f ]: 𝜎 |𝜖 given
+∅ ⊢ops h : 𝜎 |l |𝜖 (prompt)
+∅ ⊢ E[yield m f ]: 𝜎 |⟨l |𝜖⟩ above
+∅ ⊢ec E : 𝜎2 |𝜖′→𝜎 |⟨l |𝜖⟩ Lemma 4
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎 given
+x : 𝜎2 ⊢ec E : 𝜎2 |𝜖′→𝜎 |⟨l |𝜖⟩ weakening
+x : 𝜎2 ⊢ x : 𝜎2 |𝜖 (var)and (val)
+x : 𝜎2 ⊢ E[x]: 𝜎 |⟨l |𝜖⟩ weakening
+x : 𝜎2 ⊢ prompt m h E[x]: 𝜎 |𝜖 (prompt)
+∅ ⊢ (𝜆x𝜖 : 𝜎2. prompt m h E[x]): 𝜎 |𝜖 (abs)
+case (perform)prompt m h E[perform op 𝜖′𝜎 v]−→prompt m h E[yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)]
+iff op ̸∈bop(E) ∧(op →f ∈h), with 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎, ∅ ⊢ h : 𝜎 |l |𝜖, op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l).
+∅ ⊢ prompt m h E[perform op 𝜖′𝜎 v]: 𝜎 |𝜖 given
+∅ ⊢ops h : 𝜎 |l |𝜖 (prompt)
+∅ ⊢ E[perform op 𝜖′𝜎 v]: 𝜎 |⟨l |𝜖⟩ above
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) given
+∅ ⊢ec E : 𝜎2 [𝛼:=𝜎]→𝜎 |⟨l |𝜖⟩ Lemma 4
+∅ ⊢ perform op 𝜖′𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨⌈E⌉|l |𝜖⟩ above and (perform)
+∅ ⊢ perform op 𝜖′𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |⌈E⌉|𝜖⟩ op ̸∈bop(E)
+∅ ⊢ perform op 𝜖′𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |⌈E⌉|𝜖⟩𝜎2 [𝛼:=𝜎] |⟨l |⌈E⌉|𝜖⟩ (app)
+∅ ⊢val v : 𝜎1 [𝛼:=𝜎] above and (val)
+(op →f ∈h) given
+∅ ⊢val f : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎) (ops)
+𝛼 ̸∈ftv(𝜎) above
+∅ ⊢ f : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎) |𝜖 (val)
+∅ ⊢ f 𝜎 : 𝜎1 [𝛼:=𝜎]→𝜖 ((𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎)|𝜖 (tapp)
+∅ ⊢ f 𝜎 v : ((𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎)|𝜖 (app)
+k : 𝜎k ⊢ f 𝜎 v : ((𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎)|𝜖 weakening
+k : 𝜎k ⊢ f 𝜎 v k : 𝜎k →𝜖 𝜎 |𝜖 (app)
+∅ ⊢val (𝜆𝜖 k : 𝜎k. f 𝜎 v k): 𝜎k →𝜖 𝜎 (abs)
+∅ ⊢val (𝜆𝜖 k : 𝜎k. f 𝜎 v k): (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎
+∅ ⊢ yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k): 𝜎2 [𝛼:=𝜎]|⟨⌈E⌉|l |𝜖⟩ (yield)
+∅ ⊢ E[yield m (𝜆𝜖 k. f 𝜎 v k)]: 𝜎 |⟨l |𝜖⟩ Lemma 3
+∅ ⊢ prompt m h E[yield m (𝜆𝜖 k. f 𝜎 v k)]: 𝜎 |𝜖 (prompt)
+□
+Proof. (Of Theorem 10)
+e1 = E[e′
+1] (step)
+e′
+1 −→e′
+2 above
+e2 = E[e′
+2] above
+∅ ⊢ E[e′
+1]: 𝜎 |⟨⟩ given
+∅ ⊢ e′
+1 : 𝜎1 |⌈E⌉ Lemma 4
+∅ ⊢ E : 𝜎1 →𝜎 |⟨⟩ above
+∅ ⊢ e′
+2 : 𝜎1 |⌈E⌉ Lemma 9
+∅ ⊢ E[e′
+2]: 𝜎 |⟨⟩ Lemma 3
+□
+38
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+F.2.2 Progress.
+Lemma 10. (Progress with effects). If ∅ ⊢ e1 : 𝜎 |𝜖 then either (1) e1 is a value; or (2) e1 ↦−→e2;
+or (3) e1 = E[perform op 𝜖 𝜎 v], where op ̸∈bop(E); or (4) e1 = E[yield m f ], where m ̸∈bm(E).
+Proof. (Of Lemma 10) By induction on typing. Based on the progress theorem of System F𝜖 , here
+we only discuss the new cases.
+case ∅ ⊢ prompt m h e : 𝜎 |𝜖. By I.H., we know that either e is a value, or e ↦−→e′
+,
+or e = E[perform op 𝜖 𝜎 v], or e = E[yield m′f ]where m′ ̸∈bm(E).
+•If e is a value, then by (promptv)we have prompt m h e ↦−→e
+•If e ↦−→e′, then by (step)we have prompt m h e ↦−→prompt m h e′
+.
+•If e = E[perform op 𝜖 𝜎 v]. We discuss whether op is bound in h.
+– op →f ∈h. Then by (perform)we have
+prompt m h E[perform op 𝜖 𝜎 v]↦−→prompt m h E[yield m (𝜆k. f 𝜎 v k)].
+– op ̸∈h. Let E′
+= prompt m h E, then we have e1 = E′[perform op 𝜖 𝜎 v].
+•If e = E[yield m′f ].
+– m = m′. Then by (prompt), we have prompt m h E[yield m f ]↦−→f (𝜆x. prompt m h E[x]).
+– m ≠ m′. Let E′
+= prompt m h E, then we have e1 = E′[yield m′f ].
+case ∅ ⊢ yield m f : 𝜎 |𝜖. The goal follows trivially. □.
+Proof. (Of Theorem 11) Apply Lemma 10, then we know that either e1 is a value, or e1 ↦−→e2, or
+e1 = E[perform op 𝜖 𝜎 v]where op ̸∈bop(E), or e = E[yield m f ], where m ̸∈bm(E).
+For the first two cases, we have proved the goal. For the third case, we prove it by contradiction.
+∅ ⊢ E[perform op 𝜖 𝜎 v]: 𝜎 |⟨⟩ given
+l ̸∈bop(E) given
+l ∈⟨⟩ Lemma 6
+Contradiction
+The last case is an impossible case as for internal-safe expressions, yield cannot appear without the
+corresponding prompt. This is because (1) initially yield only appears after applying rule (perform);
+(2) it is then directly followed by rule (prompt)so there is no way to pass it around. Thus there is
+no possible evaluation that can construct a standalone yield.
+□
+F.2.3 Simulation.
+Definition 4. (⌈e⌉𝜖⇓𝑝 and ⌈e⌉𝜖⇑𝑝 ). ⌈e⌉𝜖⇓𝑝 turns an expression from F𝜖 to Fp by turning handle h
+into prompt m h with fresh m of the correct type; and ⌈e⌉𝜖⇑𝑝 turns a yield-free expression from Fp
+into F𝜖 by turning back prompt m h into handle h. The definition can be lifted straightforward to
+handlers and evaluation contexts.
+Lemma 11. (Simulation (small step)). ⌈e1⌉𝜖⇓𝑝 −→∗e′
+2 in System Fp, and ⌈e′
+2⌉𝜖⇑𝑝 = e2.
+If e1 −→e2 in System F𝜖 , then there exists e′
+2 such that
+Proof. (Of Lemma 11) By induction on e1 −→e2. Most cases are straightforward. The only interest-
+ing case is
+(handler)handler h E[perform op 𝜖0 𝜎 v]−→f 𝜎 v (𝜆x. handle h E[x])with op ̸∈bop(E), (op →f ) ∈h.
+In this case, we have
+⌈handler h E[perform op 𝜖0 𝜎 v]⌉𝜖⇓𝑝 = prompt m ⌈h⌉𝜖⇓𝑝 (⌈E⌉𝜖⇓𝑝 [perform op 𝜖0 𝜎 ⌈v⌉𝜖⇓𝑝 ])with a
+39
+Xie and Leijen MSR-TR-2021-5
+fresh m. Since ⌈⌉𝜖⇓𝑝 does not change handlers in an evaluation context, obviously we have
+op ̸∈bop(⌈E⌉𝜖⇓𝑝 ).
+prompt m ⌈h⌉𝜖⇓𝑝 (⌈E⌉𝜖⇓𝑝 [perform op 𝜖0 𝜎 ⌈v⌉𝜖⇓𝑝 ])
+−→(perform)
+prompt m ⌈h⌉𝜖⇓𝑝 ⌈E⌉𝜖⇓𝑝 [yield m (𝜆k. ⌈f ⌉𝜖⇓𝑝 𝜎 ⌈v⌉𝜖⇓𝑝 k)]
+−→(prompt)
+(𝜆k. ⌈f ⌉𝜖⇓𝑝 𝜎 ⌈v⌉𝜖⇓𝑝 k)(𝜆x. prompt m ⌈h⌉𝜖⇓𝑝 ⌈E⌉𝜖⇓𝑝 [x])
+−→(app)
+⌈f ⌉𝜖⇓𝑝 𝜎 ⌈v⌉𝜖⇓𝑝 (𝜆x. prompt m ⌈h⌉𝜖⇓𝑝 ⌈E⌉𝜖⇓𝑝 [x])
+We have ⌈⌈f ⌉𝜖⇓𝑝 𝜎 ⌈v⌉𝜖⇓𝑝 (𝜆x. prompt m ⌈h⌉𝜖⇓𝑝 ⌈E⌉𝜖⇓𝑝 [x])⌉𝜖⇑𝑝 = f 𝜎 v (𝜆x. handle h E[x]).
+□
+Theorem 14. (Simulation). in System Fp, and ⌈e′
+2⌉𝜖⇑𝑝 = e2.
+Proof. (Of Theorem 14) Follows directly by Lemma 11 and (step). □
+If e1 ↦−→e2 in System F𝜖 , then there exists e′
+2 such that ⌈e1⌉𝜖⇓𝑝 ↦−→∗e′
+2
+F.3 System Fpw: Multi-prompt with Evidence Passing Semantics
+F.3.1 Preservation.
+Lemma 12. (Small Step Preservation). 1. If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and e1 −→e2,
+then ∅ ⊢ e2 : 𝜎 |𝜖.
+2. If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and w ⊢ e1 −→e2, where w : evv 𝜖, then ∅ ⊢ e2 : 𝜎 |𝜖.
+Proof. (Of Theorem 9) The e1 −→e2 is the same as before (Lemma 9). So here we only discuss the
+case for w ⊢ e1 −→e2.
+(perform)w ⊢ perform op 𝜖0 𝜎 v −→yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)with (m, h, _)= w.l, and (op →f )∈h,
+and op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l), and ∅ ⊢ h : 𝜎 |l |𝜖, and 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎.
+∅ ⊢ h : 𝜎 |l |𝜖 given
+(op →f ) ∈h given
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) given
+∅ ⊢val f : ∀𝛼. 𝜎1 →𝜖 (𝜎2 →𝜖 𝜎)→𝜖 𝜎 ops
+𝛼 ̸∩tv(𝜖, 𝜎) above
+∅ ⊢ f : ∀𝛼. 𝜎1 →𝜖 (𝜎2 →𝜖 𝜎)→𝜖 𝜎 |𝜖 val
+∅ ⊢ f 𝜎 : 𝜎1 [𝛼:=𝜎]→𝜖 (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 |𝜖 tapp
+∅ ⊢val perform op 𝜖0 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖0⟩𝜎2 [𝛼:=𝜎] perform
+∅ ⊢ perform op 𝜖0 𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |𝜖0⟩ app
+∅ ⊢val v : 𝜎1 [𝛼:=𝜎] above
+∅ ⊢ f 𝜎 v : (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 |𝜖 app
+k : 𝜎k ⊢ f 𝜎 v : (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 |𝜖 weakening
+k : 𝜎k ⊢ f 𝜎 v k : 𝜎 |𝜖 app
+∅ ⊢val 𝜆k : 𝜎k. f 𝜎 v k : 𝜎k →𝜖 𝜎 |𝜖 abs
+∅ ⊢ yield m (𝜆k : 𝜎k. f 𝜎 v k): 𝜎2 [𝛼:=𝜎]|⟨l |𝜖0⟩ yield
+□
+Lemma 13. (Preservation). If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and w ⊢ e1 ↦−→e2 where
+w : evv 𝜖, then ∅ ⊢ e2 : 𝜎 |𝜖.
+40
+Generalized Evidence Passing for Effect Handlers Proof. (Of Lemma 13) By induction on w ⊢ e1 ↦−→e2.
+case (step)
+e1 = F[e′
+1] (step)
+e′
+1 −→e′
+2 above
+e2 = F[e′
+2] above
+∅ ⊢ F[e′
+1]: 𝜎 |⟨⟩ given
+∅ ⊢ e′
+1 : 𝜎1 |⌈F⌉ Lemma 4
+∅ ⊢ F : 𝜎1 →𝜎 |⟨⟩ above
+∅ ⊢ e′
+2 : 𝜎1 |⌈F⌉ Lemma 12
+∅ ⊢ F[e′
+2]: 𝜎 |⟨⟩ Lemma 3
+case (stepw)
+e1 = F[e′
+1] (step)
+w ⊢ e′
+1 −→e′
+2 above
+e2 = F[e′
+2] above
+∅ ⊢ F[e′
+1]: 𝜎 |⟨⟩ given
+∅ ⊢ e′
+1 : 𝜎1 |⌈F⌉ Lemma 4
+∅ ⊢ F : 𝜎1 →𝜎 |⟨⟩ above
+∅ ⊢ e′
+2 : 𝜎1 |⌈F⌉ Lemma 12
+∅ ⊢ F[e′
+2]: 𝜎 |⟨⟩ Lemma 3
+case (promptw)
+e1 = F[prompt m h e′
+1] (promptw)
+⟨l : (m, h, w)|w⟩|e′
+1 −→e′
+2 above
+e2 = F[prompt m h e′
+2] above
+∅ ⊢ F[prompt m h e′
+1]: 𝜎 |⟨⟩ given
+∅ ⊢ e′
+1 : 𝜎1 |⌈F (prompt m h □)⌉ Lemma 4
+∅ ⊢ F (prompt m h □]): 𝜎1 →𝜎 |⟨⟩ above
+∅ ⊢ e′
+2 : 𝜎1 |⌈F (prompt m h □)⌉ I.H.
+∅ ⊢ F[prompt m h e′
+2]: 𝜎 |⟨⟩ Lemma 3
+□
+Proof. (Of Theorem 2) Follows directly by Lemma 13. □
+MSR-TR-2021-5
+F.3.2 Progress.
+Lemma 14. (Progress with effects). If ∅ ⊢ e1 : 𝜎 |𝜖, then for any w : evv 𝜖, we have either (1)
+e1 is a value; or (2) w ⊢ e1 ↦−→e2; or (3) e1 = E[yield m f ]where m ̸∈bm(E).
+Proof. (Of Lemma 14) By induction on typing.
+First, notice that the type of w is always correctly updates through (step), (stepw)and (promptw).
+Most cases follow the progress theorem of System Fp, so here we only discuss the new cases.
+case ∅ ⊢ prompt m h e : 𝜎 |𝜖. By I.H., we know that either e is a value, or ⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′
+,
+or e = E[yield m′f ], where m′ ̸∈bm(E).
+•If e is a value, then by (promptv)we have prompt m h e ↦−→e.
+•If ⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′. Then by (promptw), prompt m h e ↦−→prompt m h e′
+.
+•If e = E[yield m′f ]where m′ ̸∈bm(E).
+41
+Xie and Leijen MSR-TR-2021-5
+– m = m′. Then by (prompt), we have prompt m h E[yield m f ]↦−→f (𝜆x. prompt m h E[x]).
+– m ≠ m′. Let E′
+= prompt m h E, then we have e1 = E′[yield m′f ].
+case ∅ ⊢ yield m f : 𝜎 |𝜖. The goal follows trivially.
+case ∅ ⊢ perform op 𝜖 𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |𝜖⟩where op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l), ∅ ⊢val v : 𝜎1 [𝛼:=𝜎].
+The main difference between the progress theorem for System Fpw from System Fp is that perform
+can always reduce in System Fpw under the evidence vector with the right type. The case when
+the operation argument is not a value can follow the existing standard proof steps for previous
+progress lemmas, so here we only discuss when it is a value.
+Given w : evv ⟨l |𝜖⟩, we can get (m, h, _)= w.l where h is a handler for effect l, and thus
+(op →f ) ∈h.
+So by (perform), we have
+w ⊢ perform op 𝜖 𝜎 v : 𝜎2 [𝛼:=𝜎]−→yield m (𝜆k. f 𝜎 v k). □
+Proof. (Of Theorem 3) Apply Lemma 14, then we know that either e1 is a value, or ⟨⟩ ⊢ e1 ↦−→e2,
+or e = E[yield m f ], where m ̸∈bm(E).
+For the first two cases, we have proved the goal.
+The last case is an impossible case. For internal-safe expressions, yield can only appear under
+(perform). By Lemma 1, we know that (perform)is applied under the evidence vector ⟨⌈E⌉|⟨⟩⟩.
+And thus the corresponding prompt m must be in E.
+□
+F.3.3 Correspondence.
+Proof. (Proof for Lemma 1) By induction on ↦−→.
+case (step).
+e1 = F[e′
+1] (step)
+e2 = F[e′
+2] above
+e′
+1 −→e′
+2 above
+case (stepw).
+e1 = F[e′
+1] (step)
+e2 = F[e′
+2] above
+w ⊢ e′
+1 −→e′
+2 above
+⟨⌈F⌉|w⟩= w by definition
+case (promptw).
+e1 = F[prompt m h e′
+1] (step)
+e2 = F[prompt m h e′
+2] above
+⟨l : (m, h)|w⟩ ⊢ e′
+1 ↦−→e′
+2 above
+By I.H., we have
+subcase
+e′
+1 = E′[e′′
+1 ] I.H.
+e′
+2 = E′[e′′
+2 ]
+e′′
+1 −→e′′
+2
+E= F (prompt m h E′) Let
+42
+Generalized Evidence Passing for Effect Handlers subcase
+e′
+1 = E′[e′′
+1 ] I.H.
+e′
+2 = E′[e′′
+2 ]
+⟨⌈E′⌉|l : (m, h, _)|w⟩ ⊢ e′′
+1 −→e′′
+2
+⟨⌈F (prompt m h E′)⌉|w⟩= ⟨⌈E′⌉|l : (m, h, _)|w⟩ by definition
+□
+MSR-TR-2021-5
+Proof. (Of Theorem 1) Follows directly by Lemma 1 and (perform). □
+F.3.4 Simulation.
+Lemma 15. (Simulation (small step)). Given ∅ ⊢ e1 : 𝜎 |𝜖, if e1 −→e2 in System Fp, then for
+w : evv 𝜖, we have w ⊢ e1 ↦−→e2 in System Fpw
+.
+Proof. (Of Lemma 15) By induction on e1 −→e2 in System Fp. Most cases are straightforward. The
+only interesting case is
+(perform)prompt m h E[perform op 𝜖0 𝜎 v]−→prompt m h E[yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)]
+iff op ̸∈bop(E) ∧(op →f ∈h), op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l), ∅ ⊢ h : 𝜎 |l |𝜖, 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎.
+In System Fpw then, we know that
+reducing
+w ⊢ prompt m h E[perform op 𝜖 𝜎 v]
+means (by (promptw)) reducing
+⟨l : (m, h, w)|w⟩ ⊢ E[perform op 𝜖 𝜎 v]
+which then means (by ↦−→) reducing
+⟨⌈E⌉ |⟨l : (m, h, w)|w⟩⟩ ⊢ perform op 𝜖 𝜎 v
+Since op ̸∈bop(E), we know that ⟨⌈E⌉ |⟨l : (m, h, w)|w⟩⟩.l= (m, h, _). We then have by
+(perform),
+⟨⌈E⌉|⟨l : (m, h, w)|w⟩⟩ ⊢ perform op 𝜖 𝜎 v ↦−→yield m (𝜆k. f 𝜎 v k)
+Therefore
+w ⊢ prompt m h E[perform op 𝜖 𝜎 v]↦−→prompt m h E[yield m (𝜆k. f 𝜎 v k)]
+□
+Lemma 16. (Evaluation Step (II)). 1. If e1 −→e2, then w ⊢ E[e1]↦−→E[e2].
+2. If ⟨⌈E⌉|w⟩ ⊢ e1 −→e2, then w ⊢ E[e1]↦−→E[e2].
+Proof. (Of Lemma 16) Both cases can be easily proved by induction on E. We take the first case as
+an example. case E= □. The goal follows directly by (step).
+case E= E′e. By I.H., we have w ⊢ E′[e1]↦−→E′[e2]. By (stepw), we have (E′e)[e1]↦−→(E′e)[e2].
+case The case for v E′and E′𝜎 are similar as the case for E′e, following directly by I.H. and (stepw).
+case E= prompt m h E′. By I.H., we have ⟨l : (m, h, w)|w⟩ ⊢ E′[e1]−→E[e2]. By (promptw),
+we have (prompt m h E′)[e1]−→(prompt m h E′)[e2]. □
+Lemma 17. (Evaluation Step (III)). If ⟨⌈E⌉|w⟩ ⊢ e1 ↦−→e2, then w ⊢ E[e1]↦−→E[e2].
+Proof. (Of Lemma 17) Given ⟨⌈E⌉|w⟩ ⊢ e1 ↦−→e2, by Lemma 1, we know that there are two cases
+•e1 = E′[e′
+1], e2 = E′[e′
+2], and e′
+1 −→e′
+2.
+By Lemma 16 (1), we have that w ⊢ (E •E′)[e′
+1]↦−→(E •E′)[e′
+2]. That is, w ⊢ E[e1]↦−→E[e2].
+•e1 = E′[e′
+1], e2 = E′[e′
+2], and ⟨⌈E′⌉|⟨⌈E⌉|w⟩⟩ ⊢ e′
+1 −→e′
+2.
+43
+Xie and Leijen MSR-TR-2021-5
+By Lemma 16 (2), we have that w ⊢ (E •E′)[e′
+1]↦−→(E •E′)[e′
+2]. That is, E[e1]↦−→E[e2].
+□
+Theorem 15. (Simulation). Given ∅ ⊢ e1 : 𝜎 |𝜖, if e1 ↦−→e2 in System Fp, then for w : evv 𝜖,
+we have w ⊢ e1 ↦−→e2 in System Fpw
+.
+Proof. (Of Theorem 15) In System Fp
+, e1 ↦−→e2 means that, by (step), e1 = E[e′
+1], and e2 = E[e′
+2],
+and e′
+1 −→e′
+2.
+From Lemma 15, we have that ⟨⌈E⌉|w⟩⊢ e′
+1 ↦−→e′
+2.
+By Lemma 17, we have w ⊢ E[e′
+1]↦−→E[e′
+2]. That is, w ⊢ e1 ↦−→e2.
+□
+F.3.5 Uniqueness.
+Proof. (Of Theorem 4) From Lemma 8, we know that internal-safe expressions are m-mapping.
+Then suppose there is an internal-safe expression of form
+prompt m h •E •prompt m h •e
+where the marker m is duplicated, and these two ms, as the expression is m-mapping, have the
+same handler h, and h is a handler for effect l.
+Since it is internal-safe, we know it is closed and well-typed. So we have
+∅ ⊢ prompt m h •E •prompt m h •e : 𝜎 |𝜖 known
+∅ ⊢ops h : 𝜎 |l |𝜖 prompt
+∅ ⊢ E •prompt m h •e : 𝜎 |⟨l |𝜖⟩ prompt
+∅ ⊢ec E : 𝜎1 →𝜎 |⟨l |𝜖⟩ Lemma 4
+∅ ⊢ prompt m h •e : 𝜎1 |⟨⌈E⌉|l |𝜖⟩ Lemma 4
+∅ ⊢ops h : 𝜎1 |l |⟨⌈E⌉|l |𝜖⟩ prompt
+𝜎 = 𝜎1
+𝜖 = ⟨⌈E⌉|l |𝜖⟩
+contradiction
+We have a contradiction because ⟨⌈E⌉|l |𝜖⟩contains at least one more label than 𝜖, so they cannot
+be equivalent. □
+F.4 Tail Resumptive Operation
+F.4.1 Preservation.
+Lemma 18. (Small Step Preservation). 1. If ∅ ⊢ e1 : 𝜎 |𝜖, where e1 is internal-safe, and e1 −→e2,
+then ∅ ⊢ e2 : 𝜎 |𝜖.
+2. If ∅ ⊢ e1 : 𝜎 |𝜖, where e1 is internal-safe, and w ⊢ e1 −→e2, where w : evv 𝜖, then ∅ ⊢ e2 : 𝜎 |𝜖.
+Proof. (Of Theorem 9) Based on the preservation lemma for System Fpw (Lemma 12), here we only
+discuss the new cases for under.
+case (performt)w |perform op 𝜖0 𝜎 v −→(Λ𝛼.𝜆⟨l |𝜖0⟩x : 𝜎1. under𝜖0,𝜖 l e)𝜎 v where (m, h, w′)= w.l
+and op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l), and (op →Λ𝛼. 𝜆𝜖 x : 𝜎1 k : 𝜎2→𝜎. k e)∈h with k ̸∈fv(e)
+44
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+w : evv 𝜖 given
+(m, h, w′)= w.l given
+∅ ⊢ops h : l |𝜎 |𝜖 op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) (op →Λ𝛼. 𝜆𝜖 x : 𝜎1 k : 𝜎2→𝜎. k e)∈h ∅ ⊢ (Λ𝛼. 𝜆𝜖 x : 𝜎1 k : 𝜎2→𝜎. k e): ∀𝛼. 𝜎1 →𝜖 (𝜎2→𝜖 𝜎)→𝜖 𝜎 ops
+x : 𝜎1, k : 𝜎2→𝜎 ⊢ k e : 𝜎 |𝜖 x : 𝜎1, k : 𝜎2→𝜎 ⊢ e : 𝜎2 |𝜖 k ̸∈fv(e) given
+x : 𝜎1 ⊢ e : 𝜎2 |𝜖 x : 𝜎1 ⊢ under𝜖0, 𝜖 l e : 𝜎2 |⟨l |𝜖0⟩ ∅ ⊢ Λ𝛼. 𝜆x : 𝜎1. under𝜖0, 𝜖 l e : ∀𝛼. 𝜎1 →⟨l |𝜖0⟩𝜎2 |⟨l |𝜖0⟩ ∅ ⊢ perform op 𝜖0 𝜎 v : 𝜎2 [𝛼:=𝜎] ∅ ⊢ v : 𝜎1 [𝛼:=𝜎]|⟨l |𝜖0⟩
+∅ ⊢ (Λ𝛼. 𝜆x : 𝜎1. under𝜖0, 𝜖 l e)𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |𝜖0⟩ follows
+given
+given
+tabs and abs
+app
+strengthening
+under
+tabs and abs
+given and perform
+tapp and app
+case (under)under𝜖0, 𝜖 l v −→v.
+Given that ∅ ⊢ under𝜖0, 𝜖 l v : 𝜎 |⟨l |𝜖0⟩, by under we have ∅ ⊢ v : 𝜎 |𝜖. As Lemma 7, we
+have ∅ ⊢ v : 𝜎 |⟨l |𝜖0⟩. □
+Lemma 19. (Preservation). If ∅ ⊢ e1 : 𝜎 |𝜖, where e1 is internal-safe, and w ⊢ e1 ↦−→e2 where
+w : evv 𝜖, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+Proof. (Of Theorem 13) By induction on w That is, e1 = F[under𝜖0, 𝜖 l e].
+⊢ e1 ↦−→e2. We discuss the only new case (underw).
+w′ ⊢ e ↦−→e′ (m, h, w′)= w.l
+w ⊢ F[under𝜖0,𝜖 l e]↦−→F[under𝜖0,𝜖 l e′] (underw)
+Because e1 is internal safe, so under𝜖0, 𝜖 was initially generated by (performt).
+w ⊢ perform op 𝜖0 𝜎 v | −→| (Λ𝛼. 𝜆⟨l |𝜖0⟩x : 𝜎1. under𝜖0,𝜖 l e)𝜎 v, where (m, h, w′)= w.l, and
+(op →Λ𝛼. 𝜆𝜖 x : 𝜎1. k : 𝜎2→𝜖 𝜎. k e)∈h with k ̸∈fv(e).
+At that point, we know that the expression is of effect ⟨l |𝜖0⟩, so w : evv ⟨l |𝜖0⟩. Given (m, h, w′)= w.l
+and (op →Λ𝛼. 𝜆𝜖 x : 𝜎1. k : 𝜎2→𝜖 𝜎. k e)∈h, we know that w′: evv 𝜖. That is, effect context of label
+l from effect ⟨l |𝜖0⟩is 𝜖.
+Back to (underw), we know that w′ : w 𝜖. Now we have
+∅ ⊢ F[under𝜖0, 𝜖 l e]: 𝜎 |⟨l |𝜖0⟩ given
+∅ ⊢ec F : 𝜎1 →𝜎 |⟨l |𝜖0⟩ above
+∅ ⊢ under𝜖0, 𝜖 l e : 𝜎1 |⟨l |𝜖0⟩ Lemma 4
+∅ ⊢ e : 𝜎1 |𝜖 under
+∅ ⊢ e′ : 𝜎1 |𝜖 I.H.
+∅ ⊢ under𝜖0, 𝜖 l e′ : 𝜎1 |⟨l |𝜖0⟩ under
+∅ ⊢ F[under𝜖0, 𝜖 l e]: 𝜎 |⟨l |𝜖0⟩ Lemma 3
+□
+Theorem 16. (Preservation). If ∅ ⊢ e1 : 𝜎 |⟨⟩, where e1 is internal-safe, and ⟨⟩ ⊢ e1 ↦−→e2,
+then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+Proof. (Of Theorem 16) Follows directly by Lemma 19 with w = ⟨⟩. □
+45
+Xie and Leijen MSR-TR-2021-5
+F.4.2 Progress.
+Definition 5. (Well-formed evaluation contexts). if it is of the following form:
+F ::= □ |F e |v F
+| prompt m h •E •under𝜖0,𝜖 l F l ̸∈⌈E⌉, ∅ ⊢ h : 𝜎 |l |𝜖
+E ::= □ |E e |v E
+| prompt m h •E′ •under𝜖0,𝜖 l E l ̸∈⌈E′⌉, ∅ ⊢ h : 𝜎 |l |𝜖
+| prompt m h E
+We say that an evaluation context is well-formed,
+Lemma 20. (Internal-safe expressions have well-formed evaluation contexts). If an internal-safe
+Fp expressions e, which was initially reduced (↦−→) under ⟨⟩, can be written as E[e′], then E is a
+well-formed evaluation context.
+Proof. (Of Lemma 20) This lemma is to rule out expressions like
+prompt m hl1 •prompt m hl2 •under l1 •under l2 e
+The term type-checks because l1 and l2 are handled. But it does not evaluate as (skipw)does not
+apply: because of under l1, (underw)would remove the prompt m hl2 in the evidence vector, and
+thus under l2 would fail to find any l2 evidence in the evidence vector. So skipw for under l2 does
+not apply.
+The lemma is restricted to internal-safe expressions that are evaluated (↦−→) under ⟨⟩, as we
+want to rule out stand-alone under l e, which itself can be an internal-safe expressions as it can
+be reduced from perform with a proper non-empty evidence vector, but its evaluation context
+under l □is not well-formed.
+We prove our goal by case-analyzing the definition of internal-safe expressions:
+•When e contains no under at all, then the goal is trivially true.
+•If e is reduced from an internal-safe expression e1, then we need to show that at every step,
+the property is preserved.
+The key observation is that whenever an under is introduced ((performt)), its l is chosen
+from the current available evidence vector w. According to (underw), all existing unders
+have already removed all the evidence from their prompt until the corresponding under.
+Thus the only possible prompt that the newly introduced under is paired to can only wrap
+well-formed evaluation contexts and the new evaluation context is thus also well-formed.
+□
+Lemma 21. (Progress with effects). If ∅ ⊢ e1 : 𝜎 |𝜖, then for any w : evv 𝜖, we have either (1) e1 is
+a value; or (2) w ⊢ e1 ↦−→e2; or (3) e1 = E[yield m f ], where m ̸∈bm(E); or (4) e1 = E[under𝜖 l e],
+where E is well-formed, and there is no h ∈E such that ∅ ⊢ops h : l |_ |𝜖, which we denote using
+l𝜖 ̸∈⌈E⌉.
+Proof. (Of Lemma 21) In the fourth case, it is possible that an expression contains several unders
+that cannot be correctly reduced, but here we only need to know the first under that causes the
+trouble. That’s why we can still show E is well-formed. For example, under l1 (under l2 e)can be
+represented as □[under l1 (under l2 e)].
+We first do induction on the size of e1, and then do induction on typing.
+Based on the progress theorem of System Fp (Lemma 14), here we only discuss the new cases for
+under.
+case ∅ ⊢ prompt m h e : 𝜎 |𝜖. By I.H., we know that either e is a value, or ⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′
+,
+or e = E[yield m′f ], where m′ ̸∈bm(E), or e = E[under𝜖 l e′
+1], where E is well-formed and l𝜖 ̸∈⌈E⌉.
+46
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+We have already talked about the first three cases in Lemma 14. In the last case, we have
+e = E[under𝜖 l e′
+1], where l𝜖 ̸∈⌈E⌉, and E is well-formed.
+•∅ ⊢ops h : l |_ |𝜖. That means under l is paired with the current prompt. Because E is
+well-formed, we now have both prompt m h E and prompt m h E[under l □]well-formed.
+By I.H. on e′
+1 (the size of e′
+1 is smaller than prompt m h E[under l e′
+1]), we have
+– e′
+1 is a value. Then we know that under l v −→v by (under). Because prompt m h E is
+well-formed, we have prompt m h E[under l v]↦−→prompt m h E[v].
+– w ⊢ e′
+1 ↦−→e′
+2. Because of (underw), under l removes all the evidence vector between the
+prompt m and under l, we know that evaluating w ⊢ prompt m h E[under l e′
+1] reduces
+to evaluating w ⊢ e′
+1. The type of w is of the right type because of preservation. So we
+have prompt m h E[under l e′
+1]↦−→prompt m h E[under l e′
+2].
+– e′
+1 = E′[yield m′f ]where m′ ̸∈bm(E′). Then again since under l removes all the evi-
+dence vector between the prompt m and under l, we have
+e′
+1 = (prompt m h E •under l •E′)[yield m1 f ], and m′ ̸∈bm(prompt m h E •under l •E′).
+– e′
+1 = E′[under𝜖′ l′e′
+2]where l′𝜖′ ̸∈⌈E′⌉and E′is well-formed. Again since under l re-
+moves all the evidence vector between prompt m and under l, we have
+e′
+1 = (prompt m h E •under l •E′)[under l′e′
+2], and l′𝜖′ ̸∈⌈prompt m h E •under l •E′⌉.
+•h is not a handler for l. Then we have (prompt m h E)[under l e′
+1]and l𝜖 ̸∈⌈(prompt m h E)⌉.
+□
+Theorem 17. (Progress of Internal-safe System Fpw with under). If ∅ ⊢ e1 : 𝜎 |⟨⟩where e1 is an
+internal-safe expression, we have either e1 is a value, or ⟨⟩ ⊢ e1 ↦−→e2.
+Proof. (Of Theorem 17) Apply Lemma 21, then we know that either e1 is a value, or ⟨⟩ ⊢ e1 ↦−→e2, or
+e = E[yield m f ]where m ̸∈bm(E), or e1 = E[under𝜖 l e]where E is well-formed, and l𝜖 ̸∈⌈E⌉.
+For the first two cases, we have proved the goal.
+For the third case, we can prove it by contradiction, following the proof for System Fp (Theorem 3).
+The last case is new. However it is an impossible case. By Lemma 20, we know that internal-
+safe expressions can only have well-formed evaluation context. That means E •under𝜖 l □must
+be well-formed. However we already know that l𝜖 ̸∈⌈E⌉, and thus E •under𝜖 l □cannot be
+well-formed. So we have a contradiction.
+□
+F.4.3 Coherence.
+Lemma 22. ( preserves the handler context). Given E1 E2, and Γ ⊢ E1 : 𝜎1 →𝜎2 |⟨⟩, then
+⌈E1⌉= ⌈E2⌉.
+Proof. (Of Lemma 22) Most cases follow directly. The only interesting case is the equivalence
+of evaluation contexts lifted by eq-under. In this case we have (𝜆x. prompt m h E1 [x])E1
+prompt m h •E2 •under𝜖 l E2, with E1 E2.
+We then have ⌈(𝜆x. prompt m h E1 [x])E1⌉= ⌈E1⌉.
+Also, since under removes the evidence vector between prompt m h and under, we have
+⌈prompt m h •E2 •under𝜖 l E2⌉= ⌈E2⌉.
+By I.H., we have ⌈E1⌉= ⌈E2⌉.
+□
+47
+Xie and Leijen MSR-TR-2021-5
+Lemma 23. ( preserves evaluation (general)). Given e1 e2 where e1 and e2 are well-typed
+non-values, and E1 E2 where E1 [e1]and E2 [e2]are well-typed internal-expressions with effect
+⟨⟩, there exist e′
+1, e′
+2 such that ⟨⟩ ⊢ E1 [e1]↦−→+e′
+1, and ⟨⟩ ⊢ E2 [e2]↦−→+e′
+2, and e′
+1 e′
+2.
+Proof. (Of Lemma 23) By induction on e1. We write e1 ↦−→e2 for ⟨⟩ ⊢ e1 ↦−→e2.
+case e1 = e3 e4, where e3 is not a value.
+e2 = e5 e6 by
+e3 e5 above
+e4 e6 above
+E1 •□e4 •e3 ↦−→+e′
+3 I.H.
+E2 •□e5 •e5 ↦−→+e′
+5 I.H.
+e′
+3 e′
+5 I.H.
+case e1 = v1 e3, where e3 is not a value.
+We discuss the shape of e2.
+subcase e2 = v2 e4.
+v1 v2 by
+e3 e4 above
+E1 •v1 □•e3 ↦−→+e′
+3 I.H.
+E2 •v2 □•e4 ↦−→+e′
+4 I.H.
+e′
+3 e′
+4 I.H.
+subcase e1 = (𝜆x. prompt m h E′
+1 [x])e3 and e2 = prompt m h •E′
+2 •under l e4 with l ̸∈⌈E⌉.
+e3 e4 by
+E′
+1 E′
+2 by
+E1 • (𝜆x. prompt m h E′[x])□•e3 ↦−→+e′
+3 I.H.
+E2 •prompt m h •E′
+2.under l □•e4 ↦−→+
+u e′
+4 I.H.
+e′
+3 e′
+4 I.H.
+case e1 = (𝜆x. e3)v1.
+subcase e2 = (𝜆x. e4)v2.
+e3 e4 by
+v1 v2 above
+E1 [e1]↦−→E1 [e3 [x:=v1]] (app)
+E2 [e2]↦−→E2 [e4 [x:=v2]] (app)
+e3 [x:=v1] e4 [x:=v2] by substitution
+subcase e1 = (𝜆x. prompt m h E′
+1 [x])v1 and e2 = prompt m h •E′
+2 •under𝜖 l v2 with
+l ̸∈⌈E⌉.
+e3 e4 by
+E′
+1 E′
+2 by
+v1 v2 above
+E1 [e1]↦−→E1 [prompt m h E′
+1 [v1]] (app)
+E2 [e2]↦−→E2 [prompt m h E′
+2 [v2]] (under)
+E1 [prompt m h E′
+1 [v1]] E2 [prompt m h E′
+2 [v2]] congruence
+case e1 = handler h v1.
+48
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+e2 = handler h v2 by
+v1 v2 above
+E1 [handler h v1]↦−→E1 [prompt m h (v1 ())] (handler)
+E2 [handler h v2]↦−→E2 [prompt m h (v2 ())] (handler)
+E1 [prompt m h (v1 ())] E1 [prompt m h (v2 ())] congruence
+case e1 = perform op 𝜎 v1.
+E1 [perform op 𝜎 v1]↦−→E1 [yield m (𝜆k. f [𝜎]v1 k)] (m, h, _)= ⌈E1⌉.l and (op →f ) ∈h e2 = perform op 𝜎 v2 (perform)
+above
+by
+v1 v2 above
+subcase f is not a tail-resumptive operation.
+⌈E1⌉= ⌈E2⌉ Lemma 22
+E2 [perform op 𝜎 v2]↦−→E2 [yield m (𝜆k. f [𝜎]v2 k)] E1 [yield m (𝜆k. f [𝜎]v1 k)]= E2 [yield m (𝜆k. f [𝜎]v2 k)] (perform)
+congruence
+subcase f= Λ𝛼. 𝜆x. k e is a tail-resumptive operation.
+As E1 [e1]is internal-safe. According to progress, yield m is going to be handled.
+E1 = E′
+1 •prompt m h •E′′
+1 suppose
+E1 [yield m (𝜆k. f [𝜎]v1 k)]↦−→E′
+1 [(𝜆k. f [𝜎]v1 k)(𝜆x. prompt m h E′′
+1 [x])] (prompt)
+E1 [yield m (𝜆k. f [𝜎]v1 k)]↦−→E′
+1 [(𝜆x. prompt m h E′′
+1 [x])e[𝛼:=𝜎, x:=v1]] (tapp)and (ap
+E2 = E′
+2 •prompt m h •E′′
+2 by
+E′
+1 E′
+2 by
+E′′
+1 E′′
+2 by
+E2 [perform op 𝜎 v2]↦−→E2 [(Λ𝛼. 𝜆x. under l •e)[𝜎]v2 ] (performt)
+E2 [perform op 𝜎 v2]↦−→E2 [under l •e[𝛼:=𝜎, x:=v2]] (tapp)and (ap
+(𝜆x. prompt m h E′′
+1 [x])e[𝛼:=𝜎, x:=v1]= prompt m h •E′′
+2 •under l •e[𝛼:=𝜎, x:=v2] eq-under
+E′
+1 [(𝜆x. prompt m h E′′
+1 [x])e[𝛼:=𝜎, x:=v1]]
+= E′
+2 •prompt m h. E′′
+2 •under l •e[𝛼:=𝜎, x:=v2] = E2 [under l •e[𝛼:=𝜎, x:=v2]] congruence
+by substitution
+case e1 = prompt m h e3.
+subcase e3 = v1 is a value.
+e2 = prompt m h v2 by
+v1 v2 above
+E1 [prompt m h v1]↦−→E1 [v1] (promptv)
+E2 [prompt m h v2]↦−→E2 [v2] (promptv)
+v1 v2 known
+subcase e3 is not a value.
+e2 = prompt m h e4 by
+e3 e4 above
+E1. prompt m h •e3 ↦−→e′
+1 I.H.
+E2. prompt m h •e4 ↦−→e′
+2 I.H.
+e′
+1 e′
+2 I.H.
+case e1 = yield m f1. According to progress, E1 [e1]is going to be handled.
+49
+Xie and Leijen MSR-TR-2021-5
+E1 = E′
+1 •prompt m h •E′′
+1 suppose
+E1 [e1]↦−→E′
+1 [f1 (𝜆x. prompt m h E′′
+1 [x])] (prompt)
+e2 = yield m f2 by
+f1 f2 above
+E1 E2 given
+E2 = E′
+2 •prompt m h •E′′
+2 by
+E′
+1 E′
+2 by
+E′′
+1 E′′
+2 by
+E2 [e2]↦−→E′
+2 [f2 (𝜆x. prompt m h E′′
+2 [x])] (prompt)
+E′
+1 [f1 (𝜆x. prompt m h E′′
+1 [x])]= E′
+2 [f2 (𝜆x. prompt m h E′′
+2 [x])] congruence
+□
+Proof. (Of Lemma 2) If they are both values then we are done.
+Otherwise, according to the definition of , it’s impossible that one is a value and the other is an
+expression, so they are both expressions. We then apply Lemma 23 with 𝜖 = ⟨⟩and, E1 = E2 = □,
+and we are done. □
+Proof. (Of Theorem 5) If C[e]↦−→∗n under the unoptimized semantics, then as C[e] C[e]and
+by Lemma 2, we must have C[e]↦−→∗e′under the tail-resumptive optimization semantics, with
+e′ n.
+According to the definition of , we must have e′
+= n.
+That means C[e]↦−→∗n under the tail-resumptive optimization semantics.
+The case from right to left is the same. □
+F.5 System Fpb: Bubbling Semantics
+F.5.1 Preservation.
+Lemma 24. (Small Step Preservation). 1. If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and e1 −→e2,
+then ∅ ⊢ e2 : 𝜎 |𝜖.
+2. If ∅ ⊢ e1 : 𝜎 |𝜖 where e1 is internal-safe, and w ⊢ e1 −→e2, where w : evv 𝜖, then ∅ ⊢ e2 : 𝜎 |𝜖.
+Proof. (Of Lemma 24) We case analyze the −→relation, and only discuss all new cases.
+case (app1)v □•yield m f k −→yield m f (𝜆𝜖′
+x : 𝜎2. v (k x)), where ∅ ⊢val k : 𝜎2 →𝜖′𝜎′
+.
+∅ ⊢ v □•yield m f k : 𝜎0 |𝜖′ given
+∅ ⊢val k : 𝜎2 →𝜖′𝜎′ given
+x : 𝜎2 ⊢ k : 𝜎2 →𝜖′𝜎′|𝜖′ val and weakening
+x : 𝜎2 ⊢ k x : 𝜎′|𝜖′ app
+∅ ⊢ yield m f k : 𝜎′|𝜖′ app
+∅ ⊢ v : 𝜎′→𝜖′𝜎0 |𝜖′ app
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎 yield
+x : 𝜎2 ⊢ v : 𝜎′→𝜖′𝜎0 |𝜖′ weakening
+x : 𝜎2 ⊢ v (k x): 𝜎0 |𝜖′ app
+∅ ⊢val 𝜆𝜖′
+x : 𝜎2. v (k x): 𝜎2 →𝜖′𝜎0 abs
+yield m f (𝜆𝜖′
+x : 𝜎2. v (k x)): 𝜎0 |𝜖′ yield
+case (app2)□e •yield m f k −→yield m f (𝜆𝜖′
+x : 𝜎2. (k x)e), where ∅ ⊢val k : 𝜎2 →𝜖′𝜎′
+50
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+∅ ⊢ □e •yield m f k : 𝜎′
+2 |𝜖′ given
+∅ ⊢val k : 𝜎2 →𝜖′𝜎′ given
+x : 𝜎2 ⊢ k : 𝜎2 →𝜖′𝜎′|𝜖′ val and weakening
+x : 𝜎2 ⊢ k x : 𝜎′|𝜖′ app
+𝜎′
+= 𝜎′
+1 →𝜖′𝜎′
+2 app
+∅ ⊢ yield m f k : 𝜎′
+1 →𝜖′𝜎′
+2 |𝜖′ app
+∅ ⊢ e : 𝜎′
+1 |𝜖′ app
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎 yield
+x : 𝜎2 ⊢ e : 𝜎′
+1 |𝜖′ weakening
+x : 𝜎2 ⊢ (k x)e : 𝜎′
+2 |𝜖′ app
+∅ ⊢val 𝜆𝜖′
+x : 𝜎2. (k x)e : 𝜎2 →𝜖′𝜎′
+2 abs
+yield m f (𝜆𝜖′
+x : 𝜎2. (k x)e): 𝜎′
+2 |𝜖′ yield
+case (under)under𝜖0,𝜖 l □ •yield m f k −→yield m f (𝜆⟨l |𝜖0⟩x : 𝜎2. under𝜖0,𝜖 l (k x))∅ ⊢val k : 𝜎2 →𝜖 𝜎
+∅ ⊢ under𝜖0,𝜖 l □ •yield m f k : 𝜎 |⟨l |𝜖0⟩ given
+∅ ⊢ yield m f k : 𝜎 |𝜖 under
+∅ ⊢val f : (𝜎2 →𝜖′𝜎′)→𝜖′𝜎′ yield
+∅ ⊢val k : 𝜎2 →𝜖 𝜎 given
+x : 𝜎2 ⊢ k : 𝜎2 →𝜖 𝜎 |𝜖 val and weakening
+x : 𝜎2 ⊢ k x : 𝜎 |𝜖 app
+x : 𝜎2 ⊢ under𝜖0,𝜖 l (k x): 𝜎 |⟨l |𝜖0⟩ under
+∅ ⊢ 𝜆⟨l |𝜖0⟩x : 𝜎2. under𝜖0,𝜖 l (k x): 𝜎2 →⟨l |𝜖0⟩𝜎 abs
+∅ ⊢ yield m f (𝜆𝜖0 x : 𝜎2. under𝜖0,𝜖 l (k x)): 𝜎 |⟨l |𝜖0⟩ yield
+case (prompt1)prompt m h □•yield m f k −→f (𝜆𝜖 x : 𝜎2. prompt m h (k x)), where
+∅ ⊢val k : 𝜎2 →⟨l |𝜖⟩𝜎.
+Because it’s internal safe, we know that the type of h indeed matches that of f.
+∅ ⊢ prompt m h □•yield m f k : 𝜎 |𝜖 given
+∅ ⊢val k : 𝜎2 →⟨l |𝜖⟩𝜎 given
+x : 𝜎2 ⊢ k : 𝜎2 →⟨l |𝜖⟩𝜎 |⟨l |𝜖⟩ val and weakening
+x : 𝜎2 ⊢ k x : 𝜎 |⟨l |𝜖⟩ app
+∅ ⊢ yield m f k : 𝜎 |⟨l |𝜖⟩ prompt
+∅ ⊢ops h : 𝜎 |l |𝜖 prompt
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎 yield
+x : 𝜎2 ⊢ prompt m h (k x): 𝜎 |𝜖 prompt
+∅ ⊢val 𝜆𝜖′
+x : 𝜎2. prompt m h (k x): 𝜎2 →𝜖 𝜎 abs
+∅ ⊢ f (𝜆𝜖′
+x : 𝜎2. prompt m h (k x)): 𝜎 |𝜖 app
+case (prompt2)prompt n h □•yield m f k −→yield m f (𝜆𝜖′
+x : 𝜎2. prompt n h (k x)), iff n ≠ m,
+∅ ⊢val k : 𝜎2 →⟨l |𝜖′⟩𝜎′
+.
+51
+Xie and Leijen MSR-TR-2021-5
+∅ ⊢ prompt n h □•yield m f k : 𝜎′|𝜖′ given
+∅ ⊢val k : 𝜎2 →⟨l |𝜖′⟩𝜎′ given
+x : 𝜎2 ⊢ k : 𝜎2 →⟨l |𝜖′⟩𝜎′|⟨l |𝜖′⟩ val and weakening
+x : 𝜎2 ⊢ k x : 𝜎′|⟨l |𝜖′⟩ app
+∅ ⊢ yield m f k : 𝜎′|⟨l |𝜖′⟩ prompt
+∅ ⊢ops h : 𝜎′|l |𝜖′ prompt
+∅ ⊢val f : (𝜎2 →𝜖 𝜎)→𝜖 𝜎 yield
+x : 𝜎2 ⊢ prompt m h (k x): 𝜎′|𝜖′ prompt
+∅ ⊢val 𝜆𝜖′
+x : 𝜎2. prompt m h (k x): 𝜎2 →𝜖′𝜎′ abs
+yield m f (𝜆𝜖′
+x : 𝜎2. prompt n h (k x)): 𝜎′|𝜖′ yield
+case (perform)w ⊢ perform op 𝜖′𝜎 v −→yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)(𝜆⟨l |𝜖′⟩x : 𝜎2 [𝛼:=𝜎]. x), with
+(m, h, _)= w.l, (op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖, 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎.
+∅ ⊢ perform op 𝜖′𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |𝜖′⟩ given
+(op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖 given
+∅ ⊢val f : ∀𝛼. 𝜎1 →𝜖 (𝜎2 →𝜖 𝜎)→𝜖 𝜎 ops
+∅ ⊢val f 𝜎 : 𝜎1 [𝛼:=𝜎]→𝜖 (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 tapp
+∅ ⊢val v : 𝜎1 [𝛼:=𝜎] perform and val
+∅ ⊢ f 𝜎 v : (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 |𝜖 app
+k : 𝜎k ⊢ f 𝜎 v : (𝜎2 [𝛼:=𝜎]→𝜖 𝜎)→𝜖 𝜎 |𝜖 weakening
+k : 𝜎k ⊢ f 𝜎 v k : 𝜎 |𝜖 app
+∅ ⊢val 𝜆𝜖 k : 𝜎k. f 𝜎 v k : 𝜎k →𝜎 abs
+∅ ⊢val 𝜆⟨l |𝜖′⟩x : 𝜎2 [𝛼:=𝜎]. x : 𝜎2 [𝛼:=𝜎]→⟨l |𝜖′⟩𝜎2 [𝛼:=𝜎] abs
+yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)(𝜆⟨l |𝜖′⟩x : 𝜎2 [𝛼:=𝜎]. x): 𝜎2 [𝛼:=𝜎]|⟨l |𝜖′⟩ yield
+□
+Proof. (Of Theorem 12) The same as preservation for System Fpw (Theorem 2), with Lemma 24. □
+F.5.2 Progress.
+Lemma 25. (Progress with effects). If ∅ ⊢ e1 : 𝜎 |𝜖, then for any w : evv 𝜖, we have either (1)
+e1 is a value; or (2) w ⊢ e1 ↦−→e2; or (3) e1 = yield m f k.
+Proof. (Of Lemma 25) The proof is essentially the same as progress with effects for System Fpw
+(Lemma 14). The main difference between progress for System Fpb from System Fpw is that notice
+in option (3) we have yield m f k as the outermost instead of E[yield m f ]as in Lemma 14. That is
+because under the bubble semantics, yield can always evaluate under (or, bubble out of) the outer
+evaluation context.
+We take prompt as an example.
+case ∅ ⊢ prompt m h e : 𝜎 |𝜖. By I.H., we know that either e is a value, or ⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′
+,
+or e = yield m f e.
+•If e is a value, then by (promptv)we have prompt m h e ↦−→e.
+•If ⟨l : (m, h, w)|w⟩ ⊢ e ↦−→e′. Then by (promptw), prompt m h e ↦−→prompt m h e′
+.
+•If e = yield m′f k.
+– m = m′. Then by (prompt1), we have prompt m h yield m f k ↦−→f (𝜆x. prompt m h (k x)).
+– m ≠ m′. Then by (prompt2), we have
+prompt m h yield m′f k ↦−→yield m′f (𝜆x. prompt m h (k x)).
+□
+52
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Proof. (Of Theorem 13) The same as the progress theorem for System Fpw (Theorem 3), with
+Lemma 25. □
+We define=𝜂 as a congruent relation between
+F.5.3 Simulation.
+Definition 6. (⌈e⌉𝑝𝑤⇓𝑝𝑏 and ⌈e⌉𝑝𝑤⇑𝑝𝑏 ). ⌈e⌉𝑝𝑤⇓𝑝𝑏 turns an expression from Fpw to Fpb by turning
+yield m f into yield m f (𝜆x. x); and ⌈e⌉𝑝𝑤⇑𝑝𝑏 turns an expression from Fpb into Fpw by turning back
+yield m f k into yield m f . The definition can be lifted straightforward to handlers and evaluation
+contexts.
+Definition 7. (Eta-expansion of evaluation contexts). expressions with E[v]=𝜂 (𝜆x. E[x])v.
+Lemma 26. (Simulation (small step)). Given ∅ ⊢ e1 : 𝜎 |𝜖, and w : evv 𝜖,
+(1) if e1 −→e2 in internal-safe System Fpw, we have ⌈e1⌉𝑝𝑤⇓𝑝𝑏 ↦−→∗e′
+2 in System Fpb, and e′
+2 =𝜂 e2 ;
+(2) if w ⊢ e1 −→e2 in internal-safe System Fpw, we have w ⊢ ⌈e1⌉𝑝𝑤⇓𝑝𝑏 ↦−→e′
+2 in System Fpb, and
+e′
+2 =𝜂 e2.
+Proof. (Of Lemma 26) This Lemma is defined for internal-safe System Fpw because when yielding,
+in the (prompt)rule in System Fpw
+, yield non-deterministically finds a marker, while in System Fpb
+in terms of the bubble semantics, yield always finds the closest corresponding marker. Therefore we
+restrict the lemma to internal-safe System Fpw so that we know markers in the evaluation context
+are unique and two semantics coincide.
+By induction on e1 −→e2 and w ⊢ e1 −→e2 in System Fpb. Most cases are straightforward. Here
+we discuss only interesting cases.
+case (perform)w ⊢ perform op 𝜖0 𝜎 v −→yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k).
+Then by (perform)from System Fpb, we have
+w ⊢ perform op 𝜖′𝜎 ⌈v⌉𝑝𝑤⇓𝑝𝑏 −→yield m (𝜆𝜖 k : 𝜎k. ⌈f ⌉𝑝𝑤⇓𝑝𝑏 𝜎 v ⌈k⌉𝑝𝑤⇓𝑝𝑏 )(𝜆⟨l |𝜖′⟩x : 𝜎2 [𝛼:=𝜎]. x)
+Now
+⌈yield m (𝜆𝜖 k : 𝜎k. ⌈f ⌉𝑝𝑤⇓𝑝𝑏 𝜎 v ⌈k⌉𝑝𝑤⇓𝑝𝑏 )(𝜆⟨l |𝜖′⟩x : 𝜎2 [𝛼:=𝜎]. x)⌉𝑝𝑤⇑𝑝𝑏
+= yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)
+case (prompt)prompt m h E[yield m f ]−→f (𝜆𝜖 y : 𝜎2. prompt m h E[y])
+We have
+⌈prompt m h E[yield m f ]⌉𝑝𝑤⇓𝑝𝑏 = prompt m ⌈h⌉𝑝𝑤⇓𝑝𝑏 ⌈E⌉𝑝𝑤⇓𝑝𝑏 [yield m ⌈f ⌉𝑝𝑤⇓𝑝𝑏 (𝜆x. x)]
+Now by the operational semantics rules, we know that yield m f (𝜆x. x)will bubble up until
+it finds prompt. During this process, suppose ⌈E⌉𝑝𝑤⇓𝑝𝑏 consists of multiple “minimal” evaluation
+contexts (E1 •E2. . . En). By “minimal” evaluation contexts we mean that each Ei cannot be
+destruct anymore to non-empty E′
+i •E′′
+i.
+Note that initially, we have k= (𝜆x. x)which is equivalent to 𝜆x. □[x]. For each bubble rules,
+we have
+Ei •yield m f k −→yield m f (𝜆x. (E •k □)[x])
+So bubbling through all the evaluation contexts until prompt, we have the final k′built up as
+k′
+= (𝜆x1. (E1 • (𝜆x2. (E2 • (𝜆x3. (E3 • (. . . (𝜆x. (□)[x]))□)[x3])□)[x2])□)[x1])
+We then have
+prompt m ⌈h⌉𝑝𝑤⇓𝑝𝑏 (yield m f k′)−→⌈f ⌉𝑝𝑤⇓𝑝𝑏 (𝜆y. prompt m h (k′y))
+53
+Xie and Leijen MSR-TR-2021-5
+We have
+k′y
+=
+=𝜂
+=
+=𝜂
+=
+=𝜂
+=
+=
+(𝜆x1. (E1 • (𝜆x2. (E2 • (𝜆x3. (E3 • (. . . (𝜆x. (□)[x]))□)[x3])□)[x2])□)[x1])y
+(E1 • (𝜆x2. (E • (𝜆x3. (E • (. . . (𝜆x. (□)[x]))□)[x3])□)[x2])□)[y]
+E [(𝜆x2. (E • ((𝜆x3. (E3 • (. . . (𝜆x. (□)[x]))□)[x3]))□)[x2])y]
+E1 [(E2 • (𝜆x3. (E3 • (. . . (𝜆x. (□)[x]))□)[x3])□)[y]]
+E1 [E2 [(𝜆x3. (E3 • (. . . (𝜆x. (□)[x]))□)[x3])y]]
+E1 [E2 [(E3 • (. . . (𝜆x. (□)[x]))□)[y]]]
+E1 [E2 [E3 [(. . . (𝜆x. (□)[x]))y]]]
+. . .
+E1 [E2 [E3 [. . .[En [(𝜆x. (□)[x])y]]]]
+=𝜂
+E1 [E2 [E3 [. . .[En [y]]]]
+That means that
+⌈k′y⌉𝑝𝑤⇑𝑝𝑏 = ⌈E1 [E2 [E3 [. . .[En [y]]]]⌉𝑝𝑤⇑𝑝𝑏 = E[y]
+Therefore
+⌈⌈f ⌉𝑝𝑤⇓𝑝𝑏 (𝜆y. prompt m h (k′y))⌉𝑝𝑤⇑𝑝𝑏 = f (𝜆y. prompt m h E[y]) □
+Theorem 18. (Simulation). Given ∅ ⊢ e1 : 𝜎 |𝜖, if w ⊢ e1 ↦−→e2 in internal-safe System Fpw
+,
+we have w ⊢ ⌈e1⌉𝑝𝑤⇓𝑝𝑏 ↦−→∗e′
+2 in System Fpb, and e′
+2 =𝜂 e2.
+Proof. (Of Theorem 18) Follows directly based on Lemma 26. □
+F.6 Monadic Translation
+F.6.1 Translation Soundness.
+Lemma 27. (Monadic Translation is Sound). 1. If Γ ⊢ e : 𝜎 |𝜖 ⇝e′, then ⌊Γ⌋⊢F e′ : Mon 𝜖 ⌊𝜎⌋.
+2. If Γ ⊢val v : 𝜎 ⇝v′, then ⌊Γ⌋⊢F v′ : ⌊𝜎⌋.
+3. If Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′, then ⌊Γ⌋ ⊢ h′ : Hndl 𝜖 ⌊𝜎⌋.
+4. If Γ ⊢ec E : 𝜎1 →𝜎2 |𝜖 ⇝g, then ⌊Γ⌋⊢F g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎2⌋.
+Proof. (Of Lemma 27) Part 1 By induction on the translation.
+case e = v.
+Γ ⊢ v : 𝜎 |𝜖 ⇝pure 𝜖 ⌊𝜎⌋v′ Γ ⊢val v : 𝜎 |𝜖 ⇝v′ ⌊Γ⌋⊢F v′ : ⌊𝜎⌋ given
+val
+Part 2
+⌊Γ⌋⊢F Pure 𝜖 ⌊𝜎⌋v′ : Mon 𝜖 ⌊𝜎⌋ Pure, ftapp and fapp
+case e = e 𝜎.
+54
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Γ ⊢ e 𝜎 : 𝜎1 [𝛼:=𝜎]|𝜖 ⇝e′▷(𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋)) Γ ⊢ e : ∀𝛼. 𝜎1 |𝜖 ⇝e′ ⌊Γ⌋⊢F e′ : Mon 𝜖 (∀𝛼. ⌊𝜎1⌋) ⌊𝜎1 [𝛼:=𝜎]⌋= ⌊𝜎1⌋[𝛼:=⌊𝜎⌋] by substitution
+⌊Γ⌋, x : ∀𝛼. ⌊𝜎1⌋⊢F pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋): Mon 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋ given
+tapp
+I.H.
+pure, ftapp and fapp
+⌊Γ⌋⊢F 𝜆x : ⌊∀𝛼. 𝜎1⌋]. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋): (∀𝛼. ⌊𝜎1⌋)→Mon 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋ fabs
+⌊Γ⌋⊢F e′▷(𝜆x : ⌊∀𝛼. 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋)): Mon 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋ ▷
+case e = e1 e2.
+Γ ⊢ e1 e2 : 𝜎 |𝜖 ⇝e′
+1 ▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. e′
+2 ▷f ) given
+Γ ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 ⇝e′
+1 app
+Γ ⊢ e2 : 𝜎1 |𝜖 ⇝e′
+2 above
+⌊Γ⌋⊢F e′
+1 : Mon 𝜖 (⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋) I.H
+⌊Γ⌋⊢F e′
+2 : Mon 𝜖 ⌊𝜎1⌋ I.H
+⌊Γ⌋, f : (⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋)⊢F f : ⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋ fvar
+⌊Γ⌋, f : (⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋)⊢F e′
+2 : Mon 𝜖 ⌊𝜎1⌋ weakening
+⌊Γ⌋, f : (⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋)⊢F e′
+2 ▷f : Mon 𝜖 ⌊𝜎⌋ ▷
+⌊Γ⌋⊢F (𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. e′
+2 ▷f ): (⌊𝜎1⌋→Mon ⌊𝜎⌋)→Mon 𝜖 ⌊𝜎⌋ fabs
+⌊Γ⌋⊢F e′
+1 ▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. e′
+2 ▷f ): Mon 𝜖 ⌊𝜎⌋ ▷
+case e = prompt m h e.
+Γ ⊢ prompt m h e : 𝜎 |𝜖 ⇝promptl 𝜖 ⌊𝜎⌋m h′e′ given
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′ Γ ⊢ e : 𝜎 |⟨l |𝜖⟩⇝e′ ⌊Γ⌋⊢F h′ : Hndl 𝜖 ⌊𝜎⌋ ⌊Γ⌋⊢F e′ : Mon ⟨l |𝜖⟩𝜎 prompt
+above
+Part 3
+I.H.
+⌊Γ⌋⊢F promptl 𝜖 ⌊𝜎⌋m h′e′ : Mon 𝜖 𝜎 prompt, ftapp and fapp
+case e = yield m f k.
+Γ ⊢ yield m h e0 : 𝜎 |𝜖 ⇝yield 𝜖 ⌊𝜎⌋⌊𝜎2⌋𝜖′⌊𝜎′⌋m f′k′ given
+Γ ⊢val f : (𝜎2 →𝜖′𝜎′)→𝜖′𝜎′ ⇝f′ Γ ⊢val k : 𝜎2 →𝜖 𝜎 ⇝k′ ⌊Γ⌋⊢F f′ : (⌊𝜎2⌋→Mon 𝜖′⌊𝜎′⌋)→Mon 𝜖′⌊𝜎′⌋ ⌊Γ⌋⊢F k′ : ⌊𝜎2 ⌋→Mon 𝜖 ⌊𝜎⌋ ⌊Γ⌋⊢F yield 𝜖 ⌊𝜎⌋⌊𝜎2⌋𝜖′⌊𝜎′⌋m f′k′ : Mon 𝜖 ⌊𝜎⌋ yieldb
+above
+Part 3
+Part 3
+yield, ftapp and fapp
+case e = under𝜖0,𝜖 l e.
+Γ ⊢ under𝜖0,𝜖 l e : 𝜎 |⟨l |𝜖0⟩⇝𝜆w : Evv ⟨l |𝜖0⟩. let (m, _, w′): Ev 𝜖 r = w.l
+in underl ⟨l |𝜖0⟩⌊𝜎⌋𝜖 r m w′e′w Γ ⊢ e : 𝜎 |𝜖 ⇝e′ ⌊Γ⌋⊢F e′ : Mon 𝜖 ⌊𝜎⌋ given
+under
+I.H.
+⌊Γ⌋, w : Evv ⟨l |𝜖0⟩⊢F let (m, _, w′): Ev 𝜖 r = w.l
+in underl ⟨l |𝜖0⟩⌊𝜎⌋𝜖 r m w′e′w : Ctl ⟨l |𝜖0⟩⌊𝜎⌋ underl
+⌊Γ⌋⊢F 𝜆w : Evv ⟨l |𝜖0⟩. let (m, _, w′): Ev 𝜖 r = w.l
+in underl ⟨l |𝜖0⟩⌊𝜎⌋𝜖 r m w′e′w : Mon ⟨l |𝜖0⟩⌊𝜎⌋ fabs
+Part 2
+By induction on the translation.
+case v = x.
+55
+mhandle
+Part 3
+handler, ftapp. fapp
+Xie and Leijen MSR-TR-2021-5
+Γ ⊢val x : 𝜎 ⇝x given
+x : 𝜎 ∈Γ var
+x : ⌊𝜎⌋ ∈⌊Γ⌋ follows
+⌊Γ⌋⊢F x : ⌊𝜎⌋ fvar
+case v = 𝜆𝜖 x : 𝜎. e.
+Γ ⊢val 𝜆𝜖 x : 𝜎1.e : 𝜎1 →𝜖 𝜎2 ⇝𝜆x : ⌊𝜎1⌋. e′ given
+Γ, x : 𝜎1 ⊢ e : 𝜎2 |𝜖 ⇝e′ ⌊Γ⌋, x : ⌊𝜎1⌋⊢F e′: Mon 𝜖 ⌊𝜎2⌋ ⌊Γ⌋⊢F 𝜆x : ⌊𝜎1⌋. e′ : ⌊𝜎1⌋→Mon 𝜖 ⌊𝜎2⌋ abs
+Part 1
+fabs
+case v = Λ𝛼𝜅
+. v0.
+Γ ⊢val Λ𝛼𝜅
+. v : ∀𝛼. 𝜎 ⇝Λ𝛼𝜅
+. v′ given
+Γ ⊢val v : 𝜎 ⇝v′ tabs
+⌊Γ⌋⊢F v′ : ⌊𝜎⌋ I.H.
+⌊Γ⌋⊢F Λ𝛼. v′ : ∀𝛼. ⌊𝜎⌋ ftabs
+case v = handler h.
+Γ ⊢val handler𝜖 h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎 ⇝handlerl 𝜖 ⌊𝜎⌋h′ given
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′ ⌊Γ⌋⊢F h′ : Hndl 𝜖 ⌊𝜎⌋ ⌊Γ⌋⊢F handlerl 𝜖 ⌊𝜎⌋h′ : (()→Mon ⟨l |𝜖⟩𝜎)→Mon 𝜖 𝜎 case v = perform op 𝜖 𝜎.
+Γ ⊢val perform op 𝜖 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]
+⇝performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r) given
+⌊𝜎1 [𝛼:=𝜎]⌋= ⌊𝜎1⌋[𝛼:=⌊𝜎⌋] by substitution
+⌊𝜎2 [𝛼:=𝜎]⌋= ⌊𝜎2⌋[𝛼:=⌊𝜎⌋] by substitution
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) mperform
+⌊Γ⌋⊢F (Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r): ∀𝜇 r. Hndl 𝜇 r →Op ⌊𝜎1⌋[𝛼:=⌊𝜎⌋]⌊𝜎2⌋[𝛼:=⌊𝜎⌋]𝜇 r ftabs, selectop
+⌊Γ⌋⊢F performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r) :
+⌊𝜎1 [𝛼:=𝜎]⌋→Mon ⟨l |𝜖⟩⌊𝜎2 [𝛼:=𝜎]⌋ perform, ftapp, fapp
+Part 3
+Γ ⊢ops {op1→f1, . . ., opn
+→fn}: 𝜎 |l |𝜖 ⇝Hndl (∀𝛼. Normal ⌊𝜎1⌋⌊𝜎2⌋𝜖 ⌊𝜎⌋f′
+i ) given
+Γ ⊢val fi : ∀𝛼. 𝜎1 →𝜖 (𝜎2 →𝜖 𝜎)→𝜖 𝜎 ⇝f′
+i ops
+⌊Γ⌋⊢F f′
+i : ∀𝛼. ⌊𝜎1⌋→Mon 𝜖 ((⌊𝜎2⌋→Mon ⌊𝜎⌋)→Mon ⌊𝜎⌋) Part 2
+⌊Γ⌋⊢F Normal ⌊𝜎1⌋⌊𝜎2⌋𝜖 ⌊𝜎⌋f′
+i : ∀𝛼. Op ⌊𝜎1⌋⌊𝜎2⌋𝜖 ⌊𝜎⌋ Op
+⌊Γ⌋⊢F Hndl (Normal ⌊𝜎1⌋⌊𝜎2⌋𝜖 ⌊𝜎⌋f′
+i ): Hndl 𝜖 ⌊𝜎⌋ Hnd and fapp
+Part 4 case cempty.
+⌊Γ⌋ ⊢ 𝜆x : Mon 𝜖 ⌊𝜎⌋. x : Mon 𝜖 ⌊𝜎⌋→Mon 𝜖 ⌊𝜎⌋
+case capp1.
+56
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Γ ⊢ec E e : 𝜎1 →𝜎3 |𝜖 ⇝(𝜆f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋. e′▷f )★ g given
+Γ ⊢ e : 𝜎2 |𝜖 ⇝e′
+Γ ⊢ec E : 𝜎1 →(𝜎2 →𝜖 𝜎3)|𝜖 ⇝g
+⌊Γ⌋⊢F e′ : Mon 𝜖 ⌊𝜎2⌋ ⌊Γ⌋⊢F g : Mon ⟨⌈E⌉|𝜖⟩𝜎1 →Mon 𝜖 (⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋) ⌊Γ⌋, f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋⊢F e′ : Mon 𝜖 ⌊𝜎2⌋ ⌊Γ⌋, f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋⊢F (e′▷f ): Mon 𝜖 ⌊𝜎3⌋ ⌊Γ⌋⊢F (𝜆f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋. e′▷f ): (⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋)→Mon 𝜖 ⌊𝜎3⌋ ⌊Γ⌋, f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋⊢F g : Mon ⟨⌈E⌉|𝜖⟩𝜎1 →Mon 𝜖 (⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋) weakening
+⌊Γ⌋⊢F (𝜆f : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋. e′▷f )★ g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎3⌋ Part 1
+I.H.
+weakening
+(▷)
+fabs
+(★)
+case capp2.
+Γ ⊢ec v E : 𝜎1 →𝜎3 |𝜖 ⇝v ★ g given
+Γ ⊢val v : 𝜎2 →𝜖 𝜎3 ⇝v′
+Γ ⊢ec E : 𝜎1 →𝜎2 |𝜖 ⇝g
+⌊Γ⌋⊢F v′ : ⌊𝜎2⌋→Mon 𝜖 ⌊𝜎3⌋ ⌊Γ⌋⊢F g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎2⌋ Part 2
+I.H.
+⌊Γ⌋⊢F v ★ g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎3⌋ (★)
+case ctapp.
+Γ ⊢ec E 𝜎 : 𝜎1 →𝜎2 [𝛼:=𝜎]|𝜖 ⇝(𝜆x : ⌊∀𝛼. 𝜎2⌋. pure 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))★ g Γ ⊢ec E : 𝜎1 →∀𝛼. 𝜎2 |𝜖 ⇝g
+⌊Γ⌋⊢F g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊∀𝛼. 𝜎2⌋ ⌊Γ⌋, x : ⌊∀𝛼. 𝜎2⌋⊢F (x ⌊𝜎⌋)): ⌊𝜎2⌋[𝛼:=⌊𝜎⌋] ⌊Γ⌋, x : ⌊∀𝛼. 𝜎2⌋⊢F (x ⌊𝜎⌋)): ⌊𝜎2 [𝛼:=𝜎]⌋ ⌊Γ⌋, x : ⌊∀𝛼. 𝜎2⌋⊢F pure 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋(x ⌊𝜎⌋)): Mon 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋ ⌊Γ⌋⊢F (𝜆x : ⌊∀𝛼. 𝜎2⌋. pure 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋(x ⌊𝜎⌋)): ⌊∀𝛼. 𝜎2⌋→Mon 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋ ⌊Γ⌋⊢F (𝜆x : ⌊∀𝛼. 𝜎2⌋. pure 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))★ g : Mon ⟨⌈E⌉|𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎2 [𝛼:=𝜎]⌋ (★)
+case cprompt.
+Γ ⊢ec Γ ⊢ec prompt m h E : 𝜎1 →𝜎 |𝜖 promptl 𝜖 ⌊𝜎⌋m h′◦g given
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′
+Γ ⊢ec E : 𝜎1 →𝜎 |⟨l |𝜖⟩⇝g
+⌊Γ⌋⊢F h′ : Hndl 𝜖 ⌊𝜎⌋ ⌊Γ⌋⊢F g : Mon ⟨⌈E⌉|l |𝜖⟩⌊𝜎1⌋→Mon ⟨l |𝜖⟩⌊𝜎⌋ ⌊Γ⌋⊢F promptl 𝜖 ⌊𝜎⌋m h : Mon ⟨l |𝜖⟩⌊𝜎⌋→Mon 𝜖 ⌊𝜎⌋ Part 3
+I.H.
+promptl
+⌊Γ⌋⊢F (promptl 𝜖 ⌊𝜎⌋m h)◦g : Mon ⟨⌈E⌉|l |𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋ (◦)
+case cunder.
+given
+I.H.
+ftapp
+by subst
+pure
+fabs
+57
+Xie and Leijen MSR-TR-2021-5
+Γ ⊢ec under𝜖′,𝜖 l E : 𝜎1 →𝜎 |⟨l |𝜖′⟩⇝𝜆x : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋. 𝜆w : Evv ⟨l |𝜖′⟩. given
+let (m, h′
+, w′): Ev 𝜖 r = w.l in underl ⟨l |𝜖′⟩⌊𝜎⌋𝜖 r m w′(g x)w
+Γ ⊢ec E : 𝜎1 →𝜎 |𝜖 ⇝g
+⌊Γ⌋⊢F g : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋ ⌊Γ⌋, x : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋⊢F g x : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋→Mon 𝜖 ⌊𝜎⌋ I.H.
+I.H.
+⌊Γ⌋, x : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋, w : Evv ⟨l |𝜖′⟩⊢F
+let (m, h′
+, w′): Ev 𝜖 r = w.l in underl ⟨l |𝜖′⟩⌊𝜎⌋𝜖 r m w′(g x)w : Ctl ⟨l |𝜖′⟩⌊𝜎⌋ underl
+⌊Γ⌋⊢F 𝜆x : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋. 𝜆w : Evv ⟨l |𝜖′⟩.
+let (m, h′
+, w′): Ev 𝜖 r = w.l
+in underl ⟨l |𝜖′⟩⌊𝜎⌋𝜖 r m w′(g x)w : Mon ⟨⌈E⌉ |𝜖⟩⌊𝜎1⌋→Mon ⟨l |𝜖′⟩⌊𝜎⌋
+(m, h′
+, w′): Ev 𝜖 r, h′
+, w′
+= w.l given
+Since under removes labels from the context effect, we consider
+⟨⌈under𝜖′, 𝜖 l E⌉|l |𝜖′⟩
+= ⟨⌈E⌉|⌈under𝜖′, 𝜖 l⌉|l |𝜖′⟩
+= ⟨⌈E⌉|𝜖⟩
+□
+Proof. (Proof for Theorem 6) Applying Lemma 27 Part 1 with Γ= ∅ and 𝜖 = ⟨⟩. □
+Lemma 28. . If Γ ⊢ec F : 𝜎1 →𝜎2 |𝜖 ⇝g, then g= g1 ★ (g2 ★ (.. ★ gn)), where gn = id.
+Proof. (Of Lemma 28) By straightforward induction on the translation. Note the gn comes from the
+translation of □, which is always id. □.
+F.6.2 Simulation.
+Lemma 29. (Simulation (−→)). 1. If ∅ ⊢ e1 : 𝜎 |𝜖 ⇝e′
+1 and ∅ ⊢ e2 : 𝜎 |𝜖 ⇝e′
+2, and e1−→e2
+in internal-safe System Fpb, and w′ : Evv 𝜖 then e′
+1 w′↦−→∗e′
+2 w′;
+2. If ∅ ⊢ e1 : 𝜎 |𝜖 ⇝e′
+1 and ∅ ⊢ e2 : 𝜎 |𝜖 ⇝e′
+2, and w ⊢ e1 −→e2 in internal-safe System
+Fpb, where w elaborates to w′ : Evv 𝜖, then e′
+1 ⌊w⌋↦−→∗e′
+2 ⌊w⌋;
+Proof. (Of Theorem 29) To prove simulation, we apply many kinds of functional laws and equiva-
+lence throughout the proof.
+Also, to make the proof concise, we sometimes omit the type arguments to regular functions.
+Part 1. Induction on the operational rules.
+case (app)(𝜆𝜖 x : 𝜎1. e)v −→e[x:=v].
+∅ ⊢ (𝜆𝜖 x : 𝜎1. e)v : 𝜎 |𝜖 ⇝(pure 𝜖 ⌊𝜎1 →𝜖 𝜎2⌋(𝜆𝜖 x : 𝜎1. e′))▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. pure 𝜖 ⌊𝜎1⌋v′▷f )
+((pure 𝜖 ⌊𝜎1 →𝜖 𝜎2⌋(𝜆𝜖 x : 𝜎1. e′))▷(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. pure 𝜖 ⌊𝜎1⌋v′▷f ))w′
+↦−→∗(𝜆w. (𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. pure 𝜖 ⌊𝜎1⌋v′▷f )(𝜆𝜖 x : 𝜎1. e′)w)w′
+↦−→∗(𝜆f : ⌊𝜎1 →𝜖 𝜎⌋. pure 𝜖 ⌊𝜎1⌋v′▷f )(𝜆𝜖 x : 𝜎1. e′)w′
+↦−→∗(pure 𝜖 ⌊𝜎1⌋v′▷(𝜆𝜖 x : 𝜎1. e′))w′
+↦−→∗(𝜆w. (𝜆𝜖 x : 𝜎1. e′)v′w)w′
+↦−→∗(𝜆𝜖 x : 𝜎1. e′)v′w′
+↦−→∗e′[x:=v′]w′
+case (tapp)(Λ𝛼𝜅
+. v)[𝜎]−→v[𝛼:=𝜎].
+58
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+∅ ⊢ (Λ𝛼𝜅
+. v)[𝜎]: 𝜎1 [𝛼:=𝜎]|𝜖
+⇝(pure 𝜖 ⌊∀𝛼𝜅 . 𝜎1⌋(Λ𝛼𝜅
+. v′))▷(𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))
+((pure 𝜖 ⌊∀𝛼𝜅 . 𝜎1⌋(Λ𝛼𝜅
+. v′))▷(𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋)))w′
+↦−→∗(𝜆w. (𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))(Λ𝛼𝜅
+. v′)w)w′
+↦−→∗(𝜆x : ⌊∀𝛼𝜅 . 𝜎1⌋. pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(x ⌊𝜎⌋))(Λ𝛼𝜅
+. v′)w′
+↦−→∗pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋((Λ𝛼𝜅
+. v′)⌊𝜎⌋)w′
+↦−→∗pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋v′[𝛼:=𝜎]w′
+∅ ⊢ v : 𝜎1 |𝜖 ⇝pure 𝜖 ⌊𝜎1⌋v′
+∅ ⊢ v[𝛼:=𝜎]: 𝜎1 [𝛼:=𝜎]|𝜖 ⇝pure 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋(v′[𝛼:=𝜎]) By substitution
+case (handler)(handler h)v −→prompt m h (v ())with m unique.
+∅ ⊢ (handler h)v : 𝜎 |𝜖
+⇝pure 𝜖 ⌊(()→⟨l |𝜖⟩𝜎)→𝜖 𝜎⌋(handlerl 𝜖 ⌊𝜎⌋h′)▷(𝜆f : ⌊()→𝜖 𝜎⌋. pure ⟨l |𝜖⟩()v ▷f )
+(pure 𝜖 ⌊(()→⟨l |𝜖⟩𝜎)→𝜖 𝜎⌋(handlerl 𝜖 ⌊𝜎⌋h′)▷(𝜆f : ⌊()→𝜖 𝜎⌋. pure ⟨l |𝜖⟩()v ▷f ))w′
+↦−→∗(𝜆w. (𝜆f : ⌊()→𝜖 𝜎⌋. pure ⟨l |𝜖⟩()v ▷f )(handlerl 𝜖 ⌊𝜎⌋h′)w)w′
+↦−→∗(𝜆f : ⌊()→𝜖 𝜎⌋. pure ⟨l |𝜖⟩()v ▷f )(handlerl 𝜖 ⌊𝜎⌋h′)w′
+↦−→∗(pure ⟨l |𝜖⟩()v ▷(handlerl 𝜖 ⌊𝜎⌋h′))w′
+↦−→∗(𝜆w. (handlerl 𝜖 ⌊𝜎⌋h′)v w)w′
+↦−→∗(handlerl 𝜖 ⌊𝜎⌋h′)v w′
+↦−→∗freshm (𝜆m →promptl 𝜖 ⌊𝜎⌋m h′(v′()))w′
+↦−→∗promptl 𝜖 ⌊𝜎⌋m h′(v′())w′ ∅ ⊢ promptl m h (v ()): 𝜎 |𝜖
+⇝promptl 𝜖 ⌊𝜎⌋m h′(pure 𝜖 ⌊()→⟨l |𝜖⟩𝜎⌋v ▷(𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f ))
+promptl 𝜖 ⌊𝜎⌋m h′(pure 𝜖 ⌊()→⟨l |𝜖⟩𝜎⌋v ▷(𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f ))w′
+↦−→∗promptl 𝜖 ⌊𝜎⌋m h′(𝜆w. (𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f )v w)w′
+↦−→∗(𝜆w. case (𝜆w. (𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f )v w)⟨l : (m, h′
+, w | w⟩of. . .)w′
+↦−→∗case (𝜆w. (𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f )v w)⟨l : m, h′
+, w′| w′⟩of. . .
+↦−→∗case (𝜆f : ⌊()→⟨l |𝜖⟩𝜎⌋. pure 𝜖 ⌊()⌋()▷f )v ⟨l : m, h′
+, w′| w′⟩of. . .
+↦−→∗case (pure 𝜖 ⌊()⌋()▷v)⟨l : m, h′
+, w′| w′⟩of. . .
+↦−→∗case (𝜆w. v ()w)⟨l : m, h′
+, w′|w′⟩of. . .
+↦−→∗case v ()⟨l : m, h′
+, w′|w′⟩of. . .
+= promptl 𝜖 ⌊𝜎⌋m h′(v′())w′
+case (promptv)prompt m h v −→v.
+∅ ⊢ prompt m h v : 𝜎 |𝜖 ⇝promptl 𝜖 ⌊𝜎⌋m h′(pure ⟨l |𝜖⟩⌊𝜎⌋v)
+promptl 𝜖 ⌊𝜎⌋m h′(pure ⟨l |𝜖⟩⌊𝜎⌋v)w′
+↦−→∗Pure ⟨l |𝜖⟩⌊𝜎⌋v
+= pure ⟨l |𝜖⟩⌊𝜎⌋v w′
+case (prompt1)prompt m h (yield m f k)−→f (𝜆𝜖 x : 𝜎2. prompt m h (k x))
+with ∅ ⊢val k : 𝜎2 →⟨l |𝜖⟩𝜎.
+59
+m fre
+Xie and Leijen MSR-TR-2021-5
+∅ ⊢ prompt m h (yield m f )⇝promptl m h′(yield 𝜖′m f′k′)
+promptl m h′(yield m f′k′)w′
+↦−→∗f′(promptl m h′◦k′)w′
+= f′(𝜆x. promptl m h′(k′x))w′
+∅ ⊢ f (𝜆𝜖 x : 𝜎2. prompt m h (k′x))
+⇝(pure f′)▷(𝜆g. pure (𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))▷g)
+↦−→∗((pure f′)▷(𝜆g. pure (𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))▷g))w′
+↦−→∗(𝜆w. (𝜆g. pure ((𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))▷g)f )w)w′
+↦−→∗(𝜆g. pure ((𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))▷g)f )w′
+↦−→∗(pure (𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))▷f′)w′
+↦−→∗(𝜆w. f′(𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))w)w′
+↦−→∗f′(𝜆x. promptl m h′(pure k′▷(𝜆h. pure x ▷h)))w′
+↦−→∗f′(𝜆x. promptl m h′(𝜆w. (𝜆h. pure x ▷h)k′w))w′
+= f′(𝜆x. promptl m h′((𝜆h. pure x ▷h)k′))w′
+↦−→∗f′(𝜆x. promptl m h′(pure x ▷k′)w′
+↦−→∗f′(𝜆x. promptl m h′(𝜆w. k′x w)w′
+= f′(𝜆x. promptl m h′(k′x)w′
+case (prompt2)prompt n h (yield m f k)−→yield m f (𝜆𝜖 x : 𝜎2. prompt n h (k x)) ∅ ⊢ prompt n h (yield m f )⇝promptl n h′(yield 𝜖′m f′k′)
+promptl n h′(yield m f′k′)w′
+↦−→∗Yield m f′(prompt n h′◦k′)
+= Yield m f′(𝜆x. prompt n h′(k′x))
+∅ ⊢ yield m f (𝜆𝜖 x : 𝜎2. prompt n h (k x))⇝yield m f′(𝜆x. prompt n h′(k′x))
+yield m f′(𝜆x. prompt n h′(k′x)w′
+= Yield m f′(𝜆x. prompt n h′(k′x)
+case (app1)v (yield m f k)−→yield m f (𝜆𝜖 x : 𝜎2. v (k x))
+∅ ⊢ v (yield m f k)⇝pure v′▷(𝜆f. (yield m f′k′)▷f )
+(pure v′▷(𝜆f. (yield m f′k′)▷f ))w′
+↦−→∗(𝜆w. (𝜆f. (yield m f′k′)▷f )v′w)w′
+↦−→∗(𝜆f. (yield m f′k′)▷f )v′w′
+↦−→∗((yield m f′k′)▷v′)w′
+↦−→∗(𝜆w. Yield m f′(v ★ k′))w′
+↦−→∗Yield m f′(v′★ k′)
+= Yield m f′(𝜆x. k′x ▷v′)
+∅ ⊢ yield m f (𝜆𝜖 x : 𝜎2. v (k x))
+⇝yield m f′(𝜆x. pure v′▷(𝜆f. (pure k′▷(𝜆g. pure x ▷g))▷f ))
+yield m f′(𝜆x. pure v′▷(𝜆f. (pure k′▷(𝜆g. pure x ▷g))▷f ))w′
+↦−→∗Yield m f′(𝜆x. (pure k′▷(𝜆g. pure x ▷g))▷v′)
+↦−→∗Yield m f′(𝜆x. (pure x ▷k′)▷v′)
+↦−→∗Yield m f′(𝜆x. k′x ▷v′)
+case (app2) yield m f k e −→yield m f (𝜆𝜖 x : 𝜎2. (k x)e)| ∅ ⊢val k : 𝜎2 →𝜖 𝜎
+iff n ≠ m
+60
+MSR-TR-2021-5
+Generalized Evidence Passing for Effect Handlers ∅ ⊢ (yield m f k)e ⇝(yield m f′k′)▷(𝜆f. e′▷f′))
+((yield m f′k′)▷(𝜆f. e′▷f′)))w′
+↦−→∗(𝜆w. (Yield m f′((𝜆f. e′▷f′)★ k)))w′
+↦−→∗Yield m f′((𝜆f. e′▷f′)★ k′)
+= Yield m f′(𝜆x. k′x ▷(𝜆f. e′▷f′))
+∅ ⊢ yield m f (𝜆𝜖 x : 𝜎2. (k x)e)
+⇝yield m f′(𝜆x. (pure k′▷(𝜆g. pure x ▷g))▷(𝜆f. e′▷f )))
+yield m f′(𝜆x. (pure k′▷(𝜆g. pure x ▷g))▷(𝜆f. e′▷f )))w′
+↦−→∗Yield m f′(𝜆x. (pure x ▷k′)▷(𝜆f. e′▷f )))
+↦−→∗Yield m f′(𝜆x. k′x ▷(𝜆f. e′▷f ))
+case (under)under𝜖0,𝜖 l (yield n f k)−→yield n f (𝜆𝜖0 x : 𝜎2. under𝜖0,𝜖 l (k x))
+∅ ⊢ under l (yield n f k)⇝𝜆w. let (m, _, w′)= w.l in underl m w′(yield n f′k′)w
+(𝜆w. let (m, _, w1)= w.l in underl m w1 (yield n f′k′)w)w′
+↦−→∗let (m, _, w1)= w′
+.l in underl m w1 (yield n f′k′)w′
+↦−→∗let (m, _, w1)= w′
+.l in (Yield n f′(underkl m k′))
+= let (m, _, w1)= w′
+.l in Yield n f′(𝜆x. 𝜆w2. underkl m k′x w2)
+= let (m, _, w1)= w′
+.l in
+Yield n f′(𝜆x. 𝜆w2. let (m2, _, w′
+2)= w2.l in if (m = m2)then underl m w′
+2 (k′x)w2)
+∅ ⊢ yield n f (𝜆𝜖 x : 𝜎2. under l (k x))
+⇝yield n f′(𝜆x. 𝜆w2. let (m, _, w′
+2)= w2.l in under m w′
+2 (pure k′▷(𝜆f. pure x ▷f ))w2 )
+yield n f′(𝜆x. 𝜆w2. let (m, _, w′
+2)= w2.l in under m w′
+2 (pure k′▷(𝜆f. pure x ▷f ))w2 )w′
+↦−→∗Yield n f′(𝜆x. 𝜆w2. let (m, _, w′
+2)= w2.l in under m w′
+2 (k′x)w2)
+= Yield n f′(𝜆x. 𝜆w2. let (m, _, w′
+2)= w2.l in under m w′
+2 (k′x)w2)
+For internal-safe expressions, we know that m = m2 is always true, so the expressions are
+equivalent.
+Part 2. case (perform)w ⊢ perform op 𝜖0 𝜎 v −→yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)(𝜆⟨l |𝜖0⟩x : 𝜎2 [𝛼:=𝜎]. x)
+with (m, h, _)= w.l, (op : (∀𝛼. 𝜎1 →𝜎2)→f ) ∈h : 𝜎 |l |𝜖, 𝜎k = 𝜎2 [𝛼:=𝜎]→𝜖 𝜎.
+∅ ⊢ perform op 𝜖0 𝜎 v : 𝜎2 [𝛼:=𝜎]|⟨l |𝜖0⟩
+⇝(pure (performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)))▷(𝜆f. pure v′▷f )
+(pure (performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)))▷(𝜆f. pure v′▷f )w′
+↦−→∗performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)v′w′
+↦−→∗performl 𝜖 ⌊𝜎1 [𝛼:=𝜎]⌋⌊𝜎2 [𝛼:=𝜎]⌋(Λ𝜇 r. selectop ⌊𝜎⌋𝜇 r)v′w′
+↦−→∗Yield m (𝜆k. f′v′▷(𝜆g. g k))pure
+∅ ⊢ yield m (𝜆𝜖 k : 𝜎k. f 𝜎 v k)(𝜆⟨l |𝜖0⟩x : 𝜎2 [𝛼:=𝜎]. x): 𝜎2 [𝛼:=𝜎]|⟨l |𝜖0⟩
+⇝yield m (𝜆𝜖 k : 𝜎k. (pure f′)𝜎 ▷(𝜆g1. pure v′▷g1 )▷(𝜆g. pure k ▷g))(𝜆⟨l |𝜖0⟩x : 𝜎2 [𝛼:=𝜎]. pure x)
+yield m (𝜆k. (pure f′)𝜎 ▷(𝜆g1. pure v′▷g1 )▷(𝜆g. pure k ▷g))(𝜆x. pure x)w′
+= yield m (𝜆k. (pure f′)𝜎 ▷(𝜆g1. pure v′▷g1 )▷(𝜆g. pure k ▷g))pure w′
+↦−→∗yield m (𝜆k. f′v′▷(𝜆g. pure k ▷g))pure w′
+↦−→∗yield m (𝜆k. f′v′▷(𝜆g. g k))pure w′
+↦−→∗Yield m (𝜆k. f′v′▷(𝜆g. g k))pure
+□
+Lemma 30. (Simulation (↦−→)). If ∅ ⊢ e1 : 𝜎 |𝜖 ⇝e′
+1 and 0 ⊢ e2 : 𝜎 |𝜖 ⇝e′
+2, and w : evv 𝜖,
+and w ⊢ e1 ↦−→e2 in internal-safe System Fpb, then e′
+1 ⌊w⌋↦−→∗e′
+2 ⌊w⌋;
+Proof. case
+61
+Xie and Leijen MSR-TR-2021-5
+e1 −→e2
+w ⊢ F[e1]↦−→F[e2] (step)
+62
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+∅ ⊢ F[e1]: 𝜎 |𝜖 ⇝g e′
+1 given
+∅ ⊢ F : 𝜎1 →𝜎 |𝜖 ⇝g
+∅ ⊢ e1 : 𝜎1 |𝜖 ⇝e′
+1
+g= g1 ★ (g2 ★ (. . . ★ gn)) Lemma 28
+gn = id above
+e′
+1 w′−→e′
+2 w′ Lemma 30
+g e′
+1
+= (g1 ★ (g2 ★ (. . . ★ gn)))e′
+1
+= (g2 ★ (. . . ★ gn))e′
+1 ▷g1
+= ((gn e′
+1)▷. . .)▷g2)▷g1
+g e′
+1 w′
+= (((gn e′
+1)▷. . .)▷g2)▷g1)w′
+= case (((gn e′
+1)▷. . .)▷g2)w′of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+= case
+(case (((gn e′
+1)▷. . .))w′of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+=
+. . .
+= case
+case
+. . .
+(case gn e′
+1 w′)of Pure x →gn−1 x w′; Yield m f k →Yield m f (gn−1 ★ k))
+. . .
+of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+= case gn = id
+case
+. . .
+case (id e′
+1 w′)of Pure x →gn−1 x w′; Yield m f k →Yield m f (gn−1 ★ k))
+. . .
+of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+↦−→∗case
+case
+. . .
+case (e′
+1 w′)of Pure x →gn−1 x w′; Yield m f k →Yield m f (gn−1 ★ k))
+. . .
+of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+↦−→∗case
+case
+. . .
+case (e′
+2 w′)of Pure x →gn−1 x w′; Yield m f k →Yield m f (gn−1 ★ k))
+. . .
+of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+= case gn = id
+case
+. . .
+(gn e′
+2 w′)of Pure x →gn−1 x w′; Yield m f k →Yield m f (gn−1 ★ k))
+63
+. . .
+of Pure x →g2 x w′; Yield m f k →Yield m f (g2 ★ k))
+of Pure x →g1 x w′; Yield m f k →Yield m f (g1 ★ k)
+Xie and Leijen MSR-TR-2021-5
+case
+w ⊢ e −→e′
+w ⊢ F[e]↦−→F[e′] (stepw)
+The same as the previous case with part 2 of Lemma 29.
+case
+⟨l : (m, h, w)|w⟩ ⊢ e1 ↦−→e2
+w ⊢ F[prompt m h e1]↦−→F[prompt m h e2] (promptw)
+Similar as previous cases, except that the final expression in the case of the last (▷)is id e′
+1 ⟨l : (m, h′
+, w′)|w of. . . ⟩↦−→∗e′
+2 ⟨l : (m, h′
+, w′)|w of. . . ⟩ id (prompt m h′e′
+1)w′
+= (prompt m h′e′
+1)w′
+= case (e′
+1 ⟨l : (m, h′
+, w′)|w)of. . . ⟩
+↦−→∗case (e′
+2 ⟨l : (m, h′
+, w′) |w)of. . . ⟩
+= (prompt m h′e′
+2)w′
+case
+Lemma 29
+(prompt m h′e′)w′
+.
+w′ ⊢ e ↦−→e′ (m, h, w′)= w.l
+w ⊢ F[under𝜖0,𝜖 l e]↦−→F[under𝜖0,𝜖 l e′] (underw)
+Similar as previous cases, except that the final expression in the case of the last (▷)is id (𝜆w. let (m, _, w1)= w
+e′
+1 w′↦−→∗e′
+2 w′ Lemma 29
+id (𝜆w. let (m, _, w1)= w.l in underl m w1 e′
+1 w)w′
+= (𝜆w. let (m, _, w1)= w.l in underl m w1 e′
+1 w)w′
+= let (m, _, w1)= w′
+.l in underl m w1 e′
+1 w′
+= let (m, _, w1)= w′
+.l in case e′
+1 w′of. . .
+↦−→let (m, _, w1)= w′
+.l in case e′
+2 w′of. . .
+= id (𝜆w. let (m, _, w1)= w.l in underl m w1 e′
+2 w)w′
+Theorem 19. (Simulation). If ∅ ⊢ e1 : 𝜎 |⟨⟩⇝e′
+1 and 0 ⊢ e2 : 𝜎 |⟨⟩⇝e′
+2, and ⟨⟩ ⊢ e1 ↦−→e2
+in internal-safe System Fpb, then e′
+1 ⟨⟩↦−→∗e′
+2 ⟨⟩;
+Proof. (Of Theorem 19) Apply Lemma 30 with 𝜖 = ⟨⟩ and w = ⟨⟩. □
+F.7 Semantics Preserving
+Proof. (Of Theorem 7) We have established the simulation theorems for all refinements: Theorem
+14, Theorem 15, Theorem 18 and Theorem 19.
+If e ↦−→∗n in System F𝜖 , we know that from Theorem 14, there exists e2, such that ⌈e⌉𝜖⇓𝑝 ↦−→∗e2
+and ⌈e2⌉𝜖⇑𝑝 = n. Since e is user-provided which contains no internal frames, so ⌈e⌉𝜖⇓𝑝 = e. Also
+according to the definition of ⌈⌉𝜖⇑𝑝 , we know e2 = n. So we have e↦−→∗n in System Fp
+.
+Then by Theorem 15, we know that e ↦−→∗n in System Fpw
+.
+Theorem 18 does not directly lead to e ↦−→∗n in System Fpb, because of the=𝜂 relation. However,
+since the relation only occurs when we build up the resumption, it is easy to show that evaluation
+preserves the=𝜂 relation, as if the resumption is not used that the equivalence is preserved, and
+when the resumption is used we immediately have (𝜆x. E[x])v −→E[v].
+64
+Generalized Evidence Passing for Effect Handlers MSR-TR-2021-5
+Then we get e ↦−→∗e3 in System Fpb, where n =𝜂 e3. By progress, we can further evaluate e3 to
+n, i.e., e ↦−→∗n. Note e3 cannot loop as we can only add a finite number of the=𝜂 sequence during
+the evaluation of e ↦−→∗e3.
+Finally, given ∅ ⊢ e : int |⟨⟩⇝e′, and ∅ ⊢ n : int |⟨⟩⇝pure ⟨⟩int n, by Theorem 19, we
+know that e′⟨⟩−→∗pure ⟨⟩n ⟨⟩−→∗Pure ⟨⟩int n.
+On the other hand, if e diverges (i.e., e ⇑), then following the same reasoning as above, we can
+show that e′⟨⟩diverges.
+□
+Created with Madoko.net.
+65

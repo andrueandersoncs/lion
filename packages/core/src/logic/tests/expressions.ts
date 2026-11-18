@@ -178,7 +178,10 @@ const goalOf = (n: Arbitrary.Arbitrary<Expression>, depth: number) => {
   );
 };
 
-/** A find about a number computed from `?x`, with variables of its own. */
+/**
+ * A find about a number computed from `?x`, with variables of its own, also
+ * asked as if the database had changed.
+ */
 const findOf = (n: Arbitrary.Arbitrary<Expression>, depth: number) => {
   const k = `?k${depth}`;
   const m = `?m${depth}`;
@@ -186,6 +189,16 @@ const findOf = (n: Arbitrary.Arbitrary<Expression>, depth: number) => {
     Arbitrary.map(n, (value): Expression => ["find", k, ["link", value, k]]),
     Arbitrary.map(n, (value): Expression => ["find", k, ["reach", value, k]]),
     Arbitrary.map(n, (value): Expression => ["targets", value]),
+    // The same question, asked as if a link were added or taken away.
+    Arbitrary.map(
+      n,
+      (value): Expression => [
+        "assuming",
+        ["fact", ["link", value, 5]],
+        ["retract", ["link", 2, 3]],
+        ["find", k, ["reach", value, k]],
+      ]
+    ),
     // The template computes with the question's own variable and `?x`.
     Arbitrary.map(
       Arbitrary.all([n, n]),

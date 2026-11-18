@@ -1,0 +1,22 @@
+{
+  "claims": [
+    {
+      "quote": "`assuming` runs in the compiled evaluator as the other forms that ask the database do: as an Effect, in the scope it was written in, with its changes and its expression evaluated by the evaluator that runs it. The generated programs that check the compiled evaluator against the interpreter it replaced, and plain code against code that waits for a logic variable, now ask questions with `assuming` too, adding a link and taking one away before a `find`.",
+      "says": {
+        "behavior": "compiled-assuming",
+        "is": "same-as-interpreter",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "The REPL's program graph shows an `assuming` form as a logic node that asks as if the database had changed, with the number of its changes. Without it the REPL did not type-check once `assuming` was a special form.",
+      "says": {
+        "behavior": "repl-graph-assuming",
+        "is": "logic-node",
+        "area": "editor",
+        "fixes": true,
+        "was": "type-error"
+      }
+    }
+  ]
+}

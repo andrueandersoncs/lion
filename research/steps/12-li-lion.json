@@ -1,0 +1,1050 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "README.md"
+   ],
+   [
+    "quote",
+    "Lion README at commit f49b97a"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "bun run bench plain; bun run scale triangles; the lion command on a loop and on hub graphs"
+   ],
+   [
+    "quote",
+    "Lion benchmarks and probes run for this research"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "wc -l packages/core/src/logic/*.ts"
+   ],
+   [
+    "quote",
+    "Lines of code in Lion's logic layer"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probe"
+   ],
+   [
+    "quote",
+    "grep -rci over README.md and packages/site-runtime/content"
+   ],
+   [
+    "quote",
+    "Words Lion's documentation never uses"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l1"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "explains a derived fact by the rule that derived it and what its body rested on"
+   ],
+   [
+    "quote",
+    {
+     "lion": "why provenance",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l1"
+   ],
+   [
+    "quote",
+    "Logic, Forms"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l2"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A fact that does not hold is explained the other way round."
+   ],
+   [
+    "quote",
+    {
+     "lion": "showing what is missing for a goal to hold",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l2"
+   ],
+   [
+    "quote",
+    "Logic, Forms"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l3"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "are lattice aggregates: a group's value only moves one way as matches arrive"
+   ],
+   [
+    "quote",
+    {
+     "lion": "lattice aggregates",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l3"
+   ],
+   [
+    "quote",
+    "Recursion through aggregates"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l4"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A rule head can aggregate."
+   ],
+   [
+    "quote",
+    {
+     "lion": "aggregates",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l4"
+   ],
+   [
+    "quote",
+    "Aggregates"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l5"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A keyed relation holds at most one row per key, so a fact whose key is already present replaces the old row, like an upsert."
+   ],
+   [
+    "quote",
+    {
+     "lion": "keys",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l5"
+   ],
+   [
+    "quote",
+    "Keys"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l6"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A rule's head can also say that two values are the same"
+   ],
+   [
+    "quote",
+    {
+     "lion": "equality rules",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l6"
+   ],
+   [
+    "quote",
+    "Existential rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l7"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A rule head can say that something exists without saying what it is."
+   ],
+   [
+    "quote",
+    {
+     "lion": "existential rules",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l7"
+   ],
+   [
+    "quote",
+    "Existential rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l8"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question."
+   ],
+   [
+    "quote",
+    {
+     "lion": "stratified negation",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l8"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l9"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question."
+   ],
+   [
+    "quote",
+    {
+     "lion": "non-stratified negation",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l9"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l10"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Answers are computed bottom-up with semi-naive evaluation"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l10"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l11"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Lion rewrites the rules with the magic-sets technique"
+   ],
+   [
+    "quote",
+    {
+     "lion": "goal-directed evaluation",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l11"
+   ],
+   [
+    "quote",
+    "Goal-directed queries"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l12"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A change to facts is followed through what was derived, so it costs what it reaches and not what the database holds."
+   ],
+   [
+    "quote",
+    {
+     "lion": "derived rows kept up to date as facts change",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l12"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l13"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Three kinds of relation cannot be followed row by row"
+   ],
+   [
+    "quote",
+    {
+     "lion": "incremental maintenance of every relation",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l13"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l14"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "An invariant is a query assertion the database keeps."
+   ],
+   [
+    "quote",
+    {
+     "lion": "invariants",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l14"
+   ],
+   [
+    "quote",
+    "Invariants"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l15"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Dijkstra's algorithm from"
+   ],
+   [
+    "quote",
+    {
+     "lion": "shortest paths",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l15"
+   ],
+   [
+    "quote",
+    "Graph algorithms"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l16"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A host function needs nothing to work in rules and queries."
+   ],
+   [
+    "quote",
+    {
+     "lion": "host functions",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l16"
+   ],
+   [
+    "quote",
+    "Host functions in rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l17"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Adding what the database already holds changes nothing"
+   ],
+   [
+    "quote",
+    {
+     "lion": "counting",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l17"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l18"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first."
+   ],
+   [
+    "quote",
+    {
+     "lion": "top-k proofs",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l18"
+   ],
+   [
+    "quote",
+    "Logic, Forms"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l19"
+   ],
+   [
+    "quote",
+    "lion-probe"
+   ],
+   [
+    "quote",
+    "probabilit: 1 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "probabilities",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l19"
+   ],
+   [
+    "quote",
+    "The one line is the Jev how-to: an AI answer carries probabilities a program can branch on with cond. Nothing carries them through rules."
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l20"
+   ],
+   [
+    "quote",
+    "lion-probe"
+   ],
+   [
+    "quote",
+    "macro: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "macros",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l21"
+   ],
+   [
+    "quote",
+    "lion-probe"
+   ],
+   [
+    "quote",
+    "worst-case optimal: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "worst-case optimal joins",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l22"
+   ],
+   [
+    "quote",
+    "lion-probe"
+   ],
+   [
+    "quote",
+    "constrained decoding: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "constrained generation",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l23"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "plain: fib(17) through a recursive lambda                    45.6 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "fib(17) through a recursive lambda",
+     "ms": 45.6
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l24"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "plain: array/map and array/reduce over 20,000 items         117.0 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "array/map and array/reduce over 20,000 items",
+     "ms": 117
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l25"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "explaining: why 200 rows hold or do not, over 20,000 facts   80.7 ms"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "why 200 rows hold or do not, over 20,000 facts",
+     "ms": 80.7
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l26"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "n = 100,000: real 2.56 s"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "a tail-recursive loop of 100,000 steps",
+     "s": 2.56
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l27"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "19,983 edges, 23,950 triangles: real 14.22 s"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "triangles on a graph with two hubs, 19,983 edges",
+     "s": 14.22
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l28"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "time grows about n^1.9 between the two largest sizes"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles on a graph with two hubs",
+     "power": 1.9
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l29"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "join: triangles among n edges over n/4 nodes       5 ms      11 ms       34 ms  n^0.8"
+   ],
+   [
+    "quote",
+    {
+     "lion grows": "triangles among n edges over n/4 nodes",
+     "power": 0.8
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l30"
+   ],
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "957 logic/maintain.ts"
+   ],
+   [
+    "quote",
+    {
+     "counted": "lines in logic/maintain.ts",
+     "n": 957
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l31"
+   ],
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "713 logic/explain.ts"
+   ],
+   [
+    "quote",
+    {
+     "counted": "lines in logic/explain.ts",
+     "n": 713
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l32"
+   ],
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "159 logic/aggregates.ts"
+   ],
+   [
+    "quote",
+    {
+     "counted": "lines in logic/aggregates.ts",
+     "n": 159
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l33"
+   ],
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "9877 total"
+   ],
+   [
+    "quote",
+    {
+     "counted": "lines in the logic layer",
+     "n": 9877
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

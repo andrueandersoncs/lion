@@ -52,9 +52,21 @@ export type Shape =
       readonly kind: "record";
       /** True for `schema/open`: the value can have keys the record lacks. */
       readonly open: boolean;
+      /**
+       * The schema of the rest, which `schema/open` is given beside the
+       * record: the record of the keys the record does not name must fit it.
+       */
+      readonly rest?: Shape;
       readonly fields: Readonly<Record<string, Field>>;
     }
-  | { readonly kind: "tuple"; readonly items: readonly Shape[] }
+  | {
+      readonly kind: "tuple";
+      /** True for `schema/open`: the value can have items after these. */
+      readonly open?: boolean;
+      /** The schema of the list of the items after these. */
+      readonly rest?: Shape;
+      readonly items: readonly Shape[];
+    }
   | { readonly kind: "arrayOf" | "recordOf"; readonly item: Shape }
   | { readonly kind: "allOf" | "anyOf"; readonly parts: readonly Shape[] };
 
@@ -136,10 +148,10 @@ export const lion = (shape: Shape): unknown => {
             : lion(field.shape),
         ])
       );
-      return shape.open ? ["schema/open", record] : record;
+      return opened(shape, record);
     }
     case "tuple":
-      return ["array/make", ...shape.items.map(lion)];
+      return opened(shape, ["array/make", ...shape.items.map(lion)]);
     case "arrayOf":
     case "recordOf":
       return [`schema/${shape.kind}`, lion(shape.item)];
@@ -147,6 +159,51 @@ export const lion = (shape: Shape): unknown => {
       return [`schema/${shape.kind}`, ...shape.parts.map(lion)];
   }
 };
+
+/** A record or list as `schema/open` writes it, with the schema of its rest. */
+const opened = (
+  shape: { readonly open?: boolean; readonly rest?: Shape },
+  named: unknown
+): unknown => {
+  if (!shape.open) {
+    return named;
+  }
+  return shape.rest === undefined
+    ? ["schema/open", named]
+    : ["schema/open", named, lion(shape.rest)];
+};
+
+/**
+ * Where what a record or list leaves over does not fit the schema of its
+ * rest, as the value shows it: a part of the rest where it stands, `shift`
+ * items further on in a list, and the rest as a whole as the whole value.
+ */
+const misfitsOfRest = (
+  rest: Shape,
+  left: Json,
+  path: Path,
+  shift = 0
+): Misfit[] => {
+  const found = misfits(rest, left, path);
+  const inner = found.flatMap((misfit): Misfit[] => {
+    const [step, ...more] = misfit.path.slice(path.length);
+    if (step === undefined) {
+      return [];
+    }
+    const moved = typeof step === "number" ? step + shift : step;
+    return [{ ...misfit, path: [...path, moved, ...more] }];
+  });
+  return inner.length < found.length ? [...wrong(path), ...inner] : inner;
+};
+
+/** The record of the keys of a value that a record of schemas does not name. */
+const othersOf = (
+  value: { readonly [key: string]: Json },
+  named: Readonly<Record<string, unknown>>
+): Json =>
+  Object.fromEntries(
+    Object.entries(value).filter(([key]) => !Object.hasOwn(named, key))
+  );
 
 /** A key that is equal for equal JSON values, whatever order their keys have. */
 export const keyOf = (value: unknown): string =>
@@ -234,12 +291,39 @@ const misfitsOfRecord = (
       ? []
       : [{ kind: "missing" as const, path: [...path, key] }];
   });
-  const extra = shape.open
-    ? []
-    : Object.keys(value)
-        .filter((key) => !Object.hasOwn(shape.fields, key))
-        .map((key) => ({ kind: "extra" as const, path: [...path, key] }));
+  if (shape.open) {
+    return shape.rest === undefined
+      ? fields
+      : [
+          ...fields,
+          ...misfitsOfRest(shape.rest, othersOf(value, shape.fields), path),
+        ];
+  }
+  const extra = Object.keys(value)
+    .filter((key) => !Object.hasOwn(shape.fields, key))
+    .map((key) => ({ kind: "extra" as const, path: [...path, key] }));
   return [...fields, ...extra];
+};
+
+const misfitsOfTuple = (
+  shape: Extract<Shape, { kind: "tuple" }>,
+  value: Json,
+  path: Path
+): Misfit[] => {
+  const count = shape.items.length;
+  if (
+    !Array.isArray(value) ||
+    value.length < count ||
+    (!shape.open && value.length > count)
+  ) {
+    return wrong(path);
+  }
+  const items = shape.items.flatMap((item, at) =>
+    misfits(item, value[at] as Json, [...path, at])
+  );
+  return shape.open && shape.rest !== undefined
+    ? [...items, ...misfitsOfRest(shape.rest, value.slice(count), path, count)]
+    : items;
 };
 
 /** Every place where a value does not fit a shape; none when it fits. */
@@ -276,11 +360,7 @@ export const misfits = (
     case "record":
       return misfitsOfRecord(shape, value, path);
     case "tuple":
-      return Array.isArray(value) && value.length === shape.items.length
-        ? shape.items.flatMap((item, at) =>
-            misfits(item, value[at] as Json, [...path, at])
-          )
-        : wrong(path);
+      return misfitsOfTuple(shape, value, path);
     case "arrayOf":
       return Array.isArray(value)
         ? value.flatMap((item: Json, at) =>
@@ -326,21 +406,55 @@ const bindingsOfRecord = (
   value: Json,
   vars: Bindings
 ): Bindings[] => {
-  const named = Object.keys(shape.fields);
+  const keys = Object.keys(shape.fields);
   if (
     !(
       isRecord(value) &&
-      (shape.open || Object.keys(value).every((key) => named.includes(key)))
+      (shape.open || Object.keys(value).every((key) => keys.includes(key)))
     )
   ) {
     return [];
   }
-  return fold(Object.entries(shape.fields), vars, ([key, field], answered) => {
-    if (Object.hasOwn(value, key)) {
-      return bindings(field.shape, value[key] as Json, answered);
+  const named = fold(
+    Object.entries(shape.fields),
+    vars,
+    ([key, field], answered) => {
+      if (Object.hasOwn(value, key)) {
+        return bindings(field.shape, value[key] as Json, answered);
+      }
+      return field.optional || field.shape.kind === "maybe" ? [answered] : [];
     }
-    return field.optional || field.shape.kind === "maybe" ? [answered] : [];
-  });
+  );
+  const { rest } = shape;
+  return shape.open && rest !== undefined
+    ? named.flatMap((answered) =>
+        bindings(rest, othersOf(value, shape.fields), answered)
+      )
+    : named;
+};
+
+const bindingsOfTuple = (
+  shape: Extract<Shape, { kind: "tuple" }>,
+  value: Json,
+  vars: Bindings
+): Bindings[] => {
+  const count = shape.items.length;
+  if (
+    !Array.isArray(value) ||
+    value.length < count ||
+    (!shape.open && value.length > count)
+  ) {
+    return [];
+  }
+  const named = fold(
+    shape.items.map((item, at) => [item, value[at] as Json] as const),
+    vars,
+    ([item, part], answered) => bindings(item, part, answered)
+  );
+  const { rest } = shape;
+  return shape.open && rest !== undefined
+    ? named.flatMap((answered) => bindings(rest, value.slice(count), answered))
+    : named;
 };
 
 /**
@@ -367,13 +481,7 @@ export const bindings = (
     case "record":
       return bindingsOfRecord(shape, value, vars);
     case "tuple":
-      return Array.isArray(value) && value.length === shape.items.length
-        ? fold(
-            shape.items.map((item, at) => [item, value[at] as Json] as const),
-            vars,
-            ([item, part], answered) => bindings(item, part, answered)
-          )
-        : [];
+      return bindingsOfTuple(shape, value, vars);
     case "arrayOf":
       return Array.isArray(value)
         ? fold(value as Json[], vars, (part, answered) =>
@@ -412,9 +520,15 @@ export const asksEven = (shape: Shape): boolean => {
     case "member":
       return true;
     case "record":
-      return Object.values(shape.fields).some((field) => asksEven(field.shape));
+      return (
+        Object.values(shape.fields).some((field) => asksEven(field.shape)) ||
+        (shape.rest !== undefined && asksEven(shape.rest))
+      );
     case "tuple":
-      return shape.items.some(asksEven);
+      return (
+        shape.items.some(asksEven) ||
+        (shape.rest !== undefined && asksEven(shape.rest))
+      );
     case "arrayOf":
     case "recordOf":
       return asksEven(shape.item);
@@ -553,17 +667,28 @@ export const shape = (
     Arbitrary.all([inner, integer(0, 2)]),
     ([part, roll]): Field => ({ optional: roll === 0, shape: part })
   );
+  const record = Arbitrary.map(
+    Arbitrary.all([recordFrom(field), integer(0, 3), inner]),
+    ([fields, roll, rest]): Shape => ({
+      kind: "record",
+      open: roll <= 1,
+      ...(roll === 1 ? { rest } : {}),
+      fields,
+    })
+  );
   return oneOf<Shape>(
     leaf,
+    record,
+    record,
     Arbitrary.map(
-      Arbitrary.all([recordFrom(field), integer(0, 2)]),
-      ([fields, roll]): Shape => ({ kind: "record", open: roll === 0, fields })
+      Arbitrary.all([several, integer(0, 3), inner]),
+      ([items, roll, rest]): Shape => ({
+        kind: "tuple",
+        open: roll <= 1,
+        ...(roll === 1 ? { rest } : {}),
+        items,
+      })
     ),
-    Arbitrary.map(
-      Arbitrary.all([recordFrom(field), integer(0, 2)]),
-      ([fields, roll]): Shape => ({ kind: "record", open: roll === 0, fields })
-    ),
-    Arbitrary.map(several, (items): Shape => ({ kind: "tuple", items })),
     Arbitrary.map(inner, (item): Shape => ({ kind: "arrayOf", item })),
     Arbitrary.map(inner, (item): Shape => ({ kind: "recordOf", item })),
     Arbitrary.map(several, (parts): Shape => ({ kind: "anyOf", parts })),
@@ -632,8 +757,11 @@ const fitting = (given: Shape): Arbitrary.Arbitrary<Json> => {
             )
           ),
           integer(0, 3),
+          given.rest === undefined ? constant<Json>(null) : fitting(given.rest),
         ]),
-        ([entries, roll]): Json => ({
+        ([entries, roll, rest]): Json => ({
+          // The keys of a rest that fits, where they are not named.
+          ...(isRecord(rest) ? rest : {}),
           // Now and then a key the shape does not name, or one left out.
           ...(roll === 0 ? { extra: 1 } : {}),
           ...Object.fromEntries(
@@ -649,8 +777,16 @@ const fitting = (given: Shape): Arbitrary.Arbitrary<Json> => {
       );
     case "tuple":
       return Arbitrary.map(
-        Arbitrary.all(given.items.map(fitting)),
-        (items): Json => items
+        Arbitrary.all([
+          Arbitrary.all(given.items.map(fitting)),
+          given.rest === undefined
+            ? Arbitrary.array(primitive, { maxLength: given.open ? 2 : 0 })
+            : fitting(given.rest),
+        ]),
+        ([items, rest]): Json => [
+          ...items,
+          ...(Array.isArray(rest) ? rest : []),
+        ]
       );
     case "arrayOf":
       return Arbitrary.array(fitting(given.item), { maxLength: 3 });

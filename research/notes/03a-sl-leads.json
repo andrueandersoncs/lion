@@ -1,0 +1,76 @@
+{
+  "leads": [
+    {
+      "id": "sl-terms",
+      "statement": "Explain the two things the tweet asks about, from primary sources",
+      "pursues": [
+        {
+          "defines": "separating conjunction"
+        },
+        {
+          "defines": "unital resource algebra"
+        }
+      ],
+      "patience": 4
+    },
+    {
+      "id": "sl-records",
+      "statement": "Find how other languages split a record into named keys and the rest, and compose exact record shapes",
+      "pursues": [
+        {
+          "covers": "record pattern that binds the rest"
+        },
+        {
+          "covers": "composing exact record schemas"
+        }
+      ],
+      "patience": 4
+    },
+    {
+      "id": "sl-persistent",
+      "statement": "Find whether a separating conjunction means more than plain conjunction over facts that can be used again",
+      "pursues": [
+        {
+          "needs": "resources that cannot be duplicated"
+        }
+      ],
+      "patience": 3
+    },
+    {
+      "id": "sl-algebra",
+      "statement": "Find what resource algebras say about combining values, clashes, and units",
+      "pursues": [
+        {
+          "covers": "keys that reject two different values"
+        },
+        {
+          "covers": "a combining operation with a validity check"
+        },
+        {
+          "covers": "a unit value for combining"
+        }
+      ],
+      "patience": 3
+    },
+    {
+      "id": "sl-linear",
+      "statement": "Find whether rules that use up facts keep results independent of the order rules run in",
+      "pursues": [
+        {
+          "covers": "results independent of rule order"
+        }
+      ],
+      "patience": 3
+    },
+    {
+      "id": "sl-hypo",
+      "statement": "Find how logic languages ask what would hold if some facts were added, and what it costs",
+      "pursues": [
+        {
+          "covers": "adding facts for the duration of a goal"
+        }
+      ],
+      "patience": 3
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "min of nothing": [
+    "aggregate/min",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "max of nothing": [
+    "aggregate/max",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "mean of nothing": [
+    "aggregate/mean",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "count of nothing": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "collect of nothing": [
+    "aggregate/collect",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}

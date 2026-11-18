@@ -1,0 +1,354 @@
+{
+  "sources": [
+    {
+      "id": "lion-readme",
+      "url": "README.md",
+      "title": "Lion README at commit f49b97a",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261117
+    },
+    {
+      "id": "lion-bench",
+      "url": "bun run bench plain; bun run scale triangles; the lion command on a loop and on hub graphs",
+      "title": "Lion benchmarks and probes run for this research",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261117
+    },
+    {
+      "id": "lion-code",
+      "url": "wc -l packages/core/src/logic/*.ts",
+      "title": "Lines of code in Lion's logic layer",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261117
+    },
+    {
+      "id": "lion-probe",
+      "url": "grep -rci over README.md and packages/site-runtime/content",
+      "title": "Words Lion's documentation never uses",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261117
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-l1",
+      "source": "lion-readme",
+      "quote": "explains a derived fact by the rule that derived it and what its body rested on",
+      "says": {
+        "lion": "why provenance",
+        "has": true
+      },
+      "where": "Logic, Forms"
+    },
+    {
+      "id": "li-l2",
+      "source": "lion-readme",
+      "quote": "A fact that does not hold is explained the other way round.",
+      "says": {
+        "lion": "showing what is missing for a goal to hold",
+        "has": true
+      },
+      "where": "Logic, Forms"
+    },
+    {
+      "id": "li-l3",
+      "source": "lion-readme",
+      "quote": "are lattice aggregates: a group's value only moves one way as matches arrive",
+      "says": {
+        "lion": "lattice aggregates",
+        "has": true
+      },
+      "where": "Recursion through aggregates"
+    },
+    {
+      "id": "li-l4",
+      "source": "lion-readme",
+      "quote": "A rule head can aggregate.",
+      "says": {
+        "lion": "aggregates",
+        "has": true
+      },
+      "where": "Aggregates"
+    },
+    {
+      "id": "li-l5",
+      "source": "lion-readme",
+      "quote": "A keyed relation holds at most one row per key, so a fact whose key is already present replaces the old row, like an upsert.",
+      "says": {
+        "lion": "keys",
+        "has": true
+      },
+      "where": "Keys"
+    },
+    {
+      "id": "li-l6",
+      "source": "lion-readme",
+      "quote": "A rule's head can also say that two values are the same",
+      "says": {
+        "lion": "equality rules",
+        "has": true
+      },
+      "where": "Existential rules"
+    },
+    {
+      "id": "li-l7",
+      "source": "lion-readme",
+      "quote": "A rule head can say that something exists without saying what it is.",
+      "says": {
+        "lion": "existential rules",
+        "has": true
+      },
+      "where": "Existential rules"
+    },
+    {
+      "id": "li-l8",
+      "source": "lion-readme",
+      "quote": "A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.",
+      "says": {
+        "lion": "stratified negation",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l9",
+      "source": "lion-readme",
+      "quote": "A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.",
+      "says": {
+        "lion": "non-stratified negation",
+        "has": false
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l10",
+      "source": "lion-readme",
+      "quote": "Answers are computed bottom-up with semi-naive evaluation",
+      "says": {
+        "lion": "recursion",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l11",
+      "source": "lion-readme",
+      "quote": "Lion rewrites the rules with the magic-sets technique",
+      "says": {
+        "lion": "goal-directed evaluation",
+        "has": true
+      },
+      "where": "Goal-directed queries"
+    },
+    {
+      "id": "li-l12",
+      "source": "lion-readme",
+      "quote": "A change to facts is followed through what was derived, so it costs what it reaches and not what the database holds.",
+      "says": {
+        "lion": "derived rows kept up to date as facts change",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l13",
+      "source": "lion-readme",
+      "quote": "Three kinds of relation cannot be followed row by row",
+      "says": {
+        "lion": "incremental maintenance of every relation",
+        "has": false
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l14",
+      "source": "lion-readme",
+      "quote": "An invariant is a query assertion the database keeps.",
+      "says": {
+        "lion": "invariants",
+        "has": true
+      },
+      "where": "Invariants"
+    },
+    {
+      "id": "li-l15",
+      "source": "lion-readme",
+      "quote": "Dijkstra's algorithm from",
+      "says": {
+        "lion": "shortest paths",
+        "has": true
+      },
+      "where": "Graph algorithms"
+    },
+    {
+      "id": "li-l16",
+      "source": "lion-readme",
+      "quote": "A host function needs nothing to work in rules and queries.",
+      "says": {
+        "lion": "host functions",
+        "has": true
+      },
+      "where": "Host functions in rules"
+    },
+    {
+      "id": "li-l17",
+      "source": "lion-readme",
+      "quote": "Adding what the database already holds changes nothing",
+      "says": {
+        "lion": "counting",
+        "has": false
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l18",
+      "source": "lion-readme",
+      "quote": "A row that several answers give is explained the way a database that derives it from the facts as they now are finds it first.",
+      "says": {
+        "lion": "top-k proofs",
+        "has": false
+      },
+      "where": "Logic, Forms"
+    },
+    {
+      "id": "li-l19",
+      "source": "lion-probe",
+      "quote": "probabilit: 1 lines",
+      "says": {
+        "lion": "probabilities",
+        "has": false
+      },
+      "where": "The one line is the Jev how-to: an AI answer carries probabilities a program can branch on with cond. Nothing carries them through rules."
+    },
+    {
+      "id": "li-l20",
+      "source": "lion-probe",
+      "quote": "macro: 0 lines",
+      "says": {
+        "lion": "macros",
+        "has": false
+      }
+    },
+    {
+      "id": "li-l21",
+      "source": "lion-probe",
+      "quote": "worst-case optimal: 0 lines",
+      "says": {
+        "lion": "worst-case optimal joins",
+        "has": false
+      }
+    },
+    {
+      "id": "li-l22",
+      "source": "lion-probe",
+      "quote": "constrained decoding: 0 lines",
+      "says": {
+        "lion": "constrained generation",
+        "has": false
+      }
+    },
+    {
+      "id": "li-l23",
+      "source": "lion-bench",
+      "quote": "plain: fib(17) through a recursive lambda                    45.6 ms",
+      "says": {
+        "lion measured": "fib(17) through a recursive lambda",
+        "ms": 45.6
+      }
+    },
+    {
+      "id": "li-l24",
+      "source": "lion-bench",
+      "quote": "plain: array/map and array/reduce over 20,000 items         117.0 ms",
+      "says": {
+        "lion measured": "array/map and array/reduce over 20,000 items",
+        "ms": 117
+      }
+    },
+    {
+      "id": "li-l25",
+      "source": "lion-bench",
+      "quote": "explaining: why 200 rows hold or do not, over 20,000 facts   80.7 ms",
+      "says": {
+        "lion measured": "why 200 rows hold or do not, over 20,000 facts",
+        "ms": 80.7
+      }
+    },
+    {
+      "id": "li-l26",
+      "source": "lion-bench",
+      "quote": "n = 100,000: real 2.56 s",
+      "says": {
+        "lion measured": "a tail-recursive loop of 100,000 steps",
+        "s": 2.56
+      }
+    },
+    {
+      "id": "li-l27",
+      "source": "lion-bench",
+      "quote": "19,983 edges, 23,950 triangles: real 14.22 s",
+      "says": {
+        "lion measured": "triangles on a graph with two hubs, 19,983 edges",
+        "s": 14.22
+      }
+    },
+    {
+      "id": "li-l28",
+      "source": "lion-bench",
+      "quote": "time grows about n^1.9 between the two largest sizes",
+      "says": {
+        "lion grows": "triangles on a graph with two hubs",
+        "power": 1.9
+      }
+    },
+    {
+      "id": "li-l29",
+      "source": "lion-bench",
+      "quote": "join: triangles among n edges over n/4 nodes       5 ms      11 ms       34 ms  n^0.8",
+      "says": {
+        "lion grows": "triangles among n edges over n/4 nodes",
+        "power": 0.8
+      }
+    },
+    {
+      "id": "li-l30",
+      "source": "lion-code",
+      "quote": "957 logic/maintain.ts",
+      "says": {
+        "counted": "lines in logic/maintain.ts",
+        "n": 957
+      }
+    },
+    {
+      "id": "li-l31",
+      "source": "lion-code",
+      "quote": "713 logic/explain.ts",
+      "says": {
+        "counted": "lines in logic/explain.ts",
+        "n": 713
+      }
+    },
+    {
+      "id": "li-l32",
+      "source": "lion-code",
+      "quote": "159 logic/aggregates.ts",
+      "says": {
+        "counted": "lines in logic/aggregates.ts",
+        "n": 159
+      }
+    },
+    {
+      "id": "li-l33",
+      "source": "lion-code",
+      "quote": "9877 total",
+      "says": {
+        "counted": "lines in the logic layer",
+        "n": 9877
+      }
+    }
+  ]
+}

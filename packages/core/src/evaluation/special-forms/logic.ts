@@ -69,6 +69,7 @@ import {
 } from "@/logic/terms";
 import {
   type AndFormSchema,
+  type AssumingFormSchema,
   type ExistsFormSchema,
   type FactFormSchema,
   type FindFormSchema,
@@ -179,13 +180,18 @@ const atoms = (
   });
 
 /**
- * Reads `{"key": [...], "schema": name}`. Relation options are read as
- * written: the key names columns, and the schema names a declared schema.
+ * Reads `{"key": [...], "schema": name, "merge": {column: aggregate}}`.
+ * Relation options are read as written: the key names columns, the schema
+ * names a declared schema, and the merge says which lattice aggregate joins
+ * the values a key gets in each column it names.
  */
 const relationOptions = (name: string, options: unknown) =>
   Effect.gen(function* () {
-    const { key: given, schema } =
-      options === undefined ? {} : yield* readOptions("relation", options);
+    const {
+      key: given,
+      merge,
+      schema,
+    } = options === undefined ? {} : yield* readOptions("relation", options);
     const key = typeof given === "string" ? [given] : given;
     const isKey =
       Array.isArray(key) && key.every((column) => typeof column === "string");
@@ -199,7 +205,25 @@ const relationOptions = (name: string, options: unknown) =>
         `The schema of "${name}" must be the name of a declared schema, but found ${show(schema)}.`
       );
     }
-    return { key: key as readonly string[] | undefined, schema };
+    const merges =
+      typeof merge === "object" && merge !== null && !Array.isArray(merge)
+        ? Object.entries(merge as Record<string, unknown>)
+        : undefined;
+    if (
+      !(
+        merge === undefined ||
+        merges?.every(([, kind]) => typeof kind === "string")
+      )
+    ) {
+      return yield* logicError(
+        `The merge of "${name}" must be a record from a column to the aggregate that joins its values, as in {"price": "aggregate/min"}, but found ${show(merge)}.`
+      );
+    }
+    return {
+      key: key as readonly string[] | undefined,
+      merge: merges as readonly (readonly [string, string])[] | undefined,
+      schema,
+    };
   });
 
 const VARIABLE_NAME = /^[A-Za-z][\w-]*$/;
@@ -247,7 +271,8 @@ const rowsMustFit = (
 /**
  * ["relation", "dep", ["from", "to"]] declares a relation and binds it.
  * ["relation", "order", ["id", "status"], {"key": ["id"]}] gives it a key,
- * and {"schema": "Order"} says that its rows must fit a declared schema.
+ * {"schema": "Order"} says that its rows must fit a declared schema, and
+ * {"merge": {"price": "aggregate/min"}} that the prices a key gets join.
  */
 export const evaluateRelation = ([
   _,
@@ -257,7 +282,7 @@ export const evaluateRelation = ([
 ]: typeof RelationFormSchema.Type) =>
   Effect.gen(function* () {
     const store = yield* database;
-    const { key, schema } = yield* relationOptions(name, options);
+    const { key, merge, schema } = yield* relationOptions(name, options);
     const rowSchema =
       schema === undefined ? undefined : store.schemas.get(schema);
     if (schema !== undefined && rowSchema === undefined) {
@@ -265,7 +290,7 @@ export const evaluateRelation = ([
         `Relation "${name}" names the schema "${schema}" for its rows, but no schema is declared under that name. Declare it first, as in ["schema", "${schema}", {...}].`
       );
     }
-    const relation = yield* declareRelation(store, name, columns, key);
+    const relation = yield* declareRelation(store, name, columns, key, merge);
     const value = relationValue(relation);
     setGlobalBinding(yield* LionEnvironmentService, name, value);
     if (schema !== undefined && rowSchema !== undefined) {
@@ -423,6 +448,51 @@ export const evaluateFind = (
     );
     const find = new LogicForm("find", [templateValue, goalValue]);
     return (yield* isWriting) ? find : yield* answer(find);
+  });
+
+/**
+ * ["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]
+ * is what the expression gives in the database as it would be after the
+ * changes, made in order, each as its form would make it: keys, merges, and
+ * invariants included. The database itself does not change. It is a
+ * question, as a find is: outside of rules it is asked right away, and in a
+ * rule, query, or find it is asked for each answer, with the variables the
+ * rule has bound.
+ */
+export const evaluateAssuming = (
+  [_, ...parts]: typeof AssumingFormSchema.Type,
+  part: Part = evaluate
+) =>
+  Effect.gen(function* () {
+    const expression = parts.at(-1);
+    const changes = parts.slice(0, -1);
+    if (expression === undefined || changes.length === 0) {
+      return yield* logicError(
+        `assuming takes fact and retract forms, then the expression to evaluate as if they were made, as in ["assuming", ["fact", ["edge", "c", "d"]], ["path", "a", "d"]].`
+      );
+    }
+    const held: LogicForm[] = [];
+    for (const change of changes) {
+      const [form, ...goals] = change as readonly unknown[];
+      if (!(form === "fact" || form === "retract")) {
+        return yield* logicError(
+          `assuming takes fact and retract forms before its expression, but found ${show(change)}.`
+        );
+      }
+      const values = yield* writing(
+        evaluateAll(goals as LionExpressionType[], part)
+      );
+      const wrong = values.find((value) => !(value instanceof Atom));
+      if (wrong !== undefined) {
+        return yield* logicError(
+          `assuming takes relation calls in its ${form} forms, but found ${show(wrong)}.`
+        );
+      }
+      held.push(new LogicForm(form, values));
+    }
+    const value = yield* writing(part(expression as LionExpressionType));
+    const question = new LogicForm("assuming", [...held, value]);
+    return (yield* isWriting) ? question : yield* answer(question);
   });
 
 /**

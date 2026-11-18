@@ -76,6 +76,12 @@ const ROLES: Record<SpecialFormName, Role> = {
   retract: roleByIndex(["operator"], "fact"),
   query: roleByIndex(["operator", "goal", "options"], "options"),
   find: roleByIndex(["operator", "template", "goal"], "goal"),
+  assuming: (index, length) => {
+    if (index === 0) {
+      return "operator";
+    }
+    return index === length - 1 ? "expression" : "change";
+  },
   exists: roleByIndex(["operator", "parameters", "goal"], "goal"),
   some: roleByIndex(["operator", "variable", "goal"], "goal"),
   why: roleByIndex(["operator", "fact"], "fact"),

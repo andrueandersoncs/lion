@@ -243,6 +243,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
+| `["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]` | What the expression gives in the database as it would be after the changes. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
 | `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
@@ -375,6 +376,38 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 - Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
 - `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: as a value, `["value/identity", ["exists", ["?y"], ["=", "?y", 1]]]` is `true`. See [Existential rules](#existential-rules).
 
+#### Asking what would hold
+
+`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact` or `retract` form, made in order as that form would make it, with keys, merges, and invariants. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
+
+```json
+["begin",
+  ["relation", "road", ["from", "to"]],
+  ["relation", "reaches", ["from", "to"]],
+  ["relation", "town", ["name"]],
+  ["relation", "joins", ["from", "to"]],
+  ["fact", ["road", "a", "b"], ["road", "b", "c"], ["town", "a"], ["town", "b"], ["town", "c"], ["town", "d"]],
+  ["rule", ["reaches", "?x", "?y"], ["road", "?x", "?y"]],
+  ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]],
+  ["rule", ["joins", "?x", "?y"],
+    ["town", "?x"], ["town", "?y"],
+    ["not", ["reaches", "a", "?y"]],
+    ["assuming", ["fact", ["road", "?x", "?y"]], ["reaches", "a", "?y"]]],
+  {"with a road from c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "without the road from b to c": ["assuming", ["retract", ["road", "b", "c"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "as it is": ["find", "?t", ["reaches", "a", "?t"]],
+   "one road that would reach d": ["find", "?x", ["joins", "?x", "d"]]}]
+```
+
+Evaluates to `{ "with a road from c to d": ["b", "c", "d"], "without the road from b to c": ["b"], "as it is": ["b", "c"], "one road that would reach d": ["a", "b", "c"] }`.
+
+- `assuming` is a question, as `find` is. In plain code it is asked right away. In a rule, query, or `find` it is asked for each answer, with the values the rule bound in place: `joins` above asks, for each pair of towns, whether a road between them would let `a` reach the second.
+- What a change states must be known when it is asked, so its variables are ones the rule around it binds. Every other variable of the expression is its own, as in any question.
+- As a goal, its expression must be a goal, and it holds when that goal holds after the changes. As a value it is whatever the expression gives, so `["=", "?n", ["assuming", ..., ["aggregate/count", ["find", ...]]]]` counts what would be there.
+- A change the database would refuse fails the question in the same words, as a fact an invariant refuses does. Assumptions nest, and an inner one starts from the database the outer one assumed.
+- Each `assuming` derives what its expression needs in a database of its own, which shares every fact it does not change. Asked for each answer of a rule, it costs one such derivation per answer. Hypothetical reasoning is known to cost more than reasoning over the facts: in Datalog, adding facts hypothetically raises the cost of a question from polynomial to polynomial space.
+- A rule cannot ask, through `assuming`, about a relation that depends on its own head, as for every question.
+
 ### Keys
 
 A record after the columns gives a relation a key. A keyed relation holds at most one row per key, so a fact whose key is already present replaces the old row, like an upsert.
@@ -393,7 +426,29 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 - When one `fact` form repeats a key, the last row wins, and the form writes no other row for that key. So a form whose last row for each key holds already changes nothing, not even the order a snapshot writes the rows in.
 - `retract` removes a row only when every column matches.
 - Rules can derive rows of a keyed relation, but two different rows with the same key, from facts or rules, are an error, unless they differ only in values that rules invented: then the key makes them one. See [Existential rules](#existential-rules).
-- Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns and key.
+- Declaring the relation again, for example in a later `run` that shares the database, must repeat the same columns, key, and merge.
+
+#### Merging what a key gets
+
+`"merge"` says how the rows a key gets combine instead: for a column outside the key, a lattice aggregate, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row, whose merged columns join the candidates' values. A column the merge does not name must agree, as it must for any key.
+
+```json
+["begin",
+  ["relation", "offer", ["sku", "shop", "usd"]],
+  ["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+  ["fact", ["offer", "a1", "north", 5], ["offer", "a1", "south", 4], ["offer", "b2", "north", 9]],
+  ["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?_", "?usd"]],
+  ["fact", ["best", "b2", 7], ["best", "c3", 2]],
+  {"best": ["query", ["best", "?sku", "?usd"], {"order": "sku"}],
+   "why b2": ["why", ["best", "b2", 7]]}]
+```
+
+Evaluates to `{ "best": [{ "sku": "a1", "usd": 4 }, { "sku": "b2", "usd": 7 }, { "sku": "c3", "usd": 2 }], "why b2": { "fact": ["best", "b2", 7], "rule": ["relation", "best", ["sku", "usd"], { "key": ["sku"], "merge": { "usd": "aggregate/min" } }], "because": [{ "fact": ["best", "b2", 7], "given": true }] } }`.
+
+- A fact of a relation that merges never replaces another: it is one more candidate, and `retract` takes it back. The fact `["best", "b2", 7]` beats the rule's 9 above, and `c3` has only its fact.
+- A rule's head gives a merged column plainly, as above, and the relation joins it: it is the rule `["rule", ["best", "?sku", ["aggregate/min", "?usd"]], ...]`, which may also be written. So a relation that merges is an aggregated relation whose facts are candidates too, and like one it is derived in full, before the rules that read it, and can go through recursion: a merge with `aggregate/min` over a rule that adds a road's length to a distance gives the shortest distances.
+- Only a lattice aggregate merges, since its join does not depend on the order the candidates come in. `aggregate/sum` and `aggregate/count` add up a rule's matches, which a fact is not, so they stay in rule heads.
+- `why` tells the candidate that gave the row: a fact, with the relation's declaration as its rule, or a rule's match.
 
 ### Query options
 
@@ -491,7 +546,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`, or a constant: `["aggregate/count", 1]` counts the matches.
 - An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a `find`. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
 - An aggregate of a `find` combines what the `find` found, wherever it is written: in a rule, in a query, or in plain code, as in `["aggregate/sum", ["find", "?amount", ["order", "?_", "?_", "?amount"]]]`.
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts.
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate.
 - `why` on an aggregated fact lists every match it combines under `matches`, in the order of their answers. For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
 
@@ -738,7 +793,7 @@ A schema says what a value must be. Anything is a schema, and one rule says what
 - A list fits a list of the same length, item by item.
 - Any other value fits a value equal to it.
 
-So data is a schema for itself: it fits exactly the values equal to it. A function in it makes room for every value the function accepts, `schema/optional` for a key that can be left out, and `schema/open` for keys the record does not name.
+So data is a schema for itself: it fits exactly the values equal to it. A function in it makes room for every value the function accepts, `schema/optional` for a key that can be left out, and `schema/open` for the keys a record does not name or the items after a list, which are the rest.
 
 `["schema/fits?", value, schema]` asks whether a value fits. `["schema/problems", value, schema]` lists every place where it does not, and `["schema/assert", value, schema]` returns the value when it fits and fails when it does not. `["schema", name, shape]` gives a schema a name, and the name is then a predicate: `["Order", value]`.
 
@@ -772,7 +827,8 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 | `["schema/arrayOf", schema]` | A list whose every item fits the schema. |
 | `["schema/recordOf", schema]` | A record whose every value fits the schema. |
 | `["schema/optional", schema]` | As the schema of a record's key, lets the key be left out. A key that is there must fit. |
-| `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. |
+| `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. With a list of schemas, a list that starts with items that fit them, whatever comes after. |
+| `["schema/open", record, rest]` | The same, when the record of its other keys, or the list of its other items, fits the schema `rest`. |
 
 - What these functions build is a function like any other, so it can be called, as in `[["schema/arrayOf", "value/number?"], "items"]`, and given to `array/map` or `match`.
 - A predicate that fails, or returns anything but `true`, does not fit. So `["lambda", ["n"], ["number/greaterThan", "n", 0]]` needs no check that `n` is a number first: a string does not fit it.
@@ -783,6 +839,34 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 - `value/any?` fits every value. `["schema/anyOf", "value/string?", null]` fits a string or `null`.
 - A problem has a `path`, the keys and positions that lead to the part that does not fit. A part with the wrong value has what was `expected`, a schema written as the expression that makes it, and what was `found`. A part that is missing has only `expected`, and a key the schema does not name has only `found`. Problems come in the order of their paths.
 - `schema/anyOf` reports one problem, at the value that fits none of its schemas. `schema/allOf` reports the problems of every schema the value does not fit.
+
+#### The rest of a record or list
+
+A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. One rule says what the rest must fit:
+- **On its own**, a record or list of schemas leaves nothing: `{}`, or `[]`. So a record has no other keys, and a list has no other items.
+- **`["schema/open", record]`** leaves anything.
+- **`["schema/open", record, rest]`** leaves what fits `rest`.
+
+A key the record names is never part of the rest. So `["schema/open", a, b]`, where `a` and `b` are records of schemas with no key in common, is the one record of schemas with the keys of both: two exact schemas build a third that is exact too. `["schema/allOf", a, b]` asks for a record that has only `a`'s keys and only `b`'s keys at once, which no record does when each has a key the other lacks.
+
+```json
+["begin",
+  ["schema", "Entity", {"id": "value/integer?", "created": "value/string?"}],
+  ["schema", "Line", {"sku": "value/string?", "qty": "value/integer?"}],
+  ["schema", "Stock", ["schema/open", "Entity", "Line"]],
+  ["schema", "Tagged", ["schema/open", {"id": "value/integer?"}, ["schema/recordOf", "value/string?"]]],
+  {"stock": ["Stock", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2}]],
+   "allOf": ["schema/fits?", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2}], ["schema/allOf", "Entity", "Line"]],
+   "problems": ["schema/problems", ["quote", {"id": 4, "created": "2026-11-18", "sku": "a1", "qty": 2, "rush": true}], "Stock"],
+   "tagged": ["Tagged", ["quote", {"id": 1, "color": "red", "size": "m"}]],
+   "numbers after a name": ["schema/fits?", ["quote", ["total", 3, 4]], ["schema/open", ["array/make", "value/string?"], ["schema/arrayOf", "value/number?"]]]}]
+```
+
+Evaluates to `{ "stock": true, "allOf": false, "problems": [{ "path": ["rush"], "found": true }], "tagged": true, "numbers after a name": true }`.
+
+- A part of the rest that does not fit is shown where it stands in the value, as `rush` is above. When the rest as a whole does not fit, the problem is the value not fitting the `schema/open` schema.
+- A record of schemas with no rest is `["schema/open", record, {}]`, and `["schema/open", record]` is `["schema/open", record, "value/any?"]`: each fits the same values.
+- `rest` is a schema like any other: a variable binds the rest in a pattern, as [Taking data apart](#taking-data-apart) shows.
 
 ### Named schemas
 
@@ -804,7 +888,7 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
   Evaluates to `{ "fits": true, "does not": false }`.
 - A value fits only when that follows from the shapes in finitely many steps, so a schema that comes back to itself without going into the value does not fit: only `1` fits `["schema", "Loop", ["schema/anyOf", "Loop", 1]]`.
 - What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: declaring `Line` after an `Order` whose shape says `"Line"` fails, and says to declare `Line` first, to declare the two in one form, or to write `["quote", "Line"]` for the string.
-- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record.
+- A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record or a list.
 - A shape cannot ask the database while it is declared, since a snapshot writes the shape and it has to mean the same when it is loaded. To check a value against the facts, use a relation as a schema, or ask inside a lambda.
 - Declaring a schema again, for example in a later `run` that shares the database, must repeat the same shape, and changes nothing. A schema and a relation cannot share a name.
 - A named schema that is `schema/optional` lets a record's key be left out, and `schema/open` takes a named record schema, like the schemas they name.
@@ -830,12 +914,15 @@ A logic variable in a schema stands for a value. Once it is bound it is that val
      ["and",
        ["inbox", ["schema/open", {"id": "?order", "lines": "?lines"}]],
        ["in", {"sku": "?sku", "qty": "?qty"}, "?lines"]]],
-   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]]}]
+   "the rest": ["find", ["array/make", "?id", "?rest"], ["inbox", ["schema/open", {"type": "order", "id": "?id"}, "?rest"]]],
+   "ends": ["query", ["=", ["array/make", "?first", "?_", "?last"], ["quote", ["a", "b", "c"]]]],
+   "the tail": ["query", ["schema/fits?", ["quote", ["a", "b", "c"]], ["schema/open", ["array/make", "?head"], "?tail"]]]}]
 ```
 
-Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], "lines": [[1, "a1", 2], [1, "b2", 1]], "ends": [{ "first": "a", "last": "c" }] }`.
+Evaluates to `{ "refunds": [{ "id": 3 }], "orders": [{ "id": 1 }, { "id": 2 }], "lines": [[1, "a1", 2], [1, "b2", 1]], "the rest": [[1, { "lines": [{ "sku": "a1", "qty": 2 }, { "sku": "b2", "qty": 1 }] }], [2, { "lines": [], "rush": true }]], "ends": [{ "first": "a", "last": "c" }], "the tail": [{ "head": "a", "tail": ["b", "c"] }] }`.
 
 - A record in a pattern is a record schema: it fits a record with the same keys. `schema/open` takes the keys it names from a record that has more, as `orders` does above, where the second order also has `rush`.
+- A variable as the rest of `schema/open` binds what the record or list leaves over: the record of the other keys, as `the rest` does above, or the list of the items after, as `the tail` does. Put back together with the parts the pattern names, the two are the value. A rest that another goal bound first must be exactly what is left over.
 - `?_` fits any value and binds nothing. A variable that occurs twice must take the same value: `{"a": "?x", "b": "?x"}` fits `{"a": 1, "b": 1}` and not `{"a": 1, "b": 2}`.
 - Every `schema` function works in a pattern. `["schema/allOf", "value/integer?", "?id"]` binds `?id` only to an integer. `["schema/anyOf", a, b]` gives the answers of every schema that fits, each once: `["schema/anyOf", ["schema/open", {"a": "?x"}], ["schema/open", {"b": "?x"}]]` binds `?x` to 1 and then to 2 for `{"a": 1, "b": 2}`.
 - An argument of a relation call that is not data is a schema like any other. With readings of `30`, `10`, and `"n/a"`, `["reading", "?sensor", "value/number?"]` asks for the two that are numbers, and `["and", ["limit", "?max"], ["reading", "?sensor", ["func/partial", "number/lessThan", "?max"]]]` for those above the limit.

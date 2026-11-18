@@ -1,0 +1,139 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "claim",
+   [
+    "quote",
+    "li-l34"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Evaluation always finishes."
+   ],
+   [
+    "quote",
+    {
+     "lion": "guaranteed termination",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l34"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l35"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "So the result does not depend on the order rules or facts were added in."
+   ],
+   [
+    "quote",
+    {
+     "lion": "results independent of rule order",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l35"
+   ],
+   [
+    "quote",
+    "Existential rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l36"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Lion is a JSON-based Lisp."
+   ],
+   [
+    "quote",
+    {
+     "lion": "plain-code evaluation",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l37"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "n = 100,000: real 2.56 s"
+   ],
+   [
+    "quote",
+    {
+     "lion": "deep recursion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l38"
+   ],
+   [
+    "quote",
+    "lion-bench"
+   ],
+   [
+    "quote",
+    "time grows about n^1.9 between the two largest sizes"
+   ],
+   [
+    "quote",
+    {
+     "lion": "skewed joins",
+     "has": false
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

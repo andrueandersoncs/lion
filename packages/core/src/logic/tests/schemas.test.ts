@@ -1081,7 +1081,11 @@ describe("a schema used or declared wrongly", () => {
   /** What can be called, how many arguments it takes, and what it says. */
   const CALLS: Record<
     string,
-    { call: (args: readonly Form[]) => Form; says: string; takes: number }
+    {
+      call: (args: readonly Form[]) => Form;
+      says: string;
+      takes: number | readonly [number, number];
+    }
   > = {
     "a named schema": {
       call: (args) => ["Tree", ...args],
@@ -1094,7 +1098,7 @@ describe("a schema used or declared wrongly", () => {
       takes: 1,
     },
     ...Object.fromEntries(
-      ["arrayOf", "recordOf", "optional", "open"].map((name) => [
+      ["arrayOf", "recordOf", "optional"].map((name) => [
         `schema/${name}`,
         {
           call: (args: readonly Form[]) => [`schema/${name}`, ...args],
@@ -1103,6 +1107,11 @@ describe("a schema used or declared wrongly", () => {
         },
       ])
     ),
+    "schema/open": {
+      call: (args: readonly Form[]) => ["schema/open", ...args],
+      says: '"schema/open" takes 1 to 2 arguments (a record or list of schemas, and the schema of its rest)',
+      takes: [1, 2],
+    },
     ...Object.fromEntries(
       ["fits?", "problems", "assert"].map((name) => [
         `schema/${name}`,
@@ -1123,7 +1132,9 @@ describe("a schema used or declared wrongly", () => {
         const { call, says, takes } = CALLS[what] as (typeof CALLS)[string];
         const args = Array.from({ length: count }, () => ARGUMENT);
         const outcome = yield* evaluate([call(args), true]);
-        if (count === takes) {
+        const [least, most] =
+          typeof takes === "number" ? [takes, takes] : takes;
+        if (count >= least && count <= most) {
           expect(outcome).toEqual({ ok: true, value: true });
           return;
         }
@@ -1206,7 +1217,7 @@ describe("a schema used or declared wrongly", () => {
     },
     "an option that is not one": {
       options: { shape: "Tree" },
-      says: 'Unknown relation option "shape". Relation options are "key", "schema".',
+      says: 'Unknown relation option "shape". Relation options are "key", "schema", "merge".',
     },
   };
 

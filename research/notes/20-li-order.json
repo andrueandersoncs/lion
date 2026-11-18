@@ -1,0 +1,94 @@
+{
+  "claims": [
+    {
+      "id": "li-f1",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "𝑄Δ def= D ◦𝑄◦I.",
+      "says": {
+        "covers": "re-deriving and comparing",
+        "by": "dbsp",
+        "is": true
+      },
+      "where": "Definition 3.1: the incremental version of any operator is integrate, apply, differentiate"
+    },
+    {
+      "id": "li-f2",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "We have just proven the correctness of semi-naïve evaluation as an immediate consequence of the cycle rule!",
+      "says": {
+        "covers": "semi-naive evaluation",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-f3",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "the I and D operators were defined on abelian groups, and relational databases in general are not abelian groups, since they operate on sets.",
+      "says": {
+        "covers": "annotations without subtraction",
+        "by": "dbsp",
+        "is": false
+      }
+    },
+    {
+      "id": "li-f4",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "some aggregate functions, such as MIN, are not linear: for handling deletions they need to track the full set.",
+      "says": {
+        "covers": "min without the full set",
+        "by": "dbsp",
+        "is": false
+      }
+    },
+    {
+      "id": "li-f5",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "converts set operations into group operations by using Z-sets (also called z-relations [22]) to represent sets.",
+      "says": {
+        "covers": "annotated relations",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-f6",
+      "source": "b-green-2007",
+      "quote": "bag semantics can be viewed as a generalization to annotated relations",
+      "says": {
+        "covers": "annotated relations",
+        "by": "semiring provenance",
+        "is": true
+      }
+    },
+    {
+      "id": "li-l39",
+      "source": "lion-readme",
+      "quote": "Such a relation is derived again and compared with what it was",
+      "says": {
+        "lion": "re-deriving and comparing",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l40",
+      "source": "lion-readme",
+      "quote": "Answers are computed bottom-up with semi-naive evaluation",
+      "says": {
+        "lion": "semi-naive evaluation",
+        "has": true
+      },
+      "where": "Guarantees"
+    },
+    {
+      "id": "li-l41",
+      "source": "lion-code",
+      "quote": "2545 logic/model.ts",
+      "says": {
+        "counted": "lines in logic/model.ts",
+        "n": 2545
+      }
+    }
+  ]
+}

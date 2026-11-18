@@ -1,0 +1,1282 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract
+1 Introduction
+1.1 Provenance Semantics
+1.2 Intermezzo: Examples of Commutative Semirings
+2 First-Order Logic Interpreted in Commutative Semirings
+2.1 K K -Interpretations
+2.2 Intermezzo: Positive Semirings
+2.3 Sanity Checks
+2.4 “Consistency” and “completeness” for K K -interpretations
+3 A Provenance Semiring for FOL
+3.1 Dual-Indeterminate Polynomials
+3.2 An Example and a Characterization
+3.3 From Provenance to Confidence
+3.4 Detailed Provenance Analysis: Top-Secret Proofs
+4 Reverse Provenance Analysis
+4.1 A Reverse Analysis Example
+4.2 Properties of Provenance
+4.3 Confidence Maximization
+5 Model Update
+6 Conclusions
+Acknowledgements
+References
+License: arXiv.org perpetual non-exclusive license
+arXiv:1712.01980v1 [cs.LO] 06 Dec 2017
+Semiring Provenance for First-Order Model Checking
+Erich Grädel Val Tannen
+Affiliation: RWTH Aachen University Univ. of Pennsylvania
+Abstract
+Given a first-order sentence, a model-checking computation tests
+whether the sentence holds true in a given finite structure. Data
+provenance extracts from this computation an abstraction of the manner
+in which its result depends on the data items that describe the
+model. Previous work on provenance was, to a large extent, restricted to the negation-free
+fragment of first-order logic and showed how provenance abstractions
+can be usefully described as elements of commutative semirings — most
+generally as multivariate polynomials with positive integer coefficients.
+In this paper we introduce a novel approach to dealing with negation
+and a corresponding commutative semiring of polynomials with dual
+indeterminates. These polynomials are used to perform reverse provenance
+analysis, i.e., finding models that satisfy various properties under
+given provenance tracking assumptions.
+1 Introduction
+Semiring provenance was originally developed
+for positive database query languages [ 16 ] .
+From this baseline, we have recently started to investigate
+an approach to the provenance analysis of model checking for full first-order logic (FOL).
+We propose a novel approach to dealing with negation in provenance
+formulation and a corresponding commutative semiring of polynomials with dual
+indeterminates. A preliminary account of this joint work
+was given by the second author in [ 24 ] .
+Data provenance is extremely useful in many computational disciplines.
+Suppose that a computational process is applied to a complex input consisting
+of multiple items. Provenance analysis allows us to understand how these
+different input items affect the output of the process. It can be used to
+answer questions of the following type:
+(1)
+Which ones of input items are actually used
+in the computation of the output?
+(2)
+Can the same output be obtained from
+different combinations of input items?
+(3)
+In how many different ways
+can the same output be computed?
+As a consequence, provenance can be further
+applied to issues such as deciding how much to trust the output,
+assuming that we may trust some input items more than others, deciding
+what clearance level is required for accessing the output, assuming that
+we know the clearance levels for the input items, or, assuming that one has to pay
+for the input items, how to minimize the cost of obtaining the output.
+More generally, reverse provenance analysis
+allows us to find input data (here first-order models) that satisfies
+various properties under given provenance tracking assumptions.
+This is also closely related to reverse data
+management [ 20 , 21 ] .
+It turns out that the questions listed above, as well as several other
+questions of interest,
+can be answered for database transformations (queries and views) via
+interpretations in commutative semirings. In past work, the semiring
+provenance approach has been applied to query and view languages such
+as the positive relational algebra [ 16 , 13 ] ,
+nested relations/complex values
+(objects) [ 10 , 23 ] ,
+Datalog [ 16 , 7 ] ,
+XQuery (for unordered XML) [ 10 ]
+full relational algebra
+(on ℤ \mathbb{Z} -annotated relations) [ 14 ] ,
+SQL aggregates [ 3 ] ,
+workflows with map-reduce modules [ 1 ] ,
+and languages for data-centric (data-dependent)
+processes [ 8 ] . Moreover, the semiring approach has been
+successfully implemented in two software systems, Orchestra
+[ 15 , 17 , 18 ] and
+Propolis [ 8 ] .
+There exists a well-known tight connection between conjunctive queries
+in databases and constraint satisfaction problems in
+AI [ 19 ] . In this light, and despite a number of
+technical differences, there exists an interesting connection (that
+needs more exploration) between the semiring provenance framework
+applied to conjunctive queries and the semiring framework for
+soft constraint satisfaction [ 6 , 5 ] .
+The reader may have noticed that the bulk of the work on provenance
+for database transformations was concerned with positive query
+languages. Indeed, trying to add to the commutative semiring structure
+operations that capture difference of relations has led to
+interesting and algebraically challenging, but divergent
+approaches [ 11 , 14 , 3 , 2 , 12 ] . In particular there is no separate account
+of tracking negative information, an aspect that we hope to remedy
+here.
+1.1 Provenance Semantics
+We shall consider certain non-standard semantics for FOL
+that will help us to understand how a sentence φ \varphi ends up being true
+in a finite structure 𝔄 \mathfrak{A} , i.e.,
+whether 𝔄 ⊧ φ \mathfrak{A}\models\varphi holds or not (we call this
+provenance in model checking ).
+The non-standard
+semantics that we champion involves various commutative
+semirings . Here we strive to justify this choice.
+First of all, the standard semantics for first-order logic maps formulae
+to truth values in 𝔹 = { ⊥ , ⊤ } \mathbb{B}=\{\bot,\top\} , which
+form a commutative semiring with respect
+to the operations of disjunction and conjunction, with units ⊥ \bot
+and ⊤ \top .
+Second, in a provenance semantics we want to understand the
+connections between the facts (positive or negative) that are embodied
+in a model 𝔄 \mathfrak{A} and their use in a justification that
+𝔄 ⊧ φ \mathfrak{A}\models\varphi . Since the model is finite, we can think of such a
+justification as an alternating disjunction-conjunction
+proof tree (an example appears in 3.2 ).
+In any case, these justifications are definitely
+not proofs in some axiomatization of FOL. If we had a provenance semantics
+for model checking, it would, in particular, help us to count proof trees.
+This particular case suffices to suggest the semiring structure as well
+as some ways in which such non-standard semantics can be quite different
+from the standard one.
+Notice that a semiring semantics refines the classical Boolean semantics,
+and formulae that are classically equivalent may become
+non-equivalent under a semantics that counts proof trees.
+Indeed, already a sentence φ ∨ φ \varphi\vee\varphi has in general
+more proof trees than φ \varphi .
+We further illustrate with the failure
+of some of the usual logical equivalences
+invoked in transforming sentences to prenex form .
+Let ρ ≡ ( ∀ x ​ φ ) ∧ ψ \rho\equiv(\forall x\,\varphi)\wedge\psi and σ ≡ ∀ x ⁡ ( φ ∧ ψ ) \sigma\equiv\forall x\,(\varphi\wedge\psi) . Every proof tree of ρ \rho can be
+transformed into a proof tree of σ \sigma by making copies of the
+subtree rooted at ψ \psi . However, when ψ \psi has two or more
+distinct proof trees we see that σ \sigma can have strictly more proof
+trees than ρ \rho . Similarly we can argue that
+∀ x ⁡ ( φ ∨ ψ ) \forall x\,(\varphi\vee\psi) can have strictly more proof trees
+than ( ∀ x ​ φ ) ∨ ψ (\forall x\,\varphi)\vee\psi .
+Now consider ρ ≡ ( ∃ x ​ φ ) ∨ ψ \rho\equiv(\exists x\,\varphi)\vee\psi
+and σ ≡ ∃ x ⁡ ( φ ∨ ψ ) \sigma\equiv\exists x\,(\varphi\vee\psi) . Let’s write
+φ ⁡ ( x ) \varphi(x) to show occurrences of x x in φ \varphi . For simplicity
+suppose that the model has exactly two elements, a a and b b , and that
+each of φ ⁡ ( a ) \varphi(a) , φ ⁡ ( b ) \varphi(b) , and ψ \psi has exactly one proof tree.
+Then, ρ \rho will have 3 proof trees but σ \sigma will have 4.
+Finally, we note that OPEN ( ∃ x ​ φ ) ∧ ψ ) (\exists x\,\varphi)\wedge\psi)
+and ∃ x ⁡ ( φ ∧ ψ ) \exists x\,(\varphi\wedge\psi) have exactly the same number
+of proof trees and this reflects the fact that multiplication distributes
+over addition.
+For other sentences, we can see that the number-of-proof-trees
+constitutes a non-standard semantics for FOL sentences constructed
+using disjunction, conjunction, existentials and universals,
+because, moreover, addition and multiplication are
+associative and commutative.
+This discussion provides some partial justification for considering
+commutative semirings as semantic domains. The rest of the justification
+will follow from the subsequent development.
+Remark.
+Instead of thinking about proof trees for 𝔄 ⊧ φ \mathfrak{A}\models\varphi ,
+we could equivalently consider winning strategies in 𝒢 ⁡ ( 𝔄 , φ ) \mathcal{G}(\mathfrak{A},\varphi) ,
+the model checking game for 𝔄 \mathfrak{A} and φ \varphi (see e.g. [ 4 ] ).
+We do not pursue this aspect in this paper, but we remark that a provenance analysis in commutative
+semirings can also be developed for more general models of finite and infinite games,
+beyond the acyclic and always terminating first-order model-checking games.
+Also beyond the applications to query evaluation and logic, a provenance analysis
+of games provides insights into more subtle game-theoretic questions than just who wins the game,
+concerning for instance the number or costs of winning strategies, or issues like confidence and trust in game-theoretic settings.
+This approach will be developed in more detail in a forthcoming paper.
+1.2 Intermezzo: Examples of Commutative Semirings
+Definition 1
+An algebraic structure
+( K , + , ⋅ , 0 , 1 ) (K,+,\cdot,0,1) , with 0 ≠ 1 0\neq 1 , is a semiring when ( K , + , 0 ) (K,+,0)
+is a commutative monoid, ( K , ⋅ , 1 ) (K,\cdot,1) is a monoid, ⋅ \cdot
+distributes over + + and 0 ⋅ a = a ⋅ 0 = 0 0\cdot a=a\cdot 0=0 . The semiring
+is commutative when ⋅ \cdot is commutative, and it
+is idempotent when + + is idempotent.
+Any distributive lattice is an idempotent commutative semiring.
+Here are some commutative semirings of interest to us:
+1.
+The Boolean semiring 𝔹 = ( 𝔹 , ∨ , ∧ , ⊥ , ⊤ ) \mathbb{B}=(\mathbb{B},\vee,\wedge,\bot,\top) is the standard habitat of
+logical truth. It is a distributive lattice.
+2.
+ℕ = ( ℕ , + , ⋅ , 0 , 1 ) \mathbb{N}=(\mathbb{N},+,\cdot,0,1) is used for bag semantics in databases
+and we use it here for counting proof trees.
+3.
+𝕋 = ( ℝ + ∞ , min , + , ∞ , 0 ) \mathbb{T}=(\mathbb{R}_{+}^{\infty},\min,+,\infty,0)
+is called the tropical semiring and is idempotent but
+not a distributive lattice. Its elements and operations appear in
+min-cost interpretations (e.g., shortest paths) and it plays
+a surprising role in connecting certain dynamic programming algorithms
+in statistics with certain methods of algebraic
+geometry [ 22 ] (see also next item).
+4.
+𝕍 = ( [ 0 , 1 ] , max , ⋅ , 0 , 1 ) \mathbb{V}=([0,1],\max,\cdot,0,1)
+is called the Viterbi semiring and is isomorhic to 𝕋 \mathbb{T}
+via x ↦ e − x x\mapsto e^{-x} and y ↦ − ln ⁡ y y\mapsto-\ln y . When interpreted as
+probabilities, its elements and operations appear in
+statistical model interpretations
+(e.g., maximum probability trajectories in Hidden Markov Models).
+We will think of the elements of 𝕍 \mathbb{V} as confidence scores .
+5.
+𝔽 = ( [ 0 , 1 ] , max , min , 0 , 1 ) \mathbb{F}=([0,1],\max,\min,0,1) , is called the fuzzy semiring.
+It is a distributive lattice.
+6.
+𝔸 = ( { 𝖯 < 𝖢 < 𝖲 < 𝖳 < 0 } , min , max , 0 , 𝖯 ) \mathbb{A}=(\{\mathsf{P}<\mathsf{C}<\mathsf{S}<\mathsf{T}<0\},\min,\max,0,\mathsf{P})
+is the access control semiring, where
+𝖯 \mathsf{P} is “public”, 𝖢 \mathsf{C} is “confidential”, 𝖲 \mathsf{S} is “secret”, 𝖳 \mathsf{T} is “top secret”, and
+0 0 is “so secret that nobody can access it!”.
+This is a distributive lattice (beware! the lattice order is the opposite
+of the one we used in the definition).
+7.
+For any set X X , the semiring ℕ ⁡ [ X ] = ( ℕ ⁡ [ X ] , + , ⋅ , 0 , 1 ) \mathbb{N}[X]=(\mathbb{N}[X],+,\cdot,0,1)
+consist of the multivariate polynomials in indeterminates from X X
+and with coefficients from ℕ \mathbb{N} . This is the commutative
+semiring freely generated by the set X X . It’s used for a general
+form of provenance.
+8.
+𝖯𝗈𝗌𝖡𝗈𝗈𝗅 ⁡ ( X ) = ( 𝖯𝗈𝗌𝖡𝗈𝗈𝗅 ⁡ ( X ) , ∨ , ∧ , ⊥ , ⊤ ) \mathsf{PosBool}(X)=(\mathsf{PosBool}(X),\vee,\wedge,\bot,\top) is the semiring
+whose elements are classes of equivalent positive (monotone)
+boolean expressions with boolean variables from X X (its elements
+are in bijection with the positive boolean expressions
+in irredundant disjunctive normal form).
+This is the distributive lattice freely generated by the set X X .
+It is also used for provenance, e.g., in probabilistic databases.
+2 First-Order Logic Interpreted in Commutative Semirings
+We are interested in the provenance analysis of the model checking
+computation of first-order sentences. Such a computation is nicely and
+declaratively driven by the structure of the sentence, and
+thus amounts to a non-standard semantics for FOL. In its simplest
+form model checking takes as input a finite structure and
+the input items are the various facts (positive or negative) which
+hold in the model. We have found however that it pays to take a more
+general approach and specify not a structure but just its (finite)
+universe. This way we can track the use of positive and negative facts
+in checking a sentence under multiple possible models on that universe.
+This allows a certain amount of reverse analysis : finding models
+that satisfy useful constraints.
+2.1 K K -Interpretations
+Consider a finite relational vocabulary: 𝒱 = { R , S , … } \mathscr{V}=\{R,S,\ldots\} .
+From this vocabulary and a finite non-empty universe A A of ground
+values we construct the set 𝖥𝖺𝖼𝗍𝗌 A \mathsf{Facts}_{A} of all ground relational
+atoms (facts) R ⁡ ( 𝐚 ) R(\mathbf{a}) , the set 𝖭𝖾𝗀𝖥𝖺𝖼𝗍𝗌 A \mathsf{NegFacts}_{A} of all negated
+facts ¬ R ⁡ ( 𝐚 ) \neg R(\mathbf{a}) and thus the set
+𝖫𝗂𝗍 A = 𝖥𝖺𝖼𝗍𝗌 A ∪ 𝖭𝖾𝗀𝖥𝖺𝖼𝗍𝗌 A \mathsf{Lit}_{A}=\mathsf{Facts}_{A}\cup\mathsf{NegFacts}_{A} of all literals ,
+positive and negative facts, over 𝒱 \mathscr{V} and A A .
+By convention we will identify ¬ ¬ ⁡ R ⁡ ( 𝐚 ) ≡ R ⁡ ( 𝐚 ) \neg\neg R(\mathbf{a})\equiv R(\mathbf{a}) )
+so the negation of a literal is again a literal.
+Any finite structure 𝔄 = ( A , R 𝔄 , S 𝔄 , … ) \mathfrak{A}=(A,R^{\mathfrak{A}},S^{\mathfrak{A}},\ldots)
+with universe A A makes some of these
+literals true and the remaining ones false. Note, however, that
+much of the development does not assume a specific model, and this
+can be usefully exploited.
+Let ( K , + , ⋅ , 0 , 1 ) (K,+,\cdot,0,1) be a commutative semiring. Very roughly
+speaking, 0 ∈ K 0\in K is intended to interpret false assertions,
+while an element a ≠ 0 a\neq 0 in K K provides a “nuanced” interpretation
+for true assertions (call them “ a a -true”).
+Next, K K -interpretations will map literals to elements of K K
+and are then extended to all formulae.
+Disjunction and existential quantification are interpreted by the
+addition operation of K K .
+Conjunction and universal quantification are interpreted by the
+multiplication operation of K K .
+For quantifiers, the finiteness of the universe
+A A of ground values will be essential.
+For negation we use the well-known syntactic transformation to
+negation normal form (NNF) , denoted ψ ↦ 𝗇𝗇𝖿 ⁡ ( ψ ) \psi\mapsto\mathsf{nnf}(\psi) .
+Note that 𝗇𝗇𝖿 ⁡ ( ψ ) \mathsf{nnf}(\psi) is a formula constructed from
+literals (positive and negative facts) and equality/inequality atoms
+using just ∧ , ∨ , ∃ , ∀ \wedge,\vee,\exists,\forall .
+Definition 2
+A K K -interpretation is a mapping π : 𝖫𝗂𝗍 A → K \pi:\mathsf{Lit}_{A}\rightarrow K .
+This is extended to FO formulae given valuations
+ν : 𝖵𝖺𝗋𝗌 → A \nu:\mathsf{Vars}\rightarrow A :
+π ​ [ [ R ⁡ ( 𝐱 ) ] ] ν = π ⁡ ( R ⁡ ( ν ⁡ ( 𝐱 ) ) CLOSE π ​ [ [ ¬ R ⁡ ( 𝐱 ) ] ] ν = π ⁡ ( ¬ R ⁡ ( ν ⁡ ( 𝐱 ) ) CLOSE π ​ [ [ x ​ 𝗈𝗉 ​ y ] ] ν = if ​ ν ​ ( x ) ​ 𝗈𝗉 ​ ν ​ ( y ) ​ then ​ 1 ​ else ​ 0 π ​ [ [ φ ∧ ψ ] ] ν = π ​ [ [ φ ] ] ν ⋅ π ​ [ [ ψ ] ] ν π ​ [ [ φ ∨ ψ ] ] ν = π ​ [ [ φ ] ] ν + π ​ [ [ ψ ] ] ν π ​ [ [ ∃ x ​ φ ] ] ν = ∑ a ∈ A π [ [ φ ] ] ν [ x ↦ a ] π ​ [ [ ∀ x ​ φ ] ] ν = ∏ a ∈ A π [ [ φ ] ] ν [ x ↦ a ] π ​ [ [ ¬ φ ] ] ν = π ​ [ [ 𝗇𝗇𝖿 ⁡ ( ¬ φ ) ] ] ν \begin{array}[]{rcl@{\hspace*{10mm}}rcl}\pi[\![R(\mathbf{x})]\!]_{\nu}&=&\pi(R(\nu(\mathbf{x}))\hfil\hskip 28.45274pt&\pi[\![\neg R(\mathbf{x})]\!]_{\nu}&=&\pi(\neg R(\nu(\mathbf{x}))\\
+\\
+\pi[\![x\;\mathsf{op}\;y]\!]_{\nu}&=&\mathrm{if~}\nu(x)\;\mathsf{op}\;\nu(y)\mathrm{~then~}1\mathrm{~else~}0\hfil\hskip 28.45274pt&\pi[\![\varphi\wedge\psi]\!]_{\nu}&=&\pi[\![\varphi]\!]_{\nu}~\cdot~\pi[\![\psi]\!]_{\nu}\\
+\\
+\pi[\![\varphi\vee\psi]\!]_{\nu}&=&\pi[\![\varphi]\!]_{\nu}~+~\pi[\![\psi]\!]_{\nu}\hfil\hskip 28.45274pt&\pi[\![\exists x\,\varphi]\!]_{\nu}&=&\sum_{a\in A}\pi[\![\varphi]\!]_{\nu[x\mapsto a]}\\
+\\
+\pi[\![\forall x\,\varphi]\!]_{\nu}&=&\prod_{a\in A}\pi[\![\varphi]\!]_{\nu[x\mapsto a]}\hfil\hskip 28.45274pt&\pi[\![\neg\varphi]\!]_{\nu}&=&\pi[\![\mathsf{nnf}(\neg\varphi)]\!]_{\nu}\end{array}
+The symbol 𝗈𝗉 \;\mathsf{op}\; stands for either = = or ≠ \neq .
+As you can see from the definition,
+the equality and inequality atoms are interpreted in K K as 0 0 or 1 1 , i.e.,
+their provenance is not tracked. One could give a similar treatment to other
+such relations with “fixed” meaning, e.g., assuming an ordering on A A ,
+however, we omit this here.
+As intended, it suffices to consider formulae in NNF:
+Proposition 3
+π ​ [ [ φ ] ] ν = π ​ [ [ 𝗇𝗇𝖿 ⁡ ( φ ) ] ] ν \pi[\![\varphi]\!]_{\nu}~=~\pi[\![\mathsf{nnf}(\varphi)]\!]_{\nu}
+Corollary 4
+π ​ [ [ ¬ ( φ ∧ ψ ) ] ] ν = π [ [ ¬ φ ∨ ¬ ψ ) ] ] ν π ​ [ [ ¬ ( φ ∨ ψ ) ] ] ν = π [ [ ¬ φ ∧ ¬ ψ ) ] ] ν π ​ [ [ ¬ ( ∀ x ​ φ ) ] ] ν = π ​ [ [ ∃ x ​ ¬ φ ] ] ν π ​ [ [ ¬ ( ∃ x ​ φ ) ] ] ν = π ​ [ [ ∀ x ​ ¬ φ ] ] ν π ​ [ [ ¬ ¬ ⁡ φ ] ] ν = π ​ [ [ φ ] ] ν \begin{array}[t]{rcl}\pi[\![\neg(\varphi\wedge\psi)]\!]_{\nu}&=&\pi[\![\neg\varphi\vee\neg\psi)]\!]_{\nu}\\
+\pi[\![\neg(\varphi\vee\psi)]\!]_{\nu}&=&\pi[\![\neg\varphi\wedge\neg\psi)]\!]_{\nu}\\
+\pi[\![\neg(\forall x\,\varphi)]\!]_{\nu}&=&\pi[\![\exists x\,\neg\varphi]\!]_{\nu}\\
+\pi[\![\neg(\exists x\,\varphi)]\!]_{\nu}&=&\pi[\![\forall x\,\neg\varphi]\!]_{\nu}\\
+\pi[\![\neg\neg\varphi]\!]_{\nu}&=&\pi[\![\varphi]\!]_{\nu}\end{array}
+A useful consequence of Proposition 3 is that we can prove
+further results by induction on formulas in NNF, and hence avoid the
+negation connective.
+When φ \varphi is a sentence we write just π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] .
+Proposition 5 (Fundamental Property)
+Let h : K 1 → K 2 h:K_{1}\rightarrow K_{2} be a semiring homomorphism
+and let π 1 : 𝖫𝗂𝗍 A → K 1 \pi_{1}:\mathsf{Lit}_{A}\rightarrow K_{1} and
+π 2 : 𝖫𝗂𝗍 A → K 2 \pi_{2}:\mathsf{Lit}_{A}\rightarrow K_{2} be interpretations such that
+h ∘ π 1 = π 2 h\circ\pi_{1}=\pi_{2} . Then, for any FOL sentence φ \varphi we have
+h ⁡ ( π 1 ​ [ [ φ ] ] ) = π 2 ​ [ [ φ ] ] h(\pi_{1}[\![\varphi]\!])~=~\pi_{2}[\![\varphi]\!] . As diagrams
+Proof:
+By Proposition 3 the proof can proceed by induction
+on formulae in NNF. For example
+h ( π 1 [ [ φ ∧ ψ ] ] ν ) = h ( π 1 [ [ φ ] ] ν ⋅ 1 π 1 [ [ ψ ] ] ν ) = h ( π 1 [ [ φ ] ] ν ) ⋅ 2 h ( π 1 [ [ ψ ] ] ν ) = π 2 [ [ φ ] ] ν ⋅ 2 π 2 [ [ ψ ] ] ν = π 2 [ [ φ ∧ ψ ] ] ν h(\pi_{1}[\![\varphi\wedge\psi]\!]_{\nu})=h(\pi_{1}[\![\varphi]\!]_{\nu}\cdot_{{}_{1}}\pi_{1}[\![\psi]\!]_{\nu})=h(\pi_{1}[\![\varphi]\!]_{\nu})\cdot_{{}_{2}}h(\pi_{1}[\![\psi]\!]_{\nu})=\pi_{2}[\![\varphi]\!]_{\nu}\cdot_{{}_{2}}\pi_{2}[\![\psi]\!]_{\nu}=\pi_{2}[\![\varphi\wedge\psi]\!]_{\nu} .
+■ \blacksquare
+The somewhat bombastic name “fundamental property” is motivated by
+two observations. First, the property checks that the
+definition of our semantics is nicely compositional. Second,
+the property plays a central role in a strategy that we have widely
+applied with query languages in databases: compute provenance
+as generally as (computationally) feasible, then specialize via
+homomorphisms to
+coarser-grain provenance, or to specific domains, e.g., count, trust, cost
+or access control.
+2.2 Intermezzo: Positive Semirings
+We say that a semiring K K has divisors of 0 if there
+exist a , b ∈ K a,b\in K such that a ≠ 0 a\neq 0 , b ≠ 0 b\neq 0 but a ​ b = 0 ab=0 . None
+of the semirings described in Sect. 1.2
+has divisors of 0. The classical examples of such are rings that
+are not integral domains, e.g., ℤ 6 \mathbb{Z}_{6} , as well as boolean algebras.
+A semiring K K is +-positive if a + b = 0 a+b=0 implies a = 0 a=0 and
+b = 0 b=0 . Rings, e.g., ℤ \mathbb{Z} , or the boolean ring ℤ 2 \mathbb{Z}_{2} ,
+are not + + -positive. Finally, a semiring is (simply)
+positive [ 9 ] if it is + + -positive and has no
+divisors of 0 0 . All the semirings described
+in Sect. 1.2 are positive.
+Proposition 6
+A semiring K K is positive if, and only if,
+† K : K → 𝔹 ~~\dagger_{{}_{K}}:K\rightarrow\mathbb{B}~~ defined by
+† K ( a ) = { ⊤ if ​ a ≠ 0 ⊥ if ​ a = 0 \dagger_{{}_{K}}(a)=\begin{cases}\top&\mathrm{if~}a\neq 0\\
+\bot&\mathrm{if~}a=0\end{cases}
+is a homomorphism.
+2.3 Sanity Checks
+Let 𝔄 = ( A , R 𝔄 , S 𝔄 , … ) \mathfrak{A}=(A,R^{\mathfrak{A}},S^{\mathfrak{A}},\ldots) be a
+(finite) 𝒱 \mathscr{V} -model.
+The canonical truth interpretation for 𝔄 \mathfrak{A}
+is, of course, π 𝔄 : 𝖫𝗂𝗍 A → 𝔹 \pi_{{}_{\mathfrak{A}}}:\mathsf{Lit}_{A}\rightarrow\mathbb{B} where
+π 𝔄 ( L ) = { ⊤ if ​ 𝔄 ⊧ L ⊥ otherwise \pi_{{}_{\mathfrak{A}}}(L)~=~\begin{cases}\top&\mathrm{if~}\mathfrak{A}\models L\\
+\bot&\mathrm{otherwise}\end{cases}
+Earlier we have discussed “number of proof trees”
+as a non-standard semantics for FOL model-checking.
+This is also captured by interpretations in a semiring.
+The canonical counting interpretation for 𝔄 \mathfrak{A}
+is π # ​ 𝔄 : 𝖫𝗂𝗍 A → ℕ \pi_{{}_{\#\mathfrak{A}}}:\mathsf{Lit}_{A}\rightarrow\mathbb{N} where
+π # ​ 𝔄 ( L ) = { 1 if ​ 𝔄 ⊧ L 0 otherwise \pi_{{}_{\#\mathfrak{A}}}(L)~=~\begin{cases}1&\mathrm{if~}\mathfrak{A}\models L\\
+0&\mathrm{otherwise}\end{cases}
+Proposition 7 (sanity checks)
+For any FOL sentence φ \varphi we have
+𝔄 ⊧ φ \mathfrak{A}\models\varphi if, and only if,
+π 𝔄 [ [ φ ] ] = ⊤ \pi_{{}_{\mathfrak{A}}}[\![\varphi]\!]=\top .
+Moreover, π # ​ 𝔄 [ [ φ ] ] \pi_{{}_{\#\mathfrak{A}}}[\![\varphi]\!] is the number of proof trees that
+witness 𝔄 ⊧ φ \mathfrak{A}\models\varphi .
+Now, let K K be a commutative semiring, and let π \pi
+be a K K -interpretation. As we have indicated, for a sentence
+φ \varphi we intend to interpret π ⁡ [ [ φ ] ] = 0 \pi[\![\varphi]\!]=0 as “ φ \varphi is false
+in K K ”, while π ⁡ [ [ φ ] ] = k ≠ 0 \pi[\![\varphi]\!]=k\neq 0 is interpreted as “ φ \varphi is
+k k -true in K K ”, i.e., as offering “shades of truth”. We examine
+how this meshes with standard logical truth in a model.
+Definition 8
+A K K -interpretation π : 𝖫𝗂𝗍 A → K \pi:\mathsf{Lit}_{A}\rightarrow K is
+model-defining when, for each fact, one of π ⁡ ( R ⁡ ( 𝐚 ) ) \pi(R(\mathbf{a})) and π ⁡ ( ¬ R ⁡ ( 𝐚 ) ) \pi(\neg R(\mathbf{a}))
+is 0 0 and the other one is ≠ 0 \neq 0 .
+Indeed, every model-defining interpretation π \pi uniquely defines a
+𝒱 \mathscr{V} -model 𝔄 π \mathfrak{A}_{\pi} with universe A A such that for any literal
+L L we have 𝔄 π ⊧ L \mathfrak{A}_{\pi}\models L if, and only if, π ⁡ ( L ) ≠ 0 \pi(L)\neq 0 .
+Both π 𝔄 \pi_{{}_{\mathfrak{A}}} and π # ​ 𝔄 \pi_{{}_{\#\mathfrak{A}}} shown above are model-defining and the model they
+define is 𝔄 \mathfrak{A} . If K K is not 𝔹 \mathbb{B} then several
+model-defining interpretations may define the same model. It is also
+clear that any finite model can be defined by such an interpretation,
+for any K K .
+Proposition 9 (another sanity check)
+Let K K be positive ,
+and let π \pi be a model-defining K K -interpretation.
+Then for any FOL sentence
+𝔄 π ⊧ φ ⇔ π ⁡ [ [ φ ] ] ≠ 0 \mathfrak{A}_{\pi}\models\varphi~~\Leftrightarrow~~\pi[\![\varphi]\!]\neq 0
+Proof:
+By Proposition 6 ,
+since K K is positive, † K \dagger_{{}_{K}} is a homomorphism.
+Since π \pi is model-defining let 𝔄 \mathfrak{A} be the model defined by π \pi .
+Clearly, † K ∘ π \dagger_{{}_{K}}\circ\pi is the canonical truth interpretation π 𝔄 \pi_{{}_{\mathfrak{A}}} .
+Applying Proposition 5
+we get † K ( π [ [ φ ] ] ) = π 𝔄 [ [ φ ] ] \dagger_{{}_{K}}(\pi[\![\varphi]\!])=\pi_{{}_{\mathfrak{A}}}[\![\varphi]\!] .
+Now the result follows from Proposition 7 .
+■ \blacksquare
+In fact, we can refine the previous proposition as follows.
+Proposition 10 (refinement of Proposition 9 )
+(a)
+For any semiring K K (positive or not!),
+for any model-defining K K -interpretation π \pi , and
+for any FOL sentence φ \varphi we have
+π ⁡ [ [ φ ] ] ≠ 0 ⇒ 𝔄 π ⊧ φ . \pi[\![\varphi]\!]\neq 0~~\Rightarrow~~\mathfrak{A}_{\pi}\models\varphi.
+(b)
+Moreover, a semiring K K is positive if, and only if,
+for any model-defining K K -interpretation π \pi
+and any FOL sentence φ \varphi we have
+𝔄 π ⊧ φ ⇒ π ⁡ [ [ φ ] ] ≠ 0 . \mathfrak{A}_{\pi}\models\varphi~~\Rightarrow~~\pi[\![\varphi]\!]\neq 0.
+Proof:
+Part (a) of the proposition is by induction on φ \varphi .
+The left to right implication in part (b) follows
+from Proposition 9 . For the right to left
+implication we first prove that K K has no divisors of 0 0 .
+Suppose that a , b ∈ K a,b\in K are such that a ≠ 0 a\neq 0 , b ≠ 0 b\neq 0 but
+a ​ b = 0 ab=0 . Consider A = { { c 1 , c 2 } A=\{\{c_{1},c_{2}\} and the model-defining interpretation defined by π ⁡ ( ¬ R ⁡ ( c 1 ) ) = π ⁡ ( ¬ R ⁡ ( c 2 ) ) = 0 \pi(\neg R(c_{1}))=\pi(\neg R(c_{2}))=0 ,
+π ⁡ ( R ⁡ ( c 1 ) ) = a \pi(R(c_{1}))=a , π ⁡ ( R ⁡ ( c 2 ) ) = b \pi(R(c_{2}))=b as well as the sentence
+φ = R ⁡ ( c 1 ) ∧ R ⁡ ( c 2 ) \varphi=R(c_{1})\wedge R(c_{2}) . We have 𝔄 π ⊧ φ \mathfrak{A}_{\pi}\models\varphi
+hence π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 , contradiction.
+Next we prove that K K is + + -positive. Let a , b ∈ K a,b\in K be such
+that a ≠ 0 a\neq 0 and b ≠ 0 b\neq 0 . Consider the same interpretation
+π \pi as above, with the sentence
+ψ = R ⁡ ( c 1 ) ∨ R ⁡ ( c 2 ) \psi=R(c_{1})\vee R(c_{2}) . We have 𝔄 π ⊧ ψ \mathfrak{A}_{\pi}\models\psi hence
+0 ≠ π ⁡ [ [ ψ ] ] = a + b 0\neq\pi[\![\psi]\!]=a+b .
+■ \blacksquare
+2.4 “Consistency” and “completeness” for K K -interpretations
+In the study of provenance we shall also have occasion to consider
+interpretations that do not correspond to a single specific model
+(as formalized in Definition 8 ).
+Additional issues arise for such interpretations.
+An interpretation in which both π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 and
+π ⁡ [ [ ¬ φ ] ] ≠ 0 \pi[\![\neg\varphi]\!]\neq 0 for some sentence φ \varphi is seemingly
+“inconsistent”. On the other hand, an interpretation
+in which both π ⁡ [ [ φ ] ] = 0 \pi[\![\varphi]\!]=0 and
+π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\neg\varphi]\!]=0 for some sentence φ \varphi seems to to be
+‘‘incomplete’’.
+1 1
+1
+The same terminology is used for logical theories.
+Of course, neither of these situations arises for a model-defining K K -interpretation when K K is positive (by Proposition 9 ).
+We analyze each of these issues in turn for general
+interpretations.
+First we note that we have the following:
+Proposition 11
+Let π : 𝖫𝗂𝗍 A → K \pi:\mathsf{Lit}_{A}\rightarrow K be a K K -interpretation.
+If for every L ∈ 𝖫𝗂𝗍 A L\in\mathsf{Lit}_{A} at least one of π ⁡ ( L ) \pi(L)
+and π ⁡ ( ¬ L ) \pi(\neg L) is 0 0
+then there exists no sentence φ \;\varphi\; for which both
+π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 and π ⁡ [ [ ¬ φ ] ] ≠ 0 \pi[\![\neg\varphi]\!]\neq 0 .
+Observe that if at least one of π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] or
+π ⁡ [ [ ¬ φ ] ] \pi[\![\neg\varphi]\!] is 0 0 then
+π ⁡ [ [ φ ] ] ⋅ π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\varphi]\!]\cdot\pi[\![\neg\varphi]\!]=0 . If K K has no
+divisors of 0 the converse holds as well. Although the examples
+described in 1.2
+are positive semirings, we are about to introduce,
+in 3.1 , a semiring for FOL provenance that
+does have divisors of 0 0 . For this reason we note also the
+following:
+Proposition 12
+Let π : 𝖫𝗂𝗍 A → K \pi:\mathsf{Lit}_{A}\rightarrow K be a K K -interpretation.
+If for every L ∈ 𝖫𝗂𝗍 A L\in\mathsf{Lit}_{A} we have π ⁡ ( L ) ⋅ π ⁡ ( ¬ L ) = 0 \pi(L)\cdot\pi(\neg L)=0
+then for any sentence φ \varphi we have
+π ⁡ [ [ φ ] ] ⋅ π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\varphi]\!]\cdot\pi[\![\neg\varphi]\!]=0 .
+Propositions 11 and 12
+hold in arbitrary K K and each supports a kind of “consistency”, with
+the two kinds coinciding when K K has no divisors of 0 0 .
+Turning to “completeness”, note that if both π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] and
+π ⁡ [ [ ¬ φ ] ] \pi[\![\neg\varphi]\!] are 0 0 then
+π ⁡ [ [ φ ] ] + π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\varphi]\!]+\pi[\![\neg\varphi]\!]=0 . If K K is +-positive then
+the converse holds as well. However, for arbitrary K K ,
+neither an analog of
+Proposition 11 nor one of
+Proposition 12 holds. Indeed, let
+K = ℤ 4 K=\mathbb{Z}_{4} . Consider the vocabulary consisting of one unary
+relation symbol R R and let A = { c 1 , c 2 } A=\{c_{1},c_{2}\} . For the interpretation
+given by π ⁡ ( ¬ R ⁡ ( c 1 ) ) = π ⁡ ( ¬ R ⁡ ( c 2 ) ) = π ⁡ ( R ⁡ ( c 1 ) ) = π ⁡ ( R ⁡ ( c 2 ) ) = 2 \pi(\neg R(c_{1}))=\pi(\neg R(c_{2}))=\pi(R(c_{1}))=\pi(R(c_{2}))=2
+and the sentence φ = R ⁡ ( c 1 ) ∧ R ⁡ ( c 2 ) \varphi=R(c_{1})\wedge R(c_{2}) we have
+π ⁡ [ [ φ ] ] = π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\varphi]\!]=\pi[\![\neg\varphi]\!]=0 .
+Instead, we have the following for positive semirings.
+Proposition 13
+Assume that K K is positive.
+Let π : 𝖫𝗂𝗍 A → K \pi:\mathsf{Lit}_{A}\rightarrow K be a K K -interpretation.
+If for every L ∈ 𝖫𝗂𝗍 A L\in\mathsf{Lit}_{A} we have π ⁡ ( L ) ≠ 0 \pi(L)\neq 0 or π ⁡ ( ¬ L ) ≠ 0 \pi(\neg L)\neq 0
+(equivalently, π ⁡ ( L ) + π ⁡ ( ¬ L ) ≠ 0 \pi(L)+\pi(\neg L)\neq 0 )
+then for any sentence φ \varphi we have
+π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 or π ⁡ [ [ ¬ φ ] ] ≠ 0 \pi[\![\neg\varphi]\!]\neq 0
+(equivalently, π ⁡ [ [ φ ] ] + π ⁡ [ [ ¬ φ ] ] ≠ 0 \pi[\![\varphi]\!]+\pi[\![\neg\varphi]\!]\neq 0 ).
+3 A Provenance Semiring for FOL
+We have claimed Sect. 1.2 that
+ℕ ⁡ [ Y ] \mathbb{N}[Y] , the commutative semiring freely generated by a set
+Y Y is used for provenance tracking. The elements of Y Y label the
+information whose propagation we wish to capture in provenance. This
+works fine for positive database query
+languages [ 16 ] but difference/negation cause problems.
+Here we shall use a variation on the idea of polynomials
+in order to deal with negated facts in provenance analysis.
+We construct a semiring whose elements can be identified with certain
+polynomials that describe the provenance of FOL model checking. The
+main insight is the use of indeterminates in “positive-negative pairs”.
+We show that the resulting polynomials provide a nicely dual interpretation
+for provenance that captures model-checking proofs.
+We illustrate with a running example.
+3.1 Dual-Indeterminate Polynomials
+Let X , X ¯ X,\bar{X} be two disjoint sets together with a one-to-one
+correspondence X ⟷ X ¯ X\longleftrightarrow\bar{X} . We denote by p ∈ X p\in X and
+p ¯ ∈ X ¯ \bar{p}\in\bar{X} two elements that are in this correspondence. We refer
+to the elements of X ∪ X ¯ X\cup\bar{X} as provenance tokens as they
+will be used to label/annotate some of the “data”, i.e., literals
+over some ground values, via the concept of K K -interpretation that
+we defined previously. Indeed, if, as before, we fix a finite
+non-empty set A A and consider 𝖫𝗂𝗍 A = 𝖥𝖺𝖼𝗍𝗌 A ∪ 𝖭𝖾𝗀𝖥𝖺𝖼𝗍𝗌 A \mathsf{Lit}_{A}=\mathsf{Facts}_{A}\cup\mathsf{NegFacts}_{A} then
+we shall use X X for 𝖥𝖺𝖼𝗍𝗌 A \mathsf{Facts}_{A} and X ¯ \bar{X} for 𝖭𝖾𝗀𝖥𝖺𝖼𝗍𝗌 A \mathsf{NegFacts}_{A} . By
+convention, if we annotate R ⁡ ( 𝐚 ) R(\mathbf{a}) with the “positive” token p p
+then the “negative” token p ¯ \bar{p} can only be
+used to annotate ¬ R ⁡ ( 𝐚 ) \neg R(\mathbf{a}) , and vice versa.
+We refer to p p and p ¯ \bar{p} as complementary tokens.
+Further, we denote by ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] the quotient
+of the semiring of polynomials ℕ ⁡ [ X ∪ X ¯ ] \mathbb{N}[X\cup\bar{X}] by the
+congruence generated by the equalities p ⋅ p ¯ = 0 p\cdot\bar{p}=0 for
+all p ∈ X p\in X . 2 2
+2
+This is the same as quotienting by the ideal generated
+by the polynomials p ​ p ¯ p\bar{p} for all p ∈ X p\in X .
+Observe that two polynomials 𝔭 , 𝔮 ∈ ℕ ⁡ [ X ∪ X ¯ ] \mathfrak{p},\mathfrak{q}\in\mathbb{N}[X\cup\bar{X}]
+are congruent if, and only if, they become identical after deleting from each of them
+the monomials that contain complementary tokens. Hence, the
+congruence classes in ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] are in one-to-one correspondence
+with the polynomials in ℕ ⁡ [ X ∪ X ¯ ] \mathbb{N}[X\cup\bar{X}]
+such that none of their monomials contain complementary tokens.
+We shall call these dual-indeterminate polynomials although we might
+often omit “-indeterminate” just use “dual polynomials”.
+The following is the universality property of the semiring of dual
+polynomials:
+Proposition 14
+For any commutative semiring K K and for any
+f : X ∪ X ¯ → K f:X\cup\bar{X}\rightarrow K such that
+∀ p ∈ X ​ f ​ ( p ) ⋅ f ⁡ ( p ¯ ) = 0 \forall p\in X\,f(p)\cdot f(\bar{p})=0 there exists
+a unique semiring homomorphism
+h : ℕ ⁡ [ X , X ¯ ] → K h:\mathbb{N}[X,\bar{X}]\rightarrow K
+such that ∀ x ∈ X ∪ X ¯ ​ h ​ ( x ) = f ⁡ ( x ) \forall x\in X\cup\bar{X}\;h(x)=f(x) .
+We note that ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] is + + -positive, but not positive,
+since it has divisors of 0 0 . Examples:
+p ⋅ p ¯ = 0 , ( p + q ¯ ) ​ p ¯ ​ q = 0 , ( p ​ q ¯ + p ¯ ​ q ) ​ ( p ​ q + p ¯ ​ q ¯ ) = 0 . p\cdot\bar{p}~=~0,~~~~(p+\bar{q})\bar{p}q~=~0,~~~~(p\bar{q}+\bar{p}q)(pq+\bar{p}\bar{q})~=~0.
+However, keeping both p p and p ¯ \bar{p} around
+and even using them in certain “inconsistent”
+ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] -interpretations
+can be very useful in provenance analysis, as we shall see
+in Sect. 4.1 .
+Definition 15
+A provenance-tracking interpretation is a
+ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] -interpretation
+π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] such that
+π ⁡ ( 𝖥𝖺𝖼𝗍𝗌 A ) ⊆ X ∪ { 0 , 1 } \pi(\mathsf{Facts}_{A})\subseteq X\cup\{0,1\}
+and π ⁡ ( 𝖭𝖾𝗀𝖥𝖺𝖼𝗍𝗌 A ) ⊆ X ¯ ∪ { 0 , 1 } \pi(\mathsf{NegFacts}_{A})\subseteq\bar{X}\cup\{0,1\} .
+The idea is that if π \pi annotates a positive or negative fact with
+a token, then we wish to track that fact through the model-checking
+computation. On the other hand annotating with 0 0 or 1 1 is done when
+we do not track the fact, yet we need to recall whether it holds or not
+in the model.
+3.2 An Example and a Characterization
+The vocabulary of directed graphs consists one binary predicate E E
+denoting directed edges.
+Consider, over this vocabulary, the following formula and sentence
+𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ⁡ ( x ) ≡ ∀ y ⁡ ( x = y ∨ ( E ⁡ ( x , y ) ∧ ¬ E ⁡ ( y , x ) ) ) , φ ≡ ∀ x ​ ¬ 𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ⁡ ( x ) . \mathsf{dominant}(x)~\equiv~\forall y\>\bigl(x=y\vee(E(x,y)\wedge\neg E(y,x))\bigr),~~~~~~~~~~~~~~~~\varphi~\equiv~\forall x\,\neg\mathsf{dominant}(x).
+𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ⁡ ( x ) \mathsf{dominant}(x) says that in a digraph with edge relation E E
+the vertex x x is “dominant” while φ \varphi says
+that the digraph does not have a dominant vertex.
+Consider also the digraph 𝔊 \mathfrak{G} depicted in Figure 1
+with vertices a , b , c a,b,c . The edges of the digraph are the
+solid arrows and we wish to track their presence through
+model-checking. The dashed arrows corresponds to absent edges, whose
+absence, however, we also wish to track.
+We do this with the
+provenance-tracking ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] -interpretation
+β : 𝖫𝗂𝗍 V → X ∪ X ¯ ∪ { 0 , 1 } \beta:\mathsf{Lit}_{V}\rightarrow X\cup\bar{X}\cup\{0,1\} defined by
+β ⁡ ( L ) = { p if ​ L = E ⁡ ( a , b ) 0 if ​ L = ¬ E ⁡ ( a , b ) q if ​ L = E ⁡ ( b , c ) 0 if ​ L = ¬ E ⁡ ( b , c ) 0 if ​ L = E ⁡ ( a , c ) r ¯ if ​ L = ¬ E ⁡ ( a , c ) \beta(L)~=~\begin{cases}p&\mathrm{if~}L=E(a,b)\\
+0&\mathrm{if~}L=\neg E(a,b)\\
+q&\mathrm{if~}L=E(b,c)\\
+0&\mathrm{if~}L=\neg E(b,c)\\
+0&\mathrm{if~}L=E(a,c)\\
+\bar{r}&\mathrm{if~}L=\neg E(a,c)\end{cases}
+= { 0 if ​ L = E ⁡ ( c , b ) s ¯ if ​ L = ¬ E ⁡ ( c , b ) t if ​ L = E ⁡ ( b , a ) 0 if ​ L = ¬ E ⁡ ( b , a ) 0 for ​ the ​ other ​ positive ​ facts 1 for ​ the ​ other ​ negative ​ facts . =~\begin{cases}0&\mathrm{if~}L=E(c,b)\\
+\bar{s}&\mathrm{if~}L=\neg E(c,b)\\
+t&\mathrm{if~}L=E(b,a)\\
+0&\mathrm{if~}L=\neg E(b,a)\\
+0&\mathrm{for~the~other~positive~facts}\\
+1&\mathrm{for~the~other~negative~facts.}\end{cases}
+So, for example, β ⁡ ( E ⁡ ( c , a ) ) = β ⁡ ( E ⁡ ( c , c ) ) = … = 0 \beta(E(c,a))=\beta(E(c,c))=\ldots=0 and also
+β ⁡ ( ¬ E ⁡ ( c , a ) ) = β ⁡ ( ¬ E ⁡ ( c , c ) ) = … = 1 \beta(\neg E(c,a))=\beta(\neg E(c,c))=\ldots=1 .
+Note that β \beta is model-defining in the sense of
+Definition 8
+and that the model it defines is precisely 𝔊 \mathfrak{G} .
+Figure 1: The model 𝔊 \mathfrak{G}
+The assumptions made in the definition of β \beta
+indicate that we choose to track positive facts
+like E ⁡ ( b , c ) E(b,c) and negative facts like ¬ E ⁡ ( a , b ) \neg E(a,b) , etc., as they are
+used in establishing the truth of some sentence in 𝔊 \mathfrak{G} .
+They also indicate that we accept, and thus do not
+track, the absence of the other potential edges such as E ⁡ ( c , a ) E(c,a) .
+We think of data annotated with 0 0 as being “forget-about-it” absent and of
+data annotated with 1 as “available for free” present.
+Clearly, 𝔊 ⊧ φ \mathfrak{G}\models\varphi , but how can we justify this in terms
+of the facts, negative or positive, that hold in the model?
+By computing the semantics of the sentence φ \varphi
+under the interpretation β \beta we will obtain provenance information
+for the result 𝔊 ⊧ φ \mathfrak{G}\models\varphi . Clearly
+𝗇𝗇𝖿 ⁡ ( φ ) ≡ ∀ x ​ ∃ y ⁡ ( x ≠ y ∧ ( ¬ E ⁡ ( x , y ) ∨ E ⁡ ( y , x ) ) ) \mathsf{nnf}(\varphi)~\equiv~\forall x\,\exists y\>\bigl(x\neq y\wedge(\neg E(x,y)\vee E(y,x))\bigr)
+and therefore
+β ⁡ [ [ φ ] ] = β ⁡ [ [ 𝗇𝗇𝖿 ⁡ ( φ ) ] ] = ( r ¯ + t ) ⋅ p ⋅ ( 1 + q + s ¯ ) = p ​ r ¯ + p ​ t + p ​ q ​ r ¯ + p ​ q ​ t + p ​ r ¯ ​ s ¯ + p ​ s ¯ ​ t . \beta[\![\varphi]\!]~=~\beta[\![\mathsf{nnf}(\varphi)]\!]~=~(\bar{r}+t)\cdot p\cdot(1+q+\bar{s})~=~p\bar{r}+pt+pq\bar{r}+pqt+p\bar{r}\bar{s}+p\bar{s}t.
+Each of the monomials of the dual polynomial β ⁡ [ [ φ ] ] \beta[\![\varphi]\!]
+has coefficient 1
+3 3
+3
+In this example all the monomial
+coefficients and all the exponents are 1. This is certainly not the case
+in general. In fact, it is possible to show that any dual polynomial
+can be computed as some provenance, with suitable choices of sentence,
+model, and interpretation.
+and each corresponds to a different (model-checking)
+proof tree of φ \varphi from the literals
+described by the monomial.
+For example, the monomial p ​ t pt corresponds to a proof tree of φ \varphi
+in which the fact
+E ⁡ ( a , b ) E(a,b) is used to deny the dominance of b b , the fact
+E ⁡ ( b , a ) E(b,a) is used to deny the dominance of a a , and the
+negative fact ¬ E ⁡ ( c , a ) \neg E(c,a) , which is accepted without
+tracking—it has provenance 1—is used to deny the dominance of c c .
+Note that what we call proof tree here involves formulae in NNF
+and has inference rules corresponding
+to model checking conjunction, disjunction, universal and existential
+quantifiers. We illustrate with the proof tree
+corresponding to another monomial, p ​ r ¯ ​ s ¯ p\bar{r}\bar{s} ,
+using the following formula abbreviations:
+𝖽𝖾𝗇𝗒𝖽𝗈𝗆 ⁡ ( x , y ) \displaystyle\mathsf{denydom}(x,y)
+≡ \displaystyle\equiv
+( x ≠ y ∧ ( ¬ E ⁡ ( x , y ) ∨ E ⁡ ( y , x ) ) ) y ​ denies ​ dominance ​ of ​ x \displaystyle\bigl(x\neq y\wedge(\neg E(x,y)\vee E(y,x))\bigr)~~~~~~~~~~~~y~\mathrm{denies~dominance~of}~x
+𝗇𝗈𝗍𝖽𝗈𝗆 ⁡ ( x ) \displaystyle\mathsf{notdom}(x)
+≡ \displaystyle\equiv
+∃ y ⁡ ( x ≠ y ∧ ( ¬ E ⁡ ( x , y ) ∨ E ⁡ ( y , x ) ) ) x ​ is ​ not ​ dominant \displaystyle\exists y\>\bigl(x\neq y\wedge(\neg E(x,y)\vee E(y,x))\bigr)~~~~~~~~~~~x~\mathrm{is~not~dominant}
+𝗇𝗈𝖵𝖽𝗈𝗆 \displaystyle\mathsf{noVdom}
+≡ \displaystyle\equiv
+∀ x ​ ∃ y ⁡ ( x ≠ y ∧ ( ¬ E ⁡ ( x , y ) ∨ E ⁡ ( y , x ) ) ) no ​ vertex ​ is ​ dominant \displaystyle\forall x\,\exists y\>\bigl(x\neq y\wedge(\neg E(x,y)\vee E(y,x))\bigr)~~~~~~~\mathrm{no~vertex~is~dominant}
+With these, the proof tree corresponding to p ​ r ¯ ​ s ¯ p\bar{r}\bar{s} is:
+  a ≠ b a\neq b      
+    ¬ E ​ ( a , c ) ​ [ r ¯ ] \neg E(a,c)~~~[\bar{r}]  
+  ¬ E ⁡ ( a , c ) ∨ E ⁡ ( c , a ) \neg E(a,c)\vee E(c,a)  
+       𝖽𝖾𝗇𝗒𝖽𝗈𝗆 ⁡ ( a , c ) \mathsf{denydom}(a,c)  
+    
+         𝗇𝗈𝗍𝖽𝗈𝗆 ⁡ ( a ) \mathsf{notdom}(a)  
+   
+  b ≠ c b\neq c      
+      E ​ ( a , b ) ​ [ p ] E(a,b)~~~[p]  
+  ¬ E ⁡ ( b , a ) ∨ E ⁡ ( a , b ) \neg E(b,a)\vee E(a,b)  
+       𝖽𝖾𝗇𝗒𝖽𝗈𝗆 ⁡ ( b , a ) \mathsf{denydom}(b,a)  
+    
+         𝗇𝗈𝗍𝖽𝗈𝗆 ⁡ ( b ) \mathsf{notdom}(b)  
+   
+  c ≠ a c\neq a      
+      ¬ E ​ ( c , b ) ​ [ s ¯ ] \neg E(c,b)~~~[\bar{s}]  
+  ¬ E ⁡ ( c , b ) ∨ E ⁡ ( b , c ) \neg E(c,b)\vee E(b,c)  
+       𝖽𝖾𝗇𝗒𝖽𝗈𝗆 ⁡ ( c , b ) \mathsf{denydom}(c,b)  
+    
+        𝗇𝗈𝗍𝖽𝗈𝗆 ⁡ ( c ) \mathsf{notdom}(c)  
+      
+                      𝗇𝗈𝖵𝖽𝗈𝗆 \mathsf{noVdom}  
+The following proposition summarizes the situation.
+Proposition 16
+Let β : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \beta:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] be a provenance-tracking
+model-defining interpretation,
+and let φ \varphi be an FOL sentence.
+Then, the dual polynomial
+β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] describes all the proof
+trees that verify φ \varphi using premises from among the literals that
+that β \beta maps to provenance tokens or to 1 (i.e., from the
+literals that hold in 𝔄 β \mathfrak{A}_{\beta} ).
+Specifically, each monomial m x 1 m 1 ⋯ x k m k m\,x_{1}^{m_{1}}\cdots x_{k}^{m_{k}}
+corresponds to m m distinct proof trees
+that use m 1 m_{1} times a literal that β \beta annotates by x 1 x_{1} , …,
+and m k m_{k} times a literal annotated by x k x_{k} , as well
+as any number of the literals annotated with 1.
+In particular, β ⁡ [ [ φ ] ] ≠ 0 \beta[\![\varphi]\!]\neq 0 if, and only if, some proof tree exists, and if, and only if,
+𝔄 β ⊧ φ \mathfrak{A}_{\beta}\models\varphi .
+Note that since ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] is not positive this proposition
+does not follow from Proposition 9 .
+(Nor does this contradict Proposition 10 (b) because
+provenance-tracking interpretations have a special form.)
+Nonetheless, albeit not positive,
+ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] has many remarkable properties and
+this proposition is a corollary of a more general one that we shall
+state in Sect. 4.2 .
+3.3 From Provenance to Confidence
+Recall from Sect. 1.2 the Viterbi semiring
+𝕍 \mathbb{V} . We think of the elements of 𝕍 \mathbb{V} as confidence scores.
+Going back to the example in Sect. 3.2 , and assuming
+specific confidence scores for the literals that 𝔊 \mathfrak{G} makes true,
+and that we track, we wish to compute a confidence score for
+𝔊 ⊧ φ \mathfrak{G}\models\varphi .
+Specifically, consider the 𝕍 \mathbb{V} -interpretation
+γ : 𝖫𝗂𝗍 V → [ 0 , 1 ] \gamma:\mathsf{Lit}_{V}\rightarrow[0,1] defined by
+γ ⁡ ( E ⁡ ( a , b ) ) = γ ⁡ ( E ⁡ ( b , c ) ) = 0.9 , γ ⁡ ( E ⁡ ( b , a ) ) = 0.2 , γ ⁡ ( ¬ E ⁡ ( a , c ) ) = γ ⁡ ( ¬ E ⁡ ( c , b ) ) = 0.6 , \gamma(E(a,b))=\gamma(E(b,c))=0.9,~~~~~~~~\gamma(E(b,a))=0.2,~~~~~~~~~~~~~\gamma(\neg E(a,c))=\gamma(\neg E(c,b))=0.6,
+and in addition, for any other positive fact we have
+γ ⁡ ( E ⁡ ( _ , _ ) ) = 0 \gamma(E(\_\,,\_))=0 and for any other negative fact
+we have γ ⁡ ( ¬ E ⁡ ( _ , _ ) ) = 1 \gamma(\neg E(\_\,,\_))=1 .
+With this we could use Definition 2
+to compute γ ⁡ [ [ φ ] ] ∈ [ 0 , 1 ] \gamma[\![\varphi]\!]\in[0,1] , which is the desired
+confidence score.
+However, since we have already computed in Sect. 3.2 the provenance
+β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] we can take advantage of the Fundamental Property
+(Proposition 5 ) via a homomorphism whose existence is
+guaranteed by Proposition 14 .
+We define f : X ∪ X ¯ → [ 0 , 1 ] f:X\cup\bar{X}\rightarrow[0,1] by
+f ⁡ ( p ) = f ⁡ ( q ) = 0.9 , f ⁡ ( t ) = 0.2 , f ⁡ ( r ¯ ) = f ⁡ ( s ¯ ) = 0.6 , f(p)=f(q)=0.9,~~~~~~~f(t)=0.2,~~~~~~~~~~~~~~~~f(\bar{r})=f(\bar{s})=0.6,
+by f ⁡ ( x ) = 0 f(x)=0 for x ∉ { p , q , t } x\not\in\{p,q,t\} , and by f ⁡ ( x ¯ ) = 1 f(\bar{x})=1 for
+x ¯ ∉ { r ¯ , s ¯ } \bar{x}\not\in\{\bar{r},\bar{s}\} . The condition on f f in
+Proposition 14 is satisfied, hence f f can be extended
+to a homomorphism h : ℕ ⁡ [ X , X ¯ ] → 𝕍 h:\mathbb{N}[X,\bar{X}]\rightarrow\mathbb{V} . From the definition
+of f f we have h ∘ β = γ h\circ\beta=\gamma . By the Fundamental Property
+γ ⁡ [ [ φ ] ] = h ⁡ ( β ⁡ [ [ φ ] ] ) . \gamma[\![\varphi]\!]~=~h(\beta[\![\varphi]\!]).
+Hence the score we wish to compute can be obtained by applying the homomorphism
+h h to the dual polynomial β ⁡ [ [ φ ] ] = p ​ r ¯ + p ​ t + p ​ q ​ r ¯ + p ​ q ​ t + p ​ r ¯ ​ s ¯ + p ​ s ¯ ​ t \beta[\![\varphi]\!]=p\bar{r}+pt+pq\bar{r}+pqt+p\bar{r}\bar{s}+p\bar{s}t . It is easier to use the
+factored form of β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] :
+h ⁡ ( p ⁡ ( r ¯ + t ) ​ ( 1 + q + s ¯ ) ) = 0.9 ⋅ max ⁡ ( 0.6 ,  0.2 ) ⋅ max ⁡ ( 1 ,  0.9 ,  0.6 ) = 0.54 . h(p(\bar{r}+t)(1+q+\bar{s}))~=~0.9\cdot\max(0.6,\;0.2)\cdot\max(1,\;0.9,\;0.6)~=~0.54.
+In general, confidence calculation may be only one of the analyses that we
+wish to perform. When these analyses are based on semiring calculations
+we can compute the provenance just once and then evaluate it in multiple
+semiring and under multiple valuations, by virtue of the Fundamental Property.
+3.4 Detailed Provenance Analysis: Top-Secret Proofs
+We describe here another kind of provenance analysis that we can perform on
+in conjunction with interpretation in various semiring.
+Recall from Sect. 1.2 the access control
+semiring 𝔸 \mathbb{A} . Its elements are interpreted as clearance
+levels , from lowest to highest
+𝖯 < 𝖢 < 𝖲 < 𝖳 < 0 \mathsf{P}<\mathsf{C}<\mathsf{S}<\mathsf{T}<0 . For example, administrators would assign
+clearance levels
+to the different items in the input data. The resulting clearance
+level for the output of a computation determines which users get to
+access that output. In the context of this paper there would be an
+assignment of clearance levels to literals.
+Going back to the example in Sect. 3.2 ,
+consider the 𝔸 \mathbb{A} -interpretation
+α : 𝖫𝗂𝗍 V → 𝔸 \alpha:\mathsf{Lit}_{V}\rightarrow\mathbb{A} defined by
+α ⁡ ( E ⁡ ( a , b ) ) = α ⁡ ( E ⁡ ( b , c ) ) = α ⁡ ( E ⁡ ( b , a ) ) = 𝖯 , α ⁡ ( ¬ E ⁡ ( a , c ) ) = α ⁡ ( ¬ E ⁡ ( c , b ) ) = 𝖳 , \alpha(E(a,b))=\alpha(E(b,c))=\alpha(E(b,a))=\mathsf{P},~~~~~~~~~~~~~\alpha(\neg E(a,c))=\alpha(\neg E(c,b))=\mathsf{T},
+and in addition, for any other positive fact we have
+α ⁡ ( E ⁡ ( _ , _ ) ) = 0 \alpha(E(\_\,,\_))=0 and for any other negative fact
+we have α ⁡ ( ¬ E ⁡ ( _ , _ ) ) = 𝖯 \alpha(\neg E(\_\,,\_))=\mathsf{P} .
+As in Sect. 3.3 we have
+α ⁡ [ [ φ ] ] = h ⁡ ( p ​ r ¯ + p ​ t + p ​ q ​ r ¯ + p ​ q ​ t + p ​ r ¯ ​ s ¯ + p ​ s ¯ ​ t ) \alpha[\![\varphi]\!]=h(p\bar{r}+pt+pq\bar{r}+pqt+p\bar{r}\bar{s}+p\bar{s}t) ,
+where h h is the unique homomorphism ℕ ⁡ [ X , X ¯ ] → 𝔸 \mathbb{N}[X,\bar{X}]\rightarrow\mathbb{A}
+such that h ⁡ ( p ) = h ⁡ ( q ) = h ⁡ ( t ) = 𝖯 h(p)=h(q)=h(t)=\mathsf{P} ,
+h ⁡ ( r ¯ ) = h ⁡ ( s ¯ ) = 𝖳 h(\bar{r})=h(\bar{s})=\mathsf{T} , and otherwise equals 0 0 on the rest of X X
+and equals 𝖯 \mathsf{P} on the rest of X ¯ \bar{X} .
+We can see that α ⁡ [ [ φ ] ] = 𝖯 \alpha[\![\varphi]\!]=\mathsf{P} but we can also perform a
+more detailed analysis in which we can associate clearance levels to
+individual proof trees
+Thus, while it will be
+publicly known that 𝔊 ⊧ φ \mathfrak{G}\models\varphi , those with top-secret
+clearance can also know that p ​ r ¯ p\bar{r} describes a proof of the
+assertion 𝔊 ⊧ φ \mathfrak{G}\models\varphi . This may become relevant if we have
+particularly high confidence (as described above in Sect. 3.3 )
+in the literals that p p and r ¯ \bar{r} annotate, that is, in the presence
+of the edge from a a to b b and in the absence of an edge from a a to c c .
+4 Reverse Provenance Analysis
+There are limitations to what we can do with the provenance of a
+model-checking assertion 𝔄 ⊧ φ \mathfrak{A}\models\varphi for a given 𝔄 \mathfrak{A} .
+It is even more interesting to consider provenance-tracking interpretations
+that allow us to choose , from among multiple models, the ones
+that fulfill various desiderata.
+Figure 2: Provenance tracking assumptions
+Figure 3: The model 𝔉 \mathfrak{F}
+4.1 A Reverse Analysis Example
+Let V = { a , b , c } V=\{a,b,c\} be a set of ground values. As before, these will eventually
+play the role of the vertices of a digraph.
+However, we do not yet specify
+a set of edges, i.e., we do not specify a finite model with
+universe V V . Instead, as illustrated by the dotted edges in
+Figure 2 , we supply a set of provenance tokens
+X = { p , q , r , s , t } X=\{p,q,r,s,t\} that corresponds
+to the potential presence of some edges that we wish to track.
+Therefore, X ¯ = { p ¯ , q ¯ , r ¯ , s ¯ , t ¯ } \bar{X}=\{\bar{p},\bar{q},\bar{r},\bar{s},\bar{t}\} are the provenance tokens
+allowing us to track the potential absence of the same edges.
+These provenance tracking assumptions can be formalized via a
+provenance-tracking ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] -interpretation.
+Define π : 𝖫𝗂𝗍 V → X ∪ X ¯ ∪ { 0 , 1 } \pi:\mathsf{Lit}_{V}\rightarrow X\cup\bar{X}\cup\{0,1\} by
+π ⁡ ( L ) = { p if ​ L = E ⁡ ( a , b ) p ¯ if ​ L = ¬ E ⁡ ( a , b ) q if ​ L = E ⁡ ( b , c ) q ¯ if ​ L = ¬ E ⁡ ( b , c ) r if ​ L = E ⁡ ( a , c ) r ¯ if ​ L = ¬ E ⁡ ( a , c ) \pi(L)~=~\begin{cases}p&\mathrm{if~}L=E(a,b)\\
+\bar{p}&\mathrm{if~}L=\neg E(a,b)\\
+q&\mathrm{if~}L=E(b,c)\\
+\bar{q}&\mathrm{if~}L=\neg E(b,c)\\
+r&\mathrm{if~}L=E(a,c)\\
+\bar{r}&\mathrm{if~}L=\neg E(a,c)\end{cases}
+= { s if ​ L = E ⁡ ( c , b ) s ¯ if ​ L = ¬ E ⁡ ( c , b ) t if ​ L = E ⁡ ( b , a ) t ¯ if ​ L = ¬ E ⁡ ( b , a ) 0 for ​ the ​ other ​ positive ​ facts 1 for ​ the ​ other ​ negative ​ facts . =~\begin{cases}s&\mathrm{if~}L=E(c,b)\\
+\bar{s}&\mathrm{if~}L=\neg E(c,b)\\
+t&\mathrm{if~}L=E(b,a)\\
+\bar{t}&\mathrm{if~}L=\neg E(b,a)\\
+0&\mathrm{for~the~other~positive~facts}\\
+1&\mathrm{for~the~other~negative~facts.}\end{cases}
+So, for example, π ⁡ ( E ⁡ ( c , a ) ) = π ⁡ ( E ⁡ ( c , c ) ) = … = 0 \pi(E(c,a))=\pi(E(c,c))=\ldots=0 and also
+π ⁡ ( ¬ E ⁡ ( c , a ) ) = π ⁡ ( ¬ E ⁡ ( c , c ) ) = … = 1 \pi(\neg E(c,a))=\pi(\neg E(c,c))=\ldots=1 .
+This particular interpretation does not feature a positive fact annotated
+with 1 but we could have just as well had π ⁡ ( E ⁡ ( a , b ) ) = 1 \pi(E(a,b))=1 and
+π ⁡ ( ¬ E ⁡ ( a , b ) ) = 0 \pi(\neg E(a,b))=0 if we chose to assume that edge without tracking it.
+Note that π \pi is not model-defining (in the sense of
+Definition 8 ), i.e., it does not correspond
+to any single model.
+As we shall see, this is not a bug but a feature (!), as it
+will allow us to consider, under the given provenance assumptions,
+multiple models that can satisfy a sentence.
+Now we compute the semantics of the sentence φ \varphi from Sect. 3.2 ,
+under this interpretation and we obtain
+π ⁡ [ [ φ ] ] = ( p ¯ + r ¯ + t ) ⋅ ( p + q ¯ + s + t ¯ ) ⋅ ( 1 + q + r + s ¯ ) . \pi[\![\varphi]\!]~=~(\bar{p}+\bar{r}+t)\cdot(p+\bar{q}+s+\bar{t})\cdot(1+q+r+\bar{s}).
+If we multiply these three expressions and we apply
+p ​ p ¯ = q ​ q ¯ = r ​ r ¯ = s ​ s ¯ = 0 p\bar{p}=q\bar{q}=r\bar{r}=s\bar{s}=0 we get a polynomial with
+48 − 4 − 3 − 3 − 4 = 34 48-4-3-3-4=34 monomials (the reader shall be spared the
+trouble of admiring it). As in Sect. 3.2 ,
+each of these monomials has coefficient 1
+and (as shown in Sect. 4.2 )
+each corresponds to a different proof tree of φ \varphi from the literals
+described by the monomial.
+For example, the monomial p ​ q ​ t pqt corresponds to a proof tree of φ \varphi
+in which the fact
+E ⁡ ( b , a ) E(b,a) is used to deny the dominance of a a , the fact
+E ⁡ ( a , b ) E(a,b) is used to deny the dominance of b b , and the fact
+E ⁡ ( b , c ) E(b,c) is used to deny the dominance of c c . Recalling the
+notations from Sect. 3.2 , note that the same monomial
+is part of the dual polynomial β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] and that
+the same proof tree justifies 𝔊 ⊧ φ \mathfrak{G}\models\varphi . Note also
+that setting r = s = p ¯ = q ¯ = t ¯ = 0 r=s=\bar{p}=\bar{q}=\bar{t}=0 in the definition
+of π \pi gives the definition of β \beta . Doing the same in
+π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] gives
+( 0 + r ¯ + t ) ⋅ ( p + 0 + 0 + 0 ) ⋅ ( 1 + q + 0 + s ¯ ) = ( r ¯ + t ) ⋅ p ⋅ ( 1 + q + s ¯ ) , (0+\bar{r}+t)\cdot(p+0+0+0)\cdot(1+q+0+\bar{s})~=~(\bar{r}+t)\cdot p\cdot(1+q+\bar{s}),
+which is the same as the polynomial β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] obtained with the
+model-defining interpretation β \beta which corresponds to the model 𝔊 \mathfrak{G} . In
+this sense, π \pi is a “generalization” of β \beta , or,
+β \beta can be obtained by specializing π \pi .
+All this will be made precise in full generality
+in Sect. 4.2 while here we explore two other interesting
+specializations of π \pi .
+One of the monomials in π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] is p ¯ ​ q ¯ \bar{p}\bar{q} . This means
+that we can find a specialization of π \pi that is model-defining and that defines,
+in fact,
+a model with no positive information, namely the digraph with
+vertices V V and no edges.
+Hence, denoting with 𝔈 \mathfrak{E}
+this no-edge model, we have 𝔈 ⊧ φ \mathfrak{E}\models\varphi .
+How many proof trees verify that 𝔈 ⊧ φ \mathfrak{E}\models\varphi ?
+The specialization π 1 \pi_{1} that we are after corresponds to
+setting p = q = r = s = t = 0 p=q=r=s=t=0 . This gives
+π 1 ​ [ [ φ ] ] = ( p ¯ + r ¯ ) ⋅ ( q ¯ + t ¯ ) ⋅ ( 1 + s ¯ ) , \pi_{1}[\![\varphi]\!]~=~(\bar{p}+\bar{r})\cdot(\bar{q}+\bar{t})\cdot(1+\bar{s}),
+which is a polynomial with 8 monomials, each with coefficient 1. It follows
+that there are 8 distinct proof trees for 𝔈 ⊧ φ \mathfrak{E}\models\varphi .
+One can also figure out that p ​ q ​ t , p ​ r ​ t , q ​ s ​ t , r ​ s ​ t pqt,prt,qst,rst are among the
+monomials in π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] . This means that we can find another
+specialization of π \pi that is also model-defining and that defines a model with
+maximum positive information (allowed by π \pi ), namely the
+digraph with
+vertices V V and edges E ⁡ ( a , b ) , E ⁡ ( b , c ) , E ⁡ ( a , c ) , E ⁡ ( c , b ) E(a,b),E(b,c),E(a,c),E(c,b) and E ⁡ ( b , a ) E(b,a) .
+Let’s denote with 𝔉 \mathfrak{F}
+this all-allowed-edges model (see Figure 3 ).
+How many proof trees verify that 𝔉 ⊧ φ \mathfrak{F}\models\varphi ?
+The specialization π 2 \pi_{2} that we look for here
+corresponds to setting p ¯ = q ¯ = r ¯ = s ¯ = t ¯ = 0 \bar{p}=\bar{q}=\bar{r}=\bar{s}=\bar{t}=0 . This gives
+π 2 ​ [ [ φ ] ] = t ⋅ ( p + s ) ⋅ ( 1 + q + r ) , \pi_{2}[\![\varphi]\!]~=~t\cdot(p+s)\cdot(1+q+r),
+which is a polynomial with 6 monomials, each with coefficient 1,
+hence there are 6 proof trees
+for this.
+Finally, we also wish to consider for this example
+the provenance of the negation
+of the sentence φ \varphi considered above, i.e., the sentence
+¬ φ \neg\varphi that says that the digraph has a dominant vertex:
+¬ φ ≡ ¬ ∀ x ​ ¬ 𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ⁡ ( x ) . \neg\varphi~\equiv~\neg\forall x\,\neg\mathsf{dominant}(x).
+Since 𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ⁡ ( x ) ≡ ∀ y ⁡ ( x = y ∨ ( E ⁡ ( x , y ) ∧ ¬ E ⁡ ( y , x ) ) ) \mathsf{dominant}(x)\equiv\forall y\>\bigl(x=y\vee(E(x,y)\wedge\neg E(y,x))\bigr)
+is already in NNF, we have 𝗇𝗇𝖿 ⁡ ( ¬ φ ) ≡ ∃ x ​ 𝖽𝗈𝗆𝗂𝗇𝖺𝗇𝗍 ​ ( x ) \mathsf{nnf}(\neg\varphi)\equiv\exists x\,\mathsf{dominant}(x) .
+We compute the semantics of this sentence under the same interpretation:
+π ⁡ [ [ ¬ φ ] ] = p ​ r ​ t ¯ + p ¯ ​ q ​ s ¯ ​ t + s ​ q ¯ ​ r ¯ ⋅ 0 = p ​ r ​ t ¯ + p ¯ ​ q ​ s ¯ ​ t . \pi[\![\neg\varphi]\!]~=~pr\bar{t}+\bar{p}q\bar{s}t+s\bar{q}\bar{r}\cdot 0~=~pr\bar{t}+\bar{p}q\bar{s}t.
+Thus, under the provenance tracking assumptions we have made,
+there are only two proof trees for ¬ φ \neg\varphi .
+4 4
+4
+In the polynomials featured in this example all the monomial
+coefficients and all the exponents are 1. This is certainly not the case
+in general. In fact, it can be shown that any dual polynomial results
+from suitably chosen sentences and interpretations.
+We shall come back later to this.
+4.2 Properties of Provenance
+In this subsection all interpretations are provenance-tracking, unless
+another semiring is specified. The interpretation exhibited
+in Sect. 4.1 belongs to a class that merits its own
+definition.
+Definition 17
+A provenance-tracking interpretation
+π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}]
+is said to be model-compatible if for each fact R ⁡ ( 𝐚 ) R(\mathbf{a}) one of the
+following three holds:
+1.
+∃ z ∈ X \exists z\in X
+s.t π ⁡ ( R ⁡ ( 𝐚 ) ) = z \pi(R(\mathbf{a}))=z and π ⁡ ( ¬ R ⁡ ( 𝐚 ) ) = z ¯ \pi(\neg R(\mathbf{a}))=\bar{z} ,
+or
+2.
+π ⁡ ( R ⁡ ( 𝐚 ) ) = 0 \pi(R(\mathbf{a}))=0 and π ⁡ ( ¬ R ⁡ ( 𝐚 ) ) = 1 \pi(\neg R(\mathbf{a}))=1 , or
+3.
+π ⁡ ( R ⁡ ( 𝐚 ) ) = 1 \pi(R(\mathbf{a}))=1 and π ⁡ ( ¬ R ⁡ ( 𝐚 ) ) = 0 \pi(\neg R(\mathbf{a}))=0
+As promised, we state a more powerful
+version of Proposition 16
+(which was about provenance-tracking model-defining interpretations).
+Proposition 18
+Let π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] be a model-compatible interpretation and let φ \varphi be an FOL sentence. Then,
+π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] describes all the proof
+trees that verify φ \varphi using premises from among the literals that
+π \pi maps to provenance tokens or to 1. Specifically, each monomial
+m x 1 m 1 ⋯ x k m k m\,x_{1}^{m_{1}}\cdots x_{k}^{m_{k}} corresponds to m m distinct proof trees
+that use m 1 m_{1} times a literal annotated by x 1 x_{1} , …, and m k m_{k} times
+a literal annotated by x k x_{k} ., where x 1 , … , x k ∈ X ∪ X ¯ x_{1},\ldots,x_{k}\in X\cup\bar{X} .
+In particular, when π ⁡ [ [ φ ] ] = 0 \pi[\![\varphi]\!]=0 no proof tree exists.
+Corollary 19
+Let π \pi be a model-compatible interpretation. Then, the sum of
+the monomial coefficients in π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] counts
+the number of proof trees that verify φ \varphi using premises
+from among the literals that π \pi maps to provenance tokens or to 1.
+The same count can be obtained from an ℕ \mathbb{N} -interpretation
+as ( h ∘ π ) ​ [ [ φ ] ] ∈ ℕ (h\circ\pi)[\![\varphi]\!]\in\mathbb{N} where
+h : X ∪ X ¯ ∪ { 0 , 1 } → ℕ h:X\cup\bar{X}\cup\{0,1\}\rightarrow\mathbb{N} is defined by h ⁡ ( 0 ) = 0 h(0)=0 and
+h ⁡ ( p ) = h ⁡ ( p ¯ ) = h ⁡ ( 1 ) = 1 h(p)=h(\bar{p})=h(1)=1 .
+A model-compatible interpretation may allow the tracking of both a literal
+and its negation. Therefore, model-compatible interpretations are not
+model-defining unless they do not make use of provenance tokens at all
+(in which case they are essentially canonical truth interpretations).
+Hence,
+Proposition 16 is not a simple particular case of
+Proposition 18 . Nonetheless, we shall see how
+model-defining interpretations can be seen as specializations of model-compatible interpretations with respect to models that “agree”
+(i.e., are compatible ) with them, as defined below.
+Definition 20
+Let π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] be a model-compatible interpretation and let 𝔄 \mathfrak{A}
+be a model with universe A A (same A A ). We say that 𝔄 \mathfrak{A}
+is compatible with π \pi
+if 𝔄 ⊧ L \mathfrak{A}\models L for any literal L L such that π ⁡ ( L ) = 1 \pi(L)=1 .
+Further, let 𝖬𝗈𝖽 π := { 𝔄 ∣ 𝔄 ​ is ​ compatible ​ with ​ π } \mathsf{Mod}_{\pi}:=\{\mathfrak{A}\mid\mathfrak{A}\mathrm{~is~compatible~with~}\pi\} .
+For instance, the models shown in
+Figures 1 and 3
+are compatible with the interpretation
+defined in Sect. 4.1 .
+Now we can talk about satisfiability and validity restricted to the
+class of models that agree with the provenance tracking assumptions
+made by an interpretation.
+Corollary 21 (to Proposition 18 )
+Let π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] be a model-compatible interpretation and let φ \varphi be a first-order sentence.
+Then, φ \varphi is 𝖬𝗈𝖽 π \mathsf{Mod}_{\pi} -satisfiable if, and only if, π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 ,
+and φ \varphi is 𝖬𝗈𝖽 π \mathsf{Mod}_{\pi} -valid if, and only if, π ⁡ [ [ ¬ φ ] ] = 0 \pi[\![\neg\varphi]\!]=0 .
+This is not finite satisfiability (shown undecidable by Trakhtenbrot),
+of course.
+Even if we map every possible literal to a different provenance token
+we only decide satisfiability in a model with exactly | A | |A| elements,
+which is easily in NP (without talking about provenance).
+Example 22
+With the same (digraph) vocabulary as in Sect. 3.2
+and 4.1 consider the sentence
+τ := ∃ x ​ ∀ y ​ E ​ ( x , y ) → ∀ y ​ ∃ x ​ E ​ ( x , y ) . \tau:=\exists x\,\forall y\,E(x,y)\,\rightarrow\,\forall y\,\exists x\,E(x,y).
+This is a well-known tautology (holding in all models, not just in finite
+ones). Obviously,
+𝑂𝑃𝐸𝑁 𝗇𝗇𝖿 ⁡ ( ¬ τ ) = ∃ x ​ ∀ y ​ E ​ ( x , y ) ) ∧ ∃ y ​ ∀ x ​ ¬ E ⁡ ( x , y ) \mathsf{nnf}(\neg\tau)=\exists x\,\forall y\,E(x,y))\,\wedge\,\exists y\,\forall x\,\neg E(x,y) .
+Now consider V = { a , b } V=\{a,b\} and a truth-compatible interpretation
+π \pi that annotates E ⁡ ( a , b ) , E ⁡ ( b , a ) , E ⁡ ( a , a ) , E ⁡ ( b , b ) E(a,b),E(b,a),E(a,a),E(b,b) with p , q , r , s p,q,r,s
+respectively,
+and the corresponding negated facts with p ¯ , q ¯ , r ¯ , s ¯ \bar{p},\bar{q},\bar{r},\bar{s} . Then
+π ⁡ [ [ ¬ τ ] ] = ( p ​ r + q ​ s ) ​ ( q ¯ ​ r ¯ + p ¯ ​ s ¯ ) = 0 , \pi[\![\neg\tau]\!]~=~(pr+qs)(\bar{q}\bar{r}+\bar{p}\bar{s})=0,
+verifying that τ \tau is 𝖬𝗈𝖽 π \mathsf{Mod}_{\pi} -valid.
+From the provenance analysis of (provenance-restricted)
+validity/satisfiability that is enabled by Corollary 21
+we can obtain a provenance analysis of model checking, for each
+model of a given sentence, as follows.
+Definition 23
+Let π \pi be model-compatible and let 𝔄 ∈ 𝖬𝗈𝖽 π \mathfrak{A}\in\mathsf{Mod}_{\pi} .
+The specialization of π \pi with respect to 𝔄 \mathfrak{A}
+is the ℕ ⁡ [ X , X ¯ ] \mathbb{N}[X,\bar{X}] -interpretation
+π | 𝔄 : 𝖫𝗂𝗍 A → ℕ [ X , X ¯ ] \pi|_{{}_{\mathfrak{A}}}:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] defined by
+π | 𝔄 ( L ) = { π ⁡ ( L ) if ​ 𝔄 ⊧ L 0 otherwise . \pi|_{{}_{\mathfrak{A}}}(L)~=~\begin{cases}\pi(L)&\mathrm{if~}\mathfrak{A}\models L\\
+0&\mathrm{otherwise.}\end{cases}
+Note that π | 𝔄 \pi|_{{}_{\mathfrak{A}}} is always model-defining and the model it defines
+is, of course, 𝔄 \mathfrak{A} .
+The model-defining interpretation β \beta in Sect. 3.2 is the specialization
+with respect to the model 𝔊 \mathfrak{G} of the model-compatible interpretation π \pi
+in Sect. 4.1 , β = π | 𝔊 \beta=\pi|_{{}_{\mathfrak{G}}} .
+Other specializations of π \pi are given
+in Sect. 4.1 . The next corollary finally justifies
+Proposition 16 .
+Corollary 24 (to Proposition 18 )
+Let π : 𝖫𝗂𝗍 A → ℕ ⁡ [ X , X ¯ ] \pi:\mathsf{Lit}_{A}\rightarrow\mathbb{N}[X,\bar{X}] be a model-compatible interpretation, let 𝔄 \mathfrak{A} be structure that is compatible with π \pi , and let
+φ \varphi be a first-order sentence such that 𝔄 ⊧ φ \mathfrak{A}\models\varphi (hence, by
+Corollary 21 , π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 ).
+Then, π | 𝔄 [ [ φ ] ] ≠ 0 \pi|_{{}_{\mathfrak{A}}}[\![\varphi]\!]\neq 0 and
+every monomial in π | 𝔄 [ [ φ ] ] \pi|_{{}_{\mathfrak{A}}}[\![\varphi]\!]
+also appears in π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] , with the same coefficient.
+Moreover, π | 𝔄 [ [ φ ] ] \pi|_{{}_{\mathfrak{A}}}[\![\varphi]\!] describes
+all the proof trees that verify 𝔄 ⊧ φ \mathfrak{A}\models\varphi . In particular,
+the sum of all the monomial coefficients in π | 𝔄 [ [ φ ] ] \pi|_{{}_{\mathfrak{A}}}[\![\varphi]\!]
+counts the number of distinct such proof trees
+(as in Corollary 19 , the same count can be obtained from an
+ℕ \mathbb{N} -interpretation).
+While π | 𝔄 [ [ φ ] ] \pi|_{{}_{\mathfrak{A}}}[\![\varphi]\!] analyzes the provenance
+of checking in a specific model, the more general
+π ⁡ [ [ φ ] ] \pi[\![\varphi]\!] allows for a form reverse analysis .
+Indeed, to each monomial m x 1 m 1 ⋯ x k m k m\,x_{1}^{m_{1}}\cdots x_{k}^{m_{k}} in
+π ⁡ [ [ φ ] ] ≠ 0 \pi[\![\varphi]\!]\neq 0 we can associate a model from 𝖬𝗈𝖽 π \mathsf{Mod}_{\pi} that
+makes true the literals that are annotated by x 1 , … , x k x_{1},\ldots,x_{k}
+(and possibly more literals)
+and, as we have seen, every model 𝔄 ∈ 𝖬𝗈𝖽 π \mathfrak{A}\in\mathsf{Mod}_{\pi}
+such that 𝔄 ⊧ φ \mathfrak{A}\models\varphi can be obtained this way.
+Example 25 (Example 22 cont’d)
+Let us also compute the provenance of the tautology τ \tau itself:
+π ⁡ [ [ τ ] ] = ( p ¯ + r ¯ ) ​ ( q ¯ + s ¯ ) + ( q + r ) ​ ( p + s ) . \pi[\![\tau]\!]=(\bar{p}+\bar{r})(\bar{q}+\bar{s})+(q+r)(p+s).
+Here 𝖬𝗈𝖽 π \mathsf{Mod}_{\pi} consists of all possible structures with universe { a , b } \{a,b\}
+and, for any such 𝔄 \mathfrak{A} , the model-refinement π | 𝔄 \pi|_{{}_{\mathfrak{A}}}
+sets to 0 exactly one of the two tokens in a complementary pair.
+No matter how this is done, observe that
+π | 𝔄 [ [ τ ] ] ≠ 0 \pi|_{{}_{\mathfrak{A}}}[\![\tau]\!]\neq 0 .
+4.3 Confidence Maximization
+Figure 4: Maximum confidence model with dominant vertex
+As in Sect. 3.3 we use the Viterbi semiring 𝕍 \mathbb{V}
+from Sect. 1.2 interpreting its values as
+confidence scores.
+Interestingly, we can reverse analyze the provenance polynomials
+and use confidence scores to find a model in which confidence is
+maximized.
+In the context of the example in Sect. 4.1 ,
+suppose that we have confidence 1 / 3 1/3 in all the literals
+that the model-compatible interpretation π \pi maps to
+a (positive or negative) provenance token. This yields
+a 𝕍 \mathbb{V} -interpretation π ′ \pi^{\prime} which, by Propositions 5
+and 14 ,
+factors as π ′ = h ∘ π \pi^{\prime}=h\circ\pi where
+h h is the unique semiring homomorphism
+ℕ ⁡ [ X ∪ X ¯ ] → 𝕍 \mathbb{N}[X\cup\bar{X}]\rightarrow\mathbb{V} that maps all the tokens
+p , … , p ¯ , … p,\ldots,\bar{p},\ldots to 1 / 3 1/3 (this is perfectly plausible, as
+confidence is not probability).
+Now recall from Sect. 4.1
+the sentence ¬ φ \neg\varphi (which asserts that there exists a dominant
+vertex). We have computed π ⁡ [ [ ¬ φ ] ] = p ​ r ​ t ¯ + p ¯ ​ q ​ s ¯ ​ t \pi[\![\neg\varphi]\!]~=~pr\bar{t}+\bar{p}q\bar{s}t . Obviously, π ′ \pi^{\prime} is inconsistent so further applying
+h ⁡ ( p ​ r ​ t ¯ + p ¯ ​ q ​ s ¯ ​ t ) = 1 / 27 + 1 / 81 = 4 / 81 h(pr\bar{t}+\bar{p}q\bar{s}t)=1/27+1/81=4/81 is not
+meaningful. However, we know from Corollary 24 that each
+monomial in π ⁡ [ [ ¬ φ ] ] \pi[\![\neg\varphi]\!] corresponds to some model of ¬ φ \neg\varphi . In
+this case we have exactly two proof tree choices, corresponding to different
+models, and they give different
+confidence to ¬ φ \neg\varphi . To maximize confidence we choose the
+monomial p ​ r ​ t ¯ pr\bar{t} therefore a model in which we have an edge E ⁡ ( a , b ) E(a,b) ,
+an edge E ⁡ ( a , c ) E(a,c) and no edge E ⁡ ( b , a ) E(b,a) . This will ensure the
+dominance of vertex a a with confidence 1 / 27 1/27 , in other words,
+¬ φ \neg\varphi is 1 / 27 1/27 -true in this model.
+This model is shown in Figure 4 (the
+edge E ⁡ ( b , a ) E(b,a) is dashed because it is absent but we still wanted to show
+the confidence 1/3 in this absence).
+The edges E ⁡ ( b , c ) E(b,c) and E ⁡ ( c , b ) E(c,b) are dotted because neither their presence
+nor their absence contradicts the provenance assumptions. We can, in fact,
+continue with a provenance analysis for these two edges if other properties
+of the model are of interest.
+5 Model Update
+Figure 5: The model ℌ \mathfrak{H}
+In this section we indicate a method for updating provenance polynomials
+corresponding to a model-defining interpretation when the model associated with
+the interpretation is updated by inserting or deleting facts.
+For example, recall from Sect. 3.2 the interpretation β \beta ,
+the structure 𝔊 \mathfrak{G} that it defines (Figure 1 ), and the sentence
+φ \varphi asserting “no dominant vertex”. We had computed
+β ⁡ [ [ φ ] ] = ( r ¯ + t ) ⋅ p ⋅ ( 1 + q + s ¯ ) . \beta[\![\varphi]\!]~=~(\bar{r}+t)\cdot p\cdot(1+q+\bar{s}).
+First suppose that we update 𝔊 \mathfrak{G} by deleting E ⁡ ( a , b ) E(a,b) and E ⁡ ( b , c ) E(b,c) .
+Keeping the other provenance targets, this results in the model
+ℌ \mathfrak{H} depicted in Figure 5 .
+What is the
+corresponding update on the dual polynomial β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] ? For the
+provenance polynomials used for positive queries, as in [ 16 ] ,
+this update is performed by setting p = q = 0 p=q=0 . However, this would result
+in the polynomial 0, which is wrong, because ℌ ⊧ φ \mathfrak{H}\models\varphi .
+The right way to perform this update takes advantage of the results
+in Sect. 4.2 . We use the model-compatible interpretation π \pi
+given in Sect. 4.1 (or any other model-compatible interpretation
+that both 𝔊 \mathfrak{G} and ℌ \mathfrak{H} are compatible with and that specializes
+with respect to 𝔊 \mathfrak{G} to β \beta ). Recall from Sect. 4.1 that
+π ⁡ [ [ φ ] ] = ( p ¯ + r ¯ + t ) ⋅ ( p + q ¯ + s + t ¯ ) ⋅ ( 1 + q + r + s ¯ ) , \pi[\![\varphi]\!]~=~(\bar{p}+\bar{r}+t)\cdot(p+\bar{q}+s+\bar{t})\cdot(1+q+r+\bar{s}),
+and therefore
+π | ℌ [ [ φ ] ] = ( p ¯ + r ¯ + t ) ⋅ q ¯ ⋅ ( 1 + s ¯ ) \pi|_{{}_{\mathfrak{H}}}[\![\varphi]\!]~=~(\bar{p}+\bar{r}+t)\cdot\bar{q}\cdot(1+\bar{s})
+is the update we desire. Comparing this with β ⁡ [ [ φ ] ] \beta[\![\varphi]\!]
+shows the need for doing an excursion through π \pi .
+Next, suppose that we update 𝔊 \mathfrak{G} by inserting E ⁡ ( a , c ) E(a,c) and E ⁡ ( c , b ) E(c,b)
+resulting in the model 𝔉 \mathfrak{F} in Figure 3 . Then, the update
+of β ⁡ [ [ φ ] ] \beta[\![\varphi]\!] is
+π | 𝔉 [ [ φ ] ] = t ⋅ ( p + s ) ⋅ ( 1 + q + r ) . \pi|_{{}_{\mathfrak{F}}}[\![\varphi]\!]~=~t\cdot(p+s)\cdot(1+q+r).
+6 Conclusions
+The previous work on provenance in databases focused on positive languages,
+and essentially even on the ∃ , ∧ , ∨ \exists,\wedge,\vee fragment of first-order logic. But it also
+focused on Datalog, hence on least fixed points. The presentation in
+this article should encourage us to extend these studies to the full least fixed-point logic
+LFP. This will be done in subsequent work, in relationship to games. The model checking
+games for LFP are parity games (see e.g. [ 4 ] ), which are much more complicated than the acyclic
+games with only finite plays that suffice for first-order logic. At this point it is not really clear yet how
+a provenance analysis for arbitrary parity games can be done, but it is known that, on finite structures, we can
+restrict LFP to formulae that only make use of positive least fixed-point operators, without losing expressive power.
+On the game-theoretic side this corresponds to restricting parity games to reachability games (that however may
+still admit infinite plays), and for these a combination of ω \omega -continuous semirings of formal power series
+with the idea of dual indeterminates provides a sound mathematical basis for provenance analysis.
+Acknowledgements
+Our collaboration on the topics of this paper started in Fall 2016 as we were
+both participating in the “Logical Structures in Computation”
+program at the Simons Institute for the Theory of Computing in
+Berkeley. We are very grateful to the Institute for support and for the
+perfect collaborative atmosphere that it fosters.
+We would like to acknowledge very useful discussions at the Institute
+with Andreas Blass, Mikołaj Bojańczyk,
+Thomas Colcombet, Anuj Dawar, Kousha Etessami, Diego Figueira,
+Phokion Kolaitis, Ugo Montanari, Jaroslav Nešetřil,
+Daniela Petrişan, and Miguel Romero.
+Val Tannen is very grateful to his collaborators
+in the development over several years of semiring
+provenance for databases: (in chronological ⋅ \,\cdot\, alphabetical
+order) T.J. Green, Grigoris Karvounarakis, Zack Ives, Nate Foster,
+Yael Amsterdamer, Daniel Deutch, Tova Milo, Susan Davidson, Julia
+Stoyanovich, Sudeepa Roy, and Yuval Moskovitch. He was partially supported
+by NSF grants 1302212 and 1547360 and by NIH grant U01EB02095401.
+References
+[1]
+Y. Amsterdamer, S. B. Davidson, D. Deutch, T. Milo, J. Stoyanovich, and
+V. Tannen.
+Putting lipstick on pig: Enabling database-style workflow provenance.
+PVLDB , 5(4):346–357, 2011.
+[2]
+Y. Amsterdamer, D. Deutch, and V. Tannen.
+On the limitations of provenance for queries with difference.
+In 3rd Workshop on the Theory and Practice of Provenance,
+TaPP’11, Heraklion, Crete, Greece, June 20-21, 2011 , 2011.
+See also CoRR abs/1105.2255.
+[3]
+Y. Amsterdamer, D. Deutch, and V. Tannen.
+Provenance for aggregate queries.
+In Proceedings of the 30th ACM SIGMOD-SIGACT-SIGART
+Symposium on Principles of Database Systems, PODS 2011, June 12-16, 2011,
+Athens, Greece , pages 153–164, 2011.
+See also CoRR abs/1101.1110.
+[4]
+K. Apt and E. Grädel, editors.
+Lectures in Game Theory for Computer Scientists .
+Cambridge University Press, 2011.
+[5]
+S. Bistarelli.
+Semirings for Soft Constraint Solving and Programming , volume
+2962 of Lecture Notes in Computer Science .
+Springer, 2004.
+[6]
+S. Bistarelli, U. Montanari, and F. Rossi.
+Semiring-based constraint satisfaction and optimization.
+J. ACM , 44(2):201–236, 1997.
+[7]
+D. Deutch, T. Milo, S. Roy, and V. Tannen.
+Circuits for datalog provenance.
+In Proc. 17th International Conference on Database Theory
+(ICDT), Athens, Greece, March 24-28, 2014. , pages 201–212, 2014.
+[8]
+D. Deutch, Y. Moskovitch, and V. Tannen.
+Provenance-based analysis of data-centric processes.
+VLDB J. , 24(4):583–607, 2015.
+[9]
+S. Eilenberg.
+Automata, Languages, and Machines .
+Academic Press, New York, 1974.
+[10]
+J. N. Foster, T. J. Green, and V. Tannen.
+Annotated XML: queries and provenance.
+In Proceedings of the Twenty-Seventh ACM
+SIGMOD-SIGACT-SIGART Symposium on Principles of Database Systems, PODS
+2008, June 9-11, 2008, Vancouver, BC, Canada , pages 271–280, 2008.
+[11]
+F. Geerts and A. Poggi.
+On database query languages for K-relations.
+J. Applied Logic , 8(2):173–185, 2010.
+[12]
+F. Geerts, T. Unger, G. Karvounarakis, I. Fundulaki, and V. Christophides.
+Algebraic structures for capturing the provenance of SPARQL
+queries.
+J. ACM , 63(1):7:1–7:63, 2016.
+[13]
+T. J. Green.
+Containment of conjunctive queries on annotated relations.
+Theory Comput. Syst. , 49(2):429–459, 2011.
+[14]
+T. J. Green, Z. G. Ives, and V. Tannen.
+Reconcilable differences.
+Theory Comput. Syst. , 49(2):460–488, 2011.
+[15]
+T. J. Green, G. Karvounarakis, Z. G. Ives, and V. Tannen.
+Update exchange with mappings and provenance.
+In Proceedings of the 33rd International Conference on Very
+Large Data Bases, University of Vienna, Austria, September 23-27, 2007 ,
+pages 675–686, 2007.
+[16]
+T. J. Green, G. Karvounarakis, and V. Tannen.
+Provenance semirings.
+In Proceedings of the Twenty-Sixth ACM SIGACT-SIGMOD-SIGART
+Symposium on Principles of Database Systems, June 11-13, 2007, Beijing,
+China , pages 31–40, 2007.
+[17]
+Z. G. Ives, T. J. Green, G. Karvounarakis, N. E. Taylor, V. Tannen, P. P.
+Talukdar, M. Jacob, and F. C. N. Pereira.
+The ORCHESTRA collaborative data sharing system.
+SIGMOD Record , 37(3):26–32, 2008.
+[18]
+G. Karvounarakis, Z. G. Ives, and V. Tannen.
+Querying data provenance.
+In Proceedings of the ACM SIGMOD International Conference on
+Management of Data, SIGMOD 2010, Indianapolis, Indiana, USA, June 6-10,
+2010 , pages 951–962, 2010.
+[19]
+P. G. Kolaitis and M. Y. Vardi.
+Conjunctive-query containment and constraint satisfaction.
+J. Comput. Syst. Sci. , 61(2):302–332, 2000.
+[20]
+A. Meliou, W. Gatterbauer, and D. Suciu.
+Reverse data management.
+PVLDB , 4(12):1490–1493, 2011.
+[21]
+A. Meliou and D. Suciu.
+Tiresias: the database oracle for how-to queries.
+In Proceedings of the ACM SIGMOD International Conference on
+Management of Data, SIGMOD 2012, Scottsdale, AZ, USA, May 20-24, 2012 ,
+pages 337–348, 2012.
+[22]
+L. Pachter and B. Sturmfels.
+Algebraic Statistics for Computational Biology .
+Cambridge University Press, 2005.
+[23]
+V. Tannen.
+Provenance propagation in complex queries.
+In In Search of Elegance in the Theory and Practice of
+Computation - Essays Dedicated to Peter Buneman , pages 483–493, 2013.
+[24]
+V. Tannen.
+Provenance analysis for FOL model checking.
+SIGLOG News , 4(1):24–36, 2017.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

@@ -1,0 +1,17 @@
+[
+  "begin",
+  ["schema", "Id", { "id": "value/integer?" }],
+  ["schema", "Tagged", { "tag": "value/string?" }],
+  {
+    "a record with an id and a tag fits allOf of the two named exact schemas": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/allOf", "Id", "Tagged"]
+    ],
+    "two literal record schemas joined with object/set, in plain code": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["object/set", { "id": "value/integer?" }, "tag", "value/string?"]
+    ]
+  }
+]

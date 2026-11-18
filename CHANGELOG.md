@@ -13,6 +13,18 @@
 
 - An expression is compiled to a JavaScript function of the scope it runs in (`compile` added)
 - Each schema a library function checks its arguments with is compiled, once, into a guard (`guardOf` added)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming` added)
+- The run on what to improve in Lion next (2026-11-17) is the second run in the shared research model: its sources, its 275 quoted claims, its directions as candidates, and the two programs that model invented unknowns and annotations are in `research/` beside the separation-logic run, under the names that run already used, and its ranking comes out the same there. (`lion-improvements-research` added)
+- A frozen eval of what a record of observations is worth when re-observing is expensive and nothing else says what changed. It runs in two sessions, and between them the project changes without the agent being told. (`reasoning-eval-rechecks-what-changed` added)
+- A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`relation-merge-option` added)
+- What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. (`research-probes-runner` added)
+- `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`researching-guideline` added)
+- `schema/open` takes one or two arguments, and a list of schemas as well as a record. (`schema-open-rest` added)
+- The separation-logic run is the first run in `research/`. (`separation-logic-research` added)
+- `--bare` runs the case with no skill at all. (`skill-eval-bare` added)
+- `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, or another skill to compare it with; the agent is told the name its `SKILL.md` gives. (`skill-eval-from-other-skill` added)
+- A case may run its agent several times in the same folder, as work that a later session picks up. Its prompts are then a `sessions/` folder of files named by number, `1.md`, `2.md`, run in that order, and each later prompt gets the message the session before it ended with wherever it says `{{earlier}}`. (`skill-eval-sessions` added)
+- A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts. (`skill-eval-setup` added)
 
 ### Removed
 
@@ -25,10 +37,22 @@
 - A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (`deep-call-not-in-tail-position` is `works`; `tail-call-loop-memory` is `constant`, was `grows-with-calls`)
 - A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time (`equality-rule-group-after-fact-change` is `followed`, was `derived-again`)
 - A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time: the values the changed rows hold, and every value a row joins to them, are derived again on their own, and the rest keeps its rows. Where a key makes twins share an invented mother, adding twenty twins one at a time and asking each one's mother takes 17 milliseconds with 10,000 people, where it took 8.4 seconds, and 0.1 seconds with 100,000, where it did not finish in a minute. It applies when every relation goal of the rules holds only variables and values, the goals of each rule share variables, and nothing else in their bodies asks a question; such a group whose rules join rows some other way is still derived again and compared. (`keyed-invention-after-fact-change` is `followed`, was `derived-again`)
+- It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (`assuming-in-rule` is `asked-per-answer`)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming-leaves-database` is `unchanged`)
+- `assuming` runs in the compiled evaluator as the other forms that ask the database do: as an Effect, in the scope it was written in, with its changes and its expression evaluated by the evaluator that runs it. The generated programs that check the compiled evaluator against the interpreter it replaced, and plain code against code that waits for a logic variable, now ask questions with `assuming` too, adding a link and taking one away before a `find`. (`compiled-assuming` is `same-as-interpreter`)
+- A fact of such a relation never replaces another, and `retract` takes it back. (`merge-fact-retract` is `candidate-removed`)
+- Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. (`merge-joins-facts-and-rules` is `join`)
+- It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. (`reasoning-skill-when-it-pays` is `expensive-observations-undated-changes`)
+- `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. (`research-extends-existing-model` is `true`)
+- A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern. (`schema-open-composes-exact-schemas` is `fits`; `schema-open-rest-binds` is `the-other-keys`)
+- What it leaves over is the rest: the record of the other keys, or the list of the items after. (`schema-open-list-rest` is `the-other-items`)
 
 ### Fixed
 
 - The test helper `attempt` reports a function in a program's value as Lion writes it, wherever it stands: `"even"` for the relation `even`, `["lambda", ["n"], "n"]` for a lambda. A program that ended in a declaration, such as `["begin", ["relation", "even", ["n"]]]`, made it throw `"undefined" is not valid JSON`, which failed the `why` property about rules that ask no question once in about 300 runs, and a function inside a list or a record was reported as `null` or left out. A property checks that two programs are reported the same only when their values are the same. (`test-report-function-value` is `written-as-lion`, was `error`)
+- Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. (`keyed-aggregated-rows-differ` is `error`, was `both-held`)
+- The REPL's program graph shows an `assuming` form as a logic node that asks as if the database had changed, with the number of its changes. Without it the REPL did not type-check once `assuming` was a special form. (`repl-graph-assuming` is `logic-node`, was `type-error`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder` is `outside-repository`, was `inside-repository`)
 
 ### Decided
 
@@ -39,12 +63,23 @@
 - A scope holds its bindings in a `Map` that compiled code reads and writes right away. (`scope-bindings-store`: `map` over `ref`)
 - A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time (`rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`)
 - Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. (`library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`)
+- A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
+- Every research run adds to one Lion model in `research/`. (`research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`)
+- On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder`: `outside-repository` over `inside-repository`)
 
 ### Rules
 
 - a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first (rule `least-member-survives-a-merge`)
 - A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (rule `tail-calls-keep-nothing`)
 - Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. (rule `library-argument-errors-are-the-decoders`)
+- Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
+- It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
+- A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
+- A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. (rule `research-runs-extend-shared-model`)
+- A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
@@ -1120,7 +1155,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. (`aggregate-match-found-by-several-or-alternatives` is `counts-once`; `aggregate-separate-rules-same-relation` is `add-up`)
 - Sum and mean of numbers (`mean` of nothing is `null`) (`aggregate-mean-empty` is `null`)
 - expects all numbers or all strings, but found (`aggregate-min-mixed-types` is `error`)
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
+- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
 - Logic variables must be direct arguments, not nested inside arrays or records (`logic-variable-nested-in-array` is `error`; `logic-variable-nested-in-record` is `error`)
 - For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did. (`why-aggregate-min-max-fact` is `producing-match`)
 - `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (`aggregate-shortest-tie` is `smaller-value`)

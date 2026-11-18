@@ -106,6 +106,7 @@ const NODE_COLOR_BY_KEY = {
   retract: "var(--node-logic)",
   query: "var(--node-logic)",
   find: "var(--node-logic)",
+  assuming: "var(--node-logic)",
   exists: "var(--node-logic)",
   some: "var(--node-logic)",
   why: "var(--node-logic)",
@@ -372,6 +373,12 @@ const describeSpecialForm = (
         mark: form,
         description: "collect matches",
         detail: "goal → list",
+      };
+    case "assuming":
+      return {
+        mark: form,
+        description: "ask as if changed",
+        detail: `${pluralize(roleCount("change"), "change")} → value`,
       };
     case "exists":
       return {

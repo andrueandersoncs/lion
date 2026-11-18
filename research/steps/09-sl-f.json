@@ -1,0 +1,182 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "f-beginner-iris-2021"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2105.12077"
+   ],
+   [
+    "quote",
+    "A beginner's guide to Iris, Coq and separation logic (bachelor's thesis, arXiv v2)"
+   ],
+   [
+    "quote",
+    "Dietrich (Indiana University Bloomington)"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    20250123
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "f-krebbers-2017"
+   ],
+   [
+    "quote",
+    "https://doi.org/10.1007/978-3-662-54434-1_26"
+   ],
+   [
+    "quote",
+    "The Essence of Higher-Order Concurrent Separation Logic (ESOP 2017)"
+   ],
+   [
+    "quote",
+    "Iris project"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-f1"
+   ],
+   [
+    "quote",
+    "f-beginner-iris-2021"
+   ],
+   [
+    "quote",
+    "Figure 6. The definition of a (unital) resource algebra (RA)."
+   ],
+   [
+    "quote",
+    {
+     "defines": "unital resource algebra"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-f1"
+   ],
+   [
+    "quote",
+    "Section 5, Figure 6"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-f2"
+   ],
+   [
+    "quote",
+    "f-beginner-iris-2021"
+   ],
+   [
+    "quote",
+    "∀a. ϵ · a = a RA − ID V(ϵ) RA − V ALID − ID"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a unit value for combining",
+     "by": "unital resource algebra",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-f2"
+   ],
+   [
+    "quote",
+    "Section 5, Figure 6"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-f3"
+   ],
+   [
+    "quote",
+    "f-beginner-iris-2021"
+   ],
+   [
+    "quote",
+    "All the logic demands is that the set of resources forms a unital resource algebra (RA)"
+   ],
+   [
+    "quote",
+    {
+     "defines": "unital resource algebra"
+    }
+   ]
+  ],
+  [
+   "attributed",
+   [
+    "quote",
+    "sl-f3"
+   ],
+   [
+    "quote",
+    "f-krebbers-2017"
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-f3"
+   ],
+   [
+    "quote",
+    "Section 5"
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "f-beginner-iris-2021"
+   ],
+   [
+    "quote",
+    "sl-terms"
+   ],
+   19
+  ]
+ ],
+ "recorded"
+]

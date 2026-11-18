@@ -41,3 +41,9 @@ history/research/model.json
 history/research/steps/*.json
 !history/research/steps/*.src.json
 history/research/notes/20-runs.json
+# Built from research/steps by the replay, and from each run's page plan.
+research/model.json
+research/runs/*/explorer.html
+research/runs/*/page-check.json
+# Written by research/probes/chase-model/test.ts and test2.ts each time they run.
+research/probes/chase-model/*examples.json

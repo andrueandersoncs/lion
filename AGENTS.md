@@ -41,6 +41,7 @@ Every change aims for these:
 - **[Testing](guidelines/testing.md)**: read it before you write or change a test. New behavior gets property-based tests with `it.prop` or `it.effect.prop`, not tests with fixed example inputs, and every bug gets the property it breaks.
 - **[Code style](guidelines/code-style.md)**: read it before you write TypeScript. It gives the compiler flags, the formatting, the order of imports, the naming, and where files go.
 - **[Effect and React patterns](guidelines/patterns.md)**: read it before you write Effect or React code, compile a special form, handle an error, or add a UI component.
+- **[Researching](guidelines/researching.md)**: read it before any research run. Every run adds to the one research model in `research/`. It starts from what earlier runs established, reuses their vocabulary, and proves its conclusions with Lion programs kept in `research/probes/`. It is committed with its sources.
 
 Keep this file and `CLAUDE.md` under 200 lines each. What a practice needs beyond its main rule goes in its guideline, and a new practice gets a guideline and a line here.
 

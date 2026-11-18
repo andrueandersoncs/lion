@@ -5,6 +5,7 @@
  */
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
+import { aggregateCall } from "@/logic/aggregates";
 import {
   Atom,
   callsOf,
@@ -58,6 +59,12 @@ export interface CompiledRule {
    * unknown the rules there invented take the value it equals.
    */
   readonly equates?: true;
+  /**
+   * Set for the rule that reads a relation's facts as candidates of its
+   * merge, which the relation's declaration makes. A snapshot writes the
+   * declaration, and not this rule.
+   */
+  readonly given?: true;
   readonly head: Atom;
   /**
    * Set for a rule whose head says `exists`. Such a rule adds every
@@ -668,6 +675,9 @@ const checkValues = (
 };
 
 const planQuestion = (question: LogicValue, outer: readonly string[]) => {
+  if (isForm(question, "assuming")) {
+    return planAssuming(question, outer);
+  }
   if (!isForm(question, "find")) {
     return plan(question, outer);
   }
@@ -683,6 +693,31 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
     );
   }
   return planned;
+};
+
+/**
+ * An `assuming` is asked of another database, so here it has nothing to
+ * match: what its changes state must be known when it is asked, and the
+ * questions of its expression must be ones that can be asked there, with
+ * the variables the rule or query around it binds.
+ */
+const planAssuming = (
+  question: LogicValue,
+  outer: readonly string[]
+): readonly Plan[] => {
+  const bound = new Set(outer);
+  const changes = (question as LogicForm).parts.slice(0, -1);
+  checkValues(
+    question,
+    changes.flatMap((change) =>
+      (change as LogicForm).parts.flatMap((call) => (call as Atom).args)
+    ),
+    bound,
+    (names) =>
+      `Unsafe assuming ${show(question)}: what its changes state must be known, but ${names} is not bound by the rule or query around it.`
+  );
+  checkQuestions([(question as LogicForm).parts.at(-1)], bound);
+  return [{ body: [], bound }];
 };
 
 const PLANS = new WeakMap<LogicValue, Map<string, readonly Plan[]>>();
@@ -718,6 +753,29 @@ const aggregatesOf = (head: Atom) =>
   head.args.flatMap((arg, position) =>
     arg instanceof DeferredCall && arg.aggregate !== undefined ? [position] : []
   );
+
+/**
+ * A head of a relation that merges what a key gets: each column it merges
+ * joins its values with its aggregate, as if the head said so. A head that
+ * aggregates there already keeps what it says, and must say the same.
+ */
+const merging = (head: Atom): Atom => {
+  const { merge } = head.relation;
+  if (merge === undefined) {
+    return head;
+  }
+  const kinds = new Map(merge);
+  return new Atom(
+    head.relation,
+    head.args.map((arg, position) => {
+      const kind = kinds.get(position);
+      return kind === undefined ||
+        (arg instanceof DeferredCall && arg.aggregate !== undefined)
+        ? arg
+        : aggregateCall(kind, arg);
+    })
+  );
+};
 
 /**
  * What a rule's head says: its relation calls, and the variables `exists`
@@ -862,7 +920,7 @@ export const compileRule = (head: unknown, body: readonly unknown[]) =>
     if (invented.length === 0) {
       // Each relation call and each "=" of the head is a rule of its own.
       return planned.flatMap(({ body: literals }) => [
-        ...heads.map(
+        ...heads.map(merging).map(
           (call): CompiledRule => ({
             ...rule,
             aggregates: aggregatesOf(call),

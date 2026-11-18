@@ -1,0 +1,508 @@
+=== Full text (author PDF, cs.ox.ac.uk/people/boris.motik/pubs/mnph15owl-sameAs-rewriting.pdf), line breaks joined ===
+Handling owl:sameAs via Rewriting Boris Motik, Yavor Nenov, Robert Piro and Ian Horrocks Department of Computer Science, Oxford University Oxford, United Kingdom forename.lastname@cs.ox.ac.uk Abstract Rewriting is widely used to optimise owl:sameAs reason- ing in materialisation based OWL 2 RL systems.
+We inves- tigate issues related to both the correctness and efficiency of rewriting, and present an algorithm that guarantees correct- ness, improves efficiency, and can be effectively parallelised.
+Our evaluation shows that our approach can reduce reasoning times on practical data sets by orders of magnitude.
+1 Introduction RDF (Manola and Miller 2004) and SPARQL (Harris and Seaborne 2013) are increasingly being used to store and ac- cess semistructured data.
+An OWL ontology (Motik, Patel- Schneider, and Parsia 2012) is often used to enhance query answers with tuples implied by the ontology and data, and the OWL 2 RL profile was specifically designed to allow for tractable rule-based query answering (Motik et al.
+2012).
+In practice, the latter often involves using a forward chain- ing procedure in which the materialisation (i.e., all conse- quences) of the ontology and data is computed in a prepro- cessing step, allowing queries to be evaluated directly over the materialised triples.
+This technique is used by systems such as Owlgres (Stocker and Smith 2008), WebPIE (Urbani et al.
+2012), Oracle’s RDF store (Wu et al.
+2008), OWLIM SE (Bishop et al.
+2011), and RDFox (Motik et al.
+2014a).
+One disadvantage of materialisation is that the prepro- cessing step can be costly w.r.t.
+both the computation and the storage of entailed triples.
+This problem is exacerbated when materialisation requires equality reasoning—that is, when the owl:sameAs property is used to state equalities between resources.
+OWL 2 RL/RDF (Motik et al.
+2012, Section 4.3) axiomatises the semantics of owl:sameAs using rules such as ⟨s′,p,o⟩←⟨s,p,o⟩∧⟨s,owl:sameAs,s′⟩that, for each pair of equal resources r and r′, ‘copy’ all triples between r and r′.
+It is well known that such ‘copying’ can severely impact both the materialisation size and time (Kolovski, Wu, and Eadon 2010); what is less obvious is that the increase in computation time due to duplicate derivations may be even more serious (see Section 3).
+In order to address this problem, materialisation based systems often use some form of rewriting—a well-known Copyright c⃝2015, Association for the Advancement of Artificial Intelligence (www.aaai.org).
+All rights reserved.
+technique for theorem proving with equality (Baader and Nipkow 1998; Nieuwenhuis and Rubio 2001).
+In the OWL 2 RL setting, rewriting consists of choosing one representative from each set of equal resources, and replacing all remain- ing resources in the set with the representative.
+Variants of this idea have been implemented in many of the above men- tioned systems, and they have been shown to be very effec- tive on practical data sets (Kolovski, Wu, and Eadon 2010).
+Although the idea of rewriting is well known, ensuring its correctness (i.e., ensuring that the answer to an arbitrary SPARQL query is the same with and without rewriting) is not straightforward.
+In this paper we identify two problems that, we believe, have been commonly overlooked in exist- ing implementations.
+First, whenever a resource ris rewrit- ten in the data, rmust also be rewritten in the rules; hence, the rule set cannot be assumed to be fixed during the course of materialisation, which is particularly problematic if com- putation is parallelised.
+Second, it is a common assumption that SPARQL queries can be efficiently evaluated over the materialisation by rewriting them, evaluating them over the rewritten triples, and then ‘expanding’ the answer set (i.e., substituting all representative resources with equal ones in all possible ways).
+However, such an approach can be incor- rect when SPARQL queries are evaluated under bag seman- tics, or when they contain builtin functions.
+We address both issues in this paper and make the fol- lowing contributions.
+In Section 3 we discuss the problems related to owl:sameAs in more detail and show how they can lead to both increased computation costs and incorrect query answers.
+In Section 4 we present an algorithm that gener- alises OWL 2 RL materialisation, can also handle SWRL rules (Horrocks et al.
+2004), rewrites rules as well as data triples, and is lock-free (Herlihy and Shavit 2008).
+The latter means that at least one thread always makes progress, en- suring that the system is less susceptible to adverse thread scheduling decisions and thus scales better to many threads.
+In Section 5 we show how to modify SPARQL query pro- cessing so as to guarantee correctness.
+Finally, in Section 6 we present a preliminary evaluation of an implementation of our algorithms in the open-source RDFox system.
+We show that rewriting can reduce the number of materialised triples by a factor of up to 7.8, and can reduce materialisa- tion time by a factor of up to 31.1 on a single thread, with the time saving being largely due to the elimination of dupli- cate derivations.
+Our approach also parallelises computation very well in practice,1 providing a speedup of up to 6.7 with eight physical cores, and up to 9.6 with 16 virtual cores.2 Due to space constraints, in this paper we have only been able to present a high level description of our algorithms, but detailed formalisations and correctness proofs are provided in the appendix.
+The implemented system and all test data sets are available online.3 2 Preliminaries A term is a resource (i.e., a constant) or a variable.
+Un- less otherwise stated, s, p, o, and t are terms, and x, y, and z are variables.
+An atom is a triple of terms ⟨s,p,o⟩ called the subject, predicate, and object, respectively.
+A fact (or triple) is a variable-free atom.
+A rule r is an im- plication of the form (1), where h(r)· ·= ⟨s,p,o⟩ is the head, b(r)· ·= ⟨s1,p1,o1⟩∧...∧⟨sn,pn,on⟩is the body, and each variable in h(r) also occurs in b(r).
+⟨s,p,o⟩←⟨s1,p1,o1⟩∧...∧⟨sn,pn,on⟩ (1) A program P is a finite set of rules, and P∞(E) is the ma- terialisation of P on a finite set of explicit (i.e., extensional or EDB) facts E(Abiteboul, Hull, and Vianu 1995).
+Two styles of OWL 2 RL reasoning are known, corre- sponding to the RDF- and DL-style semantics of OWL.
+In the RDF style, an ontology is represented using triples stored with the data in a single RDF graph, and a fixed (i.e., inde- pendent from the ontology) set of rules is used to axiomatise the RDF-style semantics (Motik et al.
+2012, Section 4.3).
+While conceptually simple, this approach is inefficient be- cause the fixed program contains complex joins.
+In the DL style, the rules are derived from and depend on the ontology (Grosof et al.
+2003), but they are shorter and contain fewer joins.
+This approach is complete only if the ontology and the data satisfy conditions from Section 3 of (Motik, Patel- Schneider, and Parsia 2012)—an assumption commonly met in practice.
+Rewriting can be used with either style of rea- soning, but we will use the DL style in our examples and evaluation because the rules are more readable and their evaluation tends to be more efficient.
+3 Problems with owl:sameAs In this section we discuss, by means of an example, the prob- lems that the owl:sameAs property poses to materialisation- based reasoners.
+The semantics of owl:sameAs can be cap- tured explicitly using program P≈, consisting of rules (≈1)– (≈4), which axiomatises owl:sameAs as a congruence rela- tion (i.e., an equivalence relation satisfying the replacement property).
+We call each set of resources all of which are equal to each other an owl:sameAs-clique.
+⟨xi,owl:sameAs,xi⟩←⟨x1,x2,x3⟩, for 1 ≤i≤3 (≈1) 1Datalog reasoning is PTIME complete in the size of the data, and it is thus believed that sequential computation will be required in some cases.
+2In hyperthreading, each virtual core has its own architectural state, but several virtual cores share the execution resources of one physical core.
+3https://krr-nas.cs.ox.ac.uk/2015/AAAI/RDFox/Equality/ ⟨x′ 1,x2,x3⟩←⟨x1,x2,x3⟩∧⟨x1,owl:sameAs,x′ 1⟩ (≈2) ⟨x1,x′ 2,x3⟩←⟨x1,x2,x3⟩∧⟨x2,owl:sameAs,x′ 2⟩ (≈3) ⟨x1,x2,x′ 3⟩←⟨x1,x2,x3⟩∧⟨x3,owl:sameAs,x′ 3⟩ (≈4) OWL 2 RL/RDF (Motik et al.
+2012, Section 4.3) also makes owl:sameAs symmetric and transitive, but those rules are re- dundant as they are instances of (≈2) and (≈4).
+Rules (≈1)–(≈4) can lead to the derivation of many equiv- alent triples, as we demonstrate using an example program Pex containing rules (R)–(F3); these correspond directly to SWRL rules, but one could equally use slightly more com- plex rules obtained from OWL 2 RL axioms.
+⟨x,owl:sameAs,:USA⟩←⟨:Obama,:presidentOf,x⟩ (R) ⟨x,owl:sameAs,:Obama⟩←⟨x,:presidentOf,:USA⟩ (S) ⟨:USPresident,:presidentOf,:US⟩ (F1) ⟨:Obama,:presidentOf,:America⟩ (F2) ⟨:Obama,:presidentOf,:US⟩ (F3) On Pex ∪P≈, rule (R) derives that :USA is equal to :US and :America, and rules (≈1)–(≈4) then derive an owl:sameAs triple for each of the nine pairs involving :USA, :America, and :US.
+The total number of derivations, however, is much higher: we derive each triple once from rule (≈1), three times from rule (≈2), once from rule (≈3),4 and three times from rule (≈4); thus, we get 66 derivations in total for the nine owl:sameAs triples.
+Analogously, rule (S) derives that :Obama and :USPresident are equal, and rules (≈1)–(≈4) derive the two owl:sameAs triples 22 times in total.
+These owl:sameAs triples lead to further inferences; for example, from (F1), rules (≈2) and (≈4) infer 2 ×3 triples with sub- ject :Obama or :USPresident, and object :USA, :America, or :US.
+Each of these six triples is inferred three times from rule (≈2), once from rule (≈3), and three times from rule (≈4), so we get 36 derivations in total.
+Thus, for each owl:sameAs-clique of size n, rules (≈1)– (≈4) derive n2 owl:sameAs triples via 2n3 + n2 + n derivations.
+Moreover, each triple ⟨s,p,o⟩with terms in owl:sameAs-cliques of sizes ns, np, and no, respectively, is ‘expanded’ to ns×np×no triples, each of which is derived ns + np + no times.
+This duplication of facts and deriva- tions is a major source of inefficiency.
+To reduce these numbers, we can choose a representa- tive resource for each owl:sameAs-clique and then rewrite all triples—that is, replace all resources with their repre- sentatives (Stocker and Smith 2008; Urbani et al.
+2012; Kolovski, Wu, and Eadon 2010; Bishop et al.
+2011).
+For ex- ample, after applying rule (R), we can choose :USA as the representative of :USA, :US and :America, and, after apply- ing rule (S), we can choose :Obama as the representative of :Obama and :USPresident.
+The materialisation of Pex then contains only the triple ⟨:Obama,:presidentOf,:US⟩ and, as we show in Section 4, the number of derivations of owl:sameAs triples drops from over 60 to just 6.
+Since owl:sameAs triples can be derived continuously during materialisation, rewriting cannot be applied as pre- 4Rule (≈1) derives ⟨owl:sameAs, owl:sameAs, owl:sameAs⟩, so we can map variable x2 to owl:sameAs in rule (≈3).
+processing; moreover, to ensure that rewriting does not af- fect query answers, the resulting materialisation must be equivalent, modulo rewriting, to [Pex ∪P≈]∞(E).
+Thus, we may need to continuously rewrite both triples and rules: rewriting only triples can be insufficient.
+For example, if we choose :US as the representative of :USA, :US and :America, then rule (S) will not be applicable, and we will fail to de- rive that :USPresident is equal to :Obama.
+To the best of our knowledge, no existing system implements rule rewrit- ing; certainly OWLIM SE and Oracle’s RDF store do not,5 and so rewriting in these systems is not guaranteed to pre- serve query answers.
+Note that the problem is less acute when using a fixed rule set operating on (the triple encoding of) the ontology and data, but it can still arise if owl:sameAs triples involve rdf: or owl: resources (with a fixed rule set, these are the only resources occurring in rule bodies).
+4 Parallel Reasoning With Rewriting The algorithm by Motik et al.
+(2014a) used in the RDFox system implements a fact-at-a-time version of the semina¨ ıve algorithm (Abiteboul, Hull, and Vianu 1995): it initialises the set of facts T with the input data E, and then com- putes P∞(E) by repeatedly applying rules from P to T using N threads until no new facts are derived.
+The objec- tive of our approach is to adapt the RDFox algorithm to use rewriting and thus reduce both the size of T and the time required to compute it, while ensuring that an arbitrary SPARQL query can be answered over the resulting facts as if the query were evaluated directly over [P ∪P≈]∞(E).
+To achieve this, we use a mapping ρ that maps resources to their representatives.
+For αa fact, a rule, or a set thereof, ρ(α) is obtained by replacing each resource rin αwith ρ(r); moreover, Tρ· ·= {⟨s,p,o⟩|⟨ρ(s),ρ(p),ρ(o)⟩∈T}is the expansion of T with ρ.
+To promote concurrency, we update ρ in a lock-free way, using compare-and-set primitives to pre- vent thread interference.
+Moreover, we do not lock ρwhen computing ρ(α); instead, we only require ρ(α) to be at least as current as αjust before the computation.
+For example, if ρis the identity as we start computing ρ(⟨a,b,a⟩), and an- other thread makes a′the representative of a, then ⟨a,b,a⟩, ⟨a′,b,a⟩, ⟨a,b,a′⟩, and ⟨a′,b,a′⟩are all valid results.
+We also maintain queues Rand C of rewritten rules and resources, respectively, for which also use lock-free imple- mentations as described by Herlihy and Shavit (2008).
+To extend the original RDFox algorithm with rewriting, we allow each thread to perform three different actions.
+First, a thread can extract a rule rfrom the queue Rof rewrit- ten rules and apply rto the set of all facts T, thus ensuring that changes to resources in rules are taken into account.
+Second, a thread can rewrite outdated facts—that is, facts containing a resource that is not a representative of itself.
+To avoid iteration over all facts in T, the thread extracts a resource c from the queue C of unprocessed outdated re- sources, and uses indexes by Motik et al.
+(2014a) to identify each fact F ∈T containing c.
+The thread then removes each such F from T, and it adds ρ(F) to T.
+5Personal communication.
+Third, a thread can extract and process an unprocessed fact F in T.
+The thread first checks whether F is outdated (i.e., whether F ̸= ρ(F)); if so, the thread removes F from T and adds ρ(F) to T.
+If F is not outdated but is of the form ⟨a,owl:sameAs,b⟩with a̸= b, the thread chooses a repre- sentative of the two resources, updates ρ, and adds the other resource to queue C.
+Otherwise, the thread processes F by partially instantiating the rules in P containing a body atom that matches F, and applying such rules to T as described by Motik et al.
+(2014a).
+Rewriting rules is nontrivial: RDFox uses an index to ef- ficiently identify rules matching a fact, and the index may need updating when ρchanges.
+Updating the index in paral- lel would be very complex, so we perform this operation serially: when all threads are waiting (i.e., when all facts have been processed), a single thread updates P to ρ(P), reindexes it, and inserts the updated rules (if any) into the queue R of rules for reevaluation.
+This is obviously a par- allelisation bottleneck, but our experiments have shown that the time used for this process is not significant when pro- grams are of moderate size.
+Parallel modification of T can also be problematic, as the following example demonstrates: (1) thread A extracts a cur- rent fact F; (2) thread B updates ρand deletes an outdated fact F′; and (3) thread A derives F′ from F and writes F′ into T, thus undoing the work of thread B.
+This could be solved via locking, but at the expense of parallelisation.
+Thus, instead of physically removing facts from T, we just mark them as outdated; then, when matching the body atoms of partially instantiated rules, we simply skip all marked facts.
+All this can be done lock-free, and we can remove all marked facts in a postprocessing step.
+Our rewriting algorithm is presented in full in the ap- pendix.
+Theorem 1 states several important properties of our algorithm that, taken together, ensure the algorithm’s correctness; a detailed formalisation of the algorithm and a proof of the theorem are given in the appendix.
+Theorem 1.
+The algorithm terminates for each finite set of facts E and program P.
+Let ρbe the final mapping and let T be the final set of unmarked facts.
+1.
+⟨a,owl:sameAs,b⟩∈T implies a= b—that is, ρcaptures all equalities.
+2.
+F ∈T implies ρ(F) = F—that is, T is minimal.
+3.
+Tρ = [P ∪P≈]∞(E)—that is, T and ρ together repre- sent [P ∪P≈]∞(E).
+Example Table 1 shows six steps of an application of our algorithm to the example program Pex from Section 3 on one thread.
+Some resource names have been abbreviated for conve- nience, and ≈abbreviates owl:sameAs.
+The ◃symbol iden- tifies the last fact extracted from T.
+Facts are numbered for easier referencing, and their (re)derivation is indicated on the right: R(n) or S(n) means that the fact was obtained from fact nand rule Ror S; moreover, we rewrite facts immedi- ately after merging resources, so W(n) identifies a rewritten version of fact n, and M(n) means that a fact was marked outdated because fact ncaused ρto change.
+We start by extracting facts from T and, in steps 1 and 2, we apply rule Rto facts 2 and 3 to derive facts 4 and 5, re- spectively.
+In step 3, we extract fact 4, merge :America into :USA, mark facts 2 and 4 as outdated, and add their rewrit- ing, facts 6 and 7, to T.
+In step 4 we merge :USA into :US, after which there are no further facts to process.
+Mapping ρ, however, has changed, so we update P to contain rules (R′) and (S′), and add them to the queue R.
+⟨x,owl:sameAs,:US⟩←⟨:Obama,:presidentOf,x⟩ (R′) ⟨x,owl:sameAs,:Obama⟩←⟨x,:presidentOf,:US⟩ (S′) In step 5 we evaluate the rules in queue R, which introduces facts 9 and 10.
+Finally, in step 6, we rewrite :USPresident into :Obama and mark facts 1 and 9 as outdated.
+At this point the algorithm terminates, making only six deriva- tions in total, instead of more than 60 derivations when owl:sameAs is axiomatised explicitly (see Section 3).
+5 Rewriting and SPARQL Query Answering Given a set of unmarked facts T and mapping ρ, we can an- swer a SPARQL query Q correctly by evaluating Q in the expansion Tρ, but that is inefficient because it ‘duplicates’ join evaluation for equal triples.
+An attempt at an improve- ment would be to evaluate ρ(Q) in T and expand the result— that is, for each answer µobtained by evaluating ρ(Q) in T, output each answer ν such that ρ(ν(x)) = µ(x) for each variable xin the domain of µ.
+However, using the example program Pexfrom Section 3, we show that such an approach is not complete.
+Note that, after we finish the materialisation of Pex, we have ρ(x) = :US for each x∈{:USA,:AM,:US} and ρ(x) = :Obama for each x∈{:USPresident,:Obama}.
+The first problem is due to the bag semantics of SPARQL, where repeated answers matter.
+Let Q1 be as follows: SELECT ?xWHERE {?x:presidentOf ?y} On Tρ, query Q1 produces answers µ1 = {?x→:Obama} and µ2 = {?x→:USPresident}, each of which is repeated three times—once for each match of ?y to :USA, :US, or :America.
+In contrast, on T, query ρ(Q1) yields only one oc- currence of µ1, and its expansion produces one occurrence of µ2; we thus obtain all answers, but not with the correct cardinalities.
+This problem arises because variable ?yis pro- jected out, so the final expansion step does not take into ac- count the number of times each binding of ?ycontributes to the result.
+To solve this problem, we must modify the pro- jection operator to output each projected answer as many times as there are resources in the projected owl:sameAs- clique(s).
+Thus, we can answer Q1 as follows: we match the triple pattern of ρ(Q1) to T as usual, obtaining one answer ν1 = {?x→:Obama,?y→:US}; then, we project ?yfrom ν1 to obtain three occurrences of µ1 since the owl:sameAs- clique of :US is of size three; finally, we expand each occur- rence of µ1 to µ2 to obtain all six results.
+The second problem is due to SPARQL builtin functions.
+For example, let Q2 be as follows: SELECT ?yWHERE { ?x:presidentOf :US.
+BIND(STR(?x) AS ?y) } On Tρ, query Q2 produces answers τ1 = {?y→“Obama”} and τ2 = {?y→“USPresident”}; in contrast, on T, query ρ(Q2) yields only τ1, which does not expand into τ2 be- cause strings “Obama” and “USPresident” are not equal.
+To solve this problem, we must expand answers before eval- uating builtin functions.
+Thus, we can answer Q2 as fol- lows: we match the triple pattern of ρ(Q2) to T as usual, obtaining κ1 = {?x→:Obama}; then, we expand κ1 to κ2 = {?x→:USPresident}; next, we evaluate the BIND expression and extend κ1 and κ2 with the respective val- ues for ?y; finally, we project ?xto obtain τ1 and τ2.
+Since we have already expanded ?x, we should not repeat the pro- jected answers as many times as there are elements in the owl:sameAs-clique for ?x; instead, we output each projected answer only once to obtain the correct answer cardinalities.
+6 Evaluation We have implemented our approach in RDFox, allowing the system to handle owl:sameAs via rewriting (REW) or the axiomatisation (AX) from Section 3.
+We then compared the performance of materialisation using these two approaches.
+In particular, we investigated the scalability of each ap- proach with the number of threads, and we measured the effect that rewriting has on the number of derivations and materialised triples.
+Test Data Sets.
+We used five test data sets, each con- sisting of an OWL 2 DL ontology and a set of facts.
+The data sets were chosen because they contain axioms with the owl:sameAs property leading to interesting inferences.
+Four data sets were derived from real-world applications.
+• Claros has been developed in an international collabora- tion between IT experts and archaeology and classical art research institutions with the aim of integrating disparate cultural heritage databases.6 • DBpedia is a crowd-sourced community effort to extract structured information from Wikipedia and make this in- formation available on the Web.7 • OpenCyc is an extensive ontology about general human knowledge.
+It contains hundreds of thousands of terms or- ganised in a carefully designed ontology and can be used as the basis of a wide variety of intelligent applications.8 • UniProt is a subset of an extensive knowledge base about protein sequences and functional information.9 The ontologies of all data sets other than DBpedia are not in the OWL 2 RL profile, so we first discarded all axioms 6http://www.clarosnet.org/XDB/ASP/clarosHome/ 7http://www.dbpedia.org/ 8http://www.cyc.com/platform/opencyc/ 9http://www.uniprot.org/ Table 1: An Example Run of Materialisation on Pex and One Thread Step 1 Step 2 Step 3 1 ⟨:USPres, :presOf, :US⟩ ◃2 ⟨:Obama, :presOf, :Am⟩ 3 ⟨:Obama, :presOf, :US⟩ 4 ⟨:Am, ≈, :USA⟩ R(2) 1 ⟨:USPres, :presOf, :US⟩ 2 ⟨:Obama, :presOf, :Am⟩ ◃3 ⟨:Obama, :presOf, :US⟩ 4 ⟨:Am, ≈, :USA⟩ 5 ⟨:US, ≈, :USA⟩ R(3) 1 ⟨:USPres, :presOf, :US⟩ 2 ⟨:Obama, :presOf, :Am⟩ M(4) 3 ⟨:Obama, :presOf, :US⟩ ◃4 ⟨:Am, ≈, :USA⟩ M(4) 5 ⟨:US, ≈, :USA⟩ 6 ⟨:Obama, :presOf, :USA⟩ W (2) 7 ⟨:USA, ≈, :USA⟩ W (4) Step 4 Step 5 Step 6 1 ⟨:USPres, :presOf, :US⟩ 3 ⟨:Obama, :presOf, :US⟩ W (6) ◃5 ⟨:US, ≈, :USA⟩ M(5) 6 ⟨:Obama, :presOf, :USA⟩M(5) 7 ⟨:USA, ≈, :USA⟩ M(5) 1 ⟨:USPres, :presOf, :US⟩ 3 ⟨:Obama, :presOf, :US⟩ 8 ⟨:US, ≈, :US⟩ R′(3) 9 ⟨:USPres, ≈, :Obama⟩ S′(1) 10 ⟨:Obama, ≈, :Obama⟩ S′(3) 1 ⟨:USPres, :presOf, :US⟩ M(9) 3 ⟨:Obama, :presOf, :US⟩ 8 ⟨:US, ≈, :US⟩ ◃9 ⟨:USPres, ≈, :Obama⟩ M(9) 10 ⟨:Obama, ≈, :Obama⟩ W (9) 8 ⟨:US, ≈, :US⟩ W (5, 7) outside OWL 2 RL, and then we translated the remaining axioms into rules as described in (Grosof et al.
+2003).
+Our fifth data set was UOBM (Ma et al.
+2006)—a syn- thetic data set that extends the well-known LUBM (Guo, Pan, and Heflin 2005) benchmark.
+We did not use LUBM because neither its ontology nor its data uses the owl:sameAs property.
+The UOBM ontology is also outside OWL 2 RL; however, instead of using its OWL 2 RL subset, we used its upper bound (Zhou et al.
+2013)—an unsound but com- plete OWL 2 RL approximation of the original ontology; thus, all answers that can be obtained from the original on- tology can also be obtained from the upper bound, but not the other way around.
+Efficient materialisation of the upper bound was critical for the work by Zhou et al.
+(2013), and it has proved to be challenging due to equality reasoning.
+The left-hand part of Table 2 summarises our test data sets: column ‘Rules’ shows the total number of rules, col- umn ‘sA-rules’ shows the number of rules containing the owl:sameAs property in the head, and column ‘Triples be- fore’ shows the number of triples before materialisation.
+Test Setting.
+We conducted our tests on a Dell computer with 128 GB of RAM and two Xeon E5-2643 processors with a total of 8 physical and 16 virtual cores, running 64- bit Fedora release 20, kernel version 3.13.3-201.
+We have not conducted warm and cold start tests separately since, as a main-memory system, the performance of RDFox should not be affected by the state of the operating system’s buffers.
+For the AX tests, we extended the relevant program with the seven rules from Section 3.
+In all cases we verified that the expansion of the rewritten triples is identical to the triples derived using the axiomatisation.
+Effect of Rewriting on Total Work.
+In order to see how rewriting affects the total amount of work, we materialised each test data set in both AX and REW modes while col- lecting statistics about the inference process; the results are shown in the right-hand part of Table 2.
+Column ‘Triples af- ter’ shows the number of triples after materialisation; in the case of REW tests, we additionally show the number of un- marked triples (i.e., of triples relevant to query answering).
+Column ‘Memory’ shows the total memory use as measured by RDFox’s internal counters.
+Column ‘Rule appl.’ shows the total number of times a rule has been applied to a triple, and column ‘Derivations’ shows the total number of deriva- tions.
+Column ‘Merged resources’ shows the number of re- sources that were replaced with representatives in the course of materialisation.
+Finally, row ‘factor’ shows the ratio be- tween the respective values in the AX and the REW tests.
+As one can see, the reduction in the number of the de- rived triples is correlated with the number of rewritten con- stants: on UniProt there is no observable reduction since only five resources are merged; however, equalities prolifer- ate on OpenCyc and so rewriting is particularly effective.
+In all cases the numbers of marked triples are negligible, sug- gesting that our decision to mark, rather than delete triples does not have unexpected drawbacks.
+In contrast, the reduc- tion in the number of rule applications and, in particular, of derivations is much more pronounced than the reduction in the number of derived triples.
+Effect of Rewriting on Materialisation Times.
+In order to see how rewriting affects materialisation times, we mea- sured the wall-clock times needed to materialise our test data sets in AX and REW modes on 1, 2, 4, 8, 12, and 16 threads.
+For each test, we report average wall-clock time over three runs.
+Table 3 shows our test results; column ‘sec’ shows the materialisation time in seconds, column ‘spd’ shows the speedup over the single-threaded version, and column ‘ AX ’ REW shows the speedup of REW over AX.
+As one can see from the table, RDFox parallelises com- putation exceptionally well in both AX and REW modes.
+When using the eight physical cores of our test server, the speedup is consistently between six and seven, which sug- gests that the lock-free algorithms and data structures of RDFox are very effective.
+We believe that the more-than- linear speedup on Claros is due to improved memory locality resulting in fewer CPU cache misses.
+The speedup contin- ues to increase with hyperthreading, but is less pronounced: virtual cores do not provide additional execution resources, and so they mainly compensate for CPU stalls due to cache Table 2: Test Data Sets Before and After Materialisation Rules sA- rules Triples before Mode Triples after unmarked total Memory (GB) Rule appl.
+Derivations Merged resources AX 102M 4.5 867M 11,009M Claros 1312 42 19M REW 79.5M 79.7M 3.6 149M 128M 12,890 factor 1.28x 1.28x 5.8x 85.5x AX 139M 6.9 934M 895M DBPedia 3384 23 113M REW 136M 136M 7.0 44.5M 37M 7,430 factor 1.2x 0.99x 21.0x 24.4x AX 1,176M 35.9 7,832M 12,890M OpenCyc 261,067 3,781 2.4M REW 141M 142M 4.6 309M 281M 361,386 factor 7.8x 7.8x 25.3x 45.9x AX 228M 15.1 1,801M 1,555M UniProt 451 60 123M REW 228M 228M 15.1 262M 183M 5 factor 1.0x 1.0x 6.9x 8.5x AX 36M 1.2 332M 16,152M UOBM 279 4 2.2M REW 9.4M 9.7M 0.4 33.8M 4,256M 686 factor 3.2x 3.2x 9.9x 3.8x Table 3: Materialisation Times with Axiomatisation and Rewriting Test Claros DBpedia OpenCyc Threads AX REW AX AX REW AX AX REW AX sec spd sec spd REW sec spd sec spd REW sec spd sec spd REW 1 2042.9 2 969.7 4 462.0 8 237.2 12 184.9 16 153.4 1.0 2.1 4.4 8.6 11.1 13.3 65.8 35.2 18.1 9.9 7.9 6.9 1.0 1.9 3.6 6.7 8.3 9.6 31.1 27.6 25.5 24.1 23.3 22.3 219.8 114.6 66.3 36.1 31.9 27.5 1.0 1.9 3.3 6.1 6.9 8.0 31.7 17.6 10.7 5.2 4.1 3.6 1.0 1.8 3.0 6.0 7.7 8.8 6.9 6.5 6.2 6.9 7.7 7.7 2093.7 1326.5 692.6 351.3 291.8 254.0 1.0 1.6 3.0 6.0 7.2 8.2 119.9 78.3 40.5 23.0 56.2 52.3 1.0 1.5 3.0 5.2 2.1 2.3 17.5 16.9 17.1 15.2 5.5 4.9 Test UniProt UOBM Threads AX REW AX AX REW AX sec spd sec spd REW sec spd sec spd REW 1 370.6 2 232.3 4 129.2 8 74.7 12 61.0 16 61.9 1.0 1.6 2.9 5.0 6.1 6.0 143.4 86.7 46.5 25.1 19.9 17.1 1.0 1.7 3.1 5.7 7.2 8.4 2.6 2.7 2.8 3.0 3.1 3.6 2696.7 1524.6 813.3 439.9 348.9 314.4 1.0 1.8 3.3 6.1 7.7 8.6 1152.7 599.6 318.3 177.7 152.7 137.9 1.0 1.9 3.6 6.5 7.6 8.4 2.3 2.5 2.6 2.5 2.3 2.3 misses.
+The AX mode seems to scale better with the number of threads than the REW mode, and we believe this to be due to contention between threads while accessing the map ρ.
+Only OpenCyc in REW mode did not scale particularly well: OpenCyc contains many rules, so sequentially updat- ing P and the associated rule index when ρchanges becomes a significant parallelisation bottleneck.
+Finally, since the ma- terialisation of Claros with more than eight threads in REW mode takes less than ten seconds, these results are difficult to measure and are susceptible to skew.
+Our results confirm that rewriting can significantly reduce materialisation times.
+RDFox was consistently faster in the REW mode than in the AX mode even on UniProt, where the reduction in the number of triples is negligible.
+This is due to the reduction in the number of derivations, mainly involving rules (≈1)–(≈4), which is still significant on UniProt.
+In all cases, the speedup of rewriting is typically much larger than the reduction in the number of derived triples (cf.
+Table 2), suggesting that the primary benefit of rewriting lies in less work needed to match the rules, rather than, as commonly thought thus far, in reducing the number of derived triples.
+This is consistent with the fact that the speedup of rewriting was not so pronounced on UniProt and UOBM, where the reduction in the number of derivations was less significant.
+Our analysis of the derivations that RDFox makes on UOBM revealed that, due to the derived owl:sameAs triples, the materialisation contains large numbers of resources connected by the :hasSameHomeTownWith property.
+This property is also symmetric and transitive so, for each pair of connected resources, the number of times each triple is derived by the transitivity rule is quadratic in the number of connected resources.
+This leads to a large number of dupli- cate derivations that do not involve equality.
+Thus, although it is helpful, rewriting does not reduce the number of deriva- tion in the same way as, for example, on Claros, which ex- plains the relatively modest speedup of REW over AX.
+7 Conclusion In this paper we have investigated issues related to the use of rewriting in materialisation based OWL 2 RL systems, and have shown how these issues can lead to both increased computation costs and incorrect query answers.
+We have ad- dressed these issues by presenting algorithms that guarantee the correctness of query answers for any input ontology and data set.
+Moreover, we have implemented our algorithms in the RDFox system, a preliminary evaluation of which has shown that our approach parallelises computation very well in practice and can reduce materialisation times on practical data sets by orders of magnitude.
+Acknowledgements This work was supported by the EPSRC projects MaSI3 , Score! and DBOnto, and by the EU FP7 project Optique.
+References Abiteboul, S.; Hull, R.; and Vianu, V.
+1995.
+Foundations of Databases.
+Addison Wesley.
+Baader, F., and Nipkow, T.
+1998.
+Term Rewriting and All That.
+Cambridge University Press.
+Bishop, B.; Kiryakov, A.; Ognyanoff, D.; Peikov, I.; Tashev, Z.; and Velkov, R.
+2011.
+Owlim: A family of scalable se- mantic repositories.
+Semantic Web 2(1):33–42.
+Grosof, B.
+N.; Horrocks, I.; Volz, R.; and Decker, S.
+2003.
+Description Logic Programs: Combining Logic Programs with Description Logic.
+In Proc.
+WWW, 48–57.
+Guo, Y.; Pan, Z.; and Heflin, J.
+2005.
+LUBM: A benchmark for OWL knowledge base systems.
+Journal of Web Seman- tics 3(2–3):158–182.
+Harris, S., and Seaborne, A.
+2013.
+SPARQL 1.1 Overview.
+W3C Recommendation.
+http://www.w3.org/TR/ sparql11-overview/.
+Herlihy, M., and Shavit, N.
+2008.
+The Art of Multiprocessor Programming.
+Morgan Kaufmann.
+Horrocks, I.; Patel-Schneider, P.
+F.; Boley, H.; Tabet, S.; Grosof, B.; and Dean, M.
+2004.
+SWRL: A semantic web rule language combining OWL and RuleML.
+W3C Member Submission.
+http://www.w3.org/Submission/SWRL/.
+Kolovski, V.; Wu, Z.; and Eadon, G.
+2010.
+Optimiz- ing Enterprise-Scale OWL 2 RL Reasoning in a Relational Database System.
+In Proc.
+ISWC, 436–452.
+Ma, L.; Yang, Y.; Qiu, Z.; Xie, G.
+T.; Pan, Y.; and Liu, S.
+2006.
+Towards a Complete OWL Ontology Benchmark.
+In Proc.
+ESWC, 125–139.
+Manola, F., and Miller, E.
+2004.
+RDF primer.
+W3C Recom- mendation.
+http://www.w3.org/TR/rdf-primer/.
+Motik, B.; Cuenca Grau, B.; Horrocks, I.; Wu, Z.; Fokoue, A.; and Lutz, C.
+2012.
+OWL 2 Web Ontology Language Profiles (Second Edition).
+W3C Recommendation.
+http: //www.w3.org/TR/owl2-profiles/.
+Motik, B.; Nenov, Y.; Piro, R.; Horrocks, I.; and Olteanu, D.
+2014a.
+Parallel materialisation of Datalog programs in cen- tralised, main-memory RDF systems.
+In Proc.
+of the 28th Nat.
+Conf.
+on Artificial Intelligence (AAAI 14), 129–137.
+AAAI Press.
+Motik, B.; Nenov, Y.; Piro, R.; and Horrocks, I.
+2014b.
+Han- dling owl:sameAs via Rewriting.
+arXiv:cs/1411.3622.
+Motik, B.; Patel-Schneider, P.
+F.; and Parsia, B.
+2012.
+OWL 2 Web Ontology Language Structural Specification and Functional-style Syntax (Second Edition).
+W3C Rec- ommendation.
+http://www.w3.org/TR/owl2-syntax/.
+Nieuwenhuis, R., and Rubio, A.
+2001.
+Paramodulation- Based Theorem Proving.
+In Robinson, A., and Voronkov, A., eds., Handbook of Automated Reasoning, volume I.
+Elsevier Science.
+chapter 7, 371–443.
+Stocker, M., and Smith, M.
+2008.
+Owlgres: A Scalable OWL Reasoner.
+In Proc.
+OWLED: Experiences and Directions Workshop, 26–27.
+Urbani, J.; Kotoulas, S.; Maassen, J.; van Harmelen, F.; and Bal, H.
+E.
+2012.
+WebPIE: A Web-scale Parallel Inference Engine using MapReduce.
+Journal of Web Semantics 10:59– 75.
+Wu, Z.; Eadon, G.; Das, S.; Chong, E.
+I.; Kolovski, V.; Annamalai, M.; and Srinivasan, J.
+2008.
+Implementing an Inference Engine for RDFS/OWL Constructs and User- Defined Rules in Oracle.
+In Proc.
+ICDE, 1239–1248.
+Zhou, Y.; Cuenca Grau, B.; Horrocks, I.; Wu, Z.; and Baner- jee, J.
+2013.
+Making the most of your triple store: query answering in OWL 2 using an RL reasoner.
+In Proc.
+WWW, 1569–1580.
+A Formalisation A rule rwas defined in Section 2 as an implication of the form (1), where atom h(r)· ·= ⟨s,p,o⟩is the head of r, conjunction b(r)· ·= ⟨s1,p1,o1⟩∧...∧⟨sn,pn,on⟩is the body of r, and each variable in h(r) also occurs in b(r).
+A program P is a finite set rules.
+We also use the standard notions of a substitution σand composition στ of substitutions σand τ; and ασis the result of applying σto a term, formula, or program α.
+Let S be a finite set of facts.
+For ra rule of the form (1), r(S) is the smallest set such that Hσ∈r(S) for each substitution σsatisfying Biσ∈Sfor each iwith 1 ≤i≤n; moreover, for P a program, let P(S)· ·= r∈P r(S).
+Given a finite a set of explicit (i.e., extensional or EDB) facts E, the materialisation P∞(E) of P on E is defined as follows: let P0(E)· ·= E; let Pi(E)· ·= Pi−1(E) ∪P(Pi−1(E)) for each i>0; and let P∞(E)· ·= iPi(E).
+Parallel Materialisation in RDFox For convenience, we will briefly recall some details of the RDFox algorithm presented in (Motik et al.
+2014a).
+The RDFox algorithm computes P∞(E) using N threads of a set of explicit facts E and a program P.
+Set E is first copied into the set of all facts T, after which each thread starts updating T using a fact-at-a-time version of the semina¨ıve algorithm (Abiteboul, Hull, and Vianu 1995).
+In particular, a thread selects an unprocessed fact F from T and tries to match it to each body atom Bi of each rule of the form (1) in P.
+For each substitution σwith F= Biσ, the thread evaluates the partially instantiated rule Hσ←B1σ∧···∧Bi−1σ∧Bi+1σ∧···∧Bkσby matching the rule’s body as a query in T, and adding Hτ to T for each thus obtained substitution τ with σ⊆τ.
+The thread repeats these steps until all facts in T have been processed.
+Materialisation finishes if at this point all other threads are waiting; otherwise, the thread waits for more facts to become available.
+To implement this idea efficiently, RDFox stores all facts in T in a single table.
+As usual, resources are encoded using nonzero integer resource IDs in a way that allows IDs to be used as array indexes.
+Furthermore, RDFox maintains three array-based and three hash-based indexes that allow it to efficiently identify all relevant facts in T when matching a given atom.
+Such a scheme has two important advantages.
+First, the indexes allow queries (i.e., rule bodies) to be evaluated using nested index loop joins with sideways information passing.
+Second, arrays and hash tables are naturally parallel data structures and so they support efficient concurrent updates as parallel threads derive fresh facts.
+Formalising the Rewriting Algorithm As discussed in Section 4, we extend the RDFox algorithm with rewriting to reduce both the size of T and the time required to compute it, while ensuring that an arbitrary SPARQL query can be answered exactly as if it were evaluated over [P∪P≈]∞(E).
+We use short-circuit evaluation of expressions: in ‘Aand B’ (resp.
+‘Aor B’), Bis evaluated only if Aevaluates to true (resp.
+false).
+We store all facts in a data structure T that must provide several abstract operations: T.add(F) atomically adds a fact F to T if F is not already present in T (marked or not), returning true if T has been changed; and T.mark(F) atomically marks a fact F ∈T as outdated, returning true if F has been changed.
+Also, T must provide an iterator over its facts: T.next atomically selects and returns a fact or returns εif no such facts exists; T.hasNext returns true if T contains such a fact; and T.last returns the last returned fact.
+These operations need not enjoy the ACID properties, but they must be linearisable (Herlihy and Shavit 2008): each asynchronous sequence of calls should appear to happen in a sequential order, with the effect of each call taking place at an instant between the call’s invocation and response.
+Access to T thus does not require synchronisation via locks.
+Given a fact F returned by T.next, let T≺F be the facts returned by T.next before F, and let T≼F · ·= T≺F ∪{F}.
+For ρthe mapping of resources to their representatives, ρ.mergeInto(d,c) atomically checks whether dis a representative of itself; if so, it updates the representative of all resources that drepresents to the representative of cand returns true.
+We discuss how to implement this operation and how to compute ρ(α) in the following subsection.
+Moreover, ρ(T) is the rewriting of T with ρ, and Tρ· ·= {⟨s,p,o⟩|⟨ρ(s),ρ(p),ρ(o)⟩∈T}is the expansion of T with ρ.
+An annotated query is a conjunction of atoms of the form A◃▹1 1 ∧···∧A◃▹k k , where ◃▹i∈{≺,≼}for each 1 ≤i≤k.
+For F a fact and σ a substitution, operation T.evaluate(Q,F,σ) returns the set containing each minimal substitution τ such that σ⊆τ and T◃▹iF contains an unmarked fact Aiτ for each 1 ≤i≤k.
+Given a conjunction of atoms Q= B1 ∧...∧Bn, let Q≼· ·= B≼ 1 ∧...∧B≼ n.
+Finally, for P′a set of rules and F a fact, P′ .rules(F) returns each tuple of the form ⟨r,Qi,σ⟩where r∈P′is a rule of the form (1), σis a substitution such that F= Biσ, and Qi = B≺ 1 ∧...B≺ i−1 ∧B≼ i+1 ∧···∧B≼ k.
+To implement T.mark(F), we associate with each fact a status bit, which we update lock-free using compare-and-set opera- tions (Herlihy and Shavit 2008); efficient implementation of all other operations was described by Motik et al.
+(2014a).
+We use a queue C of resources: C.enqueue(c) atomically inserts a resource cinto C; and C.dequeue atomically selects and removes a resource from c, or returns εif no such resource exists.
+We also use a queue Rof rules.
+Lock-free implementation of these operations is described by Herlihy and Shavit (2008).
+In addition to E, T, P, ρ, C, and R, we use several global variables: N is the number of threads (constant); W is the number of waiting threads (initially 0); P′is the ‘current’ program (initially P); runis a Boolean flag determining whether materialisation should continue (initially true); Lis the last fact returned by T.next before P′is updated (initially undefined); and mis a mutex variable.
+After initialising T to E, each of the N threads executes Algorithm 1, trying in line 2 to evaluate a rule whose resources have been updated, rewrite facts containing an outdated resource, or apply rules to a fact from T.
+When no work is available, the Algorithm 1 materialise Global: N: No.
+of threads P: a program E: explicit facts m: a mutex variable run: a Boolean flag (true) R: a queue of rules (∅) W: No.
+of waiting threads (0) P′: the current program (P) T : all facts (E) L : reevaluation limit (NaN) ρ : resource mapping (id) C : a queue of constants (∅) 1: while run do 2: if¬evaluateUpdatedRules() and¬rewriteFacts() and¬applyRules() then 3: increment W atomically 4: acquire m 5: while R= ∅∧C= ∅∧¬T.hasNext ∧run do 6: if W= N then 7: R:= {ρ(r) |r∈P′and ρ(r) ̸∈P′} 8: L· ·= T.last 9: P′· ·= ρ(P) 10: run· ·= R̸= ∅ 11: notify 12: else 13: release m, wait for notification, acquire m 14: decrement W atomically 15: release m thread enters a critical section (lines 4–15) and waits for more work or a termination signal (line 5).
+Variable W is incremented (line 3) before entering, and decremented (line 14) after leaving the critical section, so at any point in time W is the number of threads inside the critical section.
+The thread goes to sleep (line 13) if no more work is available but other threads are running.
+When the last thread runs out of work (line 6), it adds to Ran updated version of each outdated rule in P′(line 7), notes the last fact in T (line 8), updates P′(line 9), signals termination if there are no rules to reevaluate (line 10), and wakes up all waiting threads (line 11).
+Updating P on a single thread simplifies the implementation, but it introduces a potential sequential bottleneck; however, our experiments have shown that, when P is not too large, the amount of sequential processing in lines 7–11 does not significantly affect our approach.
+Algorithm 2 processes the updated rules in Rby evaluating their bodies in T≼L and instantiating the rule heads.
+Algorithm 3 rewrites all facts in T that contain an outdated resource c.
+Algorithm 4 extracts from T (line 1) an unprocessed, unmarked fact F and processes it.
+Fact F is rewritten if it is outdated (lines 4–5); this is needed because a thread can derive a fact containing an outdated resource after that resource has been processed by Algorithm 3.
+If F is an owl:sameAs triple with distinct resources (line 6), then the smaller resource (according to an arbitrary total order) is selected as the representative for the other one, and the latter is added to the queue C of outdated resources (line 9).
+An ordering on resources is needed to prevent cyclic merges and to ensure uniqueness of the algorithm’s result.
+Otherwise, the thread applies the rules to F (lines 11–13) and derives the reflexive owl:sameAs triples (lines 14–15).
+Theorem 1 presented in Section 4 captures properties that ensure correctness of our algorithm; we restate the theorem and present a detail proof in Appendix B.
+Implementing the Map of Representatives Mapping ρconsists of two arrays, repρ and nextρ, indexed by resource IDs and initialised with zeros.
+Let cbe a resource.
+Then, repρ[c] is zero if crepresents itself, or repρ[c] contains a resource that chas been merged into.
+To retrieve resources equal to a representative, we organise each owl:sameAs-clique into a linked list of resources, so nextρ[c] contains the next pointer.
+Algorithm 5 merges dinto cin a lock-free way.
+We update repρ[d] to cif dcurrently represents itself (line 1).
+The compare- and-set primitive prevents thread interference: CAS(loc,exp,new) atomically loads the value stored at location loc into a temporary variable old, stores newinto locif old= exp, and returns old.
+If this update is successful, we append the clique of dto the clique of c(lines 2–4): we move to the end of c’s list (short-circuit evaluation ensures that CAS in line 3 is evaluated only if nextρ[e] = 0) and try to change nextρ[e] to d; if the latter fails due to concurrent updates, we continue scanning c’s list.
+Algorithm 6 computes ρ(c) by traversing repρ until it reaches a non-merged resource r.
+If another thread updates ρ by modifying repρ[r], we just continue scanning repρ past r, so the result is at least as current as ρjust before the start.
+Algorithm 2 evaluateUpdatedRules Algorithm 3 rewriteFacts 1: r· ·= R.dequeue 2: if r̸= εthen 3: for each τ ∈T.evaluate(b(r)≼,L,∅) do 4: if T.add(h(r)τ) then notify 5: return r̸= ε 1: c· ·= C.dequeue 2: if c̸= εthen 3: for each unmarked fact F ∈T containing cdo 4: if T.mark(F) and T.add(ρ(F)) then notify 5: return c̸= ε Algorithm 4 applyRules 1: F· ·= T.next 2: if F ̸= εand F is not marked as outdated then 3: G· ·= ρ(F) 4: if F ̸= Gthen 5: if T.mark(F) and T.add(G) then notify 6: else if F is of the form ⟨a,owl:sameAs,b⟩, and aand bare distinct then 7: c· ·= min{a,b}; d· ·= max{a,b} 8: if ρ.mergeInto(d,c) then 9: C.enqueue(d) and notify 10: else 11: for each ⟨r,Q,σ⟩∈P′ .rules(F) do 12: for each τ ∈T.evaluate(Q,F,σ) do 13: if T.add(h(r)τ) then notify 14: for each resource coccurring in F do 15: if T.add(⟨c,owl:sameAs,c⟩) then notify 16: return F ̸= ε Algorithm 5 ρ.mergeInto(d,c) Algorithm 6 ρ(c) 1: if CAS(repρ[d],0,c) = 0 then 2: e· ·= c 3: while nextρ[e] ̸= 0 or CAS(nextρ[e],0,d) ̸= 0 do 4: e· ·= nextρ[e] 5: return true 6: else 7: return false 1: r· ·= c 2: loop 3: r′· ·= repρ[r] 4: if r′= 0 then 5: return r 6: else 7: r· ·= r′ B Proof of Theorem 1 The algorithm terminates for each finite set of facts Eand program P.
+Let ρbe the final mapping and let T be the Theorem 1.
+final set of unmarked facts.
+1.
+⟨a,owl:sameAs,b⟩∈T implies a= b—that is, ρcaptures all equalities.
+2.
+F ∈T implies ρ(F) = F—that is, T is minimal.
+3.
+Tρ = [P ∪P≈]∞(E)—that is, T and ρtogether represent [P ∪P≈]∞(E).
+For notational convenience, let Πi · ·= [P ∪P≈]i(E) and let Π∞· ·= [P ∪P≈]∞(E).
+Furthermore, let Nr be the number of distinct resources occurring in E, and let |P|be the number of rules in P.
+We split our proof into several claims.
+Claim 1.
+The algorithm terminates.
+Proof.
+Duplicate facts are eliminated eagerly, and facts are never deleted, so the number of successful additions to T is bounded by N3 r.
+Moreover, Algorithm 5 ensures that each resource is merged at most once; hence, ρcan change at most Nr times, and the number of additions to queue Cis bounded by Nr as well.
+Thus, P′̸= ρ(P′) may fail in lines lines 6–11 of Algorithm 1 at most Nr times, so the number of additions to queue Ris bounded by |P|·Nr.
+Together, these observations clearly imply that the algorithm terminates.
+All operations used in our algorithm are linearisable and the algorithm terminates, so the execution of N threads on input E and P has the same effect as some finite sequence Λ = ⟨λ1,...,λℓ⟩of operations where each λi is • T.add(F), representing successful addition of F to T in line 4 of Algorithm 2, line 4 of Algorithm 3, or line 5, 13, or 15 of Algorithm 4, • F· ·= T.next, representing successful extraction of an unmarked, unprocessed fact F from T in line 1 of Algorithm 4, • T.mark(F), representing successful marking of F as outdated in line 4 of Algorithm 3 or line 5 of Algorithm 4, • ρ.mergeInto(d,c), representing successful merging of resource dinto resource cin line 9 of Algorithm 4, or • P′· ·= ρ(P), representing an update of program P′in line 9 of Algorithm 1.
+Materialisation first adds all facts in E to T, so the first moperations in Λ are of the form T.add(Fi) for each Fi ∈E.
+By a slight abuse of notation, we often treat Λ as a set and write λi ∈Λ.
+Our algorithm clearly ensures that each operation T.add(F) in Λ is followed in Λ by F· ·= T.next or T.mark(F); if both of these operations occur in Λ, then the former precedes the latter.
+Sequence Λ induces a sequence of mappings of resources to representatives ρ0,...,ρℓ: mapping ρ0 is identity; for each i > 0 with λi = ρ.mergeInto(d,c), mapping ρi is obtained from ρi−1 by setting ρi(a)· ·= ρi−1(c) for each resource a with ρi−1(a) = d; and for each i > 0 with λi ̸= ρ.mergeInto(d,c), let ρi· ·= ρi−1.
+Clearly, ρ= ρℓ; furthermore, for each i with 1 ≤i≤ℓ, if ρi(F) ̸= F, then ρj(F) ̸= F for each jwith i≤j ≤ℓ.
+Claim 2.
+⟨a,owl:sameAs,b⟩∈T implies a= b.
+Proof.
+Assume that T contains an unmarked fact F of the form ⟨a,owl:sameAs,b⟩with a̸= b.
+Then, there exists an operation λi ∈Λ of the form F· ·= T.next.
+In case ρi(F) ̸= F, then lines 4–5 of Algorithm 4 ensure that T.mark(F) ∈Λ, contradict- ing the assumption that F was unmarked.
+In case ρi(F) = F, then there exists an operation λj ∈Λ with j ≥i of the form ρ.mergeInto(a,b) or ρ.mergeInto(b,a).
+Thus, either aor bis added to queue C in line 9 of Algorithm 4, and this resource is later processed in Algorithm 3; then, due to line 4 of Algorithm 3, there exists an operation λk ∈Λ with k≥j of the form T.mark(F).
+We obtain a contradiction in either case, as required.
+Claim 3.
+F ∈T implies ρ(F) = F.
+Proof.
+Assume for the sake of contradiction that a fact F ∈T exists such that F ̸= ρ(F).
+Then, there exists an operation λi ∈Λ of the form F· ·= T.next.
+We clearly have F= ρi(F), or lines 4–5 of Algorithm 4 would have ensured that T.mark(F) ∈Λ.
+But then, there exists an operation λj ∈Λ with i<j ≤ℓof the form ρ.mergeInto(d,c) where resource doccurs in F.
+Hence, dis added to queue C in line 9 of Algorithm 4, and this resource is later processed in Algorithm 3; but then, there exists an operation λk ∈Λ with k≥jof the form T.mark(F), which contradicts our assumption that F ∈T.
+Claim 4.
+Tρ ⊆Π∞ .
+Proof.
+The claim holds because P≈contains replacement rules (≈2)–(≈4) and the following two properties are satisfied for each 1 ≤i≤ℓ: (i) for each resource a, we have ⟨a,owl:sameAs,ρi(a)⟩∈Π∞, and (ii) if λi is of the form T.add(F), then F ∈Π∞ .
+We prove (i) and (ii) by induction on i.
+For the induction base, we consider the first moperations in Λ of the form T.add(Fi) with Fi ∈E; both claims clearly hold for i= m.
+For the inductive step, property (i) can be affected only if λi is of the form ρ.mergeInto(d,c), and property (ii) can be affected only if λiis of the form T.add(F); hence, we analyse these cases separately.
+Assume λi = ρ.mergeInto(d,c).
+To show that property (i) holds, consider an arbitrary resource a; property (i) holds trivially for aif ρi−1(a) ̸= d, so assume that ρi−1(a) = d.
+Due to the form of λi, constant dwas added to C in line 9 of Algorithm 4 due to an operation λj ∈Λ with j <iof the form F· ·= T.next with F of the form ⟨c,owl:sameAs,d⟩or ⟨d,owl:sameAs,c⟩; but then, there exists an operation λk ∈Λ with k<j of the form T.add(F); thus, by the induction assumption, property (ii) implies F ∈Π∞.
+Furthermore, by the induction assumption and ρi−1(d) = d, we have ⟨a,owl:sameAs,d⟩∈Π∞, and we also have ⟨c,owl:sameAs,ρi−1(c)⟩∈Π∞.
+Moreover, ρi(a) = ρi−1(c) = ρi(c) holds by Algorithm 5.
+Finally, property owl:sameAs is reflexive, symmetric, and transitive in Π∞, so ⟨a,owl:sameAs,ρi(a)⟩∈Π∞holds, as required for property (i).
+Assume λi = T.add(F) by line 4 of Algorithm 3 or line 5 of Algorithm 4; thus, F obtained from some fact Gfor which there exists an operation λj ∈Λ with j <iof the form T.add(G).
+By the induction assumption, we have G∈Π∞.
+Fact Gis obtained from F by replacing each occurrence of a resource cin F with ρn(c) for some nwith 1 ≤n≤i; by the induction assumption, mapping ρnsatisfies property (i), so we have ⟨c , owl:sameAs,ρn(c)⟩∈Π∞.
+But then, replacement rules (≈2)–(≈4) in P≈ensure that F ∈Π∞ .
+Assume λi = T.add(F) by line 4 of Algorithm 2 or line 13 of Algorithm 4; thus, F is obtained by applying a rule ρi(r) of the form (1) via a substitution τ that matches the body atoms B1,...,Bn of ρi(r) to facts F1,...,Fn such that, for each 1 ≤j ≤n, sequence Λ contains an operation of the form T.add(Fj) preceding λi.
+By the induction assumption, property (ii) implies {F1,...,Fn}⊆Π∞.
+We next show that rule r can be applied to facts {F′ 1,...,F′ n}⊆Π∞to derive a fact F′, and that the rules in P≈can be used to derive F from F′.
+Let Cr = {c1,...,ck}be the set of resources occurring in rule r; by the induction assumption, property (i) ensures the following observation: ⟨cj,owl:sameAs,ρi(cj)⟩∈Π∞for each jwith 1 ≤j ≤k.
+(♦) Let F′ 1,...,F′ n be the facts obtained from F1,...,Fn by replacing, for each c∈Cr, each occurrence of ρi(c) with c; due to (♦), the rules in P≈ensure that {F′ 1,...,F′ n}⊆Π∞holds.
+Now let σ be the substitution obtained from τ by replacing, for each cj ∈Cr, resource ρi(cj) in the range of τ with cj; then, substitution σmatches all body atoms of rto derive fact F′∈Π∞ where ρi(F′) = F.
+Due to (♦), the rules in P≈ensure F ∈Π∞, as required for property (ii).
+Assume λi = T.add(F) by line 15 of Algorithm 4, so F= ⟨c,owl:sameAs,c⟩with ca resource occurring in some fact G for which there exists an operation λj ∈Λ with j <iof the form T.add(G).
+By the induction assumption, we have G∈Π∞ .
+But then, due to rules (≈1) in P≈, we have F ∈Π∞, as required.
+Before proving Tρ ⊇Π∞, we show a useful property (♦) essentially saying that, whenever a fact F is added to T in operation j, at each step iafter j, a rewriting Gof F is or will be ‘visible’ in T (i.e., Ghas not been marked outdated before operation i).
+Claim 5 (♦).
+For each iwith 1 ≤i≤ℓand each operation λj ∈Λ with j ≤iof the form T.add(F), there exists ksuch that (a) λk = T.add(G), (b) Gis obtained from F by replacing each occurrence of a resource cwith ρn(c) for some nwith n≤k, and (c) for each k′(if any) with k<k′≤i, we have λk′ ̸= T.mark(G).
+Proof.
+The proof proceeds by induction on i.
+The base case i = 0 is vacuous, so we assume that (♦) holds up to some iwith 1 ≤i<ℓ, and we consider operation λi+1 and an arbitrary operation λj with j ≤i+ 1 of the form T.add(F).
+If j= i+ 1, then the claim trivially holds for k= j; otherwise, we have j <i+ 1, so by applying the induction assumption to i, an integer kwith λk = T.add(G) satisfying properties (a)–(c).
+If λi+1 ̸= T.mark(G), then ksatisfies properties (a)–(c) for i+ 1 and λj as well.
+If, however, λi+1 = T.mark(G), then either in line 4 of Algorithm 3 or in line 5 of Algorithm 4 an attempt will be made to add a fact G′satisfying property (b) to T.
+First, assume that G′already exists in T—that is, some m≤iexists such that λm = T.add(G′); then, by applying the induction assumption to G′, some k′with λk′ = T.add(G′′) exists that satisfies properties (a)–(c); but then, k′satisfies properties (a)–(c) for F which proves the claim for λj.
+In contrast, if no such mexists, then the addition in line 4 of Algorithm 3 or line 5 of Algorithm 4 succeeds, and some k′with i+ 1 <k′exists such that λk′ = T.add(G′).
+Thus, properties (a)–(c) hold for i+ 1 and λj.
+Claim 6.
+Tρ ⊇Π∞ .
+Proof.
+The claim holds if T ⊇ρ(Π∞) and if ⟨c,owl:sameAs,d⟩∈Π∞implies ρ(c) = ρ(d).
+Thus, we prove by induction on i that each set Πi in the sequence Π0 ,Π1 ,...satisfies the following two properties: (i) T ⊇ρ(Πi) and (ii) ⟨c,owl:sameAs,d⟩∈Πi implies ρ(c) = ρ(d).
+To prove these claims, we consider an arbitrary fact F ∈Π0 (for the base case) or F ∈Πi+1 \Πi with i≥0 (for the induction step) and show that T.add(ρ(F)) ∈Λ.
+Since ρis the final resource mapping, F is never marked as outdated and so we have ρ(F) ∈T, as required for property (i).
+Moreover, if F= ⟨c,owl:sameAs,d⟩, then ρ(F) ∈T together with property (1) of Theorem 1 imply that ρ(F) is of the form ⟨a,owl:sameAs,a⟩, and so we have ρ(c) = a= ρ(d), as required for property (ii).
+Induction Base.
+Consider an arbitrary fact F ∈Π0 = E.
+Let Gbe the fact that satisfies (a)–(c) of property (♦) for i= ℓ; fact Gis never marked as outdated due to (c), so ρ(F) = Gholds by property 2 of Theorem 1.
+But then, property (a) implies T.add(ρ(F)) ∈Λ, as required.
+Induction Step.
+Fact F ∈Πi+1 \Πi is derived using a rule r∈P ∪P≈of the form (1) from facts {F1,...,Fn}⊆Πi.
+By the induction assumption we have {ρ(F1),...,ρ(Fn)}⊆T, which implies T.add(ρ(Fj)) ∈Λ for each 1 ≤j ≤n; we denote the latter property with (†).
+Assume that F is derived by applying rule (≈1) to a fact G∈Πi.
+By property (†), there exists an operation T.add(ρ(G)) ∈Λ; thus, there exists an operation ρ(G)· ·= T.next ∈Λ; finally, line 15 of Algorithm 4 ensures T.add(ρ(F)) ∈Λ.
+Assume that F is derived by applying rule (≈2), (≈3), or (≈4) to facts {G,⟨c,owl:sameAs,d⟩}⊆Πi.
+By the induction assumption, we have ρ(c) = ρ(d).
+But then, since G is obtained from F by replacing c with d, we have ρ(G) = ρ(F); by property (†), we have T.add(ρ(G)) ∈Λ, and so T.add(ρ(F)) ∈Λ.
+Assume that F is derived by applying a rule r∈P of form (1) to facts {F1,...,Fn}⊆Πi via some substitution σ.
+Let τ be the substitution where τ(x) = ρ(σ(x)) for each variable x from the domain of σ.
+Rule ρ(r) derives ρ(F) via τ from ρ(F1),...,ρ(Fn).
+To show that one can match these facts to an annotated query derived from ρ(r), let G be the fact among ρ(F1),...,ρ(Fn) for which operation T.add(G) occurs last in Λ, and let jbe the smallest integer with 1 ≤j ≤nand ρ(Fj) = G.
+Rule ρ(r) occurs in the final program P′, so we have two possibilities.
+• Assume that ρ(r) ̸∈P and that ρ(r) occurs for the first time in Λ in an operation P′· ·= ρ(P) that appears in Λ after op- eration T.add(G).
+Then, by property (†), rule ρ(r) is applied to facts ρ(F1),...,ρ(Fn) in line 3 of Algorithm 2, and so T.add(ρ(F)) ∈Λ due to line 4 of Algorithm 2.
+• In all other cases, Λ contains an operation ρ(Fj)· ·= T.next, and at that point program P′contains ρ(r); hence, rule ρ(r) is applied in line 11 of Algorithm 4 by matching ρ(Bj) to G.
+Now by (†) and the way in which we have selected G, we have {ρ(F1),...,ρ(Fn)}⊆T≼G, so each body atom ρ(Bk) of ρ(r) can be matched to T≼G.
+Furthermore, jis the smallest index such that ρ(Bj) = G, so ρ(Fk) ∈T≺G for each 1 ≤k<j.
+Thus, substitution τ is returned in line 11 of Algorithm 4, and so line 13 of Algorithm 4 ensures that T.add(ρ(F)) ∈Λ holds, as required.
+Claim 7.
+Each pair of rand τ is considered at most once either in line 3 of Algorithm 2 or in line 11 of Algorithm 4.
+Proof.
+For the sake of contradiction, assume that a rule r of the form (1) and substitution τ exist that violate this claim.
+The domain of τ contains all variables in r, so τ matches all body atoms of r to a unique set of facts F1,...,Fn.
+We next show that the annotations in queries prevent the algorithm from considering the same r and τ more than once.
+To this end, let G∈{F1,...,Fn}be the fact for which operation T.add(G) occurs last in Λ.
+Assume that T.add(G) occurs in Λ before the operation P′· ·= ρ(P) in Λ with r∈P′but r /∈P.
+Since P′is updated in line 9 of Algorithm 1 only when there are no facts to process, operation G· ·= T.next also occurs in Λ before P′· ·= ρ(P); but then, rcannot be applied to Gin line 11 of Algorithm 4.
+Hence, the only possibility is that rand τ are considered twice is in line 3 of Algorithm 2; however, line 7 of Algorithm 1 ensures that ris enqueued into Rat most once.
+Assume that T.add(G) occurs in Λ after the operation P′· ·= ρ(P) ∈Λ with r∈P′.
+Line 3 of Algorithm 2 evaluates the rules in R only up to the last fact L extracted from T before P′ is updated, and so r cannot be matched in G in line 3 of Algorithm 2; hence, the only possibility is that r and τ are considered twice in line 11 of Algorithm 4.
+To this end, assume that F and F′are (not necessarily distinct) facts extracted in line 1 of Algorithm 4, let Qthe annotated query used to match body atom Bi of rto F, and let Q′the annotated query used to match body atom Bj of rto F′; thus, we have Biτ = F and Bjτ = F′.
+We consider the following two cases.
+• Assume F= F′; furthermore, w.l.o.g.
+assume that i≤j.
+If i= j, we have a contradiction since operation F· ·= T.next occurs in Λ only once and query Q= Q′is considered in line 11 of Algorithm 4 only once.
+If i<j, we have a contradiction since ◃▹i= <holds in the annotated query Q′, so atom Bi cannot be matched to fact F in query Q′(i.e., we cannot have Biτ = F) due to F ̸∈T<F′ = T<F .
+• Assume F ̸= F′; furthermore, w.l.o.g.
+assume that operation T.add(F) occurs in Λ after operation T.add(F′).
+But then, Bjτ = F′leads to a contradiction since atom Bj cannot be matched to fact F′in query Qwhen fact F is extracted in line 1 of Algorithm 4.

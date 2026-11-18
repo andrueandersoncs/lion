@@ -1,0 +1,476 @@
+{
+  "sources": [
+    {
+      "id": "d-budiu-dbsp-2023",
+      "url": "https://www.vldb.org/pvldb/vol16/p1601-budiu.pdf",
+      "title": "DBSP: Automatic Incremental View Maintenance for Rich Query Languages",
+      "publisher": "Budiu, Ryzhyk et al. (VMware Research / Feldera)",
+      "kind": "primary",
+      "published": 20230301
+    },
+    {
+      "id": "d-feldera-readme",
+      "url": "https://raw.githubusercontent.com/feldera/feldera/main/README.md",
+      "title": "Feldera: incremental computation engine (README)",
+      "publisher": "Budiu, Ryzhyk et al. (VMware Research / Feldera)",
+      "kind": "primary",
+      "published": 20261117
+    },
+    {
+      "id": "d-feldera-nexmark-2024",
+      "url": "https://www.feldera.com/blog/nexmark-vs-flink",
+      "title": "Feldera performance on Nexmark versus Flink",
+      "publisher": "Budiu, Ryzhyk et al. (VMware Research / Feldera)",
+      "kind": "primary",
+      "published": 20240910
+    },
+    {
+      "id": "d-ryzhyk-ddlog-2019",
+      "url": "https://ceur-ws.org/Vol-2368/paper6.pdf",
+      "title": "Differential Datalog",
+      "publisher": "Budiu, Ryzhyk et al. (VMware Research / Feldera)",
+      "kind": "primary",
+      "published": 20190604
+    },
+    {
+      "id": "d-mcsherry-dd-2013",
+      "url": "https://www.cidrdb.org/cidr2013/Papers/CIDR13_Paper111.pdf",
+      "title": "Differential dataflow",
+      "publisher": "McSherry, Murray, Isaacs, Isard (Microsoft Research)",
+      "kind": "primary",
+      "published": 20130106
+    },
+    {
+      "id": "d-gupta-dred-1993",
+      "url": "https://doi.org/10.1145/170035.170066",
+      "title": "Maintaining Views Incrementally",
+      "publisher": "Gupta, Mumick, Subrahmanian (AT&T Bell Labs / Maryland)",
+      "kind": "primary",
+      "published": 19930601
+    },
+    {
+      "id": "d-motik-maintenance-2019",
+      "url": "https://www.cs.ox.ac.uk/boris.motik/pubs/mnph19maintenance-revisited.pdf",
+      "title": "Maintenance of Datalog Materialisations Revisited",
+      "publisher": "Motik, Horrocks et al. (Oxford)",
+      "kind": "primary",
+      "published": 20190104
+    },
+    {
+      "id": "d-motik-equality-2015",
+      "url": "https://arxiv.org/pdf/1505.00212",
+      "title": "Combining Rewriting and Incremental Materialisation Maintenance for Datalog Programs with Equality",
+      "publisher": "Motik, Horrocks et al. (Oxford)",
+      "kind": "primary",
+      "published": 20150501
+    },
+    {
+      "id": "d-hu-optimised-2018",
+      "url": "https://arxiv.org/pdf/1711.03987",
+      "title": "Optimised Maintenance of Datalog Materialisations",
+      "publisher": "Motik, Horrocks et al. (Oxford)",
+      "kind": "primary",
+      "published": 20171120
+    },
+    {
+      "id": "d-brenner-abstraction-2017",
+      "url": "https://www.ceur-ws.org/Vol-1879/paper19.pdf",
+      "title": "Incremental Materialization Update via Abstraction Refinement",
+      "publisher": "Brenner, Glimm (Ulm)",
+      "kind": "primary",
+      "published": 20170718
+    },
+    {
+      "id": "d-szabo-dredl-2018",
+      "url": "https://voelter.de/data/pub/inca-oopsla2018.pdf",
+      "title": "Incrementalizing Lattice-Based Program Analyses in Datalog",
+      "publisher": "Szabó, Bergmann, Erdweg, Voelter (itemis / BME / Mainz)",
+      "kind": "primary",
+      "published": 20181101
+    },
+    {
+      "id": "d-wang-freejoin-2023",
+      "url": "https://arxiv.org/html/2301.10841",
+      "title": "Free Join: Unifying Worst-Case Optimal and Traditional Joins",
+      "publisher": "Wang, Willsey, Suciu (University of Washington)",
+      "kind": "primary",
+      "published": 20230125
+    },
+    {
+      "id": "d-veldhuizen-lftj-2014",
+      "url": "https://arxiv.org/pdf/1210.0481",
+      "title": "Leapfrog Triejoin: A Simple, Worst-Case Optimal Join Algorithm",
+      "publisher": "Veldhuizen (LogicBlox)",
+      "kind": "primary",
+      "published": 20131220
+    },
+    {
+      "id": "d-ngo-skew-2013",
+      "url": "https://arxiv.org/pdf/1310.3314",
+      "title": "Skew Strikes Back: New Developments in the Theory of Join Algorithms",
+      "publisher": "Ngo, Ré, Rudra (Buffalo / Stanford)",
+      "kind": "primary",
+      "published": 20131016
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-d1",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "version of a complex query can be reduced recursively to incrementalizing its component subqueries",
+      "says": {
+        "covers": "derived rows kept up to date as facts change",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d2",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "monotonic and non-monotonic recursion, streaming aggregation, and arbitrary compositions of all of these",
+      "says": {
+        "covers": "recursion",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d3",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "recursion, stratified negation, while-relational programs, window",
+      "says": {
+        "covers": "stratified negation",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d4",
+      "source": "d-budiu-dbsp-2023",
+      "quote": "full relational algebra, computations over sets and bags, nested relations, aggregation, flatmap (unnest), monotonic and nonmonotonic",
+      "says": {
+        "covers": "aggregates",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d5",
+      "source": "d-feldera-readme",
+      "quote": "The formal model that underpins our system, called DBSP, is",
+      "says": {
+        "adopted": "dbsp",
+        "in": "feldera"
+      }
+    },
+    {
+      "id": "li-d6",
+      "source": "d-feldera-readme",
+      "quote": "window functions, complex data types, time series operators, UDFs, and",
+      "says": {
+        "covers": "host functions",
+        "by": "dbsp",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d7",
+      "source": "d-feldera-nexmark-2024",
+      "quote": "On Nexmark, Feldera is up to 6.2× faster than Flink",
+      "says": {
+        "result": "dbsp",
+        "measure": "speedup over Flink on Nexmark streaming queries (Feldera)",
+        "bound": "up to",
+        "times": 6.2
+      }
+    },
+    {
+      "id": "li-d8",
+      "source": "d-ryzhyk-ddlog-2019",
+      "quote": "The DDlog compiler translates DDlog programs to Differential Dataflow (DD) [17] programs",
+      "says": {
+        "adopted": "differential dataflow",
+        "in": "ddlog"
+      }
+    },
+    {
+      "id": "li-d9",
+      "source": "d-ryzhyk-ddlog-2019",
+      "quote": "DDlog allows recursive rules with stratified negation",
+      "says": {
+        "covers": "stratified negation",
+        "by": "ddlog",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d10",
+      "source": "d-ryzhyk-ddlog-2019",
+      "quote": "DDlog relation cannot recursively depend on its own negation.",
+      "says": {
+        "covers": "non-stratified negation",
+        "by": "ddlog",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d11",
+      "source": "d-mcsherry-dd-2013",
+      "quote": "which extends traditional incremental computation to allow arbitrarily nested iteration",
+      "says": {
+        "covers": "recursion",
+        "by": "differential dataflow",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d12",
+      "source": "d-mcsherry-dd-2013",
+      "quote": "0.003% of the work done in a full prioritized re-evaluation",
+      "says": {
+        "result": "differential dataflow",
+        "measure": "work to slide a 24-hour window by one second, as a share of full re-evaluation (Twitter connected components)",
+        "bound": "exact",
+        "percent": 0.003
+      }
+    },
+    {
+      "id": "li-d13",
+      "source": "d-motik-equality-2015",
+      "quote": "in its basic form counting works only with nonrecursive rules",
+      "says": {
+        "covers": "recursion",
+        "by": "counting",
+        "is": false
+      },
+      "credits": ["d-gupta-dred-1993"]
+    },
+    {
+      "id": "li-d14",
+      "source": "d-motik-equality-2015",
+      "quote": "(DRed) algorithm [Gupta et al., 1993] handles recursive rules",
+      "says": {
+        "covers": "recursion",
+        "by": "dred",
+        "is": true
+      },
+      "credits": ["d-gupta-dred-1993"]
+    },
+    {
+      "id": "li-d15",
+      "source": "d-motik-maintenance-2019",
+      "quote": "a new counting algorithm that can handle recursive rules",
+      "says": {
+        "covers": "recursion",
+        "by": "recursive counting",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d16",
+      "source": "d-motik-maintenance-2019",
+      "quote": "overall, with an average score of 258.92 for the running time",
+      "says": {
+        "result": "recursive counting",
+        "measure": "running time relative to the fastest of counting, DRed and FBF on 1,000-fact deletions (slowdown score, 1 = fastest)",
+        "bound": "average",
+        "times": 258.92
+      }
+    },
+    {
+      "id": "li-d17",
+      "source": "d-motik-maintenance-2019",
+      "quote": "semantics of equality presents many new challenges to the materialisation maintenance problem [79], and studying these is out",
+      "says": {
+        "covers": "equality rules",
+        "by": "fbf",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d18",
+      "source": "d-motik-equality-2015",
+      "quote": "present the B/F≈algorithm, which combines rewriting with",
+      "says": {
+        "covers": "equality rules",
+        "by": "backward-forward",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d19",
+      "source": "d-motik-equality-2015",
+      "quote": "practical systems either use rewriting with rematerialisation, or axiomatise equality and use incremental maintenance",
+      "says": {
+        "covers": "derived rows kept up to date as facts change",
+        "by": "equality rewriting",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d20",
+      "source": "d-hu-optimised-2018",
+      "quote": "B/Fc was more than 20 times faster for UOBM-U",
+      "says": {
+        "result": "backward-forward with counting",
+        "measure": "speedup over plain backward-forward on small deletions",
+        "bound": "at least",
+        "times": 20
+      }
+    },
+    {
+      "id": "li-d21",
+      "source": "d-brenner-abstraction-2017",
+      "quote": "proper existentials are not supported",
+      "says": {
+        "covers": "existential rules",
+        "by": "datalog maintenance algorithms",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d22",
+      "source": "d-szabo-dredl-2018",
+      "quote": "to support incremental computation of recursive monotonic aggregations over lattices",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "dredl",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d23",
+      "source": "d-szabo-dredl-2018",
+      "quote": "analysis requires incremental recursive aggregation, which existing solvers fail to support.",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "prior incremental datalog solvers",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d24",
+      "source": "d-szabo-dredl-2018",
+      "quote": "so the analysis on BerkeleyDB uses 2.5X of",
+      "says": {
+        "result": "dredl",
+        "measure": "memory of the cached incremental analysis relative to the whole IDE's memory (cost, not speedup)",
+        "bound": "exact",
+        "times": 2.5
+      }
+    },
+    {
+      "id": "li-d25",
+      "source": "d-wang-freejoin-2023",
+      "quote": "we propose a new framework, called Free Join , that unifies the two",
+      "says": {
+        "covers": "worst-case optimal joins",
+        "by": "free join",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d26",
+      "source": "d-wang-freejoin-2023",
+      "quote": "On average (geometric mean), Free Join is 2.94x faster than binary join",
+      "says": {
+        "result": "free join",
+        "measure": "speedup over binary join on the JOB benchmark",
+        "bound": "geometric mean",
+        "times": 2.94
+      }
+    },
+    {
+      "id": "li-d27",
+      "source": "d-wang-freejoin-2023",
+      "quote": "and 9.61x faster than Generic Join",
+      "says": {
+        "result": "free join",
+        "measure": "speedup over Generic Join on the JOB benchmark (acyclic queries)",
+        "bound": "geometric mean",
+        "times": 9.61
+      }
+    },
+    {
+      "id": "li-d28",
+      "source": "d-wang-freejoin-2023",
+      "quote": "On cyclic queries, Free Join is up to 15.45x (q3) faster than binary join",
+      "says": {
+        "result": "free join",
+        "measure": "speedup over binary join on cyclic LSQB queries",
+        "bound": "up to",
+        "times": 15.45
+      }
+    },
+    {
+      "id": "li-d29",
+      "source": "d-wang-freejoin-2023",
+      "quote": "while the minimum speedups are 0.85x (17% slowdown) and 2.63x.",
+      "says": {
+        "result": "free join",
+        "measure": "speedup over binary join on the JOB benchmark, worst query",
+        "bound": "at least",
+        "times": 0.85
+      }
+    },
+    {
+      "id": "li-d30",
+      "source": "d-veldhuizen-lftj-2014",
+      "quote": "which achieves worst-case optimality (up to a log factor) over large and useful families of problem instances.",
+      "says": {
+        "covers": "worst-case optimal joins",
+        "by": "leapfrog triejoin",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d31",
+      "source": "d-veldhuizen-lftj-2014",
+      "quote": "It provides the core evaluation algorithms of the LogicBlox Datalog system.",
+      "says": {
+        "adopted": "leapfrog triejoin",
+        "in": "logicblox"
+      }
+    },
+    {
+      "id": "li-d32",
+      "source": "d-ngo-skew-2013",
+      "quote": "plan is destined to be slower than the best possible run time by a polynomial factor in the data size.",
+      "says": {
+        "covers": "worst-case optimal joins",
+        "by": "binary join plans",
+        "is": false
+      }
+    },
+    {
+      "id": "li-d33",
+      "source": "d-ngo-skew-2013",
+      "quote": "and they are special cases of a generic worst-case optimal join algorithm.",
+      "says": {
+        "covers": "worst-case optimal joins",
+        "by": "generic join",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d34",
+      "source": "d-ngo-skew-2013",
+      "quote": "The main ideas of the the algorithms presented here are an optimal way of avoiding skew",
+      "says": {
+        "covers": "skewed joins",
+        "by": "generic join",
+        "is": true
+      }
+    },
+    {
+      "id": "li-d35",
+      "source": "d-wang-freejoin-2023",
+      "quote": "the presence of skew in the data is another important factor.",
+      "says": {
+        "covers": "skewed joins",
+        "by": "binary join plans",
+        "is": false
+      }
+    }
+  ]
+}

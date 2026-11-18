@@ -1,0 +1,138 @@
+Lion programs run for research with @lionlang/cli 0.12.0 built at commit a9e953c (core 0.13.0), 2026-11-18.
+
+== program built-rest.json
+[
+  "begin",
+  ["schema", "Id", { "id": "value/integer?" }],
+  ["schema", "Tagged", { "tag": "value/string?" }],
+  {
+    "a rest variable binds the other keys": [
+      "query",
+      [
+        "schema/fits?",
+        ["quote", { "id": 1, "tag": "new", "note": "x" }],
+        ["schema/open", { "id": "?id" }, "?rest"]
+      ]
+    ],
+    "two exact schemas composed": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/open", "Id", "Tagged"]
+    ],
+    "a list rest binds the other items": [
+      "query",
+      [
+        "schema/fits?",
+        ["quote", [1, 2, 3]],
+        ["schema/open", ["array/make", "?first"], "?rest"]
+      ]
+    ],
+    "the rest matched against a schema": [
+      "schema/fits?",
+      ["quote", { "id": 1, "a": "x", "b": "y" }],
+      ["schema/open", "Id", ["schema/recordOf", "value/string?"]]
+    ]
+  }
+]
+== gives
+{
+  "a rest variable binds the other keys": [
+    {
+      "id": 1,
+      "rest": {
+        "tag": "new",
+        "note": "x"
+      }
+    }
+  ],
+  "two exact schemas composed": true,
+  "a list rest binds the other items": [
+    {
+      "first": 1,
+      "rest": [
+        2,
+        3
+      ]
+    }
+  ],
+  "the rest matched against a schema": true
+}
+
+== program built-merge.json
+[
+  "begin",
+  ["relation", "offer", ["sku", "usd"]],
+  [
+    "relation",
+    "best",
+    ["sku", "usd"],
+    { "key": "sku", "merge": { "usd": "aggregate/min" } }
+  ],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4]],
+  ["rule", ["best", "?s", "?u"], ["offer", "?s", "?u"]],
+  ["fact", ["best", "a1", 3], ["best", "b2", 7]],
+  {
+    "facts and a rule merge by the minimum": [
+      "query",
+      ["best", "?sku", "?usd"],
+      { "order": "sku" }
+    ]
+  }
+]
+== gives
+{
+  "facts and a rule merge by the minimum": [
+    {
+      "sku": "a1",
+      "usd": 3
+    },
+    {
+      "sku": "b2",
+      "usd": 7
+    }
+  ]
+}
+
+== program built-clash.json
+[
+  "begin",
+  [
+    "relation",
+    "tag",
+    ["id", "tags", "owner"],
+    { "key": "id", "merge": { "tags": "aggregate/union" } }
+  ],
+  [
+    "fact",
+    ["tag", 1, ["quote", ["a"]], "ana"],
+    ["tag", 1, ["quote", ["b"]], "bo"]
+  ],
+  ["query", ["tag", "?i", "?t", "?o"]]
+]
+== gives
+
+ERROR
+  "tag" is keyed by ["id"], but it would hold ["tag",1,["b"],"bo"] and ["tag",1,["a"],"ana"], which differ in a column that does not merge.
+
+== program built-assuming.json
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  {
+    "a reaches d after adding c to d": [
+      "assuming",
+      ["fact", ["edge", "c", "d"]],
+      ["path", "a", "d"]
+    ],
+    "a reaches d as it is": ["path", "a", "d"]
+  }
+]
+== gives
+{
+  "a reaches d after adding c to d": true,
+  "a reaches d as it is": false
+}

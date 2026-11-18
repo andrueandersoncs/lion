@@ -1,0 +1,48 @@
+{
+  "two exact parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    ["schema/allOf", { "id": "value/integer?" }, { "tag": "value/string?" }]
+  ],
+  "two open parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "two open parts let an extra key through": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new", "typo": true }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "an exact record pattern with one key too few": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    { "id": "value/integer?" }
+  ],
+  "a list pattern shorter than the list": [
+    "schema/fits?",
+    ["quote", [1, 2, 3]],
+    ["array/make", "value/number?", "value/number?"]
+  ],
+  "the rest of a record, in plain code": [
+    "object/remove",
+    ["quote", { "id": 1, "tag": "new", "note": "x" }],
+    "id"
+  ],
+  "the rest of a record, as a pattern": [
+    "query",
+    [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/open", { "id": "?id" }]
+    ]
+  ]
+}

@@ -5,7 +5,7 @@ import {
   logicError,
   takes,
 } from "@/errors/evaluation";
-import { AGGREGATORS, aggregator } from "@/logic/aggregates";
+import { AGGREGATORS, aggregator, registerAggregate } from "@/logic/aggregates";
 import {
   DeferredCall,
   isForm,
@@ -52,6 +52,7 @@ const aggregate = (kind: string) => {
   const name = `aggregate/${kind}`;
   // A waiting call is written under the name that builds it again.
   nameFunctions({ [name]: onList });
+  registerAggregate(kind, onList);
   readsOnlyArguments({ onList });
   return logicFunction(
     takes(1, (values: unknown) =>

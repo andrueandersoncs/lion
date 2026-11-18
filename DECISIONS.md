@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 162 questions have been decided, 63 records explain them, and of what the records assert, 522 hold when Lion is run, 4 are broken, 289 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 167 questions have been decided, 68 records explain them, and of what the records assert, 543 hold when Lion is run, 4 are broken, 294 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -168,6 +168,11 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`deep-calls`](#deep-calls) | `unwind-to-run-loop` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`scope-bindings-store`](#scope-bindings-store) | `map` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
+| 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
+| 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
+| 2026-11-18 | [`research-layout`](#research-layout) | `one-shared-model` | [Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions](#research-compounds) |
+| 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
+| 2026-11-18 | [`skill-eval-agent-folder`](#skill-eval-agent-folder) | `outside-repository` | [A skill eval's agent works outside the repository, and never sees a transcript](#skill-eval-outside-repository) |
 
 <a id="program-representation"></a>
 
@@ -3510,3 +3515,173 @@ Recorded 2026-11-18 in `history/notes/library-argument-guards.json`.
 - Stated, not checked by running Lion: `fib-17-lambda-ms` is 2.2. "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms"
 - Stated, not checked by running Lion: `fib-24-lambda-ms` is 54. "fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms"
 - Stated, not checked by running Lion: `core-code-lines-added` is 67. "The core grew by 67 lines of code, 0.6 percent"
+
+<a id="asking-what-would-hold"></a>
+
+## asking-what-would-hold
+
+Now: `assuming-question`.
+
+- 2026-11-18 `asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`: "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is." (`asking-what-would-hold.json`)
+
+<a id="asking-what-would-hold"></a>
+
+### `assuming` asks a question of the database as it would be after some changes
+
+Recorded 2026-11-18 in `history/notes/asking-what-would-hold.json`.
+
+**Context.** A program that wanted to know what would follow from a change had to make the change and undo it, or copy the database, as the lion-research skill's "What if" pattern did with a copy of the model on disk. A rule could not ask it at all. The research run on separation logic (`research/runs/separation-logic/`) found this in the magic wand, P −∗ Q: what holds once the state is extended with a part where P holds. Over facts, which can be used again, that is hypothetical reasoning: Bonner's embedded implications in Datalog, and the implication goals of λProlog and Lolli. Bonner showed that hypothetical additions raise the data complexity of Datalog from PTIME to PSPACE, and keep the fixpoint independent of how it is stratified.
+
+**Decision.** `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. What a change states must be known then, and every other variable of the expression is its own.
+
+**Consequences.** The engine asks an `assuming` by making a database of its own that shares the declarations, rules, invariants, and every fact it does not change, making the changes there, and asking the expression of it. The question rules carry over unchanged: a rule cannot ask, through `assuming`, about a relation that depends on its own head, and `why` shows an `assuming` that held as a check. The interop grid has two new rows, and both give in every place what plain code gives. Each `assuming` in a rule costs a derivation per answer, which the docs say.
+
+**Alternatives considered.**
+
+- Let `assuming` bind the variables of its goal, as a relation call does. Every other question, `not`, `exists`, and a goal used as a value, binds nothing outside it, and `find` gives what it matches; an `assuming` around a `find` gives the values without a second rule for questions.
+- Additions only, as in Bonner's hypothetical Datalog. `retract` is the other half of what a change is in Lion, and Sáenz-Pérez added hypothetical deletion for the same reason; a question that could add but not take away would be a special case of the change forms.
+- Keep making a copy of the database outside the program. A rule cannot ask a copy, and a copy made by hand is a second database whose answers the program cannot check.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `asking-what-would-hold`: `assuming-question`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: `assuming` exists. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: rule `assuming-is-a-question` holds. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
+- Holds when Lion is run: `assuming-leaves-database` is `unchanged`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: `assuming-in-rule` is `asked-per-answer`. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
+
+<a id="merging-what-a-key-gets"></a>
+
+## merging-what-a-key-gets
+
+Now: `lattice-merge-option`.
+
+- 2026-11-18 `merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`: "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`." (`merging-what-a-key-gets.json`)
+
+<a id="merging-what-a-key-gets"></a>
+
+### A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too
+
+Recorded 2026-11-18 in `history/notes/merging-what-a-key-gets.json`.
+
+**Context.** A keyed relation held one row per key by agreement alone: a fact replaced the row its key had, and two different rows that rules gave one key were an error. Combining the values a key gets took a second relation and a rule that aggregated into it, and that relation could not have facts, so a value known as a fact and values derived by rules could not meet in one place. The research run on separation logic (`research/runs/separation-logic/`) found the same split in Iris's resource algebras: values that combine, a check of which combinations are valid, and a unit. Lion's keyed rules are the agreement algebra, where equal values combine and different ones are invalid, and its lattice aggregates are algebras where every combination is valid. Lion's earlier design for incremental maintenance (`shared-algebra.md`, 2026-11-18) planned to make a key's columns folds over its candidates, with facts as candidates.
+
+**Decision.** A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. A fact of such a relation never replaces another, and `retract` takes it back. A rule's head gives a merged column plainly, and the relation joins it, so a relation that merges is an aggregated relation whose facts are candidates too.
+
+**Consequences.** The relation form takes the option `"merge"`, written in snapshots beside the key. The relation's declaration adds a rule that reads its facts as candidates, under the name the goal-directed rewrite already uses for a relation's own facts; a snapshot writes the declaration, not the rule, and `why` tells a fact that won as given, with the declaration as its rule. Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. `aggregate/sum`, `aggregate/count`, and the other aggregates that add up a rule's matches do not merge, since a fact is not a match: a relation that aggregates with them still cannot have facts.
+
+**Alternatives considered.**
+
+- Let any aggregated relation take facts as candidates. A sum or count adds up a rule's matches, and a fact is not one: with facts kept as a set, two equal facts would count once. A lattice join gives the same result whatever is repeated.
+- A merge function the program writes, as egglog's `:merge`. Lion could not check that a written function is associative, commutative, and idempotent, and without that the row a key holds would depend on the order candidates come in, against the guarantee that a program has one answer.
+- Combine facts when they are written, as an upsert that keeps the better value. The candidates would be lost: `retract` could not take one back, and the rows rules give could not meet the facts.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `merging-what-a-key-gets`: `lattice-merge-option`. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
+- Holds when Lion is run: rule `a-key-holds-the-join-of-its-candidates` holds. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key."
+- Holds when Lion is run: `relation-merge-option` exists. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
+- Holds when Lion is run: `merge-joins-facts-and-rules` is `join`. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values."
+- Holds when Lion is run: `merge-fact-retract` is `candidate-removed`. "A fact of such a relation never replaces another, and `retract` takes it back."
+- Holds when Lion is run: `keyed-aggregated-rows-differ` is `error`. "Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were."
+
+<a id="research-layout"></a>
+
+## research-layout
+
+Now: `one-shared-model`.
+
+- 2026-11-18 `research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`: "Every research run adds to one Lion model in `research/`." (`research-compounds.json`)
+
+<a id="research-compounds"></a>
+
+### Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions
+
+Recorded 2026-11-18 in `history/notes/research-compounds.json`.
+
+**Context.** Research runs with the lion-research skill kept each run in its own folder under the git-ignored `out/`. The run on what Lion should improve next (2026-11-17) and the run on separation logic (2026-11-18) each recorded what Lion has, from its docs and from programs run on it, under names of their own. The second run could not query the first, and neither was kept: a removed worktree takes `out/` with it. The programs that checked an inference, such as the model of a record split run over every small case, lived beside the model and were lost with it.
+
+**Decision.** Every research run adds to one Lion model in `research/`. Its steps, notes, sources, probes, standing checks, and each run's report and page plan are committed. A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule. When Lion changes, the probes run again under a new source id, and the publisher's latest word replaces its earlier one.
+
+**Consequences.** The separation-logic run is the first run in `research/`. Its frame was split into the shared frame `steps/01-frame.src.json`, which holds the kinds of statement and the rules that judge an idea for Lion, and its own step `02-sl-frame.json`, which holds its assumptions. Its claim, lead, and assumption ids start with `sl-`. `guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps. `model.json` and each run's built page are not committed: the replay builds them.
+
+**Alternatives considered.**
+
+- A folder per run, each its own model. Runs cannot ask one another, name the same feature differently, and keep two copies of what Lion does that drift apart.
+- Keep research under the git-ignored out/. The evidence and the programs behind a conclusion are lost with the worktree, and the next run starts from nothing.
+- Commit model.json beside the steps. It is built from the steps, as the project record's model is, and a copy would go stale the first time a step changed.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `research-layout`: `one-shared-model`. "Every research run adds to one Lion model in `research/`."
+- Holds when Lion is run: rule `research-runs-extend-shared-model` holds. "A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix."
+- Holds when Lion is run: `research-probes-runner` exists. "What Lion does is a claim quoting a sentence of its docs or the output of a program in `research/probes/`, saved as a source by `research/probes/run.mjs`, and each conclusion is derived by a rule."
+- Holds when Lion is run: `researching-guideline` exists. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
+- Holds when Lion is run: `research-extends-existing-model` is `true`. "`guidelines/researching.md` states the practice, `AGENTS.md` and `CLAUDE.md` name it, and the skill's `SKILL.md` says to add a run to a model the project already keeps."
+- Holds when Lion is run: `separation-logic-research` exists. "The separation-logic run is the first run in `research/`."
+
+<a id="rest-of-a-record"></a>
+
+## rest-of-a-record
+
+Now: `schema-open-second-argument`.
+
+- 2026-11-18 `rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`: "On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`." (`rest-of-a-record.json`)
+
+<a id="rest-of-a-record"></a>
+
+### What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it
+
+Recorded 2026-11-18 in `history/notes/rest-of-a-record.json`.
+
+**Context.** A record schema was exact and `schema/open` let other keys be, with nothing between: a pattern could not bind the keys it did not name, a list pattern could not take the items after its first ones, and two exact record schemas could not be combined, since `schema/allOf` asks a record to have only the keys of each at once. The research run on separation logic (`research/runs/separation-logic/`) found the same split in its separating conjunction, where a heap is a finite map and P ∗ Q splits it into disjoint parts, and in Racket's `hash` pattern, closed by default, with `#:open` and `#:rest`. JSON Schema met the composition problem and added `unevaluatedProperties` in draft 2019-09. Lion's own lion-research core computed a record's rest by hand with `object/remove`.
+
+**Decision.** A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern.
+
+**Consequences.** `schema/open` takes one or two arguments, and a list of schemas as well as a record. `fit.ts` checks a record and a list by one rule, the rest's schema in place of the flag that said whether a record was open. A problem in the rest is shown where it stands in the value, and the rest as a whole that does not fit is the value not fitting the `schema/open` schema. A call of `schema/open` around a known record and a variable for the rest is a pattern, so it binds in a relation call and in `schema/fits?`, in rules and goal-directed queries alike. The model of schemas in `logic/tests/shapes.ts` generates rests for records and lists, so every property of schemas and patterns covers them.
+
+**Alternatives considered.**
+
+- A new form, such as `schema/rest` or a reserved key like `"..."` in a record. A reserved key takes a string that JSON data may use, and a new name adds a word for what `schema/open` already means: the keys a record leaves to something else.
+- Make records open by default, as Elixir's map patterns and JSON Schema's objects are. Lion's records were made exact so that what a pattern binds does not depend on goal order, and Racket's `hash` pattern is exact by default too.
+- Fix `schema/allOf` to let each record skip the keys of the others. `schema/allOf` means that a value fits every schema on its own, everywhere else; changing it for records alone would be a special case, which `unevaluatedProperties` shows JSON Schema needed a new keyword to avoid.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `rest-of-a-record`: `schema-open-second-argument`. "On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`."
+- Holds when Lion is run: rule `rest-of-a-record-or-list` holds. "A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after."
+- Holds when Lion is run: `schema-open-rest` exists. "`schema/open` takes one or two arguments, and a list of schemas as well as a record."
+- Holds when Lion is run: `schema-open-composes-exact-schemas` is `fits`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
+- Holds when Lion is run: `schema-open-rest-binds` is `the-other-keys`. "A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern."
+- Holds when Lion is run: `schema-open-list-rest` is `the-other-items`. "What it leaves over is the rest: the record of the other keys, or the list of the items after."
+
+<a id="skill-eval-agent-folder"></a>
+
+## skill-eval-agent-folder
+
+Now: `outside-repository`.
+
+- 2026-11-18 `skill-eval-agent-folder`: `outside-repository` over `inside-repository`: "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees." (`skill-eval-outside-repository.json`)
+
+<a id="skill-eval-outside-repository"></a>
+
+### A skill eval's agent works outside the repository, and never sees a transcript
+
+Recorded 2026-11-18 in `history/notes/skill-eval-outside-repository.json`.
+
+**Context.** `bun run skill-eval` ran each agent in a folder under `out/skill-eval/`, inside the repository. A headless agent there loads the repository's `CLAUDE.md` and the index of the memory Claude Code keeps for the repository, so every run of the research skill's eval worked with Lion's developer instructions and the maintainer's notes about the skill in context. A trial of the reasoning skill found a second leak: it kept each run's transcripts in the folder the agent worked in, and a later session read the earlier one's transcript instead of the record the trial meant to test.
+
+**Decision.** Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. When its sessions end, its folder is copied there and graded.
+
+**Consequences.** No run reads the repository's instructions, the maintainer's memory, another run's work, or a transcript. Scores of the research skill's eval recorded before this change were taken with the repository's instructions and memory in context, so they are not comparable with later ones. A run's folder is in the system's temporary folder while its sessions run, so a reboot during a run loses that run.
+
+**Alternatives considered.**
+
+- Keep the agents under `out/skill-eval/` and turn the instructions off with settings. Claude Code loads `CLAUDE.md` from the folder it runs in and every folder above it, and keys its memory by the repository. No setting the runner passes stops both, and a new version could start loading something else.
+- Keep each run's transcripts beside its agent's folder. An agent lists the folder above its own. One did, and read the earlier session's transcript.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `skill-eval-agent-folder`: `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: rule `skill-eval-isolated-runs` holds. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: `skill-eval-agent-folder` is `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."

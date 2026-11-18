@@ -627,14 +627,16 @@ describe("a name that nothing has yet", () => {
 });
 
 describe("schema/open around a name of its own form", () => {
-  /** Shapes that are not a record of schemas, and do not name one. */
+  /** Shapes that are not a record or list of schemas, and do not name one. */
   const notRecord = Arbitrary.filter(
     shape(1),
     (given) =>
       !(
         given.kind === "tree" ||
         (given.kind === "record" && !given.open) ||
-        (given.kind === "literal" && isRecord(given.value))
+        (given.kind === "tuple" && !given.open) ||
+        (given.kind === "literal" &&
+          (isRecord(given.value) || Array.isArray(given.value)))
       )
   );
 
@@ -650,7 +652,7 @@ describe("schema/open around a name of its own form", () => {
           database
         );
         const message = expect.stringContaining(
-          "schema/open expects a record of schemas, or a schema that names one"
+          "schema/open expects a record or a list of schemas, or a schema that names one"
         );
         expect(direct).toMatchObject({ ok: false, message });
         resultOf(

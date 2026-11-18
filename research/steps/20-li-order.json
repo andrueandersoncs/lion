@@ -1,0 +1,244 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "claim",
+   [
+    "quote",
+    "li-f1"
+   ],
+   [
+    "quote",
+    "d-budiu-dbsp-2023"
+   ],
+   [
+    "quote",
+    "𝑄Δ def= D ◦𝑄◦I."
+   ],
+   [
+    "quote",
+    {
+     "covers": "re-deriving and comparing",
+     "by": "dbsp",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-f1"
+   ],
+   [
+    "quote",
+    "Definition 3.1: the incremental version of any operator is integrate, apply, differentiate"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-f2"
+   ],
+   [
+    "quote",
+    "d-budiu-dbsp-2023"
+   ],
+   [
+    "quote",
+    "We have just proven the correctness of semi-naïve evaluation as an immediate consequence of the cycle rule!"
+   ],
+   [
+    "quote",
+    {
+     "covers": "semi-naive evaluation",
+     "by": "dbsp",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-f3"
+   ],
+   [
+    "quote",
+    "d-budiu-dbsp-2023"
+   ],
+   [
+    "quote",
+    "the I and D operators were defined on abelian groups, and relational databases in general are not abelian groups, since they operate on sets."
+   ],
+   [
+    "quote",
+    {
+     "covers": "annotations without subtraction",
+     "by": "dbsp",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-f4"
+   ],
+   [
+    "quote",
+    "d-budiu-dbsp-2023"
+   ],
+   [
+    "quote",
+    "some aggregate functions, such as MIN, are not linear: for handling deletions they need to track the full set."
+   ],
+   [
+    "quote",
+    {
+     "covers": "min without the full set",
+     "by": "dbsp",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-f5"
+   ],
+   [
+    "quote",
+    "d-budiu-dbsp-2023"
+   ],
+   [
+    "quote",
+    "converts set operations into group operations by using Z-sets (also called z-relations [22]) to represent sets."
+   ],
+   [
+    "quote",
+    {
+     "covers": "annotated relations",
+     "by": "dbsp",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-f6"
+   ],
+   [
+    "quote",
+    "b-green-2007"
+   ],
+   [
+    "quote",
+    "bag semantics can be viewed as a generalization to annotated relations"
+   ],
+   [
+    "quote",
+    {
+     "covers": "annotated relations",
+     "by": "semiring provenance",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l39"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Such a relation is derived again and compared with what it was"
+   ],
+   [
+    "quote",
+    {
+     "lion": "re-deriving and comparing",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l39"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l40"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "Answers are computed bottom-up with semi-naive evaluation"
+   ],
+   [
+    "quote",
+    {
+     "lion": "semi-naive evaluation",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-l40"
+   ],
+   [
+    "quote",
+    "Guarantees"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-l41"
+   ],
+   [
+    "quote",
+    "lion-code"
+   ],
+   [
+    "quote",
+    "2545 logic/model.ts"
+   ],
+   [
+    "quote",
+    {
+     "counted": "lines in logic/model.ts",
+     "n": 2545
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

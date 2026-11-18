@@ -1,0 +1,472 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m1"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "A record fits a record with the same keys, with values that fit."
+   ],
+   [
+    "quote",
+    {
+     "lion": "record patterns exact by default",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m1"
+   ],
+   [
+    "quote",
+    "What fits a schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m2"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "schema/open allows keys the record does not name."
+   ],
+   [
+    "quote",
+    {
+     "lion": "open record patterns",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m2"
+   ],
+   [
+    "quote",
+    "What fits a schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m3"
+   ],
+   [
+    "quote",
+    "lion-fit-code"
+   ],
+   [
+    "quote",
+    "open = false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "open record patterns",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m3"
+   ],
+   [
+    "quote",
+    "checkRecord"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m4"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"pairs where an exact record differs from a split with an empty rest\": 0"
+   ],
+   [
+    "quote",
+    {
+     "covers": "record patterns exact by default",
+     "by": "record split with a rest schema",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m4"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m5"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"pairs where schema/open differs from a split with any record as the rest\": 0"
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "record split with a rest schema",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m5"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m6"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"triples where a split with an exact rest differs from the one exact schema of both parts\": 0"
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing exact record schemas",
+     "by": "record split with a rest schema",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m6"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m7"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"record schemas tried\": 64"
+   ],
+   [
+    "quote",
+    {
+     "counted": "record schemas",
+     "n": 64
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m7"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m8"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"records tried\": 27"
+   ],
+   [
+    "quote",
+    {
+     "counted": "records",
+     "n": 27
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m8"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m9"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"pairs where an exact record differs from a split with an empty rest\": 0"
+   ],
+   [
+    "quote",
+    {
+     "counted": "exact records that differ from a split",
+     "n": 0
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m9"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m10"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"pairs where schema/open differs from a split with any record as the rest\": 0"
+   ],
+   [
+    "quote",
+    {
+     "counted": "open records that differ from a split",
+     "n": 0
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m10"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m11"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"disjoint pairs of exact schemas tried\": 343"
+   ],
+   [
+    "quote",
+    {
+     "counted": "disjoint pairs of exact schemas",
+     "n": 343
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m11"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m12"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"triples where a split with an exact rest differs from the one exact schema of both parts\": 0"
+   ],
+   [
+    "quote",
+    {
+     "counted": "composed schemas that differ from a split",
+     "n": 0
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m12"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m13"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"triples where allOf of the two exact parts fits\": 27"
+   ],
+   [
+    "quote",
+    {
+     "counted": "records allOf of two exact parts accepts",
+     "n": 27
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m13"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-m14"
+   ],
+   [
+    "quote",
+    "lion-probes"
+   ],
+   [
+    "quote",
+    "\"triples where the one exact schema of both parts fits\": 729"
+   ],
+   [
+    "quote",
+    {
+     "counted": "records the combined exact schema accepts",
+     "n": 729
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-m14"
+   ],
+   [
+    "quote",
+    "split-model.json"
+   ]
+  ]
+ ],
+ "recorded"
+]

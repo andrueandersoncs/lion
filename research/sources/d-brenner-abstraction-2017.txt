@@ -1,0 +1,805 @@
+Incremental Materialization Update via
+
+Abstraction Refinement
+
+Markus Brenner and Birte Glimm
+
+University of Ulm, Germany, <first name>.<last name>@uni-ulm.de
+
+Abstract. Abstraction refinement is a recently introduced technique
+which allows for reducing materialization of an ontology with a large
+ABox to materialization of a smaller (compressed) ‘abstraction’ of this
+ontology. In this paper, we show how abstraction refinement can be
+adopted for incremental ABox materialization by combining it with the
+well-known DRed algorithm for materialization maintenance. Similarly
+to reasoning using abstraction refinement, we can perform computationally expensive operations such as overdeletion on smaller, disconnected
+abstractions instead of operating on a large ABox. We also show that the
+obtained procedure is sound and complete for Horn ALCHI ontologies.
+
+1
+Introduction
+
+Most ontology reasoners support the task of materialization (i.e., they compute
+and explicitly store all entailed atomic concept and role assertions for the individuals in the ontology), which allows for the evaluation of conjunctive instance
+queries directly over the stored facts. Computing the materialisation is computationally expensive and approaches such as summarization [3], ABox modularization [16], or abstraction refinement [5] attempt to “compress” the size of the
+dataset over which the materialization is computed, thereby enabling processing
+of large ABoxes and reducing the number of recurring reasoning steps. Even
+using efficient materialization techniques, recomputing all consequences whenever input data changes can cause a significant delay before user queries can
+be answered again, which might be prohibitive for some application scenarios.
+Incremental maintenance algorithms originating from the database and Datalog
+communities (see, e.g., [14, 10]) have been applied to description logics and the
+semantic web for incremental classification [6, 13], incremental materialization
+via Datalog [15] and RDF stream reasoning [2]. While the basic idea of incremental maintenance algorithms is generally applicable, the presented algorithms
+so far focus on and are optimized for ontologies that can be expressed in the form
+of (Datalog) rules, i.e., proper existentials are not supported. Furthermore, how
+incremental maintenance algorithms can be combined with data compression
+techniques is an open problem, only addressed in a sketchy way by Steigmiller
+et al. [12] in the form of a representative cache maintaining individuals in an
+incremental fashion.
+
+
+In this paper we address this problem by combining the abstraction refinement technique for materialization of Horn ALCHI ontologies with the wellknown Delete/Rederive (DRed) algorithm for materialization management.
+
+2
+Preliminaries
+
+The syntax of ALCHI is defined using a vocabulary consisting of countably
+infinite disjoint sets NC of atomic concepts, NR of atomic roles, and NI of individuals. A role is either an atomic role or an inverse role r−with r ∈NR.
+We define R−:= r−if R = r and R−:= r if R = r−. For general semantics
+and complex concepts and axioms, we conform to the standard definitions and
+refer the reader to e.g. Baader et al. [1]. An ontology O is a finite set of axioms, written as O = A ∪T , where A is an ABox consisting of the concept
+and role assertions in O and T a TBox consisting of the concept and role inclusion axioms in O. We also refer to concept and role assertions simply as
+assertions. To simplify the presentation, we do not distinguish between axioms
+R(a, b), R ⊑S and, respectively, R−(b, a), R−⊑S−. We use con(O), rol(O), and
+ind(O) for the sets of atomic concepts, atomic roles, and individuals occurring
+in O, respectively. Given an ontology O = A ∪T , an ABox justification w.r.t.
+T for an axiom α with O |= α is any set J ⊆A s.t. J ∪T |= α. An ABox
+justification J is minimal, if ∀J′ ⊂J : J′ ∪T̸ |= α. An ALCHI ontology O is
+Horn [9] and in normalized form if, for every C(a) ∈O, C is an atomic concept and every concept inclusion C ⊑D ∈O, is in one of the following forms
+⊤⊑A, A ⊑B, A ⊑∃R.B, A ⊑⊥, A ⊓B ⊑C, A ⊑∀R.B where A, B, and C
+are atomic concepts and R is a role. W.l.o.g., we assume in the remainder every
+ontology as normalized by applying a structural transformation; see e.g. [8].
+
+For an ontology O = A ∪T , we say that A is concept-materialized w.r.t.
+T , if O |= A(a) implies A(a) ∈A for each A ∈con(O) and a ∈ind(O); A
+is role-materialized w.r.t. T if O |= r(a, b) implies r(a, b) ∈A for each r ∈
+rol(O) and a, b ∈ind(O); A is (fully) materialized w.r.t. T if it is concept-, and
+role-materialized. Given an ontology O = A ∪T , the concept-, role-, and/or
+(full) materialization of A w.r.t. T of is the smallest super-set of A that is
+concept-, role-, and/or fully materialized w.r.t. T , respectively. Note that the
+full materialization of A w.r.t. T is always finite since the sets con(O), rol(O)
+and ind(O) are finite. Since the role materialization of an ALCHI ontology can
+be determined quickly using a precomputed role hierarchy, we focus on concept
+materialization in the remainder.
+
+2.1
+Abstraction Refinement
+
+The main idea of the abstraction refinement method [4, 5] is to materialize an
+ontology O = A ∪T with a potentially large ABox A by constructing a smaller
+ABox B such that the materialization of B ∪T can be computed by a generalpurpose reasoner, and transferring the new entailments back to O. The ABox B
+is usually called the abstraction of the original ABox A. For transferring back
+entailments, we use homomorphisms:
+
+2
+
+
+Definition 1. Let A and B be ABoxes. A mapping h: ind(B) →ind(A) is called
+a homomorphism (from B to A) if, for every assertion α ∈B, we have h(α) ∈A,
+where h(C(a)) := C(h(a)) and h(R(a, b)) := R(h(a), h(b)). We say an individual
+b ∈ind(B) is a representative of an individual a ∈ind(A) if there exists a
+homomorphism h: ind(B) →ind(A) such that h(b) = a. We further extend h to
+ABoxes as h(B) = ∪α∈Bh(α).
+
+Entailments can be transferred due to the following property.
+
+Lemma 1. Let h: ind(B) →ind(A) be a homomorphism between the ABoxes
+B and A. Then, for every TBox T and every axiom β, B ∪T |= β implies
+A ∪T |= h(β).
+
+Suitable abstractions for ALCHI can be constructed by considering asserted
+roles and concepts for single individuals using types:
+
+Definition 2 (Type). Let A be an ABox and a an individual. The concept
+type of a w.r.t. A is a set of concepts τC(a) = {C | C(a) ∈A}. The role type of
+a w.r.t. A is a set of roles τR(a) = {R | ∃b : R(a, b) ∈A}. The (combined) type
+of a w.r.t. A is a pair (τC, τR), where τC(a) and τR(a) are the concept and role
+type of a w.r.t. A, respectively.
+
+Example 1. Let A = {A(a), A(b), R(a, b)}. Then τC(a) = τC(b) = {A}, τR(a) =
+{R}, τR(b) = {R−}, τ(a) = τ1 = ⟨{A}, {R}⟩, and τ(b) = τ2 = ⟨{A}, {R−}⟩.
+
+The abstract ABox is then constructed by introducing one representative for
+each type with the respective assertions.
+
+Definition 3 (Abstraction). Let A be an ABox and τ = ⟨τC, τR⟩a type. The
+abstraction for τ is an ABox Bτ = {C(vτ) | C ∈τC} ∪{R(vτ, wR
+
+τ ) | R ∈τR},
+where vτ and wR
+
+τ
+are distinguished abstract individuals for the type τ. The
+abstraction of A is B = �
+
+a∈ind(A) Bτ(a), where τ(a) is the type for a w.r.t. A.
+
+Example 2. The abstraction for A in Example 1 is B = Bτ(a) ∪Bτ(b), where
+Bτ(a) = Bτ1 = {A(vτ1), R(vτ1, wR
+
+τ1)}, Bτ(b) = Bτ2 = {A(vτ2), R−(vτ2, wR−
+
+τ2 )}.
+
+Intuitively, the abstraction is a disjoint union of ABoxes simulating combined
+types. Note that each mapping h: ind(B) →ind(A) such that:
+
+h(vτ) ∈{a ∈ind(A) | τ(a) = τ},
+(1)
+
+h(wR
+
+τ ) ∈{b ∈ind(A) | R(h(vτ), b) ∈A},
+(2)
+
+is a homomorphism from B to A, which allows us to transfer entailments from the
+abstraction back to the original ABox (Lemma 1). We formalize these transferred
+entailments using Definition 4.
+
+Definition 4. Let B be the abstraction of an ABox A (according to Definition 3), B∞be the (concept-)materialization of B ∪T , and ∆B = B∞\ B. The
+update of A using ∆B is the smallest set of assertions ∆A such that:
+
+C(vτ(a)) ∈∆B
+⇒
+C(a) ∈∆A,
+(3)
+
+R(a, b) ∈A, C(wR
+
+τ(a)) ∈∆B,
+⇒
+C(b) ∈∆A.
+(4)
+
+3
+
+
+R⊑
+
+A1(a)
+· · ·
+An(a)
+B(a)
+: T |= A0 ⊓. . . ⊓An ⊑B
+
+R∀
+
+A1(a)
+· · ·
+An(a)
+R(a, b)
+B(b)
+: T |= A0 ⊓. . . ⊓An ⊑∀S.B and T |= R ⊑S
+
+Fig. 1. Materialization rules for Horn ALCHI ontologies; A and B are atomic concepts;
+R, S are roles; a, b are individuals
+
+Using the definitions above, the Abstraction Refinement method for reasoning
+over a Horn ALCHI ontology O = A ∪T can be summarized as follows:
+AR1 Build the abstraction B of A using Definition 3
+AR2 Determine the update ∆A of A according to Definition 4, using a reasoner
+
+on B ∪T and extend A with ∆A.
+AR3 Repeat from Step AR1 until no new entailments can be added to A.
+
+Steps AR1 and AR2 are repeated until the procedure reaches a fix-point.
+The method is sound, complete, and terminating for Horn ALCHI and, with
+some extensions, even for Horn SHOIF [5].
+
+3
+Combining Abstraction Refinement with DRed
+
+For computing the materialization of a Horn ALCHI ontology O = A ∪T , we
+compute the closure of the ABox assertions using a slightly modified version of
+the materialization rules given by Glimm et al. [5] for Horn SHOIF restricted
+to Horn ALCHI as shown in Figure 1. Premises are given above the horizontal
+line and the conclusions below. Side conditions are given after the colon and
+restrict the expressions to which the rules are applicable. For example, rule R⊑
+produces one inference for each individual a and concepts A1, . . . , An, B such
+that T |= A0 ⊓. . . ⊓An ⊑B with the premise {A1(a), . . . , An(a)} and the
+conclusion B(a). Note that the axioms in the TBox T are only used in side
+conditions and never as premises of the rules, which allows us to focus on ABox
+reasoning and to leave TBox reasoning to a suitable reasoner. Lemma 2 can be
+shown very similarly (although in a much simpler way) to the proof used by
+Glimm et al. [5].
+
+Lemma 2. The rules in Figure 1 are sound and complete for the conceptmaterialization of a normalized Horn ALCHI ontology.
+
+3.1
+The Delete/Rederive Algorithm
+
+While one can examine a variety of different knowledge base changes in the DL
+setting, we choose to adapt the database-based view, in which only known ABox
+
+4
+
+
+facts can be added or deleted. This view already provides enough expressivity
+for a variety of use cases, e.g. stream reasoning [2]. Additionally, as additions
+of ABox facts can be handled by simply ’continuing’ materialization using the
+new facts due to the monotonicity of DL reasoning, we also focus on deletions in
+the remainder. More precisely, we assume the following setting and notation in
+the remainder of the paper: Given a normalized ALCHI ontology O = A ∪T ,
+the materialization A∞of A w.r.t. T , and a set of assertions A−⊆A to be
+deleted, we want to determine the materialization of A \ A−w.r.t. T using A∞.
+Doing so requires the identification and removal of assertions in A∞no longer
+derivable from A \ A−, which is a rather difficult task. The Delete/Rederive
+(DRed) algorithm [7, 11] therefore initially overestimates the necessary deletions
+and then determines facts still derivable from A \ A−. This overestimation is
+obtained by continuously overdeleting facts, which could be derived from already
+overdeleted facts. We formalize this behavior by defining a form of restricted rule
+applications.
+
+Definition 5 (Restricted Derivations). Given an ontology O = A ∪T and
+an ABox A′, an axiom α directly follows from A ∪T under restriction A′, if
+either α ∈A′ or if a rule from Figure 1 can be applied to A w.r.t T to derive α
+and at least one of the premises is in A ∩A′. If α directly follows from A ∪T
+under restriction A′, we write A ∪T ⊢A′ α.
+
+For the presentation of the DRed algorithm, we follow the presentation style
+of Motik et al. [10], but we adapt it to a consequence-based calculus. This avoids
+complications with ensuring termination of a Datalog program in the presence
+of function symbols, which are required to translate existential quantifiers. The
+algorithm further uses several auxiliary sets: the set Dall accumulates facts that
+might need to be removed from A∞due to the removal of A−, the set Dnew
+gathers facts derived in the current iteration of rule application, and the set
+Dprev contains facts derived in the previous iteration of rule application. The
+DRed algorithm determines A∞
+
+new as the (concept-)materialization of (A \ A−)
+w.r.t. T as follows:
+DR1 Set A = A \ A−, set Dnew = A−, and set Dall = ∅.
+DR2 Set Dprev = Dnew \ Dall. If Dprev = ∅, then go to step DR4;
+DR3 Set Dall = Dall ∪Dprev, set Dnew to the set of all assertions α with
+
+A∞⊢Dprev α. Repeat step DR2.
+After this step, Dall contains all facts that might need to be deleted, so steps
+DR2–DR3 are called overdeletion.
+DR4 Set A∞
+
+new = A∞\ Dall, and set Dnew = Dall ∩A.
+DR5 Evaluate an extension of the rules in Figure 1 over A∞
+
+new w.r.t. T such that
+each premise additionally contains its conclusion, but restricted to match
+assertions in Dall and such that the conclusion is added to Dnew.
+This rederivation step adds to Dnew facts with an alternate derivation in the
+updated A∞
+
+new. The additional premise restricted to matches in Dall restricts
+rederivation only to facts from steps DR2–DR3.
+DR6 Set Dprev = Dnew \ A∞
+
+new. If Dprev = ∅, then terminate;
+DR7 Set A∞
+
+new = A∞
+
+new ∪Dprev, set Dnew to the set of all assertions α with
+A∞
+
+new ⊢Dprev α. Repeat step DR6. Steps DR6–DR7 are called (re)insertion.
+
+5
+
+
+3.2
+Incremental Materialization via Abstraction Refinement
+
+We adopt DRed in the general abstraction refinement way: We construct, for
+each of the different phases, suitable abstractions of the ABox, on which we
+perform the overdeletion, rederivation and the reinsertion phase. Interleaved refinement steps (in case of overdeletion and reinsertion repeatedly, until a fixpoint
+is reached) transfer results back to the original ABox and yield an adapted abstraction.
+
+While reasoning using standard abstraction refinement requires only knowledge about asserted concepts and roles, overdeleting and rederiving on abstractions additionally requires knowledge about the set of assertions that are to be
+deleted. To keep track of such assertions, we extend the definitions of types and
+abstractions to bi-types ans bi-abstractions.
+
+Definition 6 (Bi-Type). Given ABoxes A1, A2, the bi-type of an individual
+a ∈ind(A1 ∪A2) w.r.t. (A1, A2) is a quadruple (τ 1
+
+C(a), τ 1
+
+R(a), τ 2
+
+C(a), τ 2
+
+R(a)),
+where (τ 1
+
+C(a), τ 1
+
+R(a)) is the combined type of a w.r.t. A1 and (τ 2
+
+C(a), τ 2
+
+R(a)) is
+the combined type of a w.r.t. A2.
+
+Definition 7 (Bi-Abstraction). Given two ABoxes A1, A2 and a bi-type τ =
+(τ 1
+
+C, τ 1
+
+R, τ 2
+
+C, τ 2
+
+R) w.r.t. (A1, A2), the bi-abstraction for τ is an ABox B1
+
+τ ∪B2
+
+τ,
+where B1
+
+τ = {C(vτ) | C ∈τ 1
+
+C} ∪{R(vτ, wR
+
+τ ) | R ∈τ 1
+
+R}, B2
+
+τ = {C(vτ) | C ∈τ 2
+
+C} ∪
+{R(vτ, wR
+
+τ ) | R ∈τ 2
+
+R}, and vτ and wR
+
+τ are distinguished abstract individuals for
+the bi-type τ. The bi-abstraction of (A1, A2) is
+B = B1 ∪B2,
+B1 = �
+
+a∈ind(A) B1
+
+τ(a),
+B2 = �
+
+a∈ind(A) B2
+
+τ(a),
+where τ(a) is the bi-type for a w.r.t. (A1, A2) and B1
+
+τ(a) ∪B2
+
+τ(a) is the biabstraction for τ(a).
+
+The following example highlights, how bi-abstractions also differentiate types
+based on their (over-)deleted assertions, while still aggregating ‘similar’ cases.
+
+Example 3. For A = {A(a1), R(a1, b), A(a2), R(a2, b), A(a3), R(a3, b)} and A−=
+{A(a1), A(a3)}, the combined type of a1, a2, and a3 w.r.t. A is ({A}, {R}). To
+distinguish a1 and a3 from a2, we consider the bi-types w.r.t. (A \ A−, A−) and
+obtain τ(a1) = τ(a3) = τ1 = (∅, {R}, {A}, ∅) and τ(a2) = τ2 = ({A}, {R}, ∅, ∅);
+furthermore, τ(b) = τ3 = (∅, {R−}, ∅, ∅).
+
+In our procedure, we use (similar to the DRed algorithm), auxiliary sets
+Dall, Eall, Dnew, Enew, and Eprev, where Eall, Enew and Eprev represent sets used
+within abstractions. The Abstraction Refinement Delete and Rederive algorithm
+(ARDred) determines A∞
+
+new as the (concept-)materialization of A \ A−w.r.t. T
+as follows:
+ARD1 Set Dnew = A−and set Dall = ∅.
+ARD2 If Dnew \ Dall = ∅, then go to step ARD4.
+ARD3 Set Dall = Dall∪Dnew, set Dnew = ∅. Build the bi-abstraction B = B1∪B2
+
+w.r.t. (A∞\ Dall, Dall).
+OD1 Set Enew = B2 and set Eall = ∅.
+
+6
+
+
+OD2 Set Eprev = Enew \ Eall. If Eprev = ∅, go to step OD4.
+OD3 Set Eall = Eall ∪Eprev, set Enew to the set of all assertions α with
+
+B1 ∪B2 ∪T ⊢Eprev α. Go to step OD2.
+OD4 Determine Dnew as the update of Dall according to Definition 4, using
+
+Eall as ∆B and the role assertions of A∞in line 4 of the definition.
+Continue with step ARD2.
+This concludes the overdeletion phase of the algorithm.
+ARD4 Set A∞
+
+new = A∞\ Dall, set Dnew = Dall ∩(A \ A−).
+ARD5 Let B = B1 ∪B2 be the bi-abstraction w.r.t. (A∞
+
+new, Dall). Set Enew = ∅
+and evaluate the rules in Figure 1 w.r.t. T over B1, s.t. conclusions are added
+to Enew and R⊑additionally contains its conclusion as a premise restricted
+to match assertions in B2. Extend the assertions present in Dnew with the
+update to Dnew w.r.t. Definition 4, using Enew as ∆B and the role assertions
+of A \ A−in line 4 of the Definition. Set Dnew = Dnew ∩Dall.
+This step is also referred to as the rederivation phase.
+ARD6 Set Dprev = Dnew \ A∞
+
+new. If Dprev = ∅terminate.
+ARD7 Set A∞
+
+new = A∞
+
+new ∪Dnew. Construct the bi-abstraction B = B1 ∪B2
+
+w.r.t. (A∞
+
+new, Dall).
+RD1 Set Enew = B1 ∩B2, Eall = ∅.
+RD2 Set Eprev = Enew \ Eall. If Eprev = ∅, go to step RD4.
+RD3 Set Eall = Eall ∪Enew, set Enew to the set of all assertions α with
+
+B1 ∪Eall ∪T ⊢Eprev α. Continue with step RD2.
+RD4 Determine Dnew as the update of A∞
+
+new according to Definition 4, using
+Eall as ∆B and the role assertions of A∞
+
+new in line 4 of the Definition.
+Continue with step ARD6.
+Steps ARD6–RD4 form the (re-)insertion phase of the algorithm. Steps
+RD1–RD3 form the inner (re-)insertion phase.
+Similar to DRed, we have an overdeletion (steps ARD1–OD4), a rederivation (steps ARD4–ARD5) and a reinsertion phase (steps ARD6–RD4).
+Similar to abstraction refinement, instead of determining the overdeleted, rederived and reinserted assertions on the original ABox, we determine assertions
+on suitable bi-abstractions and transfer the obtained results back, in case of
+overdeletion and reinsertion repeatedly, until a fixpoint is reached.
+
+The use of bi-types and bi-abstractions allows us to transfer the deletion
+set into B as B2. In the overdeletion phase, we (indirectly) extend B2 to ultimately extend the overdeletion Dall and construct the bi-abstraction over (A∞\
+Dall, Dall), such that B is still the abstraction of the complete materialization (as
+otherwise, not all assertions could be derived). The rederivation phase uses B2
+
+to restrict possible derivations of rule R⊑. Finally, the reinsertion phases determines rederived assertions using the ‘overlap’ between B1 (created from A∞
+
+new)
+and B2, which allows us to reduce the number of possible derivations.
+
+Note that there is a slight conceptual difference in the overdeletion part
+of DRed (which always operates on a complete (concept-)materialization of an
+ABox) and the inner overdeletion (steps OD1–OD4), as the latter operates on
+B and not the (concept-)materialization of B. Thus, the inner overdeletion of
+ARDred also extends Eall with derivable assertions not in B.
+
+7
+
+
+Sound- and completeness of the algorithm strongly depends on the overdeletion phase (steps ARD1–OD4) for soundness (i.e. removing all axioms, which
+are no longer derivable) and the reinsertion phase (steps ARD6–RD4) for completeness (i.e. rederiving all axioms that are still derivable).
+
+First, we want to fix the notion of overdeletion for the following discussions.
+
+Definition 8 (Overdeletion). Let O = A ∪T be an ontology, A−⊆A a set
+of assertions to be deleted and A∞the (concept-)materialization of A w.r.t. T .
+A set Dall ⊆A∞is an overdeletion of A∞w.r.t. A−, if, for all α ∈Dall, there
+is a minimal ABox justification J ⊆A for α w.r.t. T , s.t. J ∩A−̸ = ∅.
+
+As soundness of the algorithm is related to completeness of the overdeletion
+phase of the algorithm, we can in the following focus on two completeness proofs.
+To do so, we first consider some properties of the restricted derivation relation of
+Definition 5. We can then show that determining a complete closure for restricted
+derivations in an abstraction refinement way ensures a similar closure over the
+original ABoxes. Finally, we use the obtained results to show completeness w.r.t.
+the base task, which is, respectively, overdeletion and rederivation.
+
+Lemma 3 (Properties of Direct Restricted Derivations). Let O = A∪T
+be an ontology and A1, A2 ABoxes with A1 ⊆A2, ind(A1) ⊆ind(A2) ⊆ind(A)
+and B an ABox, s.t. there is a homomorphism h : ind(A) →ind(B) from A to
+B. Then the following properties hold for any assertion α:
+
+A ∪T ⊢A1 α implies A ∪T ⊢A2 α.
+(Monotonicity)
+(5)
+
+A ∪T ⊢A1 α implies B ∪T ⊢h(A1∩A) h(α).
+(6)
+
+Proof (Sketch). Both properties can easily be verified using the assumptions,
+Definitions 1 and 5 and the rules in Figure 1.
+⊓⊔
+
+Using Definition 5, we can describe the fixpoint constructed by the overdeletion and reinsertion phases as follows: For B the bi-abstraction w.r.t. (A∞\
+Dall, Dall) (Step ARD3), the inner overdeletion phase extends B2 with assertions
+α to determine a closure over B1 ∪B2 ∪T ⊢B2 α. Similarly, in the inner reinsertion phase, for B = B1 ∪B2 the bi-abstraction w.r.t. (A∞
+
+new, Dall) (Step ARD7),
+B1 is extended with assertions α to construct a closure over B1 ∪T ⊢B1∩B2 α.
+
+In both cases, the results of constructing the closure are transferred back to
+the original ABoxes using homomorphisms and updates. We proceed to show
+(roughly similar to the completeness proof of the original abstraction refinement
+approach [4]), that if no new assertions are transferred back to the original
+ABoxes, a corresponding fixpoint on those original ABoxes (Dall in case of the
+overdeletion phase, A∞
+
+new in case of the reinsertion phase) has been reached.
+
+Theorem 1 (Overdeletion Fixpoint Theorem). Let O = A ∪T be a normalized Horn ALCHI ontology, A∞the (concept-)materialization of A w.r.t. T
+and A−⊆A a set of axioms to be deleted. Let further Dall be an ABox with
+A−⊆Dall ⊆A∞and let B = B1∪B2 be the bi-abstraction w.r.t. (A∞\Dall, Dall).
+
+8
+
+
+Then it holds for all α with A∞∪T ⊢Dall α, that α ∈Dall, if for every bitype τ = (τ 1
+
+C, τ 1
+
+R, τ 2
+
+C, τ 2
+
+R) of an individual a ∈ind(A), every atomic concept
+A ∈con(O) and every role R ∈rol(O), we have
+
+1. B1 ∪B2 ∪T ⊢B2 A(vτ) implies A(a) ∈Dall.
+2. B1 ∪B2 ∪T ⊢B2 A(wR
+τ ) and R(a, b) ∈A implies A(b) ∈Dall.
+
+Proof (Sketch). Extend B = B1 ∪B2 with new role assertions to B′ = B1′ ∪B2′
+
+as follows: If R(a, b) ∈A∞\ Dall, extend B1 with R(vτ(a), vτ(b)). If R(a, b) ∈
+A−, extend B2 with R(vτ(a), vτ(b)). Note that there is a homomorphism from
+A∞to B′ and thus, according to Property 6 of Lemma 3, B′ ∪T ⊢h(Dall) α, if
+A ∪T ⊢Dall α. We then show that h(Dall) ⊆B2′ and, therefore, B′ ∪T ⊢B2′ α.
+Thus, we are left to show, that the new role assertions provide no new derivations,
+as then the assumed properties assure the desired fixpoint.
+⊓⊔
+
+We briefly sketch the idea behind the proof, that B′ has the same atomic concept assertions as direct derivations under restriction B2′ as B under restriction
+B2. It suffices to consider four individuals v1, v2, w1, w2 of the bi-abstraction, s.t.
+v1 = vτ(a), w1 = wR
+
+τ(a), v2 = vτ(b), w2 = wR
+
+τ(b) and R(a, b) ∈A∞. By considering
+the construction of B′ and B and the rules in Figure 1 together with the conditions of restricted derivations, we can easily show that introducing the new role
+assertion R(v1, v2) does not result in new restricted entailments.
+
+We can argue similar to the above, that A∞
+
+new is determined as the closure w.r.t. A∞
+
+new ∪T ⊢A∞
+new∩Dall α by the reinsertion phase, which concludes the
+completeness proofs of the overdeletion and rederivation phases w.r.t. restricted
+derivations. It is left to show, that first of all, the results above are related to the
+task at hand (removing all axioms no longer entailed by A\A−and rederiving all
+axioms still entailed by A \ A−) and second, that the full algorithm is complete
+and sound w.r.t. the base task, which is, incrementally determining the changed
+materialization. We proceed to first examine the overdeletion phase based on
+the previous results and extend this examination into the soundness proof for
+ARDred. We then examine the reinsertion phase and its preceding operations to
+ultimately deliver the completeness proof for ARDred.
+
+For the overdeletion phase, we use the bi-abstraction w.r.t. (A∞\ Dall, Dall)
+and construct Dall, such that A∞∪T ⊢Dall α implies α ∈Dall. In particular,
+initially Dall = A−. Consider the following Lemma.
+
+Lemma 4. Given an ontology O = A ∪T , the (concept-)materialization A∞
+
+of A w.r.t. T and a set of axioms to be deleted A−⊆A. Let Dall be a set s.t.
+A−⊆Dall and, if, for any concept or role assertion α, A∞∪T ⊢Dall α, then
+α ∈Dall. Then Dall is an overdeletion of A∞w.r.t. A−according to Definition 8.
+
+Proof (Sketch). Assuming the contrary (i.e. α /∈Dall), we argue by sound- and
+completeness of the rules in Figure 1, that α can be derived via a number of rule
+applications from a minimal ABox justification J (as in Def. 8) and thus there is
+a number of premises, of which at least one also has a minimal ABox justification
+J′ ⊆J with J′ ∩A−̸ = ∅. By doing so repeatedly, we ultimately determine some
+assertion β, s.t. A∞∪T ⊢Dall β holds, which is a contradiction.
+⊓⊔
+
+9
+
+
+Thus, the overdeletion phase of the ARDred algorithm in steps ARD1–OD4
+produces a correct overdeletion Dall of A∞w.r.t. A−. Additionally, we remove
+this overdeletion from the materialization in step ARD4. Thus, it remains to
+be shown that no unsound assertions are reinserted afterwards.
+
+Lemma 5. Given an ontology O = A ∪T , a set of assertions to be deleted
+A−⊆A and the set A∞
+
+new of the ARDred algorithm after step ARD4. If, during the execution of the ARDred algorithm, an axiom α is added to A∞
+
+new after
+step ARD4, then (A \ A−) ∪T |= α.
+
+Proof (Sketch). We argue that all newly added assertions are derived using sound
+rules on sound abstractions, but with additional restrictions. As the restrictions
+only remove derivations, all added assertions are sound.
+⊓⊔
+
+Soundness follows from the previous considerations concerning overdeletion.
+
+Corollary 1 (Soundness of ARDred). Given an ontology O = A ∪T , the
+(concept-)materialization A∞of A w.r.t. T and a set of axioms to be deleted
+A−⊆A. Let A∞
+
+new be the materialization obtained by executing the ARDred
+algorithm for O, A∞and A−. Then α ∈A∞
+
+new implies (A \ A−) ∪T |= α.
+
+For the completeness of the reinsertion part of the algorithm, we need to
+additionally consider the initial contents of the sets A∞
+
+new and Dall, as they are
+used in the closure construction. As shown before, Dall contains the overdeletion
+of A∞w.r.t. A−. For A∞
+
+new, from step ARD4 and step ARD7, we see that
+A \ A−⊆A∞
+
+new. Further, we show, that step ARD5 extends A∞
+
+new with at least
+all assertions, which can be directly rederived from A∞\ Dall.
+
+Lemma 6. Given an ontology O = A ∪T , the (concept-)materialization A∞of
+A w.r.t. T and a set of axioms to be deleted A−⊆A. Let further Dall be the
+overdeletion of A∞w.r.t. A−and A∞
+
+new = A∞\ Dall. Then Dnew is extended
+by step ARD5 with all axioms α /∈A∞
+
+new obtained by applying one rule from
+Figure 1 to A∞\ A∞
+
+new.
+
+Proof (Sketch). We obtain the desired result by examining all ways, in which
+a rule from Figure 1 can derive an assertion in one step and use the necessary
+preconditions to determine which assertions must be part of B1 and B2 as constructed by the algorithm in step ARD5. We then use this examination to show
+that all necessary assertions will also be derived on the abstraction (and be part
+of the generated update).
+⊓⊔
+
+Using these preconditions together with the established closure properties of
+the reinsertion phase of the algorithm, we can now formulate the following theorem, which rather directly entails the completeness of the ARDred algorithm.
+
+Theorem 2. Given an ontology O = A ∪T , the (concept-)materialization A∞
+
+of A w.r.t. T , a set of axioms to be deleted A−⊆A and the overdeletion Dall
+of A∞w.r.t. A−. Let further A∞
+
+new be the smallest set, s.t. A∞\ Dall ⊆A∞
+
+new,
+
+10
+
+
+A\A−⊆A∞
+
+new and, if any concept assertion α can be derived from A∞\Dall by
+directly applying one of the rules from Figure 1 w.r.t. T , then α ∈A∞
+
+new. Further
+extend A∞
+
+new to the smallest set, s.t. if A∞
+
+new ∪T ⊢A∞
+new∩Dall α for any concept
+assertion α, then α ∈A∞
+
+new. Then, for any concept assertion α, (A\A−)∪T |= α
+implies α ∈A∞
+
+new.
+
+Proof. As α /∈A∞
+
+new and due to the initial construction of A∞
+
+new, there must be
+some β, s.t. β is, so to speak, the initial culprit, i.e. β /∈A∞
+
+new and β can be
+derived directly from A∞
+
+new using a rule from Figure 1. We show that if there is
+any such β, then the conditions of the construction of A∞
+
+new are violated.
+⊓⊔
+
+Completeness of ARDred directly follows from the previous considerations.
+
+Corollary 2 (Completeness of ARDred). Given an ontology O = A ∪T ,
+the (concept-)materialization A∞of A w.r.t. T and a set of axioms to be deleted
+A−⊆A. Let A∞
+
+new be the materialization obtained by executing the ARDred
+algorithm for O, A∞and A−. Then (A \ A−) ∪T |= α implies α ∈A∞
+
+new.
+
+As both the overdeletion and reinsertion loop of the algorithm terminate
+after no new assertions could be determined in the previous iteration, we obtain
+the termination of the algorithm as a direct consequence of the sound- and
+completeness results. In particular, we terminate in the worst case, when Dall =
+A∞(overdeletion) and A∞
+
+new = A∞(reinsertion).
+
+4
+Conclusion and Future Work
+
+We have introduced a way to incrementally maintain the (concept-)materialization of an ALCHI ontology by combining DRed and abstraction refinement
+and using a consequence-based reasoning procedure. We have further shown that
+the presented procedure is sound and complete. Benefits of this approach lie in
+the summarization of similar deletion and reasoning tasks, paving the road for
+efficient maintenance of materializations of large ABoxes.
+
+While the choosen presentation is appropriate for theoretical examinations,
+we will in the future focus on optimizations needed for a practical implementation
+and evaluation of the approach, to verify its practicality. For example, retaining
+results from previously materialized abstractions can reduce reasoning efforts,
+as results for unchanged types can be reused. Other optimizations will focus on
+better handling role deletions to avoid the currently large amount of unnecessary overdeletions (this can be done by either extending abstractions with a new
+role successor for deleted roles or by reducing role deletion to concept deletions
+using knowledge about propagated concepts) and on general ways to reduce the
+number of generated types while retaining sound- and completeness (one could,
+for example, only use the deletions of the previous abstraction-refinement round
+to generate bi-abstractions in the overdeletion phase), as a reduction in the
+number of types automatically entails a reduction in the overall computations.
+Finally, we want to incorporate approaches which tackle the general deficiencies
+of DRed, such as the Backward/Forward algorithm [10], which avoids unnecessary overdeletions by considering knowledge still asserted in A \ A−.
+
+11
+
+
+References
+
+1. Baader, F.: The description logic handbook: Theory, implementation and applications. Cambridge university press (2003)
+2. Barbieri, D.F., Braga, D., Ceri, S., Della Valle, E., Grossniklaus, M.: Incremental
+reasoning on streams and rich background knowledge. In: Extended Semantic Web
+Conference. pp. 1–15. Springer (2010)
+3. Dolby, J., Fokoue, A., Kalyanpur, A., Schonberg, E., Srinivas, K.: Scalable Highly
+Expressive Reasoner (SHER). J. of Web Semantics 7(4), 357–361 (2009)
+4. Glimm, B., Kazakov, Y., Liebig, T., Tran, T., Vialard, V.: Abstraction refinement
+for ontology materialization. In: Proc. of the 13th Int. Semantic Web Conference,
+ISWC 2014. pp. 180–195 (2014)
+5. Glimm, B., Kazakov, Y., Tran, T.: Ontology materialization by abstraction refinement in horn SHOIF. In: Proceedings of the 31st AAAI Conference on Artificial
+Intelligence. pp. 1114–1120. AAAI Press (2017)
+6. Grau, B.C., Halaschek-Wiener, C., Kazakov, Y., Suntisrivaraporn, B.: Incremental classification of description logics ontologies. Journal of Automated Reasoning
+44(4), 337–369 (2010)
+7. Gupta, A., Mumick, I.S., Subrahmanian, V.S.: Maintaining views incrementally. In:
+Proceedings of the 1993 ACM SIGMOD International Conference on Management
+of Data. pp. 157–166. SIGMOD ’93, ACM (1993)
+8. Kazakov, Y.: Consequence-Driven Reasoning for Horn SHIQ Ontologies. In: Proc.
+of the 21st Int. Joint Conf. on Artificial Intelligence, IJCAI 2009. pp. 2040–2045
+(2009)
+9. Kr¨otzsch, M., Rudolph, S., Hitzler, P.: Complexities of Horn Description Logics.
+ACM Trans. Comput. Log. 14(1) (2013)
+10. Motik, B., Nenov, Y., Piro, R.E.F., Horrocks, I.: Incremental update of datalog materialisation: the backward/forward algorithm. In: Proceedings of the 29th AAAI
+Conference on Artificial Intelligence. pp. 1560–1568. AAAI Press (2015)
+11. Staudt, M., Jarke, M.: Incremental maintenance of externally materialized views.
+In: Proceedings of the 22th International Conference on Very Large Data Bases.
+pp. 75–86. VLDB ’96, Morgan Kaufmann Publishers Inc. (1996)
+12. Steigmiller, A., Glimm, B., Liebig, T.: Completion graph caching for expressive
+description logics. In: Proceedings of the 28th International Workshop on Description Logics. CEUR Workshop Proceedings, vol. 1350. CEUR-WS.org (2015),
+http://ceur-ws.org/Vol-1350/paper-35.pdf
+13. Suntisrivaraporn, B.: Module extraction and incremental classification: A pragmatic approach for el+ elˆ+ ontologies. The Semantic Web: Research and Applications pp. 230–244 (2008)
+14. Volz, R., Staab, S., Motik, B.: Incremental maintenance of materialized ontologies. In: On The Move to Meaningful Internet Systems 2003: CoopIS, DOA, and
+ODBASE - OTM Confederated International Conferences, CoopIS, DOA, and
+ODBASE. Lecture Notes in Computer Science, vol. 2888, pp. 707–724. Springer
+(2003)
+15. Volz, R., Staab, S., Motik, B.: Incrementally maintaining materializations of ontologies stored in logic databases. Journal on Data Semantics II pp. 1–34 (2005)
+16. Wandelt, S., M¨oller, R.: Towards ABox Modularization of Semi-Expressive Description Logics. J. of Applied Ontology 7(2), 133–167 (2012)
+
+12

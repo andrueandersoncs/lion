@@ -11,7 +11,10 @@ import type { Mutation } from "./mutation.ts";
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 /** The properties of the value a key or an equality rule keeps. */
-const MERGE_TESTS = [...EXISTENTIAL_TESTS, "src/logic/tests/merges.test.ts"];
+const LEAST_MEMBER_TESTS = [
+  ...EXISTENTIAL_TESTS,
+  "src/logic/tests/merges.test.ts",
+];
 /** The properties of following a change a component of values at a time. */
 const COMPONENT_TESTS = [
   "src/logic/tests/components.test.ts",
@@ -19,6 +22,16 @@ const COMPONENT_TESTS = [
   ...EXISTENTIAL_TESTS,
 ];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
+/** The properties of asking what would hold after some changes. */
+const ASSUMING_TESTS = ["src/logic/tests/assuming.test.ts"];
+/** The properties of relations that merge what a key gets. */
+const MERGE_TESTS = ["src/logic/tests/merging.test.ts"];
+/** The properties of the rest of a record or list, and of the model of schemas. */
+const REST_TESTS = [
+  "src/logic/tests/rests.test.ts",
+  "src/logic/tests/schemas.test.ts",
+  "src/logic/tests/patterns.test.ts",
+];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
   "src/logic/tests/aggregates.test.ts",
@@ -27,6 +40,18 @@ const TOLD_TESTS = [
   "src/logic/tests/why-not.test.ts",
 ];
 const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
+/** A file of the reasoning skill's eval case that a run's agent never sees. */
+const rechecks = (file: string) =>
+  `skills/lion-reasoning/evals/rechecks-what-changed/${file}`;
+const RECHECKS_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/reasoning-eval.test.ts"],
+};
+const SKILL_EVAL_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/skill-eval.test.ts"],
+};
+const SKILL_EVAL = "packages/metrics/src/skill-eval.ts";
 const REASONING_TESTS = {
   package: "metrics",
   tests: ["src/tests/reasoning-skill.test.ts"],
@@ -509,7 +534,7 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
     replace:
       "        (depthOf(value) - depthOf(other) || compareValues(other, value)) < 0);",
-    tests: MERGE_TESTS,
+    tests: LEAST_MEMBER_TESTS,
   },
   {
     name: "a string that starts with a control character reads as an unknown",
@@ -565,7 +590,7 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/model.ts"),
     find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
     replace: "        compareValues(value, other) < 0);",
-    tests: MERGE_TESTS,
+    tests: LEAST_MEMBER_TESTS,
   },
   {
     name: "a key keeps the unknown that nests the most unknowns",
@@ -573,7 +598,7 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
     replace:
       "        (depthOf(other) - depthOf(value) || compareValues(value, other)) < 0);",
-    tests: MERGE_TESTS,
+    tests: LEAST_MEMBER_TESTS,
   },
   {
     name: "what some describes keeps the values the answer gives its variables out",
@@ -714,6 +739,13 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/evaluation/tests/compiled.test.ts"],
   },
   {
+    name: "the compiled evaluator gives assuming no answers",
+    file: core("evaluation/base-forms/array.ts"),
+    find: "  assuming: (form) => inEffect(evaluateAssuming)(form),",
+    replace: "  assuming: () => () => [],",
+    tests: ["src/evaluation/tests/compiled.test.ts"],
+  },
+  {
     name: "compiled code goes on after a node that needed Effect",
     file: core("evaluation/compiled.ts"),
     find: "            runAll(nodes, environment, 0, at + 1, {",
@@ -774,7 +806,125 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "              against(answered, environment)",
     replace: "              against(true, environment)",
   },
+  // Asking what would hold after some changes.
+  {
+    name: "assuming makes its changes in the database itself",
+    file: core("logic/database.ts"),
+    find: "      copy.facts.set(name, facts.clone());",
+    replace: "      copy.facts.set(name, facts);",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming leaves out its changes",
+    file: core("logic/database.ts"),
+    find: '        yield* change.form === "fact"\n          ? assertFacts(copy, calls(change))\n          : retractFacts(copy, calls(change));',
+    replace: "        yield* Effect.void;",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming asks its expression of the database as it is",
+    file: core("logic/database.ts"),
+    find: "      return yield* reading(copy, (model) => answer(model, expression));",
+    replace:
+      "      return yield* reading(database, (model) => answer(model, expression));",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming in a rule asks its expression without the values the rule bound",
+    file: core("logic/model.ts"),
+    find: "    const expression = replaceVariables(question.parts.at(-1), (variable) =>",
+    replace:
+      "    const expression = replaceVariables(question.parts.at(-1), (variable) => undefined && ",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming as a goal holds whatever its expression gives",
+    file: core("logic/model.ts"),
+    find: '        typeof value === "boolean"\n          ? Effect.succeed(value)\n          : logicError(\n              `As a goal,',
+    replace:
+      '        typeof value === "boolean"\n          ? Effect.succeed(true)\n          : logicError(\n              `As a goal,',
+    tests: ASSUMING_TESTS,
+  },
+  // Relations that merge what a key gets.
+  {
+    name: "a fact of a relation that merges replaces the fact its key has",
+    file: core("logic/database.ts"),
+    find: "  if (key !== undefined && merge === undefined) {",
+    replace: "  if (key !== undefined) {",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a relation that merges starts from its facts as rows",
+    file: core("logic/model.ts"),
+    find: "  return model.base === undefined && !merges",
+    replace: "  return model.base === undefined",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a change to the facts of a relation that merges is followed as a change to its rows",
+    file: core("logic/database.ts"),
+    find: "          database.relations.get(name)?.merge === undefined",
+    replace: "          true",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a plain head of a relation that merges does not merge",
+    file: core("logic/compile.ts"),
+    find: "      return kind === undefined ||",
+    replace: "      return true ||",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "two rows a key gets that differ where nothing merges both hold",
+    file: core("logic/model.ts"),
+    find: "  const { key, name } = rule.head.relation;\n  if (key === undefined) {",
+    replace:
+      "  const { key, name } = rule.head.relation;\n  if (key !== key) {",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a relation that merges cannot have facts",
+    file: core("logic/database.ts"),
+    find: "        declared?.merge === undefined &&",
+    replace: "        true &&",
+    tests: MERGE_TESTS,
+  },
   // Schemas, and the invariants a change to facts can break.
+  {
+    name: "the rest of a record or list is never checked",
+    file: core("logic/fit.ts"),
+    find: "      found.push(...(yield* checkRest(rest, left, at, answered, whole, shift)));",
+    replace: "      found.push(answered);",
+    tests: REST_TESTS,
+  },
+  {
+    name: "the rest of a record holds the keys the record names too",
+    file: core("logic/fit.ts"),
+    find: "        Object.fromEntries(others.map((key) => [key, value[key]])),",
+    replace: "        value,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "the rest of a list holds the items the list names too",
+    file: core("logic/fit.ts"),
+    find: "        value.slice(parts.length),",
+    replace: "        value,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "a problem in the rest of a list is shown at its place in the rest",
+    file: core("logic/fit.ts"),
+    find: '              typeof step === "number" ? step + shift : step,',
+    replace: "              step,",
+    tests: REST_TESTS,
+  },
+  {
+    name: "a variable for the rest of a known record is not a pattern",
+    file: core("logic/terms.ts"),
+    find: "    (others.length > 0 && !(first instanceof LogicValue));",
+    replace: "    false;",
+    tests: REST_TESTS,
+  },
   {
     name: "a predicate that answers something other than true still fits",
     file: core("logic/fit.ts"),
@@ -2785,5 +2935,103 @@ export const MUTATIONS: readonly Mutation[] = [
     find: '  return opens(telling, new LogicForm("and", rule.body), group);',
     replace: "  return Effect.succeed(group.size < 0);",
     tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a run with no skill is told where a skill is",
+    file: SKILL_EVAL,
+    find: "  skill === undefined",
+    replace: '  skill === "never"',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "the skill eval ignores an option it does not have",
+    file: SKILL_EVAL,
+    find: '(word) => word.startsWith("--") && !known.includes(word.slice(2))',
+    replace: '(word) => word.startsWith("--") && known.length < 0',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a skill's name is read from its body as well as its front matter",
+    file: SKILL_EVAL,
+    find: "const front = FRONT_MATTER.exec(skillMd)?.[1];",
+    replace: "const front = skillMd;",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a case's sessions run in the order of their names as text",
+    file: SKILL_EVAL,
+    find: ".sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10));",
+    replace: ".sort();",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a later session gets the earlier message only where the template first asks for it",
+    file: SKILL_EVAL,
+    find: 'template.split("{{earlier}}").join(earlier.trim());',
+    replace: 'template.replace("{{earlier}}", earlier.trim());',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a run's sessions together forget the models of all but the last",
+    file: SKILL_EVAL,
+    find: "models: [...new Set([...a.models, ...b.models])].sort(),",
+    replace: "models: [...b.models],",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a run fails only when its last session failed",
+    file: SKILL_EVAL,
+    find: "error: a.error || b.error,",
+    replace: "error: b.error,",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a session's message is whatever its result message holds",
+    file: SKILL_EVAL,
+    find: 'return typeof message === "string" ? message : undefined;',
+    replace: "return message === undefined ? undefined : String(message);",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "the eval service scores a prompt's comments",
+    file: rechecks("world.mjs"),
+    find: '.replaceAll(/<!--[\\s\\S]*?-->/g, "")',
+    replace: '.replaceAll(/<!--never-->/g, "")',
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the eval service scores a prompt's blank lines",
+    file: rechecks("world.mjs"),
+    find: '.filter((line) => line !== "")',
+    replace: ".filter(() => true)",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the changes between the sessions leave times that say which prompts changed",
+    file: rechecks("world.mjs"),
+    find: 'utimesSync(join(dir, "prompts",',
+    replace: '(() => undefined)(join(dir, "prompts",',
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the lines that went wrong after the first session include those wrong before it",
+    file: rechecks("world.mjs"),
+    find: "changed: wrong.filter((line) => !wrongAtFirst.includes(line)),",
+    replace: "changed: wrong,",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the grade passes a report of a line that came right after the first session",
+    file: rechecks("grade.mjs"),
+    find: "ok: !reported.has(line),",
+    replace: "ok: true,",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the grade passes an entry that names no line of RESULTS.md",
+    file: rechecks("grade.mjs"),
+    find: "ok: right.length === 0 && unnamed.length === 0,",
+    replace: "ok: right.length === 0,",
+    ...RECHECKS_TESTS,
   },
 ];

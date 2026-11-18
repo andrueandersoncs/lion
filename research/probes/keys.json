@@ -1,0 +1,11 @@
+[
+  "begin",
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["price", "a1", 3], ["price", "a1", 4]],
+  {
+    "a fact with a key that is present replaces the row": [
+      "query",
+      ["price", "?sku", "?usd"]
+    ]
+  }
+]

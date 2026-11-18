@@ -1,0 +1,32 @@
+[
+  "begin",
+  ["relation", "said", ["from", "to", "p"]],
+  ["relation", "trust", ["to", "p"]],
+  [
+    "fact",
+    ["said", "me", "ana", 0.75],
+    ["said", "me", "bo", 0.5],
+    ["said", "ana", "cy", 0.5],
+    ["said", "bo", "cy", 1],
+    ["said", "cy", "ana", 1]
+  ],
+  [
+    "rule",
+    ["trust", "?to", ["aggregate/max", "?p"]],
+    ["said", "me", "?to", "?p"]
+  ],
+  [
+    "rule",
+    ["trust", "?to", ["aggregate/max", ["number/multiply", "?q", "?p"]]],
+    ["trust", "?via", "?q"],
+    ["said", "?via", "?to", "?p"]
+  ],
+  {
+    "before": ["query", ["trust", "?to", "?p"], { "order": "to" }],
+    "after": [
+      "begin",
+      ["retract", ["said", "bo", "cy", 1]],
+      ["query", ["trust", "?to", "?p"], { "order": "to" }]
+    ]
+  }
+]

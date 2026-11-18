@@ -45,6 +45,7 @@ export const SPECIAL_FORM_NAMES = [
   "retract",
   "query",
   "find",
+  "assuming",
   "exists",
   "some",
   "why",
@@ -121,6 +122,15 @@ export const QueryFormSchema = Schema.Union([
 ]);
 // ["find", <template>, <goal>]
 export const FindFormSchema = form("find", Expression, Expression);
+// ["assuming", ["fact", <goal>, ...] or ["retract", <goal>, ...], ..., <expression>]
+const Change = Schema.Union([
+  formWithMore("fact", Expression),
+  formWithMore("retract", Expression),
+]);
+export const AssumingFormSchema = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literal("assuming"), Change]),
+  [Expression]
+);
 // ["exists", [<variable>, ...], <goal>]
 export const ExistsFormSchema = form(
   "exists",
@@ -155,6 +165,7 @@ const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
   retract: Schema.is(RetractFormSchema),
   query: Schema.is(QueryFormSchema),
   find: Schema.is(FindFormSchema),
+  assuming: Schema.is(AssumingFormSchema),
   exists: Schema.is(ExistsFormSchema),
   some: Schema.is(SomeFormSchema),
   why: Schema.is(WhyFormSchema),

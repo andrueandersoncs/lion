@@ -1,0 +1,1523 @@
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Abstract.
+1 INTRODUCTION
+2 BACKGROUND
+Datalog
+Recursion
+Negation
+Variability across Datalog engines
+3 ILLUSTRATIVE EXAMPLE
+Example program
+Optimization bug
+Test oracle
+Test case generation
+Remaining challenges
+4 APPROACH
+4.1 Test Case Generation
+Test case skeleton
+Rule generation
+Retaining interesting rules
+4.2 Test Oracle
+Challenge
+Program stratification
+Reference program execution
+Test oracle
+5 EVALUATION
+Implementation
+Tested Datalog engines
+Experimental setup
+5.1 Effectiveness
+Methodology
+Results
+Logic bugs
+Other bugs
+Bugs in different engines
+Reception
+5.2 Sensitivity Analysis
+Methodology
+Max number of rules ( M ​ a ​ x r ​ u ​ l ​ e ​ s > 0 Max_{rules}>0 )
+Max attempts to generate new rules ( M ​ a ​ x a ​ t ​ t > 0 Max_{att}>0 or M ​ a ​ x a ​ t ​ t = ∞ Max_{att}=\infty )
+Probability to allow empty results for a rule ( 0 ≤ P e ​ m ​ p ​ t ​ y ≤ 1 0\leq P_{empty}\leq 1 )
+Probability of choosing an existing relation as head ( 0 ≤ P h ​ e ​ a ​ d ≤ 1 0\leq P_{head}\leq 1 )
+Max iterations for recursions ( M ​ a ​ x i ​ t ​ e ​ r > 0 Max_{iter}>0 )
+5.3 Efficiency
+Methodology
+Results.
+5.4 Comparison with queryFuzz
+Challenges
+Methodology
+Results
+Bugs found by queryFuzz
+Bugs found by Deopt
+6 Discussion
+Summary
+Optimization flags
+Reimplementing an actual reference engine
+Missed bugs
+Importance of cross-rule optimization bugs
+7 RELATED WORK
+Automatic testing for Datalog
+Debugging for Datalog
+Optimizations of Datalog engines
+Metamorphic testing
+8 conclusion
+Acknowledgements
+References
+License: arXiv.org perpetual non-exclusive license
+arXiv:2402.12863v1 [cs.SE] 20 Feb 2024
+1
+Finding Cross-rule Optimization Bugs in Datalog Engines Thanks: This work was completed during Chi Zhang’s visit to National University of Singapore.
+1
+Chi Zhang
+Affiliation: State Key Laboratory for Novel Software Technology, Department of Computer Science and Technology , Nanjing University , Nanjing , China
+email: zhangchi_seg@smail.nju.edu.cn
+,
+Linzhang Wang
+Note: Corresponding authors.
+Affiliation: State Key Laboratory for Novel Software Technology, Department of Computer Science and Technology , Nanjing University , Nanjing , China
+email: lzwang@nju.edu.cn
+and
+Manuel Rigger
+Affiliation: National University of Singapore , Singapore
+email: rigger@nus.edu.sg
+© none
+Abstract.
+Datalog is a popular and widely-used declarative logic programming language.
+Datalog engines apply many cross-rule optimizations; bugs in them can cause incorrect results.
+To detect such optimization bugs, we propose an automated testing approach called Incremental Rule Evaluation (IRE) , which synergistically tackles the test oracle and test case generation problem. The core idea behind the test oracle is to compare the results of an optimized program and a program without cross-rule optimization; any difference indicates a bug in the Datalog engine.
+Our core insight is that, for an optimized, incrementally-generated Datalog program, we can evaluate all rules individually by constructing a reference program to disable the optimizations that are performed among multiple rules. Incrementally generating test cases not only allows us to apply the test oracle for every new rule generated—we also can ensure that every newly added rule generates a non-empty result with a given probability and eschew recomputing already-known facts.
+We implemented IRE as a tool named Deopt , and evaluated Deopt on four mature Datalog engines, namely Soufflé, CozoDB, µZ, and DDlog, and discovered a total of 30 bugs. Of these, 13 were logic bugs, while the remaining were crash and error bugs.
+Deopt can detect all bugs found by queryFuzz, a state-of-the-art approach. Out of the bugs identified by Deopt , queryFuzz might be unable to detect 5. Our incremental test case generation approach is efficient; for example, for test cases containing 60 rules, our incremental approach can produce 1.17 × \times (for DDlog) to 31.02 × \times (for Soufflé) as many valid test cases with non-empty results as the naive random method.
+We believe that the simplicity and the generality of the approach will lead to its wide adoption in practice.
+Keywords:
+Datalog engine testing, cross-rule optimization bugs, test oracle
+1. INTRODUCTION
+Datalog is a popular declarative logic programming language supported by deductive database systems ( Ramakrishnan and Ullman, 1995 ; Ceri et al., 1989 ) , which can conceptually be seen as relational database systems that have also logic programming capabilities.
+Initially, most Datalog dialects considered only relations, which are the basic components of rules, as well as facts, which can be used to represent data. Many Datalog dialects now also include language features such as constraints ( Buccafurri et al., 2000 ; Buccafurri et al., 1997 ) , aggregates ( Consens and Mendelzon, 1990 ; Greco, 1999 ) , and subsumptions ( Kießling and Güntzer, 1994 ; Zhao et al., 2020 ) , which have expanded the functionality of Datalog significantly.
+In recent years, Datalog has been applied to important domains, including distributed systems ( Conway et al., 2012 ) , networking ( Loo et al., 2009 ) , natural language processing ( Mooney, 1996 ) , program understanding ( Hajiyev et al., 2006 ) , program analysis ( Bravenboer and Smaragdakis, 2009 ; Lam et al., 2005 ; Whaley and Lam, 2004 ; Bembenek et al., 2020 ; Scholz et al., 2016 ) , big-data analytics ( Shkapsky et al., 2016 ) , and new programming languages that embed or are based on Datalog ( Madsen et al., 2016 ; Borraz-Sánchez et al., 2018 ) .
+Mature Datalog engines such as Soufflé ( Jordan et al., 2016 ) , DDlog ( Ryzhyk and Budiu, 2019 ) , XSB ( Sagonas et al., 1994 ) , and LogicBox ( Aref et al., 2015 ) are highly optimized in terms of performance ( Hu et al., 2021b ; Arch et al., 2022 ) and memory usage ( Ryzhyk and Budiu, 2019 ) . Many evaluation strategies and optimizations they implement are applied to efficiently evaluate rules. Commonly, they use bottom-up or top-down evaluation methods ( Ullman, 1989 ) . In terms of optimizations, magic sets ( Bancilhon et al., 1985 ; Alviano et al., 2012 ) are applied as a logical rewriting technique to transform a Datalog program into an equivalent more efficient one. Join optimizers ( Arch et al., 2022 ) can find an efficient order in which to join the relations in a rule. Automatic index selection ( Subotić et al., 2018 ) and index sharing ( Ryzhyk and Budiu, 2019 ) significantly reduce memory usage. Furthermore, various data structures ( Jordan et al., 2022 ; Jordan et al., 2019b ; Jordan et al., 2019a ; Nappa et al., 2019 ) have been proposed to speed up the execution of Datalog programs.
+Due to the complexity of modern Datalog engines, they can be affected by bugs.
+Logic bugs are a particularly notorious category of bugs, as they cause Datalog engines to silently produce incorrect results for a given program.
+As stated by a developer in response to a bug that we have found in their Datalog engine: ‘‘The worst thing a database can do is to give wrong outputs.’’ 1 1
+1
+https://github.com/cozodb/cozo/issues/101
+Determining the expected result for a complex query can be difficult for users and even developers, making it challenging to identify logic bugs.
+In fact, the main contributor of Soufflé emphasized in a recent keynote that designing novel “automated testing tools” for Datalog engines is one of the main open challenges in this domain ( Scholz, 2022 ) .
+This is also suggested by empirical evidence; we checked 222 issues in the GitHub repository of Soufflé that were tagged with either “bug-triage” or “bug-identified” labels prior to February 2023, and discovered that 39 of them were logic bugs.
+More significantly, out of the 39 issues, 21 were caused by optimization bugs, which are logic bugs caused by incorrect optimizations.
+To detect logic bugs, queryFuzz ( Mansur et al., 2021 ) was proposed as an automated testing approach for Datalog engines, which has found 8 logic bugs in Soufflé.
+Our manual analysis suggests that all 8 bugs were, in fact, optimization bugs.
+Due to the prevalence of optimization bugs, we believe that a general technique for automatically finding logic bugs caused by optimizations in Datalog engines specifically is needed.
+Non-optimizing Reference Engine Construction (NoREC) ( Rigger and Su, 2020a ) was proposed to find optimization bugs in relational database systems. Its key insight is that a query can be rewritten so that the database engine can no longer effectively optimize it; a discrepancy in the results of the two queries indicates a bug in the database system. The insights that enabled the approach are specific to SQL, and it is unclear how the approach could be used to test Datalog engines. Another intuitive idea to detect optimization bugs in Datalog engines would be to apply differential testing ( McKeeman, 1998 ) , by running the same Datalog program in different Datalog engines, which should all produce the same results.
+However, different Datalog engines share only core features, and most of the powerful functionalities of Datalog engines are implemented by unique features; for example, the subsumption and equivalence relation in Soufflé are not supported by other Datalog engines. In addition, most Datalog engines do not offer optimization options, making it difficult to perform differential testing by disabling optimizations on the same engine.
+In this work, we propose Incremental Rule Evaluation (IRE) , a novel black-box approach for testing Datalog engines based on the idea of disabling the optimizations that can be applied in the presence of multiple rules ( i.e., cross-rule optimizations),
+allowing us to compare an unoptimized execution of a Datalog program with an optimized one.
+Our technique is incremental, which allows us to build complex programs with non-empty results while efficiently computing the results of the unoptimized program.
+We have two core insights that enable our approach. First, Datalog programs consist of both facts and rules. While facts represent data and thus can hardly be optimized, many optimizations have been proposed that result in rules being processed more efficiently. Second, given a Datalog program, we can derive all facts from the rules using an existing Datalog engine. Overall, these two insights allow us to provide a conceptual reference engine by incrementally adding rules to a Datalog program—ensuring that they produce non-empty results—and maintaining a version of the program that removes the rules after deriving all possible facts. The modified version cannot be effectively optimized by the Datalog engine, since only one rule is visible at a time, thus enabling the detection of cross-rule optimization bugs by comparing the results of the real optimizing Datalog engine, and the conceptual non-optimizing engine.
+Even for Datalog engines that provide optimization flags that allow selectively disabling optimizations, our technique is useful, as the incremental construction of the unoptimized program is more efficient than simply disabling the optimizations of the optimized programs, as all intermediate results—which are needed to generate non-empty results—would need to be recomputed for every version of the optimized program, rather than being re-used as for IRE.
+We implemented IRE as a tool called Deopt —derived from D atalog E ngine Op timization T ester—and tested four mature and well-tested Datalog engines with it.
+We have found 30 bugs in these engines, out of which 13 bugs were previously unknown logic bugs.
+Of these, 19 were confirmed and 6 of them were fixed. A further 11 are awaiting confirmation.
+For the logic bugs, 6 were confirmed, out of which 2 were fixed, and 7 are awaiting confirmation.
+Our incremental test case generation approach is more efficient than a random approach when generating large test cases; for the test cases containing 60 rules, our incremental approach can produce 1.17 × \times (on DDlog) to 31.02 × \times (on Soufflé) as many valid test cases with non-empty results. The performance of our method improves significantly as the test case size increases.
+Finally, our approach is effective also in comparison to a state-of-the-art approach implemented by queryFuzz;
+IRE can detect 12 out of 13 bugs found by queryFuzz; an extension of Deopt enables us to detect the remaining bug. Out of the bugs identified by Deopt , our analysis suggests that queryFuzz might be unable to detect 5.
+In summary, we make the following main contributions:
+•
+We present a novel testing idea for finding cross-rule optimization bugs in Datalog engines termed Incremental Rule Evaluation (IRE) .
+•
+We realized IRE through an approach that handles complex features such as recursion and negation in a general way.
+•
+We implemented IRE as an open-source tool named Deopt and conducted an extensive evaluation in terms of effectiveness, efficiency, and a comparison with queryFuzz.
+2. BACKGROUND
+This section provides a minimal introduction to Datalog, which is necessary to understand the paper’s contribution.
+We refer interested readers to relevant textbooks for further details ( Ketsman et al., 2022 ; Green et al., 2013b ) .
+Figure 1 . A Datalog program used in points-to analysis.
+⬇
+1
+PointsTo ( x , y ) :- AddressOf ( x , y ).
+2
+PointsTo ( x , y ) :- Assign ( x , z ), PointsTo ( z , y ).
+3
+PointsTo ( x , w ) :- Load ( x , z ), PointsTo ( z , y ), PointsTo ( y , w ).
+4
+PointsTo ( x , y ) :- Store ( z , w ), PointsTo ( z , x ), PointsTo ( w , y ).
+Datalog
+A Datalog program P P consists of a set of rules , where each rule follows the format:
+A : − B 1 , B 2 , … , B m . A:-B_{1},B_{2},...,B_{m}.
+A A serves as the head of the rule, while B 1 , B 2 , … , B m B_{1},B_{2},...,B_{m} constitute its body .
+Both A A and B m B_{m} are relations , where each relation consists of a set of ordered tuples. The number of variables within each tuple is referred to as the arity of the relation.
+A relation is formally denoted as R ⁡ ( t 1 , t 2 , … , t n ) R(t_{1},t_{2},...,t_{n}) , where R R is the name of this relation, n n represents the arity of R R , and t 1 , … , t n t_{1},...,t_{n} form the tuple of R R ; note that the actual syntax depends on the system as detailed below.
+The Datalog program shown in Figure 1 demonstrates how to conduct a points-to analysis —a popular use-case for Datalog ( Bravenboer and Smaragdakis, 2009 ) —for a C-like language.
+In this Datalog program, the relation AddressOf ( a , b ) represents the relationship a = & b ; Assign ( a , b ) represents a = b ; Load ( a , b ) represents a = * b ; and Store ( a , b ) represents * a = b .
+The program has four rules, and all of them take the relation PointsTo as head, which has two variables a and b , representing that a may point to b .
+For a given fact AddressOf ( "var1" , "var2" ) , which serves as the program input, we can derive the new fact PointsTo ( "var1" , "var2" ) based on the first rule.
+Recursion
+Recursion in Datalog allows for more intricate applications.
+The code presented in line 2 of Figure 1 exemplifies the application of recursion in Datalog.
+To evaluate a program with recursion, the Datalog engine will repeatedly evaluate program rules until no further facts can be derived, signifying that a least-fixpoint has been reached ( Abiteboul et al., 1995 ) .
+Negation
+Negation enhances Datalog’s functionality.
+Suppose we want to find the variable pairs that do not have a points-to relationship, we can search for pairs not present in the points-to collection with the following rule:
+NoPointsTo ( x , y ) :- Var ( x ), Var ( y ), not PointsTo ( x , y ).
+The relation Var contains all the variables in the program that are subject to the points-to analysis.
+Negation in Datalog has a safety restriction: every variable in a rule’s body must appear in at least one positive relation.
+Core Datalog does not support negation because it cannot express non-monotonic queries.
+To support negation in Datalog, two extensions in evaluation are commonly used: semi-positive ( Abiteboul et al., 1995 ) and stratified Datalog ( Abiteboul and Hull, 1988 ) .
+Semi-positive Datalog allows negation to only appear on the input relation in rule bodies.
+Stratified Datalog permits negation on any relation except within recursion.
+Our approach utilizes stratified Datalog to handle cases in the program that contain negation.
+Variability across Datalog engines
+Various Datalog dialects exist that differ significantly from each other.
+Firstly, the syntax for the core language differs widely, including the use of punctuation and case sensitivity requirements.
+For example, CozoDB represents the tuples in a relation by enclosing them in [] rather than the standard notation introduced above, which uses parentheses ( i.e., () ).
+Assuming CozoDB’s syntax, the rule shown in line 1 of Figure 1 is PointsTo [ x , y ] : - AddressOf [ x , y ] .
+Soufflé, µZ, and DDlog require a period at the end of a rule, whereas CozoDB does not.
+DDlog is case-sensitive for identifiers; for example, the name of a relation must start with an uppercase letter, whereas other Datalog engines do not have this requirement.
+Secondly, the syntax and semantics in which various Datalog engines handle inputs and outputs differ.
+Inputs can be sourced using multiple ways, such as files, databases, or direct declarations within the program.
+Datalog engines offer varying levels of support for these input methods.
+Soufflé provides multiple methods to load inputs and save outputs, such as CSV or text files, SQLite3 databases, and more.
+CozoDB uses text files to load normal values, and leverages the BlobDB feature of RocksDB—a key-value database system—for loading large values.
+µZ and DDlog use text files to handle inputs.
+Soufflé, µZ, and DDlog also allow using a rule without a body as the declaration of a fact ( e.g., A (1, 2) ), which can be used as the input of a Datalog program.
+In CozoDB, the manner of input declaration stands out. One such declaration form is A [ a , b ] <-[[1, 2]] .
+CozoDB designates the result of a specific rule as its output. In contrast,
+Soufflé, µZ, and DDlog use keywords to specify relations as output.
+Thirdly, different Datalog engines support varying language features.
+For example, equivalence relations and subsumption are only supported by Soufflé.
+Lastly, the declaration of relations is necessary for Soufflé, µZ, and DDlog, whereas it is not required for CozoDB.
+In Soufflé, the declaration of relations allows us to dictate the optimizations applied to these relations—a feature other engines lack.
+Thus, it is challenging to apply differential testing as a general technique to identify logical bugs within engines by either (1) controlling which optimizations are applied using flags or declarations and (2) comparing the results of multiple Datalog engines.
+Our oracle relies on the Datalog engine under test to compute the results of two equivalent programs; thus it can be applied to any dialect, irrespective of whether the Datalog engine provides means to the user to control optimizations.
+3. ILLUSTRATIVE EXAMPLE
+(a) A test case generated with random method in four iterations.
+⬇
+1
+node [ A ] := A = 1
+2
+edge [ A , A ] := A = 1
+3
+edge [ A , B ] := A = 0, B = 1, node [ B ]
+4
+result [ C ] := edge [ A , _ ], edge [ C , A ]
+5
+?[ C ] := result [ C ]
+(b) The reference program in the first iteration.
+⬇
+1
+node [ A ] := A = 1
+2
+?[ A ] := node [ A ]
+(c) The reference program in the second iteration.
+⬇
+1
+edge [ A , A ] := A = 1
+2
+?[ A , B ] := edge [ A , B ]
+(d) The reference program in the third iteration.
+⬇
+1
+node [ A ] <- [[1]]
+2
+edge [ A , B ] := A = 0, B = 1, node [ B ]
+3
+?[ A , B ] := edge [ A , B ]
+(e) The reference program in the fourth iteration.
+⬇
+1
+edge [ A , B ] <- [[1, 1], [0, 1]]
+2
+result [ C ] := edge [ A , _ ], edge [ C , A ]
+3
+?[ C ] := result [ C ]
+Figure 2 . Illustrative example, triggering a bug in CozoDB.
+Example program
+To illustrate the intuition behind IRE, we present a bug-inducing test case 2 2
+2
+https://github.com/cozodb/cozo/issues/101 from CozoDB ( Hu, 2023 ) that our approach allowed us to find.
+For presentation purposes, we show the bug using an artificial, but illustrative scenario.
+Assume that we want to identify all the nodes in a directed graph that have successors two steps away. One step is from a node to its neighbor. For example, given the directed edge edge [0, 1] and edge [1, 1] , the result should be nodes 0 and 1 .
+We use the Datalog program shown in Figure 2(a) to implement this task.
+The first rule ( i.e., line 1 ) derives node [1] .
+In practice, users would likely specify nodes using facts ( e.g., node [ A ] <- [[1]] ).
+However, in this specific case, the bug can only be reproduced when using rules.
+Following the same pattern, the second rule ( i.e., line 2 ) derives a directed edge [1, 1] .
+The third rule ( i.e., line 3 ) derives an edge [0, 1] when node [1] exists.
+The relation edge is defined by two rules ( i.e., line 2 and 3 ), which can be viewed as disjunction rules.
+Finally, the fourth rule ( i.e., line 4 ) accomplishes our task by finding a node C that satisfies the condition of having an edge from C to A , while also having an edge from A to any other nodes.
+Then, node C is the desired node that has successors two steps away, and encompasses the facts of the relation result .
+Optimization bug
+For this program, CozoDB incorrectly produced 1 , instead of the expected output of 0 and 1 , due to an optimization bug.
+A CozoDB developer acknowledged
+that this bug was intricate and difficult to explain. Its root cause was an implementation error in the semi-naïve algorithm ( Balbin and Ramamohanarao, 1987 ) , which is a bottom-up evaluation strategy capable of handling recursive queries.
+Differential testing would have failed to detect this bug, due to CozoDB’s unique Datalog dialect, which has a different syntax than other Datalog engines, as detailed in Section 2 .
+Test oracle
+The core idea for our test oracle is to individually execute each rule in the original program, disabling all optimizations that consider multiple rules by making only a single rule visible to Datalog engines at any point in time.
+Using this bug as an example, we can demonstrate how to generate a test oracle that might detect optimization bugs.
+We refer to the original test case shown in Figure 2(a) as the optimized program , because it is receptive to cross-rule optimizations by the Datalog engine.
+In order to generate a test oracle for this program, we aim to construct a reference program ,
+which computes the same result as the optimized program, without being receptive to cross-rule optimizations.
+Figure 2(e) derives the facts for the same output relation as the optimized program.
+However, we cannot construct it directly as we do not have access to the necessary information on the facts of edge , which are required as inputs for the reference program.
+Thus, we build the programs step-by-step as shown in Figure 2(b) , 2(c) , and 2(d) , which contain only one rule each, preventing any potential cross-rule optimizations. The inputs for these programs are obtained from the outputs of the previous steps, which, in turn, are derived from the Datalog engine under test.
+Specifically, Figure 2(b) derives a fact node [1] ; Figure 2(c) derives a fact edge [1, 1] ;
+Figure 2(d) takes the fact derived from the rule in Figure 2(b) as an input to derive the new fact edge [0, 1] .
+Then, by evaluating these three rules, we can obtain the facts edge [0, 1] and edge [1, 1] .
+Finally, we evaluate the reference program shown in Figure 2(e) with the Datalog engine under test to derive the test oracle ( i.e., 0 and 1 ).
+We can determine that there is a bug,
+because the output of the optimized program is different from the test oracle provided by the reference program.
+Test case generation
+Incrementally generating test cases is also beneficial for efficiently tackling the test case generation problem.
+A key challenge is to explore interesting behaviors of the Datalog engine under test by producing valid programs whose rules mostly produce non-empty results—non-empty results cause subsequent rules that depend on a previously-generated rule to exercise the logic of the Datalog engine under test.
+For example, we would like the rules for edge to produce non-empty results, so that the output rule might subsequently produce non-empty results.
+Another challenge is that by disabling the engine’s optimizations, we might expect a slowdown in the execution of the program.
+Incrementally generating rules in the test case allows for tackling both challenges.
+Let us assume that we generate the rule of edge as shown in Figure 2(d) . Before evaluating the optimized program, we first use the Datalog engine to execute the reference program including the newly-generated rule.
+At this stage, we could already discard the rule if it would result in a semantic error; for example, CozoDB produces an error if we introduce a modulo by zero, which is challenging to prevent, since, for a complex expression used as the argument of the modulo operation, determining its value would require a complex analysis.
+In addition, if the rule would produce an empty result, we could decide to generate another rule—we only retain rules resulting in empty results with a low, manually-specified probability.
+Since the newly generated rule produces non-empty results, we append it to the optimized program and validate that both the optimized and reference programs compute the same results.
+Let us assume that we generate the rule in line 4 of the program shown in Figure 2 next.
+Retaining all the facts computed from the reference program shown in Figure 2(b) , 2(c) , and 2(d) allows us to generate the results of the current reference program shown in Figure 2(e) by evaluating only the newly-added rule, achieving high efficiency—as shown in Figure 6(b) , executing the reference program is, in fact, up to 6 × \times faster than executing the optimized program when we generate test cases with 100 rules, as we will discuss in Section 5.3 .
+While the complete optimized program must be evaluated in every step, doing so is necessary to find optimization bugs spanning across multiple rules as soon as a newly-added rule triggers an optimization bug.
+Remaining challenges
+In this simple example, applying our idea of deriving the test oracle was straightforward, as no recursive queries or negations were present. Thus, we could use the output of the reference program as the test oracle directly.
+However, when recursion is present, it is necessary to re-evaluate the rules that depend on the new rule, because the facts derived from this rule might result in a new fixpoint for the rules depending on the new rule.
+Subsequently, we detail our approach and how it applies to Datalog programs containing recursion and negation.
+4. APPROACH
+Figure 3 . Overview of IRE. The initial step is not included in the iterations, as it is required only once. In iteration n n , r n r_{n} denotes the newly generated rule, G n G_{n} denotes the precedence graph, P n r ​ e ​ f P^{ref}_{n} and P n o ​ p ​ t P^{opt}_{n} denote the reference and optimized programs respectively. The symbol + indicates that r n r_{n} is appended to the optimized program from the previous iteration.
+We propose Incremental Rule Evaluation (IRE) , a novel black-box technique to find optimization bugs in Datalog engines, addressing the two main challenges in automated testing in this context, namely test case generation, and the test oracle problem.
+The key insight of our approach is that we can incrementally generate test cases to synergistically generate meaningful test cases as well as evaluate new rules individually to disable many optimizations, in particular, cross-rule optimizations. This allows us to both generate effective test cases and tackle the test oracle problem.
+For test case generation, we incrementally generate a test case by appending rules to a Datalog program; we continue expanding the program ensuring that it is valid ( i.e., can be executed without errors), and produces non-empty results. To provide a test oracle, we execute each rule in the test case individually, preventing optimizations that occur across multiple rules and forcing the Datalog engine to optimize while being able to consider only a single rule.
+Figure 3 shows an overview of our approach supporting also complex features involving recursion.
+The example uses features and syntax supported by many Datalog engines such as Soufflé, µZ, and DDlog. The Datalog dialect used in CozoDB differs in terms of the input facts definition ( e.g., the definition of the inputs in (0). in (1). would correspond to in [ A ]<-[[0], [1]] in CozoDB) and the connector between the rule head and the rule body ( i.e., := is used in CozoDB).
+Our approach starts by generating an initial test case skeleton as the inputs of the test case (step ), and then incrementally adds rules to this test case. In each iteration, we randomly generate a rule (step ) and
+add a corresponding node to the precedence graph
+(step ). The precedence graph ( i.e., G n G_{n} ) specifies the dependence between rules and is used to determine the order in which the rules will be executed.
+Next, we construct a reference program, which contains only this new rule, and evaluate it (step ). If execution results in a semantic error ( i.e., a syntactically valid rule that might result in an error during execution), we discard the rule. Similarly, if the newly-added rule results in an empty result, we discard it with an empirically specified, high probability. In both cases, we continue execution with step by generating a new candidate rule. If the rule is successfully retained, we append it to the optimized program. The optimized program is then evaluated and any discrepancy between its results and the reference results derived from the reference programs indicates a bug (step ).
+4.1. Test Case Generation
+In Figure 3 , steps , , and are relevant for test case generation.
+We maintain two types of programs: an optimized program P n o ​ p ​ t P^{opt}_{n} , where a program at iteration n n contains the initial test case skeleton and the rules generated in the current iteration as well as those generated in the previous iterations, and will be optimized by the Datalog engine;
+a reference program P n r ​ e ​ f P^{ref}_{n} that each contains only a single rule r n r_{n} and the necessary inputs, whose result facts are used as test oracles. The reference programs are not receptive to cross-rule optimizations.
+In Figure 3 , as an example, consider the reference program P n − 1 r ​ e ​ f P^{ref}_{n-1} below step and its corresponding optimized program P n − 1 o ​ p ​ t P^{opt}_{n-1} on the right of step . While the reference program has only a single rule t ( X ):- s ( X ), b ( _ , X ). and its necessary inputs, the optimized program contains the initial input facts in (0). in (1). as well as the rules up to t ( X ):- s ( X ), b ( _ , X ). .
+Test case skeleton
+In step , we generate an initial test case skeleton including an initial set of facts as well as potentially necessary declarations. Such declarations are necessary for Datalog engines like Soufflé and DDlog.
+These facts serve as the input facts of the optimized programs, and the corresponding relations will be used as optional relations to generate new rules. In Figure 3 , in (0). in (1). are generated as the initial set of facts, and are considered the sole inputs for all optimized programs. The relation in can be utilized to generate rules in subsequent iterations.
+Rule generation
+In step , in each iteration n n , we create a new rule r n r_{n} based on the existing relations.
+In this step, we first select relations to form the body of r n r_{n} , and add other language constructs.
+We need to consider only the relations that are currently available and select one or multiple of them to form the body of the new rule. In theory, our approach supports all Datalog language features with deterministic behavior, such as recursive queries, negation, aggregation, subsumption, and functors. We consider adding any feature to a rule based on a pre-defined probability ( Seltenreich, 2023 ; Slutz, 1998 ; Rigger and Su, 2020a ) , allowing us to focus on specific features that we want to test.
+For the head of this new rule, we have the option to either generate a new relation and choose variable types for it from those that appear in the body of the rule, which can introduce a new relation into the test case. Alternatively,
+we can select an existing relation from the test case,
+which may introduce recursive queries.
+Generating the rule body before the rule head ensures that the variables in the head are bound ( Green et al., 2013a ) , with each variable in the rule head appearing at least once in a positive relation within the rule body.
+Retaining interesting rules
+We have two key considerations that help us decide when to retain a randomly-generated rule (step ).
+The first consideration is that the rule must not result in an error during execution.
+By using rule-based generators adapted to a specific Datalog engine, it is straightforward to ensure syntactic correctness.
+However, as also highlighted by prior work on testing database engines ( Rigger and Su, 2020c ; Zhong et al., 2020 ; Jiang et al., 2023 ; Liang et al., 2022 ) , it can be difficult to avoid semantic errors.
+To tackle this, we keep a record of expected semantic errors, which allows us to identify and discard invalid rules.
+The second consideration is that we would like to generally avoid rules computing empty results, so that subsequent rules might compute a non-empty result and stress the Datalog engine under test. However, we found that approximately ten percent of the bugs detected by queryFuzz and our method were triggered by rules that produced empty results. Therefore, we append rules with a fixed, low probability P e ​ m ​ p ​ t ​ y P_{empty} to allow for empty results.
+Incrementally generating rules is beneficial for both considerations, as it enables us to incrementally build complex, valid test cases; the high-level idea is similar to DynSQL ( Jiang et al., 2023 ) , which was proposed for fuzzing database engines, which, however, considered only test case validity.
+Last, we combine r n r_{n} and P n − 1 o ​ p ​ t P^{opt}_{n-1} to form P n o ​ p ​ t P^{opt}_{n} . To form a valid program, we add declarations for the new relations, and set the relation in the head of the rule r n r_{n} as the output relation of P n o ​ p ​ t P^{opt}_{n} .
+4.2. Test Oracle
+In steps and , we derive the test oracle by comparing the derived facts from the reference programs and the optimized program.
+To this end, we also require the precedence graph built in step .
+⬇
+1
+a (1). a (2). a (3). b (1). // input facts
+2
+c ( A ) :- a ( A ), ! b ( A ). // r 0 r_{0} , res: c(2). c(3).
+3
+d ( A ) :- c ( A ). // r 1 r_{1} , res: d(2). d(3).
+4
+c ( A ) :- d ( A ). // r 2 r_{2} , res: c(2). c(3).
+5
+b ( A ) :- A =2. // r 3 r_{3}
+Figure 4 . A test case in iteration 3 3 , where care is required to evaluate the rules in the correct order.
+The results displayed in the comments already reach the fixpoint before iteration 3 3 . The graph at right is the precedence graph of this test case.
+Challenge
+Evaluating the new rule alone is insufficient for generating a reference result for some programs. In iteration n n , if we generate a new rule with an existing relation as head, it will cause other rules which depend on the new rule to generate additional facts or remove existing facts.
+We need to re-evaluate rules which depend on the new rule and take care that they are executed in a specific order.
+Consider the test case illustrated in Figure 4 . In iteration 3 3 , the new rule r 3 r_{3} derives a new fact ( i.e., b (2) ) for b , causing the rule r 0 r_{0} to be re-evaluated to remove c (2) from the previous results, producing the new result c (3) for r 0 r_{0} .
+Subsequently, the update of c causes r 1 r_{1} to be re-evaluated to reach the new fixpoint, as the relation c appears in the rule r 1 r_{1} .
+Selecting the correct input facts for r 1 r_{1} requires careful consideration.
+While r 2 r_{2} also derives facts for relation c , using its results as inputs for r 1 r_{1} would result in an error, as c (2) of r 2 r_{2} originates from the d (2) of r 1 r_{1} , which was derived from the c (2) of r 0 r_{0} , and should now be discarded.
+Algorithm 1 Algorithm for test oracle generation
+1
+function TestOracleGen( p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s , o ​ u ​ t ​ p ​ u ​ t ​ _ ​ r ​ e ​ l prec\_graph,stable\_facts,output\_rel )
+     
+2
+s ​ t ​ r ​ a ​ t ​ a ← strata\leftarrow GraphStratify( p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph )
+     
+3
+for s ​ t ​ r ​ a ​ t ​ u ​ m ​ in ​ s ​ t ​ r ​ a ​ t ​ a stratum\ \textbf{in}\ strata do
+          
+4
+for n ​ o ​ d ​ e ​ in ​ s ​ t ​ r ​ a ​ t ​ u ​ m node\ \textbf{in}\ stratum do
+               
+5
+if isCondensedNode( n ​ o ​ d ​ e node ) then
+                    
+6
+HandleRecursion( n ​ o ​ d ​ e , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s node,stable\_facts )
+               
+7
+else
+                    
+8
+s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s ​ [ n ​ o ​ d ​ e ] ← stable\_facts[node]\leftarrow GenProgAndExec( n ​ o ​ d ​ e , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s node,stable\_facts )
+     
+9
+t ​ e ​ s ​ t ​ _ ​ o ​ r ​ a ​ c ​ l ​ e ← test\_oracle\leftarrow GetFacts( s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s , o ​ u ​ t ​ p ​ u ​ t ​ _ ​ r ​ e ​ l stable\_facts,output\_rel )
+     
+10
+return t ​ e ​ s ​ t ​ _ ​ o ​ r ​ a ​ c ​ l ​ e test\_oracle
+11
+function HandleRecursion( c ​ o ​ n ​ d ​ _ ​ n ​ o ​ d ​ e , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s cond\_node,stable\_facts )
+     
+12
+if isNegInCond( c ​ o ​ n ​ d ​ _ ​ n ​ o ​ d ​ e cond\_node ) then
+          
+13
+n ​ o ​ d ​ e ​ s ← nodes\leftarrow GetNodesInCond( c ​ o ​ n ​ d ​ _ ​ n ​ o ​ d ​ e cond\_node )
+          
+14
+s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s ​ [ n ​ o ​ d ​ e ​ s ] ← stable\_facts[nodes]\leftarrow GenProgAndExec( n ​ o ​ d ​ e ​ s , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s nodes,stable\_facts )
+     
+15
+else
+          
+16
+i ​ s ​ F ​ i ​ x ​ p ​ o ​ i ​ n ​ t ← False isFixpoint\leftarrow\texttt{False}
+          
+17
+while not i ​ s ​ F ​ i ​ x ​ p ​ o ​ i ​ n ​ t isFixpoint do
+               
+18
+i ​ s ​ F ​ i ​ x ​ p ​ o ​ i ​ n ​ t ← True isFixpoint\leftarrow\texttt{True}
+               
+19
+for n ​ o ​ d ​ e ​ in ​ c ​ o ​ n ​ d ​ _ ​ n ​ o ​ d ​ e node\ \textbf{in}\ cond\_node do
+                    
+20
+r ​ e ​ s ← res\leftarrow GenProgAndExec( n ​ o ​ d ​ e , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s node,stable\_facts )
+                    
+21
+if r ​ e ​ s res != s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s ​ [ n ​ o ​ d ​ e ] stable\_facts[node] then
+                         
+22
+i ​ s ​ F ​ i ​ x ​ p ​ o ​ i ​ n ​ t ← False isFixpoint\leftarrow\texttt{False}
+                         
+23
+s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s ​ [ n ​ o ​ d ​ e ] ← r ​ e ​ s stable\_facts[node]\leftarrow res
+Program stratification
+Stratified Datalog ⌝ \urcorner ( Abiteboul and Hull, 1988 ) provides a solution for evaluating Datalog programs that contain negation in front of intensional-database ( i.e., IDB) relations, by determining the execution order based on a precedence graph , which is a directed graph. Each node in the graph represents a rule in the test case and the destination node of an edge is directly dependent on the source node, specifying the dependence between all the rules.
+For example, in Figure 3 , rule r n − 1 r_{n-1} depends on rule r 1 r_{1} because the relation b is the head of r 1 r_{1} and appears in the rule body of r n − 1 r_{n-1} . So, in the precedence graph, there is an edge from the node of r 1 r_{1} to the node of r n − 1 r_{n-1} .
+Stratified Datalog ⌝ \urcorner stratifies the precedence graph into different strata,
+where rules in lower strata are executed before those in the higher strata.
+Furthermore, execution only progresses to the next stratum when all rules in the current stratum have reached a fixpoint.
+The stratification is guided by two principles: (1) If a relation R R is referenced in a positive form in the rule of another relation R ′ R^{\prime} , the rules defining R R must be placed in a lower or equal stratum compared to the rule of R ′ R^{\prime} ; (2) If R R is referenced in a negated form in the rule of R ′ R^{\prime} , the rules defining R R must be placed in a lower stratum than the rule of R ′ R^{\prime} .
+Recursion without negation can be stratified into a single stratum, whereas recursion involving negation cannot be stratified, as determined by the two principles outlined.
+Furthermore, recursion involving negation has a different fixpoint, named alternating fixpoint ( Van Gelder, 1989 ) , which can not be expressed by stratified Datalog ⌝ \urcorner .
+We propose a strategy to address the challenges posed by recursion involving negation in test oracle generation.
+As our approach relies on an existing Datalog engine, we can disregard the execution order of the unstratifiable portions of the Datalog program by placing them in a single reference program; thus, the Datalog engine under test generates the results for these rules, enabling a general, simple solution.
+While this method does not allow us to disable optimization between rules in the recursive query with negation, it might still detect bugs in executing them through their interaction with other rules.
+Reference program execution
+Algorithm 1 details how we derive our test oracle. We use the test case shown in Figure 4 as a guiding example to support the explanation of the algorithm.
+The function TestOracleGen outlines the procedure for generating test oracles and requires three arguments.
+The first argument, p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph , is a subgraph of the complete precedence graph, including all nodes that are reachable from the node of the new rule in the precedence graph, as the new rule impacts only the rules that depend on it.
+The p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph of the guiding example should be the right graph shown in Figure 4 , as all rules are impacted by the new rule.
+The second argument, s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts , encompasses both the initial facts generated in step and those derived by the rules which are not present in p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph .
+Facts derived from the rules within p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph are now outdated and consequently, they are not applicable for the construction of inputs of reference programs for the rules in p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph ; thus, s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts does not include the facts derived from the rules within p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph .
+The s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts of the guiding example includes a (1) , a (2) , a (3) and b (1) .
+The third argument, o ​ u ​ t ​ p ​ u ​ t ​ _ ​ r ​ e ​ l output\_rel , determines which relation is the output relation, which is b in the guiding example.
+A key step is implemented in GraphStratify , which is called in line 1 . Stratification is a well-understood concept that has been well-studied in literature ( Ross, 1990 ) , which is why we only briefly outline it.
+The function stratifies p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph , meaning that it determines
+the order of execution and the inputs for the rules contained within it, corresponding to step in Figure 3 .
+During stratification, we first build the condensation graph of p ​ r ​ e ​ c ​ _ ​ g ​ r ​ a ​ p ​ h prec\_graph .
+The condensation graph is a directed acyclic graph. It simplifies the structure by amalgamating each strongly connected component of the original graph into a single new node, denoted as c i c_{i} . Subsequently, the edges that were initially connected to the nodes in these strongly connected components are redirected to c i c_{i} .
+For the guiding example, we merge the two nodes of r 1 r_{1} and r 2 r_{2} into a single node c 0 c_{0} .
+For stratification, we enforce the requirement that the two nodes of each edge must be in different strata.
+We also take note of which edges in the precedence graph express negated dependence, as this information is necessary for the proper handling of recursion involving negation in our approach.
+After stratification, the rules in the guiding example are placed into three strata: r 3 r_{3} is positioned in the first stratum, r 0 r_{0} in the second stratum, and c 0 c_{0} —a condensed form of r 1 r_{1} and r 2 r_{2} —is placed in the third stratum.
+We evaluate the rules following the strata produced by graph stratification, starting from the lowest stratum and progressing to the higher ones ( i.e., the for loop in line 1 ), corresponding to step in Figure 3 .
+Non-condensed nodes are handled with GenProgAndExec in line 1 .
+GenProgAndExec is used to construct an executable reference program for one or more specific rules, and to execute it subsequently.
+It first generates the required declarations of relations and types, and then specifies the input and output relations.
+Afterward, it collects the input facts for this reference program from s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts .
+The facts pertaining to the relations present in the rule body will be considered as inputs.
+After the execution of this reference program, the newly derived facts will be stored in s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts .
+For example, in constructing the reference program for rule r 0 r_{0} in the guiding example, the inputs comprise a (1) , a (2) , a (3) , and b (1) from initial facts generated in step , along with b (2) derived from r 3 r_{3} . The result c (3) will be saved into s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts .
+We handle recursive queries in the function HandleRecursion . The recursive queries are represented by condensed nodes.
+We first determine whether the condensed node contains a negated edge as shown in line 1 .
+If so, this portion is unstratifiable, and we identify all the rules in this recursion, and place these rules into a single reference program ( e.g., d ( a ):- c ( a ). c ( a ):- c ( a ),! d ( a ). ), set all relations that appear in the head of these rules as output relations, and query the answer using the Datalog engine under test.
+If there is no negation, we cyclically evaluate every rule in this recursion beginning with a specific node until no new facts are derived ( i.e., the while loop in line 1 ).
+In the guiding example, node c 0 c_{0} exemplifies this case;
+we need to cyclically evaluate the two rules r 1 r_{1} and r 2 r_{2} in c 0 c_{0} until both of them reach the fixpoint.
+Before evaluating r 1 r_{1} and r 2 r_{2} , s ​ t ​ a ​ b ​ l ​ e ​ _ ​ f ​ a ​ c ​ t ​ s stable\_facts contains a (1) , a (2) , a (3) , b (1) , b (2) , and c (3) .
+During the first iteration of evaluating the condensed node c 0 c_{0} , d (3) is derived for rule r 1 r_{1} and c (3) for rule r 2 r_{2} .
+Subsequently, in the second iteration, the derived facts for r 1 r_{1} and r 2 r_{2} remain d (3) and c (3) , identical to those in the first iteration. Thus, we determine that the condensed node c 0 c_{0} has reached the fixpoint.
+Test oracle
+Finally, we gather the facts of the output relation of the optimized program from all reference programs as test oracle ( i.e., the function call to GetFacts in line 1 ).
+For example, in Figure 3 , relation a is defined by two rules: r 0 r_{0} and r n r_{n} , so the test oracle in iteration n n should be the union of the results derived by these two rules.
+By evaluating the optimized program (step ), we can determine whether P n o ​ p ​ t P^{opt}_{n} triggers a logic bug if its result mismatches the facts by the test oracle.
+5. EVALUATION
+To evaluate IRE, we realized it as a tool named Deopt , with its name derived from D atalog E ngine Op timization T ester.
+The goal of our evaluation was to investigate whether our approach can effectively and efficiently find bugs in Datalog engines. We selected four mature and well-tested open-source Datalog engines for the evaluation and aimed to answer the following questions:
+Q1:
+How effective is Deopt in finding new bugs?
+Q2:
+How do Deopt ’s components contribute to its overall effectiveness and efficiency?
+Q3:
+How effective is Deopt ’s test case generation compared to a random method?
+Q4:
+How does Deopt compare to the state-of-the-art approach?
+Implementation
+We implemented Deopt based on queryFuzz and modified it in four main aspects. First, we added support for another Datalog engine ( i.e., CozoDB).
+Second, for this and the existing engines ( i.e., Soufflé, µZ, and DDlog), we modified the random rule generators to generate rules incrementally.
+Third, we added additional language features ( e.g., subsumption, equivalence relation, and query plan).
+A potential concern might be that evaluating Deopt and queryFuzz might not be fair due to these additional language features. However, queryFuzz’s rules do not apply to these language features, and our manual analysis in Section 5.4 shows that conceptually, queryFuzz cannot detect the bugs we found using these language features.
+Fourth, we implemented our test oracle using Python in only approximately 200 LOC.
+Our approach is independent of the Datalog engines under test; we expect it to be compatible with all common Datalog engines.
+Among these four Datalog engines considered, Soufflé is the only one that supports multiple optimization keywords and execution options. To run the reference program for Soufflé, we must ignore the inline keyword as Souffle disallows inline optimization on input and output relations.
+We also added an extension that provides options to ignore other optimization-related keywords and execution options for the reference program.
+Tested Datalog engines
+We selected four mature open-source Datalog engines as our target: Soufflé ( Jordan et al., 2016 ) , CozoDB ( Hu, 2023 ) , µZ ( Hoder et al., 2011 ) , and DDlog ( Ryzhyk and Budiu, 2019 ) . Three of them were the test targets used to evaluate queryFuzz: Soufflé, µZ, and DDlog.
+Soufflé has been used in numerous works to support analyses, including static analysis ( Antoniadis et al., 2017 ) , security analysis ( Grech et al., 2019 ; Tsankov et al., 2018 ; Brent et al., 2018 ) , and binary disassembling ( Backes et al., 2019 ) . µZ is part of the well-known SMT solver Z3 ( Moura and Bjørner, 2008 ) . DDlog supports incremental computation and has more than one thousand stars on GitHub.
+CozoDB is designed to support large language models and artificial intelligence applications. It has garnered over 2.6 thousand stars on GitHub.
+Experimental setup
+We conducted all experiments on a laptop with a 12-core Intel i7-12700 CPU at 2.10 GHz and 16 GB of memory running Ubuntu 22.04. We downloaded Soufflé, CozoDB, µZ, and DDlog from GitHub. For Soufflé, we tested it on 29c5921 and later commit versions. For CozoDB, we tested it on 0.7.0 and later release versions. For µZ, we tested its code for version 9a65677 . For DDlog, we tested it on dbd6580 and later commit versions.
+5.1. Effectiveness
+Methodology
+We evaluated the effectiveness of Deopt by testing the four aforementioned, mature Datalog engines. We intermittently ran Deopt over a period of four months, while also developing the approach and tool. We reported bugs after determining whether we believed a bug to be unique. For logic bugs, determining whether a bug is a unique bug is an unsolved problem. To avoid reporting duplicate issues, we used a best-effort approach by avoiding reporting bugs in a given feature until the developers fixed previously-reported bugs in this feature, where the developers were responsive. For other bugs, including crashes, internal errors, and hangs, we determined whether a bug is unique based on the stack trace, error message, and/or the features involved. As bug-inducing test cases were sometimes large, we reduced them to simpler bug-inducing test cases with C-Reduce ( Regehr et al., 2012 ) and manually.
+Table 1. Deopt found 30 unique bugs in three mature engines.
+Bug type
+Datalog engine
+Logic bug
+Internal error
+Crash
+Hang
+Soufflé
+9
+9
+3
+2
+CozoDB
+2
+2
+1
+0
+µZ
+2
+0
+0
+0
+Total
+13
+11
+4
+2
+Table 2. The status of bugs found by Deopt .
+Datalog engine
+Fixed
+Verified
+Open
+Soufflé
+2
+10
+11
+CozoDB
+3
+2
+0
+µZ
+1
+1
+0
+Total
+6
+13
+11
+Results
+Table 1 shows the number of bugs found by Deopt grouped by the bug type and Datalog engine.
+Deopt found a total of 30 previously unknown bugs in three mature Datalog engines.
+Out of all bugs, 6 were already fixed and 13 were confirmed as unique bugs by developers.
+Among these, 13 were logic bugs, 2 of which have been fixed, and another 7 are awaiting confirmation.
+The number of fixed and confirmed bugs is often considered an important metric of the found bugs’ importance.
+For CozoDB, the bugs we reported were promptly confirmed and fixed.
+The ratio of fixed and verified bugs in Soufflé is low.
+We received informal feedback that our bug reports are appreciated, but due to lack of resources, the bugs could not be investigated and fixed.
+For µZ, one bug was fixed, but we received feedback that the Datalog implementation is no longer maintained. 3 3
+3
+https://github.com/Z3Prover/z3/issues/6447
+Logic bugs
+Overall, we have found 13 logic bugs. For the bugs in Soufflé, we discovered that 8 out of 9 bugs were related to optimizations, because the test cases contained only a limited set of language features after reduction,
+for example, subsumption and equivalence relation, they are language features that enable optimizations implemented in Soufflé.
+One other bug resulted in inconsistent output for specific floating-point values when running in different execution modes.
+7 out of 9 bugs were found by IRE, whereas
+the other 2 logic bugs only occurred under specific execution options.
+One bug resulted from a different result in compiler mode, which need to be executed with - c option. Another one caused an incorrect result when using provenance, which is a debug method in Soufflé that needs to be executed with the - t option. These two bugs were found by randomly ignoring the execution options for the reference program.
+For the bugs in CozoDB, we received feedback from the developers indicating that these two logic bugs were caused by errors in the implementation of the semi-naïve algorithm and the magic sets transformation, respectively.
+Figure 5 . A bug-inducing test case for µZ. We have omitted declarations in this test case for simplicity. This bug could be triggered regardless of whether b , d , and f have facts.
+⬇
+1
+h (29, 29). h (80, 80).
+2
+a ( A ) :- b ( A ), 43 != A .
+3
+c ( C ) :- d ( C ), 76 != C .
+4
+e ( A ) :- f ( A ), 77 < A .
+5
+g ( E ) :- h ( D , E ), 8 != E , 71 < D .
+6
+// expected result: g(80).
+7
+// buggy result: g(29). g(80).
+For bugs in µZ, we failed to determine the precise cause of the bugs, due to limited developer feedback. Figure 5 shows one bug-inducing test case for µZ.
+We expected that the output should only be g (80) , however, both g (29) and g (80) were computed as a result.
+Interestingly, the bug cannot be triggered when removing any of the individual rules, despite all four rules having no interdependence.
+The process of generating test oracles for all bugs is included in the supplementary materials in the artifact.
+Other bugs
+Our approach was effective also in finding other types of bugs; Deopt found a total of 11 internal errors, 4 crashes, and 2 hangs.
+Note that other random-testing approaches without an explicit test oracle could also find these bugs.
+Bugs in different engines
+We found most bugs in Soufflé ( i.e., 23 out of 30) and 5 bugs in CozoDB.
+For µZ, we have found more bugs without reporting them, because we received feedback that µZ is not actively used in Z3. We decided not to continue testing µZ, to respect the developers’ wishes.
+DDlog is known to be stable; queryFuzz found only a single bug in it. While testing the latest version of DDlog, we also repeatedly triggered this bug, since it has not been fixed yet.
+Reception
+Our bug reports have helped developers find many hard-to-find bugs, and they also appreciated our reports in the public issue trackers. For the logic bugs in Soufflé on magic transformation with subsumption and equivalence relations, one of the developers commented that our finding was "well spotted!" . 4 4
+4
+https://github.com/souffle-lang/souffle/issues/2322 For the assertion failure in Soufflé, one of the developers thought our finding on subsumption in the provenance system was a "Great find." 5 5
+5
+https://github.com/souffle-lang/souffle/issues/2321
+In addition, we directly communicated with Bernhard Scholz, the main developer of Soufflé, who told us that he valued our work and encouraged us to continue our testing efforts.
+The developer of CozoDB praised our bug-finding abilities, saying, "you are really good at finding bugs!" 6 6
+6
+https://github.com/cozodb/cozo/issues/99
+5.2. Sensitivity Analysis
+In this section, we examine the factors that might influence the efficiency and effectiveness of our test case generation method.
+As detailed next, we have introduced five options, which we believed to be potentially relevant for the efficiency and effectiveness of our approach.
+Methodology
+To illustrate the effect of each configuration on our system, we selected default configurations that we determined to work well empirically. We set
+M ​ a ​ x r ​ u ​ l ​ e ​ s = 100 Max_{rules}=100 , M ​ a ​ x a ​ t ​ t = ∞ Max_{att}=\infty , P e ​ m ​ p ​ t ​ y = 0.1 P_{empty}=0.1 , P h ​ e ​ a ​ d = 0.02 P_{head}=0.02 , M ​ a ​ x i ​ t ​ e ​ r = 100 Max_{iter}=100 . We introduce these options below. In each experiment, we modified only the relevant option to assess its impact.
+For each graph depicted, we ran the test case generation for 24 hours. Where metrics required to be summarized, we used the arithmetic mean.
+Subsequently, R ​ e ​ f . Ref. refers to the reference program, and O ​ p ​ t . Opt. to the optimized program.
+We refer to every Datalog program to which we add a rule as a test case .
+We consider the process of incrementally generating rules to form a test case as a test iteration , which will be terminated when the number of rules in this test case reaches the threshold M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} , or the attempts for generating a new rule reaches the threshold M ​ a ​ x a ​ t ​ t Max_{att} .
+Our throughput metric refers to the number of test iterations in a specific period, which is 24 hours for our experiments.
+We conducted all experiments on Soufflé, as µZ and CozoDB have similar performance trends. We also conducted performance-related experiments on DDlog, which is slower compared to the other engines.
+Max number of rules ( M ​ a ​ x r ​ u ​ l ​ e ​ s > 0 Max_{rules}>0 )
+M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} determines the maximum number of rules to be generated in a test case.
+We anticipate a decrease in the throughput with an increase in M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} , as larger M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} requires more reference and optimized programs in a test iteration.
+Thus, we evaluate how varying M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} affects Deopt ’s performance.
+(a) Runtime percentage.
+(b) The cause of results.
+Figure 6 . The results of M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} . In a, the curves illustrate the percentage of the cumulative execution time of the reference program out of the total execution time of a test iteration. In b, the curves show the ratio of average execution time between a single reference program and an optimized program.
+The two graphs in Figure 6 show the effect of varying M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} .
+The graph in Figure 6(a) illustrates the percentage of the cumulative execution time of the reference program.
+For example, when generating a test case for Soufflé with 100 rules, the cumulative execution time of the reference programs accounted for 30.2% of the total execution time of a test iteration, thus we can infer that the optimized programs accounted for 69.8%.
+As M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} increases, we can observe a decline in the cumulative execution time percentage of the reference programs.
+The explanation for this can be found in Figure 6(b) . The execution time for a single reference program is constant as it always contains a single rule, whereas the average execution time for the optimized program increases with M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} .
+Moreover, we found that regardless of the size of M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} , the number of evaluations required for reference programs when adding a new rule remains almost constant. Thus, we can conclude that as M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} increases, the time percentage required to generate the test oracle becomes small, and the execution time of the optimized program becomes the limiting factor for the test performance.
+DDlog was slow, hindering the speed of testing.
+When M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} was set to 100, we could conduct only 5 test iterations in the 24-hour period. Despite this, we can still observe that it has similar characteristics to Soufflé.
+Therefore, for M ​ a ​ x a ​ t ​ t Max_{att} , P e ​ m ​ p ​ t ​ y P_{empty} , P h ​ e ​ a ​ d P_{head} , and M ​ a ​ x i ​ t ​ e ​ r Max_{iter} , we omitted the results for DDlog, because it has the same trend as Soufflé, but due to the small number of test iterations, has a higher level of noise in the results.
+Figure 7 . The results of M ​ a ​ x a ​ t ​ t Max_{att} .
+Max attempts to generate new rules ( M ​ a ​ x a ​ t ​ t > 0 Max_{att}>0 or M ​ a ​ x a ​ t ​ t = ∞ Max_{att}=\infty )
+M ​ a ​ x a ​ t ​ t Max_{att} determines the maximum number of attempts to generate a new rule if the current rule produces an empty result or results in a semantic error; the current number of attempts is set to zero after successfully generating a rule.
+M ​ a ​ x a ​ t ​ t Max_{att} requires a positive number or is set to ∞ \infty for an infinite number of attempts.
+We introduced M ​ a ​ x a ​ t ​ t Max_{att} , because the presence of existing
+relations and their associated facts can make it difficult to generate valid rules that produce non-empty results. For example, the rule a ( A ) :- b ( A ), A < 0, A > 0. produces an empty result, as no facts can satisfy its predicates.
+If the number of failed consecutive rule generations reaches this threshold, we will stop generating more rules in this test iteration.
+We measured the impact of M ​ a ​ x a ​ t ​ t Max_{att} on the average size of generated test cases and the throughput of testing.
+The results of M ​ a ​ x a ​ t ​ t Max_{att} are shown in Figure 7 .
+When the threshold was lower than 20, the average number of rules in the test cases when the test iteration was terminated increased rapidly, reaching 96 at a threshold of 20. After that, the rate of increase slowed down and this average number gradually approached 100. This indicates that, typically, only a small number of attempts are required to generate a valid rule that maintains the probability of non-empty results.
+However, we encountered rare cases where it took a higher number of attempts for a rule.
+For the throughput , the opposite seems to hold; when the threshold was lower than 20, the number of test iterations conducted in 24 hours decreased rapidly, and remained stable when the threshold was higher than 20.
+As mentioned in the previous evaluation about M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} , the execution time of the optimized programs accounts for the majority of the total test time, so the decrease in throughput is mainly due to the larger M ​ a ​ x a ​ t ​ t Max_{att} result in the larger test case, which requires more time to execute the optimized programs.
+Figure 8 . The results of P e ​ m ​ p ​ t ​ y P_{empty} .
+Probability to allow empty results for a rule ( 0 ≤ P e ​ m ​ p ​ t ​ y ≤ 1 0\leq P_{empty}\leq 1 )
+P e ​ m ​ p ​ t ​ y P_{empty} determines the probability of generating a new rule that is permitted to produce an empty result.
+Most bugs require relations with non-empty facts to be detected, but relations with empty facts are also necessary to detect some bugs ( e.g., 2 out of 13 bugs detected by queryFuzz). We set P e ​ m ​ p ​ t ​ y P_{empty} to maintain a certain percentage of relations without any facts.
+For P e ​ m ​ p ​ t ​ y P_{empty} , we measured the probability that the optimized program will produce empty results and its impact on the throughput of testing.
+The results of P e ​ m ​ p ​ t ​ y P_{empty} are shown in Figure 8 .
+For example, when we set 60% for P e ​ m ​ p ​ t ​ y P_{empty} , the likelihood of the optimized program ( i.e., test case) producing empty results is 83.3%.
+While the results are for all test cases, the trend looks similar for the last test case when test iterations was terminated.
+Even if there is a small number of empty relations in the available relations, the probability of newly generated relations being empty is significantly higher. This is, because, for most rules, we require that all relations in the body are non-empty to ensure that the final result is non-empty.
+Even if most relations are empty, there is a chance to generate rules with non-empty results.
+This is why the curve increases quickly at the beginning and then flattens.
+Furthermore, we noticed a slight improvement in testing throughput as P e ​ m ​ p ​ t ​ y P_{empty} increases.
+This is because a lower value for P e ​ m ​ p ​ t ​ y P_{empty} requires more attempts to accept a rule, resulting in an increase in the number of reference program executions.
+However, since the execution of the reference program is fast ( i.e., about 0.03s per execution), this results only in a slight improvement in testing throughput.
+(a) P h ​ e ​ a ​ d P_{head}
+(b) M ​ a ​ x i ​ t ​ e ​ r Max_{iter}
+Figure 9 . The effect of P h ​ e ​ a ​ d P_{head} and M ​ a ​ x i ​ t ​ e ​ r Max_{iter} on recursions.
+Probability of choosing an existing relation as head ( 0 ≤ P h ​ e ​ a ​ d ≤ 1 0\leq P_{head}\leq 1 )
+P h ​ e ​ a ​ d P_{head} determines the probability of generating a new rule with an already existing relation as the head.
+This option controls the generation of recursive queries ( e.g., a ( A ):- b ( A ). b ( A ):- a ( A ). introduces a recursion because we select an existing relation b as the head of the second rule). The larger P h ​ e ​ a ​ d P_{head} is, the more recursions will be generated;
+meanwhile, the more time it will take to evaluate the newly generated rule.
+For P h ​ e ​ a ​ d P_{head} , we measured its impact on the number and complexity of recursions in the last test case when the test iteration was terminated.
+Max iterations for recursions ( M ​ a ​ x i ​ t ​ e ​ r > 0 Max_{iter}>0 )
+M ​ a ​ x i ​ t ​ e ​ r Max_{iter} controls up to how many iterations are executed in the fixpoint computation for recursion.
+As shown in Section 4.2 , for recursions without negation, we continually evaluate the rules individually until all of them reach a fixpoint. However, not all cases have a fixpoint ( e.g., a ( A +1):- b ( A ). b ( A ):- a ( A ). ).
+If the iterations exceed this threshold, we need to abandon this rule and generate a new one. Larger thresholds may result in spending more time on invalid recursive queries, while smaller thresholds may cause us to overlook complex recursions that could potentially trigger bugs. For M ​ a ​ x i ​ t ​ e ​ r Max_{iter} , we also measured its impact on the number and complexity of recursions.
+For P h ​ e ​ a ​ d P_{head} and M ​ a ​ x i ​ t ​ e ​ r Max_{iter} , determining the precise number and complexity of recursions in a test case can be challenging as some intersecting recursions are difficult to differentiate. We use the average number and size of the cycles in the precedence graph to approximate this, and treat two intersecting cycles as separate entities.
+As shown in Figure 9 , we can observe that an increase in P h ​ e ​ a ​ d P_{head} results in a significant increase in the number and size of circles, indicating an increase in test case complexity.
+An increase in M ​ a ​ x i ​ t ​ e ​ r Max_{iter} leads to an increase in both the number and size of cycles, though the impact is not significant when compared with P h ​ e ​ a ​ d P_{head} .
+5.3. Efficiency
+We compared the efficiency of our approach in generating complex test cases that produce non-empty results with a random test case generation approach.
+We evaluated this comparison under different test case sizes, denoted by M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} , which determines the maximum number of rules generated in a test case.
+Methodology
+We implemented a random test case generator, which adds the newly generated rule directly to the test case until reaching the M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} threshold, and generates test oracles for the final test case by evaluating each rule individually.
+For this experiment, we only gather statistics on the last test case when the test iteration was terminated.
+Finally, we evaluated the total number of test cases, valid test cases, and test cases with non-empty results considering various test case sizes ( i.e., M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} ).
+We conducted this experiment on Soufflé and DDlog, as µZ and CozoDB have similar performance trends with Soufflé, and DDlog is slower compared to the other engines.
+Figure 10 . Comparison with a random test case generation approach. Inc refers to the incremental test case generation, and Ran refers to the random method.
+Results.
+Figure 10 shows that the random test case generation method consistently produces more test cases over time.
+However, for Soufflé, as M ​ a ​ x r ​ u ​ l ​ e ​ s Max_{rules} increases, the number of valid test cases generated by our method surpasses that of the random method ( i.e., when M ​ a ​ x r ​ u ​ l ​ e ​ s > 40 Max_{rules}>40 ).
+Additionally, the number of test cases with non-empty results generated by our method consistently exceeds that of the random method. For example, when M ​ a ​ x r ​ u ​ l ​ e ​ s = 40 Max_{rules}=40 , the number of test cases with non-empty results generated by the incremental method is 16.73 × \times as high as that of the random method for Soufflé; when M ​ a ​ x r ​ u ​ l ​ e ​ s = 60 Max_{rules}=60 , this ratio is 31.02 for Soufflé, and 1.17 for DDlog.
+Therefore, incremental test case generation, while taking longer for the execution of the reference programs, allows for generating more complex and, thus, potentially interesting test cases.
+5.4. Comparison with queryFuzz
+queryFuzz is a state-of-the-art approach for testing Datalog engines,
+which is why we compared its effectiveness with Deopt .
+Challenges
+Fairly comparing the two approaches is difficult.
+Our approach primarily aims at finding optimization bugs applied to multiple rules, while queryFuzz finds logic bugs in general, but is restricted to specific transformations; due to the different focus, an apples-to-apples comparison is impossible.
+Both queryFuzz and Deopt support Soufflé, µZ, and DDlog, enabling testing these Datalog engines by both tools.
+However, while we could test the same version of the Datalog engine that contains the logic bugs with the respectively other tool, we cannot determine whether the two bugs triggered by different test cases have the same root cause, given that many bugs reported by the two tools remain unfixed.
+Methodology
+We implemented a best-effort comparison based on manually inspecting and analyzing the bug-inducing test cases and the bugs.
+We adopted this methodology from prior testing works ( Rigger and Su, 2020b ; Rigger and Su, 2020a ) .
+Specifically, we manually analyzed the bug-inducing test cases generated by the two tools, and attempted to apply the test oracle of the respectively other tools.
+For the logic bugs found by queryFuzz, we evaluated the rules in bug-inducing test cases individually to determine whether our approach could find them.
+However, for the logic bugs found by Deopt , we could only reason about which bugs might not be detectable by queryFuzz based on its conceptual limitations.
+It is possible, however, that queryFuzz could trigger the same underlying bug with a different test case, in which case we would incorrectly classify this case as a bug missed by queryFuzz.
+Results
+Through manual analysis, we confirmed that all 13 bugs found by queryFuzz could also be detected by Deopt .
+For each bug, we included an analysis in our supplementary materials.
+Since we could construct bug-inducing test cases using our proposed oracle, we could provide “witnesses” that Deopt could indeed have found them. Out of the bugs found by Deopt , there were five that were not detectable by queryFuzz.
+Bugs found by queryFuzz
+Figure 11 . A bug in Soufflé was detected by queryFuzz, which is specific to a single rule and cannot be detected by IRE.
+⬇
+1
+. type Word <: symbol
+2
+. decl words ( i : number , w : Word )
+3
+. decl out ( w : Word , w1 : Word )
+4
+. output out
+5
+words (0, "a" ). words (1, "b" ).
+6
+out ( w , w1 ) :- words ( i , w ), words ( i +1, w1 ).
+7
+// expected result: out("a", "b").
+8
+// buggy result:
+9
+// out("a", "a"). out("a", "b"). out("b", "a"). out("b", "b").
+We divide the 13 logic bugs found by queryFuzz into two categories: those that can be detected by our core test oracle ( i.e., IRE), and those that can only be detected by an extension of Deopt .
+12 out of 13 bugs belonged to the first category, and our test oracle was able to detect them by individually evaluating the rules.
+To demonstrate that the correct test oracles were generated by evaluating the rules individually, we used the same keywords and execution options for both the reference programs and the optimized programs for the Soufflé bugs.
+In the second category, the bug was triggered by a single rule, but IRE did not allow us to divide the rule into smaller elements for testing. The bug shown in Figure 11 was caused by a transformer that identified aliases between the logical variables of subgoals. IRE was unable to identify this bug, because it only occurred in a single rule.
+However, such bugs could have been found also by a naive differential testing approach that would remove or include optimization keywords. 7 7
+7
+https://github.com/souffle-lang/souffle/issues/1848 Integrating this into our method is straightforward by ignoring all keywords in the reference program and maintaining them in the optimized program.
+After discovering this, we extended Deopt to this end, allowing us to find all 13 bugs found by queryFuzz.
+Bugs found by Deopt
+We discovered 5 out of 13 bugs identified by Deopt could not be detected by queryFuzz.
+queryFuzz’s method for detecting bugs in programs beyond conjunctive queries relies on the concept of monotonicity ( Mansur et al., 2021 ) ;
+queryFuzz applies transformations only to conjunctive queries, and the final results should not contradict their oracles, because of monotonicity.
+Four bugs found in Soufflé do not violate the monotonicity of Datalog.
+Figure 12 . A bug found in Soufflé that subsumption does not work under the magic sets transformation.
+⬇
+1
+. decl a ( A : unsigned ) magic
+2
+. decl b ( A : unsigned )
+3
+. output b
+4
+a (6). a (7). a (3).
+5
+b ( E ) :- a ( E ).
+6
+b ( E1 ) <= b ( E2 ) :- E1 < E2 .
+7
+// expected result: b(7).
+8
+// buggy result: b(3). b(6). b(7).
+For example,
+the bug shown in Figure 12 was caused by subsumption,
+which removes facts from a relation based on the conditions specified in its body.
+Since b is equivalent to a , we can conclude that there are three facts associated with b : 3 , 6 , and 7 .
+The condition of this subsumption is E1 < E2 , which implies that if there are two facts, with one fact being smaller than the other, the smaller fact will be removed.
+Therefore, the correct result is 7 .
+This bug causes the subsumption to fail to remove any facts, even if they meet the specified conditions.
+Hence, the results of this test case remain unchanged, namely 3 , 6 , and 7 .
+This behavior is identical to the case where no facts meet the conditions, and the subsumption will not remove any facts.
+Since queryFuzz’s test oracle checks a set relationship, it fails to detect this bug.
+Suppose that the transformation applied to the test case leads to the derivation of additional facts for the relation, which will undergo subsumption computation. Since queryFuzz is unaware of whether the new facts satisfy the conditions, its test oracle can only rely on comparing the old results to ensure they are either equivalent or a subset of the new results.
+queryFuzz could not detect the other three bugs for the same reason. These bugs were related to equivalence relations and the buggy results did not violate queryFuzz’s oracle.
+More detailed information about these bugs can be found in the supplementary material.
+Although subsumption is not implemented in queryFuzz, we believe implementing it in Deopt is fair, because it is unclear how queryFuzz could conceptually support such a language feature.
+Figure 13 . We found a bug in CozoDB resulting from the usage of different comparison functions in the magic sets rewrites.
+⬇
+1
+a [ A , B ] <- [[-0.0, null ], [0.0, null ]]
+2
+b [ A , B ] := a [ A , B ], A >= 0
+3
+c [ A ] := a [ _ , A ]
+4
+?[ A , B ] := c [ B ], b [ A , B ]
+5
+// expected result: [[0.0, null]]
+6
+// buggy result: [[0.0, null], [-0.0, null]]
+Another bug found in CozoDB is shown in Figure 13 , which was caused by the discrepancy between the comparison functions employed in the magic sets rewrite ( Green et al., 2013a ) and the binary operators utilized in the rules. 8 8
+8
+https://github.com/cozodb/cozo/issues/122
+The correct result is [[0.0, null ]] , but CozoDB returned [[0.0, null ], [-0.0, null ]] . After performing the magic sets rewrite, CozoDB employed range scanning on the relation a instead of testing each individual value. However, the comparison function used in the range scan considers -0.0 >= 0 to be true, while the comparison function used in the binary operators considers it to be false.
+This bug can be identified only when the program is evaluated twice, once with the magic sets rewrite and once without it.
+We believe that queryFuzz would not be able to detect this bug, because the transformations it applies are designed specifically for conjunctive queries, which consist of single non-recursive function-free Horn rules, and produce conjunctive queries.
+We received feedback from the developer of CozoDB that their magic sets rewrite only applies to conjunctive queries.
+Therefore, the transformations supported by queryFuzz, such as adding an existing subgoal into the rule body, modifying a variable, or removing a subgoal from the rule body, cannot prevent the magic sets rewrite in this particular scenario, since the optimization would be performed on both the original and transformed program.
+6. Discussion
+Summary
+Overall, the results of our evaluation are promising.
+In terms of effectiveness (see Section 5.1 ), Deopt discovered a total of 30 bugs.
+Of these, 13 were logic bugs.
+A key finding of our sensitivity analysis (see Section 5.2 ) demonstrates that the execution time of the optimized program is the limiting factor for the test performance.
+Our efficiency comparison (see Section 5.3 ) indicates that our incremental test case generation method is more efficient than a random test case generation method.
+The comparison with queryFuzz (see Section 5.4 ) reveals that Deopt can detect all bugs identified by queryFuzz, a state-of-the-art approach. Out of the bugs identified by Deopt , queryFuzz might be unable to detect 5.
+Optimization flags
+An assumption of our work is that Datalog engines do not provide a straightforward way to disable optimizations.
+Thus, it could be argued that it is not useful for Datalog engines that provide optimization options that allow disabling all cross-rule optimizations.
+However, we believe that the test-case generation approach would still be useful.
+Our test-case generation technique incrementally generates and adds rules, which allows it to ensure that the final Datalog program consists of many rules, while also avoiding intermediate steps resulting in empty results, which would make it unlikely to observe any potential discrepancies indicating bugs for the results in the subsequent rules.
+As shown in Section 5.3 , our incremental test case generation method can produce 1.17 × \times (for DDlog) to 31.02 × \times (for Soufflé) as many valid test cases with non-empty results as a naive random method.
+When combining our test-case generation approach with a differential testing approach that uses the same Datalog engine, enabling and disabling all optimization flags, the test oracle could be either applied for every intermediate program—as for IRE—or for the final program. Applying the test oracle for every intermediate program would be costly, as the Datalog engine with optimizations disabled would need to recompute all facts for every intermediate program, while IRE stores the intermediate results as the unoptimized programs. Applying the test oracle for the final Datalog program would be undesirable due to two reasons. First, if a bug is found, reduction techniques are necessary to reduce the bug-inducing test case ( Mansur et al., 2021 ) . Second, once a bug is identified, further expanding the Datalog program after finding a bug is efficient, as the optimizing version of the Datalog engine is called for every intermediate program to prevent subsequent empty results.
+Reimplementing an actual reference engine
+Another potential approach to detect logic bugs in optimizations could be to reimplement an actual reference engine, requiring us to add support for all the data types, operators, and functions, which is not needed for IRE.
+A white-box approach could partly reuse these from the existing source code, but that would require access to the source code and a detailed understanding of the Datalog engine under test.
+Missed bugs
+IRE cannot detect all logic bugs or optimization bugs.
+By directing the Datalog engine’s focus to individual rules, IRE provides a test oracle to validate the correctness of the cross-rule optimizations of Datalog engines.
+However, while cross-rule optimizations are an important aspect of Datalog engine optimizations, there are also optimizations that are specific to individual rules. These rule-level optimizations pose a challenge for our method in detecting certain bugs, as illustrated by the bug depicted in Figure 11 .
+We believe that this is not a significant limitation, as an automated testing approach is valuable if it efficiently finds some important bugs.
+In fact, this points towards an inherent limitation of testing as coined by
+Edsger W. Dijkstra ( Dijkstra et al., 1970 ) , “Program testing can be used to show the presence of bugs, but never to show their absence!”
+Importance of cross-rule optimization bugs
+The number of fixed bugs is often deemed an important indicator of bug importance.
+Regarding the bugs reported in CozoDB, the developer fixed one out of the two bugs we reported. The CozoDB developers expressed the belief that the incorrect results would go unnoticed if someone casually glanced at them. 9 9
+9
+https://github.com/cozodb/cozo/issues/101 The CozoDB developers attributed the unfixed bug to the inherent complexity of the system.
+Although the Datalog engine in µZ is no longer maintained, the developers fixed one of the two reported bugs.
+While the percentage of fixed bugs in Soufflé may be relatively low, we received feedback from the developer of Soufflé acknowledging the significance of our findings and expressing the hope that we continue to discover more bugs. However, due to limited resources, they are unable to fix all of the identified bugs at the moment.
+Furthermore, as demonstrated in Section 5.4 , IRE successfully detects all the bugs identified by queryFuzz that are attributed to cross-rule optimizations.
+Overall, we thus believe that IRE can find important optimization bugs.
+7. RELATED WORK
+Automatic testing for Datalog
+queryFuzz ( Mansur et al., 2021 ) is a state-of-the-art technique for detecting logic bugs in Datalog engines. It transforms conjunctive queries with three mutation strategies on a single rule: by adding transformations, modifying transformations, and removing transformations.
+Its test oracle checks one of
+three relationships between the original and transformed program: equivalence, containment, and substitution. queryFuzz detects bugs based on the monotonicity of Datalog programs without negation.
+For a monotonic query Q Q , it holds that Q ⁡ ( I ) ⊆ Q ⁡ ( J ) Q(I)\subseteq Q(J) when I ⊆ J I\subseteq J ; I I and J J are the inputs of Q Q .
+DLSmith ( Mansur et al., 2023 ) extends queryFuzz by adding an annotated precedence graph, enabling rule-level program transformations such as adding or removing a rule.
+DLSmith performs complex transformations by considering the entire program, while queryFuzz only focuses on a single rule.
+While both queryFuzz and DLSmith have been successful, they have limitations with respect to Deopt . They cannot detect bugs in negation, because they can apply transformations only in lower strata than the rules with negation.
+Their reliance on a set relationship as a test oracle renders them inadequate in detecting bugs that do not violate the monotonicity property.
+Furthermore, it is unclear whether and how these approaches handle recursive queries.
+Furthermore, our method incrementally generates test cases, ensuring that they produce valid and non-empty results. Our efficiency evaluation demonstrates that our incremental approach outperforms
+random generation, which is used also by queryFuzz and DLSmith, in generating non-empty and valid test cases.
+We omitted a comparison with DLSmith in our evaluation as we consider it concurrent work.
+We reported the first bug four days after the last DLSmith-related bug report. For 9 of the logic bugs that we found in Soufflé, 8 were introduced before DLSmith’s first report, indicating that DLSmith overlooked them.
+Debugging for Datalog
+Datalog debugging helps to identify the underlying cause when encountering incorrect results. Caballero et al. (2008) presented a theoretical framework for identifying bugs based on declarative debugging and computation graphs.
+Later, Caballero et al. (2015) proposed another Datalog debugging approach based on the principles of algorithmic debugging, which involves posing questions about the validity or invalidity of intermediate results until the bug is identified.
+Computing provenance reveals the process of Datalog computation in order to assist developers in analyzing the root cause of bugs. Köhler et al. (2012) computed provenance by tracking the history of rule derivations, while Zhao et al. (2020) computed provenance based on partial proof trees, enabling the computation of provenance for large-scale Datalog programs.
+Optimizations of Datalog engines
+Bottom-up and top-down are two evaluation strategies for Datalog interpreters ( Bancilhon and Ramakrishnan, 1986 ) . Bottom-up methods evaluate all rules in a program based on the EDB and generate all possible tuples until no more facts can be derived. The semi-naïve method, a bottom-up approach, seeks to minimize redundant derivations. On the other hand, top-down methods start from the output relation and only evaluate the necessary rules that are related to the output.
+Magic set transformation ( Bancilhon et al., 1985 ; Alviano et al., 2012 ; Sereni et al., 2008 ) is an optimization technique for the bottom-up approach that involves rewriting rules for improved performance or reduced memory usage, such as through merging or splitting rules.
+Approaches to join ordering problems ( Arch et al., 2022 ) seek to find the most effective way to incorporate relations into rules in order to improve performance.
+Index selection ( Subotić et al., 2018 ; Ryzhyk and Budiu, 2019 ) is employed to reduce the time required to look up relations during the evaluation.
+The above-mentioned optimizations aim to improve the efficiency of executing rules.
+Many other optimization techniques exist that leverage specific language features for optimization, such as, subsumption ( Kießling and Güntzer, 1994 ) , equivalence relation ( Nappa et al., 2019 ) , choice ( Hu et al., 2021a ) , and specialized data structures ( Jordan et al., 2019a ; Jordan et al., 2019b ; Jordan et al., 2022 ) .
+Metamorphic testing
+Metamorphic testing ( Chen et al., 2020 ) is a methodology for detecting bugs based on so-called metamorphic relations between a test case and its follow-up version.
+Both queryFuzz, as well as our test oracle, are metamorphic testing approaches, as they define a relation between the results of two Datalog programs.
+For database engines, NoREC ( Rigger and Su, 2020a ) rewrites queries to prevent their optimization; while the high-level idea of NoREC and IRE are similar, their actual approaches differ significantly.
+NoREC transforms the predicate in the WHERE clause into a query that evaluates the predicate’s result for each row of the table. This transformation exploits the difference in optimization strategies between the fetch clause and the WHERE clause.
+IRE leverages the compositional nature of Datalog programs, where rules can be evaluated individually, enabling the prevention of cross-rule optimizations.
+Many other metamorphic testing approaches have been proposed for various domains, which have been surveyed in the literature ( Segura et al., 2016 ; Chen et al., 2018 ) .
+8. conclusion
+We have presented a general, highly-effective method, called Incremental Rule Evaluation (IRE) for detecting bugs in Datalog engines. Our key insight is that by evaluating the rules of an optimized Datalog program individually as reference programs, we can disable the optimizations applied to multiple rules in a black-box manner, enabling a test oracle that can detect optimization bugs by comparing the result sets of the two programs.
+We also proposed an incremental test case generation method that efficiently generates valid test cases with a controlled likelihood of producing non-empty results.
+We have implemented this approach as a tool called Deopt .
+We evaluated Deopt on four mature Datalog engines, and discovered a total of 30 bugs. Of these, 13 were logic bugs.
+Moreover, our evaluation illustrates that our incremental test case generation approach is more efficient than a random method.
+We believe that our incremental approach for test case and test oracle generation can be extended to other Datalog engines and data-centric systems to detect bugs.
+Furthermore, we hope that it will be widely adopted as a simple, general testing approach.
+Data-Availability Statement
+We include Deopt , the tool that we developed, as well as all experimental results as an artifact at https://github.com/nus-test/Deopt , and archived it for long-term storage at https://zenodo.org/records/10609061 .
+Acknowledgements.
+This work was partially supported by the National Natural Science Foundation of China under Grant No.62032010, No.62232001 and No.62202220.
+We would like to thank the support from the Collaborative Innovation Center of Novel Software Technology and Industrialization, Jiangsu, China.
+We also thank for the financial support from the program of China Scholarships Council (No.202106190065).
+References
+Abiteboul and Hull (1988)
+Serge Abiteboul and
+Richard Hull. 1988.
+Data Functions, Datalog and Negation. In
+Proceedings of the 1988 ACM SIGMOD International
+Conference on Management of Data (Chicago, Illinois, USA)
+(SIGMOD ’88) . Association for
+Computing Machinery, New York, NY, USA,
+143–153.
+https://doi.org/10.1145/50202.50218
+Abiteboul et al . (1995)
+Serge Abiteboul, Richard
+Hull, and Victor Vianu.
+1995.
+Foundations of databases .
+Vol. 8.
+Addison-Wesley Reading.
+Alviano et al . (2012)
+Mario Alviano, Wolfgang
+Faber, Gianluigi Greco, and Nicola
+Leone. 2012.
+Magic sets for disjunctive datalog programs.
+Artificial Intelligence
+187 (2012), 156–192.
+Antoniadis et al . (2017)
+Tony Antoniadis,
+Konstantinos Triantafyllou, and Yannis
+Smaragdakis. 2017.
+Porting Doop to Soufflé: A Tale of Inter-Engine
+Portability for Datalog-Based Analyses. In
+Proceedings of the 6th ACM SIGPLAN International
+Workshop on State Of the Art in Program Analysis (Barcelona, Spain)
+(SOAP 2017) . Association for
+Computing Machinery, New York, NY, USA,
+25–30.
+https://doi.org/10.1145/3088515.3088522
+Arch et al . (2022)
+Samuel Arch, Xiaowen Hu,
+David Zhao, Pavle Subotić, and
+Bernhard Scholz. 2022.
+Building a Join Optimizer for Soufflé. In
+Logic-Based Program Synthesis and Transformation ,
+Alicia Villanueva (Ed.).
+Springer International Publishing,
+Cham, 83–102.
+Aref et al . (2015)
+Molham Aref, Balder ten
+Cate, Todd J Green, Benny Kimelfeld,
+Dan Olteanu, Emir Pasalic,
+Todd L Veldhuizen, and Geoffrey
+Washburn. 2015.
+Design and implementation of the LogicBlox system.
+In Proceedings of the 2015 ACM SIGMOD International
+Conference on Management of Data . 1371–1382.
+Backes et al . (2019)
+John Backes, Sam Bayless,
+Byron Cook, Catherine Dodge,
+Andrew Gacek, Alan J Hu,
+Temesghen Kahsai, Bill Kocik,
+Evgenii Kotelnikov, Jure Kukovec,
+et al . 2019.
+Reachability analysis for AWS-based networks. In
+International Conference on Computer Aided
+Verification . Springer, 231–241.
+Balbin and Ramamohanarao (1987)
+Isaac Balbin and
+Kotagiri Ramamohanarao. 1987.
+A generalization of the differential approach to
+recursive query evaluation.
+The Journal of Logic Programming
+4, 3 (1987),
+259–262.
+Bancilhon et al . (1985)
+Francois Bancilhon, David
+Maier, Yehoshua Sagiv, and Jeffrey D
+Ullman. 1985.
+Magic Sets and Other Strange Ways to Implement
+Logic Programs (Extended Abstract). In Proceedings
+of the Fifth ACM SIGACT-SIGMOD Symposium on Principles of Database Systems
+(Cambridge, Massachusetts, USA) (PODS ’86) .
+Association for Computing Machinery,
+New York, NY, USA, 1–15.
+https://doi.org/10.1145/6012.15399
+Bancilhon and Ramakrishnan (1986)
+Francois Bancilhon and
+Raghu Ramakrishnan. 1986.
+An amateur’s introduction to recursive query
+processing strategies. In Proceedings of the 1986
+ACM SIGMOD international conference on Management of data .
+16–52.
+Bembenek et al . (2020)
+Aaron Bembenek, Michael
+Greenberg, and Stephen Chong.
+2020.
+Formulog: Datalog for SMT-based static analysis.
+Proceedings of the ACM on Programming
+Languages 4, OOPSLA
+(2020), 1–31.
+Borraz-Sánchez et al . (2018)
+Conrado Borraz-Sánchez,
+Diego Klabjan, Emir Pasalic, and
+Molham Aref. 2018.
+SolverBlox: algebraic modeling in datalog.
+In Declarative Logic Programming: Theory,
+Systems, and Applications , Michael
+Kifer and Yanhong Annie Liu (Eds.).
+ACM Books, Vol. 20.
+ACM / Morgan & Claypool, 331–354.
+https://doi.org/10.1145/3191315.3191322
+Bravenboer and Smaragdakis (2009)
+Martin Bravenboer and
+Yannis Smaragdakis. 2009.
+Strictly declarative specification of sophisticated
+points-to analyses. In Proceedings of the 24th ACM
+SIGPLAN conference on Object oriented programming systems languages and
+applications . 243–262.
+Brent et al . (2018)
+Lexi Brent, Anton
+Jurisevic, Michael Kong, Eric Liu,
+Francois Gauthier, Vincent Gramoli,
+Ralph Holz, and Bernhard Scholz.
+2018.
+Vandal: A scalable security analysis framework for
+smart contracts.
+arXiv preprint arXiv:1809.03981
+(2018).
+Buccafurri et al . (1997)
+Francesco Buccafurri,
+Nicola Leone, and Pasquale Rullo.
+1997.
+Strong and weak constraints in disjunctive
+datalog. In Logic Programming And Nonmonotonic
+Reasoning , Jürgen Dix,
+Ulrich Furbach, and Anil Nerode
+(Eds.). Springer Berlin Heidelberg,
+Berlin, Heidelberg, 2–17.
+Buccafurri et al . (2000)
+F. Buccafurri, N. Leone,
+and P. Rullo. 2000.
+Enhancing Disjunctive Datalog by constraints.
+IEEE Transactions on Knowledge and Data
+Engineering 12, 5
+(2000), 845–860.
+https://doi.org/10.1109/69.877512
+Caballero et al . (2008)
+Rafael Caballero, Yolanda
+García-Ruiz, and Fernando Sáenz-Pérez.
+2008.
+A theoretical framework for the declarative
+debugging of datalog programs. In International
+Workshop on Semantics in Data and Knowledge Bases . Springer,
+143–159.
+Caballero et al . (2015)
+Rafael Caballero, Yolanda
+García-Ruiz, and Fernando Sáenz-Pérez.
+2015.
+Debugging of wrong and missing answers for Datalog
+programs with constraint handling rules. In
+Proceedings of the 17th International Symposium on
+Principles and Practice of Declarative Programming .
+55–66.
+Ceri et al . (1989)
+Stefano Ceri, Georg
+Gottlob, Letizia Tanca, et al .
+1989.
+What you always wanted to know about Datalog(and
+never dared to ask).
+IEEE transactions on knowledge and data
+engineering 1, 1
+(1989), 146–166.
+Chen et al . (2020)
+Tsong Y Chen, Shing C
+Cheung, and Shiu Ming Yiu.
+2020.
+Metamorphic testing: a new approach for generating
+next test cases.
+arXiv preprint arXiv:2002.12543
+(2020).
+Chen et al . (2018)
+Tsong Yueh Chen, Fei-Ching
+Kuo, Huai Liu, Pak-Lok Poon,
+Dave Towey, TH Tse, and
+Zhi Quan Zhou. 2018.
+Metamorphic testing: A review of challenges and
+opportunities.
+ACM Computing Surveys (CSUR)
+51, 1 (2018),
+1–27.
+Consens and Mendelzon (1990)
+Mariano P. Consens and
+Alberto O. Mendelzon. 1990.
+Low complexity aggregation in graphlog and
+Datalog. In ICDT ’90 ,
+Serge Abiteboul and
+Paris C. Kanellakis (Eds.). Springer
+Berlin Heidelberg, Berlin, Heidelberg,
+379–394.
+Conway et al . (2012)
+Neil Conway, William R
+Marczak, Peter Alvaro, Joseph M
+Hellerstein, and David Maier.
+2012.
+Logic and lattices for distributed programming. In
+Proceedings of the Third ACM Symposium on Cloud
+Computing . 1–14.
+Dijkstra et al . (1970)
+Edsger Wybe Dijkstra et al .
+1970.
+Notes on structured programming.
+Grech et al . (2019)
+Neville Grech, Lexi
+Brent, Bernhard Scholz, and Yannis
+Smaragdakis. 2019.
+Gigahorse: thorough, declarative decompilation of
+smart contracts. In 2019 IEEE/ACM 41st
+International Conference on Software Engineering (ICSE) . IEEE,
+1176–1186.
+Greco (1999)
+S. Greco. 1999.
+Dynamic programming in Datalog with aggregates.
+IEEE Transactions on Knowledge and Data
+Engineering 11, 2
+(1999), 265–283.
+https://doi.org/10.1109/69.761663
+Green et al . (2013a)
+Todd J. Green, Shan Shan
+Huang, Boon Thau Loo, and Wenchao
+Zhou. 2013a.
+Datalog and Recursive Query Processing.
+Foundations and Trends® in Databases
+5, 2 (2013),
+105–195.
+https://doi.org/10.1561/1900000017
+Green et al . (2013b)
+Todd J Green, Shan Shan
+Huang, Boon Thau Loo, Wenchao Zhou,
+et al . 2013b.
+Datalog and recursive query processing.
+Foundations and Trends® in
+Databases 5, 2 (2013),
+105–195.
+Hajiyev et al . (2006)
+Elnar Hajiyev, Mathieu
+Verbaere, and Oege de Moor.
+2006.
+Codequest: Scalable source code queries with
+datalog. In European Conference on Object-Oriented
+Programming . Springer, 2–27.
+Hoder et al . (2011)
+Kryštof Hoder,
+Nikolaj Bjørner, and Leonardo de
+Moura. 2011.
+μ \mu Z–an efficient engine for fixed points with
+constraints. In International Conference on
+Computer Aided Verification . Springer, 457–462.
+Hu et al . (2021a)
+Xiaowen Hu, Joshua Karp,
+David Zhao, Abdul Zreika,
+Xi Wu, and Bernhard Scholz.
+2021a.
+The Choice Construct in the Soufflé Language.
+In Asian Symposium on Programming Languages and
+Systems . Springer, 163–181.
+Hu et al . (2021b)
+Xiaowen Hu, David Zhao,
+Herbert Jordan, and Bernhard Scholz.
+2021b.
+An Efficient Interpreter for Datalog by
+De-Specializing Relations. In Proceedings of the
+42nd ACM SIGPLAN International Conference on Programming Language Design and
+Implementation (Virtual, Canada) (PLDI 2021) .
+Association for Computing Machinery,
+New York, NY, USA, 681–695.
+https://doi.org/10.1145/3453483.3454070
+Hu (2023)
+Ziyang Hu.
+2023.
+CozoDB: Hippocampus for AI, with Embedded Datalog.
+https://www.cozodb.org/ .
+Accessed: 2023-05-16.
+Jiang et al . (2023)
+Zu-Ming Jiang, Jia-Ju
+Bai, and Zhendong Su. 2023.
+DynSQL: Stateful Fuzzing for Database Management
+Systems with Complex and Valid SQL Query Generation. In
+Proceedings of the 32nd USENIX Security Symposium
+(Security’23) .
+Jordan et al . (2016)
+Herbert Jordan, Bernhard
+Scholz, and Pavle Subotić.
+2016.
+Soufflé: On synthesis of program analyzers. In
+International Conference on Computer Aided
+Verification . Springer, 422–430.
+Jordan et al . (2019a)
+Herbert Jordan, Pavle
+Subotić, David Zhao, and Bernhard
+Scholz. 2019a.
+Brie: A specialized trie for concurrent datalog.
+In Proceedings of the 10th International Workshop
+on Programming Models and Applications for Multicores and Manycores .
+31–40.
+Jordan et al . (2019b)
+Herbert Jordan, Pavle
+Subotić, David Zhao, and Bernhard
+Scholz. 2019b.
+A specialized B-tree for concurrent datalog
+evaluation. In Proceedings of the 24th symposium
+on principles and practice of parallel programming .
+327–339.
+Jordan et al . (2022)
+Herbert Jordan, Pavle
+Subotić, David Zhao, and Bernhard
+Scholz. 2022.
+Specializing parallel data structures for Datalog.
+Concurrency and Computation: Practice and
+Experience 34, 2
+(2022), e5643.
+Ketsman et al . (2022)
+Bas Ketsman, Paraschos
+Koutris, et al . 2022.
+Modern Datalog Engines.
+Foundations and Trends® in
+Databases 12, 1 (2022),
+1–68.
+Kießling and Güntzer (1994)
+Werner Kießling and
+Ulrich Güntzer. 1994.
+Database reasoning—a deductive framework for
+solving large and complex problems by means of subsumption. In
+Workshop on Information Systems and Artificial
+Intelligence . Springer, 118–138.
+Köhler et al . (2012)
+Sven Köhler, Bertram
+Ludäscher, and Yannis Smaragdakis.
+2012.
+Declarative datalog debugging for mere mortals. In
+International Datalog 2.0 Workshop . Springer,
+111–122.
+Lam et al . (2005)
+Monica S Lam, John
+Whaley, V Benjamin Livshits, Michael C
+Martin, Dzintars Avots, Michael Carbin,
+and Christopher Unkel. 2005.
+Context-sensitive program analysis as database
+queries. In Proceedings of the twenty-fourth ACM
+SIGMOD-SIGACT-SIGART symposium on Principles of database systems .
+1–12.
+Liang et al . (2022)
+Yu Liang, Song Liu, and
+Hong Hu. 2022.
+Detecting Logical Bugs of { \{ DBMS } \} with
+Coverage-based Guidance. In 31st USENIX Security
+Symposium (USENIX Security 22) . 4309–4326.
+Loo et al . (2009)
+Boon Thau Loo, Tyson
+Condie, Minos Garofalakis, David E Gay,
+Joseph M Hellerstein, Petros Maniatis,
+Raghu Ramakrishnan, Timothy Roscoe, and
+Ion Stoica. 2009.
+Declarative networking.
+Commun. ACM 52,
+11 (2009), 87–95.
+Madsen et al . (2016)
+Magnus Madsen, Ming-Ho
+Yee, and Ondrej Lhoták.
+2016.
+From Datalog to flix: a declarative language for
+fixed points on lattices. In Proceedings of the
+37th ACM SIGPLAN Conference on Programming Language Design and
+Implementation, PLDI 2016, Santa Barbara, CA, USA, June 13-17, 2016 ,
+Chandra Krintz and
+Emery D. Berger (Eds.). ACM,
+194–208.
+https://doi.org/10.1145/2908080.2908096
+Mansur et al . (2021)
+Muhammad Numair Mansur,
+Maria Christakis, and Valentin
+Wüstholz. 2021.
+Metamorphic Testing of Datalog Engines. In
+Proceedings of the 29th ACM Joint Meeting on
+European Software Engineering Conference and Symposium on the Foundations of
+Software Engineering (Athens, Greece) (ESEC/FSE
+2021) . Association for Computing Machinery,
+New York, NY, USA, 639–650.
+https://doi.org/10.1145/3468264.3468573
+Mansur et al . (2023)
+Muhammad Numair Mansur,
+Valentin Wüstholz, and Maria
+Christakis. 2023.
+Dependency-Aware Metamorphic Testing of Datalog
+Engines. In Proceedings of the 32nd ACM
+SIGSOFT International Symposium on Software Testing and Analysis, ISSTA
+2023, Seattle, WA, USA, July 17-21, 2023 ,
+René Just and
+Gordon Fraser (Eds.). ACM,
+236–247.
+https://doi.org/10.1145/3597926.3598052
+McKeeman (1998)
+William M McKeeman.
+1998.
+Differential testing for software.
+Digital Technical Journal
+10, 1 (1998),
+100–107.
+Mooney (1996)
+Raymond J Mooney.
+1996.
+Inductive logic programming for natural language
+processing. In International conference on
+inductive logic programming . Springer, 1–22.
+Moura and Bjørner (2008)
+Leonardo de Moura and
+Nikolaj Bjørner. 2008.
+Z3: An efficient SMT solver. In
+International conference on Tools and Algorithms
+for the Construction and Analysis of Systems . Springer,
+337–340.
+Nappa et al . (2019)
+Patrick Nappa, David
+Zhao, Pavle Subotić, and Bernhard
+Scholz. 2019.
+Fast parallel equivalence relations in a Datalog
+compiler. In 2019 28th International Conference on
+Parallel Architectures and Compilation Techniques (PACT) . IEEE,
+82–96.
+Ramakrishnan and Ullman (1995)
+Raghu Ramakrishnan and
+Jeffrey D Ullman. 1995.
+A survey of deductive database systems.
+The journal of logic programming
+23, 2 (1995),
+125–149.
+Regehr et al . (2012)
+John Regehr, Yang Chen,
+Pascal Cuoq, Eric Eide,
+Chucky Ellison, and Xuejun Yang.
+2012.
+Test-Case Reduction for C Compiler Bugs.
+Proceedings of the 33rd ACM SIGPLAN
+conference on Programming Language Design and Implementation
+47, 6 (jun
+2012), 335–346.
+https://doi.org/10.1145/2345156.2254104
+Rigger and Su (2020a)
+Manuel Rigger and
+Zhendong Su. 2020a.
+Detecting Optimization Bugs in Database Engines via
+Non-Optimizing Reference Engine Construction. In
+Proceedings of the 28th ACM Joint Meeting on
+European Software Engineering Conference and Symposium on the Foundations of
+Software Engineering (Virtual Event, USA) (ESEC/FSE
+2020) . Association for Computing Machinery,
+New York, NY, USA, 1140–1152.
+https://doi.org/10.1145/3368089.3409710
+Rigger and Su (2020b)
+Manuel Rigger and
+Zhendong Su. 2020b.
+Finding bugs in database systems via query
+partitioning.
+Proceedings of the ACM on Programming
+Languages 4, OOPSLA
+(2020), 1–30.
+Rigger and Su (2020c)
+Manuel Rigger and
+Zhendong Su. 2020c.
+Testing database engines via pivoted query
+synthesis. In 14th USENIX Symposium on Operating
+Systems Design and Implementation (OSDI 20) . 667–682.
+Ross (1990)
+Kenneth A. Ross.
+1990.
+Modular Stratification and Magic Sets for DATALOG
+Programs with Negation. In Proceedings of the
+Ninth ACM SIGACT-SIGMOD-SIGART Symposium on Principles of Database Systems
+(Nashville, Tennessee, USA) (PODS ’90) .
+Association for Computing Machinery,
+New York, NY, USA, 161–171.
+https://doi.org/10.1145/298514.298558
+Ryzhyk and Budiu (2019)
+Leonid Ryzhyk and Mihai
+Budiu. 2019.
+Differential Datalog.
+Datalog 2
+(2019), 4–5.
+Sagonas et al . (1994)
+Konstantinos Sagonas,
+Terrance Swift, and David S. Warren.
+1994.
+XSB as an Efficient Deductive Database Engine. In
+Proceedings of the 1994 ACM SIGMOD International
+Conference on Management of Data (Minneapolis, Minnesota, USA)
+(SIGMOD ’94) . Association for
+Computing Machinery, New York, NY, USA,
+442–453.
+https://doi.org/10.1145/191839.191927
+Scholz (2022)
+Bernhard Scholz.
+2022.
+Commercial-Grade Static Analyzers in Datalog.
+SAS 2022.
+Scholz et al . (2016)
+Bernhard Scholz, Herbert
+Jordan, Pavle Subotić, and Till
+Westmann. 2016.
+On Fast Large-Scale Program Analysis in Datalog.
+In Proceedings of the 25th International Conference
+on Compiler Construction (Barcelona, Spain) (CC
+2016) . Association for Computing Machinery,
+New York, NY, USA, 196–206.
+https://doi.org/10.1145/2892208.2892226
+Segura et al . (2016)
+Sergio Segura, Gordon
+Fraser, Ana B Sanchez, and Antonio
+Ruiz-Cortés. 2016.
+A survey on metamorphic testing.
+IEEE Transactions on software engineering
+42, 9 (2016),
+805–824.
+Seltenreich (2023)
+Andreas Seltenreich.
+2023.
+SQLsmith.
+https://github.com/anse1/sqlsmith .
+Accessed: 2023-01-25.
+Sereni et al . (2008)
+Damien Sereni, Pavel
+Avgustinov, and Oege de Moor.
+2008.
+Adding Magic to an Optimising Datalog Compiler. In
+Proceedings of the 2008 ACM SIGMOD International
+Conference on Management of Data (Vancouver, Canada)
+(SIGMOD ’08) . Association for
+Computing Machinery, New York, NY, USA,
+553–566.
+https://doi.org/10.1145/1376616.1376673
+Shkapsky et al . (2016)
+Alexander Shkapsky, Mohan
+Yang, Matteo Interlandi, Hsuan Chiu,
+Tyson Condie, and Carlo Zaniolo.
+2016.
+Big data analytics with datalog queries on spark.
+In Proceedings of the 2016 International Conference
+on Management of Data . 1135–1149.
+Slutz (1998)
+Donald R Slutz.
+1998.
+Massive stochastic testing of SQL. In
+VLDB , Vol. 98.
+618–622.
+Subotić et al . (2018)
+Pavle Subotić, Herbert
+Jordan, Lijun Chang, Alan Fekete, and
+Bernhard Scholz. 2018.
+Automatic index selection for large-scale datalog
+computation.
+Proceedings of the VLDB Endowment
+12, 2 (2018),
+141–153.
+Tsankov et al . (2018)
+Petar Tsankov, Andrei
+Dan, Dana Drachsler-Cohen, Arthur
+Gervais, Florian Buenzli, and Martin
+Vechev. 2018.
+Securify: Practical security analysis of smart
+contracts. In Proceedings of the 2018 ACM SIGSAC
+Conference on Computer and Communications Security .
+67–82.
+Ullman (1989)
+Jeffrey D Ullman.
+1989.
+Bottom-up beats top-down for datalog. In
+Proceedings of the eighth ACM SIGACT-SIGMOD-SIGART
+symposium on Principles of database systems . 140–149.
+Van Gelder (1989)
+Allen Van Gelder.
+1989.
+The alternating fixpoint of logic programs with
+negation. In Proceedings of the eighth ACM
+SIGACT-SIGMOD-SIGART symposium on Principles of database systems .
+1–10.
+Whaley and Lam (2004)
+John Whaley and Monica S
+Lam. 2004.
+Cloning-based context-sensitive pointer alias
+analysis using binary decision diagrams. In
+Proceedings of the ACM SIGPLAN 2004 conference on
+Programming Language Design and Implementation . 131–144.
+Zhao et al . (2020)
+David Zhao, Pavle
+Subotić, and Bernhard Scholz.
+2020.
+Debugging Large-Scale Datalog: A Scalable
+Provenance Evaluation Strategy.
+ACM Trans. Program. Lang. Syst.
+42, 2, Article 7
+(apr 2020), 35 pages.
+https://doi.org/10.1145/3379446
+Zhong et al . (2020)
+Rui Zhong, Yongheng Chen,
+Hong Hu, Hangfan Zhang,
+Wenke Lee, and Dinghao Wu.
+2020.
+Squirrel: Testing database management systems with
+language validity and coverage feedback. In
+Proceedings of the 2020 ACM SIGSAC Conference on
+Computer and Communications Security . 955–970.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

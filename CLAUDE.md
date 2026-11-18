@@ -32,6 +32,16 @@ After every change to what Lion does, run the documentation procedure in `guidel
 
 Record every change and every design decision as claims in `history/notes/`, in the commit that makes it: each claim is words and what they say. A decision is a notes file with a title, its context, and claims for what it decides and what it asserts, which the model checks against Lion. Then run `bun run history write`, which writes `CHANGELOG.md`, `DECISIONS.md`, and `docs/changelog.html` from the model. Never edit those files by hand. A breaking change follows a decision. See `guidelines/recording-changes.md`.
 
+## Research
+
+Every research run adds to the one Lion model in `research/` and is committed with it, so runs compound instead of starting over.
+- **Before you search**, rebuild the model and ask it what earlier runs found.
+- **Reuse their names** for features, techniques, sources, and candidates.
+- **Prove each conclusion** with a rule, over claims that quote a source or the output of a Lion program in `research/probes/`.
+- **When Lion changes**, run the probes again under a new source id, so the verdicts follow Lion as it is now.
+
+See `guidelines/researching.md` and `research/README.md`.
+
 ## Testing
 
 Write property-based tests, not example-based unit tests. Use `it.prop` or `it.effect.prop` from `@effect/vitest` with Schemas or generators from `effect/Arbitrary`, and check behavior against a simpler model, a round trip, or an equivalence. Do not add tests with fixed example inputs (`it(...)` or `it.effect(...)`) for new behavior. When you find a bug, write the property it breaks, for every input and not only the one that failed, before you fix it. Run `bun run mutate` to confirm the properties fail on broken code. See `guidelines/testing.md` for the details and an example.

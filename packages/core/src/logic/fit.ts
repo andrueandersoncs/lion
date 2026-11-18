@@ -11,8 +11,10 @@
  * - any other value fits a value equal to it.
  *
  * So data is a schema for itself: it fits exactly the values equal to it.
- * A function in it makes room for every value the function accepts, and
- * `schema/open` for keys the record does not name.
+ * A function in it makes room for every value the function accepts. A
+ * record or list names some parts of a value, and what it leaves over must
+ * fit the schema of its rest: nothing on its own, anything in `schema/open`,
+ * or the schema `schema/open` is given beside it.
  *
  * A logic variable in a schema stands for a value. Once it is bound it is
  * that value, and until then any value fits it, and binds it. So a value is
@@ -287,16 +289,106 @@ const recordOf = (schema: unknown) => {
 };
 
 /**
- * A record fits a record with the same keys, with values that fit. A key
- * whose schema is optional can be left out, and an `open` record can have
- * keys the schema does not name.
+ * What a record or a list leaves to the schema of its rest: nothing, which
+ * is what a record or list of schemas leaves on its own, or anything, which
+ * is what `schema/open` leaves with no schema for the rest.
+ */
+const NOTHING_LEFT: unknown = Symbol("nothing left");
+const ANYTHING_LEFT: unknown = Symbol("anything left");
+
+/**
+ * Checks what a record or list leaves over against the schema of its rest.
+ * A part of the rest that does not fit is shown where it stands in the
+ * value, `shift` steps further on for a list, and the rest as a whole that
+ * does not fit is the whole value not fitting the schema `whole`.
+ */
+const checkRest = (
+  rest: unknown,
+  left: unknown,
+  at: Check,
+  vars: Vars,
+  whole: { readonly schema: unknown; readonly value: unknown },
+  shift = 0
+): Fitting => {
+  if (at.write === undefined) {
+    return check(rest, left, { ...at, open: NOT_OPEN }, vars);
+  }
+  const out: Problem[] = [];
+  return Effect.map(
+    check(rest, left, { ...at, open: NOT_OPEN, out }, vars),
+    (answers) => {
+      let shown = false;
+      for (const problem of out) {
+        const [step, ...more] = problem.path.slice(at.path.length);
+        if (step === undefined) {
+          if (!shown) {
+            fail(at, whole);
+            shown = true;
+          }
+        } else {
+          at.out.push({
+            ...problem,
+            path: [
+              ...at.path,
+              typeof step === "number" ? step + shift : step,
+              ...more,
+            ],
+          });
+        }
+      }
+      return answers;
+    }
+  );
+};
+
+/**
+ * Fits the parts a record or list names under every answer, then what it
+ * leaves over against the schema of its rest. Where problems are kept, the
+ * rest is checked once, so each of its problems is shown once.
+ */
+const andRest = (
+  named: Fitting,
+  differs: boolean,
+  rest: unknown,
+  left: unknown,
+  at: Check,
+  vars: Vars,
+  whole: { readonly schema: unknown; readonly value: unknown },
+  shift = 0
+): Fitting =>
+  Effect.gen(function* () {
+    const answers = yield* named;
+    if (rest === ANYTHING_LEFT) {
+      return differs ? NONE : answers;
+    }
+    let under = answers;
+    if (at.write !== undefined) {
+      under = answers.length > 0 ? answers.slice(0, 1) : [vars];
+    }
+    const found: Vars[] = [];
+    for (const answered of under) {
+      found.push(...(yield* checkRest(rest, left, at, answered, whole, shift)));
+    }
+    if (differs || answers.length === 0 || found.length === 0) {
+      return NONE;
+    }
+    return at.write === undefined ? found : answers;
+  });
+
+/**
+ * A record fits a record of schemas that names some of its keys, with
+ * values that fit, when the record of its other keys fits the schema of the
+ * rest: `{}` for a record of schemas on its own, so it has no other keys,
+ * and what `schema/open` was given. A key whose schema is optional can be
+ * left out, and a key the schema names never belongs to the rest.
  */
 const checkRecord = (
   schema: unknown,
   value: unknown,
   at: Check,
   vars: Vars,
-  open = false
+  rest: unknown = NOTHING_LEFT,
+  whole: unknown = schema
 ): Fitting => {
   const record = recordOf(schema);
   if (record === undefined || !isRecord(value)) {
@@ -315,8 +407,9 @@ const checkRecord = (
       differs = true;
     }
   }
-  for (const key of open ? [] : Object.keys(value)) {
-    if (!keys.includes(key)) {
+  const others = Object.keys(value).filter((key) => !keys.includes(key));
+  if (rest === NOTHING_LEFT) {
+    for (const key of others) {
       fail(at, { value: value[key] }, key);
       differs = true;
     }
@@ -324,27 +417,62 @@ const checkRecord = (
   if (differs && at.write === undefined) {
     return Effect.succeed(NONE);
   }
-  return Effect.map(
-    every(present, at, vars, ([key, part], answered) =>
-      check(part, value[key], inside(at, key), answered)
-    ),
-    (answers) => (differs ? NONE : answers)
+  const named = every(present, at, vars, ([key, part], answered) =>
+    check(part, value[key], inside(at, key), answered)
   );
+  return rest === NOTHING_LEFT
+    ? Effect.map(named, (answers) => (differs ? NONE : answers))
+    : andRest(
+        named,
+        differs,
+        rest,
+        Object.fromEntries(others.map((key) => [key, value[key]])),
+        at,
+        vars,
+        { schema: whole, value }
+      );
 };
 
-/** A list fits a list of the same length, item by item. */
+/**
+ * A list fits a list of schemas item by item, when the list of the items
+ * after them fits the schema of the rest: `[]` for a list of schemas on its
+ * own, so the two have the same length, and what `schema/open` was given.
+ */
 const checkList = (
   parts: readonly unknown[],
   schema: unknown,
   value: unknown,
   at: Check,
-  vars: Vars
-): Fitting =>
-  Array.isArray(value) && value.length === parts.length
-    ? every(value.entries(), at, vars, ([index, item], answered) =>
-        check(parts[index], item, inside(at, index), answered)
-      )
-    : Effect.succeed(fail(at, { schema, value }));
+  vars: Vars,
+  rest: unknown = NOTHING_LEFT
+): Fitting => {
+  if (
+    !Array.isArray(value) ||
+    value.length < parts.length ||
+    (rest === NOTHING_LEFT && value.length > parts.length)
+  ) {
+    return Effect.succeed(fail(at, { schema, value }));
+  }
+  const named = every(
+    value.slice(0, parts.length).entries(),
+    at,
+    vars,
+    ([index, item], answered) =>
+      check(parts[index], item, inside(at, index), answered)
+  );
+  return rest === NOTHING_LEFT
+    ? named
+    : andRest(
+        named,
+        false,
+        rest,
+        value.slice(parts.length),
+        at,
+        vars,
+        { schema, value },
+        parts.length
+      );
+};
 
 /** A function is a predicate: a named schema, a built one, or any other. */
 const checkFunction = (
@@ -586,7 +714,8 @@ const builder = (
   name: string,
   count: Count,
   checkBuilt: CheckBuilt,
-  refuses?: (part: unknown) => string | undefined
+  refuses?: (part: unknown) => string | undefined,
+  what = "a schema"
 ) => {
   const build: LionFunction = schemaBuilder(
     takes(
@@ -597,7 +726,7 @@ const builder = (
           ? Effect.succeed(builtBy(checker(), build, parts))
           : logicError(`${name} ${wrong}.`);
       },
-      "a schema"
+      what
     ),
     refuses !== undefined
   );
@@ -608,7 +737,19 @@ const builder = (
 };
 
 const notRecord = (found: unknown) =>
-  `expects a record of schemas, or a schema that names one, but found ${show(found)}`;
+  `expects a record or a list of schemas, or a schema that names one, but found ${show(found)}`;
+
+/**
+ * The schemas of a list of schemas: a list, a schema that names one, or a
+ * list that waits. Undefined for anything else.
+ */
+const listOf = (schema: unknown): readonly unknown[] | undefined => {
+  if (isListTerm(schema)) {
+    return (schema as DeferredCall).args;
+  }
+  const list = unnamed(schema);
+  return Array.isArray(list) ? list : undefined;
+};
 
 const ANY = atLeast(0);
 
@@ -661,24 +802,35 @@ export const builders = {
     check(inner, value, at, vars)
   ),
   /**
-   * Fits a record that fits the record of schemas, whatever other keys it
-   * has. A schema that is still being declared has no shape to look at yet,
-   * so its name is taken as it is, and a check finds out what it names.
+   * Fits a record that fits the record of schemas, when the record of its
+   * other keys fits the schema of the rest, or whatever other keys it has
+   * when there is none. A list of schemas works the same way: the items
+   * after the ones it names are the rest. A schema that is still being
+   * declared has no shape to look at yet, so its name is taken as it is,
+   * and a check finds out what it names.
    */
   open: builder(
     "schema/open",
-    1,
-    ([record], value, at, _, vars) =>
-      recordOf(record) === undefined
-        ? logicError(`schema/open ${notRecord(record)}.`)
-        : checkRecord(record, value, at, vars, true),
-    (record) => {
-      const named = schemaOf(record);
+    [1, 2],
+    ([shape, ...rest], value, at, schema, vars) => {
+      const left = rest.length === 0 ? ANYTHING_LEFT : rest[0];
+      const items = listOf(shape);
+      if (items !== undefined) {
+        return checkList(items, schema, value, at, vars, left);
+      }
+      return recordOf(shape) === undefined
+        ? logicError(`schema/open ${notRecord(shape)}.`)
+        : checkRecord(shape, value, at, vars, left, schema);
+    },
+    (shape) => {
+      const named = schemaOf(shape);
       return (named !== undefined && named.definition === undefined) ||
-        recordOf(record) !== undefined
+        recordOf(shape) !== undefined ||
+        listOf(shape) !== undefined
         ? undefined
-        : notRecord(record);
-    }
+        : notRecord(shape);
+    },
+    "a record or list of schemas, and the schema of its rest"
   ),
 };
 

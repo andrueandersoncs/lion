@@ -1,0 +1,2309 @@
+Skew Strikes Back: New Developments in the Theory of Join
+
+Algorithms
+
+Hung Q. Ngo
+University at Buffalo, SUNY
+
+hungngo@buffalo.edu
+
+Christopher R´e
+Stanford University
+chrismre@cs.stanford.edu
+
+Atri Rudra
+University at Buffalo, SUNY
+
+atri@buffalo.edu
+
+October 17, 2013
+
+1
+Introduction
+
+Evaluating the relational join is one of the central algorithmic and most well-studied problems in database
+systems. A staggering number of variants have been considered including Block-Nested loop join, Hash-
+Join, Grace, Sort-merge (see Grafe [20] for a survey, and [5,8,27] for discussions of more modern issues).
+Commercial database engines use finely tuned join heuristics that take into account a wide variety of factors
+including the selectivity of various predicates, memory, IO, etc. In spite of this study of join queries, the
+textbook description of join processing is suboptimal. This survey describes recent results on join algorithms
+that have provable worst-case optimality runtime guarantees. We survey recent work and provide a simpler
+and unified description of these algorithms that we hope is useful for theory-minded readers, algorithm
+designers, and systems implementors.
+
+Much of this progress can be understood by thinking about a simple join evaluation problem that we
+illustrate with the so-called triangle query, a query that has become increasingly popular in the last decade
+with the advent of social networks, biological motifs, and graph databases [39,40]
+
+Suppose that one is given a graph with N edges, how many distinct triangles can there be in the
+graph?
+
+A first bound is to say that there are at most N edges, and hence at most OpN3q triangles. A bit more thought
+suggests that every triangle is indexed by any two of its sides and hence there at most OpN2q triangles.
+However, the correct, tight, and non-trivial asymptotic is OpN3{2q. An example of the questions this survey
+is how do we list all the triangles in time OpN3{2q? Such an algorithm would have a worst-case optimal
+running time. In contrast, traditional databases evaluate joins pairwise, and as has been noted by several
+authors, this forces them to run in time ΩpN2q on some instance of the triangle query. This survey gives an
+overview of recent developments that establish such non-trivial bounds for all join queries and algorithms
+that meet these bounds, which we call worst-case optimal join algorithms.
+
+Estimates on the output size of join have been known since the 1990s, thanks to the work of Friedgut and
+Kahn [14] in the context of bounding the number of occurrences of a given small hypergraph inside a large
+hypergraph. More recently and more generally, tight estimates for the natural join problem were derived
+by Grohe-Marx [23] and Atserias-Grohe-Marx [3] (AGM henceforth). In fact, similar bounds can be traced
+back to the 1940s in geometry, where it was known as the famous Loomis-Whitney inequality [29]. The
+most general geometric bound is by Bollob´as-Thomason in the 1990s [6]. We proved (with Porat) that AGM
+and the discrete version of Bollob´as-Thomason are equivalent [32], and so the connection between these
+areas is deep.
+
+1
+
+arXiv:1310.3314v2 [cs.DB] 16 Oct 2013
+
+
+Connections of join size to arcane geometric bounds may reasonably lead a practitioner to believe that
+the cause of suboptimality is a mysterious force wholly unknown to them—but it is not; it is the old enemy
+of the database optimizer, skew. We hope to highlight two conceptual messages with this survey:
+
+• The main ideas of the the algorithms presented here are an optimal way of avoiding skew – something
+database practitioners have been fighting with for decades. We describe a theoretical basis for one
+family of techniques to cope with skew by relating them to geometry.
+
+• The second idea is a challenge to the database dogma of doing “one join at a time,” as is done in
+traditional database systems. We show that there are classes of queries for which any join-project
+plan is destined to be slower than the best possible run time by a polynomial factor in the data size.
+
+Outline of the Survey. We begin with a short (and necessarily incomplete) history of join processing with
+a focus on recent history. In Section 2, we describe how these algorithms work for the triangle query. In
+Section 3, we describe how to use these new size bounds for join queries. In Section 4, we provide new
+simplified proofs of these bounds and join algorithms. Finally, we describe two open questions in Section 5
+
+A Brief History of Join Processing
+
+Conjunctive query evaluation in general and join query evaluation in particular have a very long history
+and deep connections to logic and constraint satisfaction [7, 9, 13, 17, 19, 28, 33, 41]. Most of the join
+algorithms with provable performance guarantees work for specific classes of queries.1 As we describe,
+there are two major approaches for join processing: using structural information of the query and using
+cardinality information. As we explain, the AGM bounds are exciting because they bring together both
+types of information.
+
+The Structural Approaches
+On the theoretical side, many algorithms use some structural property of the
+query such as acyclicity or bounded “width.” For example, when the query is acyclic, the classic algorithm
+of Yannakakis [45] runs in time essentially linear in the input plus output size. A query is acyclic if and only
+if it has a join tree, which can be constructed using the textbook GYO-reduction [21,46]
+
+Subsequent work further expand the classes of queries which can be evaluated in polynomial time. These
+work define progressively more general notions of “width” for a query, which intuitively measures how far
+a query is from being acyclic. Roughly, these results state that if the corresponding notion of “width” is
+bounded by a constant, then the query is “tractable,” i.e. there is a polynomial time algorithm to evaluate it.
+For example, Gyssens et al. [24,25] showed that queries with bounded “degree of acyclicity” are tractable.
+Then come query width (qw) from Chekuri and Rajaraman [9], hypertree width and generalized hypertree
+width (ghw) from Gottlob et al. [18, 37]. These are related to the treewidth (tw) of a query’s hypergraph,
+rooted in Robertson and Seymour on graph minors [36]. Acyclic queries are exactly those with qw “ 1.
+
+Cardinality-based Approaches
+Width only tells half of the story, as was wonderfully articulated in Scarcello’s SIGMOD Record paper [37]:
+
+decomposition methods focus “only” on structural features, while they completely disregard
+“quantitative” aspects of the query, that may dramatically affect the query-evaluation time.
+
+1Throughout this survey, we will measure the run time of join algorithms in terms of the input data, assuming the input query
+has constant size; this is known as the data complexity measure, which is standard in database theory [41].
+
+
+Said another way, the width approach disregards the input relation sizes and summarizes them in a single
+number, N. As a result, the run time of these structural approaches is OpNw`1 log Nq, where N is the input
+size and w is the corresponding width measure. On the other hand, commercial RDBMSs seem to place
+little emphasis on the structural property of the query and tremendous emphasis on the cardinality side of
+join processing. Commercial databases often process a join query by breaking a complex multiway join into
+a series of pairwise joins; an approach first described in the seminal System R, Selinger-style optimizer from
+the 1970 [38]. However, throwing away this structural information comes at a cost: any join-project plan is
+destined to be slower than the best possible run time by a polynomial factor in the data size.
+
+Bridging This Gap
+A major recent result from AGM [3,23] is the key to bridging this gap: AGM derived
+a tight bound on the output size of a join query as a function of individual input relation sizes and a much
+finer notion of “width”. The AGM bound leads to the notion of fractional query number and eventually
+fractional hypertree width (fhw) which is strictly more general than all of the above width notions [31]. To
+summarize, for the same query, it can be shown that
+
+fhw ď ghw ď qw ď tw ` 1,
+
+and the join-project algorithm from AGM runs in time OpNfhw`1 log Nq. AGM’s bound is sharp enough to
+take into account cardinality information, and they can be much better when the input relation sizes vary.
+The bound takes into account both the input relation statistics and the structural properties of the query. The
+question is whether it is possible and how to turn the bound into join algorithms, with runtime OpNfwhq and
+much better when input relations do not have the same size.
+
+The first such worst-case optimal join algorithm was designed by the authors (and Porat) in 2012 [32].
+Soon after, an algorithm (with a simpler description) with a similar optimality guarantee was presented soon
+after called “Leapfrog Triejoin” [42]. Remarkably this algorithm was implemented in a commercial database
+system before its optimality guarantees were discovered. A key idea in the algorithms is handling skew in
+a theoretically optimal way, and uses many of the same techniques that database management systems have
+used for decades heuristically [12,43,44]
+
+A technical contribution of this survey is to describe the algorithms from [32] and [42] and their analyses
+in one unifying (and simplified) framework. In particular, we make the observation that these join algorithms
+are in fact special cases of a single join algorithm. This result is new and serves to explain the common link
+between these join algorithms. We also illustrate some unexpected connections with geometry, which we
+believe are interesting in their own right and may be the basis for further theoretical development.
+
+2
+Much ado about the triangle
+
+We begin with the triangle query
+
+Q△“ RpA, Bq �S pB,Cq �TpA,Cq.
+
+The above query is the simplest cyclic query and is rich enough to illustrate most of the ideas in the new join
+algorithms.2 We first describe the traditional way to evaluate this query and how skew impacts this query.
+We then develop two closely related algorithmic ideas allowing us to mitigate the impact of skew in these
+examples; they are the key ideas behind the recent join processing algorithms.
+
+2This query can be used to list all triangles in a given graph G “ pV, Eq, if we set R, S and T to consist of all pairs pu, vq and
+pv, uq for which uv is an edge. Due to symmetry, each triangle in G will be listed 6 times in the join.
+
+
+2.1
+Why traditional join plans are suboptimal
+
+The textbook way to evaluate any join query, including Q△, is to determine the best pair-wise join plan [35,
+Ch. 15]. Figure 1 illustrates three plans that a conventional RDBMS would use for this query. For example,
+the first plan is to compute the intermediate join P “ R �T and then compute P �S as the final output.
+
+�
+
+S
+�
+
+T
+R
+
+�
+
+T
+�
+
+S
+R
+
+�
+
+R
+�
+
+T
+S
+
+Figure 1: The three pair-wise join plans for Q△.
+
+We next give a family of instances for which any of the above three join plans must run in time ΩpN2q
+because the intermediate relation P is too large. Let m ě 1 be a positive integer. The instance family is
+illustrated in Figure 2, where the domain of the attributes A, B and C are {a0, a1, . . . , am}, {b0, b1, . . . , bm},
+and {c0, c1, . . . , cm} respectively. In Figure 2, the unfilled circles denote the values a0, b0 and c0 respectively
+while the black circles denote the rest of the values.
+
+For this instance each relation has N “ 2m ` 1 tuples and |Q△| “ 3m ` 1; however, any pair-wise join
+has size m2 ` m. Thus, for large m, any of the three join plans will take ΩpN2q time. In fact, it can be
+shown that even if we allow projections in addition to joins, the ΩpN2q bound still holds. (See Lemma 4.2.)
+By contrast, the two algorithms shown in the next section runs in time OpNq, which is optimal because the
+output itself has ΩpNq tuples!
+
+2.2
+Algorithm 1: The Power of Two Choices
+
+Inspecting the bad example above, one can see a root cause for the large intermediate relation: a0 has “high
+degree” or in the terminology to follow it is heavy. In other words, it is an example of skew. To cope with
+skew, we shall take a strategy often employed in database systems: we deal with nodes of high and low skew
+using different join techniques [12,44]. The first goal then is to understand when a value has high skew. To
+shorten notations, for each ai define
+
+Q△rais :“ πB,CpσA“aipQ△qq.
+
+We will call ai heavy if
+
+|σA“aipR �Tq| ě |Q△rais|.
+
+In other words, the value ai is heavy if its contribution to the size of intermediate relation R �S is greater
+than its contribution to the size of the output. Since
+
+|σA“aipR �S q| “ |σA“aiR| ¨ |σA“aiS |,
+
+we can easily compute the left hand side of the above inequality from an appropriate index of the input
+relations. Of course, we do not know |Q△rais| until after we have computed Q△. However, note that we
+always have Q△rais Ď S . Thus, we will use |S | as a proxy for |Q△rais|. The two choices come from the
+following two ways of computing Q△rais:
+
+(i) Compute σA“aipRq �σA“aipTq and filter the results by probing against S or
+
+
+R “ {a0} ˆ {b0, . . . , bm} Y {a0, . . . , am} ˆ {b0}
+
+S “ {b0} ˆ {c0, . . . , cm} Y {b0, . . . , bm} ˆ {c0}
+
+T “ {a0} ˆ {c0, . . . , cm} Y {a0, . . . , am} ˆ {c0}
+
+C
+
+A
+
+B
+
+Figure 2: Counter-example for join-project only plans for the triangles (left) and an illustration for m “ 4
+(right). The pairs connected by the red/green/blue edges form the tuples in the relations R/S /T respectively.
+Note that the in this case each relation has N “ 2m ` 1 “ 9 tuples and there are 3m ` 1 “ 13 output tuples
+in Q△. Any pair-wise join however has size m2 ` m “ 20.
+
+(ii) Consider each tuple in pb, cq P S and check if pai, bq P R and pai, cq P T.
+
+We pick option (i) when ai is light (low skew) and pick option (ii) when ai is heavy (high skew).
+
+Example 1. Let us work through the motivating example from Figure 2. When we compute Q△ra0s, we
+realize that a0 is heavy and hence, we use option (ii) above. Since here we just scan tuples in S , computing
+Q△ra0s takes Opmq time. On the other hand, when we want to compute Q△rais for i ě 1, we realize that these
+ai’s are light and so we take option (i). In these cases |σA“aiR| “ |σA“aiT| “ 1 and hence the algorithm
+runs in time Op1q. As there are m such light ai’s, the algorithm overall takes Opmq each on the heavy and
+light vertices and thus Opmq “ OpNq overall which is best possible since the output size is ΘpNq.
+
+Algorithm and Analysis
+Algorithm 1 fully specifies how to compute Q△using the above idea of two
+choices. Given that the relations R, S , and T are already indexed appropriately, computing L in line 2 can
+easily be done in time Opmin{|R|, |S |, |T|}q. Then, for each a P L, the body of the for loop from line 4 to
+line 11 clearly takes time in the order of
+
+min �|σA“aR| ¨ |σA“aT|, |S |�,
+
+thanks to the power of two choices! Thus, the overall time spent by the algorithm is up to constant factors
+
+�
+
+aPL
+
+min �|σA“aR| ¨ |σA“aT|, |S |�.
+(1)
+
+We bound the sum above by using two inequalities. The first is the simple observation that for any
+x, y ě 0
+
+minpx, yq ď √xy.
+(2)
+
+The second is the famous Cauchy-Schwarz inequality3:
+
+�
+
+aPL
+
+xa ¨ ya ď
+
+��
+
+aPL
+
+x2a ¨
+
+��
+
+aPL
+
+y2a,
+(3)
+
+3The inner product of two vectors is at most the product of their length
+
+
+Algorithm 1 Computing Q△with power of two choices.
+Input: RpA, Bq, S pB,Cq, TpA,Cq in sorted order
+
+1: Q△Ð H
+
+2: L Ð πApRq X πApTq
+
+3: For each a P L do
+
+4:
+If |σA“aR| ¨ |σA“aT| ě |S | then
+
+5:
+For each pb, cq P S do
+
+6:
+If pa, bq P R and pa, cq P T then
+
+7:
+Add pa, b, cq to Q△
+
+8:
+else
+
+9:
+For each b P πBpσA“aRq ^ c P πCpσA“aTq do
+
+10:
+If pb, cq P S then
+
+11:
+Add pa, b, cq to Q△
+
+12: Return Q
+
+where pxaqaPL and pyaqaPL are vectors of real values. Applying (2) to (1), we obtain
+
+�
+
+aPL
+
+�
+|σA“aR| ¨ |σA“aT| ¨ |S |
+(4)
+
+“
+
+�
+|S | ¨
+
+�
+
+aPL
+
+�
+|σA“aR| ¨
+
+�
+|σA“aT|
+(5)
+
+ď
+
+�
+|S | ¨
+
+��
+
+aPL
+
+|σA“aR| ¨
+
+��
+
+aPL
+
+|σA“aT|
+
+ď
+
+�
+|S | ¨
+
+��
+
+aPπApRq
+
+|σA“aR| ¨
+
+��
+
+aPπApTq
+
+|σA“aT|
+
+“
+
+�
+|S | ¨
+
+�
+|R| ¨
+
+�
+|T|.
+
+If |R| “ |S | “ |T| “ N, then the above is OpN3{2q as claimed in the introduction. We will generalize
+the above algorithm beyond triangles to general join queries in Section 4. Before that, we present a second
+algorithm that has exactly the same worst-case run-time and a similar analysis to illustrate the recursive
+structure of the generic worst-case join algorithm described in Section 4.
+
+2.3
+Algorithm 2: Delaying the Computation
+
+Now we present a second way to compute Q△rais that differentiates between heavy and light values ai P A
+in a different way. We don’t try to estimate the heaviness of ai right off the bat. Algorithm 2 “looks deeper”
+into what pair pb, cq can go along with ai in the output by computing c for each candidate b.
+
+Algorithm 2 works as follows. By computing the intersection πBpσA“aiRq X πBS , we only look at the
+candidates b that can possibly participate with ai in the output pai, b, cq. Then, the candidate set for c is
+πCpσB“bS qXπCpσA“aiTq. When ai is really skewed toward the heavy side, the candidates b and then c help
+gradually reduce the skew toward building up the final solution Q△.
+
+Example 2. Let us now see how delaying computation works on the bad example. As we have observed
+in using the power of two choices, computing the intersection of two sorted sets takes time at most the
+minimum of the two sizes.
+
+
+Algorithm 2 Computing Q△by delaying computation.
+Input: RpA, Bq, S pB,Cq, TpA,Cq in sorted order
+
+1: Q Ð H
+
+2: LA Ð πAR X πAT
+
+3: For each a P LA do
+
+4:
+La
+
+B Ð πBσA“aR X πBS
+
+5:
+For each b P La
+
+B do
+
+6:
+La,b
+
+C Ð πCσB“bS X πCσA“aT
+
+7:
+For each c P La,b
+
+C do
+
+8:
+Add pa, b, cq to Q
+
+9: Return Q
+
+For a0, we consider all b P {b0, b1, . . . , bm}. When b “ b0, we have
+
+πCpσB“b0S q “ πCpσA“a0Tq “ {c0, . . . , cm},
+
+so we output the m`1 triangles in total time Opmq. For the pairs pa0, biq when i ě 1, we have |σB“biS | “ 1
+and hence we spend Op1q time on each such pair, for a total of Opmq overall.
+
+Now consider ai for i ě 1. In this case, b “ b0 is the only candidate. Further, for pai, b0q, we have
+|σA“aiT| “ 1, so we can handle each such ai in Op1q time leading to an overall run time of Opmq. Thus on
+this bad example Algorithm 2 runs in OpNq time.
+
+Appendix B has the full analysis of Algorithm 2: its worst-case runtime is exactly the same as that of
+Algorithm 1. What is remarkable is that both of these algorithms follow exactly the same recursive structure
+and they are special cases of a generic worst-case optimal join algorithm.
+
+3
+A User’s Guide to the AGM bound
+
+We now describe one way to generalize the bound of the output size of a join (mirroring the OpN3{2q bound
+we saw for the triangle query) and illustrate its use with a few examples.
+
+3.1
+AGM Bound
+
+To state the AGM bound, we need some notation. The natural join problem can be defined as follows. We
+are given a collection of m relations. Each relation is over a collection of attributes. We use V to denote the
+set of attributes; let n “ |V|. The join query Q is modeled as a hypergraph H “ pV, Eq, where for each
+hyperedge F P E there is a relation RF on attribute set F. Figure 3 shows several example join queries, their
+associated hypergraphs, and illustrates the bounds below.
+
+Atserias-Grohe-Marx [3] and Grohe-Marx [23] proved the following remarkable inequality, which shall
+be referred to as the AGM’s inequality henceforth. Let x “ pxFqFPE be any point in the following polyhedron:
+x |
+
+�
+
+F:vPF
+
+xF ě 1, @v P V, x ě 0
+
+.
+
+Such a point x is called a fractional edge cover of the hypergraph H. Then, AGM’s inequality states that the
+join size can be bounded by
+
+|Q| “ | �FPE RF| ď
+
+�
+
+FPE
+
+|RF|xF.
+(6)
+
+
+R´4
+
+A1
+A2
+
+A3
+A4
+
+A
+
+B
+C
+
+T
+R
+
+S
+
+xT “ 1
+
+2
+xR “ 1
+
+2
+
+xS “ 0
+xS “ 1
+
+2
+xS ` xT “ 1
+xS ` xT “ 1
+
+xT “ 1
+xR “ 1
+
+R1,2
+
+R2,4
+
+R3,4
+
+R2,3
+R1,3
+
+R1,4
+
+xR1,4 “ xR2,3 “ 1
+
+R´1
+
+R´3
+
+R´2
+
+A1
+A2
+
+A3
+A4
+
+xR´1 “ xR´2 “ 1
+xRi, j “ 1
+
+3 @pi, jq
+xR´i “ 1
+
+3 @i
+
+K4
+LW4
+Q△
+
+Figure 3: A handful of queries and their covers.
+
+3.2
+Example Bounds
+
+We now illustrate the AGM bound on some specific join queries. We begin with the triangle query Q△. In
+this case the corresponding hypergraph H is as in the left part of Figure 3. We consider two covers (which
+are also marked in Figure 3). The first one is xR “ xT “ xS “ 1
+
+2. This is a valid cover since the required
+inequalities are satisfied for every vertex. For example, for vertex C, the two edges incident on it are S and
+T and we have xS ` xT “ 1 ě 1 as required. In this case the bound (6) states that
+
+|Q△| ď
+
+�
+|R| ¨ |S | ¨ |T|.
+(7)
+
+Another valid cover is xR “ xT “ 1 and xS “ 0 (this cover is also marked in Figure 3). This is a valid cover,
+e.g. since for C we have xS ` xT “ 1 ě 1 and for vertex A, we have xR ` xT “ 2 ě 1 as required. For this
+cover, bound (6) gives
+
+|Q△| ď |R| ¨ |T|.
+(8)
+
+These two bounds can be better in different scenarios. E.g. when |R| “ |S | “ |T| “ N, then (7) gives an
+upper bound of N3{2 (which is the tight answer) while (8) gives a bound of N2, which is worse. However, if
+|R| “ |T| “ 1 and |S | “ N, then (7) gives a bound of
+
+√
+
+N, which has a lot of slack; while (8) gives a bound
+of 1, which is tight.
+
+For another class of examples, consider the “clique” query. In this case there are n ě 3 attributes and
+m “
+
+�n
+2
+�
+relations: one Ri, j for every i ă j P rns: we will call this query Kn. Note that K3 is Q△. The middle
+part of Figure 3 considers the K4 query. We highlight one cover: xRi,j “
+1
+n´1 for every i ă j P rns. This is
+a valid cover since every attribute is contained in n ´ 1 relations. Further, in this case (6) gives a bound of
+
+n´1��
+
+iă j |Ri,j|, which simplifies to Nn{2 for the case when every relation has size N.
+Finally, we consider the Loomis-Whitney LWn queries. In this case there are n attributes and there are
+m “ n relations. In particular, for every i P rns there is a relation R´i “ Rrnsz{i}. Note that LW3 is Q△. See
+the right of Figure 3 for the LW4 query. We highlight one cover: xRi,j “
+1
+n´1 for every i ă j P rns. This is
+a valid cover since every attribute is contained in n ´ 1 relations. Further, in this case (6) gives a bound of
+
+n´1��
+
+i |R´i|, which simplifies to N1`
+1
+n´1 for the case when every relation has size N. Note that this bound
+approaches N as n becomes larger.
+
+
+3.3
+The Tightest AGM Bound
+
+As we just saw, the optimal edge cover for the AGM bound depends on the relation sizes. To minimize the
+right hand side of (6), we can solve the following linear program:
+
+min
+
+�
+
+FPE
+
+plog2 |RF|q ¨ xF
+
+s.t.
+
+�
+
+F:vPF
+
+xF ě 1, v P V
+
+x ě 0
+
+Implicitly, the objective function above depends on the database instance D on which the query is applied.
+Let ρ˚pQ, Dq denote the optimal objective value to the above linear program. We refer to ρ˚pQ, Dq as the
+fractional edge cover number of the query Q with respect to the database instance D, following Grohe [22].
+The AGM’s inequality can be summarized simply by |Q| ď 2ρ˚pQ,Dq.
+
+3.4
+Applying AGM bound on conjunctive queries with simple functional dependencies
+
+Thus far we have been describing bounds and algorithms for natural join queries. A super-class of natural
+join queries called conjunctive queries. A conjunctive query is a query of the form
+
+C “ R0p ¯X0q Ð R1p ¯X1q ^ ¨ ¨ ¨ ^ Rmp ¯Xmq
+
+where {R1, . . . , Rm} is a multi-set of relation symbols, i.e. some relation might occur more than once in the
+query, and ¯X0, . . . , ¯Xm are tuples of variables, and each variable occurring in the query’s head Rp ¯X0q must
+also occur in the body. It is important to note that the same variable might occur more than once in the same
+tuple ¯Xi.
+
+We will use varspCq to denote the set of all variables occurring in C. Note that ¯X0 Ď varspCq and it is
+entirely possible for ¯X0 to be empty (Boolean conjunctive query). For example, the following are conjunctive
+queries:
+
+R0pWXYZq
+Ð
+S pWXYq ^ S pWWWq ^ TpYZq
+
+R0pZq
+Ð
+S pWXYq ^ S pWWWq ^ TpYZq.
+
+The former query is a full conjunctive query because the head atom contains all the query’s variable.
+
+Following Gottlob, Lee, Valiant, and Valiant (GLVV hence forth) [15, 16], we also know that the AGM
+bound can be extended to general conjunctive queries even with simple functional dependencies.4 In this
+survey, our presentation closely follows Grohe’s presentation of GLVV [22].
+
+To illustrate what can go “wrong” when we are moving from natural join queries to conjunctive queries,
+let us first consider a few example conjunctive queries, introducing one issue at a time. In all examples
+below, relations are assumed to have the same size N.
+
+Example 3 (Projection). Consider
+
+C1 “ R0pWq Ð RpWXq ^ S pWYq ^ TpWZq.
+
+In the (natural) join query, RpWXq^S pWYq^TpWZq AGM bound gives N3; but because R0pWq Ď πWpRq �
+πWpS q �πWpTq, AGM bound can be adapted to the instance restricted only to the output variables yielding
+an upper bound of N on the output size.
+
+4GLVV also have fascinating bounds for the general functional dependency and composite keys cases, and characterization of
+treewidth-preserving queries; both of those topics are beyond the scope of this survey, in particular because they require different
+machinery from what we have developed thus far.
+
+
+Example 4 (Repeated variables). Consider the query
+
+C2 “ R0pWYq Ð RpWWq ^ S pWYq ^ TpYYq.
+
+This is a full conjunctive query as all variables appear in the head atom R0. In this case, we can replace
+RpWWq and TpYYq by keeping only tuples pt1, t2q P R for which t1 “ t2 and tuples pt1, t2q P T for which
+t1 “ t2; essentially, we turn the query into a natural join query of the form R1pWq ^ S pWYq ^ T 1pYq. For
+this query, xR1 “ xT 1 “ 0 and xS “ 1 is a fractional cover and thus by AGM bound N is an upperbound on
+the output size.
+
+Example 5 (Introducing the chase). Consider the query
+
+C3 “ R0pWXYq Ð RpWXq ^ RpWWq ^ S pXYq.
+
+Without additional information, the best bound we can get for this query is OpN2q: we can easily turn it
+into a natural join query of the form RpWXq ^ R1pWq ^ S pXYq, where R1 is obtained from R by keeping all
+tuples pt1, t2q P R for which t1 “ t2. Then, pxR, xR1, xS q is a fractional edge cover for this query if and only if
+
+xR ` xR1 ě 1 (to cover W), xR ` xS ě 1 (to cover X), xS ě 1 (to cover Y); So, xS “ xR1 “ 1 and xR “ 0 is
+a fractional cover, yielding the OpN2q bound. Furthermore, it is easy to construct input instances for which
+the output size is ΩpN2q:
+
+R
+“
+{pi, iq | i P rN{2s}
+
+�
+{pi, 0q | i P rN{2s}
+
+S
+“
+{p0, jq | j P rNs}.
+
+Every tuple pi, 0, jq for i P rN{2s, j P rNs is in the output.
+
+Next, suppose we have an additional piece of information that the first attribute in relation R is its key,
+i.e. if pt1, t2q and pt1, t1
+
+2q are in R, then t2 “ t1
+2. Then we can significantly reduce the output size bound
+because we can infer the following about the output tuples: pw, x, yq is an output tuple iff pw, xq and pw, wq
+are in R, and px, yq are in S . The functional dependency tells us that x “ w. Hence, the query is equivalent
+to
+
+C1
+
+3 “ R0pWYq Ð RpWWq ^ S pWYq.
+
+The AGM bound for this (natural) join query is N. The transformation from C3 to C1
+
+3 we just described is,
+of course, the famous chase operation [2,4,30], which is much more powerful than what conveyed by this
+example.
+
+Example 6 (Taking advantage of FDs). Consider the following query
+
+C4 “ R0pXY1, . . . , Yk, Zq Ð
+
+k�
+
+i“1
+
+RipXYiq ^
+
+k�
+
+i“1
+
+S ipYiZq.
+
+First, without any functional dependency, AGM bound gives Nk for this query, because the fractional cover
+constraints are
+
+k
+�
+
+i“1
+
+xRi
+ě
+1 (cover X)
+
+xRi ` xS i
+ě
+1 (cover Yi) i P rks
+
+k
+�
+
+i“1
+
+xS i
+ě
+1 (cover Z).
+
+
+The AGM bound is N
+
+�
+ipxRi`xS iq ě Nk.
+Second, suppose we know k ` 1 functional dependencies: each of the first attributes of relations
+R1, . . . , Rk is a key for the corresponding relation, and the first attribute of S 1 is its key. Then, we have
+the following sets of functional dependencies: X Ñ Yi, i P rks, and Y1 Ñ Z. Now, construct a fictitious
+relation R1pX, Y1, . . . , Yk, Zq as follows: px, y1, . . . , yk, zq P R1 iff px, yiq P Ri for all i P rks and py1, zq P S 1.
+Then, obviously |R1| ď N. More importantly, the output does not change if we add R1 to the body query C4
+to obtain a new conjunctive query C1
+
+4. However, this time we can set xR1 “ 1 and all other variables in the
+fractional cover to be 0 and obtain an upper bound of N.
+
+We present a more formal treatment of the steps needed to convert a conjunctive query with simple
+functional dependencies to a join query in Appendix E.
+
+4
+Worst-case-optimal algorithms
+
+We first show how to analyze the upper bound that proves AGM and from which we develop a generalized join algorithm that captures both algorithms from Ngo-Porat-R´e-Rudra [32] (henceforth NPRR) and
+Leapfrog Triejoin [42]. Then, we describe the limitation of any join-project plan.
+
+Henceforth, we need the following notation. Let H “ pV, Eq be any hypergraph and I Ď V be an
+arbitrary subset of vertices of H. Then, we define
+
+EI :“ �F P E | F X I �H�.
+
+Example 7. For the query Q△from Section 2, we have H△“ pV△, E△q, where
+
+V△
+“
+{A, B,C},
+
+E△
+“
+
+�
+{A, B}, {B,C}, {A,C}
+
+�
+.
+
+Let I1 “ {A} and I2 “ {A, B}, then EI1 “ {{A, B}, {A,C}}, and EI2 “ E△.
+
+4.1
+A proof of the AGM bound
+
+We prove the AGM inequality in two steps: a query decomposition lemma, and then a succinct inductive
+proof, which we then use to develop a generic worst-case optimal join algorithm.
+
+4.1.1
+The query decomposition lemma
+
+Ngo-Porat-R´e-Rudra [32] gave an inductive proof of AGM bound (6) using H¨older inequality. (AGM proved
+the bound using an entropy based argument: see Appendix D for more details.) The proof has an inductive
+structure leading naturally to recursive join algorithms. NPRR’s strategy is a generalization of the strategy
+in [6] to prove the Bollob´as-Thomason inequality, shown in [32] to be equivalent to AGM’s bound.
+
+Implicit in NPRR is the following key lemma, which will be crucial in proving bounds on general join
+queries (as well as proving upper bounds on the runtime of the new join algorithms).
+
+Lemma 4.1 (Query decomposition lemma). Let Q “ �FPE RF be a natural join query represented by a
+hypergraph H “ pV, Eq, and x be any fractional edge cover for H. Let V “ I Z J be an arbitrary partition
+of V such that 1 ď |I| ă |V|; and,
+
+L “�FPEI πIpRFq.
+
+Then,
+�
+
+tIPL
+
+�
+
+FPEJ
+
+|RF �tI|xF ď
+
+�
+
+FPE
+
+|RF|xF.
+(9)
+
+
+Before we prove the lemma above, we outline how we have already used the lemma above specialized
+to Q△in Section 2 to bound the runtime of Algorithm 1. We use the lemma with x “ p1{2, 1{2, 1{2q, which
+is a valid fractional edge cover for H△.
+
+For Algorithm 1 we use Lemma 4.1 with I “ I1. Note that L in Lemma 4.1 is the same as
+
+πApRq �πApTq “ πApRq X πApTq,
+
+i.e. this L is exactly the same as the L in Algorithm 1. We now consider the left hand side (LHS) in (9).
+Note that we have EJ “
+
+�
+{A, B}, {B,C}, {A,C}
+
+�
+. Thus, the LHS is the same as
+
+�
+
+aPL
+
+�
+|R �paq| ¨
+
+�
+|T �paq| ¨
+
+�
+|S �paq|
+
+“
+
+�
+
+aPL
+
+�
+|σA“aR| ¨
+
+�
+|σA“aT| ¨
+
+�
+|S |.
+
+Note that the last expression is exactly the same as (4), which is at most
+
+�
+|R| ¨ |S | ¨ |T| by Lemma 4.1. This
+was what shown in Section 2.
+
+Proof of Lemma 4.1. The plan is to “unroll” the sum of products on the left hand side using H¨older inequality as follows. Let j P I be an arbitrary attribute. Define
+
+I1
+“
+I ´ {j}
+
+J1
+“
+J Y {j}
+
+L1
+“
+�FPEI1 πI1pRFq.
+
+We will show that
+�
+
+tIPL
+
+�
+
+FPEJ
+
+|RF �tI|xF ď
+
+�
+
+tI1PL1
+
+�
+
+FPEJ1
+
+|RF �tI1|xF.
+(10)
+
+Then, by repeated applications of (10) we will bring I1 down to empty and the right hand side is that of (9).
+
+To prove (10) we write tI “ ptI1, tjq for some tI1 P L1 and decompose a sum over L to a double sum over
+L1 and tj, where the second sum is only over tj for which ptI1, tjq P L.
+
+�
+
+tIPL
+
+�
+
+FPEJ
+
+|RF �tI|xF
+“
+
+�
+
+tI1PL1
+
+�
+
+tj
+
+�
+
+FPEJ
+
+|RF �ptI1, tjq|xF
+
+“
+
+�
+
+tI1PL1
+
+�
+
+tj
+
+
+
+�
+
+FPEJ
+
+|RF �ptI1, t jq|xF
+
+¨
+
+
+
+�
+
+FPEJ1´EJ
+
+1xF
+
+
+
+“
+
+�
+
+tI1PL1
+
+�
+
+tj
+
+�
+
+FPEJ1
+
+|RF �ptI1, tjq|xF
+
+“
+
+�
+
+tI1PL1
+
+�
+
+FPEJ1´E{ j}
+
+|RF �tI1|xF �
+
+tj
+
+�
+
+FPE{ j}
+
+|RF �ptI1, tjq|xF
+
+ď
+
+�
+
+tI1PL1
+
+�
+
+FPEJ1´E{ j}
+
+|RF �tI1|xF �
+
+FPE{ j}
+
+
+
+�
+
+t j
+
+|RF �ptI1, tjq|
+
+
+
+xF
+
+ď
+
+�
+
+tI1PL1
+
+�
+
+FPEJ1´E{ j}
+
+|RF �tI1|xF �
+
+FPE{ j}
+
+|RF �tI1|xF
+
+“
+
+�
+
+tI1PL1
+
+�
+
+FPEJ1
+
+|RF �tI1|xF.
+
+
+In the above, the third equality follows from fact that for any F P EJ1 ´ EJ, we have F Ď I1 Y {j}. The
+first inequality is an application of H¨older inequality, which holds because �
+
+FPE{j} xF ě 1. The second
+inequality is true because the sum is only over tj for which ptI1, tjq P L.
+□
+
+It is quite remarkable that from the query decomposition lemma, we can prove AGM inequality (6), and
+describe and analyze two join algorithms succinctly.
+
+4.1.2
+An inductive proof of AGM inequality
+
+Base case. In the base case |V| “ 1, we are computing the join of |E| unary relations. Let x “ pxFqFPE be
+a fractional edge cover for this instance. Then,
+
+| �FPE RF|
+ď
+min
+
+FPE |RF|
+
+ď
+
+�
+min
+
+FPE |RF|
+
+��
+FPE xF
+
+“
+
+�
+
+FPE
+
+�
+min
+
+FPE |RF|
+
+�xF
+
+ď
+
+�
+
+FPE
+
+|RF|xF.
+
+Inductive step. Now, assume n “ |V| ě 2. Let V “ IZJ be any partition of V such that 1 ď |I| ă |V|.
+Define L “ �FPEI πIpRFq as in Lemma 4.1. For each tuple tI P L we define a new join query
+
+QrtIs :“�FPEJ πJpRF �tIq.
+
+Then, obviously we can write the original query Q as
+
+Q “
+
+�
+
+tIPL
+
+�{tI} ˆ QrtIs�.
+(11)
+
+The vector pxFqFPEJ is a fractional edge cover for the hypergraph of QrtIs. Hence, the induction hypothesis
+gives us
+
+|QrtIs| ď
+
+�
+
+FPEJ
+
+|πJpRF �tIq|xF “
+
+�
+
+FPEJ
+
+|RF �tI|xF.
+(12)
+
+From (11), (12), and (9) we obtain AGM inequality:
+
+|Q| “
+
+�
+
+tIPL
+
+|QrtIs| ď
+
+�
+
+FPE
+
+|RF|xF.
+
+4.2
+Worst-case optimal join algorithms
+
+From the proof of Lemma 4.1 and the query decomposition (11), it is straightforward to design a class of
+recursive join algorithms which is optimal in the worst case. (See Algorithm 3.)
+
+A mild assumption which is not very crucial is to pre-index all the relations so that the inputs to the subqueries QrtIs can readily be available when the time comes to compute it. Both NPRR and Leapfrog Triejoin
+algorithms do this by fixing a global attribute order and build a B-tree-like index structure for each input
+relation consistent with this global attribute order. NPRR also described an hash-based indexing structure so
+as to remove a log-factor from the final run time. We will not delve on this point here, except to emphasize
+the fact that we do not include the linear time pre-processing step in the final runtime formula.
+
+
+Algorithm 3 Generic-Join(�FPE RF)
+Input: Query Q, hypergraph H “ pV, Eq
+
+1: Q Ð H
+
+2: If |V| “ 1 then
+
+3:
+return �
+
+FPE RF
+
+4: Pick I arbitrarily such that 1 ď |I| ă |V|
+
+5: L Ð Generic-Joinp�FPEI πIpRFqq
+
+6: For every tI P L do
+
+7:
+QrtIs Ð Generic-Joinp�FPEJ πJpRF �tIqq
+
+8:
+Q Ð Q Y {tI} ˆ QrtIs
+
+9: Return Q
+
+Given the indices, when |V| “ 1 computing �
+
+FPE RF can easily be done in time
+
+˜Opm min |RF|q “ ˜Opm
+
+�
+
+FPE
+
+|RF|xFq.
+
+Then, given this base-case runtime guarantee, we can show by induction that the overall runtime of Algorithm 3 is ˜Opmn �
+
+FPE |RF|xFq, where ˜O hides a potential log-factor of the input size. This is because, by
+induction the time it takes to compute L is ˜Opm|I| �
+
+FPEI |RF|xFq, and the time it takes to compute QrtIs is
+
+˜O
+
+mpn ´ |I|q
+
+�
+
+FPEJ
+
+|RF �tI|xF
+
+
+
+Hence, from Lemma 4.1, the total run time is ˜O of
+
+m|I|
+
+�
+
+FPEI
+
+|RF|xF ` mpn ´ |I|q
+
+�
+
+tIPL
+
+�
+
+FPEJ
+
+|RF �tI|xF
+
+ď
+m|I|
+
+�
+
+FPEI
+
+|RF|xF ` mpn ´ |I|q
+
+�
+
+FPE
+
+|RF|xF
+
+ď
+mn
+
+�
+
+FPE
+
+|RF|xF.
+
+The NPRR algorithm is an instantiation of Algorithm 3 where it picks J P E, I “ V ´ J, and solves the
+sub-queries QrtIs in a different way, making use of the power of two choices idea. Since J P E, we write
+
+QrtIs “ RJ ���FPEJ´{J} πJpRF �tIq�.
+
+Now, if xJ ě 1 then we solve for QrtIs by checking for every tuple in RJ whether it can be part of QrtIs.
+The run time is ˜O of
+
+pn ´ |I|q|RJ| ď pn ´ |I|q
+
+�
+
+FPEJ
+
+|RF �tI|xF.
+
+When xJ ă 1, we will make use of an extremely simple observation: for any real numbers p, q ě 0 and
+z P r0, 1s, min{p, q} ď pzq1´z (note that (2) is the special case of z “ 1{2). In particular, define
+
+p
+“
+|RJ|
+
+q
+“
+
+�
+
+FPEJ´{J}
+
+|πJpRF �tIq|
+
+xF
+1´xJ
+
+
+Then,
+
+min {p, q}
+ď
+|RJ|xJ
+�
+
+FPEJ´{J}
+
+|πJpRF �tIq|xF
+
+“
+
+�
+
+FPEJ
+
+|RF �tI|xF.
+
+From there, when xJ ă 1 and p ď q, we go through each tuple in RJ and check as in the case xJ ě 1.
+And when p ą q, we solve the subquery �FPEJ´{J} πJpRF �tIq first using
+
+�
+xF
+1´xJ
+�
+
+FPEJ´{J} as its fractional
+edge cover; and then check for each tuple in the result whether it is in RJ. In either case, the run time
+
+˜Opmin{p, q}q which along with the observation above completes the proof.
+
+Next we outline how Algorithm 1 is Algorithm 3 with the above modification for NPRR for the triangle
+query Q△. In particular, we will use x “ p1{2, 1{2, 1{2q and I “ {A}. Note that this choice of I implies that
+
+J “ {B,C}, which means in Step 5 Algorithm 3 computes
+
+L “ πApRq �πApTq “ πApRq X πApTq,
+
+which is exactly the same L as in Algorithm 1. Thus, in the remaining part of Algorithm 3 one would cycle
+through all a P L (as one does in Algorithm 1). In particular, by the discussion above, since xS “ 1{2 ă 1,
+we will try the best of two choices. In particular, we have
+
+�FPEJ´{J} πJpRF �paqq
+“
+πBpσA“aRq ˆ πCpσA“aTq,
+
+p
+“
+|I|,
+
+q
+“
+|σA“aR| ¨ |σA“aT|.
+
+Hence, the NPRR algorithm described exactly matches Algorithm 1.
+
+The Leapfrog Triejoin algorithm [42] is an instantiation of Algorithm 3 where V “ rns and I “
+{1, . . . , n ´ 1} (or equivalently I “ {1}). To illustrate, we outline how Algorithm 2 is Algorithm 3 with
+I “ {A, B} when specialized to Q△. Consider the run of Algorithm 3 on H△, and the first time Step 4 is
+executed. The call to Generic-Join in Step 5 returns L “ {pa, bq|a P LA, b P La
+
+B}, where LA and La
+
+B are as
+defined in Algorithm 2. The rest of Algorithm 3 is to do the following for every pa, bq P L. Qrpa, bqs is
+computed by the recursive call to Algorithm 3 to obtain {pa, bq ˆ La,b
+
+C , where
+
+La,b
+
+C “ πCσB“bS �πCσA“aT “ πCσB“bS X πCσA“aT,
+
+exactly as was done in Algorithm 2. Finally, we get back to L in Step 5 being as claimed above. Note that
+in during the recursive call of Algorithm 3 on QŹŸ “ R �πBpS q �πApTq. The claim follows by picking
+I “ {A} in Step 4 when Algorithm 3 is run on QŹŸ (and tracing through rest of Algorithm 3).
+
+4.3
+On the limitation of any join-project plan
+
+AGM proved that there are classes of queries for which join-only plans are significantly worse than their
+join-project plan. In particular, they showed that for every M, N P N, there is a query Q of size at least M
+and a database D of size at least N such that 2ρ˚pQ,Dq ď N2 and every join-only plan runs in time at least
+N
+
+1
+5 log2 |Q|.
+NPRR continued with the story and noted that for the class of LWn queries from Section 3.2 every joinproject plan runs in time polynomially worse than the AGM bound. The proof of the following lemma can
+be found in Appendix F.
+
+
+Lemma 4.2. Let n ě 2 be an arbitrary integer. For any LW-query Q with corresponding hypergraph H “
+prns,
+
+�rns
+n´1
+
+�
+q, and any positive integer N ě 2, there exist n relations Ri, i P rns such that |Ri| “ N, @i P rns,
+the attribute set for Ri is rns ´ {i}, and that any join-project plan for Q on these relations has run-time at
+least ΩpN2{n2q.
+
+Note that both the traditional join-tree-based algorithms and AGM’s algorithm described in Appendix D.2
+are join-project plans. Consequently, they run in time asymptotically worse than the best AGM bound for
+this instance, which is
+
+| �n
+
+i“1 Ri| ď
+
+n
+�
+
+i“1
+
+|Ri|1{pn´1q “ N1`1{pn´1q.
+
+On the other hand, both algorithms described in Section 4.2 take OpN1`1{pn´1qq-time because their run
+times match the AGM bound. In fact, the NPRR algorithm in Section 4.2 can be shown to run in linear
+data-complexity time Opn2Nq for this query [32].
+
+5
+Open Questions
+
+We conclude this survey with two open questions: one for systems researchers and one for theoreticians:
+
+1. A natural question to ask is whether the algorithmic ideas that were presented in this survey can gain
+runtime efficiency in databases systems. This is an intriguing open question: on one hand we have
+shown asymptotic improvements in join algorithms, but on the other there are several decades of
+engineering refinements and research contributions in the traditional dogma.
+
+2. Worst-case results, as noted by several authors, may only give us information about pathological
+instances. Thus, there is a natural push toward more refined measures of complexity. For example,
+current complexity measures are too weak to explain why indexes are used or give insight into the
+average case. For example, could one design an adaptive join algorithm whose run time is somehow
+dictated by the “difficulty” of the input instance (instead of the input size as in the currently known
+results)?
+
+Acknowledgements
+
+HN’s work is partly supported by NSF grant CCF-1319402 and a gift from Logicblox. CR’s work on this
+project is generously supported by NSF CAREER Award under No. IIS-1353606, NSF award under No.
+CCF-1356918, the ONR under awards No. N000141210041 and No. N000141310129, Sloan Research Fellowship, Oracle, and Google. AR’s work is partly supported by NSF CAREER Award CCF-CCF-0844796,
+NSF grant CCF-1319402 and a gift from Logicblox.
+
+References
+
+[1] Abiteboul, S., Hull, R., and Vianu, V. Foundations of Databases. Addison-Wesley, 1995.
+
+[2] Aho, A. V., Beeri, C., and Ullman, J. D. The theory of joins in relational databases. ACM Trans.
+
+Database Syst. 4, 3 (1979), 297–314.
+
+[3] Atserias, A., Grohe, M., and Marx, D. Size bounds and query plans for relational joins. In FOCS
+
+(2008), IEEE Computer Society, pp. 739–748.
+
+
+[4] Beeri, C., and Vardi, M. Y. A proof procedure for data dependencies. J. ACM 31, 4 (1984), 718–741.
+
+[5] Blanas, S., Li, Y., and Patel, J. M. Design and evaluation of main memory hash join algorithms for
+
+multi-core cpus. In SIGMOD (2011), ACM, pp. 37–48.
+
+[6] Bollob´as, B., and Thomason, A. Projections of bodies and hereditary properties of hypergraphs. Bull.
+
+London Math. Soc. 27, 5 (1995), 417–424.
+
+[7] Chandra, A. K., and Merlin, P. M. Optimal implementation of conjunctive queries in relational data
+
+bases. In STOC (1977), J. E. Hopcroft, E. P. Friedman, and M. A. Harrison, Eds., ACM, pp. 77–90.
+
+[8] Chaudhuri, S. An overview of query optimization in relational systems. In PODS (1998), ACM,
+
+pp. 34–43.
+
+[9] Chekuri, C., and Rajaraman, A. Conjunctive query containment revisited. Theor. Comput. Sci. 239, 2
+
+(2000), 211–229.
+
+[10] Chung, F. R. K., Graham, R. L., Frankl, P., and Shearer, J. B. Some intersection theorems for ordered
+
+sets and graphs. J. Combin. Theory Ser. A 43, 1 (1986), 23–37.
+
+[11] Cover, T. M., and Thomas, J. A. Elements of information theory, second ed. Wiley-Interscience [John
+
+Wiley & Sons], Hoboken, NJ, 2006.
+
+[12] DeWitt, D. J., Naughton, J. F., Schneider, D. A., and Seshadri, S. Practical skew handling in parallel
+
+joins. In Proceedings of the 18th International Conference on Very Large Data Bases (San Francisco,
+CA, USA, 1992), VLDB ’92, Morgan Kaufmann Publishers Inc., pp. 27–40.
+
+[13] Fagin, R. Degrees of acyclicity for hypergraphs and relational database schemes. J. ACM 30, 3 (1983),
+
+514–550.
+
+[14] Friedgut, E., and Kahn, J. On the number of copies of one hypergraph in another. Israel J. Math. 105
+
+(1998), 251–256.
+
+[15] Gottlob, G., Lee, S. T., and Valiant, G. Size and treewidth bounds for conjunctive queries. In PODS
+
+(2009), J. Paredaens and J. Su, Eds., ACM, pp. 45–54.
+
+[16] Gottlob, G., Lee, S. T., Valiant, G., and Valiant, P. Size and treewidth bounds for conjunctive queries.
+
+J. ACM 59, 3 (2012), 16.
+
+[17] Gottlob, G., Leone, N., and Scarcello, F. Hypertree decompositions and tractable queries. J. Comput.
+
+Syst. Sci. 64, 3 (2002), 579–627.
+
+[18] Gottlob, G., Leone, N., and Scarcello, F. Robbers, marshals, and guards: game theoretic and logical
+
+characterizations of hypertree width. J. Comput. Syst. Sci. 66, 4 (2003), 775–808.
+
+[19] Gottlob, G., Mikl´os, Z., and Schwentick, T. Generalized hypertree decompositions: Np-hardness and
+
+tractable variants. J. ACM 56, 6 (2009).
+
+[20] Graefe, G. Query evaluation techniques for large databases. ACM Computing Surveys 25, 2 (June
+
+1993), 73–170.
+
+[21] Graham, M. H. On the universal relation, 1980. Tech. Report.
+
+[22] Grohe, M. Bounds and algorithms for joins via fractional edge covers. http://www.automata.
+
+rwth-aachen.de/˜grohe/pub/gro12+.pdf, 2012. Manuscript.
+
+
+[23] Grohe, M., and Marx, D. Constraint solving via fractional edge covers. In SODA (2006), ACM Press,
+
+pp. 289–298.
+
+[24] Gyssens, M., Jeavons, P., and Cohen, D. A.
+Decomposing constraint satisfaction problems using
+database techniques. Artif. Intell. 66, 1 (1994), 57–89.
+
+[25] Gyssens, M., and Paredaens, J. A decomposition methodology for cyclic databases. In Advances in
+
+Data Base Theory (1982), pp. 85–122.
+
+[26] Hardy, G. H., Littlewood, J. E., and P´olya, G. Inequalities. Cambridge University Press, Cambridge,
+
+1988. Reprint of the 1952 edition.
+
+[27] Kim, C., Kaldewey, T., Lee, V. W., Sedlar, E., Nguyen, A. D., Satish, N., Chhugani, J., Di Blas, A.,
+
+and Dubey, P. Sort vs. hash revisited: fast join implementation on modern multi-core cpus. Proc.
+VLDB Endow. 2, 2 (Aug. 2009), 1378–1389.
+
+[28] Kolaitis, P. G., and Vardi, M. Y. Conjunctive-query containment and constraint satisfaction. J. Com-
+
+put. Syst. Sci. 61, 2 (2000), 302–332.
+
+[29] Loomis, L. H., and Whitney, H. An inequality related to the isoperimetric inequality. Bull. Amer. Math.
+
+Soc 55 (1949), 961–962.
+
+[30] Maier, D., Mendelzon, A. O., and Sagiv, Y. Testing implications of data dependencies. ACM Trans.
+
+Database Syst. 4, 4 (Dec. 1979), 455–469.
+
+[31] Marx, D. Approximating fractional hypertree width. ACM Trans. Algorithms 6, 2 (Apr. 2010), 29:1–
+
+29:17.
+
+[32] Ngo, H. Q., Porat, E., R´e, C., and Rudra, A. Worst-case optimal join algorithms: [extended abstract].
+
+In PODS (2012), pp. 37–48.
+
+[33] Papadimitriou, C. H., and Yannakakis, M. On the complexity of database queries. In PODS (1997),
+
+A. O. Mendelzon and Z. M. ¨Ozsoyoglu, Eds., ACM Press, pp. 12–19.
+
+[34] Radhakrishnan, J. Entropy and counting. Computational Mathematics, Modelling and Algorithms
+
+(2003), 146.
+
+[35] Ramakrishnan, R., and Gehrke, J. Database Management Systems, 3 ed. McGraw-Hill, Inc., New
+
+York, NY, USA, 2003.
+
+[36] Robertson, N., and Seymour, P. D. Graph minors. II. Algorithmic aspects of tree-width. J. Algorithms
+
+7, 3 (1986), 309–322.
+
+[37] Scarcello, F. Query answering exploiting structural properties. SIGMOD Record 34, 3 (2005), 91–99.
+
+[38] Selinger, P. G., Astrahan, M. M., Chamberlin, D. D., Lorie, R. A., and Price, T. G. Access path
+
+selection in a relational database management system. In Proceedings of the 1979 ACM SIGMOD
+international conference on Management of data (New York, NY, USA, 1979), SIGMOD ’79, ACM,
+pp. 23–34.
+
+[39] Suri, S., and Vassilvitskii, S. Counting triangles and the curse of the last reducer. In WWW (2011),
+
+pp. 607–614.
+
+
+[40] Tsourakakis, C. E. Fast counting of triangles in large real networks without counting: Algorithms and
+
+laws. In ICDM (2008), IEEE Computer Society, pp. 608–617.
+
+[41] Vardi, M. Y. The complexity of relational query languages (extended abstract). In STOC (1982), H. R.
+
+Lewis, B. B. Simons, W. A. Burkhard, and L. H. Landweber, Eds., ACM, pp. 137–146.
+
+[42] Veldhuizen, T. L. Leapfrog Triejoin: a worst-case optimal join algorithm. ArXiv e-prints (Oct. 2012).
+
+[43] Walton, C. B., Dale, A. G., and Jenevein, R. M. A taxonomy and performance model of data skew
+
+effects in parallel joins. In Proceedings of the 17th International Conference on Very Large Data Bases
+(San Francisco, CA, USA, 1991), VLDB ’91, Morgan Kaufmann Publishers Inc., pp. 537–548.
+
+[44] Xu, Y., Kostamaa, P., Zhou, X., and Chen, L. Handling data skew in parallel joins in shared-nothing
+
+systems. In Proceedings of the 2008 ACM SIGMOD international conference on Management of data
+(New York, NY, USA, 2008), SIGMOD ’08, ACM, pp. 1043–1052.
+
+[45] Yannakakis, M. Algorithms for acyclic database schemes. In VLDB (1981), IEEE Computer Society,
+
+pp. 82–94.
+
+[46] Yu, C., and Ozsoyoglu, M. On determining tree-query membership of a distributed query. Informatica
+
+22, 3 (1984), 261–282.
+
+A
+Relation Algebra Notation
+
+We assume the existence of a set of attribute names A “ A1, . . . , An with associated domains D1, . . . , Dn
+and infinite set of relational symbols R. A relational schema for the symbol R P R of arity k is a tuple
+
+¯ApRq “ pAi1, . . . , Aikq of distinct attributes that defines the attributes of the relation. A relational database
+schema is a set of relational symbols and associated schemas denoted by Rp ¯ApRqq, R P R. A relational
+instance for RpAi1, . . . , Aikq is a subset of Di1 ˆ¨ ¨ ¨ˆDik. A relational database D is a collection of instances,
+one for each relational symbol in schema, denoted by RD.
+
+A natural join query (or simply join query) Q is specified by a finite subset of relational symbols
+atomspQq Ď R, denoted by �RPatomspQq R. Let ¯ApQq denote the set of all attributes that appear in some
+relation in Q, that is ¯ApQq “ {A | A P ¯ApRq for some R P atomspQq}. Given a tuple t we will write t ¯A to
+emphasize that its support is the attribute set ¯A. Further, for any ¯S Ă ¯A we let t ¯S denote t restricted to ¯S .
+Given a database instance D, the output of the query Q on the database instance D is denoted QpDq and is
+defined as
+
+QpDq def
+“
+
+�
+t P D ¯ApQq | t ¯ApRq P RD for each R P atomspQq
+
+�
+
+where D ¯ApQq is a shorthand for ˆi:AiP ¯ApQqDi. When the instance is clear from the context we will refer to
+QpDq by just Q.
+
+We also use the notion of a semijoin: Given two relations Rp ¯Aq and S p ¯Bq their semijoin R �S is defined
+by
+
+R �S def
+“ �t P R : Du P S s.t. t ¯AX ¯B “ u ¯AX ¯B
+
+�.
+
+For any relation Rp ¯Aq, and any subset ¯S Ď ¯A of its attributes, let π ¯S pRq denote the projection of R onto ¯S ,
+i.e.
+
+π ¯S pRq “
+
+�
+t ¯S | Dt ¯Az ¯S , pt ¯S , t ¯Az ¯S q P R
+
+�
+.
+
+For any relation Rp ¯Aq, any subset ¯S Ď ¯A of its attributes, and a vector s P �
+
+iP ¯S Di, let σ ¯S “spRq denote
+the selection of R with ¯S and s, i.e.
+
+σ ¯S “spRq “ �t | t ¯S “ s�.
+
+
+B
+Analysis of Algorithm 2
+
+It turns out that the run time of Algorithm 2 is dominated by the time spent in computing the set La,b
+
+C
+for
+every a P LA and b P La
+
+B. We now analyze this time “inside out.” We first note that for a given a P LA and
+b P La
+
+B, the time it takes to compute La,b
+
+C is at most
+
+min �|πCσB“bS |, |πCσA“aT|�ď
+
+�
+|πCσB“bS | ¨ |πCσA“aT|,
+
+where the inequality follows from (2). We now go one level up and sum the run time over all b P La
+
+B (but
+for the same fixed a P LA as above). This leads to the time taken to compute La,b
+
+C over all b P La
+
+B to be upper
+bounded by
+
+�
+|πCσA“aT| ¨
+
+�
+
+bPLa
+
+B
+
+�
+|πCσB“bS |
+
+ď
+
+�
+|πCσA“aT| ¨
+
+�
+|La
+
+B| ¨
+
+��
+
+bPLa
+
+B
+
+|πCσB“bS |
+
+ď
+
+�
+|πCσA“aT| ¨
+
+�
+|La
+
+B| ¨
+
+��
+
+bPπBS
+
+|πCσB“bS |
+
+“
+
+�
+|πCσA“aT| ¨
+
+�
+|La
+
+B| ¨
+
+�
+|S |
+
+“
+
+�
+|S | ¨
+
+�
+|πCσA“aT| ¨
+
+�
+|La
+
+B|
+
+ď
+
+�
+|S | ¨
+
+�
+|πCσA“aT| ¨
+
+�
+|πBσA“aR|,
+
+where the first inequality follows from (3) (where we have L “ La
+
+B and the vectors are the all 1’s vector
+and the vector p
+
+�
+|πCσB“bS |qbPLa
+
+B). The second inequality follows from the fact that La
+
+B Ď πBS . The final
+inequality follows from the fact that La
+
+B Ď πBσA“aR.
+To complete the runtime analysis, we need to sum up the last expression above for every a P LA.
+However, note that this sum is exactly the expression (5), which we have already seen is N3{2, as desired.
+
+For completeness, we show how the analysis of Algorithm 2 above follows directly from Lemma 4.1.
+In this case we use Lemma 4.1 with I “ I2, which implies
+
+L “ R �πBS �πAT “ {pa, bq|a P LA, b P La
+
+B},
+
+where LA and La
+
+B is as defined in Algorithm 2. Note that in this case EJ “ {{B,C}, {A,C}}. Thus, we have
+that the LHS in (9) is the same as
+
+�
+
+aPLA
+
+�
+
+bPLa
+
+B
+
+�
+|S �pa, bq| ¨
+
+�
+T �pa, bq|
+
+“
+
+�
+
+aPLA
+
+�
+
+bPLa
+
+B
+
+�
+|πCσB“bS | ¨
+
+�
+|πCσA“aT|.
+
+Note that the last expression is the same as the one in (13). Lemma 4.1 argues that the above is at most N3{2,
+which is exactly what we proved above.
+
+
+C
+Technical Tools
+
+The following form of H¨older’s inequality (also historically attributed to Jensen) can be found in any standard texts on inequalities. The reader is referred to the classic book “Inequalities” by Hardy, Littlewood,
+and P´olya [26] (Theorem 22 on page 29).
+
+Lemma C.1 (H¨older inequality). Let m, n be positive integers. Let y1, . . . , yn be non-negative real numbers
+such that y1 ` ¨ ¨ ¨ ` yn ě 1. Let aij ě 0 be non-negative real numbers, for i P rms and j P rns. With the
+convention 00 “ 0, we have:
+
+m
+�
+
+i“1
+
+n
+�
+
+j“1
+
+ay j
+
+i j ď
+
+n
+�
+
+j“1
+
+
+
+m
+�
+
+i“1
+
+ai j
+
+
+
+yj
+
+.
+(13)
+
+D
+Entropy and Alternate Derivations
+
+D.1
+Entropy and Shearer’s inequality
+
+For basic background knowledge on information theory and the entropy function in particular, the reader is
+referred to Thomas and Cover [11]. We are necessarily brief in this section.
+
+Let X be a discrete random variable taking on values from a domain X with probability mass function
+pX. The (binary) entropy function HrXs is a measure of the degree of uncertainty associated with X, and is
+defined by
+
+HrXs :“ ´
+
+�
+
+xPX
+
+pXpxq log2 pXpxq.
+
+We can replace X by a tuple X “ pX1, . . . , Xnq of random variables and define the joint entropy in exactly
+the same way. The only difference in the formula above is the replacement of pX by the joint probability
+mass function.
+
+Let X, Y be two discrete random variables on domains X, Y, respectively. The conditional entropy
+function of X given Y measures the degree of uncertainty about X given that we knew Y:
+
+HrX | Ys :“ ´
+
+�
+
+xPX
+yPY
+
+PrX “ x, Y “ ys log2 PrX “ x | Y “ ys.
+
+Again, we extend the above definition in the natural way when X and Y are replaced by tuples of random variables. Many simple relations regarding entropy and conditional entropy can be derived from first
+principle, and they often have very intuitive interpretation. For example, the inequality
+
+HrX | Y, Zs ď HrX | Ys
+
+can be intuitively “explained” by thinking that knowing less (only Y as opposed to knowing both Y and
+Z) leads to more uncertainty about X. Similarly, the following formula can easily be derived from first
+principles.
+
+HrX1, . . . , Xns “
+
+n
+�
+
+j“1
+
+HrHj | X1, . . . , X j´1s.
+(14)
+
+The above basic observation can be used to prove Shearer’s inequality below. Our proof here follows the
+conditional entropy approach from Radhakrishnan [34]. The version of Shearer’s lemma below is slightly
+more direct than the version used in [3,22], leading to a shorter proof of AGM’s inequality in Section D.2.
+
+
+Lemma D.1 (Shearer [10]). Let X1, . . . , Xn be n random variables. For each subset F Ď rns, let XF “
+pXiqiPF; and, let X “ Xrns. Let H “ pV “ rns, Eq be a hypergraph, and x “ pxFqFPE be any fractional
+edge cover of the hypergraph. Then, the following inequality holds
+
+HrXs ď
+
+�
+
+FPE
+
+xF ¨ HrXFs
+(15)
+
+Proof. For every F P E and j P F, we have
+
+HrX j | Xi, i ă js ď HrX j | Xi, i ă j, i P Fs
+
+because the entropy on left hand side is conditioned on a (perhaps non-strict) superset of the variables
+conditioned on the right hand side. Additionally, because the vector x “ pxFqFPE is a fractional edge cover,
+for every j P rns we have �
+
+FPE,jPF xF ě 1. It follows that, for every j P rns,
+
+HrX j | Xi, i ă js ď
+
+�
+
+FPE,jPF
+
+xF ¨ HrX j | Xi, i ă j, i P Fs.
+
+From this inequality and formula (14), we obtain
+
+HrXs
+“
+
+n
+�
+
+j“1
+
+HrX j | Xi, i ă js
+
+ď
+
+n
+�
+
+j“1
+
+�
+
+FPE,jPF
+
+xF ¨ HrX j | Xi, i ă j, i P Fs
+
+“
+
+�
+
+FPE
+
+xF ¨
+
+�
+
+jPF
+
+HrX j | Xi, i ă j, i P Fs
+
+“
+
+�
+
+FPE
+
+xF ¨ HrXFs.
+
+□
+
+D.2
+AGM’s proof based on Shearer’s entropy inequality and a join-project plan
+
+AGM’s inequality was shown in [3,23] as follows. A similar approach was used in [14] to prove an essentially equivalent inequality regarding the number of copies of a hypergraph in another. Let X “ pXvqvPV
+denote a uniformly chosen random tuple from the output of the query Q. Then, HrXs “ log2 |Q|. Note that
+each Xv, v P V is a random variable. For each F P E, let XF “ pXvqvPF. Then, the random variables XF takes
+on values in RF. Because the uniform distribution has the maximum entropy, we have HrXFs ď log2 |RF|,
+for all F P E.
+
+Let x denote any fractional edge cover for the hypergraph H “ pV, Eq of the query Q, then from
+Shearer’s inequality (15) we obtain
+
+log2 |Q| “ HrXs ď
+
+�
+
+FPE
+
+xF ¨ HrXFs ď
+
+�
+
+FPE
+
+xF ¨ log2 |RF|,
+
+which is exactly AGM’s inequality (6).
+
+Proposition D.2. For any query Q, there is a join-project plan with runtime Op|Q|2 ¨ 2ρ˚pQ,Dq ¨ Nq for
+evaluating Q, where N is the input size.
+
+
+Proof. We define the join-project plan recursively. Let A1, . . . , An be the attributes and R1, . . . , Rm be the
+relations of Q. Let ¯Bn´1 “ pA1, . . . , An´1q. We first recursively compute the join P “ �FPE π ¯Bn´1pRFq.
+Then, we output
+
+Q “ p¨ ¨ ¨ ppP �πAnpR1qq �πAnpR2qq �¨ ¨ ¨ �πAnpRmqq.
+
+The base case is when n “ 1 which is the simple m set intersection problem. It is easy to see that ρ˚pP, Dq ď
+ρ˚pQ, Dq, because any fractional edge cover for Q is also a fractional edge cover for P. Hence, all the
+intermediate results in computing Q from P has sizes at most |P| ¨ N ď 2ρ˚pP,DqN ď 2ρ˚pQ,Dq ¨ N. From
+there, the claimed run-time follows.
+□
+
+E
+A more formal description of GLVV results
+
+From examples in Section 3.4, we can describe GLVV’s strategy for obtaining size bounds for general conjunctive queries with simple functional dependencies. Let C be such query. The general idea is to construct
+a natural join query Q such that |C| ď |Q| and thus we can simply apply AGM bound on Q.
+
+• The first step is to turn the conjunctive query C into C1 “ chasepCq.
+
+This step can be done in Op|C|4q-time [1,2,4,30]. This is the step in the spirit of Example 5.
+
+• Next, let C2 be obtained from C1 by replacing each repeated relation symbol by a fresh relation
+symbol. Thus, in C2 there is no duplicate relation. (In the join algorithm itself, all we have to do is to
+have them point to the same underlying index.)
+
+• The next step is in the spirit of Example 6. Recall that a simple functional dependency (FD) is of the
+form Rris Ñ Rr js, which means the jth attribute of R is functionally determined by the ith attribute.
+From the set of given simple FDs, we can obtain a set of FDs in terms of the variables in the query
+C2. For example, if Rr3s Ñ Rr1s is a given FD and RpXYZWq occurs in the body of the query C2,
+then we obtain a FD of the form Z Ñ X. Now, WLOG assume that varspC2q “ {X1, . . . , Xn}. We
+repeatedly apply the following steps for each (variable) FD of the form Xi Ñ X j:
+
+– For every atom R in which Xi appears but X j does not, add X j to R. (This is a fictitious relation
+
+– and in the join algorithm we do not need to physically add a new field to the data; rather, we
+keep a pointer to where X j can be found when needed.)
+
+– For every FD of the form Xk Ñ Xi, we add Xk Ñ X j as a new FD.
+
+– Remove the FD Xi Ñ X j.
+
+It is easy to see that performing the above in a canonical order will terminate in about Opn2q time, and
+the new query C3 (with some fictitious relations “blown up” with more attributes) is exactly equivalent
+to the the old query C2.
+
+• Next, we can remove repeated variables from relations by keeping only tuples that match the repetition
+patterns. For example, if there is an atom RpXXYq in the query C3, then we only have to keep tuples
+pt1, t2, t3q in R for which t1 “ t2. After this step, we can replace R by a relation R1pXYq. This step is
+in the spirit of Example 4. We call the resulting query C4.
+
+• Finally, we turn C4 into Q by “projecting out” all the attributes not in the head atom as was shown in
+Example 3. Since Q is now a join query, AGM bounds applies.
+
+
+What is remarkable is that GLVV showed that the bound obtained this way is essentially tight up to a factor
+which is data-independent.
+
+Note again that our description above is essentially what was obtained from GLVV, without the coloring
+number machinery. Furthermore, if C was a full conjunctive query, then we don’t have to project away any
+attribute and thus any worst-case join algorithm described in the previous section can be applied which is
+still worst-case optimal!
+
+F
+Proof of Lemma 4.2
+
+Proof of Lemma 4.2. In the instances below the domain of any attribute is
+
+D “ {0, 1, . . . , pN ´ 1q{pn ´ 1q},
+
+where we ignore the integrality issue for the sake of clarify. For i P rns, let Ri denote the set of all tuples in
+Drns´{i} each of which has at most one non-zero value. It follows that, for all i P rns,
+
+|Ri| “ pn ´ 1qrpN ´ 1q{pn ´ 1q ` 1s ´ pn ´ 2q “ N,
+
+and that
+
+| �n
+
+i“1 Ri|
+“
+nrpN ´ 1q{pn ´ 1q ` 1s ´ pn ´ 1q
+
+“
+N ` pN ´ 1q{pn ´ 1q.
+
+(We remark that the instance above was specialized to n “ 3 in Section 2.)
+A relation R on attribute set ¯A Ď rns is called “simple” if R is the set of all tuples in D ¯A each of which
+has at most one non-zero value. Then, we observe the following properties.
+
+(a) The input relations Ri are simple.
+
+(b) An arbitrary projection of a simple relation is simple.
+
+(c) Let S and T be any two simple relations on attribute sets ¯AS and ¯AT, respectively. If ¯AS is contained
+
+in ¯AT or vice versa, then S �T is simple. If neither ¯AS nor ¯AT is contained in the other, then
+|S �T| ě p1 ` pN ´ 1q{pn ´ 1qq2 “ ΩpN2{n2q.
+
+For an arbitrary join-project plan starting from the simple relations Ri, we eventually must join two
+relations whose attribute sets are not contained in one another, which right then requires ΩpN2{n2q run
+time.
+□

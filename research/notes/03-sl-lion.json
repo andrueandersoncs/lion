@@ -1,0 +1,437 @@
+{
+  "sources": [
+    {
+      "id": "kiran-tweet",
+      "url": "https://x.com/kirancodes/status/2122526789918753113",
+      "title": "SEPARATING LOGIC. The SECRET to formal verification.",
+      "publisher": "Kiran (@kirancodes)",
+      "kind": "secondary",
+      "published": 20261117
+    },
+    {
+      "id": "lion-logic-forms",
+      "url": "packages/site-runtime/content/reference/logic-forms.html",
+      "title": "Lion reference: Logic forms",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-guarantees",
+      "url": "packages/site-runtime/content/reference/logic-guarantees.html",
+      "title": "Lion reference: Logic database guarantees",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-special-forms",
+      "url": "packages/site-runtime/content/reference/special-forms.html",
+      "title": "Lion reference: Special forms",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-agents",
+      "url": "AGENTS.md",
+      "title": "AGENTS.md: Developer Guidelines for Lion Project",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-fit-code",
+      "url": "packages/core/src/logic/fit.ts",
+      "title": "Lion source: logic/fit.ts, the one rule for what fits a schema",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-probes",
+      "url": "research/probes/",
+      "title": "Lion programs run for this research",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118
+    },
+    {
+      "id": "lion-shared-algebra",
+      "url": "research/runs/lion-improvements/shared-algebra.md",
+      "title": "Rows, weights, and annotations: the algebra DBSP and annotated relations share",
+      "publisher": "Lion project (earlier research, 2026-11-18)",
+      "kind": "secondary",
+      "published": 20261118
+    }
+  ],
+  "claims": [
+    {
+      "id": "sl-k1",
+      "source": "kiran-tweet",
+      "quote": "what is a separating conjunct?",
+      "says": {
+        "raises": "separating conjunction"
+      }
+    },
+    {
+      "id": "sl-k2",
+      "source": "kiran-tweet",
+      "quote": "What is a unital resource algebra?",
+      "says": {
+        "raises": "unital resource algebra"
+      }
+    },
+    {
+      "id": "sl-l1",
+      "source": "lion-logic-forms",
+      "quote": "A record in a pattern fits a record with the same keys, and schema/open takes the keys it names from a record that has more.",
+      "where": "Patterns",
+      "says": {
+        "lion": "records that split into disjoint sets of keys",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l2",
+      "source": "lion-probes",
+      "quote": "\"the rest of a record, as a pattern\": [ { \"id\": 1 } ]",
+      "where": "records.json",
+      "says": {
+        "lion": "record pattern that binds the rest",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l3",
+      "source": "lion-fit-code",
+      "quote": "for (const key of open ? [] : Object.keys(value)) {",
+      "where": "checkRecord",
+      "says": {
+        "lion": "record pattern that binds the rest",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l4",
+      "source": "lion-probes",
+      "quote": "\"a record with an id and a tag fits allOf of the two named exact schemas\": false",
+      "where": "named-schemas.json",
+      "says": {
+        "lion": "composing exact record schemas",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l5",
+      "source": "lion-probes",
+      "quote": "\"two exact parts, combined with allOf\": false",
+      "where": "records.json",
+      "says": {
+        "lion": "composing exact record schemas",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l6",
+      "source": "lion-probes",
+      "quote": "\"two literal record schemas joined with object/set, in plain code\": true",
+      "where": "named-schemas.json",
+      "says": {
+        "lion": "joining two literal record schemas as data",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l7",
+      "source": "lion-probes",
+      "quote": "\"two open parts let an extra key through\": true",
+      "where": "records.json",
+      "says": {
+        "lion": "exact record from open parts",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l8",
+      "source": "lion-logic-forms",
+      "quote": "A list fits a list of the same length, item by item.",
+      "where": "What fits a schema",
+      "says": {
+        "lion": "list pattern that binds the rest",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l9",
+      "source": "lion-probes",
+      "quote": "\"a list pattern takes the first item and the rest\": []",
+      "where": "lists.json",
+      "says": {
+        "lion": "list pattern that binds the rest",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l10",
+      "source": "lion-guarantees",
+      "quote": "Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows.",
+      "where": "Keys",
+      "says": {
+        "lion": "keys that reject two different values",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l11",
+      "source": "lion-probes",
+      "quote": "\"price\" is keyed by [\"sku\"], but [\"rule\",[\"price\",\"?s\",\"?u\"],[\"quote_\",\"?s\",\"?u\"]] derived [\"price\",\"a1\",4] while [\"price\",\"a1\",3] holds.",
+      "where": "keys-rules.json",
+      "says": {
+        "lion": "keys that reject two different values",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l12",
+      "source": "lion-guarantees",
+      "quote": "A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.",
+      "where": "Keys",
+      "says": {
+        "lion": "facts that replace the row with their key",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l13",
+      "source": "lion-probes",
+      "quote": "\"total\" is computed by aggregate rules, so it cannot have facts.",
+      "where": "aggregate-facts.json",
+      "says": {
+        "lion": "aggregated relations that accept facts",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l14",
+      "source": "lion-guarantees",
+      "quote": "Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts.",
+      "where": "Questions and aggregation",
+      "says": {
+        "lion": "aggregated relations that accept facts",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l15",
+      "source": "lion-logic-forms",
+      "quote": "Options are read as written, not evaluated. They are \"key\" and \"schema\".",
+      "where": "relation",
+      "says": {
+        "lion": "a combining operation with a validity check",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l16",
+      "source": "lion-logic-forms",
+      "quote": "A find with no match is an empty list, so a count of it is 0.",
+      "where": "find",
+      "says": {
+        "lion": "a unit value for combining",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l17",
+      "source": "lion-probes",
+      "quote": "\"a sum of a find with no match\": 0",
+      "where": "lists.json",
+      "says": {
+        "lion": "a unit value for combining",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l18",
+      "source": "lion-shared-algebra",
+      "quote": "two different known values are an error.",
+      "where": "One mechanism under keys, equality, and aggregates",
+      "says": {
+        "covers": "a combining operation with a validity check",
+        "by": "group folds (earlier Lion design)",
+        "is": true
+      }
+    },
+    {
+      "id": "sl-l19",
+      "source": "lion-guarantees",
+      "quote": "A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the new rows alone when its goal matches the rows of the relation that changed.",
+      "where": "Changes are all or nothing",
+      "says": {
+        "lion": "checking only what a change can affect",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l20",
+      "source": "lion-guarantees",
+      "quote": "What rules derive is kept, and brought up to date when facts or rules change; what is kept is what evaluation from nothing would give.",
+      "where": "Equivalent ways to answer",
+      "says": {
+        "lion": "derived rows kept up to date as facts change",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l21",
+      "source": "lion-logic-forms",
+      "quote": "Names are replaced by their values when the rule or query is written, also inside a cond or lambda that waits.",
+      "where": "Waiting for values",
+      "says": {
+        "lion": "rules unaffected by later changes to names",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l22",
+      "source": "lion-special-forms",
+      "quote": "Binding a name again replaces its value. Functions that use the name see the new value when they next run.",
+      "where": "define",
+      "says": {
+        "lion": "a store whose cells change",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l23",
+      "source": "lion-logic-forms",
+      "quote": "A relation's facts are a set; adding a fact that is present changes nothing.",
+      "where": "fact",
+      "says": {
+        "lion": "facts that a goal cannot use twice",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l24",
+      "source": "lion-probes",
+      "quote": "\"one row matched twice by and\": [ { \"a\": \"ana\", \"w\": \"yes\", \"b\": \"ana\" } ]",
+      "where": "sets.json",
+      "says": {
+        "lion": "facts that a goal cannot use twice",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l25",
+      "source": "lion-logic-forms",
+      "quote": "Facts derived by rules cannot be retracted. What rules derived from a removed fact changes with it.",
+      "where": "retract",
+      "says": {
+        "lion": "facts used up when a rule reads them",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l26",
+      "source": "lion-guarantees",
+      "quote": "Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.",
+      "where": "Questions and aggregation",
+      "says": {
+        "lion": "results independent of rule order",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l27",
+      "source": "lion-agents",
+      "quote": "Lion MUST be a JSON-based Lisp: every program is valid JSON.",
+      "where": "Goals for Every Change",
+      "says": {
+        "lion": "every program is valid JSON",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l28",
+      "source": "lion-agents",
+      "quote": "A Lion program MUST be able to be evaluated entirely in memory.",
+      "where": "Goals for Every Change",
+      "says": {
+        "lion": "evaluates entirely in memory",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l29",
+      "source": "lion-probes",
+      "quote": "\"but\": { \"absent\": [ \"edge\", \"a\", \"c\" ], \"because\": [] }",
+      "where": "why-missing.json",
+      "says": {
+        "lion": "showing what is missing for a goal to hold",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l30",
+      "source": "lion-logic-forms",
+      "quote": "A goal that does not hold is {\"absent\": goal, \"because\": [way, ...]}, whether it is the fact asked about or a goal under not. A way is something that could have made the goal hold.",
+      "where": "why",
+      "says": {
+        "lion": "showing what is missing for a goal to hold",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l31",
+      "source": "lion-logic-forms",
+      "quote": "Goals are built by calling a relation, by not, and, or, =, in, and exists, by calling a graph algorithm, and by calling any other function on logic variables, which makes a filter.",
+      "where": "Goals",
+      "says": {
+        "lion": "adding facts for the duration of a goal",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l32",
+      "source": "lion-probes",
+      "quote": "\"the rest of a record, as a pattern\": [ { \"id\": 1 } ]",
+      "where": "records.json",
+      "says": {
+        "lion": "rest of a record matched against a further pattern",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l33",
+      "source": "lion-probes",
+      "quote": "\"one row matched twice by and\": [ { \"a\": \"ana\", \"w\": \"yes\", \"b\": \"ana\" } ]",
+      "where": "sets.json",
+      "says": {
+        "lion": "conjunction that splits resources",
+        "has": false
+      }
+    },
+    {
+      "id": "sl-l35",
+      "source": "lion-probes",
+      "quote": "\"min of nothing\": null",
+      "where": "units.json",
+      "says": {
+        "lion": "a unit added to an algebra that has none",
+        "has": true
+      }
+    },
+    {
+      "id": "sl-l36",
+      "source": "lion-probes",
+      "quote": "\"count of nothing\": 0",
+      "where": "units.json",
+      "says": {
+        "lion": "a unit value for combining",
+        "has": true
+      }
+    }
+  ]
+}

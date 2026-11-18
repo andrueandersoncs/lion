@@ -9,10 +9,11 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, mergeOption } from "@/logic/database";
 import { keyColumns } from "@/logic/model";
 import {
   quoted,
+  type RelationInfo,
   schemaOf,
   show,
   Unwritable,
@@ -48,6 +49,20 @@ const writer = (
     );
   },
 });
+
+/** The `relation` form that declares a relation again: its key and merge. */
+const relationForm = (relation: RelationInfo) => {
+  if (relation.key === undefined) {
+    return ["relation", relation.name, relation.columns];
+  }
+  const merge = mergeOption(relation);
+  return [
+    "relation",
+    relation.name,
+    relation.columns,
+    { key: keyColumns(relation), ...(merge === undefined ? {} : { merge }) },
+  ];
+};
 
 /**
  * A `schema` form for the schemas of each form that declared them. A shape
@@ -90,16 +105,7 @@ export const saveDatabase = (
       const goal = (item: unknown) => write(item, written);
       const forms: unknown[] = [];
       for (const relation of database.relations.values()) {
-        forms.push(
-          relation.key === undefined
-            ? ["relation", relation.name, relation.columns]
-            : [
-                "relation",
-                relation.name,
-                relation.columns,
-                { key: keyColumns(relation) },
-              ]
-        );
+        forms.push(relationForm(relation));
       }
       forms.push(...schemaForms(database, goal));
       for (const [name, facts] of database.facts) {
@@ -114,7 +120,8 @@ export const saveDatabase = (
       // written once.
       const seen = new Set<unknown>();
       for (const rule of database.rules) {
-        if (!seen.has(rule.source)) {
+        // A relation's declaration makes the rule that merges its facts.
+        if (!(seen.has(rule.source) || rule.given)) {
           seen.add(rule.source);
           forms.push(["rule", ...(rule.definition ?? []).map(goal)]);
         }

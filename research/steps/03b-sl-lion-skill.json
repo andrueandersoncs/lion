@@ -1,0 +1,127 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-research-core"
+   ],
+   [
+    "quote",
+    "skills/lion-research/assets/core.json"
+   ],
+   [
+    "quote",
+    "lion-research skill: the core every research model starts from"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-research-patterns"
+   ],
+   [
+    "quote",
+    "skills/lion-research/references/patterns.md"
+   ],
+   [
+    "quote",
+    "lion-research skill: patterns for research models"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-s1"
+   ],
+   [
+    "quote",
+    "lion-research-core"
+   ],
+   [
+    "quote",
+    "[\"lambda\", [\"rest\", \"key\"], [\"object/remove\", \"rest\", \"key\"]]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "the rest of a record as a value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-s1"
+   ],
+   [
+    "quote",
+    "rule for base"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-s2"
+   ],
+   [
+    "quote",
+    "lion-research-patterns"
+   ],
+   [
+    "quote",
+    "To ask what would follow from a fact you do not have, or from reading an ambiguous source another way, run it against a copy, so the model stays as the evidence left it"
+   ],
+   [
+    "quote",
+    {
+     "lion": "adding facts for the duration of a goal",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-s2"
+   ],
+   [
+    "quote",
+    "What if"
+   ]
+  ]
+ ],
+ "recorded"
+]

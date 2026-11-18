@@ -1,0 +1,3 @@
+T1  each of 10 aggregates kept by counted candidates equals Lion's fold after each of 5730 insertions and deletions
+T2  Lion's aggregated relations equal the fold of each group's distinct matches after each of 2238 fact changes
+T3  best-proof probabilities through recursion equal a max-product model after each of 2467 edge changes, retractions included

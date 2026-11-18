@@ -47,6 +47,7 @@
   <li>Under <code>not</code>, it holds when it has no match.</li>
   <li>As a value, it is <code>true</code> when it has a match and <code>false</code> when it has none. A goal is a value in a <code>cond</code> condition, as an argument of a function, as an operand of <code>=</code> or <code>in</code>, as a value of a record or an argument of a <code>fact</code>, and as the value <code>match</code> looks at. A relation is a predicate for <code>match</code> and for functions that are given it, such as <code>array/map</code>.</li>
   <li><a href="#form-find"><code>find</code></a> gives what it matches, as a list.</li>
+  <li><a href="#form-assuming"><code>assuming</code></a> gives what an expression gives in the database as it would be after some changes.</li>
 </ul>
 <ul>
   <li>When a question is asked, the variables that the rule or query around it has bound have their values. Every other variable in it is the question's own: the question binds it, and it never appears in an answer. Two questions that use the same name for a variable of their own do not share it.</li>
@@ -85,11 +86,13 @@
 <code-block lang="json">
 ["relation", name, [column, ...]]
 ["relation", name, [column, ...], {"key": column-or-columns, "schema": schema-name}]
+["relation", name, [column, ...], {"key": column-or-columns, "merge": {column: aggregate, ...}}]
 </code-block>
 <ul>
   <li>Declares a relation in the current database and binds <code>name</code> to it in the global environment. Returns the relation, a function: calling it with one term per column builds a goal. Each term is a schema for its column: a value, a variable, a <a href="#logic-patterns">pattern</a>, or a predicate.</li>
-  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code> and <code>"schema"</code>.</li>
+  <li>Column names must be distinct. Options are read as written, not evaluated. They are <code>"key"</code>, <code>"schema"</code>, and <code>"merge"</code>.</li>
   <li>With a key, the relation holds at most one row per key: adding a fact whose key is present replaces the old row. A key can name one column or several.</li>
+  <li>With a merge, which needs a key, the rows a key gets combine instead: each column the merge names, outside the key, joins the values of every candidate with its lattice aggregate, <code>"aggregate/min"</code>, <code>"aggregate/max"</code>, <code>"aggregate/shortest"</code>, or <code>"aggregate/union"</code>. Every fact of the relation and every row its rules give is a candidate, a fact never replaces another, and a column the merge does not name must agree. A rule's head gives a merged column plainly, or with the same aggregate. The relation is aggregated: it is derived in full before the rules that read it, and can go through recursion.</li>
   <li>With a schema, the name of a declared <a href="#form-schema">schema</a>, every row must fit it, taken as a record of every column, so the schema names every column or is <code>schema/open</code>. The option adds the invariant <code>["invariant", ["and", [name, "?column", ...], ["not", [schema, {"column": "?column", ...}]]], {"assert": "none"}]</code>, and is nothing more: it must hold for the rows that are there, it is kept and reported like every <a href="#form-invariant">invariant</a>, and a snapshot writes it as one.</li>
   <li>Declaring a relation that already exists with the same columns and key does nothing; declaring it with different ones fails. A relation cannot take the name of a schema.</li>
 </ul>
@@ -98,6 +101,16 @@
   ["relation", "order", ["id", "status"], {"key": "id"}],
   ["fact", ["order", 1, "open"], ["order", 1, "paid"]],
   ["query", ["order", "?id", "?status"]]]
+</lion-example>
+<p>With a merge, the cheapest offer for each item is the row its key holds, whether a fact or a rule gives it:</p>
+<lion-example name="A relation that merges">
+["begin",
+  ["relation", "offer", ["sku", "usd"]],
+  ["relation", "best", ["sku", "usd"], {"key": "sku", "merge": {"usd": "aggregate/min"}}],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4], ["offer", "b2", 9]],
+  ["rule", ["best", "?sku", "?usd"], ["offer", "?sku", "?usd"]],
+  ["fact", ["best", "b2", 7]],
+  ["query", ["best", "?sku", "?usd"], {"order": "sku"}]]
 </lion-example>
 <p>With a schema, a change that would leave a row that does not fit is refused. Here the schema is open, so it need not name the <code>note</code> column:</p>
 <lion-example name="A relation with a schema" expect="error">
@@ -153,7 +166,7 @@
 <p>Anything is a schema, and one rule says what fits it. <code>match</code>, the functions of the <a href="#module-schema"><code>schema</code> module</a>, a schema's own parts, and the schema of a relation's rows all ask through it.</p>
 <ul>
   <li>A function is a predicate: a value fits when the function returns <code>true</code>. A failure, or any other result, counts as not fitting, except a misspelled name, which is an <a href="#errors">error</a>. A relation with one column, a named schema, and a schema that a <code>schema</code> function built are functions. A relation with more columns is not the schema of one value, and using it as one is an error.</li>
-  <li>A record fits a record with the same keys, with values that fit. A key whose schema is <code>schema/optional</code> can be left out, and <code>schema/open</code> allows keys the record does not name.</li>
+  <li>A record fits a record with the same keys, with values that fit. A key whose schema is <code>schema/optional</code> can be left out, and <code>schema/open</code> allows keys the record does not name: what a record or list of schemas leaves over is its rest, which is nothing on its own, anything in <code>["schema/open", record]</code>, and what fits <code>rest</code> in <code>["schema/open", record, rest]</code>.</li>
   <li>A list fits a list of the same length, item by item.</li>
   <li>Any other value fits a value equal to it.</li>
 </ul>
@@ -206,7 +219,7 @@
   <li><a href="#form-unify"><code>=</code></a> and <a href="#form-in"><code>in</code></a> bind the variables of a record or list, on either side of <code>=</code> or as the element of <code>in</code>. They compare values, so a function in the record is a value there, and not a predicate.</li>
 </ul>
 <ul>
-  <li>A record in a pattern fits a record with the same keys, and <code>schema/open</code> takes the keys it names from a record that has more. A list fits a list of the same length.</li>
+  <li>A record in a pattern fits a record with the same keys, and <code>schema/open</code> takes the keys it names from a record that has more. A list fits a list of the same length, and <code>schema/open</code> around a list takes its first items. A variable as the rest, as in <code>["schema/open", {"id": "?id"}, "?rest"]</code>, binds the record of the other keys or the list of the other items.</li>
   <li><code>?_</code> fits any value and binds nothing. A variable that occurs twice must take the same value.</li>
   <li>Every <code>schema</code> function works in a pattern. <code>schema/anyOf</code> gives the answers of every schema that fits, each once; in plain code, where nothing is left to bind, the first that fits decides.</li>
   <li>A predicate made from a variable, as <code>["func/partial", "number/lessThan", "?max"]</code> is, is the predicate made from the variable's value.</li>
@@ -257,8 +270,8 @@
   <li>Adds each fact, a relation call with data and no logic variables, and returns the facts given. Data is JSON values and <a href="#form-some">unknowns</a>. A <a href="#logic-asking">question</a> among a fact's arguments is asked, and the fact holds its answer.</li>
   <li>A fact can be <a href="#form-exists"><code>exists</code></a> over a relation call or an <code>and</code> of them. It adds the rows with an unknown for each listed variable, the rows a rule with that head would invent, whether or not the head holds already.</li>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
-  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing.</li>
-  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts.</li>
+  <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.</li>
+  <li>A relation that rules aggregate into, or that a graph algorithm computes, cannot have facts, unless it merges what a key gets.</li>
   <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
 </ul>
 
@@ -336,6 +349,28 @@
      "orders": ["find", "?id", ["order", "?id", "?c", "?_"]],
      "total": ["aggregate/sum", ["find", "?amount", ["order", "?_", "?c", "?amount"]]]},
     ["customer", "?c"]]]
+</lion-example>
+<h2 id="form-assuming"><code>assuming</code></h2>
+<code-block lang="json">
+["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]
+</code-block>
+<ul>
+  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a> or <a href="#form-retract"><code>retract</code></a> form of relation calls, made in order as that form would make it: a key replaces a row, a merge takes a candidate, and a change an invariant refuses fails in the same words.</li>
+  <li>The expression is asked there: a goal is <code>true</code> or <code>false</code>, a <code>find</code> is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.</li>
+  <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. What a change states must be known then; every other variable of the expression is its own.</li>
+  <li>An inner <code>assuming</code> starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.</li>
+  <li>Each <code>assuming</code> derives what its expression needs in a database of its own, which shares the facts it does not change. Asked for each answer of a rule, it derives once per answer.</li>
+</ul>
+<lion-example name="assuming">
+["begin",
+  ["relation", "road", ["from", "to"]],
+  ["relation", "reaches", ["from", "to"]],
+  ["fact", ["road", "a", "b"], ["road", "b", "c"]],
+  ["rule", ["reaches", "?x", "?y"], ["road", "?x", "?y"]],
+  ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]],
+  {"with c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "without b to c": ["assuming", ["retract", ["road", "b", "c"]], ["reaches", "a", "c"]],
+   "as it is": ["find", "?t", ["reaches", "a", "?t"]]}]
 </lion-example>
 
 <h2 id="form-why"><code>why</code></h2>

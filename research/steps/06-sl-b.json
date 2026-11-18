@@ -1,0 +1,1691 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "https://docs.racket-lang.org/reference/match.html"
+   ],
+   [
+    "quote",
+    "The Racket Reference, 9 Pattern Matching (match)"
+   ],
+   [
+    "quote",
+    "Racket"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "https://json-schema.org/understanding-json-schema/reference/object"
+   ],
+   [
+    "quote",
+    "Understanding JSON Schema: object"
+   ],
+   [
+    "quote",
+    "JSON Schema"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "https://json-schema.org/draft/2020-12/json-schema-core"
+   ],
+   [
+    "quote",
+    "JSON Schema: A Media Type for Describing JSON Documents (draft-bhutton-json-schema-01, 2020-12)"
+   ],
+   [
+    "quote",
+    "JSON Schema (Wright, Andrews, Hutton, Dennis, eds.)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20220616
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-mdn-destructuring"
+   ],
+   [
+    "quote",
+    "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring"
+   ],
+   [
+    "quote",
+    "Destructuring (MDN JavaScript reference)"
+   ],
+   [
+    "quote",
+    "Mozilla"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-leijen-scoped-labels"
+   ],
+   [
+    "quote",
+    "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/scopedlabels.pdf"
+   ],
+   [
+    "quote",
+    "Extensible records with scoped labels (draft revision 76, TFP 2005)"
+   ],
+   [
+    "quote",
+    "Leijen (Utrecht University; copy hosted by Microsoft Research)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20050723
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-purescript-types"
+   ],
+   [
+    "quote",
+    "https://github.com/purescript/documentation/blob/master/language/Types.md"
+   ],
+   [
+    "quote",
+    "PureScript documentation: Types (Records, Row Polymorphism, Rows)"
+   ],
+   [
+    "quote",
+    "PureScript"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-disjoint-intersection"
+   ],
+   [
+    "quote",
+    "https://i.cs.hku.hk/~bruno/papers/icfp2016.pdf"
+   ],
+   [
+    "quote",
+    "Disjoint Intersection Types (ICFP 2016)"
+   ],
+   [
+    "quote",
+    "Oliveira, Shi, Alpuim (The University of Hong Kong)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-disjoint-polymorphism"
+   ],
+   [
+    "quote",
+    "https://i.cs.hku.hk/~bruno/papers/ESOP2017.pdf"
+   ],
+   [
+    "quote",
+    "Disjoint Polymorphism (ESOP 2017)"
+   ],
+   [
+    "quote",
+    "Alpuim, Oliveira, Shi (The University of Hong Kong)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-javert"
+   ],
+   [
+    "quote",
+    "https://www.doc.ic.ac.uk/~pg/publications/FragosoSantos2018JaVerT.pdf"
+   ],
+   [
+    "quote",
+    "JaVerT: JavaScript Verification Toolchain (POPL 2018, PACMPL vol. 2)"
+   ],
+   [
+    "quote",
+    "Fragoso Santos, Maksimović, Naudžiūnienė, Wood, Gardner (Imperial College London)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "https://www.doc.ic.ac.uk/~pg/publications/Gardner2012Towards.pdf"
+   ],
+   [
+    "quote",
+    "Towards a Program Logic for JavaScript (POPL 2012)"
+   ],
+   [
+    "quote",
+    "Gardner, Maffeis, Smith (Imperial College London)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-elixir-patterns"
+   ],
+   [
+    "quote",
+    "https://hexdocs.pm/elixir/patterns-and-guards.html"
+   ],
+   [
+    "quote",
+    "Elixir documentation: Patterns and guards"
+   ],
+   [
+    "quote",
+    "Elixir"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-clojure-spec"
+   ],
+   [
+    "quote",
+    "https://clojure.org/guides/spec"
+   ],
+   [
+    "quote",
+    "Clojure guides: spec Guide"
+   ],
+   [
+    "quote",
+    "Clojure"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "b-typescript-objects"
+   ],
+   [
+    "quote",
+    "https://www.typescriptlang.org/docs/handbook/2/objects.html"
+   ],
+   [
+    "quote",
+    "TypeScript Handbook: Object Types"
+   ],
+   [
+    "quote",
+    "Microsoft (TypeScript)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261117
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b1"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "When ht-opt is not provided or when it is #:closed , all of the keys in the hash table value must be matched."
+   ],
+   [
+    "quote",
+    {
+     "covers": "record patterns exact by default",
+     "by": "racket match",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b1"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching, (hash expr pat ... ... ht-opt)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b2"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "When ht-opt is #:open , there can be keys in the hash table value that are not specified in the pattern."
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "racket match",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b2"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching, (hash expr pat ... ... ht-opt)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b3"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "When ht-opt is #:rest pat , pat is further matched against the residue hash table."
+   ],
+   [
+    "quote",
+    {
+     "covers": "record pattern that binds the rest",
+     "by": "racket match",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b3"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching, (hash expr pat ... ... ht-opt)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b4"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "When ht-opt is #:rest pat , pat is further matched against the residue hash table."
+   ],
+   [
+    "quote",
+    {
+     "covers": "rest of a record matched against a further pattern",
+     "by": "racket match",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b4"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching, (hash expr pat ... ... ht-opt)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b5"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "the final pat matches the “rest” of the list after the last lvp"
+   ],
+   [
+    "quote",
+    {
+     "covers": "list pattern that binds the rest",
+     "by": "racket match",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b5"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching, (list-rest lvp ... pat)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b6"
+   ],
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "Changed in version 8.11.1.10: Added the hash and hash* patterns."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "racket match",
+     "in": "Racket 8.11.1.10"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b6"
+   ],
+   [
+    "quote",
+    "9 Pattern Matching"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b7"
+   ],
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "By default any additional properties are allowed."
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "json schema",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b7"
+   ],
+   [
+    "quote",
+    "Additional Properties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b8"
+   ],
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "additionalProperties can restrict you from \"extending\" a schema using combining keywords such as allOf"
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing exact record schemas",
+     "by": "json schema additionalProperties",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b8"
+   ],
+   [
+    "quote",
+    "Extending Closed Schemas"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b9"
+   ],
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "Validation with \"additionalProperties\" applies only to the child values of instance names that do not appear in the annotation results of either \"properties\" or \"patternProperties\"."
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing exact record schemas",
+     "by": "json schema additionalProperties",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b9"
+   ],
+   [
+    "quote",
+    "10.3.2.3 additionalProperties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b10"
+   ],
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "The unevaluatedProperties keyword is similar to additionalProperties except that it can recognize properties declared in subschemas."
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing exact record schemas",
+     "by": "json schema unevaluatedProperties",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b10"
+   ],
+   [
+    "quote",
+    "Unevaluated Properties (new in draft 2019-09)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b11"
+   ],
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "Validation with \"unevaluatedProperties\" applies only to the child values of instance names that do not appear in the \"properties\", \"patternProperties\", \"additionalProperties\", or \"unevaluatedProperties\" annotation results that apply to the instance location being validated."
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing exact record schemas",
+     "by": "json schema unevaluatedProperties",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b11"
+   ],
+   [
+    "quote",
+    "11.3 unevaluatedProperties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b12"
+   ],
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "Unevaluated Properties New in draft 2019-09"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "json schema unevaluatedProperties",
+     "in": "JSON Schema 2019-09"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b12"
+   ],
+   [
+    "quote",
+    "Unevaluated Properties"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b13"
+   ],
+   [
+    "quote",
+    "b-mdn-destructuring"
+   ],
+   [
+    "quote",
+    "For object destructuring, it copies all enumerable own properties of the object that are not already picked off by the destructuring pattern into a new object called rest ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "record pattern that binds the rest",
+     "by": "javascript destructuring",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b13"
+   ],
+   [
+    "quote",
+    "Rest properties and rest elements"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b14"
+   ],
+   [
+    "quote",
+    "b-mdn-destructuring"
+   ],
+   [
+    "quote",
+    "For array destructuring, it collects remaining elements of the iterable into a new array called rest (or any name you give it)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "list pattern that binds the rest",
+     "by": "javascript destructuring",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b14"
+   ],
+   [
+    "quote",
+    "Rest properties and rest elements"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b15"
+   ],
+   [
+    "quote",
+    "b-mdn-destructuring"
+   ],
+   [
+    "quote",
+    "object destructuring can only have an identifier (or a property access in assignment patterns) as the rest property."
+   ],
+   [
+    "quote",
+    {
+     "covers": "rest of a record matched against a further pattern",
+     "by": "javascript destructuring",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b15"
+   ],
+   [
+    "quote",
+    "Using a binding pattern as the rest property"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b16"
+   ],
+   [
+    "quote",
+    "b-leijen-scoped-labels"
+   ],
+   [
+    "quote",
+    "In contrast to many programming languages, the distance function works for any record that contains an x and y field of a suitable numeric type."
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "row polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b16"
+   ],
+   [
+    "quote",
+    "2 Record operations, Selection"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b17"
+   ],
+   [
+    "quote",
+    "b-leijen-scoped-labels"
+   ],
+   [
+    "quote",
+    "Finally, the restriction operation (r − l ) removes a label l from a record r ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "the rest of a record as a value",
+     "by": "row polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b17"
+   ],
+   [
+    "quote",
+    "2 Record operations, Restriction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b18"
+   ],
+   [
+    "quote",
+    "b-leijen-scoped-labels"
+   ],
+   [
+    "quote",
+    "Special lacks predicates are used to prevent records from containing duplicate labels."
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjointness when combining records",
+     "by": "row polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b18"
+   ],
+   [
+    "quote",
+    "3.2 Scoped labels, Predicates (on Gaster and Jones)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b19"
+   ],
+   [
+    "quote",
+    "b-leijen-scoped-labels"
+   ],
+   [
+    "quote",
+    "Our type system accepts the extension of a record with a field that is already present"
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjointness when combining records",
+     "by": "scoped labels",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b19"
+   ],
+   [
+    "quote",
+    "2.1 Safe operations"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b20"
+   ],
+   [
+    "quote",
+    "b-purescript-types"
+   ],
+   [
+    "quote",
+    "In other words, addProps accepts any record which has properties foo and bar , and any other record properties ."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a name for the other fields of a record",
+     "by": "row polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b20"
+   ],
+   [
+    "quote",
+    "Row Polymorphism"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b21"
+   ],
+   [
+    "quote",
+    "b-purescript-types"
+   ],
+   [
+    "quote",
+    "In other words, addProps accepts any record which has properties foo and bar , and any other record properties ."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "row polymorphism",
+     "in": "PureScript"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b21"
+   ],
+   [
+    "quote",
+    "Row Polymorphism"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b22"
+   ],
+   [
+    "quote",
+    "b-purescript-types"
+   ],
+   [
+    "quote",
+    "To denote an open row (i.e. one which may unify with another row to add new fields), separate the specified terms from a row variable by a pipe:"
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "row polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b22"
+   ],
+   [
+    "quote",
+    "Rows"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b23"
+   ],
+   [
+    "quote",
+    "b-disjoint-intersection"
+   ],
+   [
+    "quote",
+    "The notation A ∗ B is inspired by the separating conjunction construct in Reynolds’ separation logic [29]."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "separating conjunction",
+     "in": "disjoint intersection types"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b23"
+   ],
+   [
+    "quote",
+    "1 Introduction, footnote 1"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b24"
+   ],
+   [
+    "quote",
+    "b-disjoint-intersection"
+   ],
+   [
+    "quote",
+    "T-MERGE means that a merge e1, , e2, is assigned an intersection type composed of the resulting types of e1 and e2, as long as the types of the two expressions are disjoint."
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjointness when combining records",
+     "by": "disjoint intersection types",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b24"
+   ],
+   [
+    "quote",
+    "3.3 Declarative Type System"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b25"
+   ],
+   [
+    "quote",
+    "b-disjoint-polymorphism"
+   ],
+   [
+    "quote",
+    "If the labels coincide, then the records are disjoint whenever their fields’ types are also disjoint; otherwise they are always disjoint."
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjointness when combining records",
+     "by": "disjoint intersection types",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b25"
+   ],
+   [
+    "quote",
+    "Disjointness rules DRec= and DRec≠"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b26"
+   ],
+   [
+    "quote",
+    "b-disjoint-polymorphism"
+   ],
+   [
+    "quote",
+    "The disjointness constraint on B ensures that values of type B do not contain a record with type l : A."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a name for the other fields of a record",
+     "by": "disjoint intersection types",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b26"
+   ],
+   [
+    "quote",
+    "3.2 Extensible Records, Polymorphic extensible records"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b27"
+   ],
+   [
+    "quote",
+    "b-javert"
+   ],
+   [
+    "quote",
+    "is a partial function mapping pairs of object locations and property names to JS heap values."
+   ],
+   [
+    "quote",
+    {
+     "covers": "object properties as separate heap cells",
+     "by": "javert",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b27"
+   ],
+   [
+    "quote",
+    "3 JaVerT: JS Logic (heap model)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b28"
+   ],
+   [
+    "quote",
+    "b-javert"
+   ],
+   [
+    "quote",
+    "states that the object at the location denoted by E1 has no properties other than possibly those included in the set denoted by E2."
+   ],
+   [
+    "quote",
+    {
+     "covers": "an assertion that a record has no other keys",
+     "by": "javert",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b28"
+   ],
+   [
+    "quote",
+    "3 JaVerT: JS Logic assertions (emptyFields)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b29"
+   ],
+   [
+    "quote",
+    "b-javert"
+   ],
+   [
+    "quote",
+    "based on separation logic and aimed at the specialist developer"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "separating conjunction",
+     "in": "JaVerT"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b29"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b30"
+   ],
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "An object is represented by a set of heap cells addressed by the same location but with different field names."
+   ],
+   [
+    "quote",
+    {
+     "covers": "object properties as separate heap cells",
+     "by": "javascript separation logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b30"
+   ],
+   [
+    "quote",
+    "3.1 Heaps"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b31"
+   ],
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "The separating conjunction P ∗Q says that the heap may be split into two disjoint heaps, one satisfying P and the other Q."
+   ],
+   [
+    "quote",
+    {
+     "defines": "separating conjunction"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b31"
+   ],
+   [
+    "quote",
+    "4 Assertion Language"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b32"
+   ],
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "The separating conjunction P ∗Q says that the heap may be split into two disjoint heaps, one satisfying P and the other Q."
+   ],
+   [
+    "quote",
+    {
+     "covers": "state that splits into disjoint parts",
+     "by": "separating conjunction",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b32"
+   ],
+   [
+    "quote",
+    "4 Assertion Language"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b33"
+   ],
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "The assertion says nothing about any other field of L."
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "javascript separation logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b33"
+   ],
+   [
+    "quote",
+    "2 Motivating example"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b34"
+   ],
+   [
+    "quote",
+    "b-gardner-js-logic"
+   ],
+   [
+    "quote",
+    "which asserts the absence from L′ of all the fields we have not mentioned as parameters."
+   ],
+   [
+    "quote",
+    {
+     "covers": "an assertion that a record has no other keys",
+     "by": "javascript separation logic",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b34"
+   ],
+   [
+    "quote",
+    "2 Motivating example (newobj predicate)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b35"
+   ],
+   [
+    "quote",
+    "b-elixir-patterns"
+   ],
+   [
+    "quote",
+    "This means a map pattern will match any other map that has at least all of the keys in the pattern."
+   ],
+   [
+    "quote",
+    {
+     "covers": "open record patterns",
+     "by": "elixir patterns",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b35"
+   ],
+   [
+    "quote",
+    "Patterns, Maps"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b36"
+   ],
+   [
+    "quote",
+    "b-elixir-patterns"
+   ],
+   [
+    "quote",
+    "pattern matching on %{} would match any map, not only the empty ones"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a pattern for the empty record",
+     "by": "elixir patterns",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b36"
+   ],
+   [
+    "quote",
+    "Guards"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b37"
+   ],
+   [
+    "quote",
+    "b-clojure-spec"
+   ],
+   [
+    "quote",
+    "The s/merge spec can be used to combine multiple s/keys specs into a single spec that combines their requirements."
+   ],
+   [
+    "quote",
+    {
+     "covers": "composing open record schemas",
+     "by": "clojure spec",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b37"
+   ],
+   [
+    "quote",
+    "Entity Maps (s/merge)"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "sl-b38"
+   ],
+   [
+    "quote",
+    "b-typescript-objects"
+   ],
+   [
+    "quote",
+    "In the case of intersection types, properties with different types will be merged automatically."
+   ],
+   [
+    "quote",
+    {
+     "covers": "disjointness when combining records",
+     "by": "typescript intersections",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "sl-b38"
+   ],
+   [
+    "quote",
+    "Interface Extension vs. Intersection"
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "b-racket-match"
+   ],
+   [
+    "quote",
+    "sl-records"
+   ],
+   6
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "b-json-schema-object"
+   ],
+   [
+    "quote",
+    "sl-records"
+   ],
+   7
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "sl-records"
+   ],
+   8
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "b-mdn-destructuring"
+   ],
+   [
+    "quote",
+    "sl-records"
+   ],
+   9
+  ]
+ ],
+ "recorded"
+]

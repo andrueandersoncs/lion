@@ -216,6 +216,19 @@ export const EXPRESSIONS: readonly Expression[] = [
   },
   { name: "find", form: ["find", "?y", ["link", X, "?y"]] },
   {
+    name: "assuming",
+    form: [
+      "assuming",
+      ["fact", ["link", X, 9]],
+      ["find", "?y", ["link", X, "?y"]],
+    ],
+  },
+  {
+    name: "goal assuming a retract",
+    form: ["assuming", ["retract", ["small", X]], ["small", X]],
+    boolean: true,
+  },
+  {
     name: "aggregate of a find",
     form: ["aggregate/count", ["find", "?y", ["link", X, "?y"]]],
   },
@@ -302,6 +315,28 @@ export const EXPRESSIONS: readonly Expression[] = [
       "schema/fits?",
       { id: X, more: true },
       ["schema/open", { id: ["schema/anyOf", 1, 2] }],
+    ],
+    boolean: true,
+  },
+  {
+    name: "record with a rest",
+    form: [
+      "schema/fits?",
+      { id: 1, more: X },
+      ["schema/open", { id: 1 }, { more: ["schema/anyOf", 1, 2] }],
+    ],
+    boolean: true,
+  },
+  {
+    name: "list with a rest",
+    form: [
+      "schema/fits?",
+      ["array/make", 1, X],
+      [
+        "schema/open",
+        ["array/make", 1],
+        ["array/make", ["schema/anyOf", 1, 2]],
+      ],
     ],
     boolean: true,
   },

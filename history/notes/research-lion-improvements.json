@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "quote": "The run on what to improve in Lion next (2026-11-17) is the second run in the shared research model: its sources, its 275 quoted claims, its directions as candidates, and the two programs that model invented unknowns and annotations are in `research/` beside the separation-logic run, under the names that run already used, and its ranking comes out the same there.",
+      "says": {
+        "feature": "lion-improvements-research",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says.",
+      "says": {
+        "rule": "research-pages-keep-to-their-run",
+        "holds": true,
+        "statement": "A research run's page asks only about the candidates it weighed and the ids that carry its prefix",
+        "area": "docs"
+      }
+    }
+  ]
+}
