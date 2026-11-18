@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 157 questions have been decided, 59 records explain them, and of what the records assert, 509 hold when Lion is run, 4 are broken, 271 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 60 records explain them, and of what the records assert, 511 hold when Lion is run, 4 are broken, 272 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -163,6 +163,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
 | 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
+| 2026-11-18 | [`skill-eval-agent-folder`](#skill-eval-agent-folder) | `outside-repository` | [A skill eval's agent works outside the repository, and never sees a transcript](#skill-eval-outside-repository) |
 
 <a id="program-representation"></a>
 
@@ -3342,3 +3343,34 @@ Recorded 2026-11-17 in `history/notes/experiment-expectation-in-its-version.json
 - Stated, not checked by running Lion: `reasoning-belief-tries` exists. "A belief may say which direction it `tries`, as an observation does."
 - Stated, not checked by running Lion: `reasoning-direction-addresses` exists. "A direction `addresses` the problems its notes list and the problems its experiments target."
 - Stated, not checked by running Lion: `reasoning-targets` exists. "that experiment `targets` the problem"
+
+<a id="skill-eval-agent-folder"></a>
+
+## skill-eval-agent-folder
+
+Now: `outside-repository`.
+
+- 2026-11-18 `skill-eval-agent-folder`: `outside-repository` over `inside-repository`: "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees." (`skill-eval-outside-repository.json`)
+
+<a id="skill-eval-outside-repository"></a>
+
+### A skill eval's agent works outside the repository, and never sees a transcript
+
+Recorded 2026-11-18 in `history/notes/skill-eval-outside-repository.json`.
+
+**Context.** `bun run skill-eval` ran each agent in a folder under `out/skill-eval/`, inside the repository. A headless agent there loads the repository's `CLAUDE.md` and the index of the memory Claude Code keeps for the repository, so every run of the research skill's eval worked with Lion's developer instructions and the maintainer's notes about the skill in context. A trial of the reasoning skill found a second leak: it kept each run's transcripts in the folder the agent worked in, and a later session read the earlier one's transcript instead of the record the trial meant to test.
+
+**Decision.** Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. When its sessions end, its folder is copied there and graded.
+
+**Consequences.** No run reads the repository's instructions, the maintainer's memory, another run's work, or a transcript. Scores of the research skill's eval recorded before this change were taken with the repository's instructions and memory in context, so they are not comparable with later ones. A run's folder is in the system's temporary folder while its sessions run, so a reboot during a run loses that run.
+
+**Alternatives considered.**
+
+- Keep the agents under `out/skill-eval/` and turn the instructions off with settings. Claude Code loads `CLAUDE.md` from the folder it runs in and every folder above it, and keys its memory by the repository. No setting the runner passes stops both, and a new version could start loading something else.
+- Keep each run's transcripts beside its agent's folder. An agent lists the folder above its own. One did, and read the earlier session's transcript.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `skill-eval-agent-folder`: `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: rule `skill-eval-isolated-runs` holds. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: `skill-eval-agent-folder` is `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."

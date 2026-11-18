@@ -2,6 +2,32 @@
 
 # Changelog
 
+## Unreleased
+
+### Added
+
+- A frozen eval of what a record of observations is worth when re-observing is expensive and nothing else says what changed. It runs in two sessions, and between them the project changes without the agent being told. (`reasoning-eval-rechecks-what-changed` added)
+- `--bare` runs the case with no skill at all. (`skill-eval-bare` added)
+- `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, or another skill to compare it with; the agent is told the name its `SKILL.md` gives. (`skill-eval-from-other-skill` added)
+- A case may run its agent several times in the same folder, as work that a later session picks up. Its prompts are then a `sessions/` folder of files named by number, `1.md`, `2.md`, run in that order, and each later prompt gets the message the session before it ended with wherever it says `{{earlier}}`. (`skill-eval-sessions` added)
+- A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts. (`skill-eval-setup` added)
+
+### Changed
+
+- It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. (`reasoning-skill-when-it-pays` is `expensive-observations-undated-changes`)
+
+### Fixed
+
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder` is `outside-repository`, was `inside-repository`)
+
+### Decided
+
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder`: `outside-repository` over `inside-repository`)
+
+### Rules
+
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
+
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
 `why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.
