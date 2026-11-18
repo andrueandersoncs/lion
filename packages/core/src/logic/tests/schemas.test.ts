@@ -14,6 +14,7 @@ import { attempt, element, type Outcome, oneOf } from "./programs";
 import {
   asksEven,
   checked,
+  checkedBelow,
   checkedMany,
   fits,
   type Json,
@@ -40,18 +41,10 @@ const MODES = [true, false];
 
 /**
  * Runs forms after the prelude, and reports the value of the last one, or
- * the error. A declaration's value is a function, which is not data, so a
- * program that ends in one reports `true` instead.
+ * the error.
  */
-const evaluate = (forms: readonly Form[], database = new LogicDatabase()) => {
-  const last = forms.at(-1);
-  const declares =
-    Array.isArray(last) && (last[0] === "schema" || last[0] === "relation");
-  return attempt(
-    ["begin", ...PRELUDE, ...forms, ...(declares ? [true] : [])],
-    database
-  );
-};
+const evaluate = (forms: readonly Form[], database = new LogicDatabase()) =>
+  attempt(["begin", ...PRELUDE, ...forms], database);
 
 /** The value of an outcome that must have one. */
 const resultOf = (outcome: Outcome): unknown => {
@@ -153,7 +146,7 @@ describe("schemas", () => {
 
   it.effect.prop(
     "a schema keeps the values its names had when it was declared",
-    { given: checked() },
+    { given: checkedBelow() },
     ({ given: { shape: schema, value } }) =>
       Effect.gen(function* () {
         expect(

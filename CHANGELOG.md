@@ -2,6 +2,12 @@
 
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- The test helper `attempt` reports a function in a program's value as Lion writes it, wherever it stands: `"even"` for the relation `even`, `["lambda", ["n"], "n"]` for a lambda. A program that ended in a declaration, such as `["begin", ["relation", "even", ["n"]]]`, made it throw `"undefined" is not valid JSON`, which failed the `why` property about rules that ask no question once in about 300 runs, and a function inside a list or a record was reported as `null` or left out. A property checks that two programs are reported the same only when their values are the same. (`test-report-function-value` is `written-as-lion`, was `error`)
+
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
 `why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.
