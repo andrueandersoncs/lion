@@ -1,0 +1,93 @@
+{
+  "title": "A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others",
+  "context": "Once Lion compiled expressions to direct-style closures, checking the arguments of library functions was most of what plain arithmetic cost. Each call of `number/add`, `number/subtract`, or `number/lessThan` ran Effect Schema's decoder over its list of arguments, which goes through the parser's general machinery and builds a new list even when every argument is a number. On fib(24) through a recursive lambda, the parser was about a quarter of the time, and the same program took about 45 ms with unchecked JavaScript arithmetic and 75 ms with the library.",
+  "decision": "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. A schema gets a guard when its decoder gives back the value it was given: strings, numbers, booleans, anything, and lists of those, each with any checks of its own, and nothing that transforms. Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. A check that throws makes the guard say no, and the decoder reports what it threw. A schema with no guard, such as a record, which the decoder copies key by key, or a schema that transforms, is decoded on every call, as before. `over` also takes the fewest arguments a call may give, so the functions whose last argument may be left out, `array/slice`, `string/slice`, `string/join`, `string/numbers`, `number/toString`, and `number/fromString`, are built with it like the rest.",
+  "consequences": "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms, and fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms. `array/map` and `array/reduce` over 20,000 items run 1.1 to 1.2 times as fast, and rules, aggregates, and questions that call library functions up to 1.3 times; benchmarks that call none moved by no more than the noise between runs. A list whose items may be anything, which every `array` function takes, is checked without looking at its items, where the decoder copied it. No result, error, or message changed: the 89 programs the docs show and 40 calls with arguments of right and wrong kinds give what they gave before. The core grew by 67 lines of code, 0.6 percent: the guard is 67 lines, and building the six functions whose last argument may be left out on `over` paid for the rest. `decode(schema)` still gives the decoded value, and takes `then` to go on from it.",
+  "alternatives": [
+    {
+      "option": "Turn on Effect's own schema compiler, `effect/schema/SchemaJITCompiler`",
+      "rejected": "It switches compiled parsing on for every schema in the host's process, it is marked unstable, it writes code with `new Function`, which a page's content security policy may forbid, and fib(24) took 63 ms with it, against 54 ms with the guard."
+    },
+    {
+      "option": "Check with `Schema.is`",
+      "rejected": "It runs the same parser and then runs its result with `Effect.runSyncExit`, so it costs as much as decoding."
+    },
+    {
+      "option": "Write each library function's check by hand, such as `typeof a === \"number\"`",
+      "rejected": "What a function takes would be written twice, in its schema and in its check, and the two could drift apart; a guard compiled from the schema cannot."
+    },
+    {
+      "option": "Let the guard give a finished Effect of the value, and leave `over` as it was",
+      "rejected": "That made an Exit and bound it on every call, and fib(24) took 55 ms where going on from the guard directly took 50 ms."
+    },
+    {
+      "option": "Give records a guard too",
+      "rejected": "The decoder rebuilds a record key by key, and a struct drops the keys it does not declare, so a record's guard would need rules of its own to give the same value, and no record function is in a hot loop."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts.",
+      "says": {
+        "decision": "library-argument-checks",
+        "chose": "guard-then-decoder",
+        "over": [
+          "decoder-every-call",
+          "effect-jit-compiler",
+          "hand-written-checks"
+        ],
+        "because": "a call on arguments of the right kinds then costs a few comparisons, and every error is still the decoder's",
+        "area": "library"
+      }
+    },
+    {
+      "quote": "Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before.",
+      "says": {
+        "rule": "library-argument-errors-are-the-decoders",
+        "holds": true,
+        "statement": "A library function given an argument of the wrong kind fails with the error its parameter's schema gives",
+        "area": "library",
+        "predicts": [
+          {
+            "behavior": "library-function-argument-of-wrong-kind",
+            "is": "error"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Each schema a library function checks its arguments with is compiled, once, into a guard",
+      "says": {
+        "feature": "guardOf",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms",
+      "says": {
+        "measured": "fib-17-lambda-ms",
+        "before": 3.8,
+        "after": 2.2,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms",
+      "says": {
+        "measured": "fib-24-lambda-ms",
+        "before": 75,
+        "after": 54,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The core grew by 67 lines of code, 0.6 percent",
+      "says": {
+        "measured": "core-code-lines-added",
+        "after": 67,
+        "area": "metrics"
+      }
+    }
+  ]
+}

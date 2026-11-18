@@ -11,6 +11,7 @@
 ### Added
 
 - An expression is compiled to a JavaScript function of the scope it runs in (`compile` added)
+- Each schema a library function checks its arguments with is compiled, once, into a guard (`guardOf` added)
 
 ### Removed
 
@@ -26,10 +27,12 @@
 - A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop. (`deep-calls`: `unwind-to-run-loop` over `continuation-passing`, `generators`, `trampoline-per-tail-call`)
 - An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. (`evaluator-design`: `compile-to-direct-style` over `match-dispatch`, was `match-dispatch`)
 - A scope holds its bindings in a `Map` that compiled code reads and writes right away. (`scope-bindings-store`: `map` over `ref`)
+- Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. (`library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`)
 
 ### Rules
 
 - A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (rule `tail-calls-keep-nothing`)
+- Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. (rule `library-argument-errors-are-the-decoders`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

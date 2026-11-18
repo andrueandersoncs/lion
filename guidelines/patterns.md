@@ -42,7 +42,7 @@ Lion compiles an expression, in `packages/core/src/evaluation/`, to a function o
 - Go on from a part with `andThen(result, depth, next)` and run several in order with `runAll`, so a part that needs Effect makes only what follows it run in Effect. Call a function's result through `returned`, which takes a finished Effect's value right away and runs any other in the scope of the call.
 - Pass `depth` on unchanged. Only a call to a Lion function goes one deeper, and past `DEEPEST` it starts again at the bottom of the stack.
 - Give a part that is in tail position back as it is, without `andThen`, so a loop of tail calls keeps nothing.
-- A library function returns a finished Effect when it can: decode its arguments with `decode` and combine with `Effect.flatMapEager` or `Effect.mapEager`, as `over` does.
+- A library function returns a finished Effect when it can. Build it with `over` or `combining`, which check the arguments with `decode(schema, then)`: a guard compiled from the schema's AST (`modules/lib/guard.ts`) passes arguments of the right kinds straight to `then`, and the schema's decoder runs only on the others, so the errors are the decoder's. An argument a call may leave out is a parameter past `over`'s `least`, given its default in `operate`. Combine anything after it with `Effect.flatMapEager` or `Effect.mapEager`.
 - Add the new form to the model in `evaluation/tests/interpreter.ts` too: the compiled evaluator is checked against it.
 
 ## React/TypeScript Patterns

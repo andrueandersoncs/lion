@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 160 questions have been decided, 60 records explain them, and of what the records assert, 517 hold when Lion is run, 4 are broken, 281 are stated but not checked by running Lion, and 13 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 161 questions have been decided, 61 records explain them, and of what the records assert, 519 hold when Lion is run, 4 are broken, 285 are stated but not checked by running Lion, and 13 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -166,6 +166,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`compiled-code-lifetime`](#compiled-code-lifetime) | `kept-by-lambda` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`deep-calls`](#deep-calls) | `unwind-to-run-loop` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`scope-bindings-store`](#scope-bindings-store) | `map` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
+| 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
 
 <a id="program-representation"></a>
 
@@ -3412,3 +3413,40 @@ Now: `unwind-to-run-loop`.
 Now: `map`.
 
 - 2026-11-18 `scope-bindings-store`: `map` over `ref`: "A scope holds its bindings in a `Map` that compiled code reads and writes right away." (`compiled-evaluation.json`)
+
+<a id="library-argument-checks"></a>
+
+## library-argument-checks
+
+Now: `guard-then-decoder`.
+
+- 2026-11-18 `library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`: "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts." (`library-argument-guards.json`)
+
+<a id="library-argument-guards"></a>
+
+### A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others
+
+Recorded 2026-11-18 in `history/notes/library-argument-guards.json`.
+
+**Context.** Once Lion compiled expressions to direct-style closures, checking the arguments of library functions was most of what plain arithmetic cost. Each call of `number/add`, `number/subtract`, or `number/lessThan` ran Effect Schema's decoder over its list of arguments, which goes through the parser's general machinery and builds a new list even when every argument is a number. On fib(24) through a recursive lambda, the parser was about a quarter of the time, and the same program took about 45 ms with unchecked JavaScript arithmetic and 75 ms with the library.
+
+**Decision.** Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. A schema gets a guard when its decoder gives back the value it was given: strings, numbers, booleans, anything, and lists of those, each with any checks of its own, and nothing that transforms. Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. A check that throws makes the guard say no, and the decoder reports what it threw. A schema with no guard, such as a record, which the decoder copies key by key, or a schema that transforms, is decoded on every call, as before. `over` also takes the fewest arguments a call may give, so the functions whose last argument may be left out, `array/slice`, `string/slice`, `string/join`, `string/numbers`, `number/toString`, and `number/fromString`, are built with it like the rest.
+
+**Consequences.** fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms, and fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms. `array/map` and `array/reduce` over 20,000 items run 1.1 to 1.2 times as fast, and rules, aggregates, and questions that call library functions up to 1.3 times; benchmarks that call none moved by no more than the noise between runs. A list whose items may be anything, which every `array` function takes, is checked without looking at its items, where the decoder copied it. No result, error, or message changed: the 89 programs the docs show and 40 calls with arguments of right and wrong kinds give what they gave before. The core grew by 67 lines of code, 0.6 percent: the guard is 67 lines, and building the six functions whose last argument may be left out on `over` paid for the rest. `decode(schema)` still gives the decoded value, and takes `then` to go on from it.
+
+**Alternatives considered.**
+
+- Turn on Effect's own schema compiler, `effect/schema/SchemaJITCompiler`. It switches compiled parsing on for every schema in the host's process, it is marked unstable, it writes code with `new Function`, which a page's content security policy may forbid, and fib(24) took 63 ms with it, against 54 ms with the guard.
+- Check with `Schema.is`. It runs the same parser and then runs its result with `Effect.runSyncExit`, so it costs as much as decoding.
+- Write each library function's check by hand, such as `typeof a === "number"`. What a function takes would be written twice, in its schema and in its check, and the two could drift apart; a guard compiled from the schema cannot.
+- Let the guard give a finished Effect of the value, and leave `over` as it was. That made an Exit and bound it on every call, and fib(24) took 55 ms where going on from the guard directly took 50 ms.
+- Give records a guard too. The decoder rebuilds a record key by key, and a struct drops the keys it does not declare, so a record's guard would need rules of its own to give the same value, and no record function is in a hot loop.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `library-argument-checks`: `guard-then-decoder`. "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts."
+- Holds when Lion is run: rule `library-argument-errors-are-the-decoders` holds. "Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before."
+- Holds when Lion is run: `guardOf` exists. "Each schema a library function checks its arguments with is compiled, once, into a guard"
+- Stated, not checked by running Lion: `fib-17-lambda-ms` is 2.2. "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms"
+- Stated, not checked by running Lion: `fib-24-lambda-ms` is 54. "fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms"
+- Stated, not checked by running Lion: `core-code-lines-added` is 67. "The core grew by 67 lines of code, 0.6 percent"

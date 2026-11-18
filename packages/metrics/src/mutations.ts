@@ -1540,8 +1540,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "string/join puts a separator before a single item",
     file: core("modules/string.ts"),
-    find: "          texts.length < 2",
-    replace: "          texts.length < 1",
+    find: "      texts.length < 2",
+    replace: "      texts.length < 1",
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
@@ -2155,10 +2155,98 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a negative position of a slice counts from the start",
     file: core("modules/lib/shared.ts"),
-    find: "([value, start]) => value.slice(start))",
-    replace: "([value, start]) => value.slice(Math.max(start, 0)))",
+    find: "(value, start, end) => value.slice(start, end)",
+    replace: "(value, start, end) => value.slice(Math.max(start, 0), end)",
     tests: ["src/modules/tests/models.test.ts"],
   },
+  ...[
+    [
+      "a library function runs on arguments its guard says no to",
+      "lib/shared.ts",
+      "(fits(input) ? then(input as A) : decoded(input))",
+      "then(input as A)",
+    ],
+    [
+      "no schema has a guard, so every library call runs the decoder",
+      "lib/guard.ts",
+      'const kind = ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag];',
+      "const kind = undefined as Guard | undefined;",
+    ],
+    [
+      "a schema that transforms gets a guard",
+      "lib/guard.ts",
+      "  if (ast.encoding !== undefined) {\n    return undefined;\n  }\n",
+      "",
+    ],
+    [
+      "a guard ignores the checks of its schema",
+      "lib/guard.ts",
+      "kind(value) && checks.every((check) => passes(check, value, ast))",
+      "kind(value)",
+    ],
+    [
+      "a guard ignores the checks in a group",
+      "lib/guard.ts",
+      "check.checks.every((each) => passes(each, value, ast))",
+      "true",
+    ],
+    [
+      "a check that throws escapes the guard",
+      "lib/guard.ts",
+      "    } catch {\n      return false;\n    }",
+      "    } finally {\n    }",
+    ],
+    [
+      "a list's guard accepts a list with too few items",
+      "lib/guard.ts",
+      "      value.length < items.length ||\n",
+      "",
+    ],
+    [
+      "a list's guard accepts a list with too many items",
+      "lib/guard.ts",
+      "(rest === undefined && value.length > items.length)",
+      "false",
+    ],
+    [
+      "a list's guard checks only its first item",
+      "lib/guard.ts",
+      "if (!(items[at] ?? (rest as Guard))(value[at])) {",
+      "if (at === 0 && !(items[at] ?? (rest as Guard))(value[at])) {",
+    ],
+    [
+      "a call that leaves an argument out is checked as one that gives them all",
+      "lib/shared.ts",
+      "(runs[args.length - least] as (typeof runs)[number])(args)",
+      "(runs.at(-1) as (typeof runs)[number])(args)",
+    ],
+    [
+      "a call that gives every argument is checked as one that leaves some out",
+      "lib/shared.ts",
+      "(runs[args.length - least] as (typeof runs)[number])(args)",
+      "(runs[0] as (typeof runs)[number])(args)",
+    ],
+    [
+      "a list's guard never looks at its items",
+      "lib/guard.ts",
+      "const looks = [...items, rest].some((guard) => guard && guard !== ANY);",
+      "const looks = false;",
+    ],
+    [
+      "a list with an optional item gets a guard",
+      "lib/guard.ts",
+      "    ast.rest.length > 1 ||\n    ast.elements.some((element) => element.context?.isOptional)",
+      "    ast.rest.length > 1",
+    ],
+  ].map(
+    ([name, file, find, replace]): Mutation => ({
+      name: name as string,
+      file: core(`modules/${file}`),
+      find: find as string,
+      replace: replace as string,
+      tests: ["src/modules/tests/guard.test.ts"],
+    })
+  ),
   record(
     "a release reaches its commit's parents but not theirs",
     '    ["parent", "?hash", "?older"]',

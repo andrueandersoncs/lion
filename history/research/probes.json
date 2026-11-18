@@ -20806,5 +20806,19 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "library-function-argument-of-wrong-kind",
+    "area": "library",
+    "program": ["number/add", 1, ["quote", "a"]]
+  },
+  {
+    "feature": "guardOf",
+    "kind": "function",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/modules/lib/guard.ts"],
+      "export const guardOf = "
+    ]
   }
 ]

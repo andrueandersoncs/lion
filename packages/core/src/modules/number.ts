@@ -1,12 +1,7 @@
 import { Effect, Schema } from "effect";
-import {
-  ArithmeticError,
-  atLeast,
-  type Count,
-  takes,
-} from "@/errors/evaluation";
+import { ArithmeticError, atLeast, type Count } from "@/errors/evaluation";
 import { readNumber } from "@/modules/lib/numerals";
-import { combining, decode, over } from "@/modules/lib/shared";
+import { combining, over } from "@/modules/lib/shared";
 
 const compare = (test: (a: number, b: number) => boolean) =>
   over([Schema.Number, Schema.Number], test);
@@ -44,12 +39,6 @@ const SOME = atLeast(1);
 const rounding = (operate: (a: number) => number) =>
   over([Schema.Number], operate);
 
-/** What `toString` takes: the number, and what goes between its groups. */
-const Written = decode(Schema.Tuple([Schema.Number, Schema.String]));
-
-/** What `fromString` takes: the text, and what goes between its groups. */
-const Read = decode(Schema.Tuple([Schema.String, Schema.String]));
-
 /** The digits of a number's whole part: the first run of digits in its text. */
 const WHOLE = /\d+/;
 
@@ -86,12 +75,13 @@ export const module = {
    * part is written in groups of three digits with it between them, as
    * `#:group-sep` does in Racket: "1,234,567.5".
    */
-  toString: takes([1, 2], (value: unknown, separator: unknown = "") =>
-    Effect.map(Written([value, separator]), ([n, between]) =>
+  toString: over(
+    [Schema.Number, Schema.String],
+    (n, between = "") =>
       String(n).replace(WHOLE, (digits) =>
         digits.replace(GROUPS, (digit) => digit + between)
-      )
-    )
+      ),
+    1
   ),
   /**
    * The number the text writes, as `string->number` reads it in Scheme, or
@@ -99,9 +89,9 @@ export const module = {
    * may be in groups of three digits with it between them, so the text
    * `toString` writes with a separator reads back as the number.
    */
-  fromString: takes([1, 2], (text: unknown, separator: unknown = "") =>
-    Effect.map(Read([text, separator]), ([written, between]) =>
-      readNumber(written, between)
-    )
+  fromString: over(
+    [Schema.String, Schema.String],
+    (text, between = "") => readNumber(text, between),
+    1
   ),
 };
