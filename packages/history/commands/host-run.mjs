@@ -7,7 +7,7 @@ import { run } from "@lionlang/core/evaluation/evaluate";
 import { LogicDatabase } from "@lionlang/core/logic/database";
 import { stdlib } from "@lionlang/core/modules";
 import { LionEnvironmentService } from "@lionlang/core/services/evaluation";
-import { Cause, Effect, Exit, Ref } from "effect";
+import { Cause, Effect, Exit } from "effect";
 
 console.error = () => undefined;
 const say = (what, value) => console.log(`${what}: ${JSON.stringify(value)}`);
@@ -64,9 +64,7 @@ const host = {
   "host/environment": () =>
     Effect.gen(function* () {
       const environment = yield* LionEnvironmentService;
-      return typeof (yield* Ref.get(environment.bindingsRef))[
-        "host/environment"
-      ];
+      return typeof environment.bindings.get("host/environment");
     }),
 };
 say(
@@ -91,7 +89,7 @@ say(
 say("the host function has run times", calls);
 say("the same program run again gives", await outcome(["host/tick"], host));
 say(
-  "in the Ref the environment service holds, a host function finds its own name bound to a",
+  "in the scope the environment service holds, a host function finds its own name bound to a",
   await outcome(["host/environment"], host)
 );
 

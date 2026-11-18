@@ -470,7 +470,7 @@ const byPath = (a: Problem, b: Problem) =>
  * string that is a name there, and is meant as data, goes inside `quote`.
  */
 const writer = Effect.gen(function* () {
-  const names = yield* boundNames(yield* LionEnvironmentService);
+  const names = boundNames(yield* LionEnvironmentService);
   return (schema: unknown) => expression(schema, (text) => names.has(text));
 });
 

@@ -1,88 +1,76 @@
-import { Effect, Option, pipe, Record, Ref } from "effect";
-import type {
-  Environment,
-  InnerEnvironment,
-  ToplevelEnvironment,
-} from "@/schemas/environment";
-
-const isInnerEnvironment = (
-  environment: Environment
-): environment is InnerEnvironment => "parent" in environment;
-
-export function makeEnvironment(
-  bindings: Record<string, unknown>
-): Effect.Effect<ToplevelEnvironment>;
-
-export function makeEnvironment(
-  bindings: Record<string, unknown>,
-  parent: Environment
-): Effect.Effect<InnerEnvironment>;
-
-export function makeEnvironment(
-  bindings: Record<string, unknown>,
-  parent?: Environment
-) {
-  return Ref.make(bindings).pipe(
-    Effect.map(
-      (bindingsRef): Environment =>
-        typeof parent === "undefined"
-          ? { bindingsRef }
-          : { bindingsRef, parent }
-    )
-  );
+/**
+ * The scopes names are looked up in. A scope holds its own bindings and
+ * the scope around it, if any: the top scope of a run, a lambda's
+ * parameters, the names a `schema` form declares. Looking a name up and
+ * binding one happen right away, so compiled code reads names in direct
+ * style.
+ */
+export interface Environment {
+  readonly bindings: Map<string, unknown>;
+  readonly parent: Environment | undefined;
 }
 
-export const getBinding = (
+/** A scope of the given bindings, inside `parent` when there is one. */
+export const makeEnvironment = (
+  bindings: Readonly<Record<string, unknown>> | Map<string, unknown>,
+  parent?: Environment
+): Environment => ({
+  bindings:
+    bindings instanceof Map
+      ? bindings
+      : new Map<string, unknown>(Object.entries(bindings)),
+  parent,
+});
+
+/** What `lookup` gives for a name that nothing is bound to. */
+export const UNBOUND: unique symbol = Symbol("unbound");
+
+/** The value of a name in the nearest scope that binds it. */
+export const lookup = (
   environment: Environment,
   name: string
-): Effect.Effect<Option.Option<unknown>> =>
-  Effect.gen(function* () {
-    const binding = yield* pipe(
-      Ref.get(environment.bindingsRef),
-      Effect.map(Record.get(name))
-    );
-    if (Option.isSome(binding)) {
-      return binding;
+): unknown | typeof UNBOUND => {
+  for (
+    let scope: Environment | undefined = environment;
+    scope !== undefined;
+    scope = scope.parent
+  ) {
+    const value = scope.bindings.get(name);
+    if (value !== undefined || scope.bindings.has(name)) {
+      return value;
     }
-    return isInnerEnvironment(environment)
-      ? yield* getBinding(environment.parent, name)
-      : Option.none();
-  });
+  }
+  return UNBOUND;
+};
 
-export const setLocalBinding = (
-  environment: Environment,
-  name: string,
-  value: unknown
-): Effect.Effect<Environment> =>
-  pipe(
-    environment.bindingsRef,
-    Ref.update(Record.set(name, value)),
-    Effect.as(environment)
-  );
+/** True when a scope, or one around it, binds the name. */
+export const isBound = (environment: Environment, name: string) =>
+  lookup(environment, name) !== UNBOUND;
 
+/** Binds a name in the outermost scope, where `define` puts it. */
 export const setGlobalBinding = (
   environment: Environment,
   name: string,
   value: unknown
-): Effect.Effect<Environment> =>
-  isInnerEnvironment(environment)
-    ? setGlobalBinding(environment.parent, name, value).pipe(
-        Effect.as(environment)
-      )
-    : Ref.update(environment.bindingsRef, Record.set(name, value)).pipe(
-        Effect.as(environment)
-      );
+): void => {
+  let scope = environment;
+  while (scope.parent !== undefined) {
+    scope = scope.parent;
+  }
+  scope.bindings.set(name, value);
+};
 
 /** Every name bound in the environment or its parents. */
-export const boundNames = (
-  environment: Environment
-): Effect.Effect<ReadonlySet<string>> =>
-  Effect.gen(function* () {
-    const names = new Set(Object.keys(yield* Ref.get(environment.bindingsRef)));
-    if (isInnerEnvironment(environment)) {
-      for (const name of yield* boundNames(environment.parent)) {
-        names.add(name);
-      }
+export const boundNames = (environment: Environment): ReadonlySet<string> => {
+  const names = new Set<string>();
+  for (
+    let scope: Environment | undefined = environment;
+    scope !== undefined;
+    scope = scope.parent
+  ) {
+    for (const name of scope.bindings.keys()) {
+      names.add(name);
     }
-    return names;
-  });
+  }
+  return names;
+};

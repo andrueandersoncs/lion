@@ -35,6 +35,16 @@ export const operation = flow(
 );
 ```
 
+### Compiled Evaluation
+Lion compiles an expression, in `packages/core/src/evaluation/`, to a function of the scope it runs in (`Compiled` in `evaluation/compiled.ts`). A lambda's body is compiled the first time the lambda is called and kept with it, so code that runs again runs compiled; nothing else keeps compiled code. A special form's compiler compiles its parts when it is compiled, and returns a function that runs in direct style:
+
+- It returns the form's value, or a `Pending` that holds the rest of the evaluation as an Effect. Return a `Pending` only where a node needs Effect: a host function's Effect that is not done yet, a question, a call that waits, an error. Never return an Effect as a value.
+- Go on from a part with `andThen(result, depth, next)` and run several in order with `runAll`, so a part that needs Effect makes only what follows it run in Effect. Call a function's result through `returned`, which takes a finished Effect's value right away and runs any other in the scope of the call.
+- Pass `depth` on unchanged. Only a call to a Lion function goes one deeper, and past `DEEPEST` it starts again at the bottom of the stack.
+- Give a part that is in tail position back as it is, without `andThen`, so a loop of tail calls keeps nothing.
+- A library function returns a finished Effect when it can. Build it with `over` or `combining`, which check the arguments with `decode(schema, then)`: a guard compiled from the schema's AST (`modules/lib/guard.ts`) passes arguments of the right kinds straight to `then`, and the schema's decoder runs only on the others, so the errors are the decoder's. An argument a call may leave out is a parameter past `over`'s `least`, given its default in `operate`. Combine anything after it with `Effect.flatMapEager` or `Effect.mapEager`.
+- Add the new form to the model in `evaluation/tests/interpreter.ts` too: the compiled evaluator is checked against it.
+
 ## React/TypeScript Patterns
 
 ### Component Definitions

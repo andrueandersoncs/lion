@@ -765,6 +765,20 @@ export const checked = (depth = 2): Arbitrary.Arbitrary<Case> =>
     Arbitrary.map(valueFor(given), (value): Case => ({ shape: given, value }))
   );
 
+/**
+ * A schema with a value to check against it, where `limit` decides whether
+ * the value fits: a pair of a number below the limit, which `below` checks,
+ * and any schema.
+ */
+export const checkedBelow = (depth = 2): Arbitrary.Arbitrary<Case> =>
+  Arbitrary.map(
+    Arbitrary.all([fitting({ kind: "below" }), checked(depth)]),
+    ([number, { shape: given, value }]): Case => ({
+      shape: { kind: "tuple", items: [{ kind: "below" }, given] },
+      value: [number, value],
+    })
+  );
+
 export interface Cases {
   readonly shape: Shape;
   readonly values: readonly Json[];

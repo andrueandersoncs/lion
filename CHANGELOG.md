@@ -7,6 +7,16 @@
 ### Breaking
 
 - When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first. (`equality-rule-two-invented-unknowns` is `fewest-nested-then-first-sorted`, was `first-sorted`)
+- Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup` (`environment-bindings-read-by-host` is `map`, was `ref`)
+
+### Added
+
+- An expression is compiled to a JavaScript function of the scope it runs in (`compile` added)
+- Each schema a library function checks its arguments with is compiled, once, into a guard (`guardOf` added)
+
+### Removed
+
+- `getBinding` and `setLocalBinding` are gone (`getBinding` removed; `setLocalBinding` removed)
 
 ### Changed
 
@@ -14,15 +24,27 @@
 - the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first (`keyed-rows-two-invented-unknowns` is `fewest-nested-then-first-sorted`)
 - A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time (`equality-rule-group-after-fact-change` is `followed`, was `derived-again`)
 - A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time: the values the changed rows hold, and every value a row joins to them, are derived again on their own, and the rest keeps its rows. Where a key makes twins share an invented mother, adding twenty twins one at a time and asking each one's mother takes 17 milliseconds with 10,000 people, where it took 8.4 seconds, and 0.1 seconds with 100,000, where it did not finish in a minute. It applies when every relation goal of the rules holds only variables and values, the goals of each rule share variables, and nothing else in their bodies asks a question; such a group whose rules join rows some other way is still derived again and compared. (`keyed-invention-after-fact-change` is `followed`, was `derived-again`)
+- A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (`deep-call-not-in-tail-position` is `works`; `tail-call-loop-memory` is `constant`, was `grows-with-calls`)
+
+### Fixed
+
+- The test helper `attempt` reports a function in a program's value as Lion writes it, wherever it stands: `"even"` for the relation `even`, `["lambda", ["n"], "n"]` for a lambda. A program that ended in a declaration, such as `["begin", ["relation", "even", ["n"]]]`, made it throw `"undefined" is not valid JSON`, which failed the `why` property about rules that ask no question once in about 300 runs, and a function inside a list or a record was reported as `null` or left out. A property checks that two programs are reported the same only when their values are the same. (`test-report-function-value` is `written-as-lion`, was `error`)
 
 ### Decided
 
 - Each class of values a key or an equality rule makes one is written as its least member, by one order (`merge-survivor`: `least-member-fewest-nested-then-first-sorted` over `pairwise-describes-then-first-sorted`, `first-sorted-alone`)
 - A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time (`rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`)
+- A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run. (`compiled-code-lifetime`: `kept-by-lambda` over `cache-by-expression`)
+- A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop. (`deep-calls`: `unwind-to-run-loop` over `continuation-passing`, `generators`, `trampoline-per-tail-call`)
+- An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. (`evaluator-design`: `compile-to-direct-style` over `match-dispatch`, was `match-dispatch`)
+- Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. (`library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`)
+- A scope holds its bindings in a `Map` that compiled code reads and writes right away. (`scope-bindings-store`: `map` over `ref`)
 
 ### Rules
 
 - a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first (rule `least-member-survives-a-merge`)
+- Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. (rule `library-argument-errors-are-the-decoders`)
+- A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (rule `tail-calls-keep-nothing`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
@@ -1733,7 +1755,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - Evaluates its argument, then evaluates the result. (`eval-argument` is `evaluated-twice`)
 - should return a curried function when called with no arguments (`eval-no-arguments` is `function`; `quote-no-arguments` is `function`)
 - expect(result).toBeInstanceOf(ParseError); (`eval-non-expression` is `error`)
-- `run` returns an Effect 4 `Effect` (`evaluate-result` is `effect`)
+- `evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one. (`evaluate-result` is `effect`)
 - should support passing functions as arguments (`function-as-argument` is `allowed`)
 - // Functions are valid LionValues but not valid LionExpressions (`function-as-expression` is `invalid`)
 - const LionFunctionSchema = Schema.declare((input: unknown): input is (...args: unknown[]) => unknown => { (`function-as-value` is `valid`)

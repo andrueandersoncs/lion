@@ -1,5 +1,8 @@
-import { Effect } from "effect";
+import type { Compiled } from "@/evaluation/compiled";
 import type { QuoteFormSchema } from "@/schemas/evaluation";
 
-export const evaluateQuote = ([_, args]: typeof QuoteFormSchema.Type) =>
-  Effect.succeed(args);
+/** Gives what it quotes, as it is written. */
+export const compileQuote =
+  ([_, args]: typeof QuoteFormSchema.Type): Compiled =>
+  () =>
+    args;

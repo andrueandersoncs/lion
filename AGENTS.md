@@ -40,7 +40,7 @@ Every change aims for these:
 - **[Measuring complexity](guidelines/measuring.md)**: read it before you call a change to `@lionlang/core` done. Measure the code, the semantics, the speed, and the growth beside `main`, aim for the numbers to go down, and report them as they are.
 - **[Testing](guidelines/testing.md)**: read it before you write or change a test. New behavior gets property-based tests with `it.prop` or `it.effect.prop`, not tests with fixed example inputs, and every bug gets the property it breaks.
 - **[Code style](guidelines/code-style.md)**: read it before you write TypeScript. It gives the compiler flags, the formatting, the order of imports, the naming, and where files go.
-- **[Effect and React patterns](guidelines/patterns.md)**: read it before you write Effect or React code, handle an error, or add a UI component.
+- **[Effect and React patterns](guidelines/patterns.md)**: read it before you write Effect or React code, compile a special form, handle an error, or add a UI component.
 
 Keep this file and `CLAUDE.md` under 200 lines each. What a practice needs beyond its main rule goes in its guideline, and a new practice gets a guideline and a line here.
 

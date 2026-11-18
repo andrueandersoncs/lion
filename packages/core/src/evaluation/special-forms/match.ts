@@ -1,7 +1,14 @@
 import { Effect, Schema } from "effect";
 import { answer, isWriting } from "@/evaluation/asking";
-import { evaluate } from "@/evaluation/evaluate";
-import { apply } from "@/evaluation/special-forms/function";
+import {
+  andThen,
+  type Compiled,
+  Pending,
+  toEffect,
+} from "@/evaluation/compiled";
+import type { Environment } from "@/evaluation/environment";
+import { compile } from "@/evaluation/evaluate";
+import { applyIn } from "@/evaluation/special-forms/function";
 import { suspend } from "@/evaluation/special-forms/lambda";
 import { fits } from "@/logic/fit";
 import { isWaiting, LogicValue } from "@/logic/terms";
@@ -10,16 +17,14 @@ import {
   type MatchFormSchema,
 } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
+import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
 /*
 ["match", <value>, [<schema>, <fn>], ..., <fallback-fn>]
 */
 
-const evaluateFunction = (expression: LionExpressionType) =>
-  evaluate(expression).pipe(
-    Effect.flatMap(Schema.decodeUnknownEffect(LionFunctionValueSchema))
-  );
+const functionOf = Schema.decodeUnknownEffect(LionFunctionValueSchema);
 
 /**
  * Applies the function of the first pattern whose schema the value fits, or
@@ -28,31 +33,66 @@ const evaluateFunction = (expression: LionExpressionType) =>
  * When the value, or what a schema says about it, is not known yet, the
  * form waits.
  */
-export const evaluateMatch = (
+export const compileMatch = (
   expression: typeof MatchFormSchema.Type
-): EvaluateResult =>
-  Effect.gen(function* () {
-    const [_, subject, ...rest] = expression;
-    let value = yield* evaluate(subject);
-    if (value instanceof LogicValue) {
-      if (isWaiting(value) || (yield* isWriting)) {
-        return yield* suspend(expression);
+): Compiled => {
+  const [_, subject, ...rest] = expression;
+  const value = compile(subject);
+  const patterns = (
+    rest.slice(0, -1) as (readonly [LionExpressionType, LionExpressionType])[]
+  ).map(([schema, fn]) => [compile(schema), compile(fn)] as const);
+  const fallback = compile(rest.at(-1) as LionExpressionType);
+  const applied = (fn: Compiled, made: unknown, environment: Environment) =>
+    Effect.gen(function* () {
+      const decoded = yield* functionOf(yield* toEffect(fn(environment, 0)));
+      return yield* toEffect(
+        applyIn(decoded, [made], undefined, environment, 0)
+      );
+    });
+  const against = (made: unknown, environment: Environment): EvaluateResult =>
+    Effect.gen(function* () {
+      for (const [schema, fn] of patterns) {
+        const shape = yield* toEffect(schema(environment, 0));
+        const decoded = yield* functionOf(yield* toEffect(fn(environment, 0)));
+        const fit = yield* fits(shape, made).pipe(
+          Effect.provideService(LionEnvironmentService, environment)
+        );
+        if (fit) {
+          return yield* toEffect(
+            applyIn(decoded, [made], undefined, environment, 0)
+          );
+        }
       }
-      value = yield* answer(value);
+      return yield* applied(fallback, made, environment);
+    });
+  const matched = (made: unknown, environment: Environment): unknown => {
+    if (!(made instanceof LogicValue)) {
+      return new Pending(against(made, environment));
     }
-    const patterns = rest.slice(0, -1) as (readonly [
-      LionExpressionType,
-      LionExpressionType,
-    ])[];
-    for (const [schemaExpression, functionExpression] of patterns) {
-      const schema = yield* evaluate(schemaExpression);
-      const fn = yield* evaluateFunction(functionExpression);
-      if (yield* fits(schema, value)) {
-        return yield* apply(fn, [value]);
-      }
+    if (isWaiting(made)) {
+      return new Pending(suspend(expression, environment, self));
     }
-    const fallback = yield* evaluateFunction(rest.at(-1) as LionExpressionType);
-    return yield* apply(fallback, [value]);
-  }).pipe(
-    Effect.catchTag("WaitingError", () => suspend(expression))
-  ) as EvaluateResult;
+    return new Pending(
+      Effect.flatMap(isWriting, (writing) =>
+        writing
+          ? suspend(expression, environment, self)
+          : Effect.flatMap(answer(made), (answered) =>
+              against(answered, environment)
+            )
+      )
+    );
+  };
+  const self: Compiled = (environment, depth) => {
+    const result = andThen(value(environment, depth), depth, (made) =>
+      matched(made, environment)
+    );
+    return result instanceof Pending
+      ? new Pending(
+          Effect.catchTag(result.effect, "WaitingError", () =>
+            suspend(expression, environment, self)
+          )
+        )
+      : result;
+  };
+  return self;
+};

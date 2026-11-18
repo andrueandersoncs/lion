@@ -2,14 +2,14 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 61 records explain them, and of what the records assert, 512 hold when Lion is run, 4 are broken, 275 are stated but not checked by running Lion, and 13 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 162 questions have been decided, 63 records explain them, and of what the records assert, 522 hold when Lion is run, 4 are broken, 289 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
 | 2025-12-03 | [`program-representation`](#program-representation) | `json-value` | [A Lion program is a JSON value, evaluated as it is, with no parser of its own](#json-programs) |
 | 2025-12-11 | [`evaluation-error-representation`](#evaluation-error-representation) | `tagged-errors` | [The evaluator is written with Effect, and evaluating a program gives an Effect](#evaluate-with-effect) |
 | 2025-12-11 | [`evaluation-library`](#evaluation-library) | `effect` | [The evaluator is written with Effect, and evaluating a program gives an Effect](#evaluate-with-effect) |
-| 2025-12-11 | [`evaluator-design`](#evaluator-design) | `match-dispatch` | [The evaluator is written with Effect, and evaluating a program gives an Effect](#evaluate-with-effect) |
+| 2025-12-11 | [`evaluator-design`](#evaluator-design) | `compile-to-direct-style` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation), [The evaluator is written with Effect, and evaluating a program gives an Effect](#evaluate-with-effect) |
 | 2025-12-11 | [`host-entry-point`](#host-entry-point) | `run` | [The evaluator is written with Effect, and evaluating a program gives an Effect](#evaluate-with-effect) |
 | 2025-12-19 | [`repl-surface`](#repl-surface) | `graph-editor` | [The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone](#graph-editor-is-the-repl) |
 | 2025-12-20 | [`library-function-arity`](#library-function-arity) | `strict` | [A call gives a function as many arguments as it takes, and any other number fails with one form of message](#arity-rule) |
@@ -164,6 +164,10 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
 | 2026-11-18 | [`merge-survivor`](#merge-survivor) | `least-member-fewest-nested-then-first-sorted` | [Values a key or an equality rule makes one are written as their least member](#least-member-survives-a-merge) |
+| 2026-11-18 | [`compiled-code-lifetime`](#compiled-code-lifetime) | `kept-by-lambda` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
+| 2026-11-18 | [`deep-calls`](#deep-calls) | `unwind-to-run-loop` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
+| 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
+| 2026-11-18 | [`scope-bindings-store`](#scope-bindings-store) | `map` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 
 <a id="program-representation"></a>
 
@@ -231,7 +235,7 @@ Recorded 2025-12-11 in `history/notes/evaluate-with-effect.json`.
 - Holds when Lion is run: `evaluate-result` is `effect`. "Evaluating an expression returns an `Effect`, and a failure is a value in its error channel instead of a thrown exception."
 - Stated, not checked by running Lion: decided `evaluation-error-representation`: `tagged-errors`. "Errors are tagged values, such as `InvalidFunctionCallError`, that a host catches by tag."
 - Holds when Lion is run: `evaluate-environment` is `effect-service`. "The environment is a service the evaluation reads from its context, holding a `Ref` of the bindings."
-- Stated, not checked by running Lion: decided `evaluator-design`: `match-dispatch`. "`Match` dispatches on the kind of expression"
+- Replaced by a later word: decided `evaluator-design`: `match-dispatch`. "`Match` dispatches on the kind of expression"
 - Stated, not checked by running Lion: decided `host-entry-point`: `run`. "`run(program, environment)` decodes the program, evaluates it, and provides the environment."
 - Holds when Lion is run: `run` exists. "`run(program, environment)` decodes the program, evaluates it, and provides the environment."
 - Holds when Lion is run: `effect` exists. "`@lionlang/core` depends on `effect`"
@@ -248,9 +252,52 @@ Now: `effect`.
 
 ## evaluator-design
 
-Now: `match-dispatch`.
+Now: `compile-to-direct-style`.
 
 - 2025-12-11 `evaluator-design`: `match-dispatch`: "`Match` dispatches on the kind of expression" (`b1e3f0e`, `evaluate-with-effect.json`)
+- 2026-11-18 `evaluator-design`: `compile-to-direct-style` over `match-dispatch`, was `match-dispatch`: "An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs." (`compiled-evaluation.json`)
+
+<a id="compiled-evaluation"></a>
+
+### Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it
+
+Recorded 2026-11-18 in `history/notes/compiled-evaluation.json`.
+
+**Context.** Until 0.13.0 the evaluator walked an expression each time it ran and built an Effect for every node: a name was read from a `Ref` through an Effect, a call ran in `Effect.gen` with its parts gathered by `Effect.all`, and each array was checked against the shape of its special form, with its whole subtree, every time it ran. Plain code paid for all of it. On 0.13.0, fib(17) through a recursive lambda took 50 ms, and a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory, since each call kept a frame on the heap. Research into what to improve in Lion found that compiling to closures alone gains 30 to 50 percent (Feeley and Lapalme 1987), that direct style ran 76.2 times as fast as runtime effect handlers on Koka's JavaScript backend (Xie et al. 2020), that continuation-passing style and generators make JavaScript 3 and 2 times slower than direct style (Stopify, Baxter et al. 2018), and that inlining binds at join points keeps tail calls (Xie et al. 2021).
+
+**Decision.** An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. The compiled function runs in direct style and returns the expression's value. Where a node needs Effect, because a host function returns an Effect that is not done yet, a question goes to the logic database, a call waits for a logic variable, or something fails, it returns the rest of the evaluation as an Effect, and the nodes around it go on inside that Effect. A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run. A scope holds its bindings in a `Map` that compiled code reads and writes right away. A library function whose arguments check right away gives a finished Effect, whose value compiled code takes without running it. A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop. `evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one.
+
+**Consequences.** fib(17) takes 3.8 ms instead of 50 ms, and `array/map` and `array/reduce` over 20,000 items about 19 ms instead of 135 ms; rules, aggregates, and questions mostly run 1.1 to 2.4 times as fast, since they evaluate what they hold through the same code, while adding 300 rules one form at a time and finding every path along a chain of 150 ran at 0.8 to 1.1 times their old speed from run to run, where the logic engine does nearly all the work. A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. A tail position is a lambda's body, and the result of a `cond` case and the last expression of a `begin` that are in one. The core grew by 377 lines of code, 3.2 percent. Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup`; `getBinding` and `setLocalBinding` are gone, `makeEnvironment`, `setGlobalBinding`, and `boundNames` give their result instead of an Effect, and a plain special form's module exports a compiler, such as `compileCond`, in place of an evaluator. The interpreter that the compiler replaced is kept in the tests as the model it is checked against. The logic engine still evaluates what a rule holds as it did: compiling rule bodies waits for the rework of how the engine follows changes.
+
+**Alternatives considered.**
+
+- Compile to closures that each still return an Effect. The cost was binding an Effect at every node, not walking the JSON, and closure compilation alone gained 30 to 50 percent where it was measured.
+- Keep every compiled expression in a cache keyed by the expression. A program of 100,000 facts then held 100,000 compiled calls, and its peak memory grew from 68 MB to 180 MB; code that runs again is in a lambda's body, which keeps its own.
+- Run calls in continuation-passing style or as generators, to keep the stack short. Both make JavaScript 2 to 3 times slower than direct style, and starting again at the bottom of the stack every 100 calls costs nothing measurable.
+- Return an object for each tail call and make the calls in a loop. That makes an object for every tail call; starting again at the bottom of the stack gives tail calls in constant memory without one.
+- Resolve each name to a slot of its scope when the expression is compiled. A string is a name only when something is bound to it when it runs, and `define` binds names while a program runs, so a name is looked up when it runs.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `evaluator-design`: `compile-to-direct-style`. "An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs."
+- Holds when Lion is run: `getBinding` is removed. "`getBinding` and `setLocalBinding` are gone"
+- Holds when Lion is run: `setLocalBinding` is removed. "`getBinding` and `setLocalBinding` are gone"
+- Holds when Lion is run: `compile` exists. "An expression is compiled to a JavaScript function of the scope it runs in"
+- Stated, not checked by running Lion: `fib-17-lambda-ms` is 3.8. "fib(17) takes 3.8 ms instead of 50 ms"
+- Stated, not checked by running Lion: `map-reduce-20000-ms` is 19. "`array/map` and `array/reduce` over 20,000 items about 19 ms instead of 135 ms"
+- Stated, not checked by running Lion: `tail-loop-1000000-seconds` is 14.4. "a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory"
+- Stated, not checked by running Lion: `tail-loop-1000000-seconds` is 0.5. "a loop of 1,000,000 tail calls takes 0.5 s and 9 MB"
+- Stated, not checked by running Lion: `tail-loop-1000000-megabytes` is 4400. "a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory"
+- Stated, not checked by running Lion: `tail-loop-1000000-megabytes` is 9. "a loop of 1,000,000 tail calls takes 0.5 s and 9 MB"
+- Stated, not checked by running Lion: `core-code-lines-added` is 377. "The core grew by 377 lines of code, 3.2 percent."
+- Stated, not checked by running Lion: decided `scope-bindings-store`: `map`. "A scope holds its bindings in a `Map` that compiled code reads and writes right away."
+- Stated, not checked by running Lion: decided `deep-calls`: `unwind-to-run-loop`. "A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop."
+- Stated, not checked by running Lion: decided `compiled-code-lifetime`: `kept-by-lambda`. "A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run."
+- Holds when Lion is run: rule `tail-calls-keep-nothing` holds. "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows."
+- Holds when Lion is run: `tail-call-loop-memory` is `constant`. "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows."
+- Holds when Lion is run: `deep-call-not-in-tail-position` is `works`. "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows."
+- Holds when Lion is run: `evaluate-result` is `effect`. "`evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one."
+- Holds when Lion is run: `environment-bindings-read-by-host` is `map`. "Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup`"
 
 <a id="host-entry-point"></a>
 
@@ -3402,3 +3449,64 @@ Recorded 2026-11-18 in `history/notes/least-member-survives-a-merge.json`.
 - Holds when Lion is run: rule `least-member-survives-a-merge` holds. "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first"
 - Holds when Lion is run: `equality-rule-two-invented-unknowns` is `fewest-nested-then-first-sorted`. "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first"
 - Holds when Lion is run: `equality-rules-order` is `independent`. "Which value a class keeps depends only on the class, so it does not depend on the order rules or facts were added in, the order equality rules are written in, or the order pairs are found in"
+
+<a id="compiled-code-lifetime"></a>
+
+## compiled-code-lifetime
+
+Now: `kept-by-lambda`.
+
+- 2026-11-18 `compiled-code-lifetime`: `kept-by-lambda` over `cache-by-expression`: "A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run." (`compiled-evaluation.json`)
+
+<a id="deep-calls"></a>
+
+## deep-calls
+
+Now: `unwind-to-run-loop`.
+
+- 2026-11-18 `deep-calls`: `unwind-to-run-loop` over `continuation-passing`, `generators`, `trampoline-per-tail-call`: "A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop." (`compiled-evaluation.json`)
+
+<a id="library-argument-checks"></a>
+
+## library-argument-checks
+
+Now: `guard-then-decoder`.
+
+- 2026-11-18 `library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`: "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts." (`library-argument-guards.json`)
+
+<a id="library-argument-guards"></a>
+
+### A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others
+
+Recorded 2026-11-18 in `history/notes/library-argument-guards.json`.
+
+**Context.** Once Lion compiled expressions to direct-style closures, checking the arguments of library functions was most of what plain arithmetic cost. Each call of `number/add`, `number/subtract`, or `number/lessThan` ran Effect Schema's decoder over its list of arguments, which goes through the parser's general machinery and builds a new list even when every argument is a number. On fib(24) through a recursive lambda, the parser was about a quarter of the time, and the same program took about 45 ms with unchecked JavaScript arithmetic and 75 ms with the library.
+
+**Decision.** Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. A schema gets a guard when its decoder gives back the value it was given: strings, numbers, booleans, anything, and lists of those, each with any checks of its own, and nothing that transforms. Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. A check that throws makes the guard say no, and the decoder reports what it threw. A schema with no guard, such as a record, which the decoder copies key by key, or a schema that transforms, is decoded on every call, as before. `over` also takes the fewest arguments a call may give, so the functions whose last argument may be left out, `array/slice`, `string/slice`, `string/join`, `string/numbers`, `number/toString`, and `number/fromString`, are built with it like the rest.
+
+**Consequences.** fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms, and fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms. `array/map` and `array/reduce` over 20,000 items run 1.1 to 1.2 times as fast, and rules, aggregates, and questions that call library functions up to 1.3 times; benchmarks that call none moved by no more than the noise between runs. A list whose items may be anything, which every `array` function takes, is checked without looking at its items, where the decoder copied it. No result, error, or message changed: the 89 programs the docs show and 40 calls with arguments of right and wrong kinds give what they gave before. The core grew by 67 lines of code, 0.6 percent: the guard is 67 lines, and building the six functions whose last argument may be left out on `over` paid for the rest. `decode(schema)` still gives the decoded value, and takes `then` to go on from it.
+
+**Alternatives considered.**
+
+- Turn on Effect's own schema compiler, `effect/schema/SchemaJITCompiler`. It switches compiled parsing on for every schema in the host's process, it is marked unstable, it writes code with `new Function`, which a page's content security policy may forbid, and fib(24) took 63 ms with it, against 54 ms with the guard.
+- Check with `Schema.is`. It runs the same parser and then runs its result with `Effect.runSyncExit`, so it costs as much as decoding.
+- Write each library function's check by hand, such as `typeof a === "number"`. What a function takes would be written twice, in its schema and in its check, and the two could drift apart; a guard compiled from the schema cannot.
+- Let the guard give a finished Effect of the value, and leave `over` as it was. That made an Exit and bound it on every call, and fib(24) took 55 ms where going on from the guard directly took 50 ms.
+- Give records a guard too. The decoder rebuilds a record key by key, and a struct drops the keys it does not declare, so a record's guard would need rules of its own to give the same value, and no record function is in a hot loop.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `library-argument-checks`: `guard-then-decoder`. "Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts."
+- Holds when Lion is run: rule `library-argument-errors-are-the-decoders` holds. "Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before."
+- Holds when Lion is run: `guardOf` exists. "Each schema a library function checks its arguments with is compiled, once, into a guard"
+- Stated, not checked by running Lion: `fib-17-lambda-ms` is 2.2. "fib(17) through a recursive lambda takes 2.2 ms instead of 3.8 ms"
+- Stated, not checked by running Lion: `fib-24-lambda-ms` is 54. "fib(24) about 54 ms instead of 75 ms, where unchecked arithmetic takes about 45 ms"
+- Stated, not checked by running Lion: `core-code-lines-added` is 67. "The core grew by 67 lines of code, 0.6 percent"
+
+<a id="scope-bindings-store"></a>
+
+## scope-bindings-store
+
+Now: `map`.
+
+- 2026-11-18 `scope-bindings-store`: `map` over `ref`: "A scope holds its bindings in a `Map` that compiled code reads and writes right away." (`compiled-evaluation.json`)

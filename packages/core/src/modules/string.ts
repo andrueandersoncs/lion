@@ -1,21 +1,12 @@
 import { Effect, Schema, String as Str } from "effect";
-import { takes } from "@/errors/evaluation";
 import { numbersIn } from "@/modules/lib/numerals";
-import { combining, decode, over, slicing } from "@/modules/lib/shared";
+import { combining, over, slicing } from "@/modules/lib/shared";
 
 // Like the rest of the library, each function takes its subject first:
 // ["string/startsWith", text, prefix]. indexOf returns -1 when the text does
 // not contain the search string, as JavaScript does.
 const onTwo = <A>(operate: (text: string, other: string) => A) =>
   over([Schema.String, Schema.String], operate);
-
-/** What `join` takes: the strings, what goes between, and before the last. */
-const Joined = decode(
-  Schema.Tuple([Schema.Array(Schema.String), Schema.String, Schema.String])
-);
-
-/** What `numbers` takes: the text, and what goes between digit groups. */
-const Counted = decode(Schema.Tuple([Schema.String, Schema.String]));
 
 /** Text made as long as `length` with copies of `fill`, as JavaScript pads. */
 const padding = (pad: (text: string, length: number, fill: string) => string) =>
@@ -37,16 +28,13 @@ export const module = {
    * that one stands before the last item instead, as `#:before-last` does in
    * Racket: "a, b and c".
    */
-  join: takes(
-    [2, 3],
-    (items: unknown, separator: unknown, last: unknown = separator) =>
-      Effect.map(
-        Joined([items, separator, last]),
-        ([texts, between, before]) =>
-          texts.length < 2
-            ? texts.join("")
-            : `${texts.slice(0, -1).join(between)}${before}${texts.at(-1)}`
-      )
+  join: over(
+    [Schema.Array(Schema.String), Schema.String, Schema.String],
+    (texts, between, before = between) =>
+      texts.length < 2
+        ? texts.join("")
+        : `${texts.slice(0, -1).join(between)}${before}${texts.at(-1)}`,
+    2
   ),
   /** The parts of the text between each separator: what `join` joins back. */
   split: onTwo((text, separator): string[] => text.split(separator)),
@@ -59,9 +47,9 @@ export const module = {
    * `number/fromString` reads it: "$1,250.5M, down -3%" holds 1250.5 and -3
    * with the separator ",".
    */
-  numbers: takes([1, 2], (text: unknown, separator: unknown = "") =>
-    Effect.map(Counted([text, separator]), ([written, between]) =>
-      numbersIn(written, between)
-    )
+  numbers: over(
+    [Schema.String, Schema.String],
+    (text, between = "") => numbersIn(text, between),
+    1
   ),
 };

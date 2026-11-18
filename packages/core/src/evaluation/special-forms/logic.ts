@@ -8,11 +8,19 @@ import {
   writing,
 } from "@/evaluation/asking";
 import {
+  andThen,
+  type Compiled,
+  Pending,
+  runAll,
+  toEffect,
+} from "@/evaluation/compiled";
+import {
   boundNames,
+  type Environment,
   makeEnvironment,
   setGlobalBinding,
 } from "@/evaluation/environment";
-import { evaluate } from "@/evaluation/evaluate";
+import { compile, evaluate } from "@/evaluation/evaluate";
 import { dataStrings, suspend } from "@/evaluation/special-forms/lambda";
 import { compileQuery, compileRule, equalityGoals } from "@/logic/compile";
 import {
@@ -83,8 +91,17 @@ import { LionAskerService } from "@/services/asker";
 import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
-const evaluateAll = (expressions: readonly LionExpressionType[]) =>
-  Effect.all(expressions.map(evaluate));
+/**
+ * Evaluates a part of a form that reads or changes the logic database:
+ * `evaluate` unless another evaluator is given, as the tests give the
+ * interpreter they check the compiler against.
+ */
+export type Part = (expression: LionExpressionType) => EvaluateResult;
+
+const evaluateAll = (
+  expressions: readonly LionExpressionType[],
+  part: Part = evaluate
+) => Effect.all(expressions.map(part));
 
 /** A relation call with each question among its arguments asked. */
 const asked = (call: Atom) =>
@@ -140,10 +157,14 @@ const rowsOf = (exists: LogicForm) =>
  * The facts a form names. A fact holds values, so a question among its
  * arguments is asked, and `exists` names the rows it says hold.
  */
-const atoms = (form: string, facts: readonly LionExpressionType[]) =>
+const atoms = (
+  form: string,
+  facts: readonly LionExpressionType[],
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
     const result: Atom[] = [];
-    for (const value of yield* evaluateAll(facts)) {
+    for (const value of yield* evaluateAll(facts, part)) {
       if (isForm(value, "exists")) {
         result.push(...(yield* rowsOf(value)));
       } else if (value instanceof Atom) {
@@ -215,12 +236,11 @@ const rowsMustFit = (
   ];
   // The two names mean the relation and the schema, whatever else the
   // program has bound them to.
-  return Effect.flatMap(
-    makeEnvironment({ [relation.name]: value, [schemaName]: schema }),
-    (scope) =>
-      evaluateInvariant(form as never).pipe(
-        Effect.provideService(LionEnvironmentService, scope)
-      )
+  return evaluateInvariant(form as never).pipe(
+    Effect.provideService(
+      LionEnvironmentService,
+      makeEnvironment({ [relation.name]: value, [schemaName]: schema })
+    )
   );
 };
 
@@ -247,7 +267,7 @@ export const evaluateRelation = ([
     }
     const relation = yield* declareRelation(store, name, columns, key);
     const value = relationValue(relation);
-    yield* setGlobalBinding(yield* LionEnvironmentService, name, value);
+    setGlobalBinding(yield* LionEnvironmentService, name, value);
     if (schema !== undefined && rowSchema !== undefined) {
       yield* rowsMustFit(relation, value, schema, rowSchema);
     }
@@ -306,7 +326,7 @@ export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
     const schemas = (names as string[]).map(
       (name) => store.schemas.get(name) ?? makeSchema(name)
     );
-    const scope = yield* makeEnvironment(
+    const scope = makeEnvironment(
       Object.fromEntries(schemas.map((schema, at) => [names[at], schema])),
       environment
     );
@@ -314,10 +334,8 @@ export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
     for (const [at, schema] of schemas.entries()) {
       const name = names[at] as string;
       const form = shapes[at] as LionExpressionType;
-      const [definition, strings] = yield* Effect.all([
-        suspend(form),
-        dataStrings(form),
-      ]).pipe(Effect.provideService(LionEnvironmentService, scope));
+      const definition = yield* suspend(form, scope);
+      const strings = dataStrings(form, scope);
       const shape = yield* resolve(definition).pipe(declaring(name));
       if (shape instanceof LogicValue) {
         return yield* logicError(
@@ -328,15 +346,18 @@ export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
     }
     const declared = yield* declareSchemas(store, declarations);
     for (const [at, schema] of declared.entries()) {
-      yield* setGlobalBinding(environment, names[at] as string, schema);
+      setGlobalBinding(environment, names[at] as string, schema);
     }
     return declared[0];
   });
 
-export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
+export const evaluateRule = (
+  [_, head, ...body]: typeof RuleFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
     const [headValue, ...bodyValues] = yield* writing(
-      evaluateAll([head, ...body])
+      evaluateAll([head, ...body], part)
     );
     const rules = yield* compileRule(headValue, bodyValues);
     // A head that says two values are the same holds as an invariant too.
@@ -353,26 +374,31 @@ export const evaluateRule = ([_, head, ...body]: typeof RuleFormSchema.Type) =>
     return ["rule", render(headValue), ...bodyValues.map(render)];
   });
 
-export const evaluateFact = ([_, ...facts]: typeof FactFormSchema.Type) =>
+export const evaluateFact = (
+  [_, ...facts]: typeof FactFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
-    const values = yield* atoms("fact", facts);
+    const values = yield* atoms("fact", facts, part);
     return yield* assertFacts(yield* database, values);
   });
 
-export const evaluateRetract = ([_, ...facts]: typeof RetractFormSchema.Type) =>
+export const evaluateRetract = (
+  [_, ...facts]: typeof RetractFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
-    const values = yield* atoms("retract", facts);
+    const values = yield* atoms("retract", facts, part);
     return yield* retractFacts(yield* database, values);
   });
 
 /** ["query", goal, options?]; options are read as written, not evaluated. */
-export const evaluateQuery = ([
-  _,
-  goal,
-  options,
-]: typeof QueryFormSchema.Type) =>
+export const evaluateQuery = (
+  [_, goal, options]: typeof QueryFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
-    const goalValue = yield* writing(evaluate(goal));
+    const goalValue = yield* writing(part(goal));
     const query = yield* compileQuery(goalValue);
     const parsed = yield* parseQueryOptions(options, query.outputs);
     const store = yield* database;
@@ -387,10 +413,13 @@ export const evaluateQuery = ([
  * rule, query, or other find it is part of what is written: it is asked for
  * each answer of the rule, with the variables the rule has bound.
  */
-export const evaluateFind = ([_, template, goal]: typeof FindFormSchema.Type) =>
+export const evaluateFind = (
+  [_, template, goal]: typeof FindFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
     const [templateValue, goalValue] = yield* writing(
-      evaluateAll([template, goal])
+      evaluateAll([template, goal], part)
     );
     const find = new LogicForm("find", [templateValue, goalValue]);
     return (yield* isWriting) ? find : yield* answer(find);
@@ -402,11 +431,10 @@ export const evaluateFind = ([_, template, goal]: typeof FindFormSchema.Type) =>
  * head holds for values nobody has given, which the rule invents. In a
  * fact it states the rows of the goal with those values unknown.
  */
-export const evaluateExists = ([
-  _,
-  names,
-  goal,
-]: typeof ExistsFormSchema.Type) =>
+export const evaluateExists = (
+  [_, names, goal]: typeof ExistsFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
     const wrong = names.find(
       (name) => !isLogicVariableName(name) || name.startsWith("?_")
@@ -416,7 +444,7 @@ export const evaluateExists = ([
         `exists lists named logic variables, each once, such as ["?m"], but found ${JSON.stringify(names)}.`
       );
     }
-    const value = yield* goalOrBoolean("exists", goal);
+    const value = yield* goalOrBoolean("exists", goal, part);
     if (typeof value === "boolean") {
       return value;
     }
@@ -436,14 +464,17 @@ export const evaluateExists = ([
  * ["exists", ["?m"], goal]. Every other variable of the goal that a rule or
  * query around it does not bind is its own too.
  */
-export const evaluateSome = ([_, name, goal]: typeof SomeFormSchema.Type) =>
+export const evaluateSome = (
+  [_, name, goal]: typeof SomeFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
     if (!isLogicVariableName(name) || name.startsWith("?_")) {
       return yield* logicError(
         `some stands for a named logic variable, such as "?m", but found ${JSON.stringify(name)}.`
       );
     }
-    const value = yield* evaluate(goal);
+    const value = yield* part(goal);
     const variable = name.slice(1);
     if (!termVariables(value).includes(variable)) {
       return yield* logicError(
@@ -471,27 +502,39 @@ export const evaluateSome = ([_, name, goal]: typeof SomeFormSchema.Type) =>
  * database: the goal must have no answers ("none"), or at least one ("some"),
  * now and after every later change. Options are read as written.
  */
-export const evaluateInvariant = ([
-  _,
-  goal,
-  options,
-]: typeof InvariantFormSchema.Type) =>
+export const evaluateInvariant = (
+  [_, goal, options]: typeof InvariantFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
-    const goalValue = yield* writing(evaluate(goal));
+    const goalValue = yield* writing(part(goal));
     const query = yield* compileQuery(goalValue);
     const assert = yield* parseInvariantOptions(options);
     yield* addInvariant(yield* database, { assert, goal: goalValue, query });
     return ["invariant", render(goalValue), { assert }];
   });
 
-export const evaluateWhy = ([_, fact]: typeof WhyFormSchema.Type) =>
+export const evaluateWhy = (
+  [_, fact]: typeof WhyFormSchema.Type,
+  part: Part = evaluate
+) =>
   Effect.gen(function* () {
-    const [atom] = yield* atoms("why", [fact]);
+    const [atom] = yield* atoms("why", [fact], part);
     return yield* explainFact(yield* database, atom as Atom);
   });
 
-const goalOrBoolean = (form: string, expression: LionExpressionType) =>
-  Effect.flatMap(evaluate(expression), (value) =>
+/** What `not`, `and`, and `or` give a value that is no goal or boolean. */
+const notGoal = (form: string, value: unknown) =>
+  new Pending(
+    logicError(`${form} expects goals or booleans, but found ${show(value)}.`)
+  );
+
+const goalOrBoolean = (
+  form: string,
+  expression: LionExpressionType,
+  part: Part
+) =>
+  Effect.flatMap(part(expression), (value) =>
     isGoal(value)
       ? Effect.succeed(value)
       : logicError(
@@ -500,10 +543,17 @@ const goalOrBoolean = (form: string, expression: LionExpressionType) =>
   );
 
 /** Negates a goal, or a boolean outside of logic. */
-export const evaluateNot = ([_, goal]: typeof NotFormSchema.Type) =>
-  Effect.map(goalOrBoolean("not", goal), (value) =>
-    typeof value === "boolean" ? !value : new LogicForm("not", [value])
-  );
+export const compileNot = ([_, goal]: typeof NotFormSchema.Type): Compiled => {
+  const value = compile(goal);
+  const negate = (made: unknown) => {
+    if (!isGoal(made)) {
+      return notGoal("not", made);
+    }
+    return typeof made === "boolean" ? !made : new LogicForm("not", [made]);
+  };
+  return (environment, depth) =>
+    andThen(value(environment, depth), depth, negate);
+};
 
 /**
  * `and` and `or` read their arguments in order. On booleans they stop at the
@@ -512,55 +562,98 @@ export const evaluateNot = ([_, goal]: typeof NotFormSchema.Type) =>
  */
 const connective =
   (form: "and" | "or") =>
-  ([_, ...items]: typeof AndFormSchema.Type | typeof OrFormSchema.Type) =>
-    Effect.gen(function* () {
-      const decides = form === "or";
-      const goals: Goal[] = [];
-      for (const item of items) {
-        const value = yield* goalOrBoolean(form, item);
-        if (value === decides && goals.length === 0) {
-          return decides;
-        }
-        if (value !== !decides) {
-          goals.push(value);
-        }
+  ([_, ...items]:
+    | typeof AndFormSchema.Type
+    | typeof OrFormSchema.Type): Compiled => {
+    const decides = form === "or";
+    const nodes = items.map(compile);
+    const from = (
+      at: number,
+      goals: readonly Goal[],
+      environment: Environment,
+      depth: number
+    ): unknown => {
+      if (at === nodes.length) {
+        return goals.length === 0 ? !decides : new LogicForm(form, goals);
       }
-      return goals.length === 0 ? !decides : new LogicForm(form, goals);
-    });
+      return andThen(
+        (nodes[at] as Compiled)(environment, depth),
+        depth,
+        (value, now) => {
+          if (!isGoal(value)) {
+            return notGoal(form, value);
+          }
+          if (value === decides && goals.length === 0) {
+            return decides;
+          }
+          const kept = value === !decides ? goals : [...goals, value];
+          return from(at + 1, kept, environment, now);
+        }
+      );
+    };
+    return (environment, depth) => from(0, [], environment, depth);
+  };
 
-export const evaluateAnd = connective("and");
+export const compileAnd = connective("and");
 
-export const evaluateOr = connective("or");
+export const compileOr = connective("or");
+
+/**
+ * The values of the operands of a form that binds or tests, or a goal of the
+ * form when it is one: see `known`.
+ */
+const binding = (
+  form: "=" | "in",
+  operands: readonly unknown[],
+  test: (values: readonly unknown[]) => unknown
+): unknown => {
+  if (!operands.some((operand) => operand instanceof LogicValue)) {
+    return test(operands);
+  }
+  return new Pending(
+    Effect.flatMap(known(operands), (values) =>
+      values === undefined
+        ? Effect.succeed(new LogicForm(form, operands))
+        : toEffect(test(values))
+    )
+  );
+};
 
 /** Unifies two terms; without logic variables it is plain equality. */
-export const evaluateUnify = ([_, left, right]: typeof UnifyFormSchema.Type) =>
-  Effect.gen(function* () {
-    const operands = yield* evaluateAll([left, right]);
-    const values = yield* known(operands);
-    return values === undefined
-      ? new LogicForm("=", operands)
-      : sameValue(values[0], values[1]);
-  });
+export const compileUnify = ([
+  _,
+  left,
+  right,
+]: typeof UnifyFormSchema.Type): Compiled => {
+  const operands = [compile(left), compile(right)];
+  const same = (values: readonly unknown[]) => sameValue(values[0], values[1]);
+  return (environment, depth) =>
+    andThen(runAll(operands, environment, depth), depth, (made) =>
+      binding("=", made as readonly unknown[], same)
+    );
+};
 
 /**
  * ["in", element, list] binds the element to each item of the list, or tests
  * that it is one. Without logic variables it is plain membership.
  */
-export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
-  Effect.gen(function* () {
-    const operands = yield* evaluateAll([element, list]);
-    const values = yield* known(operands);
-    if (values === undefined) {
-      return new LogicForm("in", operands);
-    }
-    const [elementValue, listValue] = values;
-    if (!Array.isArray(listValue)) {
-      return yield* logicError(
-        `"in" expects a list, but found ${show(listValue)}.`
-      );
-    }
-    return listValue.some((item) => sameValue(item, elementValue));
-  });
+export const compileIn = ([
+  _,
+  element,
+  list,
+]: typeof InFormSchema.Type): Compiled => {
+  const operands = [compile(element), compile(list)];
+  const member = ([elementValue, listValue]: readonly unknown[]) =>
+    Array.isArray(listValue)
+      ? listValue.some((item) => sameValue(item, elementValue))
+      : new Pending(
+          logicError(`"in" expects a list, but found ${show(listValue)}.`)
+        );
+  return (environment, depth) =>
+    andThen(runAll(operands, environment, depth), depth, (made) =>
+      binding("in", made as readonly unknown[], member)
+    );
+};
 
 /**
  * ["snapshot"] returns a Lion program that rebuilds the current database.
@@ -568,7 +661,7 @@ export const evaluateIn = ([_, element, list]: typeof InFormSchema.Type) =>
  */
 export const evaluateSnapshot = () =>
   Effect.gen(function* () {
-    const names = yield* boundNames(yield* LionEnvironmentService);
+    const names = boundNames(yield* LionEnvironmentService);
     return yield* saveDatabase(yield* database, {
       isBound: (name) => names.has(name),
     });

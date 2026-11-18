@@ -9,7 +9,7 @@ import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { stdlib } from "@/modules";
-import { element, type Outcome, oneOf } from "./programs";
+import { element, type Outcome, oneOf, outcome } from "./programs";
 
 export type Expression = unknown;
 
@@ -493,22 +493,6 @@ export const values = Arbitrary.map(
   Arbitrary.array(small, { minLength: 1, maxLength: 5 }),
   (items) => [...new Set(items)].sort((a, b) => a - b)
 );
-
-const outcome = (effect: Effect.Effect<unknown, unknown>) =>
-  effect.pipe(
-    Effect.map(
-      (value): Outcome => ({
-        ok: true,
-        value: JSON.parse(JSON.stringify(value)) as unknown,
-      })
-    ),
-    Effect.catch((error) =>
-      Effect.succeed<Outcome>({
-        ok: false,
-        message: String((error as { message?: unknown }).message),
-      })
-    )
-  );
 
 /** Runs a program after the prelude, and reports its value or error. */
 export const attempt = (

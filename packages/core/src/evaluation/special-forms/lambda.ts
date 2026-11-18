@@ -1,11 +1,17 @@
-import { Array as Arr, Effect, Option, Record } from "effect";
+import { Effect } from "effect";
 import {
   ArgumentMismatchError,
   type UnboundNameError,
 } from "@/errors/evaluation";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
-import { getBinding, makeEnvironment } from "@/evaluation/environment";
-import { evaluate } from "@/evaluation/evaluate";
+import {
+  type Compiled,
+  DEEPEST,
+  Pending,
+  toEffect,
+} from "@/evaluation/compiled";
+import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
+import { compile } from "@/evaluation/evaluate";
 import {
   buildOf,
   DeferredCall,
@@ -21,10 +27,8 @@ import {
   recordMaker,
   registerLambda,
 } from "@/logic/terms";
-import type { Environment } from "@/schemas/environment";
 import { isSpecialFormName, type LambdaFormSchema } from "@/schemas/evaluation";
 import type { LionExpressionType } from "@/schemas/lion-expression";
-import { LionEnvironmentService } from "@/services/evaluation";
 
 /** The strings a form mentions; true for those only ever inside `quote`. */
 type References = Map<string, boolean>;
@@ -68,38 +72,78 @@ const references = (form: unknown): References => {
 };
 
 /**
+ * A Lion function as compiled code calls it. Its body is compiled the first
+ * time it is called, and kept for every call after.
+ */
+interface Lambda {
+  readonly body: LionExpressionType;
+  compiled: Compiled | undefined;
+  readonly environment: Environment | undefined;
+  readonly parameters: readonly string[];
+}
+
+const LAMBDAS = new WeakMap<object, Lambda>();
+
+/** The compiled form of a Lion function, when a value is one. */
+export const lambdaOf = (value: unknown): Lambda | undefined =>
+  typeof value === "function" ? LAMBDAS.get(value) : undefined;
+
+/**
+ * Calls a Lion function from compiled code that is `depth` calls deep. Its
+ * body runs right away, in a scope of its parameters inside the scope it
+ * closes over. A call too deep for the stack starts again at the bottom of
+ * it.
+ */
+export const enter = (
+  lambda: Lambda,
+  args: readonly unknown[],
+  depth: number
+): unknown => {
+  if (depth >= DEEPEST) {
+    return new Pending(Effect.suspend(() => toEffect(enter(lambda, args, 0))));
+  }
+  const { parameters } = lambda;
+  if (args.length < parameters.length) {
+    return new Pending(Effect.fail(new ArgumentMismatchError()));
+  }
+  const bindings = new Map<string, unknown>();
+  for (const [at, parameter] of parameters.entries()) {
+    bindings.set(parameter, args[at]);
+  }
+  lambda.compiled ??= compile(lambda.body);
+  return lambda.compiled({ bindings, parent: lambda.environment }, depth + 1);
+};
+
+/**
  * A Lion function over `body`. Without an environment it closes over nothing:
- * its body sees only its parameters.
+ * its body sees only its parameters. Host code that calls it gets an Effect,
+ * which runs the body when it runs.
  */
 export const makeLambda = (
   parameters: readonly string[],
   body: LionExpressionType,
-  environment?: Environment
-) =>
-  registerLambda(
-    Effect.fn(function* (...args: unknown[]) {
-      if (args.length < parameters.length) {
-        return yield* new ArgumentMismatchError();
-      }
-      const frame = Record.fromEntries(Arr.zip(parameters, args));
-      const scope = yield* environment === undefined
-        ? makeEnvironment(frame)
-        : makeEnvironment(frame, environment);
-      return yield* evaluate(body).pipe(
-        Effect.provideService(LionEnvironmentService, scope)
-      );
-    }),
+  environment?: Environment,
+  compiled?: Compiled
+) => {
+  const lambda: Lambda = { body, compiled, environment, parameters };
+  const fn = registerLambda(
+    (...args: unknown[]) =>
+      Effect.suspend(() => toEffect(enter(lambda, args, 0))),
     { parameters, body, environment }
   );
+  LAMBDAS.set(fn, lambda);
+  return fn;
+};
 
-export const evaluateLambda = ([
+/** Makes a lambda that closes over the scope it is made in. */
+export const compileLambda = ([
   _,
   parameters,
-  bodyExpression,
-]: typeof LambdaFormSchema.Type) =>
-  Effect.map(LionEnvironmentService, (environment) =>
-    makeLambda(parameters, bodyExpression, environment)
-  );
+  body,
+]: typeof LambdaFormSchema.Type): Compiled => {
+  const compiled = compile(body);
+  return (environment) => makeLambda(parameters, body, environment, compiled);
+};
 
 /** Makes a list of its arguments, as `array/make` does. */
 const makeList = listMaker((...items: unknown[]) => items);
@@ -166,26 +210,35 @@ const close = (
     return Effect.succeed(value);
   }
   closed.set(value, value);
+  const body = lambdaOf(value)?.compiled;
   return suspendIn(
     ["lambda", info.parameters, info.body] as LionExpressionType,
     info.environment,
-    closed
+    closed,
+    (environment) =>
+      makeLambda(
+        info.parameters,
+        info.body as LionExpressionType,
+        environment,
+        body
+      )
   ).pipe(Effect.tap((copy) => Effect.sync(() => closed.set(value, copy))));
 };
 
 const suspendIn = (
   form: LionExpressionType,
   environment: Environment,
-  closed: Map<unknown, unknown>
+  closed: Map<unknown, unknown>,
+  compiled?: Compiled
 ) =>
   Effect.gen(function* () {
     const names: string[] = [];
     const values: unknown[] = [];
     for (const [name, quoted] of references(form)) {
-      const binding = yield* getBinding(environment, name);
-      if (Option.isSome(binding)) {
+      const binding = lookup(environment, name);
+      if (binding !== UNBOUND) {
         names.push(name);
-        values.push(yield* close(binding.value, closed));
+        values.push(yield* close(binding, closed));
       } else if (!quoted && isLogicVariableName(name)) {
         names.push(name);
         values.push(new LogicVariable(name.slice(1)));
@@ -195,7 +248,11 @@ const suspendIn = (
         yield* nameOrString(environment, name);
       }
     }
-    return new DeferredCall(makeLambda(names, form), "lambda", values);
+    return new DeferredCall(
+      makeLambda(names, form, undefined, compiled),
+      "lambda",
+      values
+    );
   });
 
 /**
@@ -203,30 +260,33 @@ const suspendIn = (
  * nothing is bound to, and that are not logic variables or the names of
  * special forms.
  */
-export const dataStrings = (form: LionExpressionType) =>
-  Effect.gen(function* () {
-    const environment = yield* LionEnvironmentService;
-    const strings: string[] = [];
-    for (const [name, quoted] of references(form)) {
-      const isName =
-        quoted || isLogicVariableName(name) || isSpecialFormName(name);
-      if (!isName && Option.isNone(yield* getBinding(environment, name))) {
-        strings.push(name);
-      }
+export const dataStrings = (
+  form: LionExpressionType,
+  environment: Environment
+) => {
+  const strings: string[] = [];
+  for (const [name, quoted] of references(form)) {
+    const isName =
+      quoted || isLogicVariableName(name) || isSpecialFormName(name);
+    if (!isName && lookup(environment, name) === UNBOUND) {
+      strings.push(name);
     }
-    return strings;
-  });
+  }
+  return strings;
+};
 
 /**
  * Makes a form wait for the logic variables it mentions. The result is a
  * call to a lambda that holds the form and takes the value of every name the
- * form mentions, so the form runs later as it would run now, once the engine
- * has bound those variables.
+ * form mentions in `environment`, so the form runs later as it would run
+ * now, once the engine has bound those variables. `compiled` is the form
+ * compiled, when the caller has it.
  */
-export const suspend = (form: LionExpressionType) =>
-  Effect.flatMap(LionEnvironmentService, (environment) =>
-    suspendIn(form, environment, new Map())
-  );
+export const suspend = (
+  form: LionExpressionType,
+  environment: Environment,
+  compiled?: Compiled
+) => suspendIn(form, environment, new Map(), compiled);
 
 /** The arguments of a call that waits: lambdas among them become copies. */
 export const suspendArguments = (args: readonly unknown[]) => {

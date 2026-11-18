@@ -690,11 +690,41 @@ export const MUTATIONS: readonly Mutation[] = [
     find: '      isForm(values, "find")',
     replace: '      isForm(values, "not")',
   },
+  // Compiled code: what runs in direct style and what goes on in Effect.
+  {
+    name: "a call too deep for the stack starts again at its bottom",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  if (depth >= DEEPEST) {",
+    replace: "  if (false) {",
+    tests: ["src/evaluation/tests/compiled.test.ts"],
+  },
+  {
+    name: "a call in tail position keeps nothing of its caller",
+    file: core("evaluation/special-forms/cond.ts"),
+    find: "        return (results[at] as Compiled)(environment, depth);",
+    replace:
+      "        return andThen((results[at] as Compiled)(environment, depth), depth, (kept) => kept);",
+    tests: ["src/evaluation/tests/compiled.test.ts"],
+  },
+  {
+    name: "a library function's Effect runs in the scope of the call",
+    file: core("evaluation/compiled.ts"),
+    find: "      : Effect.provideService(effect, LionEnvironmentService, environment)",
+    replace: "      : effect",
+    tests: ["src/evaluation/tests/compiled.test.ts"],
+  },
+  {
+    name: "compiled code goes on after a node that needed Effect",
+    file: core("evaluation/compiled.ts"),
+    find: "            runAll(nodes, environment, 0, at + 1, {",
+    replace: "            runAll(nodes, environment, 0, nodes.length, {",
+    tests: ["src/evaluation/tests/compiled.test.ts"],
+  },
   {
     name: "cond does not ask a goal it tests",
     file: core("evaluation/special-forms/cond.ts"),
-    find: "        holds = yield* answer(holds);",
-    replace: "        holds = true;",
+    find: "              toEffect(decide(Boolean(answered), at, environment, 0))",
+    replace: "              toEffect(decide(true, at, environment, 0))",
   },
   {
     name: "a goal that a callback returns is not asked",
@@ -711,8 +741,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a record does not ask a goal among its values",
     file: core("evaluation/base-forms/record.ts"),
-    find: "            : Effect.all(Record.map(record, answer))",
-    replace: "            : Effect.succeed(record)",
+    find: "          : Effect.all(Record.map(record, answer))",
+    replace: "          : Effect.succeed(record)",
   },
   {
     name: "a fact does not ask a goal among its arguments",
@@ -735,14 +765,14 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a constant call that fails fails the rule while it is written",
     file: core("evaluation/special-forms/function.ts"),
-    find: "    return run(args).pipe(Effect.catch(unlessWriting));",
-    replace: "    return run(args);",
+    find: "              writing ? waiting(fn, args, callee) : Effect.fail(error)",
+    replace: "              Effect.fail(error)",
   },
   {
     name: "match does not ask the goal it is given",
     file: core("evaluation/special-forms/match.ts"),
-    find: "      value = yield* answer(value);",
-    replace: "      value = true;",
+    find: "              against(answered, environment)",
+    replace: "              against(true, environment)",
   },
   // Schemas, and the invariants a change to facts can break.
   {
@@ -883,8 +913,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "match takes a branch the value does not fit",
     file: core("evaluation/special-forms/match.ts"),
-    find: "      if (yield* fits(schema, value)) {",
-    replace: "      if (!(yield* fits(schema, value))) {",
+    find: "        if (fit) {",
+    replace: "        if (!fit) {",
     tests: [
       "src/logic/tests/schemas.test.ts",
       "src/evaluation/tests/special-forms/match.test.ts",
@@ -1194,15 +1224,15 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a string that reads as a misspelled name is a string",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "        return isNamespacedName(name)\n          ? nameOrString(environment, name)\n          : Effect.succeed(name);",
-    replace: "        return Effect.succeed(name);",
+    find: "    if (!namespaced) {",
+    replace: "    if (true) {",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
     name: "a misspelled name suggests no other",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "      if (edits < fewest) {",
-    replace: "      if (false) {",
+    find: "    if (edits < fewest) {",
+    replace: "    if (false) {",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
@@ -1236,8 +1266,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a string a shape quotes keeps its name from being declared",
     file: core("evaluation/special-forms/lambda.ts"),
-    find: "        quoted || isLogicVariableName(name) || isSpecialFormName(name);",
-    replace: "        isLogicVariableName(name) || isSpecialFormName(name);",
+    find: "      quoted || isLogicVariableName(name) || isSpecialFormName(name);",
+    replace: "      isLogicVariableName(name) || isSpecialFormName(name);",
     tests: ["src/logic/tests/groups.test.ts"],
   },
   {
@@ -1361,29 +1391,29 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a string in a module that has other names is data",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "      return inModule || nearest !== null",
-    replace: "      return nearest !== null",
+    find: "  return inModule || nearest !== null",
+    replace: "  return nearest !== null",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
     name: "a string a letter away from a bound name is data",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "      return inModule || nearest !== null",
-    replace: "      return inModule",
+    find: "  return inModule || nearest !== null",
+    replace: "  return inModule",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
     name: "every unbound string with a slash in it is a misspelled name",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "      return inModule || nearest !== null",
-    replace: "      return true",
+    find: "  return inModule || nearest !== null",
+    replace: "  return true",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
     name: "a name that is not of the form module/name is suggested for one that is",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "      for (const candidate of [...names].filter(isNamespacedName).sort()) {",
-    replace: "      for (const candidate of [...names].sort()) {",
+    find: "  for (const candidate of [...names].filter(isNamespacedName).sort()) {",
+    replace: "  for (const candidate of [...names].sort()) {",
     tests: ["src/evaluation/tests/names.test.ts"],
   },
   {
@@ -1396,7 +1426,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a relation call holds a lambda among its arguments as it is, and not closed",
     file: core("evaluation/special-forms/function.ts"),
-    find: "    return args.every(isHeld) || relationOf(fn) === undefined",
+    find: "    return relationOf(fn) === undefined || args.every(isHeld)",
     replace: "    return true",
     tests: ["src/logic/tests/patterns.test.ts"],
   },
@@ -1551,8 +1581,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "string/join puts a separator before a single item",
     file: core("modules/string.ts"),
-    find: "          texts.length < 2",
-    replace: "          texts.length < 1",
+    find: "      texts.length < 2",
+    replace: "      texts.length < 1",
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
@@ -2166,10 +2196,98 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a negative position of a slice counts from the start",
     file: core("modules/lib/shared.ts"),
-    find: "([value, start]) => value.slice(start))",
-    replace: "([value, start]) => value.slice(Math.max(start, 0)))",
+    find: "(value, start, end) => value.slice(start, end)",
+    replace: "(value, start, end) => value.slice(Math.max(start, 0), end)",
     tests: ["src/modules/tests/models.test.ts"],
   },
+  ...[
+    [
+      "a library function runs on arguments its guard says no to",
+      "lib/shared.ts",
+      "(fits(input) ? then(input as A) : decoded(input))",
+      "then(input as A)",
+    ],
+    [
+      "no schema has a guard, so every library call runs the decoder",
+      "lib/guard.ts",
+      'const kind = ast._tag === "Arrays" ? listGuard(ast) : KINDS[ast._tag];',
+      "const kind = undefined as Guard | undefined;",
+    ],
+    [
+      "a schema that transforms gets a guard",
+      "lib/guard.ts",
+      "  if (ast.encoding !== undefined) {\n    return undefined;\n  }\n",
+      "",
+    ],
+    [
+      "a guard ignores the checks of its schema",
+      "lib/guard.ts",
+      "kind(value) && checks.every((check) => passes(check, value, ast))",
+      "kind(value)",
+    ],
+    [
+      "a guard ignores the checks in a group",
+      "lib/guard.ts",
+      "check.checks.every((each) => passes(each, value, ast))",
+      "true",
+    ],
+    [
+      "a check that throws escapes the guard",
+      "lib/guard.ts",
+      "    } catch {\n      return false;\n    }",
+      "    } finally {\n    }",
+    ],
+    [
+      "a list's guard accepts a list with too few items",
+      "lib/guard.ts",
+      "      value.length < items.length ||\n",
+      "",
+    ],
+    [
+      "a list's guard accepts a list with too many items",
+      "lib/guard.ts",
+      "(rest === undefined && value.length > items.length)",
+      "false",
+    ],
+    [
+      "a list's guard checks only its first item",
+      "lib/guard.ts",
+      "if (!(items[at] ?? (rest as Guard))(value[at])) {",
+      "if (at === 0 && !(items[at] ?? (rest as Guard))(value[at])) {",
+    ],
+    [
+      "a call that leaves an argument out is checked as one that gives them all",
+      "lib/shared.ts",
+      "(runs[args.length - least] as (typeof runs)[number])(args)",
+      "(runs.at(-1) as (typeof runs)[number])(args)",
+    ],
+    [
+      "a call that gives every argument is checked as one that leaves some out",
+      "lib/shared.ts",
+      "(runs[args.length - least] as (typeof runs)[number])(args)",
+      "(runs[0] as (typeof runs)[number])(args)",
+    ],
+    [
+      "a list's guard never looks at its items",
+      "lib/guard.ts",
+      "const looks = [...items, rest].some((guard) => guard && guard !== ANY);",
+      "const looks = false;",
+    ],
+    [
+      "a list with an optional item gets a guard",
+      "lib/guard.ts",
+      "    ast.rest.length > 1 ||\n    ast.elements.some((element) => element.context?.isOptional)",
+      "    ast.rest.length > 1",
+    ],
+  ].map(
+    ([name, file, find, replace]): Mutation => ({
+      name: name as string,
+      file: core(`modules/${file}`),
+      find: find as string,
+      replace: replace as string,
+      tests: ["src/modules/tests/guard.test.ts"],
+    })
+  ),
   record(
     "a release reaches its commit's parents but not theirs",
     '    ["parent", "?hash", "?older"]',
