@@ -1,0 +1,100 @@
+{
+  "claims": [
+    {
+      "quote": "A case may run its agent several times in the same folder, as work that a later session picks up. Its prompts are then a `sessions/` folder of files named by number, `1.md`, `2.md`, run in that order, and each later prompt gets the message the session before it ended with wherever it says `{{earlier}}`.",
+      "says": {
+        "feature": "skill-eval-sessions",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts.",
+      "says": {
+        "feature": "skill-eval-setup",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "`--bare` runs the case with no skill at all.",
+      "says": {
+        "feature": "skill-eval-bare",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "A frozen eval of what a record of observations is worth when re-observing is expensive and nothing else says what changed. It runs in two sessions, and between them the project changes without the agent being told.",
+      "says": {
+        "feature": "reasoning-eval-rechecks-what-changed",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "| lion-reasoning | 4 of 4 | 12, 12, 12, 12 of 12 | $1.52 | 7.2 |",
+      "says": {
+        "measured": "rechecks-what-changed-runs-right-lion-reasoning",
+        "after": 4,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "| lion-reasoning | 4 of 4 | 12, 12, 12, 12 of 12 | $1.52 | 7.2 |",
+      "says": {
+        "measured": "rechecks-what-changed-cost-usd-lion-reasoning",
+        "after": 1.52,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "| plain notes (`baselines/notes`) | 0 of 4 | 11, 11, 11, 11 of 12 | $1.08 | 6.6 |",
+      "says": {
+        "measured": "rechecks-what-changed-runs-right-plain-notes",
+        "after": 0,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "| plain notes (`baselines/notes`) | 0 of 4 | 11, 11, 11, 11 of 12 | $1.08 | 6.6 |",
+      "says": {
+        "measured": "rechecks-what-changed-cost-usd-plain-notes",
+        "after": 1.08,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "| no skill (`--bare`) | 1 of 4 | 11, 12, 8, 9 of 12 | $0.88 | 6.0 |",
+      "says": {
+        "measured": "rechecks-what-changed-runs-right-no-record",
+        "after": 1,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "| no skill (`--bare`) | 1 of 4 | 11, 12, 8, 9 of 12 | $0.88 | 6.0 |",
+      "says": {
+        "measured": "rechecks-what-changed-cost-usd-no-record",
+        "after": 0.88,
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git.",
+      "says": {
+        "behavior": "reasoning-skill-when-it-pays",
+        "is": "expensive-observations-undated-changes",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "`--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, or another skill to compare it with; the agent is told the name its `SKILL.md` gives.",
+      "says": {
+        "feature": "skill-eval-from-other-skill",
+        "kind": "option",
+        "present": true
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 161 questions have been decided, 63 records explain them, and of what the records assert, 528 hold when Lion is run, 4 are broken, 275 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 162 questions have been decided, 64 records explain them, and of what the records assert, 530 hold when Lion is run, 4 are broken, 276 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -167,6 +167,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
 | 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
 | 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
+| 2026-11-18 | [`skill-eval-agent-folder`](#skill-eval-agent-folder) | `outside-repository` | [A skill eval's agent works outside the repository, and never sees a transcript](#skill-eval-outside-repository) |
 
 <a id="program-representation"></a>
 
@@ -3485,3 +3486,34 @@ Recorded 2026-11-18 in `history/notes/asking-what-would-hold.json`.
 - Holds when Lion is run: rule `assuming-is-a-question` holds. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
 - Holds when Lion is run: `assuming-leaves-database` is `unchanged`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
 - Holds when Lion is run: `assuming-in-rule` is `asked-per-answer`. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
+
+<a id="skill-eval-agent-folder"></a>
+
+## skill-eval-agent-folder
+
+Now: `outside-repository`.
+
+- 2026-11-18 `skill-eval-agent-folder`: `outside-repository` over `inside-repository`: "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees." (`skill-eval-outside-repository.json`)
+
+<a id="skill-eval-outside-repository"></a>
+
+### A skill eval's agent works outside the repository, and never sees a transcript
+
+Recorded 2026-11-18 in `history/notes/skill-eval-outside-repository.json`.
+
+**Context.** `bun run skill-eval` ran each agent in a folder under `out/skill-eval/`, inside the repository. A headless agent there loads the repository's `CLAUDE.md` and the index of the memory Claude Code keeps for the repository, so every run of the research skill's eval worked with Lion's developer instructions and the maintainer's notes about the skill in context. A trial of the reasoning skill found a second leak: it kept each run's transcripts in the folder the agent worked in, and a later session read the earlier one's transcript instead of the record the trial meant to test.
+
+**Decision.** Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. When its sessions end, its folder is copied there and graded.
+
+**Consequences.** No run reads the repository's instructions, the maintainer's memory, another run's work, or a transcript. Scores of the research skill's eval recorded before this change were taken with the repository's instructions and memory in context, so they are not comparable with later ones. A run's folder is in the system's temporary folder while its sessions run, so a reboot during a run loses that run.
+
+**Alternatives considered.**
+
+- Keep the agents under `out/skill-eval/` and turn the instructions off with settings. Claude Code loads `CLAUDE.md` from the folder it runs in and every folder above it, and keys its memory by the repository. No setting the runner passes stops both, and a new version could start loading something else.
+- Keep each run's transcripts beside its agent's folder. An agent lists the folder above its own. One did, and read the earlier session's transcript.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `skill-eval-agent-folder`: `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: rule `skill-eval-isolated-runs` holds. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."
+- Holds when Lion is run: `skill-eval-agent-folder` is `outside-repository`. "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees."

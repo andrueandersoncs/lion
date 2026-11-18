@@ -1,0 +1,16 @@
+schema_version: "1.1"
+name: rechecks-what-changed
+max_turns: 200
+timeout_seconds: 2700
+expected_outcome: |
+  Over two sessions, the run checks the 24 documented scores of RESULTS.md
+  against what each prompt scores on the eval service. Between the sessions
+  the prompts change without a commit, in edits like the owner's
+  uncommitted work already in every file, and every file is left with the
+  same time, so neither git nor file times say which prompts changed. The
+  second session may run 15 evals, too few to re-run the first session's 16
+  prompts and its own 8, but enough to re-run the 7 prompts whose files
+  changed. Its audit.json lists the 8 lines that are wrong at the end:
+  every line that went wrong after the first session, no line that came
+  right after it, and every other wrong line. `grade.mjs` grades the run's
+  folder stage by stage.

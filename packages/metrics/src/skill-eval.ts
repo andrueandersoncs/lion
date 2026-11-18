@@ -30,10 +30,59 @@ export interface Spent {
 /**
  * The case's prompt, after a first line that says where the copy of the
  * skill is. The run reads the skill from that folder, since the session's
- * own skills are switched off, so no installed copy can stand in for it.
+ * own skills are switched off, so no installed copy can stand in for it. A
+ * run with no skill, the baseline a skill is measured against, gets the
+ * case's prompt alone.
  */
-export const promptFor = (skill: string, prompt: string): string =>
-  `The ${skill} skill is in the folder ./skill. Read ./skill/SKILL.md before anything else and follow it; where it says "this skill's folder", it means ./skill.\n\n${prompt.trim()}\n`;
+export const promptFor = (skill: string | undefined, prompt: string): string =>
+  skill === undefined
+    ? `${prompt.trim()}\n`
+    : `The ${skill} skill is in the folder ./skill. Read ./skill/SKILL.md before anything else and follow it; where it says "this skill's folder", it means ./skill.\n\n${prompt.trim()}\n`;
+
+const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---/;
+const NAME_LINE = /^name:[ \t]*(\S+)[ \t]*$/m;
+
+/**
+ * The name a SKILL.md gives its skill in its front matter, so a run of a
+ * changed copy or of a baseline skill is told which skill it has.
+ */
+export const skillNameOf = (skillMd: string): string | undefined => {
+  const front = FRONT_MATTER.exec(skillMd)?.[1];
+  return front === undefined ? undefined : NAME_LINE.exec(front)?.[1];
+};
+
+/**
+ * The words of a command line that ask for an option the command does not
+ * have, such as a misspelled `--form`, or `--from <folder>` passed as one
+ * word. A command that ignored them would run something else than was asked.
+ */
+export const unknownOptions = (
+  words: readonly string[],
+  known: readonly string[]
+): string[] =>
+  words.filter(
+    (word) => word.startsWith("--") && !known.includes(word.slice(2))
+  );
+
+const SESSION_FILE = /^(\d+)\.md$/;
+
+/**
+ * The prompts of a case that runs more than one session, in order: the
+ * files of its `sessions/` folder named by number, such as `1.md` and
+ * `2.md`. Other files are not sessions.
+ */
+export const sessionOrder = (names: readonly string[]): string[] =>
+  names
+    .filter((name) => SESSION_FILE.test(name))
+    .sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10));
+
+/**
+ * A later session's prompt: its template, with the message the session
+ * before it ended with wherever the template says `{{earlier}}`, word for
+ * word.
+ */
+export const sessionPrompt = (template: string, earlier: string): string =>
+  template.split("{{earlier}}").join(earlier.trim());
 
 const STAGE_LINE = /^(\S+)\s+(\d+) of (\d+)$/;
 const FAILED_LINE = /^\s+failed\s+(.*)$/;
@@ -67,26 +116,16 @@ export const gradeOf = (
 const numberOr = (value: unknown): number | undefined =>
   typeof value === "number" && Number.isFinite(value) ? value : undefined;
 
-/**
- * What a headless run cost, read from the result message `claude -p
- * --output-format json` prints last. A run that printed nothing readable
- * spent an unknown amount and failed.
- */
-export const spentOf = (output: string): Spent => {
+/** The result message `claude -p --output-format json` prints last, if it printed one. */
+const resultOf = (output: string): Record<string, unknown> | undefined => {
   let parsed: unknown;
   try {
     parsed = JSON.parse(output);
   } catch {
-    return {
-      costUsd: undefined,
-      error: true,
-      minutes: undefined,
-      models: [],
-      turns: undefined,
-    };
+    return undefined;
   }
   const messages = Array.isArray(parsed) ? parsed : [parsed];
-  const result = [...messages]
+  return [...messages]
     .reverse()
     .find(
       (message) =>
@@ -94,6 +133,21 @@ export const spentOf = (output: string): Spent => {
         message !== null &&
         (message as { type?: unknown }).type === "result"
     ) as Record<string, unknown> | undefined;
+};
+
+/** The message a headless run ended with, which the next session of its case is given. */
+export const messageOf = (output: string): string | undefined => {
+  const message = resultOf(output)?.result;
+  return typeof message === "string" ? message : undefined;
+};
+
+/**
+ * What a headless run cost, read from the result message `claude -p
+ * --output-format json` prints last. A run that printed nothing readable
+ * spent an unknown amount and failed.
+ */
+export const spentOf = (output: string): Spent => {
+  const result = resultOf(output);
   const ms = numberOr(result?.duration_ms);
   const usage = result?.modelUsage;
   return {
@@ -107,6 +161,21 @@ export const spentOf = (output: string): Spent => {
     turns: numberOr(result?.num_turns),
   };
 };
+
+const sum = (a: number | undefined, b: number | undefined) =>
+  a === undefined || b === undefined ? undefined : a + b;
+
+/**
+ * What the sessions of one run spent together. A sum with an unknown part
+ * is unknown, and a run failed when any of its sessions did.
+ */
+export const addSpent = (a: Spent, b: Spent): Spent => ({
+  costUsd: sum(a.costUsd, b.costUsd),
+  error: a.error || b.error,
+  minutes: sum(a.minutes, b.minutes),
+  models: [...new Set([...a.models, ...b.models])].sort(),
+  turns: sum(a.turns, b.turns),
+});
 
 const fixed = (value: number | undefined, digits: number) =>
   value === undefined ? "unknown" : value.toFixed(digits);

@@ -13,6 +13,11 @@
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`relation-merge-option` added)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming` added)
 - The run on what to improve in Lion next (2026-11-17) is the second run in the shared research model: its sources, its 275 quoted claims, its directions as candidates, and the two programs that model invented unknowns and annotations are in `research/` beside the separation-logic run, under the names that run already used, and its ranking comes out the same there. (`lion-improvements-research` added)
+- A frozen eval of what a record of observations is worth when re-observing is expensive and nothing else says what changed. It runs in two sessions, and between them the project changes without the agent being told. (`reasoning-eval-rechecks-what-changed` added)
+- `--bare` runs the case with no skill at all. (`skill-eval-bare` added)
+- `--from <folder>` runs a changed copy of the skill instead of the one in `skills/`, or another skill to compare it with; the agent is told the name its `SKILL.md` gives. (`skill-eval-from-other-skill` added)
+- A case may run its agent several times in the same folder, as work that a later session picks up. Its prompts are then a `sessions/` folder of files named by number, `1.md`, `2.md`, run in that order, and each later prompt gets the message the session before it ended with wherever it says `{{earlier}}`. (`skill-eval-sessions` added)
+- A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts. (`skill-eval-setup` added)
 
 ### Changed
 
@@ -23,10 +28,12 @@
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. (`merge-joins-facts-and-rules` is `join`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (`assuming-in-rule` is `asked-per-answer`)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming-leaves-database` is `unchanged`)
+- It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. (`reasoning-skill-when-it-pays` is `expensive-observations-undated-changes`)
 
 ### Fixed
 
 - Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. (`keyed-aggregated-rows-differ` is `error`, was `both-held`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder` is `outside-repository`, was `inside-repository`)
 
 ### Decided
 
@@ -34,6 +41,7 @@
 - On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder`: `outside-repository` over `inside-repository`)
 
 ### Rules
 
@@ -42,6 +50,7 @@
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
+- Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

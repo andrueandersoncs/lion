@@ -29,6 +29,18 @@ const TOLD_TESTS = [
   "src/logic/tests/why-not.test.ts",
 ];
 const reasoning = (file: string) => `skills/lion-reasoning/${file}`;
+/** A file of the reasoning skill's eval case that a run's agent never sees. */
+const rechecks = (file: string) =>
+  `skills/lion-reasoning/evals/rechecks-what-changed/${file}`;
+const RECHECKS_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/reasoning-eval.test.ts"],
+};
+const SKILL_EVAL_TESTS = {
+  package: "metrics",
+  tests: ["src/tests/skill-eval.test.ts"],
+};
+const SKILL_EVAL = "packages/metrics/src/skill-eval.ts";
 const REASONING_TESTS = {
   package: "metrics",
   tests: ["src/tests/reasoning-skill.test.ts"],
@@ -2754,5 +2766,103 @@ export const MUTATIONS: readonly Mutation[] = [
     find: '  return opens(telling, new LogicForm("and", rule.body), group);',
     replace: "  return Effect.succeed(group.size < 0);",
     tests: WHY_NOT_TESTS,
+  },
+  {
+    name: "a run with no skill is told where a skill is",
+    file: SKILL_EVAL,
+    find: "  skill === undefined",
+    replace: '  skill === "never"',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "the skill eval ignores an option it does not have",
+    file: SKILL_EVAL,
+    find: '(word) => word.startsWith("--") && !known.includes(word.slice(2))',
+    replace: '(word) => word.startsWith("--") && known.length < 0',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a skill's name is read from its body as well as its front matter",
+    file: SKILL_EVAL,
+    find: "const front = FRONT_MATTER.exec(skillMd)?.[1];",
+    replace: "const front = skillMd;",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a case's sessions run in the order of their names as text",
+    file: SKILL_EVAL,
+    find: ".sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10));",
+    replace: ".sort();",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a later session gets the earlier message only where the template first asks for it",
+    file: SKILL_EVAL,
+    find: 'template.split("{{earlier}}").join(earlier.trim());',
+    replace: 'template.replace("{{earlier}}", earlier.trim());',
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a run's sessions together forget the models of all but the last",
+    file: SKILL_EVAL,
+    find: "models: [...new Set([...a.models, ...b.models])].sort(),",
+    replace: "models: [...b.models],",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a run fails only when its last session failed",
+    file: SKILL_EVAL,
+    find: "error: a.error || b.error,",
+    replace: "error: b.error,",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "a session's message is whatever its result message holds",
+    file: SKILL_EVAL,
+    find: 'return typeof message === "string" ? message : undefined;',
+    replace: "return message === undefined ? undefined : String(message);",
+    ...SKILL_EVAL_TESTS,
+  },
+  {
+    name: "the eval service scores a prompt's comments",
+    file: rechecks("world.mjs"),
+    find: '.replaceAll(/<!--[\\s\\S]*?-->/g, "")',
+    replace: '.replaceAll(/<!--never-->/g, "")',
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the eval service scores a prompt's blank lines",
+    file: rechecks("world.mjs"),
+    find: '.filter((line) => line !== "")',
+    replace: ".filter(() => true)",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the changes between the sessions leave times that say which prompts changed",
+    file: rechecks("world.mjs"),
+    find: 'utimesSync(join(dir, "prompts",',
+    replace: '(() => undefined)(join(dir, "prompts",',
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the lines that went wrong after the first session include those wrong before it",
+    file: rechecks("world.mjs"),
+    find: "changed: wrong.filter((line) => !wrongAtFirst.includes(line)),",
+    replace: "changed: wrong,",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the grade passes a report of a line that came right after the first session",
+    file: rechecks("grade.mjs"),
+    find: "ok: !reported.has(line),",
+    replace: "ok: true,",
+    ...RECHECKS_TESTS,
+  },
+  {
+    name: "the grade passes an entry that names no line of RESULTS.md",
+    file: rechecks("grade.mjs"),
+    find: "ok: right.length === 0 && unnamed.length === 0,",
+    replace: "ok: right.length === 0,",
+    ...RECHECKS_TESTS,
   },
 ];
