@@ -66,6 +66,7 @@
     "./schemas/json-primitive": "./dist/schemas/json-primitive.mjs",
     "./schemas/lion-expression": "./dist/schemas/lion-expression.mjs",
     "./services/asker": "./dist/services/asker.mjs",
+    "./services/checking": "./dist/services/checking.mjs",
     "./services/database": "./dist/services/database.mjs",
     "./services/evaluation": "./dist/services/evaluation.mjs",
     "./types/evaluation": "./dist/types/evaluation.mjs",
