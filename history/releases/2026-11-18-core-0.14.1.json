@@ -1,0 +1,13 @@
+{
+  "ships": [
+    {
+      "name": "@lionlang/core",
+      "version": "0.14.1"
+    },
+    {
+      "name": "@lionlang/cli",
+      "version": "0.13.1"
+    }
+  ],
+  "summary": "No invariant refuses a change that `assuming` only assumes: an invariant keeps the database, and an assumed change does not change it. In 0.14.0 an invariant whose filter asked with `assuming` could hold of different facts depending on whether it was declared before them or after, and one whose `assuming` added a new fact for each answer never finished. Now it holds of the same facts in any order and never asks itself again."
+}

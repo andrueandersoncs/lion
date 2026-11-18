@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
+
+No invariant refuses a change that `assuming` only assumes: an invariant keeps the database, and an assumed change does not change it. In 0.14.0 an invariant whose filter asked with `assuming` could hold of different facts depending on whether it was declared before them or after, and one whose `assuming` added a new fact for each answer never finished. Now it holds of the same facts in any order and never asks itself again.
 
 ### Changed
 
