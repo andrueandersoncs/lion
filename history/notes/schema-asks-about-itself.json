@@ -1,0 +1,77 @@
+{
+  "title": "A schema that asks about itself gets its least consistent answer, and asks again only about smaller values",
+  "context": "A schema already did not fit when its shape came back to it without going into the value, so ['schema', 'Loop', ['schema/anyOf', 'Loop', 1]] fits only 1. But a lambda in a shape that asked about its own schema started a new check, which did not know of the one under way. So ['schema', 'Same', ['lambda', ['v'], ['schema/fits?', 'v', 'Same']]] asked the same question forever, and Lion ran out of memory instead of answering, as did a schema that asked about a larger value each time. The research run on CIRT, the calculus of inductive refinement types (arXiv 2611.20867), found this. It also found that a type defined through its own negation has no consistent meaning (Liquid Haskell rejects such types), while one that refers to itself only at a strictly smaller index is well-founded (CIRT, Liquid Haskell's stratified types, Tores).",
+  "decision": "A named schema being checked is known to every check its shape starts, through a predicate too. Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit. If the shape then says the value fits, it is checked again assuming that it fits, and if that disagrees too, whether the value fits has no answer, and the check fails. Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused. A schema whose shape cannot ask about a schema, since it holds no lambda, relation, or other function that runs Lion code, is checked as before, at no cost.",
+  "consequences": "Every check of a schema whose lambdas ask about schemas ends: with an answer, with no answer, or refused, and never by running out of memory. The least answer that agrees with itself is the least fixed point the docs promised, 'finitely many steps', so a schema that only asks the same question again does not fit, and a loop through its shape gives the same answer as before. A lambda may recurse through not on a smaller part of the value, as stratified types do. A lambda that recursed on a number, such as asking about the next one, or on a value of the same size, is refused, even when it would have ended: a plain function can do that work. A failure inside another schema's lambda makes that schema not fit, as any failing lambda does.",
+  "alternatives": [
+    {
+      "option": "Fail with an error whenever a lambda asks about its own schema for the same value",
+      "rejected": "A schema that only asks the same question again has a consistent answer, that the value does not fit, and the docs promise it."
+    },
+    {
+      "option": "Answer that the value does not fit, as a loop through a shape does",
+      "rejected": "A schema that fits exactly the values that do not fit it would then fit, which contradicts its own definition."
+    },
+    {
+      "option": "A third answer, 'unknown', for a schema with no consistent answer, as three-valued semantics of logic programs give",
+      "rejected": "not, cond, find, and every schema function work with true and false, and a third value would change all of them."
+    },
+    {
+      "option": "Refuse only a value equal to the one being checked",
+      "rejected": "A lambda that asks about a larger value each time would still run out of memory."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit.",
+      "says": {
+        "decision": "schema-asks-about-itself",
+        "chose": "least-consistent-answer-else-no-answer",
+        "over": ["always-error", "does-not-fit", "third-truth-value"],
+        "because": "a schema that asks the same question again has a consistent answer, and one that fits exactly what does not fit it has none, so no other answer agrees with the schema's own definition",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused.",
+      "says": {
+        "decision": "schema-asks-about-another-value",
+        "chose": "only-smaller-values",
+        "over": ["any-value-but-an-equal-one"],
+        "because": "values that keep getting smaller run out, so every check ends, which is the stratification CIRT, Liquid Haskell, and Tores use",
+        "area": "schemas"
+      }
+    },
+    {
+      "quote": "A named schema being checked is known to every check its shape starts, through a predicate too.",
+      "says": {
+        "rule": "schema-asks-about-itself",
+        "holds": true,
+        "statement": "A schema that asks about itself again for the same value gets its least consistent answer or fails with no answer; for a smaller value it is checked as any schema is; for any other value the check is refused",
+        "area": "schemas",
+        "predicts": [
+          {
+            "behavior": "schema-asks-itself-same-value",
+            "is": "no-fit"
+          },
+          {
+            "behavior": "schema-asks-itself-no-consistent-answer",
+            "is": "error"
+          },
+          {
+            "behavior": "schema-asks-itself-smaller-value",
+            "is": "fits"
+          },
+          {
+            "behavior": "schema-asks-itself-larger-value",
+            "is": "error"
+          },
+          {
+            "behavior": "schema-self-reference-without-progress",
+            "is": "no-fit"
+          }
+        ]
+      }
+    }
+  ]
+}

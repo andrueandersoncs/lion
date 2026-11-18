@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 167 questions have been decided, 68 records explain them, and of what the records assert, 543 hold when Lion is run, 4 are broken, 294 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 169 questions have been decided, 69 records explain them, and of what the records assert, 544 hold when Lion is run, 4 are broken, 296 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -173,6 +173,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
 | 2026-11-18 | [`skill-eval-agent-folder`](#skill-eval-agent-folder) | `outside-repository` | [A skill eval's agent works outside the repository, and never sees a transcript](#skill-eval-outside-repository) |
 | 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
+| 2026-11-18 | [`schema-asks-about-another-value`](#schema-asks-about-another-value) | `only-smaller-values` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
+| 2026-11-18 | [`schema-asks-about-itself`](#schema-asks-about-itself) | `least-consistent-answer-else-no-answer` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
 
 <a id="program-representation"></a>
 
@@ -3685,3 +3687,44 @@ Recorded 2026-11-18 in `history/notes/asking-what-would-hold.json`.
 - Holds when Lion is run: rule `assuming-is-a-question` holds. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
 - Holds when Lion is run: `assuming-leaves-database` is `unchanged`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
 - Holds when Lion is run: `assuming-in-rule` is `asked-per-answer`. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
+
+<a id="schema-asks-about-another-value"></a>
+
+## schema-asks-about-another-value
+
+Now: `only-smaller-values`.
+
+- 2026-11-18 `schema-asks-about-another-value`: `only-smaller-values` over `any-value-but-an-equal-one`: "Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused." (`schema-asks-about-itself.json`)
+
+<a id="schema-asks-about-itself"></a>
+
+### A schema that asks about itself gets its least consistent answer, and asks again only about smaller values
+
+Recorded 2026-11-18 in `history/notes/schema-asks-about-itself.json`.
+
+**Context.** A schema already did not fit when its shape came back to it without going into the value, so ['schema', 'Loop', ['schema/anyOf', 'Loop', 1]] fits only 1. But a lambda in a shape that asked about its own schema started a new check, which did not know of the one under way. So ['schema', 'Same', ['lambda', ['v'], ['schema/fits?', 'v', 'Same']]] asked the same question forever, and Lion ran out of memory instead of answering, as did a schema that asked about a larger value each time. The research run on CIRT, the calculus of inductive refinement types (arXiv 2611.20867), found this. It also found that a type defined through its own negation has no consistent meaning (Liquid Haskell rejects such types), while one that refers to itself only at a strictly smaller index is well-founded (CIRT, Liquid Haskell's stratified types, Tores).
+
+**Decision.** A named schema being checked is known to every check its shape starts, through a predicate too. Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit. If the shape then says the value fits, it is checked again assuming that it fits, and if that disagrees too, whether the value fits has no answer, and the check fails. Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused. A schema whose shape cannot ask about a schema, since it holds no lambda, relation, or other function that runs Lion code, is checked as before, at no cost.
+
+**Consequences.** Every check of a schema whose lambdas ask about schemas ends: with an answer, with no answer, or refused, and never by running out of memory. The least answer that agrees with itself is the least fixed point the docs promised, 'finitely many steps', so a schema that only asks the same question again does not fit, and a loop through its shape gives the same answer as before. A lambda may recurse through not on a smaller part of the value, as stratified types do. A lambda that recursed on a number, such as asking about the next one, or on a value of the same size, is refused, even when it would have ended: a plain function can do that work. A failure inside another schema's lambda makes that schema not fit, as any failing lambda does.
+
+**Alternatives considered.**
+
+- Fail with an error whenever a lambda asks about its own schema for the same value. A schema that only asks the same question again has a consistent answer, that the value does not fit, and the docs promise it.
+- Answer that the value does not fit, as a loop through a shape does. A schema that fits exactly the values that do not fit it would then fit, which contradicts its own definition.
+- A third answer, 'unknown', for a schema with no consistent answer, as three-valued semantics of logic programs give. not, cond, find, and every schema function work with true and false, and a third value would change all of them.
+- Refuse only a value equal to the one being checked. A lambda that asks about a larger value each time would still run out of memory.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `schema-asks-about-itself`: `least-consistent-answer-else-no-answer`. "Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit."
+- Stated, not checked by running Lion: decided `schema-asks-about-another-value`: `only-smaller-values`. "Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused."
+- Holds when Lion is run: rule `schema-asks-about-itself` holds. "A named schema being checked is known to every check its shape starts, through a predicate too."
+
+<a id="schema-asks-about-itself"></a>
+
+## schema-asks-about-itself
+
+Now: `least-consistent-answer-else-no-answer`.
+
+- 2026-11-18 `schema-asks-about-itself`: `least-consistent-answer-else-no-answer` over `always-error`, `does-not-fit`, `third-truth-value`: "Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit." (`schema-asks-about-itself.json`)

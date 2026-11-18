@@ -5624,6 +5624,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>One form can declare several schemas, and each shape can name any of them, so schemas can be defined in terms of each other. A value fits only when that follows from the shapes in finitely many steps. A shape can name the schemas of its form but cannot call them, since they have no shape yet.</li>
   <li>What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: the later form fails, and says to declare that name first, to declare the two in one form, or to write the string inside <code>quote</code>.</li>
   <li>A schema that comes back to itself without going into the value does not fit: only <code>1</code> fits <code>["schema", "Loop", ["schema/anyOf", "Loop", 1]]</code>.</li>
+  <li>A lambda in a shape can ask about its own schema again. About a smaller value, one that holds fewer values, counting each character of a string, the schema is checked as any schema is. About the same value, it gets the least answer that agrees with itself: first that the value does not fit, then that it fits; when neither agrees, the check fails, since whether the value fits has no answer. About any other value the check is refused, since it need not end. Such a failure inside another schema's lambda makes that schema not fit, as any lambda that fails does.</li>
   <li>A shape cannot ask the database while it is declared, since a snapshot writes the shape and it must mean the same when loaded. A relation in a shape, or a lambda that asks, asks when a value is checked.</li>
   <li>Declaring a schema that already exists with the same shape does nothing; declaring it with a different one fails. A schema cannot take the name of a relation.</li>
 </ul>
@@ -5665,6 +5666,49 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <div class="playground-output">
     <span class="playground-status is-ok">result</span>
     <pre class="playground-result"><code>{"a sum of sums":true,"a word in it":false,"loop":[true,false]}</code></pre>
+  </div>
+</div>
+<p>A lambda in a shape can ask about its own schema. <code>EvenList</code> asks about the list's tail, a smaller value, so it is plain recursion. <code>Same</code> asks the same question again, and its least answer that agrees with itself is that the value does not fit:</p>
+<div class="playground" data-playground="A schema that asks about itself">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["schema", "EvenList", ["schema/anyOf", ["quote", []],
+    ["lambda", ["v"], ["and", ["value/array?", "v"], ["number/greaterThan", ["array/length", "v"], 0],
+      ["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]]]]],
+  ["schema", "Same", ["lambda", ["v"], ["schema/fits?", "v", "Same"]]],
+  {"even lengths": ["array/map", ["quote", [[], [1], [1, 2]]], "EvenList"],
+   "asks the same question": ["Same", 1]}]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>{
+  "even lengths": [true,false,true],
+  "asks the same question": false
+}</code></pre>
+  </div>
+</div>
+<p><code>Odd</code> would fit exactly the values that do not fit it, so no answer agrees with it, and the check fails:</p>
+<div class="playground" data-playground="A schema with no answer">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["schema", "Odd", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Odd"]]]],
+  ["Odd", 1]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-error">error</span>
+    <pre class="playground-result is-error"><code>LogicError: Whether 1 fits "Odd" has no answer: checking it asks the same question again, and the value would fit exactly when it does not.</code></pre>
+  </div>
+</div>
+<p>Asking about a value that is no smaller, such as a list that holds it, is refused:</p>
+<div class="playground" data-playground="A schema that asks about a larger value">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["schema", "Grows", ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "Grows"]]],
+  ["Grows", 1]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-error">error</span>
+    <pre class="playground-result is-error"><code>LogicError: Schema "Grows" asks whether [1] fits it while checking 1. A schema may ask about itself again only about a smaller value, so that its check ends.</code></pre>
   </div>
 </div>
 <p>Declared in two forms, the first shape would take <code>"Line"</code> for a plain string, so the second form is refused:</p>

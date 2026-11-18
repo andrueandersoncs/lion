@@ -887,6 +887,24 @@ Evaluates to `{ "stock": true, "allOf": false, "problems": [{ "path": ["rush"], 
 
   Evaluates to `{ "fits": true, "does not": false }`.
 - A value fits only when that follows from the shapes in finitely many steps, so a schema that comes back to itself without going into the value does not fit: only `1` fits `["schema", "Loop", ["schema/anyOf", "Loop", 1]]`.
+- A lambda in a shape can ask about its own schema again, and the same rule holds as far as it can:
+  - About a smaller value, such as a list's tail or one of a record's values, the schema is checked as any schema is. A value is smaller when it holds fewer values, counting each character of a string.
+  - About the same value, it gets the least answer that agrees with itself: first that the value does not fit, and, if the check then says it fits, that it fits. When neither agrees, as for a schema that fits exactly the values that do not fit it, whether the value fits has no answer, and the check fails.
+  - About any other value, such as a list that holds the value, or the next number, the check is refused, since it need not end.
+
+  A lambda that fails does not fit, so such a failure inside another schema's lambda only makes that schema not fit.
+
+  ```json
+  ["begin",
+    ["schema", "EvenList", ["schema/anyOf", ["quote", []],
+      ["lambda", ["v"], ["and", ["value/array?", "v"], ["number/greaterThan", ["array/length", "v"], 0],
+        ["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]]]]],
+    ["schema", "Same", ["lambda", ["v"], ["schema/fits?", "v", "Same"]]],
+    {"even lengths": ["array/map", ["quote", [[], [1], [1, 2]]], "EvenList"],
+     "asks the same question": ["Same", 1]}]
+  ```
+
+  Evaluates to `{ "even lengths": [true, false, true], "asks the same question": false }`. `["schema", "Odd", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Odd"]]]]` fits no value consistently, so `["Odd", 1]` fails, and says that whether `1` fits `"Odd"` has no answer.
 - What a name in a shape means is settled when the shape is declared. A name that nothing has yet is a plain string, and nothing can be declared under it afterwards: declaring `Line` after an `Order` whose shape says `"Line"` fails, and says to declare `Line` first, to declare the two in one form, or to write `["quote", "Line"]` for the string.
 - A shape can name the schemas of its form, but cannot call them: `["Expr", 1]` inside the form fails, since `Expr` has no shape yet. `["schema/open", "Sum"]` takes the name as it is, and a check fails if `Sum` turned out not to be a record or a list.
 - A shape cannot ask the database while it is declared, since a snapshot writes the shape and it has to mean the same when it is loaded. To check a value against the facts, use a relation as a schema, or ask inside a lambda.

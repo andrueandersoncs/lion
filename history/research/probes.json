@@ -21347,5 +21347,99 @@
       ["relation", "edge", ["from", "to"]],
       ["assuming", ["fact", ["edge", "a", "b"]], ["edge", "a", "b"]]
     ]
+  },
+  {
+    "case": "schema-self-reference-without-progress",
+    "area": "schemas",
+    "program": [
+      "begin",
+      ["schema", "ProbeLoop", ["schema/anyOf", "ProbeLoop", 1]],
+      [
+        "cond",
+        [["ProbeLoop", 2], ["quote", "fits"]],
+        ["else", ["quote", "no-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-asks-itself-same-value",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "ProbeSame",
+        ["lambda", ["v"], ["schema/fits?", "v", "ProbeSame"]]
+      ],
+      [
+        "cond",
+        [["ProbeSame", 1], ["quote", "fits"]],
+        ["else", ["quote", "no-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-asks-itself-no-consistent-answer",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "ProbeOdd",
+        ["lambda", ["v"], ["not", ["schema/fits?", "v", "ProbeOdd"]]]
+      ],
+      [
+        "cond",
+        [["ProbeOdd", 1], ["quote", "fits"]],
+        ["else", ["quote", "no-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-asks-itself-smaller-value",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "ProbeEven",
+        [
+          "schema/anyOf",
+          ["quote", []],
+          [
+            "lambda",
+            ["v"],
+            [
+              "and",
+              ["value/array?", "v"],
+              ["number/greaterThan", ["array/length", "v"], 0],
+              ["not", ["schema/fits?", ["array/tail", "v"], "ProbeEven"]]
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [["ProbeEven", ["quote", [1, 2]]], ["quote", "fits"]],
+        ["else", ["quote", "no-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-asks-itself-larger-value",
+    "area": "schemas",
+    "program": [
+      "begin",
+      [
+        "schema",
+        "ProbeGrows",
+        ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "ProbeGrows"]]
+      ],
+      [
+        "cond",
+        [["ProbeGrows", 1], ["quote", "fits"]],
+        ["else", ["quote", "no-fit"]]
+      ]
+    ]
   }
 ]

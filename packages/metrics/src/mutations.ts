@@ -32,6 +32,8 @@ const REST_TESTS = [
   "src/logic/tests/schemas.test.ts",
   "src/logic/tests/patterns.test.ts",
 ];
+/** The properties of a schema that asks about itself. */
+const SELF_REFERENCE_TESTS = ["src/logic/tests/self-reference.test.ts"];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
   "src/logic/tests/aggregates.test.ts",
@@ -933,6 +935,41 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
+    name: "a schema that asks about itself is never checked again assuming it fits",
+    file: core("logic/fit.ts"),
+    find: "    if (entry.refused === undefined && entry.used && answers.length > 0) {",
+    replace: "    if (false) {",
+    tests: SELF_REFERENCE_TESTS,
+  },
+  {
+    name: "a schema checked again keeps assuming the value does not fit",
+    file: core("logic/fit.ts"),
+    find: "      entry.assumed = true;",
+    replace: "      entry.assumed = false;",
+    tests: SELF_REFERENCE_TESTS,
+  },
+  {
+    name: "a schema with no consistent answer answers that the value does not fit",
+    file: core("logic/fit.ts"),
+    find: "      if (entry.refused === undefined && answers.length === 0) {",
+    replace: "      if (false) {",
+    tests: SELF_REFERENCE_TESTS,
+  },
+  {
+    name: "a schema asked about the same value through a predicate is refused",
+    file: core("logic/fit.ts"),
+    find: "    if (again || sameValue(value, earlier.value)) {",
+    replace: "    if (again) {",
+    tests: SELF_REFERENCE_TESTS,
+  },
+  {
+    name: "a schema asked about a value no smaller than its own does not fit, and is not refused",
+    file: core("logic/fit.ts"),
+    find: "    earlier.refused ??= { value };",
+    replace: "    earlier.used = earlier.used;",
+    tests: SELF_REFERENCE_TESTS,
+  },
+  {
     name: "a predicate that fails fits",
     file: core("logic/fit.ts"),
     find: "      () => Effect.succeed(false)",
@@ -959,8 +996,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a schema that comes back to itself is checked forever",
     file: core("logic/fit.ts"),
-    find: "  return at.open.has(named)",
-    replace: "  return false && at.open.has(named)",
+    find: "  const again = at.open.has(named);",
+    replace: "  const again = false && at.open.has(named);",
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {

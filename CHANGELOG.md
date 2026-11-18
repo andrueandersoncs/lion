@@ -47,6 +47,10 @@
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (`assuming-in-rule` is `asked-per-answer`)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming-leaves-database` is `unchanged`)
 - `assuming` runs in the compiled evaluator as the other forms that ask the database do: as an Effect, in the scope it was written in, with its changes and its expression evaluated by the evaluator that runs it. The generated programs that check the compiled evaluator against the interpreter it replaced, and plain code against code that waits for a logic variable, now ask questions with `assuming` too, adding a link and taking one away before a `find`. (`compiled-assuming` is `same-as-interpreter`)
+- A schema whose lambda asks about a value that is no smaller, such as a list that holds the value, is refused, since its check need not end. (`schema-asks-itself-larger-value` is `error`, was `out-of-memory`)
+- A schema that fits exactly the values that do not fit it, such as ['schema', 'Odd', ['lambda', ['v'], ['not', ['schema/fits?', 'v', 'Odd']]]], fails, and says that whether the value fits has no answer. (`schema-asks-itself-no-consistent-answer` is `error`, was `out-of-memory`)
+- A schema whose lambda asks about the schema again no longer runs Lion out of memory. One that only asks the same question again, such as ['schema', 'Same', ['lambda', ['v'], ['schema/fits?', 'v', 'Same']]], gets the least answer that agrees with itself: it does not fit. (`schema-asks-itself-same-value` is `no-fit`, was `out-of-memory`)
+- A schema whose lambda asks about a smaller value, such as a list's tail, is checked as any schema is, so a schema that asks under not whether a list's tail fits it fits the lists of even length. (`schema-asks-itself-smaller-value` is `fits`)
 
 ### Fixed
 
@@ -69,6 +73,8 @@
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder`: `outside-repository` over `inside-repository`)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`)
+- Asked about again for a smaller value, one that holds fewer values, counting each character of a string, it is checked as any schema is. Asked about again for any other value, the check is refused. (`schema-asks-about-another-value`: `only-smaller-values` over `any-value-but-an-equal-one`)
+- Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit. (`schema-asks-about-itself`: `least-consistent-answer-else-no-answer` over `always-error`, `does-not-fit`, `third-truth-value`)
 
 ### Rules
 
@@ -82,6 +88,7 @@
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
 - A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked. (rule `research-verdict-in-part`)
+- A named schema being checked is known to every check its shape starts, through a predicate too. (rule `schema-asks-about-itself`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

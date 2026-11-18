@@ -26,7 +26,7 @@
  * `match`, the functions of the `schema` module, the schema of a relation's
  * rows, and every goal that binds a variable all go through this one rule.
  */
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import {
   atLeast,
   type Count,
@@ -46,6 +46,7 @@ import {
   compareValues,
   DeferredCall,
   expression,
+  isArgumentsOnly,
   isForm,
   isListTerm,
   isPlainObject,
@@ -70,6 +71,7 @@ import {
   Unknown,
   valueKey,
 } from "@/logic/terms";
+import { type Checking, LionCheckingService } from "@/services/checking";
 import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
@@ -113,9 +115,10 @@ interface Check {
   readonly equal: boolean;
   /**
    * The named schemas being checked against this very value. A schema that
-   * comes back to itself without moving into the value does not fit, so a
-   * schema defined by itself alone fits nothing, as a rule that derives a
-   * row only from that row derives nothing.
+   * comes back to itself without moving into the value meets what it
+   * assumes of that value, which is first that it does not fit, so a schema
+   * defined by itself alone fits nothing, as a rule that derives a row only
+   * from that row derives nothing.
    */
   readonly open: ReadonlySet<SchemaInfo>;
   readonly out: Problem[];
@@ -474,6 +477,179 @@ const checkList = (
       );
 };
 
+/**
+ * Whether a schema, through the names in it, holds a predicate that runs
+ * Lion code, such as a lambda or a relation, and so can ask about a schema
+ * again while a value is checked. Data, what the `schema` functions build,
+ * and library functions that read only their arguments ask nothing.
+ */
+const asks = (schema: unknown, seen: Set<SchemaInfo>): boolean => {
+  if (schema instanceof LogicValue) {
+    return true;
+  }
+  if (typeof schema === "function") {
+    const named = schemaOf(schema);
+    if (named !== undefined) {
+      if (seen.has(named)) {
+        return false;
+      }
+      seen.add(named);
+      return asks(named.shape, seen);
+    }
+    const built = buildOf(schema);
+    return built === undefined
+      ? !isArgumentsOnly(schema)
+      : built.args.some((part) => asks(part, seen));
+  }
+  if (Array.isArray(schema)) {
+    return schema.some((part) => asks(part, seen));
+  }
+  return (
+    isPlainObject(schema) &&
+    Object.values(schema).some((part) => asks(part, seen))
+  );
+};
+
+const ASKS = new WeakMap<SchemaInfo, boolean>();
+
+/** Whether a named schema's shape can ask about a schema while it checks. */
+const asksBack = (named: SchemaInfo) => {
+  let known = ASKS.get(named);
+  if (known === undefined) {
+    known = asks(named.shape, new Set([named]));
+    ASKS.set(named, known);
+  }
+  return known;
+};
+
+const SIZES = new WeakMap<object, number>();
+
+/**
+ * How large a value is: one for each value in it, and one for each
+ * character of a string. A part of a value, such as a list's tail or a
+ * record's value, is smaller than the value, so a schema that asks about
+ * itself only about smaller values asks a finite number of times.
+ */
+const sizeOf = (value: unknown): number => {
+  if (typeof value === "string") {
+    return 1 + value.length;
+  }
+  const record = isPlainObject(value);
+  if (!(record || Array.isArray(value))) {
+    return 1;
+  }
+  let size = SIZES.get(value as object);
+  if (size === undefined) {
+    size = 1;
+    for (const part of record ? Object.values(value) : value) {
+      size += sizeOf(part);
+    }
+    SIZES.set(value as object, size);
+  }
+  return size;
+};
+
+const NOT_CHECKING: ReadonlyMap<SchemaInfo, Checking> = new Map();
+
+/**
+ * Checks a value against the shape of a named schema that can ask about a
+ * schema again, as the schemas being checked. Until the shape is checked,
+ * asking about it again for the same value answers that the value does not
+ * fit. When the shape answers that it fits, that disagrees, and the shape is
+ * checked again assuming that it fits. If that disagrees too, whether the
+ * value fits has no answer. And if the schema was asked about a value that
+ * is no smaller, the check may never end, so it is refused.
+ */
+const settle = (
+  named: SchemaInfo,
+  value: unknown,
+  at: Check,
+  vars: Vars,
+  checking: ReadonlyMap<SchemaInfo, Checking>
+): Fitting =>
+  Effect.gen(function* () {
+    const entry: Checking = {
+      assumed: false,
+      refused: undefined,
+      used: false,
+      value,
+    };
+    const shape = check(
+      named.shape,
+      value,
+      { ...at, open: new Set([...at.open, named]) },
+      vars
+    ).pipe(
+      Effect.provideService(
+        LionCheckingService,
+        new Map(checking).set(named, entry)
+      )
+    );
+    const kept = at.out.length;
+    let answers = yield* shape;
+    if (entry.refused === undefined && entry.used && answers.length > 0) {
+      entry.assumed = true;
+      entry.used = false;
+      at.out.splice(kept);
+      answers = yield* shape;
+      if (entry.refused === undefined && answers.length === 0) {
+        return yield* logicError(
+          `Whether ${show(value)} fits "${named.name}" has no answer: checking it asks the same question again, and the value would fit exactly when it does not.`
+        );
+      }
+    }
+    if (entry.refused !== undefined) {
+      return yield* logicError(
+        `Schema "${named.name}" asks whether ${show(entry.refused.value)} fits it while checking ${show(value)}. A schema may ask about itself again only about a smaller value, so that its check ends.`
+      );
+    }
+    return answers;
+  });
+
+/**
+ * A value against a named schema. A schema that asks about itself again,
+ * through its shape or a predicate in it, meets the check under way: about
+ * the same value it gets what that check assumes, about a smaller value it
+ * is checked as any schema is, and about any other value it is refused.
+ */
+const checkNamed = (
+  schema: LionFunction,
+  named: SchemaInfo,
+  value: unknown,
+  at: Check,
+  vars: Vars
+): Fitting => {
+  const again = at.open.has(named);
+  if (!asksBack(named)) {
+    return again
+      ? Effect.succeed(fail(at, { schema, value }))
+      : check(
+          named.shape,
+          value,
+          { ...at, open: new Set([...at.open, named]) },
+          vars
+        );
+  }
+  return Effect.flatMap(Effect.serviceOption(LionCheckingService), (found) => {
+    const checking = Option.getOrElse(found, () => NOT_CHECKING);
+    const earlier = checking.get(named);
+    if (
+      earlier === undefined ||
+      (!again && sizeOf(value) < sizeOf(earlier.value))
+    ) {
+      return settle(named, value, at, vars, checking);
+    }
+    if (again || sameValue(value, earlier.value)) {
+      earlier.used = true;
+      return Effect.succeed(
+        earlier.assumed ? [vars] : fail(at, { schema, value })
+      );
+    }
+    earlier.refused ??= { value };
+    return Effect.succeed(fail(at, { schema, value }));
+  });
+};
+
 /** A function is a predicate: a named schema, a built one, or any other. */
 const checkFunction = (
   schema: LionFunction,
@@ -488,14 +664,7 @@ const checkFunction = (
         `Schema "${named.name}" is still being declared, so nothing can be checked against it yet. Its shape can name it, but cannot call it.`
       );
     }
-    return at.open.has(named)
-      ? Effect.succeed(fail(at, { schema, value }))
-      : check(
-          named.shape,
-          value,
-          { ...at, open: new Set([...at.open, named]) },
-          vars
-        );
+    return checkNamed(schema, named, value, at, vars);
   }
   const built = buildOf(schema);
   const checkBuilt = built === undefined ? undefined : BUILT.get(built.by);

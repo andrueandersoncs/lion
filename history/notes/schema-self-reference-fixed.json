@@ -1,0 +1,43 @@
+{
+  "claims": [
+    {
+      "quote": "A schema whose lambda asks about the schema again no longer runs Lion out of memory. One that only asks the same question again, such as ['schema', 'Same', ['lambda', ['v'], ['schema/fits?', 'v', 'Same']]], gets the least answer that agrees with itself: it does not fit.",
+      "says": {
+        "behavior": "schema-asks-itself-same-value",
+        "is": "no-fit",
+        "area": "schemas",
+        "was": "out-of-memory"
+      },
+      "decisions": ["schema-asks-about-itself"]
+    },
+    {
+      "quote": "A schema that fits exactly the values that do not fit it, such as ['schema', 'Odd', ['lambda', ['v'], ['not', ['schema/fits?', 'v', 'Odd']]]], fails, and says that whether the value fits has no answer.",
+      "says": {
+        "behavior": "schema-asks-itself-no-consistent-answer",
+        "is": "error",
+        "area": "schemas",
+        "was": "out-of-memory"
+      },
+      "decisions": ["schema-asks-about-itself"]
+    },
+    {
+      "quote": "A schema whose lambda asks about a smaller value, such as a list's tail, is checked as any schema is, so a schema that asks under not whether a list's tail fits it fits the lists of even length.",
+      "says": {
+        "behavior": "schema-asks-itself-smaller-value",
+        "is": "fits",
+        "area": "schemas"
+      },
+      "decisions": ["schema-asks-about-itself"]
+    },
+    {
+      "quote": "A schema whose lambda asks about a value that is no smaller, such as a list that holds the value, is refused, since its check need not end.",
+      "says": {
+        "behavior": "schema-asks-itself-larger-value",
+        "is": "error",
+        "area": "schemas",
+        "was": "out-of-memory"
+      },
+      "decisions": ["schema-asks-about-itself"]
+    }
+  ]
+}
