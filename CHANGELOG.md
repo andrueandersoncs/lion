@@ -12,10 +12,13 @@
 
 - When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first. It used to depend on the order the values were made one, so swapping two equality rules could change every unknown a program showed: with ben's and cy's invented mothers and cy's grandmother made one by two equality rules, one order kept cy's mother and the other ben's. Now both keep ben's mother, which nests no unknown and sorts before cy's. (`equality-rules-order` is `independent`, was `depends-on-order`)
 - the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first (`keyed-rows-two-invented-unknowns` is `fewest-nested-then-first-sorted`)
+- A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time (`equality-rule-group-after-fact-change` is `followed`, was `derived-again`)
+- A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time: the values the changed rows hold, and every value a row joins to them, are derived again on their own, and the rest keeps its rows. Where a key makes twins share an invented mother, adding twenty twins one at a time and asking each one's mother takes 17 milliseconds with 10,000 people, where it took 8.4 seconds, and 0.1 seconds with 100,000, where it did not finish in a minute. It applies when every relation goal of the rules holds only variables and values, the goals of each rule share variables, and nothing else in their bodies asks a question; such a group whose rules join rows some other way is still derived again and compared. (`keyed-invention-after-fact-change` is `followed`, was `derived-again`)
 
 ### Decided
 
 - Each class of values a key or an equality rule makes one is written as its least member, by one order (`merge-survivor`: `least-member-fewest-nested-then-first-sorted` over `pairwise-describes-then-first-sorted`, `first-sorted-alone`)
+- A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time (`rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`)
 
 ### Rules
 
@@ -109,7 +112,7 @@ The logic layer grows with its facts. What rules derive is kept and follows ever
 ### Rules
 
 - A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
-- A rule that invents is followed through a change where it invents alone into a relation with no key: with 100,000 facts, adding a fact and asking its rows takes 70 milliseconds, where it took a second. A relation that cannot be followed, one that rules invent rows of into a keyed relation or beside other rules, one whose rule holds a function from the host, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed instead of forgotten. (rule `unfollowed-relations-derived-again`)
+- A group whose rules join rows some other way is still derived again and compared. (rule `unfollowed-relations-derived-again`)
 - `AGENTS.md` and `CLAUDE.md` stay under 200 lines each. (rule `agent-instructions-under-200-lines`)
 - `guidelines/documentation.md` and `CLAUDE.md` state the documentation procedure to run after every change, in order: run the docs' programs, search every place that describes Lion for sentences the change made untrue, give each new feature its example, rebuild the website's docs, record the change with the claims that quote reworded sentences, and say what the first two steps found. The package README, both skills' references, and the website's guarantees still described derived rows as recomputed or kept only until a change, and now say that they follow changes. (rule `documentation-procedure`)
 - The documentation procedure no longer asks for every edit to be made in both files. (rule `edit-both-readmes` withdrawn)

@@ -20,11 +20,15 @@
  * A rule that invents gives a row where no fact holds its head, so a fact
  * of its relation is a row its answers use too.
  *
- * Some groups cannot be followed: a rule invents into a relation with a
- * key, or beside other rules, where what is invented depends on the order
- * things were invented in; a rule holds a function from the host, which
- * may read anything; or a rule reads a changed relation through something
- * other than a relation goal, such as a schema.
+ * A group whose rules invent into a relation with a key, or beside other
+ * rules, or make values one, is followed a component of values at a time
+ * (see `components.ts`), when its rules join rows only through the values
+ * their variables share.
+ *
+ * Some groups cannot be followed: one whose rules invent or make values one
+ * and join rows some other way; a rule holds a function from the host,
+ * which may read anything; or a rule reads a changed relation through
+ * something other than a relation goal, such as a schema.
  * Such a group is derived again and compared with what it was, so the
  * groups that read it are still followed, when something has read it since
  * the last change. Otherwise nobody is waiting for it: it is forgotten,
@@ -38,6 +42,7 @@ import {
   type Literal,
   planLiterals,
 } from "@/logic/compile";
+import { componentwise, followComponents } from "@/logic/components";
 import { guarded } from "@/logic/magic";
 import {
   type Change,
@@ -333,6 +338,10 @@ const inventsAlone = (stratum: Stratum) =>
       rule.head.relation.key === undefined
   );
 
+/** True for a rule that invents values, or makes values one. */
+const makesValues = (rule: CompiledRule) =>
+  rule.invents !== undefined || rule.equates === true;
+
 /** True when a group's rows can be followed through a change. */
 const follows = (pass: Pass, stratum: Stratum) => {
   const { members, rules } = stratum;
@@ -341,8 +350,9 @@ const follows = (pass: Pass, stratum: Stratum) => {
     rules.every((rule) => {
       const { loose, uses } = readingOf(rule);
       return (
-        (rule.invents === undefined || inventsAlone(stratum)) &&
-        !rule.equates &&
+        (makesValues(rule) === false ||
+          inventsAlone(stratum) ||
+          componentwise(stratum)) &&
         ![...loose].some(moves) &&
         uses.every(
           ({ body, relation }) => body !== undefined || !moves(relation)
@@ -871,8 +881,10 @@ const wayFor = (pass: Pass, stratum: Stratum) => {
 
 /** Follows a change through a group, by what its rules do. */
 const followed = (pass: Pass, stratum: Stratum) => {
-  if (stratum.rules.some((rule) => rule.invents !== undefined)) {
-    return followInvented(pass, stratum);
+  if (stratum.rules.some(makesValues)) {
+    return inventsAlone(stratum)
+      ? followInvented(pass, stratum)
+      : followComponents(pass, stratum);
   }
   return stratum.rules.some((rule) => rule.aggregates.length > 0)
     ? followGroups(pass, stratum)

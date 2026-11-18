@@ -12,6 +12,12 @@ const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 /** The properties of the value a key or an equality rule keeps. */
 const MERGE_TESTS = [...EXISTENTIAL_TESTS, "src/logic/tests/merges.test.ts"];
+/** The properties of following a change a component of values at a time. */
+const COMPONENT_TESTS = [
+  "src/logic/tests/components.test.ts",
+  "src/logic/tests/maintained.test.ts",
+  ...EXISTENTIAL_TESTS,
+];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
@@ -79,7 +85,10 @@ const researchStep = (
   tests: ["src/tests/research.test.ts"],
 });
 
-const MAINTAINED_TESTS = ["src/logic/tests/maintained.test.ts"];
+const MAINTAINED_TESTS = [
+  "src/logic/tests/maintained.test.ts",
+  "src/logic/tests/components.test.ts",
+];
 const TUPLE_SET_TESTS = ["src/logic/tests/tuple-set.test.ts"];
 const BATCH_TESTS = ["src/logic/tests/batches.test.ts"];
 
@@ -171,9 +180,9 @@ const SCALING: readonly Mutation[] = [
     tests: TOLD_TESTS,
   },
   maintained(
-    "a rule that invents into a relation with a key is followed",
-    "(rule.invents === undefined || inventsAlone(stratum)) &&",
-    "true &&"
+    "a group whose rules invent is followed whatever its rules join through",
+    "          componentwise(stratum)) &&",
+    "          true) &&"
   ),
   maintained(
     "a fact does not reach the row a rule invented in its place",
@@ -472,6 +481,28 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "    if (inventions !== undefined && false) {",
     tests: EXISTENTIAL_TESTS,
   },
+  {
+    name: "a change followed a component at a time seeds it only with the rows it gained",
+    file: core("logic/components.ts"),
+    find: "  ...(lost.get(name)?.values() ?? []),",
+    replace: "",
+    tests: COMPONENT_TESTS,
+  },
+  {
+    name: "a component keeps the rows it no longer derives",
+    file: core("logic/components.ts"),
+    find: "    if (!after.has(row) && rows.delete(row)) {",
+    replace: "    if (false) {",
+    tests: COMPONENT_TESTS,
+  },
+  {
+    name: "rules whose goals share no variable are followed a component at a time",
+    file: core("logic/components.ts"),
+    find: "    connected(goals)",
+    replace: "    true",
+    tests: COMPONENT_TESTS,
+  },
+
   {
     name: "a key keeps the unknown that sorts last",
     file: core("logic/model.ts"),

@@ -386,19 +386,17 @@ const HOW: Readonly<Record<string, string>> = {
       form[0] === "relation" ? [[form[1] as string, "followed"]] : []
     )
   ),
-  // A rule that invents into a relation with a key, and a rule that
-  // reads a graph algorithm.
-  owner: "derived",
+  // A rule that reads a graph algorithm. A rule that invents into a relation
+  // with a key is followed a component of values at a time.
   grouped: "derived",
 };
 
 /**
  * What a change does with a relation, when nothing was read since the last
- * one: a relation it cannot follow is forgotten, and so is the one relation
- * here that reads such a relation.
+ * one: a relation it cannot follow is forgotten.
  */
 const unreadHow = (name: string) =>
-  HOW[name] === "derived" || name === "owned" ? "forgotten" : HOW[name];
+  HOW[name] === "derived" ? "forgotten" : HOW[name];
 
 /** The derived relations a change to each relation's facts always reaches. */
 const READERS: Readonly<Record<string, readonly string[]>> = {

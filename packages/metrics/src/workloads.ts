@@ -128,6 +128,38 @@ const SHIPMENT = [
   ],
 ];
 
+/**
+ * `n` people in twin pairs, each with a mother a rule invents, which a key
+ * on the child makes one for twins.
+ */
+const TWINS = (n: number) => [
+  ["relation", "person", ["name"]],
+  ["relation", "twin", ["a", "b"]],
+  ["relation", "mother", ["child", "mother"], { key: "child" }],
+  ["fact", ...range(n).map((index) => ["person", `p${index}`])],
+  [
+    "fact",
+    ...range(Math.floor(n / 2)).map((index) => [
+      "twin",
+      `p${2 * index}`,
+      `p${2 * index + 1}`,
+    ]),
+  ],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  [
+    "rule",
+    ["mother", "?b", "?m"],
+    ["twin", "?a", "?b"],
+    ["mother", "?a", "?m"],
+  ],
+  [
+    "rule",
+    ["mother", "?a", "?m"],
+    ["twin", "?a", "?b"],
+    ["mother", "?b", "?m"],
+  ],
+];
+
 /** `n` roads between scattered pairs of n/3 towns, each a few km long. */
 const ROADS = (n: number) => {
   const next = scattered(11);
@@ -510,6 +542,27 @@ export const WORKLOADS: readonly Workload[] = [
     ],
     timed: (n) =>
       changing(n, 20, () => size(["query", ["shipment", "?id", "?s"]])),
+  },
+  {
+    // Mothers that a key makes one: following a change derives again only
+    // the twins it touches, not every mother.
+    name: "change: add a twin, ask the mother a key gave them, 20 times",
+    gives: () => 1,
+    setup: (n) => [
+      "begin",
+      ...TWINS(n),
+      size(["query", ["mother", "?c", "?m"]]),
+    ],
+    timed: () =>
+      range(20).map((index) => [
+        "begin",
+        [
+          "fact",
+          ["person", `new${index}`],
+          ["twin", `p${2 * index}`, `new${index}`],
+        ],
+        size(["query", ["mother", `new${index}`, "?m"]]),
+      ]),
   },
   {
     name: "change: add a rule elsewhere, ask every row of a rule, 20 times",

@@ -1,0 +1,69 @@
+{
+  "title": "A group whose rules invent or make values one follows a change a component of values at a time",
+  "context": "A change to facts was followed row by row through every relation except a few, which were derived again in full and compared. Among them was a relation that rules invent rows of when it has a key or other rules beside them, and a group with an equality rule: there, the rows a change gives seemed to depend on the order things were invented in and made one, so the decision every-change-is-followed derived such a group again. That cost grew with the whole group: giving one more person a mother in a program where a key makes twins share one took 34 milliseconds with 1,000 people and 622 with 16,000. Since 91f41a5, the value a class of values made one keeps depends only on the class, so a group's rows no longer depend on the order its values were made one.",
+  "decision": "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time when each argument of its rules' relation goals is a variable or a value, the goals of each rule share variables, and nothing else in their bodies asks a question. A change reaches the values its rows hold, and every value a row of the group, or a row its goals read, joins to them. That component is derived again beside the model, from its own rows alone, by the same rounds the group is derived in, and its rows replace the ones it had. A group whose rules join rows some other way is still derived again and compared.",
+  "consequences": "An answer of such a rule combines only rows that share values, and so do the checks of rules that invent, keys, and equality rules, so the group's rows are what each component derives on its own: a database that followed a change answers as one that derived nothing. Giving one more person a mother where a key makes twins share one takes under a millisecond whatever the number of people. The first change builds an index of each relation by the columns its goals join through, once, which costs a look at every row. A rule with a pattern, a computed value, or a question in its body, or with goals that share no variable, still makes its group derived again.",
+  "alternatives": [
+    {
+      "option": "Keep deriving such a group again in full",
+      "rejected": "A change costs the whole group, which is what following changes is for avoiding."
+    },
+    {
+      "option": "Keep, for every row, the round of inventions it first held in, and follow a change round by round",
+      "rejected": "It keeps more for every row and needs every round followed in order; deriving the one component the change touched gives the same rows with what Lion already has."
+    },
+    {
+      "option": "Invent for every answer, even where the head holds, and let keys make the extra unknowns one",
+      "rejected": "It changes which unknown names a class of values in some programs, which a program can see."
+    },
+    {
+      "option": "Rewrite how changes are followed around rows that carry counts, as DBSP does",
+      "rejected": "It reverses derived-rows-follow-changes, which chose not to keep a count for every row, and it would replace the engine before it removed a single special case."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time",
+      "says": {
+        "decision": "rule-that-invents-on-change",
+        "chose": "follow-a-component-at-a-time",
+        "over": [
+          "follow-where-it-invents-alone",
+          "derive-again-every-case",
+          "track-rounds-per-row",
+          "skolem-for-keyed-relations",
+          "weighted-rows"
+        ],
+        "because": "the value a class of values made one keeps depends only on the class, so a component derived on its own gives what deriving the whole group again would",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time",
+      "says": {
+        "behavior": "keyed-invention-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time",
+      "says": {
+        "behavior": "equality-rule-group-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "A group whose rules join rows some other way is still derived again and compared.",
+      "says": {
+        "rule": "unfollowed-relations-derived-again",
+        "holds": true,
+        "statement": "A relation that cannot be followed through a change, such as one whose rules invent or make values one and join rows other than through shared variables, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed",
+        "area": "logic"
+      }
+    }
+  ]
+}

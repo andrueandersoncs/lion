@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "quote": "A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time: the values the changed rows hold, and every value a row joins to them, are derived again on their own, and the rest keeps its rows. Where a key makes twins share an invented mother, adding twenty twins one at a time and asking each one's mother takes 17 milliseconds with 10,000 people, where it took 8.4 seconds, and 0.1 seconds with 100,000, where it did not finish in a minute. It applies when every relation goal of the rules holds only variables and values, the goals of each rule share variables, and nothing else in their bodies asks a question; such a group whose rules join rows some other way is still derived again and compared.",
+      "says": {
+        "behavior": "keyed-invention-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["follow-a-component-at-a-time"]
+    },
+    {
+      "quote": "A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time",
+      "says": {
+        "behavior": "equality-rule-group-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      },
+      "decisions": ["follow-a-component-at-a-time"]
+    }
+  ]
+}

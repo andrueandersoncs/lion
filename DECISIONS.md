@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 60 records explain them, and of what the records assert, 512 hold when Lion is run, 4 are broken, 272 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 61 records explain them, and of what the records assert, 512 hold when Lion is run, 4 are broken, 275 are stated but not checked by running Lion, and 13 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -153,7 +153,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-16 | [`undoing-a-change-to-facts`](#undoing-a-change-to-facts) | `take-back-each-row` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
 | 2026-11-17 | [`derived-rows-on-refused-change`](#derived-rows-on-refused-change) | `follow-back` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`derived-rows-on-rule-change`](#derived-rows-on-rule-change) | `derive-again-what-changed` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
-| 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `follow-where-it-invents-alone` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
+| 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `follow-a-component-at-a-time` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed), [A group whose rules invent or make values one follows a change a component of values at a time](#follow-a-component-at-a-time) |
 | 2026-11-17 | [`unfollowable-relation-on-change`](#unfollowable-relation-on-change) | `derive-again-and-compare-once-read` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
@@ -3058,7 +3058,7 @@ Recorded 2026-11-17 in `history/notes/every-change-is-followed.json`.
 - Stated, not checked by running Lion: `hundred-thousand-roads-change-then-distances-ms` is 15. "adding a road and asking every shortest distance takes 15 milliseconds instead of 0.7 seconds"
 - Stated, not checked by running Lion: `million-facts-refused-change-then-every-row-ms` is 230. "a fact an invariant refused costs 0.23 seconds instead of 2.7"
 - Stated, not checked by running Lion: `recursive-aggregate-after-fact-change` is `followed`. "An aggregate that recurses goes on from the row a group has"
-- Stated, not checked by running Lion: decided `rule-that-invents-on-change`: `follow-where-it-invents-alone`. "A rule that invents is followed where it invents alone, into a relation with no key"
+- Replaced by a later word: decided `rule-that-invents-on-change`: `follow-where-it-invents-alone`. "A rule that invents is followed where it invents alone, into a relation with no key"
 - Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
 - Stated, not checked by running Lion: decided `unfollowable-relation-on-change`: `derive-again-and-compare-once-read`. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
 - Stated, not checked by running Lion: decided `derived-rows-on-rule-change`: `derive-again-what-changed`. "A `rule` form derives again the relations whose rules changed and keeps the rows of every other"
@@ -3078,9 +3078,36 @@ Now: `derive-again-what-changed`.
 
 ## rule-that-invents-on-change
 
-Now: `follow-where-it-invents-alone`.
+Now: `follow-a-component-at-a-time`.
 
 - 2026-11-17 `rule-that-invents-on-change`: `follow-where-it-invents-alone` over `follow-every-case`, `derive-again-every-case`: "A rule that invents is followed where it invents alone, into a relation with no key" (`every-change-is-followed.json`)
+- 2026-11-18 `rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`: "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time" (`follow-a-component-at-a-time.json`)
+
+<a id="follow-a-component-at-a-time"></a>
+
+### A group whose rules invent or make values one follows a change a component of values at a time
+
+Recorded 2026-11-18 in `history/notes/follow-a-component-at-a-time.json`.
+
+**Context.** A change to facts was followed row by row through every relation except a few, which were derived again in full and compared. Among them was a relation that rules invent rows of when it has a key or other rules beside them, and a group with an equality rule: there, the rows a change gives seemed to depend on the order things were invented in and made one, so the decision every-change-is-followed derived such a group again. That cost grew with the whole group: giving one more person a mother in a program where a key makes twins share one took 34 milliseconds with 1,000 people and 622 with 16,000. Since 91f41a5, the value a class of values made one keeps depends only on the class, so a group's rows no longer depend on the order its values were made one.
+
+**Decision.** A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time when each argument of its rules' relation goals is a variable or a value, the goals of each rule share variables, and nothing else in their bodies asks a question. A change reaches the values its rows hold, and every value a row of the group, or a row its goals read, joins to them. That component is derived again beside the model, from its own rows alone, by the same rounds the group is derived in, and its rows replace the ones it had. A group whose rules join rows some other way is still derived again and compared.
+
+**Consequences.** An answer of such a rule combines only rows that share values, and so do the checks of rules that invent, keys, and equality rules, so the group's rows are what each component derives on its own: a database that followed a change answers as one that derived nothing. Giving one more person a mother where a key makes twins share one takes under a millisecond whatever the number of people. The first change builds an index of each relation by the columns its goals join through, once, which costs a look at every row. A rule with a pattern, a computed value, or a question in its body, or with goals that share no variable, still makes its group derived again.
+
+**Alternatives considered.**
+
+- Keep deriving such a group again in full. A change costs the whole group, which is what following changes is for avoiding.
+- Keep, for every row, the round of inventions it first held in, and follow a change round by round. It keeps more for every row and needs every round followed in order; deriving the one component the change touched gives the same rows with what Lion already has.
+- Invent for every answer, even where the head holds, and let keys make the extra unknowns one. It changes which unknown names a class of values in some programs, which a program can see.
+- Rewrite how changes are followed around rows that carry counts, as DBSP does. It reverses derived-rows-follow-changes, which chose not to keep a count for every row, and it would replace the engine before it removed a single special case.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `rule-that-invents-on-change`: `follow-a-component-at-a-time`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
+- Stated, not checked by running Lion: `keyed-invention-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
+- Stated, not checked by running Lion: `equality-rule-group-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
+- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A group whose rules join rows some other way is still derived again and compared."
 
 <a id="unfollowable-relation-on-change"></a>
 

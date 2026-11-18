@@ -35,6 +35,7 @@
     "./logic/aggregates": "./dist/logic/aggregates.mjs",
     "./logic/algorithms": "./dist/logic/algorithms.mjs",
     "./logic/compile": "./dist/logic/compile.mjs",
+    "./logic/components": "./dist/logic/components.mjs",
     "./logic/database": "./dist/logic/database.mjs",
     "./logic/explain": "./dist/logic/explain.mjs",
     "./logic/fit": "./dist/logic/fit.mjs",
