@@ -2,6 +2,35 @@
 
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup` (`environment-bindings-read-by-host` is `map`, was `ref`)
+
+### Added
+
+- An expression is compiled to a JavaScript function of the scope it runs in (`compile` added)
+
+### Removed
+
+- `getBinding` and `setLocalBinding` are gone (`getBinding` removed; `setLocalBinding` removed)
+
+### Changed
+
+- A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (`deep-call-not-in-tail-position` is `works`; `tail-call-loop-memory` is `constant`, was `grows-with-calls`)
+
+### Decided
+
+- A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run. (`compiled-code-lifetime`: `kept-by-lambda` over `cache-by-expression`)
+- A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop. (`deep-calls`: `unwind-to-run-loop` over `continuation-passing`, `generators`, `trampoline-per-tail-call`)
+- An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. (`evaluator-design`: `compile-to-direct-style` over `match-dispatch`, was `match-dispatch`)
+- A scope holds its bindings in a `Map` that compiled code reads and writes right away. (`scope-bindings-store`: `map` over `ref`)
+
+### Rules
+
+- A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (rule `tail-calls-keep-nothing`)
+
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
 `why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.
@@ -1711,7 +1740,7 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - Evaluates its argument, then evaluates the result. (`eval-argument` is `evaluated-twice`)
 - should return a curried function when called with no arguments (`eval-no-arguments` is `function`; `quote-no-arguments` is `function`)
 - expect(result).toBeInstanceOf(ParseError); (`eval-non-expression` is `error`)
-- `run` returns an Effect 4 `Effect` (`evaluate-result` is `effect`)
+- `evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one. (`evaluate-result` is `effect`)
 - should support passing functions as arguments (`function-as-argument` is `allowed`)
 - // Functions are valid LionValues but not valid LionExpressions (`function-as-expression` is `invalid`)
 - const LionFunctionSchema = Schema.declare((input: unknown): input is (...args: unknown[]) => unknown => { (`function-as-value` is `valid`)

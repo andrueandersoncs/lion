@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Arbitrary, Effect, Match, Option, pipe, Schema } from "effect";
+import { Arbitrary, Effect, Match, pipe, Schema } from "effect";
 import { InvalidFunctionCallError } from "@/errors/evaluation";
-import { getBinding, makeEnvironment } from "@/evaluation/environment";
+import { lookup, makeEnvironment } from "@/evaluation/environment";
 import { evaluate, run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
 import { DefineFormSchema, SPECIAL_FORM_NAMES } from "@/schemas/evaluation";
@@ -18,12 +18,12 @@ describe("define special form", () => {
         // should return the value of the evaluated "value" argument; define
         // evaluates it before binding, so compute the expectation in a separate
         // environment where the defined name is never bound
-        const valueEnvironment = yield* makeEnvironment({});
+        const valueEnvironment = makeEnvironment({});
         const value = yield* evaluate(expression[2]).pipe(
           Effect.provideService(LionEnvironmentService, valueEnvironment),
           Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
         );
-        const environment = yield* makeEnvironment({});
+        const environment = makeEnvironment({});
         const result = yield* evaluate(expression).pipe(
           Effect.provideService(LionEnvironmentService, environment),
           Effect.catchTag("InvalidFunctionCallError", (e) => Effect.succeed(e))
@@ -37,12 +37,8 @@ describe("define special form", () => {
             Effect.succeed(null)
           ),
           Match.orElse(() =>
-            Effect.gen(function* () {
-              const environmentValue = yield* getBinding(
-                environment,
-                expression[1]
-              );
-              expect(Option.getOrUndefined(environmentValue)).toEqual(result);
+            Effect.sync(() => {
+              expect(lookup(environment, expression[1])).toEqual(result);
             })
           )
         );

@@ -153,6 +153,16 @@ Creates a Lion function with lexical scope.
 
 Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.
 
+Calls nest as deep as memory allows. A call in tail position keeps nothing of the call it is in, as in Scheme. A lambda's body is in tail position, and so are the result of a `cond` case and the last expression of a `begin` that are. A lambda that calls itself there is a loop, and runs in constant memory, so this counts to 100,000 in a fraction of a second:
+
+```json
+["begin",
+  ["define", "count", ["lambda", ["n", "total"],
+    ["cond", [["number/equals?", "n", 0], "total"],
+             ["else", ["count", ["number/subtract", "n", 1], ["number/add", "total", 1]]]]]],
+  ["count", 100000, 0]]
+```
+
 A call must give a lambda at least as many arguments as it has parameters. Arguments beyond those are ignored, as in JavaScript, so host code can call a lambda as a callback. The functions of the [standard library](#standard-library) are stricter: each takes a set number of arguments.
 
 ### `cond`

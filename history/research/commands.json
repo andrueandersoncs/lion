@@ -11,6 +11,10 @@
     "cwd": "packages/history",
     "command": ["bun", "commands/host-run.mjs"]
   },
+  "tail-calls": {
+    "cwd": "packages/history",
+    "command": ["bun", "commands/tail-calls.mjs"]
+  },
   "site-evaluator": {
     "cwd": "packages/site-runtime",
     "command": ["bun", "../history/commands/site-evaluator.mjs"]

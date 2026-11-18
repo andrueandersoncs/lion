@@ -1,7 +1,8 @@
 import { Effect, pipe, Schema } from "effect";
-import { evaluateArray } from "@/evaluation/base-forms/array";
-import { evaluatePrimitive } from "@/evaluation/base-forms/primitive";
-import { evaluateRecord } from "@/evaluation/base-forms/record";
+import { compileArray } from "@/evaluation/base-forms/array";
+import { compilePrimitive } from "@/evaluation/base-forms/primitive";
+import { compileRecord } from "@/evaluation/base-forms/record";
+import { type Compiled, toEffect } from "@/evaluation/compiled";
 import { makeEnvironment } from "@/evaluation/environment";
 import {
   LogicDatabase,
@@ -19,15 +20,26 @@ import { LionDatabaseService } from "@/services/database";
 import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
-/** Evaluates an expression: JSON that `run` or `eval` has checked. */
-export const evaluate = (expression: LionExpressionType): EvaluateResult => {
+/**
+ * Compiles an expression: JSON that `run` or `eval` has checked. What it
+ * compiles to holds its parts compiled, so a lambda's body is compiled once
+ * and runs compiled every time the lambda is called. Nothing else keeps it:
+ * once the code that holds it is gone, so is the compiled code.
+ */
+export const compile = (expression: LionExpressionType): Compiled => {
   if (Array.isArray(expression)) {
-    return evaluateArray(expression);
+    return compileArray(expression);
   }
   return typeof expression === "object" && expression !== null
-    ? evaluateRecord(expression as LionRecordExpressionType)
-    : evaluatePrimitive(expression as JsonPrimitiveType);
+    ? compileRecord(expression as LionRecordExpressionType)
+    : compilePrimitive(expression as JsonPrimitiveType);
 };
+
+/** Evaluates an expression in the scope of the evaluation. */
+export const evaluate = (expression: LionExpressionType): EvaluateResult =>
+  Effect.flatMap(Effect.service(LionEnvironmentService), (environment) =>
+    toEffect(compile(expression)(environment, 0))
+  );
 
 export interface RunOptions {
   /**
@@ -49,7 +61,7 @@ export const run = (
     return pipe(
       Schema.decodeUnknownEffect(LionExpressionSchema)(expression),
       Effect.flatMap(evaluate),
-      Effect.provideServiceEffect(
+      Effect.provideService(
         LionEnvironmentService,
         makeEnvironment({
           ...relationBindings(database),

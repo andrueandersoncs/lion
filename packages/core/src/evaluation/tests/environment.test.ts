@@ -1,57 +1,64 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Option, Ref } from "effect";
+import { Arbitrary, Schema } from "effect";
 import {
-  getBinding,
+  boundNames,
+  type Environment,
+  isBound,
+  lookup,
   makeEnvironment,
   setGlobalBinding,
-  setLocalBinding,
+  UNBOUND,
 } from "@/evaluation/environment";
 
-describe("environment", () => {
-  it.effect("should set a local binding", () =>
-    Effect.gen(function* () {
-      const environment = yield* makeEnvironment({});
-      const newEnvironment = yield* setLocalBinding(environment, "x", 1);
-      const binding = yield* getBinding(newEnvironment, "x");
-      expect(Option.getOrUndefined(binding)).toBe(1);
-    })
-  );
-  it.effect("should set a global binding", () =>
-    Effect.gen(function* () {
-      const parentEnvironment = yield* makeEnvironment({});
-      const environment = yield* makeEnvironment({}, parentEnvironment);
-      const newEnvironment = yield* setGlobalBinding(environment, "x", 1);
-      const bindings = yield* Ref.get(newEnvironment.bindingsRef);
-      const binding = yield* getBinding(newEnvironment, "x");
-      expect(bindings.x).toBeUndefined();
-      expect(Option.getOrUndefined(binding)).toBe(1);
-    })
-  );
-  it.effect("should get a binding from a triple-nested environment", () =>
-    Effect.gen(function* () {
-      const e1 = yield* makeEnvironment({});
-      const e2 = yield* makeEnvironment({}, e1);
-      const e3 = yield* makeEnvironment({}, e2);
-      const e4 = yield* makeEnvironment({}, e3);
-      const newEnvironment = yield* setGlobalBinding(e4, "x", 1);
-      const bindings = yield* Ref.get(newEnvironment.bindingsRef);
-      const binding = yield* getBinding(newEnvironment, "x");
-      expect(bindings.x).toBeUndefined();
-      expect(Option.getOrUndefined(binding)).toBe(1);
-    })
-  );
-});
+/** A few names, so that scopes often bind the same one. */
+const Name = Schema.Literals(["a", "b", "c", "d", "constructor"]);
 
-describe("makeEnvironment", () => {
-  it.effect("should create nested environments", () =>
-    Effect.gen(function* () {
-      const e1 = yield* makeEnvironment({});
-      const e2 = yield* makeEnvironment({}, e1);
-      const e3 = yield* makeEnvironment({}, e2);
-      const e4 = yield* makeEnvironment({}, e3);
-      expect(e4.parent).toEqual(e3);
-      expect(e3.parent).toEqual(e2);
-      expect(e2.parent).toEqual(e1);
-    })
+/** Scopes from the outermost in, each with some names bound. */
+const Scopes = Schema.Array(Schema.Record(Name, Schema.Int)).check(
+  Schema.isMinLength(1)
+);
+
+/** The scopes as nested environments, with the innermost one returned. */
+const nest = (scopes: readonly Record<string, number>[]) =>
+  scopes.reduce<Environment | undefined>(
+    (parent, bindings) => makeEnvironment(bindings, parent),
+    undefined
+  ) as Environment;
+
+/** The model: the innermost scope that has the name gives its value. */
+const modelLookup = (scopes: readonly Record<string, number>[], name: string) =>
+  scopes.findLast((scope) => Object.hasOwn(scope, name))?.[name] ?? UNBOUND;
+
+describe("environment", () => {
+  it.prop(
+    "a name has the value of the innermost scope that binds it",
+    { scopes: Arbitrary.schema(Scopes), name: Arbitrary.schema(Name) },
+    ({ scopes, name }) => {
+      const environment = nest(scopes);
+      expect(lookup(environment, name)).toBe(modelLookup(scopes, name));
+      expect(isBound(environment, name)).toBe(
+        modelLookup(scopes, name) !== UNBOUND
+      );
+      expect([...boundNames(environment)].sort()).toEqual(
+        [...new Set(scopes.flatMap(Object.keys))].sort()
+      );
+    }
+  );
+
+  it.prop(
+    "a global binding goes to the outermost scope, under any inner one",
+    {
+      scopes: Arbitrary.schema(Scopes),
+      name: Arbitrary.schema(Name),
+      value: Arbitrary.schema(Schema.Int),
+    },
+    ({ scopes, name, value }) => {
+      const environment = nest(scopes);
+      setGlobalBinding(environment, name, value);
+      const model = [{ ...scopes[0], [name]: value }, ...scopes.slice(1)];
+      for (const other of Name.literals) {
+        expect(lookup(environment, other)).toBe(modelLookup(model, other));
+      }
+    }
   );
 });

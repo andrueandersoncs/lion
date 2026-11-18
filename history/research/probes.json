@@ -16716,7 +16716,7 @@
           ["object/get", ["repo/run", "host-run"], "output"],
           [
             "quote",
-            "in the Ref the environment service holds, a host function finds its own name bound to a: \"function\"\n"
+            "in the scope the environment service holds, a host function finds its own name bound to a: \"function\"\n"
           ]
         ],
         ["quote", "effect-service"]
@@ -20718,6 +20718,93 @@
         ["quote", "printed"]
       ],
       ["else", ["quote", "not-printed"]]
+    ]
+  },
+  {
+    "case": "tail-call-loop-memory",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "tail-calls"], "output"],
+          ["quote", "holds less than 64 MB at its last call: true"]
+        ],
+        ["quote", "constant"]
+      ],
+      ["else", ["quote", "grows-with-calls"]]
+    ]
+  },
+  {
+    "case": "deep-call-not-in-tail-position",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      [
+        "define",
+        "sum",
+        [
+          "lambda",
+          ["n"],
+          [
+            "cond",
+            [["number/equals?", "n", 0], 0],
+            ["else", ["number/add", "n", ["sum", ["number/subtract", "n", 1]]]]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        [["number/equals?", ["sum", 100000], 5000050000], ["quote", "works"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "feature": "compile",
+    "kind": "function",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/evaluation/evaluate.ts"],
+      "export const compile = "
+    ]
+  },
+  {
+    "feature": "getBinding",
+    "kind": "function",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/evaluation/environment.ts"],
+      "export const getBinding = "
+    ]
+  },
+  {
+    "feature": "setLocalBinding",
+    "kind": "function",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/evaluation/environment.ts"],
+      "export const setLocalBinding = "
+    ]
+  },
+  {
+    "case": "environment-bindings-read-by-host",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          [
+            "quote",
+            "in the scope the environment service holds, a host function finds its own name bound to a: \"function\"\n"
+          ]
+        ],
+        ["quote", "map"]
+      ],
+      ["else", ["quote", "other"]]
     ]
   }
 ]

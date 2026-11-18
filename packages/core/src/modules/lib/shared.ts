@@ -1,10 +1,15 @@
 import { Effect, Schema } from "effect";
 import { atLeast, type Count, takes } from "@/errors/evaluation";
 
-export const decode =
-  <A>(schema: Schema.Decoder<A>) =>
-  (input: unknown) =>
-    Schema.decodeUnknownEffect(schema)(input);
+/**
+ * Checks a value against a schema. A check that is done right away gives a
+ * finished Effect, so a library function on values of the right kinds
+ * finishes right away too, and compiled code goes on in direct style.
+ */
+export const decode = <A>(schema: Schema.Decoder<A>) => {
+  const check = Schema.decodeUnknownEffect(schema);
+  return (input: unknown) => check(input);
+};
 
 /**
  * A library function over arguments of the given kinds: it takes one
@@ -25,7 +30,7 @@ export const overEffect = <
     >
   );
   return takes(parameters.length, (...args: unknown[]) =>
-    Effect.flatMap(check(args), (values) => operate(...values))
+    Effect.flatMapEager(check(args), (values) => operate(...values))
   );
 };
 
@@ -48,8 +53,8 @@ export const slicing = <A extends string | readonly unknown[]>(
   const between = decode(Schema.Tuple([subject, Schema.Int, Schema.Int]));
   return takes([2, 3], (...args: unknown[]) =>
     args.length === 2
-      ? Effect.map(toEnd(args), ([value, start]) => value.slice(start))
-      : Effect.map(between(args), ([value, start, end]) =>
+      ? Effect.mapEager(toEnd(args), ([value, start]) => value.slice(start))
+      : Effect.mapEager(between(args), ([value, start, end]) =>
           value.slice(start, end)
         )
   );
@@ -67,6 +72,6 @@ export const combining = <A, B, E = never>(
 ) => {
   const check = decode(Schema.Array(item));
   return takes(count, (...args: unknown[]) =>
-    Effect.flatMap(check(args), combine)
+    Effect.flatMapEager(check(args), combine)
   );
 };

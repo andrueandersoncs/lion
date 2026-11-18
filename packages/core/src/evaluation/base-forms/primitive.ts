@@ -1,21 +1,18 @@
-import { Effect, Match, Option, pipe, String as Str } from "effect";
+import { Exit } from "effect";
 import { UnboundNameError } from "@/errors/evaluation";
-import { boundNames, getBinding } from "@/evaluation/environment";
+import { type Compiled, Pending } from "@/evaluation/compiled";
+import {
+  boundNames,
+  type Environment,
+  lookup,
+  UNBOUND,
+} from "@/evaluation/environment";
 import {
   isLogicVariableName,
   isNamespacedName,
   LogicVariable,
 } from "@/logic/terms";
-import type { Environment } from "@/schemas/environment";
 import type { JsonPrimitiveType } from "@/schemas/json-primitive";
-import { LionEnvironmentService } from "@/services/evaluation.ts";
-
-export const evaluatePrimitive = (expression: JsonPrimitiveType) =>
-  pipe(
-    Match.value(expression),
-    Match.when(Str.isString, evaluateReference),
-    Match.orElse(Effect.succeed)
-  );
 
 /** How many single-letter edits turn one name into another, up to `limit`. */
 const distance = (a: string, b: string, limit: number) => {
@@ -42,48 +39,55 @@ const MAX_EDITS = 2;
  * names of its module are bound, or a bound name is a letter or two away,
  * which the error suggests. Any other such string is data, like "n/a".
  */
-export const nameOrString = (environment: Environment, name: string) =>
-  Effect.flatMap(
-    boundNames(environment),
-    (names): Effect.Effect<string, UnboundNameError> => {
-      const module = name.slice(0, name.indexOf("/") + 1);
-      let inModule = false;
-      let nearest: string | null = null;
-      let fewest = MAX_EDITS + 1;
-      // Only a name of the same form can be what was meant.
-      for (const candidate of [...names].filter(isNamespacedName).sort()) {
-        inModule ||= candidate.startsWith(module);
-        const edits = distance(name, candidate, MAX_EDITS);
-        if (edits < fewest) {
-          fewest = edits;
-          nearest = candidate;
-        }
-      }
-      return inModule || nearest !== null
-        ? Effect.fail(new UnboundNameError({ nearest, unbound: name }))
-        : Effect.succeed(name);
+export const nameOrString = (
+  environment: Environment,
+  name: string
+): Exit.Exit<string, UnboundNameError> => {
+  const names = boundNames(environment);
+  const module = name.slice(0, name.indexOf("/") + 1);
+  let inModule = false;
+  let nearest: string | null = null;
+  let fewest = MAX_EDITS + 1;
+  // Only a name of the same form can be what was meant.
+  for (const candidate of [...names].filter(isNamespacedName).sort()) {
+    inModule ||= candidate.startsWith(module);
+    const edits = distance(name, candidate, MAX_EDITS);
+    if (edits < fewest) {
+      fewest = edits;
+      nearest = candidate;
     }
-  );
+  }
+  return inModule || nearest !== null
+    ? Exit.fail(new UnboundNameError({ nearest, unbound: name }))
+    : Exit.succeed(name);
+};
 
 /**
  * Bound names evaluate to their value. An unbound `?name` evaluates to a
  * logic variable, and an unbound `module/name` that reads as a misspelled
  * name is an error. Any other unbound string evaluates to itself.
  */
-export const evaluateReference = (name: string) =>
-  Effect.flatMap(Effect.service(LionEnvironmentService), (environment) =>
-    Effect.flatMap(
-      getBinding(environment, name),
-      (binding): Effect.Effect<unknown, UnboundNameError> => {
-        if (Option.isSome(binding)) {
-          return Effect.succeed(binding.value);
-        }
-        if (isLogicVariableName(name)) {
-          return Effect.succeed(new LogicVariable(name.slice(1)));
-        }
-        return isNamespacedName(name)
-          ? nameOrString(environment, name)
-          : Effect.succeed(name);
-      }
-    )
-  );
+export const compileReference = (name: string): Compiled => {
+  const variable = isLogicVariableName(name) ? name.slice(1) : undefined;
+  const namespaced = isNamespacedName(name);
+  return (environment) => {
+    const value = lookup(environment, name);
+    if (value !== UNBOUND) {
+      return value;
+    }
+    if (variable !== undefined) {
+      return new LogicVariable(variable);
+    }
+    if (!namespaced) {
+      return name;
+    }
+    const meant = nameOrString(environment, name);
+    return Exit.isSuccess(meant) ? name : new Pending(meant);
+  };
+};
+
+/** A string is a name; any other primitive is itself. */
+export const compilePrimitive = (expression: JsonPrimitiveType): Compiled =>
+  typeof expression === "string"
+    ? compileReference(expression)
+    : () => expression;

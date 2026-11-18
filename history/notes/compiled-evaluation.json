@@ -1,0 +1,210 @@
+{
+  "title": "Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it",
+  "context": "Until 0.13.0 the evaluator walked an expression each time it ran and built an Effect for every node: a name was read from a `Ref` through an Effect, a call ran in `Effect.gen` with its parts gathered by `Effect.all`, and each array was checked against the shape of its special form, with its whole subtree, every time it ran. Plain code paid for all of it. On 0.13.0, fib(17) through a recursive lambda took 50 ms, and a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory, since each call kept a frame on the heap. Research into what to improve in Lion found that compiling to closures alone gains 30 to 50 percent (Feeley and Lapalme 1987), that direct style ran 76.2 times as fast as runtime effect handlers on Koka's JavaScript backend (Xie et al. 2020), that continuation-passing style and generators make JavaScript 3 and 2 times slower than direct style (Stopify, Baxter et al. 2018), and that inlining binds at join points keeps tail calls (Xie et al. 2021).",
+  "decision": "An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. The compiled function runs in direct style and returns the expression's value. Where a node needs Effect, because a host function returns an Effect that is not done yet, a question goes to the logic database, a call waits for a logic variable, or something fails, it returns the rest of the evaluation as an Effect, and the nodes around it go on inside that Effect. A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run. A scope holds its bindings in a `Map` that compiled code reads and writes right away. A library function whose arguments check right away gives a finished Effect, whose value compiled code takes without running it. A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop. `evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one.",
+  "consequences": "fib(17) takes 3.8 ms instead of 50 ms, and `array/map` and `array/reduce` over 20,000 items about 19 ms instead of 135 ms; rules, aggregates, and questions mostly run 1.1 to 2.4 times as fast, since they evaluate what they hold through the same code, while adding 300 rules one form at a time and finding every path along a chain of 150 ran at 0.8 to 1.1 times their old speed from run to run, where the logic engine does nearly all the work. A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. A tail position is a lambda's body, and the result of a `cond` case and the last expression of a `begin` that are in one. The core grew by 377 lines of code, 3.2 percent. Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup`; `getBinding` and `setLocalBinding` are gone, `makeEnvironment`, `setGlobalBinding`, and `boundNames` give their result instead of an Effect, and a plain special form's module exports a compiler, such as `compileCond`, in place of an evaluator. The interpreter that the compiler replaced is kept in the tests as the model it is checked against. The logic engine still evaluates what a rule holds as it did: compiling rule bodies waits for the rework of how the engine follows changes.",
+  "alternatives": [
+    {
+      "option": "Compile to closures that each still return an Effect",
+      "rejected": "The cost was binding an Effect at every node, not walking the JSON, and closure compilation alone gained 30 to 50 percent where it was measured."
+    },
+    {
+      "option": "Keep every compiled expression in a cache keyed by the expression",
+      "rejected": "A program of 100,000 facts then held 100,000 compiled calls, and its peak memory grew from 68 MB to 180 MB; code that runs again is in a lambda's body, which keeps its own."
+    },
+    {
+      "option": "Run calls in continuation-passing style or as generators, to keep the stack short",
+      "rejected": "Both make JavaScript 2 to 3 times slower than direct style, and starting again at the bottom of the stack every 100 calls costs nothing measurable."
+    },
+    {
+      "option": "Return an object for each tail call and make the calls in a loop",
+      "rejected": "That makes an object for every tail call; starting again at the bottom of the stack gives tail calls in constant memory without one."
+    },
+    {
+      "option": "Resolve each name to a slot of its scope when the expression is compiled",
+      "rejected": "A string is a name only when something is bound to it when it runs, and `define` binds names while a program runs, so a name is looked up when it runs."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs.",
+      "says": {
+        "decision": "evaluator-design",
+        "chose": "compile-to-direct-style",
+        "over": ["match-dispatch"],
+        "because": "binding an Effect at every node cost more than the work it did",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "A scope holds its bindings in a `Map` that compiled code reads and writes right away.",
+      "says": {
+        "decision": "scope-bindings-store",
+        "chose": "map",
+        "over": ["ref"],
+        "because": "compiled code reads a name right away, where a `Ref` is read through an Effect",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "A call between Lion functions uses the JavaScript stack, and a call more than 100 calls deep starts again at the bottom of the stack, in Effect's run loop.",
+      "says": {
+        "decision": "deep-calls",
+        "chose": "unwind-to-run-loop",
+        "over": [
+          "continuation-passing",
+          "generators",
+          "trampoline-per-tail-call"
+        ],
+        "because": "direct style is 2 to 3 times as fast, and unwinding every 100 calls costs nothing measurable",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "A lambda's body is compiled the first time the lambda is called and kept with the lambda; nothing else keeps compiled code, and the forms that read or change the logic database evaluate their parts as they run.",
+      "says": {
+        "decision": "compiled-code-lifetime",
+        "chose": "kept-by-lambda",
+        "over": ["cache-by-expression"],
+        "because": "a cache made a program of 100,000 facts peak at 180 MB instead of 68 MB",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows.",
+      "says": {
+        "rule": "tail-calls-keep-nothing",
+        "holds": true,
+        "statement": "A call in tail position keeps nothing of the call it is in",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "tail-call-loop-memory",
+            "is": "constant"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows.",
+      "says": {
+        "behavior": "tail-call-loop-memory",
+        "is": "constant",
+        "area": "evaluation",
+        "follows": "scheme",
+        "was": "grows-with-calls"
+      }
+    },
+    {
+      "quote": "A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows.",
+      "says": {
+        "behavior": "deep-call-not-in-tail-position",
+        "is": "works",
+        "area": "evaluation"
+      }
+    },
+    {
+      "quote": "`evaluate` and `run` still give Effects, and a Lion function that host code calls still returns one.",
+      "says": {
+        "behavior": "evaluate-result",
+        "is": "effect",
+        "area": "host"
+      }
+    },
+    {
+      "quote": "Host code that read a scope through `Ref.get(environment.bindingsRef)` reads `environment.bindings`, a `Map`, or calls `lookup`",
+      "says": {
+        "behavior": "environment-bindings-read-by-host",
+        "is": "map",
+        "area": "host",
+        "breaking": true,
+        "was": "ref"
+      }
+    },
+    {
+      "quote": "`getBinding` and `setLocalBinding` are gone",
+      "says": {
+        "feature": "getBinding",
+        "kind": "function",
+        "present": false,
+        "replaced_by": "lookup"
+      }
+    },
+    {
+      "quote": "`getBinding` and `setLocalBinding` are gone",
+      "says": {
+        "feature": "setLocalBinding",
+        "kind": "function",
+        "present": false
+      }
+    },
+    {
+      "quote": "An expression is compiled to a JavaScript function of the scope it runs in",
+      "says": {
+        "feature": "compile",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "fib(17) takes 3.8 ms instead of 50 ms",
+      "says": {
+        "measured": "fib-17-lambda-ms",
+        "before": 50,
+        "after": 3.8,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "`array/map` and `array/reduce` over 20,000 items about 19 ms instead of 135 ms",
+      "says": {
+        "measured": "map-reduce-20000-ms",
+        "before": 135,
+        "after": 19,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory",
+      "says": {
+        "measured": "tail-loop-1000000-seconds",
+        "after": 14.4,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a loop of 1,000,000 tail calls takes 0.5 s and 9 MB",
+      "says": {
+        "measured": "tail-loop-1000000-seconds",
+        "before": 14.4,
+        "after": 0.5,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a loop of 1,000,000 tail calls took 14.4 s and 4.4 GB of memory",
+      "says": {
+        "measured": "tail-loop-1000000-megabytes",
+        "after": 4400,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "a loop of 1,000,000 tail calls takes 0.5 s and 9 MB",
+      "says": {
+        "measured": "tail-loop-1000000-megabytes",
+        "before": 4400,
+        "after": 9,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "The core grew by 377 lines of code, 3.2 percent.",
+      "says": {
+        "measured": "core-code-lines-added",
+        "after": 377,
+        "area": "metrics"
+      }
+    }
+  ]
+}

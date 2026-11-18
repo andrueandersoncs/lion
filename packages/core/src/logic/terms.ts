@@ -6,7 +6,7 @@
  * bindings, and combined. Relations, rules, and queries consume them.
  */
 import { Effect } from "effect";
-import type { Environment } from "@/schemas/environment";
+import type { Environment } from "@/evaluation/environment";
 
 export type LionFunction = (...args: unknown[]) => unknown;
 
