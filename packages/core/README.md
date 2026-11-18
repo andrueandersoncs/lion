@@ -378,7 +378,7 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 
 #### Asking what would hold
 
-`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact` or `retract` form, made in order as that form would make it, with keys, merges, and invariants. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
+`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact` or `retract` form, made in order as that form would make it, with keys and merges; no invariant refuses it, since an invariant keeps the database and the change is only assumed. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
 
 ```json
 ["begin",
@@ -404,7 +404,7 @@ Evaluates to `{ "with a road from c to d": ["b", "c", "d"], "without the road fr
 - `assuming` is a question, as `find` is. In plain code it is asked right away. In a rule, query, or `find` it is asked for each answer, with the values the rule bound in place: `joins` above asks, for each pair of towns, whether a road between them would let `a` reach the second.
 - What a change states must be known when it is asked, so its variables are ones the rule around it binds. Every other variable of the expression is its own, as in any question.
 - As a goal, its expression must be a goal, and it holds when that goal holds after the changes. As a value it is whatever the expression gives, so `["=", "?n", ["assuming", ..., ["aggregate/count", ["find", ...]]]]` counts what would be there.
-- A change the database would refuse fails the question in the same words, as a fact an invariant refuses does. Assumptions nest, and an inner one starts from the database the outer one assumed.
+- An invariant does not refuse a change that is only assumed. With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`. So an invariant can ask with `assuming` what a change would do, and holds of the same facts whatever order they and the invariant came in, without asking itself again. A change that fails for another reason, such as a relation call with the wrong number of arguments, fails the question in the same words. Assumptions nest, and an inner one starts from the database the outer one assumed.
 - Each `assuming` derives what its expression needs in a database of its own, which shares every fact it does not change. Asked for each answer of a rule, it costs one such derivation per answer. Hypothetical reasoning is known to cost more than reasoning over the facts: in Datalog, adding facts hypothetically raises the cost of a question from polynomial to polynomial space.
 - A rule cannot ask, through `assuming`, about a relation that depends on its own head, as for every question.
 

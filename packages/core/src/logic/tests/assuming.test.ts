@@ -2,8 +2,9 @@
  * Asking what would hold after some changes: `assuming` gives what its
  * expression gives in the database as it would be after its `fact` and
  * `retract` forms, made as those forms make them, and leaves the database
- * as it was. Checked against the same changes made for real on a database
- * of its own.
+ * as it was. No invariant refuses a change that is only assumed. Checked
+ * against the same changes made for real on a database of its own that
+ * has the same facts and rules and no invariants.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
@@ -72,7 +73,7 @@ const withInvariants = (database: LogicDatabase, invariants: readonly Form[]) =>
 
 describe("assuming", () => {
   it.effect.prop(
-    "gives what the same changes made on a database of its own give, and leaves the database as it was",
+    "gives what the same changes made on a database of its own without invariants give, and leaves the database as it was",
     {
       given: start,
       changes: Arbitrary.array(changeForm, { minLength: 1, maxLength: 3 }),
@@ -94,11 +95,11 @@ describe("assuming", () => {
           ["assuming", ...changes, LOOK],
           database
         );
-        // The model: the same changes, made for real on a copy.
-        const snapshot = yield* attempt(["snapshot"], database);
-        expect(snapshot.ok).toBe(true);
+        // The model: the same changes, made for real on a database with the
+        // same facts and rules and no invariants, since an invariant keeps
+        // the database and does not refuse a change that is only assumed.
         const copy = new LogicDatabase({ goalDirected });
-        yield* attempt(snapshot.ok ? snapshot.value : true, copy);
+        yield* attempt(["begin", ...setup(given), true], copy);
         let made: { ok: boolean; message?: string } = { ok: true };
         for (const change of changes) {
           const outcome = yield* attempt(change, copy);
@@ -110,7 +111,7 @@ describe("assuming", () => {
         if (made.ok) {
           expect(assumed).toEqual(yield* attempt(LOOK, copy));
         } else {
-          // A change the database would refuse is refused in the same words.
+          // A change refused for another reason is refused in the same words.
           expect(assumed).toEqual(made);
         }
         expect(yield* attempt(LOOK, database)).toEqual(before);

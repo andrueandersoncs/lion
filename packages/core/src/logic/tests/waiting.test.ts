@@ -373,4 +373,46 @@ describe("an invariant that holds waiting forms", () => {
       }),
     OPTIONS
   );
+
+  it.effect.prop(
+    "holds of the same facts whether it is declared before them or after",
+    { filter: booleanOf(2, ANY), inputs: values },
+    ({ filter, inputs }) =>
+      Effect.gen(function* () {
+        const invariant = [
+          "invariant",
+          ["and", ["n", "?x"], filter],
+          { assert: "none" },
+        ];
+        const first = new LogicDatabase();
+        yield* attempt([["relation", "n", ["x"]], invariant], first);
+        const held: number[] = [];
+        const refused: number[] = [];
+        for (const input of inputs) {
+          const added = yield* attempt([["fact", ["n", input]]], first);
+          (added.ok ? held : refused).push(input);
+        }
+        // Declared after the facts, it holds of the facts it let in, and of
+        // no set with one it refused.
+        const declaredAfter = (facts: readonly number[]) =>
+          Effect.map(
+            attempt(
+              [
+                ["relation", "n", ["x"]],
+                ...(facts.length > 0
+                  ? [["fact", ...facts.map((x) => ["n", x])]]
+                  : []),
+                invariant,
+              ],
+              new LogicDatabase()
+            ),
+            (outcome) => outcome.ok
+          );
+        expect(yield* declaredAfter(held)).toBe(true);
+        for (const input of refused) {
+          expect(yield* declaredAfter([...held, input])).toBe(false);
+        }
+      }),
+    OPTIONS
+  );
 });

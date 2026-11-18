@@ -817,6 +817,14 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ASSUMING_TESTS,
   },
   {
+    name: "assuming checks the changes it assumes against the invariants",
+    file: core("logic/database.ts"),
+    find: "  copy.rules = database.rules;\n  return copy;",
+    replace:
+      "  copy.rules = database.rules;\n  copy.invariants = database.invariants;\n  return copy;",
+    tests: [...ASSUMING_TESTS, "src/logic/tests/waiting.test.ts"],
+  },
+  {
     name: "assuming leaves out its changes",
     file: core("logic/database.ts"),
     find: '        yield* change.form === "fact"\n          ? assertFacts(copy, calls(change))\n          : retractFacts(copy, calls(change));',

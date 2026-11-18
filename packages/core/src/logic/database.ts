@@ -1195,8 +1195,11 @@ export const addRules = (
 
 /**
  * A database that starts as this one is and goes its own way: it shares
- * the declarations, rules, and invariants, and the facts of each relation
- * until it changes them, when it changes its own copy.
+ * the declarations and rules, and the facts of each relation until it
+ * changes them, when it changes its own copy. It keeps no invariants: an
+ * invariant keeps the database itself, and a change made here is only
+ * assumed. So an invariant that asks with `assuming` does not ask itself
+ * again, and holds of the same facts in whatever order they came.
  */
 const copyOf = (database: LogicDatabase, changing: Iterable<string>) => {
   const copy = new LogicDatabase({ goalDirected: database.goalDirected });
@@ -1216,14 +1219,14 @@ const copyOf = (database: LogicDatabase, changing: Iterable<string>) => {
     }
   }
   copy.rules = database.rules;
-  copy.invariants = database.invariants;
   return copy;
 };
 
 /**
  * What an expression gives in the database as it would be after some
  * changes, each a `fact` or `retract` form with its relation calls, made in
- * order as the form would make it. The database itself does not change.
+ * order as the form would make it, with keys and merges and no invariant
+ * to refuse it. The database itself does not change.
  */
 const assumeIn =
   (database: LogicDatabase) =>

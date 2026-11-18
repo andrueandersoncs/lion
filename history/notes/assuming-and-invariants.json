@@ -1,0 +1,58 @@
+{
+  "title": "An invariant does not refuse a change that `assuming` only assumes",
+  "context": "Core 0.14.0 made each change of an `assuming` as its `fact` or `retract` form would make it, with keys, merges, and invariants. CI then found an invariant whose filter asks with `assuming` that held of different facts in different orders: declared after the facts n(-4) and n(-2) it held, and with the invariant declared first, adding n(-2) was refused. An invariant applied to the worlds its own filter assumes only once it had been declared, and in the world n(-2)'s filter assumed, the invariant failed for n(-4). An invariant whose `assuming` adds a new fact for each answer, such as n(x + 1), never finished: each assumed world checked the invariant again, which assumed again.",
+  "decision": "`assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database. This holds of every invariant: one written with `invariant`, the one a relation's `schema` option stands for, and the one an equality rule holds as.",
+  "consequences": "With `[\"invariant\", [\"shift\", \"?p\", \"sun\"], {\"assert\": \"none\"}]`, adding `[\"fact\", [\"shift\", \"cy\", \"sun\"]]` fails, while `[\"assuming\", [\"fact\", [\"shift\", \"cy\", \"sun\"]], [\"find\", \"?p\", [\"shift\", \"?p\", \"sun\"]]]` is `[\"cy\"]`. An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again. An `assuming` can ask about a world the database would refuse, such as one where a row does not fit its relation's schema; its expression is answered there as the facts and rules give it. A change that fails for another reason, such as a relation call with the wrong number of arguments, still fails the question in the same words. The part of the decision `asking-what-would-hold` that made changes with invariants is decided again here.",
+  "alternatives": [
+    {
+      "option": "Keep checking invariants in an assumed world, declare an invariant before checking it, and stop the recursion",
+      "rejected": "An invariant that asks with `assuming` would then hold only if it held in every world its own filter assumes, and in every world those assume. Ending that regress needs a rule of its own, as the least consistent answer is for schemas, for a question no program has needed."
+    },
+    {
+      "option": "Check invariants in an assumed world, except while an invariant is being checked",
+      "rejected": "The same `assuming` would answer differently in plain code and in an invariant's goal, where an expression gives what it gives in plain code."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database.",
+      "says": {
+        "decision": "assuming-and-invariants",
+        "chose": "invariants-keep-the-database",
+        "over": ["checked-like-fact", "skipped-inside-invariants"],
+        "because": "an assumed world that checked the invariants made an invariant that asks with assuming depend on the order of its facts and ask itself without end, and an invariant keeps the database, which an assumption does not change",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "With `[\"invariant\", [\"shift\", \"?p\", \"sun\"], {\"assert\": \"none\"}]`, adding `[\"fact\", [\"shift\", \"cy\", \"sun\"]]` fails, while `[\"assuming\", [\"fact\", [\"shift\", \"cy\", \"sun\"]], [\"find\", \"?p\", [\"shift\", \"?p\", \"sun\"]]]` is `[\"cy\"]`.",
+      "says": {
+        "behavior": "assuming-change-an-invariant-refuses",
+        "is": "assumed",
+        "area": "logic",
+        "was": "error"
+      },
+      "decisions": ["assuming-and-invariants"]
+    },
+    {
+      "quote": "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again.",
+      "says": {
+        "behavior": "invariant-asking-assuming-order",
+        "is": "independent",
+        "area": "logic",
+        "was": "depends-on-order"
+      },
+      "decisions": ["assuming-and-invariants"]
+    },
+    {
+      "quote": "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again.",
+      "says": {
+        "behavior": "invariant-assuming-a-new-fact-each-answer",
+        "is": "ends",
+        "area": "logic",
+        "was": "does-not-end"
+      },
+      "decisions": ["assuming-and-invariants"]
+    }
+  ]
+}

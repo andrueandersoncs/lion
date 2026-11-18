@@ -21441,5 +21441,116 @@
         ["else", ["quote", "no-fit"]]
       ]
     ]
+  },
+  {
+    "case": "assuming-change-an-invariant-refuses",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "shift", ["person", "day"]],
+      ["invariant", ["shift", "?p", "sun"], { "assert": "none" }],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "assuming",
+              ["fact", ["shift", "cy", "sun"]],
+              ["find", "?p", ["shift", "?p", "sun"]]
+            ],
+            ["quote", ["cy"]]
+          ],
+          ["quote", "assumed"]
+        ],
+        ["else", ["quote", "not-there"]]
+      ]
+    ]
+  },
+  {
+    "case": "invariant-asking-assuming-order",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "link", ["from", "to"]],
+      ["relation", "reach", ["from", "to"]],
+      ["relation", "n", ["x"]],
+      [
+        "fact",
+        ["link", 0, 1],
+        ["link", 0, 2],
+        ["link", 1, 2],
+        ["link", 2, 3],
+        ["link", 3, 0],
+        ["link", -1, -1],
+        ["link", -2, 4],
+        ["link", 4, 4]
+      ],
+      ["rule", ["reach", "?a", "?b"], ["link", "?a", "?b"]],
+      [
+        "rule",
+        ["reach", "?a", "?c"],
+        ["reach", "?a", "?b"],
+        ["link", "?b", "?c"]
+      ],
+      [
+        "invariant",
+        [
+          "and",
+          ["n", "?x"],
+          [
+            "in",
+            ["aggregate/sum", ["find", "?k1", ["link", "?x", "?k1"]]],
+            [
+              "assuming",
+              [
+                "fact",
+                ["link", [["func/partial", "number/add", "?x"], "?x"], 5]
+              ],
+              ["retract", ["link", 2, 3]],
+              [
+                "find",
+                "?k2",
+                ["reach", [["func/partial", "number/add", "?x"], "?x"], "?k2"]
+              ]
+            ]
+          ]
+        ],
+        { "assert": "none" }
+      ],
+      ["fact", ["n", -4]],
+      ["fact", ["n", -2]],
+      [
+        "cond",
+        [
+          ["=", ["find", "?x", ["n", "?x"]], ["quote", [-4, -2]]],
+          ["quote", "independent"]
+        ],
+        ["else", ["quote", "depends-on-order"]]
+      ]
+    ]
+  },
+  {
+    "case": "invariant-assuming-a-new-fact-each-answer",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      [
+        "invariant",
+        [
+          "and",
+          ["n", "?x"],
+          ["assuming", ["fact", ["n", ["number/add", "?x", 1]]], false]
+        ],
+        { "assert": "none" }
+      ],
+      ["fact", ["n", 0]],
+      [
+        "cond",
+        [["=", ["find", "?x", ["n", "?x"]], ["quote", [0]]], ["quote", "ends"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

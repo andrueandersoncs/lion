@@ -2,6 +2,17 @@
 
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`. (`assuming-change-an-invariant-refuses` is `assumed`, was `error`)
+- An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again. (`invariant-asking-assuming-order` is `independent`, was `depends-on-order`; `invariant-assuming-a-new-fact-each-answer` is `ends`, was `does-not-end`)
+
+### Decided
+
+- `assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database. (`assuming-and-invariants`: `invariants-keep-the-database` over `checked-like-fact`, `skipped-inside-invariants`)
+
 ## 2026-11-18 — @lionlang/core 0.14.0, @lionlang/cli 0.13.0
 
 Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, and a call in tail position keeps nothing of the call it is in, so a loop runs in constant memory. `["assuming", change, ..., expression]` asks what would hold after a change and leaves the database as it is. `schema/open` names the rest of a record or list, and a keyed relation can declare `"merge"`, a lattice aggregate that joins the values its key gets. When a key or an equality rule makes values one, the value kept is their least, so answers no longer depend on the order of rules or facts; this is a breaking change, as is host code that read a scope's bindings through a `Ref`. A group whose rules invent unknowns follows a change to facts one component of values at a time, and a schema whose lambda asks about itself no longer runs Lion out of memory. Research runs share one Lion model in `research/`.

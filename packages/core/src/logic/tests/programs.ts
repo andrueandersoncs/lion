@@ -109,6 +109,22 @@ export const INVARIANTS: readonly Form[] = [
     ],
     { assert: "none" },
   ],
+  // A question of what would hold after a change: no order whose next id,
+  // given the same status, would be cancelled. The change it assumes is
+  // not checked against the invariants, so asking does not ask again.
+  [
+    "invariant",
+    [
+      "and",
+      ["order", "?id", "?status"],
+      [
+        "assuming",
+        ["fact", ["order", ["number/add", "?id", 1], "?status"]],
+        ["cancelled", ["number/add", "?id", 1]],
+      ],
+    ],
+    { assert: "none" },
+  ],
   // A filter that fails, instead of answering, on an edge from "c".
   [
     "invariant",

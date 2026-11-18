@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 169 questions have been decided, 69 records explain them, and of what the records assert, 544 hold when Lion is run, 4 are broken, 296 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 170 questions have been decided, 70 records explain them, and of what the records assert, 547 hold when Lion is run, 4 are broken, 297 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -175,6 +175,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
 | 2026-11-18 | [`schema-asks-about-another-value`](#schema-asks-about-another-value) | `only-smaller-values` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
 | 2026-11-18 | [`schema-asks-about-itself`](#schema-asks-about-itself) | `least-consistent-answer-else-no-answer` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
+| 2026-11-18 | [`assuming-and-invariants`](#assuming-and-invariants) | `invariants-keep-the-database` | [An invariant does not refuse a change that `assuming` only assumes](#assuming-and-invariants) |
 
 <a id="program-representation"></a>
 
@@ -3728,3 +3729,35 @@ Recorded 2026-11-18 in `history/notes/schema-asks-about-itself.json`.
 Now: `least-consistent-answer-else-no-answer`.
 
 - 2026-11-18 `schema-asks-about-itself`: `least-consistent-answer-else-no-answer` over `always-error`, `does-not-fit`, `third-truth-value`: "Asked about again for the same value, it answers what the check under way assumes, which is first that the value does not fit." (`schema-asks-about-itself.json`)
+
+<a id="assuming-and-invariants"></a>
+
+## assuming-and-invariants
+
+Now: `invariants-keep-the-database`.
+
+- 2026-11-18 `assuming-and-invariants`: `invariants-keep-the-database` over `checked-like-fact`, `skipped-inside-invariants`: "`assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database." (`assuming-and-invariants.json`)
+
+<a id="assuming-and-invariants"></a>
+
+### An invariant does not refuse a change that `assuming` only assumes
+
+Recorded 2026-11-18 in `history/notes/assuming-and-invariants.json`.
+
+**Context.** Core 0.14.0 made each change of an `assuming` as its `fact` or `retract` form would make it, with keys, merges, and invariants. CI then found an invariant whose filter asks with `assuming` that held of different facts in different orders: declared after the facts n(-4) and n(-2) it held, and with the invariant declared first, adding n(-2) was refused. An invariant applied to the worlds its own filter assumes only once it had been declared, and in the world n(-2)'s filter assumed, the invariant failed for n(-4). An invariant whose `assuming` adds a new fact for each answer, such as n(x + 1), never finished: each assumed world checked the invariant again, which assumed again.
+
+**Decision.** `assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database. This holds of every invariant: one written with `invariant`, the one a relation's `schema` option stands for, and the one an equality rule holds as.
+
+**Consequences.** With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`. An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again. An `assuming` can ask about a world the database would refuse, such as one where a row does not fit its relation's schema; its expression is answered there as the facts and rules give it. A change that fails for another reason, such as a relation call with the wrong number of arguments, still fails the question in the same words. The part of the decision `asking-what-would-hold` that made changes with invariants is decided again here.
+
+**Alternatives considered.**
+
+- Keep checking invariants in an assumed world, declare an invariant before checking it, and stop the recursion. An invariant that asks with `assuming` would then hold only if it held in every world its own filter assumes, and in every world those assume. Ending that regress needs a rule of its own, as the least consistent answer is for schemas, for a question no program has needed.
+- Check invariants in an assumed world, except while an invariant is being checked. The same `assuming` would answer differently in plain code and in an invariant's goal, where an expression gives what it gives in plain code.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `assuming-and-invariants`: `invariants-keep-the-database`. "`assuming` makes its changes with keys and merges, and no invariant refuses them: an invariant keeps the database, and a change that is only assumed does not change the database."
+- Holds when Lion is run: `assuming-change-an-invariant-refuses` is `assumed`. "With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`."
+- Holds when Lion is run: `invariant-asking-assuming-order` is `independent`. "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again."
+- Holds when Lion is run: `invariant-assuming-a-new-fact-each-answer` is `ends`. "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again."

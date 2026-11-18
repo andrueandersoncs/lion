@@ -378,7 +378,7 @@
 ["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]
 </code-block>
 <ul>
-  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a> or <a href="#form-retract"><code>retract</code></a> form of relation calls, made in order as that form would make it: a key replaces a row, a merge takes a candidate, and a change an invariant refuses fails in the same words.</li>
+  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a> or <a href="#form-retract"><code>retract</code></a> form of relation calls, made in order as that form would make it: a key replaces a row, and a merge takes a candidate. No <a href="#form-invariant">invariant</a> refuses the change: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
   <li>The expression is asked there: a goal is <code>true</code> or <code>false</code>, a <code>find</code> is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.</li>
   <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. What a change states must be known then; every other variable of the expression is its own.</li>
   <li>An inner <code>assuming</code> starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.</li>
@@ -391,8 +391,10 @@
   ["fact", ["road", "a", "b"], ["road", "b", "c"]],
   ["rule", ["reaches", "?x", "?y"], ["road", "?x", "?y"]],
   ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]],
+  ["invariant", ["road", "?_", "a"], {"assert": "none"}],
   {"with c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
    "without b to c": ["assuming", ["retract", ["road", "b", "c"]], ["reaches", "a", "c"]],
+   "with c to a, which the invariant keeps out": ["assuming", ["fact", ["road", "c", "a"]], ["reaches", "c", "b"]],
    "as it is": ["find", "?t", ["reaches", "a", "?t"]]}]
 </lion-example>
 
