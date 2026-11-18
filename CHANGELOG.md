@@ -2,7 +2,9 @@
 
 # Changelog
 
-## Unreleased
+## 2026-11-18 — @lionlang/core 0.14.0, @lionlang/cli 0.13.0
+
+Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, and a call in tail position keeps nothing of the call it is in, so a loop runs in constant memory. `["assuming", change, ..., expression]` asks what would hold after a change and leaves the database as it is. `schema/open` names the rest of a record or list, and a keyed relation can declare `"merge"`, a lattice aggregate that joins the values its key gets. When a key or an equality rule makes values one, the value kept is their least, so answers no longer depend on the order of rules or facts; this is a breaking change, as is host code that read a scope's bindings through a `Ref`. A group whose rules invent unknowns follows a change to facts one component of values at a time, and a schema whose lambda asks about itself no longer runs Lion out of memory. Research runs share one Lion model in `research/`.
 
 ### Breaking
 
@@ -89,6 +91,7 @@
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
 - A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked. (rule `research-verdict-in-part`)
 - A named schema being checked is known to every check its shape starts, through a predicate too. (rule `schema-asks-about-itself`)
+- After you commit a change with its pages, run `bun run history write` again and commit what it changed on its own, as `docs: write the project record's pages for <commit>`. Then run it once more and `git commit --amend --no-edit` that pages commit: an amend replaces the commit instead of adding one, so the count now includes it. (rule `pages-count-their-commit`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
