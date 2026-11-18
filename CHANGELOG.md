@@ -2,16 +2,6 @@
 
 # Changelog
 
-## Unreleased
-
-### Changed
-
-- `assuming` runs in the compiled evaluator as the other forms that ask the database do: as an Effect, in the scope it was written in, with its changes and its expression evaluated by the evaluator that runs it. The generated programs that check the compiled evaluator against the interpreter it replaced, and plain code against code that waits for a logic variable, now ask questions with `assuming` too, adding a link and taking one away before a `find`. (`compiled-assuming` is `same-as-interpreter`)
-
-### Fixed
-
-- The REPL's program graph shows an `assuming` form as a logic node that asks as if the database had changed, with the number of its changes. Without it the REPL did not type-check once `assuming` was a special form. (`repl-graph-assuming` is `logic-node`, was `type-error`)
-
 ## 2026-11-18 — @lionlang/core 0.14.0, @lionlang/cli 0.13.0
 
 Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, and a call in tail position keeps nothing of the call it is in, so a loop runs in constant memory. `["assuming", change, ..., expression]` asks what would hold after a change and leaves the database as it is. `schema/open` names the rest of a record or list, and a keyed relation can declare `"merge"`, a lattice aggregate that joins the values its key gets. When a key or an equality rule makes values one, the value kept is their least, so answers no longer depend on the order of rules or facts; this is a breaking change, as is host code that read a scope's bindings through a `Ref`. A group whose rules invent unknowns follows a change to facts one component of values at a time, and a schema whose lambda asks about itself no longer runs Lion out of memory. Research runs share one Lion model in `research/`.
@@ -58,6 +48,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. (`reasoning-skill-when-it-pays` is `expensive-observations-undated-changes`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (`assuming-in-rule` is `asked-per-answer`)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming-leaves-database` is `unchanged`)
+- `assuming` runs in the compiled evaluator as the other forms that ask the database do: as an Effect, in the scope it was written in, with its changes and its expression evaluated by the evaluator that runs it. The generated programs that check the compiled evaluator against the interpreter it replaced, and plain code against code that waits for a logic variable, now ask questions with `assuming` too, adding a link and taking one away before a `find`. (`compiled-assuming` is `same-as-interpreter`)
 - A schema whose lambda asks about a value that is no smaller, such as a list that holds the value, is refused, since its check need not end. (`schema-asks-itself-larger-value` is `error`, was `out-of-memory`)
 - A schema that fits exactly the values that do not fit it, such as ['schema', 'Odd', ['lambda', ['v'], ['not', ['schema/fits?', 'v', 'Odd']]]], fails, and says that whether the value fits has no answer. (`schema-asks-itself-no-consistent-answer` is `error`, was `out-of-memory`)
 - A schema whose lambda asks about the schema again no longer runs Lion out of memory. One that only asks the same question again, such as ['schema', 'Same', ['lambda', ['v'], ['schema/fits?', 'v', 'Same']]], gets the least answer that agrees with itself: it does not fit. (`schema-asks-itself-same-value` is `no-fit`, was `out-of-memory`)
@@ -68,6 +59,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - The test helper `attempt` reports a function in a program's value as Lion writes it, wherever it stands: `"even"` for the relation `even`, `["lambda", ["n"], "n"]` for a lambda. A program that ended in a declaration, such as `["begin", ["relation", "even", ["n"]]]`, made it throw `"undefined" is not valid JSON`, which failed the `why` property about rules that ask no question once in about 300 runs, and a function inside a list or a record was reported as `null` or left out. A property checks that two programs are reported the same only when their values are the same. (`test-report-function-value` is `written-as-lion`, was `error`)
 - Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were. (`keyed-aggregated-rows-differ` is `error`, was `both-held`)
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder` is `outside-repository`, was `inside-repository`)
+- The REPL's program graph shows an `assuming` form as a logic node that asks as if the database had changed, with the number of its changes. Without it the REPL did not type-check once `assuming` was a special form. (`repl-graph-assuming` is `logic-node`, was `type-error`)
 
 ### Decided
 

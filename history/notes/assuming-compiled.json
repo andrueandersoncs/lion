@@ -6,7 +6,8 @@
         "behavior": "compiled-assuming",
         "is": "same-as-interpreter",
         "area": "evaluation"
-      }
+      },
+      "commits": ["c219278"]
     },
     {
       "quote": "The REPL's program graph shows an `assuming` form as a logic node that asks as if the database had changed, with the number of its changes. Without it the REPL did not type-check once `assuming` was a special form.",
@@ -16,7 +17,8 @@
         "area": "editor",
         "fixes": true,
         "was": "type-error"
-      }
+      },
+      "commits": ["c219278"]
     }
   ]
 }
