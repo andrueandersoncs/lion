@@ -1,0 +1,2223 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2611.20867"
+   ],
+   [
+    "quote",
+    "CIRT: Calculus of Inductive Refinement Types"
+   ],
+   [
+    "quote",
+    "Ferrarini et al. (CIRT)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261116
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "vazou-greenberg-2022"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2103.02177"
+   ],
+   [
+    "quote",
+    "How to Safely Use Extensionality in Liquid Haskell"
+   ],
+   [
+    "quote",
+    "Vazou and Greenberg"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20210303
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "jacob-rao-2018"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/1805.00401"
+   ],
+   [
+    "quote",
+    "Index-Stratified Types"
+   ],
+   [
+    "quote",
+    "Jacob-Rao et al. (Tores)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20180501
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "mendler-1987"
+   ],
+   [
+    "quote",
+    ""
+   ],
+   [
+    "quote",
+    "Recursive types and type constraints in second-order lambda calculus"
+   ],
+   [
+    "quote",
+    "Mendler"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "hitzler-wendt-2002"
+   ],
+   [
+    "quote",
+    "https://ar5iv.labs.arxiv.org/html/cs/0210027"
+   ],
+   [
+    "quote",
+    "A uniform approach to logic programming semantics"
+   ],
+   [
+    "quote",
+    "Hitzler and Wendt"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "przymusinski-1988"
+   ],
+   [
+    "quote",
+    ""
+   ],
+   [
+    "quote",
+    "On the declarative semantics of deductive databases and logic programs"
+   ],
+   [
+    "quote",
+    "Przymusinski"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "out/research/cirt-refinement-types/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run for the CIRT research, at commit f49b97a"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118100000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-logic-programming"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/explanation/logic-programming.html"
+   ],
+   [
+    "quote",
+    "Lion explanation: logic programming"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-standard-library"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/standard-library.html"
+   ],
+   [
+    "quote",
+    "Lion reference: the standard library's schema functions"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "https://ucsd-progsys.github.io/liquidhaskell/specifications/"
+   ],
+   [
+    "quote",
+    "Liquid Haskell: Specifications"
+   ],
+   [
+    "quote",
+    "Liquid Haskell"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-strat-wf"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "This ensures that the stratified types are well-founded as they are generated bottom-up from the well-founded order on the indices."
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-strat-wf"
+   ],
+   [
+    "quote",
+    "Section 7.1, Stratified inductive types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-strat-neg"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "Stratified inductive types allow recursive occurrences at smaller indices, even in negative positions."
+   ],
+   [
+    "quote",
+    {
+     "covers": "schemas that recurse through not on a smaller part of the value",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-strat-neg"
+   ],
+   [
+    "quote",
+    "Section 7, introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-strat-consistent"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "We extend the model to positive and stratified inductive types, showing that both are consistent in the presence of impredicativity."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-strat-consistent"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-neg-breaks"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "admitting such negative datatypes breaks normalisation"
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "self-reference under not at the same index",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "attributed",
+   [
+    "quote",
+    "ci-c-neg-breaks"
+   ],
+   [
+    "quote",
+    "mendler-1987"
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-neg-breaks"
+   ],
+   [
+    "quote",
+    "Section 2.1.4, Non-standard Inductive Types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-lfp"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "for positive inductive types the type operator is monotone and the Knaster-Tarski theorem yields a least fixed point"
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas read as least fixed points",
+     "by": "least fixed point of a monotone definition",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-lfp"
+   ],
+   [
+    "quote",
+    "Section 7.2.3, Refined inductive types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-lh-implemented"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "We implemented the positive and stratified inductive types of CIRT in Liquid Haskell"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "self-reference only at a strictly smaller index",
+     "in": "Liquid Haskell"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-lh-implemented"
+   ],
+   [
+    "quote",
+    "Section 8, Compiling indexed types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-lh-positive"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "We implemented the positive and stratified inductive types of CIRT in Liquid Haskell"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "least fixed point of a monotone definition",
+     "in": "Liquid Haskell"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-lh-positive"
+   ],
+   [
+    "quote",
+    "Section 8, Compiling indexed types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-no-casts"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "The subtyping relation is interpreted as set inclusion between PERs, so no cast operations are needed and annotation independence holds by construction."
+   ],
+   [
+    "quote",
+    {
+     "covers": "schemas that never change what a program computes",
+     "by": "subtyping as inclusion, with no casts",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-no-casts"
+   ],
+   [
+    "quote",
+    "Section 2.4, Our approach"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-inclusion-no-casts"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "Interpreting subtyping as inclusion requires no casts"
+   ],
+   [
+    "quote",
+    {
+     "covers": "schema checks that never change the value they check",
+     "by": "subtyping as inclusion, with no casts",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-inclusion-no-casts"
+   ],
+   [
+    "quote",
+    "Section 2.3, Design requirements"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-sub-impl"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "reduces subtyping to implication between propositions"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a check of whether one schema includes another",
+     "by": "subtyping reduced to implication between predicates",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-sub-impl"
+   ],
+   [
+    "quote",
+    "Section 6.1, Subtyping and SMT"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-smt-abstract"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "We keep the behaviour of the SMT judgment abstract and require the following soundness condition: if a proposition is well-formed and valid then it is true in all environments."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a sound solver for implication between predicates",
+     "by": "subtyping reduced to implication between predicates"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-smt-abstract"
+   ],
+   [
+    "quote",
+    "Section 6.2, Subtyping"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-eq-unrefined"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "the notion of equality cannot depend on the refined interpretation of types"
+   ],
+   [
+    "quote",
+    {
+     "covers": "equality that does not depend on schemas",
+     "by": "equality that ignores refinements",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-eq-unrefined"
+   ],
+   [
+    "quote",
+    "Section 6.2, Propositions"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-funext-false"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "with unrefined equality, the same axiom has greater force and Vazou and Greenberg (2022) showed that admitting it leads to a proof of false."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "function extensionality with schema-blind equality and subtyping",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "attributed",
+   [
+    "quote",
+    "ci-c-funext-false"
+   ],
+   [
+    "quote",
+    "vazou-greenberg-2022"
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-funext-false"
+   ],
+   [
+    "quote",
+    "Section 2.1.2, Unrefined equality"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-impredicative"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "the PERs offer enough structure to model impredicative polymorphism as set-theoretic intersection over the set of all PERs."
+   ],
+   [
+    "quote",
+    {
+     "covers": "schemas that quantify over every schema, checked before a program runs",
+     "by": "impredicative polymorphism",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-impredicative"
+   ],
+   [
+    "quote",
+    "Section 2.4, Our approach"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-c-static"
+   ],
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "Refinement types are a powerful mechanism for statically verifying properties of programs."
+   ],
+   [
+    "quote",
+    {
+     "needs": "a type checker that runs before the program",
+     "by": "impredicative polymorphism"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-c-static"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-vg-unsound"
+   ],
+   [
+    "quote",
+    "vazou-greenberg-2022"
+   ],
+   [
+    "quote",
+    "refinement type systems with semantic subtyping treat naive phrasings of functional extensionality inconsistently, leading to unsoundness."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "function extensionality with schema-blind equality and subtyping",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-vg-unsound"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-is-tores"
+   ],
+   [
+    "quote",
+    "jacob-rao-2018"
+   ],
+   [
+    "quote",
+    "a form of recursion over objects in the index language to build new types. The latter, which we call index-stratified types"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "self-reference only at a strictly smaller index",
+     "in": "Tores"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-is-tores"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-is-sound"
+   ],
+   [
+    "quote",
+    "jacob-rao-2018"
+   ],
+   [
+    "quote",
+    "We prove the soundness of Tores as a programming and proof language via the key theorems of subject reduction and termination."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-is-sound"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lp-local"
+   ],
+   [
+    "quote",
+    "hitzler-wendt-2002"
+   ],
+   [
+    "quote",
+    "Przymusinski [ 45 ] developed the perfect model semantics for locally stratified programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "rules that recurse through not on a smaller argument",
+     "by": "local stratification by a well-founded order on rows",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "attributed",
+   [
+    "quote",
+    "ci-lp-local"
+   ],
+   [
+    "quote",
+    "przymusinski-1988"
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lp-local"
+   ],
+   [
+    "quote",
+    "Introduction"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-js-loop"
+   ],
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "A schema MUST NOT be run into an infinite loop against an instance."
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "a JSON Schema validator",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-js-loop"
+   ],
+   [
+    "quote",
+    "Section 9.4.1, Guarding Against Infinite Recursion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-js-validators"
+   ],
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "Validators MUST NOT fall into an infinite loop."
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "a JSON Schema validator",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-js-validators"
+   ],
+   [
+    "quote",
+    "Security considerations"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-js-naive"
+   ],
+   [
+    "quote",
+    "b-json-schema-core-2020-12"
+   ],
+   [
+    "quote",
+    "a naive validator might get stuck in an infinite recursive loop trying to validate the instance"
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "schemas that refer to each other without moving into the value",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-js-naive"
+   ],
+   [
+    "quote",
+    "Section 9.4.1, Guarding Against Infinite Recursion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-bad"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas whose every check ends",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-bad"
+   ],
+   [
+    "quote",
+    "probe negative-recursion.json: a schema whose predicate says the value does not fit that same schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-self"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas whose every check ends",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-self"
+   ],
+   [
+    "quote",
+    "probe positive-through-lambda.json: a schema whose predicate asks whether the value fits that same schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-even"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"a list of three fits EvenList\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "schemas that recurse through not on a smaller part of the value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-even"
+   ],
+   [
+    "quote",
+    "probe stratified-recursion.json: EvenList asks under not whether the list's tail fits EvenList"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-loop"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"a string fits a schema that names itself before value/integer?\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas read as least fixed points",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-loop"
+   ],
+   [
+    "quote",
+    "probe positive-recursion.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-refused"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "Adding this fact breaks an invariant, so nothing changed."
+   ],
+   [
+    "quote",
+    {
+     "lion": "schema checks that never change the value they check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-refused"
+   ],
+   [
+    "quote",
+    "probe annotation-refused.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-includes"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"every integer is a number, and value/integer? fits value/number?\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of whether one schema includes another",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-includes"
+   ],
+   [
+    "quote",
+    "probe schema-against-schema.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-lambdas"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"two lambdas with the same text are equal\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to compare what two predicates accept",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-lambdas"
+   ],
+   [
+    "quote",
+    "probe function-equality.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-funext"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"two lambdas with the same text are equal\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "function extensionality",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-funext"
+   ],
+   [
+    "quote",
+    "probe function-equality.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-win"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "Rule [\"rule\",[\"win\",\"?x\"],[\"move\",\"?x\",\"?y\"],[\"not\",[\"win\",\"?y\"]]] asks about \"win\", which depends on \"win\". A question, such as a goal under \"not\", cannot go through recursion."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse through not on a smaller argument",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-win"
+   ],
+   [
+    "quote",
+    "probe rule-negation.json: win(x) if a move from x reaches a position that does not win"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-win-rule"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "A question, such as a goal under \"not\", cannot go through recursion."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules refused when a question goes through recursion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-win-rule"
+   ],
+   [
+    "quote",
+    "probe rule-negation.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-suffix"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "computes a new value in its head while recursing, which may never finish."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse on a smaller value they compute",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-suffix"
+   ],
+   [
+    "quote",
+    "probe rule-shrinking.json: each suffix of a word, by array/tail"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-suffix-smaller"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "computes a new value in its head while recursing, which may never finish."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to know a computed value is smaller than the one it came from",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-suffix-smaller"
+   ],
+   [
+    "quote",
+    "probe rule-shrinking.json: each suffix of a word, by array/tail"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-p-unchecked"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "\"a function that adds the string one to a number, defined and never called\": \"defined without complaint\""
+   ],
+   [
+    "quote",
+    {
+     "lion": "a type checker that runs before the program",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-p-unchecked"
+   ],
+   [
+    "quote",
+    "probe checked-when-run.json and checked-when-run-called.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-lfp"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "A value fits only when that follows from the shapes in finitely many steps."
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas read as least fixed points",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-lfp"
+   ],
+   [
+    "quote",
+    "schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-into"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "A schema that comes back to itself without going into the value does not fit"
+   ],
+   [
+    "quote",
+    {
+     "lion": "schema checks that know when they move into the value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-into"
+   ],
+   [
+    "quote",
+    "schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-erase"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "and is nothing more: it must hold for the rows that are there, it is kept and reported like every invariant"
+   ],
+   [
+    "quote",
+    {
+     "lion": "schemas that never change what a program computes",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-erase"
+   ],
+   [
+    "quote",
+    "relation"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-eq"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "Without logic variables, it is structural equality of JSON values, and identity for other values"
+   ],
+   [
+    "quote",
+    {
+     "lion": "equality that does not depend on schemas",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-eq"
+   ],
+   [
+    "quote",
+    "="
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-funext"
+   ],
+   [
+    "quote",
+    "lion-logic-forms"
+   ],
+   [
+    "quote",
+    "Without logic variables, it is structural equality of JSON values, and identity for other values"
+   ],
+   [
+    "quote",
+    {
+     "lion": "function extensionality",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-funext"
+   ],
+   [
+    "quote",
+    "="
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-stratum"
+   ],
+   [
+    "quote",
+    "lion-logic-programming"
+   ],
+   [
+    "quote",
+    "A rule that asks about a relation that depends on its own head has no correct stratum, so such a rule is rejected when added."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules refused when a question goes through recursion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-stratum"
+   ],
+   [
+    "quote",
+    "Stratification"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-rstrat"
+   ],
+   [
+    "quote",
+    "lion-logic-programming"
+   ],
+   [
+    "quote",
+    "A rule that asks about a relation that depends on its own head has no correct stratum, so such a rule is rejected when added."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse through not on a smaller argument",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-rstrat"
+   ],
+   [
+    "quote",
+    "Stratification"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-flows"
+   ],
+   [
+    "quote",
+    "lion-guarantees"
+   ],
+   [
+    "quote",
+    "as long as that value never flows back, through the rules, into making another new value."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse on a smaller value they compute",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-flows"
+   ],
+   [
+    "quote",
+    "Termination"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-one-answer"
+   ],
+   [
+    "quote",
+    "lion-guarantees"
+   ],
+   [
+    "quote",
+    "Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included."
+   ],
+   [
+    "quote",
+    {
+     "lion": "results independent of rule order",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-one-answer"
+   ],
+   [
+    "quote",
+    "Stratification"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-stops"
+   ],
+   [
+    "quote",
+    "lion-guarantees"
+   ],
+   [
+    "quote",
+    "So every new value comes from a finite chain of others, and evaluation stops."
+   ],
+   [
+    "quote",
+    {
+     "lion": "guaranteed termination",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-stops"
+   ],
+   [
+    "quote",
+    "Termination"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-assert"
+   ],
+   [
+    "quote",
+    "lion-standard-library"
+   ],
+   [
+    "quote",
+    "The value, when it fits. When it does not, fails with a message that says where."
+   ],
+   [
+    "quote",
+    {
+     "lion": "schema checks that never change the value they check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-assert"
+   ],
+   [
+    "quote",
+    "schema/assert"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-d-fit-into"
+   ],
+   [
+    "quote",
+    "lion-fit-code"
+   ],
+   [
+    "quote",
+    "comes back to itself without moving into the value does not fit, so a"
+   ],
+   [
+    "quote",
+    {
+     "lion": "schema checks that know when they move into the value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-d-fit-into"
+   ],
+   [
+    "quote",
+    "the Check interface, open"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-is-ends"
+   ],
+   [
+    "quote",
+    "jacob-rao-2018"
+   ],
+   [
+    "quote",
+    "We prove the soundness of Tores as a programming and proof language via the key theorems of subject reduction and termination."
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-is-ends"
+   ],
+   [
+    "quote",
+    "Abstract"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lh-annotation"
+   ],
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "{-@ stratified <data-type-declaration> @-} the datatype is treated as a stratified type by the well-definedness checker."
+   ],
+   [
+    "quote",
+    {
+     "adopted": "self-reference only at a strictly smaller index",
+     "in": "Liquid Haskell"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lh-annotation"
+   ],
+   [
+    "quote",
+    "Annotations"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lh-well-founded"
+   ],
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "Some definitions that fail the positivity check are still well-founded and consistent. A class of those are stratified types"
+   ],
+   [
+    "quote",
+    {
+     "covers": "recursive schemas whose every check ends",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lh-well-founded"
+   ],
+   [
+    "quote",
+    "Stratified Types"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lh-consistent"
+   ],
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "This controlled form of non positive types preserves consistency while allowing more expressive data definitions."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lh-consistent"
+   ],
+   [
+    "quote",
+    "Stratified Types, Definition"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lh-smaller"
+   ],
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "are indexed by strictly smaller values than the index of the constructor itself."
+   ],
+   [
+    "quote",
+    {
+     "covers": "schemas that recurse through not on a smaller part of the value",
+     "by": "self-reference only at a strictly smaller index",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lh-smaller"
+   ],
+   [
+    "quote",
+    "Stratified Types, Definition"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-lh-evil"
+   ],
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "Liquid Haskell disallows arbitrary user-defined data types, since some can be used to derive inconsistencies in the refinement logic."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a logic that cannot prove false",
+     "by": "self-reference under not at the same index",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-lh-evil"
+   ],
+   [
+    "quote",
+    "Stratified Types"
+   ]
+  ],
+  [
+   "lead",
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   [
+    "quote",
+    "Find how Lion treats a definition that refers to itself, in schemas and in rules"
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "recursive schemas whose every check ends"
+    }
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "schemas that recurse through not on a smaller part of the value"
+    }
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   [
+    "quote",
+    {
+     "lion has": "rules that recurse through not on a smaller argument"
+    }
+   ]
+  ],
+  [
+   "lead",
+   [
+    "quote",
+    "ci-outside-stratified"
+   ],
+   [
+    "quote",
+    "Find a system other than CIRT that allows recursion at a smaller index"
+   ],
+   [
+    "quote",
+    3
+   ]
+  ],
+  [
+   "pursues",
+   [
+    "quote",
+    "ci-outside-stratified"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "self-reference only at a strictly smaller index"
+    }
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "ferrarini-cirt-2026"
+   ],
+   [
+    "quote",
+    "ci-outside-stratified"
+   ],
+   20
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "jacob-rao-2018"
+   ],
+   [
+    "quote",
+    "ci-outside-stratified"
+   ],
+   21
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "lion-probes-ci-f49b97a"
+   ],
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   22
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "lion-logic-programming"
+   ],
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   23
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "liquidhaskell-specifications"
+   ],
+   [
+    "quote",
+    "ci-outside-stratified"
+   ],
+   24
+  ]
+ ],
+ "recorded"
+]

@@ -1,0 +1,7 @@
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  {
+    "a function that adds the string one to a number, defined and never called": "defined without complaint"
+  }
+]

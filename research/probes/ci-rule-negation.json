@@ -1,0 +1,8 @@
+[
+  "begin",
+  ["relation", "move", ["from", "to"]],
+  ["relation", "win", ["position"]],
+  ["fact", ["move", "a", "b"], ["move", "b", "c"]],
+  ["rule", ["win", "?x"], ["move", "?x", "?y"], ["not", ["win", "?y"]]],
+  ["query", ["win", "?x"]]
+]

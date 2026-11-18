@@ -1,0 +1,295 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "candidate",
+   "stratified-schemas",
+   [
+    "quote",
+    "Let a schema ask about itself only about a smaller part of the value"
+   ]
+  ],
+  [
+   "uses",
+   "stratified-schemas",
+   [
+    "quote",
+    "self-reference only at a strictly smaller index"
+   ]
+  ],
+  [
+   "offers",
+   "stratified-schemas",
+   [
+    "quote",
+    "recursive schemas whose every check ends"
+   ]
+  ],
+  [
+   "offers",
+   "stratified-schemas",
+   [
+    "quote",
+    "schemas that recurse through not on a smaller part of the value"
+   ]
+  ],
+  [
+   "on",
+   "stratified-schemas",
+   [
+    "quote",
+    "schema checks that know when they move into the value"
+   ]
+  ],
+  [
+   "candidate",
+   "least-fixed-points",
+   [
+    "quote",
+    "Read a recursive schema as its least fixed point"
+   ]
+  ],
+  [
+   "uses",
+   "least-fixed-points",
+   [
+    "quote",
+    "least fixed point of a monotone definition"
+   ]
+  ],
+  [
+   "offers",
+   "least-fixed-points",
+   [
+    "quote",
+    "recursive schemas read as least fixed points"
+   ]
+  ],
+  [
+   "candidate",
+   "annotation-independence",
+   [
+    "quote",
+    "Keep schemas as checks that never change what a program computes"
+   ]
+  ],
+  [
+   "uses",
+   "annotation-independence",
+   [
+    "quote",
+    "subtyping as inclusion, with no casts"
+   ]
+  ],
+  [
+   "offers",
+   "annotation-independence",
+   [
+    "quote",
+    "schemas that never change what a program computes"
+   ]
+  ],
+  [
+   "offers",
+   "annotation-independence",
+   [
+    "quote",
+    "schema checks that never change the value they check"
+   ]
+  ],
+  [
+   "candidate",
+   "schema-inclusion",
+   [
+    "quote",
+    "Decide when one schema includes another"
+   ]
+  ],
+  [
+   "uses",
+   "schema-inclusion",
+   [
+    "quote",
+    "subtyping reduced to implication between predicates"
+   ]
+  ],
+  [
+   "offers",
+   "schema-inclusion",
+   [
+    "quote",
+    "a check of whether one schema includes another"
+   ]
+  ],
+  [
+   "on",
+   "schema-inclusion",
+   [
+    "quote",
+    "a way to compare what two predicates accept"
+   ]
+  ],
+  [
+   "candidate",
+   "schema-blind-equality",
+   [
+    "quote",
+    "Keep equality blind to schemas, without function extensionality"
+   ]
+  ],
+  [
+   "uses",
+   "schema-blind-equality",
+   [
+    "quote",
+    "equality that ignores refinements"
+   ]
+  ],
+  [
+   "offers",
+   "schema-blind-equality",
+   [
+    "quote",
+    "equality that does not depend on schemas"
+   ]
+  ],
+  [
+   "candidate",
+   "polymorphic-schemas",
+   [
+    "quote",
+    "Check polymorphic schemas before a program runs"
+   ]
+  ],
+  [
+   "uses",
+   "polymorphic-schemas",
+   [
+    "quote",
+    "impredicative polymorphism"
+   ]
+  ],
+  [
+   "offers",
+   "polymorphic-schemas",
+   [
+    "quote",
+    "schemas that quantify over every schema, checked before a program runs"
+   ]
+  ],
+  [
+   "on",
+   "polymorphic-schemas",
+   [
+    "quote",
+    "a type checker that runs before the program"
+   ]
+  ],
+  [
+   "candidate",
+   "stratified-rules",
+   [
+    "quote",
+    "Let rules recurse through not when an argument gets smaller"
+   ]
+  ],
+  [
+   "uses",
+   "stratified-rules",
+   [
+    "quote",
+    "local stratification by a well-founded order on rows"
+   ]
+  ],
+  [
+   "offers",
+   "stratified-rules",
+   [
+    "quote",
+    "rules that recurse through not on a smaller argument"
+   ]
+  ],
+  [
+   "offers",
+   "stratified-rules",
+   [
+    "quote",
+    "rules that recurse on a smaller value they compute"
+   ]
+  ],
+  [
+   "on",
+   "stratified-rules",
+   [
+    "quote",
+    "a way to know a computed value is smaller than the one it came from"
+   ]
+  ],
+  [
+   "rewrites",
+   "stratified-rules",
+   [
+    "quote",
+    "rules refused when a question goes through recursion"
+   ]
+  ],
+  [
+   "weighed_in",
+   "annotation-independence",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "least-fixed-points",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "polymorphic-schemas",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "schema-blind-equality",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "schema-inclusion",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "stratified-rules",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ],
+  [
+   "weighed_in",
+   "stratified-schemas",
+   [
+    "quote",
+    "cirt-refinement-types"
+   ]
+  ]
+ ],
+ "ci candidates"
+]

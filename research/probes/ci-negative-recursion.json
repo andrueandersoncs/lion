@@ -1,0 +1,11 @@
+[
+  "begin",
+  ["schema", "Bad", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Bad"]]]],
+  {
+    "1 fits a schema whose predicate says the value does not fit that same schema": [
+      "schema/fits?",
+      1,
+      "Bad"
+    ]
+  }
+]

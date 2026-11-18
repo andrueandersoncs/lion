@@ -1,0 +1,14 @@
+[
+  "begin",
+  ["relation", "word", ["letters"]],
+  ["relation", "suffix", ["letters"]],
+  ["fact", ["word", ["quote", ["a", "b", "c"]]]],
+  ["rule", ["suffix", "?xs"], ["word", "?xs"]],
+  [
+    "rule",
+    ["suffix", ["array/tail", "?xs"]],
+    ["suffix", "?xs"],
+    ["number/greaterThan", ["array/length", "?xs"], 0]
+  ],
+  ["query", ["suffix", "?xs"]]
+]

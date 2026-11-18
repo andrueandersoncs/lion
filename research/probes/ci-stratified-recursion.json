@@ -1,0 +1,34 @@
+[
+  "begin",
+  [
+    "schema",
+    "EvenList",
+    [
+      "schema/anyOf",
+      ["quote", []],
+      [
+        "lambda",
+        ["v"],
+        [
+          "and",
+          ["value/array?", "v"],
+          ["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "the empty list fits EvenList": ["schema/fits?", ["quote", []], "EvenList"],
+    "a list of one fits EvenList": ["schema/fits?", ["quote", [1]], "EvenList"],
+    "a list of two fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2]],
+      "EvenList"
+    ],
+    "a list of three fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2, 3]],
+      "EvenList"
+    ]
+  }
+]

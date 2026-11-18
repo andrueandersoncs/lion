@@ -1,0 +1,5 @@
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  ["addOne", 1]
+]

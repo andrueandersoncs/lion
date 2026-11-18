@@ -1,0 +1,11 @@
+[
+  "begin",
+  ["schema", "Self", ["lambda", ["v"], ["schema/fits?", "v", "Self"]]],
+  {
+    "1 fits a schema whose predicate asks whether the value fits that same schema": [
+      "schema/fits?",
+      1,
+      "Self"
+    ]
+  }
+]

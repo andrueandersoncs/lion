@@ -56,6 +56,7 @@ It also holds the rules that judge an idea for Lion:
 - The model derives what a candidate's techniques `give`, and of that what Lion has, which they `handle`, and what it lacks, which they `bring`.
 - It derives what each candidate `adds` that Lion lacks among what it offers, what Lion has `already`, what it `folds` into one rule, and what `blocks` it or leaves it `moot`.
 - From those it derives a `verdict`, a `rank`, `caveat`s, and `precedent`s.
+- A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked.
 - An assumption `expects` a question to have a value, or `expects_cover`s: expects some technique a candidate uses to cover a feature. The model finds the evidence that `violated` it, and calls it `unsettled` while no evidence bears on it.
 
 A feature name is the same words in every run, so that evidence from different runs meets on one question. Before you name a feature, ask the model which names exist:
@@ -70,6 +71,7 @@ A feature name is the same words in every run, so that evidence from different r
 |---|---|---|
 | `separation-logic` (2026-11-18) | `02-sl-*` to `10-sl-*` | What can Lion use from separation logic? Step `10-sl-built` records Lion after the three ideas it ranked were built. |
 | `lion-improvements` (2026-11-17) | `11-li-*` to `23-li-*` | What to improve in Lion next? It weighs seven directions, such as one algebra of changes (DBSP) and annotated relations, by net reasons: Lion features one mechanism would take over, capabilities it would add, and measured gaps a published speedup applies to, until Lion closes them. Its own frame, `11-li-frame`, ranks them as `net_rank` from `tally`. Step `23-li-built` records Lion after the least-member fix, component following, and compiled evaluation were built. |
+| `cirt-refinement-types` (2026-11-18) | `24-ci-*` to `26-ci-*` | What can Lion use from CIRT, the calculus of inductive refinement types (arXiv 2611.20867)? It weighs seven ideas against Lion's schemas and rules. It ranks stratified recursion for schemas first: a schema may ask about itself only about a smaller part of the value. Its probes found that a schema whose predicate asks about itself, about the same value, runs Lion out of memory; step `26-ci-probes-now` reran them after compiled evaluation. Its own frame, `24-ci-frame`, adds `overturns` (a documented rule a candidate would change) and `alike` (an assumption that two questions have one answer). It also added the shared verdict `worth adopting in part`. |
 
 A run's own ids start with its prefix: claims `sl-a1`, leads `sl-terms`, assumptions `sl-records`. Source ids, candidate ids, and feature names have no prefix, because later runs share them. A later run that reads Reynolds 2002 cites `a-reynolds-2002`, and new evidence about the record split adds to the candidate `rest`.
 

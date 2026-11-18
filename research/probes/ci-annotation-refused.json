@@ -1,0 +1,13 @@
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["checked", 2, "lost", "none"]]
+]

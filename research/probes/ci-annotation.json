@@ -1,0 +1,27 @@
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "plain", ["id", "status", "note"]],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["plain", 1, "open", "gift"], ["plain", 2, "paid", "none"]],
+  ["fact", ["checked", 1, "open", "gift"], ["checked", 2, "paid", "none"]],
+  {
+    "rows of the relation without a schema": [
+      "query",
+      ["plain", "?id", "?status", "?note"],
+      { "order": "id" }
+    ],
+    "rows of the relation with a schema": [
+      "query",
+      ["checked", "?id", "?status", "?note"],
+      { "order": "id" }
+    ]
+  }
+]

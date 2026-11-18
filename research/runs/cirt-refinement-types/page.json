@@ -1,0 +1,980 @@
+{
+  "title": "CIRT refinement types and Lion",
+  "names": {
+    "stratified-schemas": "Let a schema ask about itself only about a smaller part of the value",
+    "least-fixed-points": "Read a recursive schema as its least fixed point",
+    "annotation-independence": "Keep schemas as checks that never change what a program computes",
+    "schema-inclusion": "Decide when one schema includes another",
+    "schema-blind-equality": "Keep equality blind to schemas, without function extensionality",
+    "polymorphic-schemas": "Check polymorphic schemas before a program runs",
+    "stratified-rules": "Let rules recurse through not when an argument gets smaller"
+  },
+  "define": {
+    "title": [
+      "lambda",
+      ["c"],
+      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+    ],
+    "withVerdict": [
+      "lambda",
+      ["v"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", "cirt-refinement-types"]
+          ]
+        ]
+      ]
+    ],
+    "quoteOf": [
+      "lambda",
+      ["id"],
+      ["array/head", ["find", "?q", ["claim", "id", "?_", "?q", "?_"]]]
+    ],
+    "paper": [
+      "lambda",
+      ["field"],
+      [
+        "array/head",
+        [
+          "find",
+          "?v",
+          [
+            "or",
+            [
+              "and",
+              ["=", "field", "title"],
+              ["source", "ferrarini-cirt-2026", "?_", "?v", "?_", "?_", "?_"]
+            ],
+            [
+              "and",
+              ["=", "field", "publisher"],
+              ["source", "ferrarini-cirt-2026", "?_", "?_", "?v", "?_", "?_"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "case": [
+      "lambda",
+      ["c"],
+      [
+        "string/concat",
+        [
+          "cond",
+          [
+            ["verdict", "c", "worth adopting"],
+            [
+              "string/concat",
+              "Worth adopting. It would give Lion what it lacks: ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?f", ["adds", "c", "?f", "?_"]]]
+              ],
+              ". ",
+              [
+                "cond",
+                [
+                  ["already", "c", "?_"],
+                  [
+                    "string/concat",
+                    "Lion already has part of it: ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?f", ["already", "c", "?f"]]
+                      ]
+                    ],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["met", "c", "?_"],
+                  [
+                    "string/concat",
+                    "What it builds on is there: ",
+                    [
+                      "words/listed",
+                      ["aggregate/unique", ["find", "?x", ["met", "c", "?x"]]]
+                    ],
+                    ". "
+                  ]
+                ],
+                ["else", ""]
+              ],
+              [
+                "cond",
+                [
+                  ["precedent", "c", "?_", "?_"],
+                  [
+                    "string/concat",
+                    "Systems that already do it: ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?s", ["precedent", "c", "?_", "?s"]]
+                      ]
+                    ],
+                    "."
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          [
+            ["verdict", "c", "worth adopting in part"],
+            [
+              "string/concat",
+              "Worth adopting in part. It would give Lion ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?f", ["adds", "c", "?f", "?_"]]]
+              ],
+              ", but only where it does not need ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?x", ["moot", "c", "?x"]]]
+              ],
+              ", which Lion does not have."
+            ]
+          ],
+          [
+            ["verdict", "c", "Lion does this already"],
+            [
+              "string/concat",
+              "Lion does this already: ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?f", ["already", "c", "?f"]]]
+              ],
+              "."
+            ]
+          ],
+          [
+            ["verdict", "c", "conflicts with what Lion guarantees"],
+            [
+              "string/concat",
+              "Does not fit Lion: it gives up ",
+              [
+                "words/listed",
+                [
+                  "aggregate/unique",
+                  ["find", "?g", ["blocks", "c", "?g", "?_"]]
+                ]
+              ],
+              ", which Lion guarantees."
+            ]
+          ],
+          [
+            ["verdict", "c", "has nothing in Lion to work on"],
+            [
+              "string/concat",
+              "Not now: it needs ",
+              [
+                "words/listed",
+                ["aggregate/unique", ["find", "?x", ["moot", "c", "?x"]]]
+              ],
+              ", and Lion does not have that.",
+              [
+                "cond",
+                [
+                  ["overturns", "c", "?_"],
+                  [
+                    "string/concat",
+                    " It would also change a rule Lion documents: ",
+                    [
+                      "words/listed",
+                      [
+                        "aggregate/unique",
+                        ["find", "?r", ["overturns", "c", "?r"]]
+                      ]
+                    ],
+                    "."
+                  ]
+                ],
+                ["else", ""]
+              ]
+            ]
+          ],
+          ["else", "Not judged yet: the model has too little evidence."]
+        ]
+      ]
+    ],
+    "evidenceOf": [
+      "lambda",
+      ["c"],
+      [
+        "query",
+        [
+          "or",
+          [
+            "and",
+            ["offers", "c", "?feature"],
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
+          ],
+          [
+            "and",
+            ["on", "c", "?feature"],
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
+          ],
+          [
+            "and",
+            ["rewrites", "c", "?feature"],
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
+          ],
+          [
+            "and",
+            ["uses", "c", "?technique"],
+            [
+              "answer",
+              {
+                "covers": "?feature",
+                "by": "?technique"
+              },
+              "?value",
+              "?statement"
+            ],
+            ["or", ["offers", "c", "?feature"], ["guarantee", "?feature"]]
+          ],
+          [
+            "and",
+            ["uses", "c", "?technique"],
+            ["=", "?feature", "used in"],
+            [
+              "answer",
+              {
+                "adopted": "?technique",
+                "in": "?value"
+              },
+              "?_",
+              "?statement"
+            ]
+          ]
+        ]
+      ]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    ["paper", "title"],
+    ", by ",
+    ["paper", "publisher"],
+    ", is a mathematical model of refinement types. In its own words: “",
+    ["quoteOf", "ci-c-strat-consistent"],
+    "” Of the ",
+    [
+      "words/count",
+      [
+        "aggregate/count",
+        ["find", "?c", ["weighed_in", "?c", "cirt-refinement-types"]]
+      ],
+      "idea",
+      "ideas"
+    ],
+    " in it weighed for Lion, the verdicts are: ",
+    "worth adopting",
+    ", ",
+    ["words/number", ["array/length", ["withVerdict", "worth adopting"]]],
+    "; ",
+    "worth adopting in part",
+    ", ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "worth adopting in part"]]
+    ],
+    "; ",
+    "Lion does this already",
+    ", ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "Lion does this already"]]
+    ],
+    "; ",
+    "has nothing in Lion to work on",
+    ", ",
+    [
+      "words/number",
+      ["array/length", ["withVerdict", "has nothing in Lion to work on"]]
+    ],
+    ".",
+    [
+      "cond",
+      [
+        ["violated", "ci-ends", "?_"],
+        " Checking them against Lion found a bug: a schema whose own predicate asks about that same schema, about the same value, never finishes."
+      ],
+      ["else", ""]
+    ]
+  ],
+  "views": [
+    {
+      "name": "The answer",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/count",
+                  ["find", "?c", ["weighed_in", "?c", "cirt-refinement-types"]]
+                ]
+              ]
+            },
+            {
+              "label": "Worth adopting",
+              "value": [
+                "words/number",
+                [
+                  "number/add",
+                  ["array/length", ["withVerdict", "worth adopting"]],
+                  ["array/length", ["withVerdict", "worth adopting in part"]]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/number",
+                  ["array/length", ["withVerdict", "worth adopting in part"]]
+                ],
+                " of them in part"
+              ]
+            },
+            {
+              "label": "Lion does already",
+              "value": [
+                "words/number",
+                ["array/length", ["withVerdict", "Lion does this already"]]
+              ]
+            },
+            {
+              "label": "Sources quoted",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  [
+                    "find",
+                    "?s",
+                    [
+                      "and",
+                      ["claim", "?c", "?s", "?_", "?_"],
+                      ["string/startsWith", "?c", "ci-"]
+                    ]
+                  ]
+                ]
+              ],
+              "note": [
+                "string/concat",
+                [
+                  "words/count",
+                  [
+                    "aggregate/count",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["claim", "?c", "?_", "?_", "?_"],
+                        ["string/startsWith", "?c", "ci-"]
+                      ]
+                    ]
+                  ],
+                  "statement",
+                  "statements"
+                ],
+                " in their own words"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What from this paper can Lion use?",
+          "answer": [
+            "string/concat",
+            [
+              "string/join",
+              [
+                "array/map",
+                ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+                [
+                  "lambda",
+                  ["pair"],
+                  [
+                    "string/concat",
+                    ["number/toString", ["array/head", "pair"]],
+                    ". ",
+                    ["title", ["array/head", ["array/tail", "pair"]]],
+                    ". ",
+                    ["case", ["array/head", ["array/tail", "pair"]]]
+                  ]
+                ]
+              ],
+              " "
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["verdict", "?c", "worth adopting in part"],
+                  ["weighed_in", "?c", "cirt-refinement-types"]
+                ],
+                [
+                  "string/concat",
+                  " Also: ",
+                  [
+                    "string/join",
+                    [
+                      "array/map",
+                      [
+                        "find",
+                        "?c",
+                        [
+                          "and",
+                          ["verdict", "?c", "worth adopting in part"],
+                          ["weighed_in", "?c", "cirt-refinement-types"]
+                        ]
+                      ],
+                      [
+                        "lambda",
+                        ["c"],
+                        ["string/concat", ["title", "c"], ". ", ["case", "c"]]
+                      ]
+                    ],
+                    " "
+                  ]
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", "cirt-refinement-types"],
+              [
+                "or",
+                ["verdict", "?idea", "worth adopting"],
+                ["verdict", "?idea", "worth adopting in part"]
+              ],
+              ["adds", "?idea", "?gives", "?_"]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Did checking it against Lion find anything wrong?",
+          "answer": [
+            "cond",
+            [
+              ["violated", "ci-ends", "?_"],
+              [
+                "string/concat",
+                "Yes. Lion's docs say “",
+                ["quoteOf", "ci-d-lfp"],
+                "” But a schema whose own predicate asks whether a value fits that same schema never finishes: in ",
+                [
+                  "words/count",
+                  [
+                    "aggregate/count",
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "claim",
+                        "?c",
+                        "lion-probes-ci",
+                        "?_",
+                        {
+                          "lion": "recursive schemas whose every check ends",
+                          "has": false
+                        }
+                      ]
+                    ]
+                  ],
+                  "probe",
+                  "probes"
+                ],
+                [
+                  "cond",
+                  [
+                    [
+                      "and",
+                      [
+                        "claim",
+                        "?_",
+                        "lion-probes-ci",
+                        "?_",
+                        {
+                          "lion": "recursive schemas whose every check ends",
+                          "has": false
+                        }
+                      ],
+                      [
+                        "claim",
+                        "?_",
+                        "lion-probes-ci-f49b97a",
+                        "?_",
+                        {
+                          "lion": "recursive schemas whose every check ends",
+                          "has": false
+                        }
+                      ]
+                    ],
+                    ", both before and after Lion compiled its evaluation,"
+                  ],
+                  ["else", ""]
+                ],
+                " Lion stopped with “",
+                ["quoteOf", "ci-n-bad"],
+                "” instead of an answer.",
+                [
+                  "cond",
+                  [
+                    [
+                      "adds",
+                      "stratified-schemas",
+                      "recursive schemas whose every check ends",
+                      "?_"
+                    ],
+                    " The paper's rule for stratified types gives what is missing: a definition may ask about itself only at a strictly smaller index, and for a schema the index is the value it checks."
+                  ],
+                  ["else", ""]
+                ]
+              ]
+            ],
+            [
+              "else",
+              "No. Every recursive schema the probes tried gave an answer."
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "answer",
+              {
+                "lion has": "recursive schemas whose every check ends"
+              },
+              "?value",
+              "?statement"
+            ]
+          ]
+        },
+        {
+          "type": "lookup",
+          "title": "What does the paper offer for each idea, and where does Lion stand?",
+          "choose": {
+            "idea": {
+              "label": "Idea",
+              "options": [
+                "aggregate/unique",
+                ["find", "?c", ["weighed_in", "?c", "cirt-refinement-types"]]
+              ]
+            }
+          },
+          "example": {
+            "idea": "stratified-schemas"
+          },
+          "answer": ["lambda", ["idea"], ["case", "idea"]],
+          "query": ["lambda", ["idea"], ["evidenceOf", "idea"]]
+        }
+      ]
+    },
+    {
+      "name": "The recursion bug",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "What does Lion do with a schema that refers to itself?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": "recursive schemas read as least fixed points"
+                  },
+                  true
+                ],
+                "Through its shape, it fits only what follows in finitely many steps, which is the least fixed point the paper uses for positive types. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": "schemas that recurse through not on a smaller part of the value"
+                  },
+                  true
+                ],
+                "Through a predicate that asks about a smaller part of the value, even under not, it gives the right answer, which is the paper's stratified case. "
+              ],
+              ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "answer",
+                  {
+                    "lion has": "recursive schemas whose every check ends"
+                  },
+                  false,
+                  "?_"
+                ],
+                [
+                  "string/concat",
+                  "Through a predicate that asks about the same value, it never finishes: ",
+                  [
+                    "words/count",
+                    [
+                      "aggregate/count",
+                      [
+                        "find",
+                        "?c",
+                        [
+                          "claim",
+                          "?c",
+                          "lion-probes-ci",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ]
+                      ]
+                    ],
+                    "probe",
+                    "probes"
+                  ],
+                  [
+                    "cond",
+                    [
+                      [
+                        "and",
+                        [
+                          "claim",
+                          "?_",
+                          "lion-probes-ci",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ],
+                        [
+                          "claim",
+                          "?_",
+                          "lion-probes-ci-f49b97a",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ]
+                      ],
+                      ", both before and after Lion compiled its evaluation,"
+                    ],
+                    ["else", ""]
+                  ],
+                  " stopped with “",
+                  ["quoteOf", "ci-n-bad"],
+                  "”"
+                ]
+              ],
+              ["else", "Every check the probes tried ended."]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                ["=", "?about", "recursive schemas read as least fixed points"],
+                [
+                  "=",
+                  "?about",
+                  "schemas that recurse through not on a smaller part of the value"
+                ],
+                ["=", "?about", "recursive schemas whose every check ends"]
+              ],
+              [
+                "answer",
+                {
+                  "lion has": "?about"
+                },
+                "?value",
+                "?statement"
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Who else allows recursion only at a smaller index, and is it sound?",
+          "answer": [
+            "string/concat",
+            [
+              "cond",
+              [
+                [
+                  "corroborated",
+                  {
+                    "covers": "recursive schemas whose every check ends",
+                    "by": "self-reference only at a strictly smaller index"
+                  },
+                  true
+                ],
+                [
+                  "string/concat",
+                  "It is well-founded by the word of ",
+                  [
+                    "words/listed",
+                    [
+                      "array/head",
+                      [
+                        "find",
+                        "?p",
+                        [
+                          "backing",
+                          {
+                            "covers": "recursive schemas whose every check ends",
+                            "by": "self-reference only at a strictly smaller index"
+                          },
+                          true,
+                          "?p"
+                        ]
+                      ]
+                    ]
+                  ],
+                  ". "
+                ]
+              ],
+              ["else", "Only one source says it is well-founded. "]
+            ],
+            "Systems that ship it: ",
+            [
+              "words/listed",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?s",
+                  [
+                    "stated",
+                    {
+                      "adopted": "self-reference only at a strictly smaller index",
+                      "in": "?s"
+                    },
+                    true
+                  ]
+                ]
+              ]
+            ],
+            ". ",
+            [
+              "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "covers": "recursive schemas whose every check ends",
+                    "by": "a JSON Schema validator"
+                  },
+                  true
+                ],
+                "JSON Schema requires the same of every validator: it must never fall into an infinite loop."
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "or",
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "self-reference only at a strictly smaller index"
+                },
+                "?value",
+                "?statement"
+              ],
+              [
+                "and",
+                ["=", "?feature", "used in"],
+                [
+                  "answer",
+                  {
+                    "adopted": "self-reference only at a strictly smaller index",
+                    "in": "?value"
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ],
+              [
+                "and",
+                ["=", "?feature", "required of"],
+                ["=", "?value", "a JSON Schema validator"],
+                [
+                  "answer",
+                  {
+                    "covers": "recursive schemas whose every check ends",
+                    "by": "a JSON Schema validator"
+                  },
+                  "?_",
+                  "?statement"
+                ]
+              ]
+            ]
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Do Lion's rules follow the same rule as its schemas?",
+          "answer": [
+            "cond",
+            [
+              ["violated", "ci-one-recursion", "?_"],
+              [
+                "string/concat",
+                "No. Schemas may recurse through not on a smaller part of the value, but rules may not: “",
+                ["quoteOf", "ci-d-stratum"],
+                "” Bringing rules in line would need ",
+                [
+                  "words/listed",
+                  [
+                    "aggregate/unique",
+                    ["find", "?x", ["moot", "stratified-rules", "?x"]]
+                  ]
+                ],
+                ", which Lion does not have",
+                [
+                  "cond",
+                  [
+                    ["overturns", "stratified-rules", "?_"],
+                    [
+                      "string/concat",
+                      ", and would change a rule Lion documents: ",
+                      [
+                        "words/listed",
+                        [
+                          "aggregate/unique",
+                          [
+                            "find",
+                            "?r",
+                            ["overturns", "stratified-rules", "?r"]
+                          ]
+                        ]
+                      ],
+                      "."
+                    ]
+                  ],
+                  ["else", "."]
+                ]
+              ]
+            ],
+            [
+              "else",
+              "Yes: both accept, or both refuse, recursion through not on something smaller."
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "or",
+                [
+                  "=",
+                  "?about",
+                  "schemas that recurse through not on a smaller part of the value"
+                ],
+                [
+                  "=",
+                  "?about",
+                  "rules that recurse through not on a smaller argument"
+                ],
+                [
+                  "=",
+                  "?about",
+                  "rules that recurse on a smaller value they compute"
+                ]
+              ],
+              [
+                "answer",
+                {
+                  "lion has": "?about"
+                },
+                "?value",
+                "?statement"
+              ]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

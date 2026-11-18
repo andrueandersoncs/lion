@@ -25,6 +25,7 @@
 - A case's `setup.mjs` makes the world around the sessions. It may export `start()`, called once before the runs, which returns what to `stop()` after them, such as a service the agents call; `prepare(work)`, which lays out a run's folder before its first session; `between(work, finished)`, called after each session but the last, for the changes the next session is not told about; and `finish(work, logs)`, which may leave a record beside the run's transcripts. (`skill-eval-setup` added)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming` added)
 - The run on what to improve in Lion next (2026-11-17) is the second run in the shared research model: its sources, its 275 quoted claims, its directions as candidates, and the two programs that model invented unknowns and annotations are in `research/` beside the separation-logic run, under the names that run already used, and its ranking comes out the same there. (`lion-improvements-research` added)
+- The run on CIRT, the calculus of inductive refinement types (arXiv 2611.20867, 2026-11-18), is the third run in the shared research model. It weighs seven ideas from the paper against Lion's schemas and rules, and ranks first stratified recursion for schemas: a schema may ask about itself only about a smaller part of the value. Its fourteen programs, in `research/probes/ci-*.json`, show that a schema whose predicate asks about itself, about the same value, runs Lion out of memory, before and after compiled evaluation. (`cirt-refinement-types-research` added)
 
 ### Removed
 
@@ -80,6 +81,7 @@
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
+- A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked. (rule `research-verdict-in-part`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

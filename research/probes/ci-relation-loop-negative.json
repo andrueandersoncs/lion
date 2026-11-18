@@ -1,0 +1,9 @@
+[
+  "begin",
+  ["relation", "item", ["v"]],
+  ["relation", "ok", ["v"]],
+  ["schema", "Okay", "ok"],
+  ["fact", ["item", 1]],
+  ["rule", ["ok", "?v"], ["item", "?v"], ["not", ["Okay", "?v"]]],
+  ["query", ["ok", "?v"]]
+]

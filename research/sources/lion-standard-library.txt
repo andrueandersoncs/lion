@@ -1,0 +1,41 @@
+["begin",
+["relation", "team", ["name"]],
+["relation", "lead", ["team", "person"]],
+["fact", ["team", "web"], ["team", "data"], ["lead", "web", "ana"]],
+["rule", ["exists", ["?p"], ["lead", "?t", "?p"]], ["team", "?t"]],
+{"leads": ["find", ["array/make", "?t", "?p", ["value/unknown?", "?p"]], ["lead", "?t", "?p"]],
+"known leads": ["find", "?p", ["and", ["lead", "?_", "?p"], ["not", ["value/unknown?", "?p"]]]],
+"object? of an unknown": ["value/object?", ["some", "?p", ["lead", "data", "?p"]]]}]
+schema
+Checks values against schemas, and builds schemas out of others. Anything is a schema; see What fits a schema. The functions that check take the value first, then the schema. schema gives a schema a name.
+FunctionReturns
+["schema/fits?", value, schema]Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema; see Patterns.
+["schema/problems", value, schema]Every place where the value does not fit, in the order of their paths; an empty list when it fits. A problem is a record with a path, the keys and positions that lead to the part. A part with the wrong value has what was expected, a schema written as the expression that makes it, and what was found. A part that is missing has only expected, and a key the schema does not name has only found.
+["schema/assert", value, schema]The value, when it fits. When it does not, fails with a message that says where. As a value in a rule or find, it fails the query that runs it.
+["schema/anyOf", schema, ...]A schema that fits a value which fits at least one of the schemas. Of plain values it is a list of choices. It reports one problem, at the value that fits none.
+["schema/allOf", schema, ...]A schema that fits a value which fits every one of the schemas. It reports the problems of each schema the value does not fit.
+["schema/arrayOf", schema]A schema that fits a list whose every item fits the schema
+["schema/recordOf", schema]A schema that fits a record whose every value fits the schema
+["schema/optional", schema]As the schema of a record's key, lets the key be left out; a key that is there must fit. Anywhere else it is the schema itself.
+["schema/open", record]A schema that fits a record which fits the record of schemas, or the named schema of one, whatever other keys it has
+What the building functions return is a function: called with a value, it says whether the value fits. A snapshot writes it as the call that built it.
+{"fits?": ["schema/fits?", 3, "value/number?"],
+"problems": ["schema/problems",
+{"id": "x"},
+{"id": "value/integer?", "name": "value/string?"}],
+"assert": ["schema/assert", 3, "value/number?"],
+"anyOf": ["schema/fits?", null, ["schema/anyOf", "value/string?", null]],
+"allOf": ["schema/fits?", 5,
+["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]],
+"arrayOf": ["schema/fits?", ["array/make", 1, 2], ["schema/arrayOf", "value/number?"]],
+"recordOf": ["schema/fits?", {"a": 1, "b": "x"}, ["schema/recordOf", "value/number?"]],
+"optional": ["schema/fits?", {}, {"note": ["schema/optional", "value/string?"]}],
+"extra key": ["schema/problems", {"id": 1, "extra": true}, {"id": "value/integer?"}],
+"open": ["schema/fits?", {"id": 1, "extra": true}, ["schema/open", {"id": "value/integer?"}]],
+"called": [["schema/arrayOf", "value/number?"], ["array/make", 1, "two"]]}
+["schema/assert",
+{"id": 7, "tags": ["array/make", "new", 3]},
+{"id": "value/integer?", "tags": ["schema/arrayOf", "value/string?"]}]
+object
+For records and host objects. Paths are dot-separated keys; a numeric segment indexes a list. Keys belong to objects, so reading one needs an object, but a method can belong to any value except null, so the method functions also work on strings, numbers, and lists.
+FunctionReturns

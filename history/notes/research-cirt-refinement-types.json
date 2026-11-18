@@ -1,0 +1,21 @@
+{
+  "claims": [
+    {
+      "quote": "The run on CIRT, the calculus of inductive refinement types (arXiv 2611.20867, 2026-11-18), is the third run in the shared research model. It weighs seven ideas from the paper against Lion's schemas and rules, and ranks first stratified recursion for schemas: a schema may ask about itself only about a smaller part of the value. Its fourteen programs, in `research/probes/ci-*.json`, show that a schema whose predicate asks about itself, about the same value, runs Lion out of memory, before and after compiled evaluation.",
+      "says": {
+        "feature": "cirt-refinement-types-research",
+        "kind": "file",
+        "present": true
+      }
+    },
+    {
+      "quote": "A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked.",
+      "says": {
+        "rule": "research-verdict-in-part",
+        "holds": true,
+        "statement": "A research candidate that adds something Lion lacks but needs a condition Lion lacks is worth adopting in part, not a candidate with nothing to work on",
+        "area": "docs"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1614 @@
+A uniform approach to logic programming semantics
+Pascal Hitzler and Matthias Wendt
+Knowledge Representation and Reasoning Group
+  
+Artificial Intelligence Institute
+Department of Computer Science
+  
+Dresden University of Technology
+Dresden
+  
+Germany
+Email: {phitzler,mw177754}@inf.tu-dresden.de
+2003
+Abstract
+Part of the theory of logic programming and nonmonotonic reasoning concerns
+the study of fixed-point semantics for these paradigms. Several different
+semantics have been proposed during the last two decades, and some have been
+more successful and acknowledged than others. The rationales behind those
+various semantics have been manifold, depending on one’s point of view,
+which may be that of a programmer or inspired by commonsense reasoning, and
+consequently the constructions which lead to these semantics are technically
+very diverse, and the exact relationships between them have not yet been
+fully understood. In this paper, we present a conceptually new method, based
+on level mappings, which allows to provide uniform characterizations of
+different semantics for logic programs. We will display our approach by
+giving new and uniform characterizations of some of the major semantics,
+more particular of the least model semantics for definite programs, of the
+Fitting semantics, and of the well-founded semantics. A novel
+characterization of the weakly perfect model semantics will also be
+provided.
+keywords
+Level mapping, Fitting semantics, well-founded semantics, least model
+semantics, stable semantics, weak stratification
+Contents
+1 Introduction
+2 Preliminaries and Notation
+3 Least and Stable Model Semantics
+4 Fitting Semantics
+5 Well-Founded Semantics
+6 Weakly Perfect Model Semantics
+7 Related Work
+8 Conclusions and Further Work
+References
+1 Introduction
+Negation in logic programming differs from the negation of classical
+logic. Indeed, the quest for a satisfactory understanding of negation in
+logic programming is still inconclusive — although the issue has cooled
+down a bit recently — and has proved to be very stimulating for research
+activities in computational logic, and in particular amongst knowledge
+representation and reasoning researchers concerned with commonsense and
+nonmonotonic reasoning. During the last two decades, different
+interpretations of negation in logic programming have lead to the
+development of a variety of declarative semantics , as they are
+called. Some early research efforts for establishing a satisfactory
+declarative semantics for negation as failure and its variants, as featured
+by the resolution-based Prolog family of logic programming systems, have
+later on been merged with nonmonotonic frameworks for commonsense reasoning,
+culminating recently in the development of so-called answer set programming
+systems, like smodels or dlv
+[ 14 , 41 , 36 , 49 ] .
+Systematically, one can understand Fitting’s proposal [ 16 ] of a
+Kripke-Kleene semantics — also known as Fitting semantics
+— as a cornerstone which plays a fundamental rôle both for
+resolution-based and nonmonotonic reasoning inspired logic
+programming. Indeed, his proposal, which is based on a monotonic semantic
+operator in Kleene’s strong three-valued logic, has been pursued in both
+communities, for example by Kunen [ 35 ] for giving a semantics for
+pure Prolog, and by Apt and Pedreschi [ 3 ] in their fundamental paper
+on termination analysis of negation as failure, leading to the notion of
+acceptable program . On the other hand, however, Fitting himself
+[ 17 , 21 ] , using a bilattice-based approach which was further
+developed by Denecker, Marek, and Truszczynski [ 11 ] , tied his
+semantics closely to the major semantics inspired by nonmonotonic reasoning,
+namely the stable model semantics due to Gelfond and Lifschitz
+[ 22 ] , which is based on a nonmonotonic semantic operator, and the
+well-founded semantics due to van Gelder, Ross, and Schlipf
+[ 54 ] , originally defined using a different monotonic operator in
+three-valued logic together with a notion of unfoundedness.
+Another fundamental idea which was recognised in both communities was that
+of stratification , with the underlying idea of restricting attention
+to certain kinds of programs in which recursion through negation is
+prevented. Apt, Blair, and Walker [ 2 ] proposed a variant of
+resolution suitable for these programs, while Przymusinski [ 45 ] and
+van Gelder [ 52 ] generalized the notion to local
+stratification. Przymusinski [ 45 ] developed the perfect model
+semantics for locally stratified programs, and together with Przymusinska
+[ 44 ] generalized it later to a three-valued setting as the
+weakly perfect model semantics .
+The semantics mentioned so far are defined and characterized using a variety
+of different techniques and constructions, including monotonic and
+nonmonotonic semantic operators in two- and three-valued logics, program
+transformations, level mappings, restrictions to suitable subprograms,
+detection of cyclic dependencies etc. Relationships between the semantics
+have been established, but even a simple comparison of the respective models
+in restricted cases could be rather tedious. So, in this paper, we propose a
+methodology which allows to obtain uniform characterizations of all
+semantics previously mentioned, and we believe that it will scale up well to
+most semantics based on monotonic operators, and also to some nonmonotonic
+operators, and to extensions of the logic programming paradigm including
+disjunctive conclusions and uncertainty. The characterizations will allow
+immediate comparison between the semantics, and once obtained we will easily
+be able to make some new and interesting observations, including the fact
+that the well-founded semantics can formally be understood as a Fitting
+semantics augmented with a form of stratification. Indeed we will note that
+from this novel perspective the well-founded semantics captures the idea of
+stratification much better than the weakly perfect model semantics, thus
+providing a formal explanation for the historic fact that the latter has not
+received as much attention as the former.
+The main tool which will be employed for our characterizations is the notion
+of level mapping . Level mappings are mappings from Herbrand bases to
+ordinals, i.e. they induce orderings on the set of all ground atoms while
+disallowing infinite descending chains. They have been a technical tool in a
+variety of contexts, including termination analysis for resolution-based
+logic programming as studied by Bezem [ 8 ] , Apt and Pedreschi
+[ 3 ] , Marchiori [ 40 ] , Pedreschi, Ruggieri, and Smaus
+[ 43 ] , and others, where they appear naturally since ordinals are
+well-orderings. They have been used for defining classes of programs with
+desirable semantic properties, e.g. by Apt, Blair, and Walker [ 2 ] ,
+Przymusinski [ 45 ] and Cavedon [ 10 ] , and they are intertwined
+with topological investigations of fixed-point semantics in logic
+programming, as studied e.g. by Fitting [ 20 , 21 ] , and by Hitzler
+and Seda [ 47 , 48 , 25 , 31 ] . Level mappings are also relevant
+to some aspects of the study of relationships between logic programming and
+artificial neural networks, as studied by Hölldobler, Kalinke, and Störr
+[ 33 ] and by Hitzler and Seda [ 28 , 30 ] . In our novel
+approach to uniform characterizations of different semantics, we will use
+them as a technical tool for capturing dependencies between atoms in a
+program.
+The paper is structured as follows. Section 2 contains
+preliminaries which are needed to make the paper relatively
+self-contained. The subsequent sections contain the announced uniform
+characterizations of the least model semantics for definite programs and the
+stable model semantics in Section 3 , of the Fitting
+semantics in Section 4 , of the well-founded semantics in
+Section 5 , and of the weakly perfect model semantics in Section
+6 . Related work will be discussed in Section
+7 , and we close with conclusions and a discussion of further
+work in Section 8 .
+Part of this paper was presented at the 25th German Conference on Artificial
+Intelligence, KI2002, Aachen, Germany, September 2002 [ 32 ] .
+Acknowledgement. We thank Tony Seda for pointing out some flaws in a
+previous version of the proof of Theorem 5.1 .
+2 Preliminaries and Notation
+A ( normal ) logic program is a finite set of (universally
+quantified) clauses of the form ∀ ( A ← A 1 ∧ … ∧ A n ∧ ¬ B 1 ∧ … ∧ ¬ B m ) \forall(A\leftarrow A_{1}\wedge\dots\wedge A_{n}\wedge\lnot B_{1}\wedge\dots\wedge\lnot B_{m}) , commonly written as A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} , where A A , A i A_{i} , and B j B_{j} , for
+i = 1 , … , n i\mathchar 61\relax 1,\dots,n and j = 1 , … , m j\mathchar 61\relax 1,\dots,m , are atoms over some given first order
+language. A A is called the head of the clause, while the remaining
+atoms make up the body of the clause, and depending on context, a
+body of a clause will be a set of literals (i.e. atoms or negated atoms) or
+the conjunction of these literals. Care will be taken that this
+identification does not cause confusion. We allow a body, i.e. a
+conjunction, to be empty, in which case it always evaluates to true. A
+clause with empty body is called a unit clause or a fact . A
+clause is called definite , if it contains no negation symbol. A
+program is called definite if it consists only of definite
+clauses. We will usually denote atoms with A A or B B , and literals, which
+may be atoms or negated atoms, by L L or K K .
+Given a logic program P P , we can extract from it the components of a first
+order language. The corresponding set of ground atoms, i.e. the
+Herbrand base of the program, will be denoted by B P B_{P} . For a subset
+I ⊆ B P I\subseteq B_{P} , we set ¬ I = { ¬ A ∣ A ∈ I } \lnot I\mathchar 61\relax\{\lnot A\mid A\in I\} . The set of all
+ground instances of P P with respect to B P B_{P} will be denoted by
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) . For I ⊆ B P ∪ ¬ B P I\subseteq B_{P}\cup\lnot B_{P} we say that A A is
+true with respect to (or in ) I I if A ∈ I A\in I , we say that A A
+is false with respect to (or in ) I I if ¬ A ∈ I \lnot A\in I , and if
+neither is the case, we say that A A is undefined with respect to (or
+in ) I I . A ( three-valued or partial )
+interpretation I I for P P is a subset of B P ∪ ¬ B P B_{P}\cup\lnot B_{P} which is
+consistent , i.e. whenever A ∈ I A\in I then ¬ A ∉ I \lnot A\not\in I . A body,
+i.e. a conjunction of literals, is true in an interpretation I I if every
+literal in the body is true in I I , it is false in I I if one of its
+literals is false in I I , and otherwise it is undefined in I I . For a
+negative literal L = ¬ A L\mathchar 61\relax\lnot A we will find it convenient to write ¬ L ∈ I \lnot L\in I if A ∈ I A\in I and say that L L is false in I I etc. in this case. By I P I_{P}
+we denote the set of all (three-valued) interpretations of P P . It is a
+complete partial order (cpo) via set-inclusion, i.e. it contains the empty
+set as least element, and every ascending chain has a supremum, namely its
+union. A model of P P is an interpretation I ∈ I P I\in I_{P} such that for
+each clause A ← body A\leftarrow\texttt{body} we have that body true in I I implies A A true
+in I I , and body undefined in I I implies A A true or undefined in I I .
+A total interpretation is an interpretation I I such that no A ∈ B P A\in B_{P} is undefined in I I .
+For an interpretation I I and a program P P , an I I -partial level
+mapping for P P is a partial mapping l : B P → α l:B_{P}\to\alpha with domain
+𝖽𝗈𝗆 ⁡ ( l ) = { A ∣ A ∈ I ​ or ​ ¬ A ∈ I } \mathsf{dom}(l)\mathchar 61\relax\{A\mid A\in I\mbox{ or }\lnot A\in I\} , where α \alpha is some
+(countable) ordinal. We extend every level mapping to literals by setting
+l ⁡ ( ¬ A ) = l ⁡ ( A ) l(\lnot A)\mathchar 61\relax l(A) for all A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) . A ( total ) level
+mapping is a total mapping l : B P → α l:B_{P}\to\alpha for some (countable) ordinal
+α \alpha .
+Given a normal logic program P P and some I ⊆ B P ∪ ¬ B P I\subseteq B_{P}\cup\lnot B_{P} , we say
+that U ⊆ B P U\subseteq B_{P} is an unfounded set ( of P P ) with
+respect to I I if each atom A ∈ U A\in U satisfies the following condition: For
+each clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) (at least) one of the following
+holds.
+(Ui)
+Some (positive or negative) literal in body is false in I I .
+(Uii)
+Some (non-negated) atom in body occurs in U U .
+Given a normal logic program P P , we define the following operators on
+B P ∪ ¬ B P B_{P}\cup\lnot B_{P} . T P ​ ( I ) T_{P}(I) is the set of all A ∈ B P A\in B_{P} such that there
+exists a clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that body is true in
+I I . F P ​ ( I ) F_{P}(I) is the set of all A ∈ B P A\in B_{P} such that for all clauses
+A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) we have that body is false in I I . Both
+T P T_{P} and F P F_{P} map elements of I P I_{P} to elements of I P I_{P} . Now define the
+operator Φ P : I P → I P \Phi_{P}:I_{P}\to I_{P} by
+Φ P ( I ) = T P ( I ) ∪ ¬ F P ( I ) ⋅ \Phi_{P}(I)\mathchar 61\relax T_{P}(I)\cup\lnot F_{P}(I)\mathbin{\cdot}
+This operator is due to Fitting [ 16 ] and is monotonic on the cpo
+I P I_{P} , hence has a least fixed point by the Tarski fixed-point theorem, and
+we can obtain this fixed point by defining, for each monotonic operator F F ,
+that F ↑ 0 = ∅ F\!\uparrow\!0\mathchar 61\relax\emptyset , F ↑ ( α + 1 ) = F ⁡ ( F ↑ α ) F\!\uparrow\!(\alpha\mathchar 43\relax 1)\mathchar 61\relax F(F\!\uparrow\!\alpha) for any ordinal
+α \alpha , and F ↑ β = ⋃ γ ​ ¡ ​ β F ↑ γ F\!\uparrow\!\beta\mathchar 61\relax\bigcup_{\gamma\mathchar 60\relax\beta}F\!\uparrow\!\gamma for any limit
+ordinal β \beta , and the least fixed point 𝗅𝖿𝗉 ⁡ ( F ) \mathsf{lfp}(F) of F F is obtained as
+F ↑ α F\!\uparrow\!\alpha for some ordinal α \alpha . The least fixed point of Φ P \Phi_{P}
+is called the Kripke-Kleene model or Fitting model of P P ,
+determining the Fitting semantics of P P .
+Example 2.1
+Let P P be the program consisting of the two clauses p ← p p\leftarrow p and
+q ← ¬ r q\leftarrow\lnot r . Then Φ P ↑ 1 = { ¬ r } \Phi_{P}\!\uparrow\!1\mathchar 61\relax\{\lnot r\} , and Φ P ↑ 2 = { q , ¬ r } = Φ P ↑ 3 \Phi_{P}\!\uparrow\!2\mathchar 61\relax\{q,\lnot r\}\mathchar 61\relax\Phi_{P}\!\uparrow\!3 is the Fitting model of P P .
+Now, for I ⊆ B P ∪ ¬ B P I\subseteq B_{P}\cup\lnot B_{P} , let U P ​ ( I ) U_{P}(I) be the greatest
+unfounded set (of P P ) with respect to I I , which always exists due to van
+Gelder, Ross, and Schlipf [ 54 ] . Finally, define
+W P ​ ( I ) = T P ​ ( I ) ∪ ¬ U P ​ ( I ) W_{P}(I)\mathchar 61\relax T_{P}(I)\cup\lnot U_{P}(I)
+for all I ⊆ B P ∪ ¬ B P I\subseteq B_{P}\cup\lnot B_{P} . The operator W P W_{P} , which operates
+on the cpo B P ∪ ¬ B P B_{P}\cup\lnot B_{P} , is due to van Gelder et al. [ 54 ] and
+is monotonic, hence has a least fixed point by the Tarski fixed-point
+theorem, as above for Φ P \Phi_{P} . It turns out that W P ↑ α W_{P}\!\uparrow\!\alpha is in
+I P I_{P} for each ordinal α \alpha , and so the least fixed point of W P W_{P} is
+also in I P I_{P} and is called the well-founded model of P P , giving the
+well-founded semantics of P P .
+Example 2.2
+Let P P be the program consisting of the following clauses.
+s ← q q ← ¬ p p ← p r ← ¬ r \begin{array}[]{lcl}s&\leftarrow&q\\
+q&\leftarrow&\lnot p\\
+p&\leftarrow&p\\
+r&\leftarrow&\lnot r\end{array}
+Then { p } \{p\} is the largest unfounded set of P P with respect to ∅ \emptyset
+and we obtain
+W P ↑ 1 = { ¬ p } , W P ↑ 2 = { ¬ p , q } , and W P ↑ 3 = { ¬ p , q , s } = W P ↑ 4 ⋅ \begin{array}[]{lcl}W_{P}\!\uparrow\!1&\mathchar 61\relax&\{\lnot p\},\\
+W_{P}\!\uparrow\!2&\mathchar 61\relax&\{\lnot p,q\},\qquad\mbox{and}\\
+W_{P}\!\uparrow\!3&\mathchar 61\relax&\{\lnot p,q,s\}\\
+&\mathchar 61\relax&W_{P}\!\uparrow\!4\mathbin{\cdot}\end{array}
+Given a program P P , we define the operator T P + T_{P}^{\mathchar 43\relax} on subsets of B P B_{P}
+by T P + ​ ( I ) = T P ​ ( I ∪ ¬ ( B P ∖ I ) ) T_{P}^{\mathchar 43\relax}(I)\mathchar 61\relax T_{P}(I\cup\lnot(B_{P}\setminus I)) . It is well-known that
+for definite programs this operator is monotonic on the set of all subsets
+of B P B_{P} , with respect to subset inclusion. Indeed it is Scott-continuous
+[ 38 , 1 , 50 ] and, via Kleene’s fixed-point theorem, achieves its
+least fixed point M M as the supremum of the iterates T P + ↑ n T_{P}^{\mathchar 43\relax}\!\uparrow\!n for
+n ∈ ℕ n\in\mathbb{N} . So M = 𝗅𝖿𝗉 ⁡ ( T P + ) = T P + ↑ ω M\mathchar 61\relax\mathsf{lfp}(T_{P}^{\mathchar 43\relax})\mathchar 61\relax T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega is the least
+two-valued model of P P . In turn, we can identify M M with the total
+interpretation M ∪ ¬ ( B P ∖ M ) M\cup\lnot(B_{P}\setminus M) , which we will call the
+definite ( partial ) model of P P .
+Example 2.3
+Let P P be the program consisting of the clauses
+p ⁡ ( 0 ) ← p ⁡ ( s ⁡ ( X ) ) ← p ⁡ ( X ) , \begin{array}[]{lcl}p(0)&\leftarrow\\
+p(s(X))&\leftarrow&p(X),\end{array}
+where X X denotes a variable and 0 0 a constant symbol. Write s n ​ ( 0 ) s^{n}(0) for
+the term s ( ⋯ s ( 0 ) ⋯ ) s(\cdots s(0)\cdots) in which the symbol s s appears n n
+times. Then
+T P + ↑ n = { p ⁡ ( s k ​ ( 0 ) ) ∣ k ​ ¡ ​ n } T_{P}^{\mathchar 43\relax}\!\uparrow\!n\mathchar 61\relax\left\{p\left(s^{k}(0)\right)\mid k\mathchar 60\relax n\right\}
+for all n ∈ ℕ n\in\mathbb{N} and { p ⁡ ( s n ​ ( 0 ) ) ∣ n ∈ ℕ } \{p(s^{n}(0))\mid n\in\mathbb{N}\} is the least two-valued
+model of P P .
+In order to avoid confusion, we will use the following terminology: the
+notion of interpretation will by default denote consistent subsets of
+B P ∪ ¬ B P B_{P}\cup\lnot B_{P} , i.e. interpretations in three-valued logic. We will
+sometimes emphasize this point by using the notion partial
+interpretation . By two-valued interpretations we mean subsets of
+B P B_{P} . Given a partial interpretation I I , we set I + = I ∩ B P I^{\mathchar 43\relax}\mathchar 61\relax I\cap B_{P} and
+I Γ = { A ∈ B P ∣ ¬ A ∈ I } I^{\mathchar 0\relax}\mathchar 61\relax\{A\in B_{P}\mid\lnot A\in I\} . Each two-valued interpretation I I
+can be identified with the partial interpretation I ′ = I ∪ ¬ ( B P ∖ I ) I^{\prime}\mathchar 61\relax I\cup\lnot(B_{P}\setminus I) . Both, interpretations and two-valued interpretations, are ordered by
+subset inclusion. We note however, that these two orderings differ: If
+I ⊆ B P I\subseteq B_{P} , for example, then I ′ I^{\prime} is always a maximal element in the
+ordering for partial interpretations, while I I is in general not maximal as
+a two-valued interpretation. The two orderings correspond to the knowledge-
+and the truth-ordering due to Fitting [ 17 ] .
+There is a semantics using two-valued logic, the stable model semantics due
+to Gelfond and Lifschitz [ 22 ] , which is intimately related to the
+well-founded semantics. Let P P be a normal program, and let M ⊆ B P M\subseteq B_{P} be a set of atoms. Then we define P / M P/M to be the (ground) program
+consisting of all clauses A ← A 1 , … , A n A\leftarrow A_{1},\dots,A_{n} for which there is a clause
+A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with
+B 1 , … , B m ∉ M B_{1},\dots,B_{m}\not\in M . Since P / M P/M does no longer contain negation, it
+has a least two-valued model T P / M + ↑ ω T_{P/M}^{\mathchar 43\relax}\!\uparrow\!\omega . For any two-valued
+interpretation I I we can therefore define the operator
+GL P ​ ( I ) = T P / I + ↑ ω \mathrm{GL}_{P}(I)\mathchar 61\relax T_{P/I}^{\mathchar 43\relax}\!\uparrow\!\omega , and call M M a stable model of the
+normal program P P if it is a fixed point of the operator GL P \mathrm{GL}_{P} , i.e. if
+M = GL P ​ ( M ) = T P / M + ↑ ω M\mathchar 61\relax\mathrm{GL}_{P}(M)\mathchar 61\relax T_{P/M}^{\mathchar 43\relax}\!\uparrow\!\omega . As it turns out, the operator GL P \mathrm{GL}_{P} is
+in general not monotonic for normal programs P P . However it is
+antitonic , i.e. whenever I ⊆ J ⊆ B P I\subseteq J\subseteq B_{P} then
+GL P ​ ( J ) ⊆ GL P ​ ( I ) \mathrm{GL}_{P}(J)\subseteq\mathrm{GL}_{P}(I) . As a consequence, the operator GL P 2 \mathrm{GL}_{P}^{2} ,
+obtained by applying GL P \mathrm{GL}_{P} twice, is monotonic and hence has a least fixed
+point L P L_{P} and a greatest fixed point G P G_{P} . Van Gelder [ 53 ] has
+shown that GL P ​ ( L P ) = G P \mathrm{GL}_{P}(L_{P})\mathchar 61\relax G_{P} , L P = GL P ​ ( G P ) L_{P}\mathchar 61\relax\mathrm{GL}_{P}(G_{P}) , and that L P ∪ ¬ ( B P ∖ G P ) L_{P}\cup\lnot(B_{P}\setminus G_{P}) coincides with the well-founded model of P P . This is
+called the alternating fixed point characterization of the
+well-founded semantics.
+Example 2.4
+Consider the program P P from Example 2.2 . The subprogram Q Q
+consisting of the first three clauses of the program P P has stable model
+M = { s , q } M\mathchar 61\relax\{s,q\} , which can be verified by noting that Q / M Q/M consists of the
+clauses
+s ← q q ← p ← p , \begin{array}[]{lcl}s&\leftarrow&q\\
+q&\leftarrow\\
+p&\leftarrow&p,\end{array}
+and has M M as its least two-valued model.
+For the program P P we obtain
+GL P ​ ( ∅ ) = { q , s , r } , GL P ​ ( { q , s , r } ) = { q , s } = GL P 2 ​ ( { q , s } ) , and GL P ​ ( B P ) = ∅ ⋅ \begin{array}[]{lcl}\mathrm{GL}_{P}(\emptyset)&\mathchar 61\relax&\{q,s,r\},\\
+\mathrm{GL}_{P}(\{q,s,r\})&\mathchar 61\relax&\{q,s\}\\
+&\mathchar 61\relax&\mathrm{GL}_{P}^{2}(\{q,s\}),\qquad\mbox{and}\\
+\mathrm{GL}_{P}(B_{P})&\mathchar 61\relax&\emptyset\mathbin{\cdot}\end{array}
+So L P = { q , s } L_{P}\mathchar 61\relax\{q,s\} while G P = { q , s , r } G_{P}\mathchar 61\relax\{q,s,r\} , and L P ∪ ¬ ( B P ∖ G P ) = { q , s , ¬ p } L_{P}\cup\lnot(B_{P}\setminus G_{P})\mathchar 61\relax\{q,s,\lnot p\} is the well-founded model of P P .
+3 Least and Stable Model Semantics
+The most fundamental semantics in logic programming is based on the fact
+mentioned above that the operator T P + T_{P}^{\mathchar 43\relax} has a least fixed point
+M = T P + ↑ ω M\mathchar 61\relax T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega whenever P P is definite. The two-valued interpretation
+M M turns out to be the least two-valued model of the program, and is
+therefore canonically the model which should be considered for definite
+programs. Our first result characterizes the least model using level
+mappings, and serves to convey the main ideas underlying our method. It is a
+straightforward result but has, to the best of our knowledge, not been noted
+before.
+Theorem 3.1
+Let P P be a definite program. Then there is a unique two-valued model M M of
+P P for which there exists a (total) level mapping l : B P → α l:B_{P}\to\alpha such that
+for each atom A ∈ M A\in M there exists a clause A ← A 1 , … , A n A\leftarrow A_{1},\dots,A_{n} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with A i ∈ M A_{i}\in M and l ⁡ ( A ) ​ ¿ ​ l ​ ( A i ) l(A)\mathchar 62\relax l(A_{i}) for all
+i = 1 , … , n i\mathchar 61\relax 1,\dots,n . Furthermore, M M is the least two-valued model of P P .
+Proof 3.1 .
+Let M M be the least two-valued model T P + ↑ ω T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega , choose
+α = ω \alpha\mathchar 61\relax\omega , and define l : B P → α l:B_{P}\to\alpha by setting l ⁡ ( A ) = min ⁡ { n ∣ A ∈ T P + ↑ ( n + 1 ) } l(A)\mathchar 61\relax\min\{n\mid A\in T_{P}^{\mathchar 43\relax}\!\uparrow\!(n\mathchar 43\relax 1)\} , if A ∈ M A\in M , and by setting l ⁡ ( A ) = 0 l(A)\mathchar 61\relax 0 , if A ∉ M A\not\in M . From the fact that ∅ ⊆ T P + ↑ 1 ⊆ … ⊆ T P + ↑ n ⊆ … ⊆ T P + ↑ ω = ⋃ m T P + ↑ m \emptyset\subseteq T_{P}^{\mathchar 43\relax}\!\uparrow\!1\subseteq\ldots\subseteq T_{P}^{\mathchar 43\relax}\!\uparrow\!n\subseteq\ldots\subseteq T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega\mathchar 61\relax\bigcup_{m}T_{P}^{\mathchar 43\relax}\!\uparrow\!m , for each n n , we see that l l is well-defined and that the
+least model T P + ↑ ω T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega for P P has the desired properties.
+Conversely, if M M is a two-valued model for P P which satisfies the given
+condition for some mapping l : B P → α l:B_{P}\to\alpha , then it is easy to show, by
+induction on l ⁡ ( A ) l(A) , that A ∈ M A\in M implies A ∈ T P + ↑ ( l ⁡ ( A ) + 1 ) A\in T_{P}^{\mathchar 43\relax}\!\uparrow\!(l(A)\mathchar 43\relax 1) . This
+yields that M ⊆ T P + ↑ ω M\subseteq T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega , and hence that M = T P + ↑ ω M\mathchar 61\relax T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega by minimality of the model T P + ↑ ω T_{P}^{\mathchar 43\relax}\!\uparrow\!\omega .
+Example 3.2
+For the program P P from Example 2.3 we obtain l ⁡ ( p ⁡ ( s n ​ ( 0 ) ) ) = n l(p(s^{n}(0)))\mathchar 61\relax n for the level mapping l l defined in the proof of Theorem
+3.1 .
+The proof of Theorem 3.1 can serve as a blueprint for
+obtaining characterizations if the semantics under consideration is based on
+the least fixed point of a monotonic operator F F , and indeed our results
+for the Fitting semantics and the well-founded semantics, Theorems
+4.1 and 5.1 , together with their proofs, follow
+this scheme. In one direction, levels are assigned to atoms A A according to
+the least ordinal α \alpha such that A A is not undefined in
+F ↑ ( α + 1 ) F\!\uparrow\!(\alpha\mathchar 43\relax 1) , and dependencies between atoms of some level and atoms of
+lower levels are captured by the nature of the considered operator, which
+will certainly vary from case to case. In Theorem 3.1 , the
+condition thus obtained suffices for uniquely determining the least model,
+whereas in other cases which we will study later, so for the Fitting
+semantics and the well-founded semantics, the level mapping conditions will
+not suffice for unique characterization of the desired model. However, the
+desired model will in each case turn out to be the greatest among all models
+satisfying the given conditions. So in these cases it will remain to show,
+by transfinite induction on the level of some given atom A A , that the truth
+value assigned to A A by any model satisfying the given conditions is also
+assigned to A A by F ↑ ( l ⁡ ( A ) + 1 ) F\!\uparrow\!(l(A)\mathchar 43\relax 1) , which at the same time proves that
+𝗅𝖿𝗉 ⁡ ( F ) \mathsf{lfp}(F) is the greatest model satisfying the given conditions. For the
+proof of Theorem 3.1 , the proof method just described can be
+applied straightforwardly, however for more sophisticated operators may
+become technically challenging on the detailed level.
+We now turn to the stable model semantics, which in the case of programs
+with negation has come to be the major semantics based on two-valued
+logic. The following characterization is in the spirit of our proposal, and
+is due to Fages [ 15 ] . It is striking in its similarity to the
+characterization of the least model for definite programs in Theorem
+3.1 . For completeness of our exhibition, we include a proof
+of the fact.
+Theorem 3.3
+Let P P be normal. Then a two-valued model M ⊆ B P M\subseteq B_{P} of P P is a
+stable model of P P if and only if there exists a (total) level mapping
+l : B P → α l:B_{P}\to\alpha such that for each A ∈ M A\in M there exists A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with A i ∈ M A_{i}\in M ,
+B j ∉ M B_{j}\not\in M , and l ⁡ ( A ) ​ ¿ ​ l ​ ( A i ) l(A)\mathchar 62\relax l(A_{i}) for all i = 1 , … , n i\mathchar 61\relax 1,\dots,n and j = 1 , … , m j\mathchar 61\relax 1,\dots,m .
+Proof 3.2 .
+Let M M be a stable model of P P ,
+i.e. GL P ​ ( M ) = T P / M + ↑ ω = M \mathrm{GL}_{P}(M)\mathchar 61\relax T_{P/M}^{\mathchar 43\relax}\!\uparrow\!\omega\mathchar 61\relax M . Then M M is the least model for
+P / M P/M , hence is also a model for P P , and, by Theorem 3.1 ,
+satisfies the required condition with respect to any level mapping l l with
+l ⁡ ( A ) = min ⁡ { n ∣ A ∈ T P / M ↑ ( n + 1 ) } l(A)\mathchar 61\relax\min\{n\mid A\in T_{P/M}\!\uparrow\!(n\mathchar 43\relax 1)\} for each A ∈ M A\in M . Conversely,
+let M M be a model which satisfies the condition in the statement of the
+theorem. Then, for every A ∈ M A\in M , there is a clause C C in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) of
+the form A ← A 1 , … , A n , ¬ B 1 , … , ¬ B k A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{k} such that the body
+of C C is true in M M and satisfies l ⁡ ( A ) ​ ¿ ​ l ​ ( A i ) l(A)\mathchar 62\relax l(A_{i}) for all i = 1 , … , n i\mathchar 61\relax 1,\dots,n . But
+then, for every A ∈ M A\in M , there is a clause A ← A 1 , … , A n A\leftarrow A_{1},\dots,A_{n} in P / M P/M
+whose body is true in M M and such that l ⁡ ( A ) ​ ¿ ​ l ​ ( A i ) l(A)\mathchar 62\relax l(A_{i}) for all
+i = 1 , … , n i\mathchar 61\relax 1,\dots,n . By Theorem 3.1 , this means that M M is the
+least model for P / M P/M , that is, M = T P / M + ↑ ω = GL ⁡ ( M ) M\mathchar 61\relax T_{P/M}^{\mathchar 43\relax}\!\uparrow\!\omega\mathchar 61\relax\mathrm{GL}(M) .
+The proof of Theorem 3.3 just given partly follows the
+proof scheme discussed previously, by considering the monotonic operator
+T P / M + T_{P/M}^{\mathchar 43\relax} , which is used for defining stable models.
+Example 3.4
+Recall the program P P from Example 2.2 , and consider the program
+Q Q consisting of the first three clauses of P P . We already noted in
+Example 2.4 that Q Q has stable model { s , q } \{s,q\} . A corresponding
+level mapping, as defined in the proof of Theorem 3.3 ,
+satisfies l ⁡ ( q ) = 0 l(q)\mathchar 61\relax 0 and l ⁡ ( s ) = 1 l(s)\mathchar 61\relax 1 , while l ⁡ ( p ) l(p) can be an arbitrary value.
+4 Fitting Semantics
+We next turn to the Fitting semantics. Following the proof scheme which we
+described in Section 3 , we expect levels l ⁡ ( A ) l(A) to be
+assigned to atoms A A such that l ⁡ ( A ) l(A) is the least α \alpha such that A A
+is not undefined in Φ P ↑ ( α + 1 ) \Phi_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) . An analysis of the operator
+Φ P \Phi_{P} eventually yields the following conditions.
+Definition 1 .
+Let P P be a normal logic program, I I be a model of P P , and l l be an
+I I -partial level mapping for P P . We say that P P satisfies (F)
+with respect to I I and l l , if each A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies one of
+the following conditions.
+(Fi)
+A ∈ I A\in I and there exists a clause A ← L 1 , … , L n A\leftarrow L_{1},\dots,L_{n} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with L i ∈ I L_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) for all
+i i .
+(Fii)
+¬ A ∈ I \lnot A\in I and for each clause A ← L 1 , … , L n A\leftarrow L_{1},\dots,L_{n} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) there exists i i with ¬ L i ∈ I \lnot L_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) .
+If A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies (Fi), then we say that A A satisfies (Fi)
+with respect to I I and l l , and similarly if A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies
+(Fii).
+We note that condition (Fi) is stronger than the condition used for
+characterizing stable models in Theorem 3.3 . The proof of
+the next theorem closely follows our proof scheme.
+Theorem 4.1
+Let P P be a normal logic program with Fitting model M M . Then M M is the
+greatest model among all models I I , for which there exists an I I -partial
+level mapping l l for P P such that P P satisfies (F) with respect to I I
+and l l .
+Proof 4.3 .
+Let M P M_{P} be the Fitting model of P P and define the M P M_{P} -partial level
+mapping l P l_{P} as follows: l P ​ ( A ) = α l_{P}(A)\mathchar 61\relax\alpha , where α \alpha is the least
+ordinal such that A A is not undefined in Φ P ↑ ( α + 1 ) \Phi_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) . The proof
+will be established by showing the following facts: (1) P P satisfies (F)
+with respect to M P M_{P} and l P l_{P} . (2) If I I is a model of P P and l l an
+I I -partial level mapping such that P P satisfies (F) with respect to I I
+and l l , then I ⊆ M P I\subseteq M_{P} .
+(1) Let A ∈ 𝖽𝗈𝗆 ⁡ ( l P ) A\in\mathsf{dom}(l_{P}) and l P ​ ( A ) = α l_{P}(A)\mathchar 61\relax\alpha . We consider two cases.
+(Case i) If A ∈ M P A\in M_{P} , then A ∈ T P ​ ( Φ P ↑ α ) A\in T_{P}(\Phi_{P}\!\uparrow\!\alpha) , hence there
+exists a clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that body is true in
+Φ P ↑ α \Phi_{P}\!\uparrow\!\alpha . Thus, for all L i ∈ body L_{i}\in\texttt{body} we have that L i ∈ Φ P ↑ α L_{i}\in\Phi_{P}\!\uparrow\!\alpha , and hence l P ​ ( L i ) ​ ¡ ​ α l_{P}(L_{i})\mathchar 60\relax\alpha and L i ∈ M P L_{i}\in M_{P} for all
+i i . Consequently, A A satisfies (Fi) with respect to M P M_{P} and l P l_{P} .
+(Case ii) If ¬ A ∈ M P \lnot A\in M_{P} , then A ∈ F P ​ ( Φ P ↑ α ) A\in F_{P}(\Phi_{P}\!\uparrow\!\alpha) , hence for
+all clauses A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) there exists L ∈ body L\in\texttt{body} with
+¬ L ∈ Φ P ↑ α \lnot L\in\Phi_{P}\!\uparrow\!\alpha and l P ​ ( L ) ​ ¡ ​ α l_{P}(L)\mathchar 60\relax\alpha , hence ¬ L ∈ M P \lnot L\in M_{P} . Consequently, A A satisfies (Fii) with respect to M P M_{P} and l P l_{P} , and
+we have established that fact (1) holds.
+(2) We show via transfinite induction on α = l ⁡ ( A ) \alpha\mathchar 61\relax l(A) , that whenever A ∈ I A\in I (respectively, ¬ A ∈ I \lnot A\in I ), then A ∈ Φ P ↑ ( α + 1 ) A\in\Phi_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1)
+(respectively, ¬ A ∈ Φ P ↑ ( α + 1 ) \lnot A\in\Phi_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) ). For the base case, note
+that if l ⁡ ( A ) = 0 l(A)\mathchar 61\relax 0 , then A ∈ I A\in I implies that A A occurs as the head of a
+fact in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) , hence A ∈ Φ P ↑ 1 A\in\Phi_{P}\!\uparrow\!1 , and ¬ A ∈ I \lnot A\in I implies
+that there is no clause with head A A in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) , hence ¬ A ∈ Φ P ↑ 1 \lnot A\in\Phi_{P}\!\uparrow\!1 . So assume now that the induction hypothesis holds for all
+B ∈ B P B\in B_{P} with l ⁡ ( B ) ​ ¡ ​ α l(B)\mathchar 60\relax\alpha . We consider two cases.
+(Case i) If A ∈ I A\in I , then it satisfies (Fi) with respect to I I and
+l l . Hence there is a clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that
+body ⊆ I \texttt{body}\subseteq I and l ⁡ ( K ) ​ ¡ ​ α l(K)\mathchar 60\relax\alpha for all K ∈ body K\in\texttt{body} . Hence
+body ⊆ M P \texttt{body}\subseteq M_{P} by induction hypothesis, and since M P M_{P} is a model of
+P P we obtain A ∈ M P A\in M_{P} .
+(Case ii) If ¬ A ∈ I \lnot A\in I , then A A satisfies (Fii) with respect to I I
+and l l . Hence for all clauses A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) we have that
+there is K ∈ body K\in\texttt{body} with ¬ K ∈ I \lnot K\in I and l ⁡ ( K ) ​ ¡ ​ α l(K)\mathchar 60\relax\alpha . Hence for all
+these K K we have ¬ K ∈ M P \lnot K\in M_{P} by induction hypothesis, and consequently
+for all clauses A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) we obtain that body is
+false in M P M_{P} . Since M P = Φ P ​ ( M P ) M_{P}\mathchar 61\relax\Phi_{P}(M_{P}) is a fixed point of the
+Φ P \Phi_{P} -operator, we obtain ¬ A ∈ M P \lnot A\in M_{P} . This establishes fact (2) and
+concludes the proof.
+Example 4.2
+Consider the program P P from Example 2.1 . Then the level mapping
+l l , as defined in the proof of Theorem 4.1 , satsifies
+l ⁡ ( r ) = 0 l(r)\mathchar 61\relax 0 and l ⁡ ( q ) = 1 l(q)\mathchar 61\relax 1 .
+It is interesting to consider the special case where the Fitting model is
+total. Programs with this property are called Φ \Phi -accessible
+[ 27 , 31 ] , and include e.g. the acceptable programs due to Apt and
+Pedreschi [ 3 ] .
+Corollary 4.3
+A normal logic program P P has a total Fitting model if and only if there is
+a total model I I of P P and a (total) level mapping l l for P P such that
+P P satisfies (F) with respect to I I and l l .
+The result follows immediately as a special case of Theorem
+4.1 , and is closely related to results reported in
+[ 27 , 31 ] . The reader familiar with acceptable programs will also
+note the close relationship between Corollary 4.3 and the
+defining conditions for acceptable programs. Indeed, the theorem due to Apt
+and Pedreschi [ 3 ] , which says that every acceptable program has a
+total Fitting model, follows without any effort from our result. It also
+follows immediately, by comparing Corollary 4.3 and Theorem
+3.3 , that a total Fitting model is always stable, which is
+a well-known fact.
+5 Well-Founded Semantics
+The characterization of the well-founded model again closely follows our
+proof scheme. Before discussing this, though, we will take a short detour
+which will eventually reveal a surprising fact about the well-founded
+semantics: From our new perspective the well-founded semantics can be
+understood as a stratified version of the Fitting semantics.
+Let us first recall the definition of a (locally) stratified program, due to
+Apt, Blair, Walker, and Przymusinski [ 2 , 45 ] : A normal logic
+program is called locally stratified if there exists a (total) level
+mapping l : B P → α l:B_{P}\to\alpha , for some ordinal α \alpha , such that for each
+clause A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) we
+have that l ⁡ ( A ) ≥ l ⁡ ( A i ) l(A)\geq l(A_{i}) and l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) for all i = 1 , … , n i\mathchar 61\relax 1,\dots,n and
+j = 1 , … , m j\mathchar 61\relax 1,\dots,m .
+The notion of (locally) stratifed program, as already mentioned in the
+introduction, was developed with the idea of preventing recursion
+through negation , while allowing recursion through positive dependencies.
+There exist locally stratified programs which do not have a total Fitting
+model and vice versa. Indeed, the program consisting of the single clause
+p ← p p\leftarrow p is locally stratified but p p remains undefined in the Fitting
+model. Conversely, the program consisting of the two clauses q ← q\leftarrow and
+q ← ¬ q q\leftarrow\lnot q is not locally stratified but its Fitting model assigns to
+q q the truth value true .
+By comparing Definition 1 with the definition of locally
+stratified programs, we notice that condition (Fii) requires a strict
+decrease of level between the head and a literal in the rule, independent of
+this literal being positive or negative. But, on the other hand, condition
+(Fii) imposes no further restrictions on the remaining body literals, while
+the notion of local stratification does. These considerations motivate the
+substitution of condition (Fii) by the condition (WFii), as given in the
+following definition.
+Definition 2 .
+Let P P be a normal logic program, I I be a model of P P , and l l be an
+I I -partial level mapping for P P . We say that P P satisfies (WF)
+with respect to I I and l l , if each A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies one of
+the following conditions.
+(WFi)
+A ∈ I A\in I and there exists a clause A ← L 1 , … , L n A\leftarrow L_{1},\dots,L_{n} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with L i ∈ I L_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) for all
+i i .
+(WFii)
+¬ A ∈ I \lnot A\in I and for each clause A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) (at least) one of the
+following conditions holds:
+(WFiia)
+There exists i ∈ { 1 , … , n } i\in\{1,\dots,n\} with ¬ A i ∈ I \lnot A_{i}\in I and
+l ⁡ ( A ) ≥ l ⁡ ( A i ) l(A)\geq l(A_{i}) .
+(WFiib)
+There exists j ∈ { 1 , … , m } j\in\{1,\dots,m\} with B j ∈ I B_{j}\in I and
+l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) .
+If A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies (WFi), then we say that A A satisfies (WFi)
+with respect to I I and l l , and similarly if A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies
+(WFii).
+We note that conditions (Fi) and (WFi) are identical. Indeed, replacing (WFi)
+by a stratified version such as the following seems not satisfactory.
+(SFi)
+A ∈ I A\in I and there exists a clause A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with A i , B j ∈ I A_{i},B_{j}\in I ,
+l ⁡ ( A ) ≥ l ⁡ ( A i ) l(A)\geq l(A_{i}) , and l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) for all i i and j j .
+If we replace condition (WFi) by condition (SFi), then it is not guaranteed
+that for any given program there is a greatest model satisfying the desired
+properties: Consider the program consisting of the two clauses p ← p p\leftarrow p
+and q ← ¬ p q\leftarrow\lnot p , and the two (total) models { p , ¬ q } \{p,\lnot q\} and { ¬ p , q } \{\lnot p,q\} , which are incomparable, and the level mapping l l with l ⁡ ( p ) = 0 l(p)\mathchar 61\relax 0 and
+l ⁡ ( q ) = 1 l(q)\mathchar 61\relax 1 . A detailed analysis of condition (SFi) in the context of our
+approach can be found in [ 26 ] .
+So, in the light of Theorem 4.1 , Definition 2
+should provide a natural “stratified version” of the Fitting
+semantics. And indeed it does, and furthermore, the resulting semantics
+coincides with the well-founded semantics, which is a very satisfactory
+result. The proof of the fact again follows our proof scheme, but is
+slightly more involved due to the necessary treatment of unfounded sets.
+Theorem 5.1
+Let P P be a normal logic program with well-founded model M M . Then M M is
+the greatest model among all models I I , for which there exists an
+I I -partial level mapping l l for P P such that P P satisfies (WF) with
+respect to I I and l l .
+Proof 5.4 .
+Let M P M_{P} be the well-founded model of P P and define the M P M_{P} -partial
+level mapping l P l_{P} as follows: l P ​ ( A ) = α l_{P}(A)\mathchar 61\relax\alpha , where α \alpha is the least
+ordinal such that A A is not undefined in W P ↑ ( α + 1 ) W_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) . The proof
+will be established by showing the following facts: (1) P P satisfies (WF)
+with respect to M P M_{P} and l P l_{P} . (2) If I I is a model of P P and l l an
+I I -partial level mapping such that P P satisfies (WF) with respect to I I
+and l l , then I ⊆ M P I\subseteq M_{P} .
+(1) Let A ∈ 𝖽𝗈𝗆 ⁡ ( l P ) A\in\mathsf{dom}(l_{P}) and l P ​ ( A ) = α l_{P}(A)\mathchar 61\relax\alpha . We consider two cases.
+(Case i) If A ∈ M P A\in M_{P} , then A ∈ T P ​ ( W P ↑ α ) A\in T_{P}(W_{P}\!\uparrow\!\alpha) , hence there exists a
+clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that body is true in
+W P ↑ α W_{P}\!\uparrow\!\alpha . Thus, for all L i ∈ body L_{i}\in\texttt{body} we have that L i ∈ W P ↑ α L_{i}\in W_{P}\!\uparrow\!\alpha . Hence, l P ​ ( L i ) ​ ¡ ​ α l_{P}(L_{i})\mathchar 60\relax\alpha and L i ∈ M P L_{i}\in M_{P} for all
+i i . Consequently, A A satisfies (WFi) with respect to M P M_{P} and l P l_{P} .
+(Case ii) If ¬ A ∈ M P \lnot A\in M_{P} , then A ∈ U P ​ ( W P ↑ α ) A\in U_{P}(W_{P}\!\uparrow\!\alpha) , i.e. A A is
+contained in the greatest unfounded set of P P with respect to
+W P ↑ α W_{P}\!\uparrow\!\alpha . Hence for each clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) , at
+least one of (Ui) or (Uii) holds for this clause with respect to
+W P ↑ α W_{P}\!\uparrow\!\alpha and the unfounded set U P ​ ( W P ↑ α ) U_{P}(W_{P}\!\uparrow\!\alpha) . If (Ui) holds,
+then there exists some literal L ∈ body L\in\texttt{body} with ¬ L ∈ W P ↑ α \lnot L\in W_{P}\!\uparrow\!\alpha .
+Hence l P ​ ( L ) ​ ¡ ​ α l_{P}(L)\mathchar 60\relax\alpha and condition (WFiib) holds relative to M P M_{P} and
+l P l_{P} if L L is an atom, or condition (WFiia) holds relative to M P M_{P} and
+l P l_{P} if L L is a negated atom. On the other hand, if (Uii) holds, then some
+(non-negated) atom B B in body occurs in U P ​ ( W P ↑ α ) U_{P}(W_{P}\!\uparrow\!\alpha) . Hence
+l P ​ ( B ) ≤ l P ​ ( A ) l_{P}(B)\leq l_{P}(A) and A A satisfies (WFiia) with respect to M P M_{P} and
+l P l_{P} . Thus we have established that fact (1) holds.
+(2) We show via transfinite induction on α = l ⁡ ( A ) \alpha\mathchar 61\relax l(A) , that whenever A ∈ I A\in I (respectively, ¬ A ∈ I \lnot A\in I ), then A ∈ W P ↑ ( α + 1 ) A\in W_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1)
+(respectively, ¬ A ∈ W P ↑ ( α + 1 ) \lnot A\in W_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) ). For the base case, note that
+if l ⁡ ( A ) = 0 l(A)\mathchar 61\relax 0 , then A ∈ I A\in I implies that A A occurs as the head of a fact in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) . Hence, A ∈ W P ↑ 1 A\in W_{P}\!\uparrow\!1 . If ¬ A ∈ I \lnot A\in I , then consider the
+set U U of all atoms B B with l ⁡ ( B ) = 0 l(B)\mathchar 61\relax 0 and ¬ B ∈ I \lnot B\in I . We show that U U
+is an unfounded set of P P with respect to W P ↑ 0 W_{P}\!\uparrow\!0 , and this suffices
+since it implies ¬ A ∈ W P ↑ 1 \lnot A\in W_{P}\!\uparrow\!1 by the fact that A ∈ U A\in U . So let
+C ∈ U C\in U and let C ← body C\leftarrow\texttt{body} be a clause in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) . Since ¬ C ∈ I \lnot C\in I , and l ⁡ ( C ) = 0 l(C)\mathchar 61\relax 0 , we have that C C satisfies (WFiia) with respect to
+I I and l l , and so condition (Uii) is satisfied showing that U U is an
+unfounded set of P P with respect to I I . Assume now that the induction
+hypothesis holds for all B ∈ B P B\in B_{P} with l ⁡ ( B ) ​ ¡ ​ α l(B)\mathchar 60\relax\alpha . We consider two
+cases.
+(Case i) If A ∈ I A\in I , then it satisfies (WFi) with respect to I I and
+l l . Hence there is a clause A ← body A\leftarrow\texttt{body} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that
+body ⊆ I \texttt{body}\subseteq I and l ⁡ ( K ) ​ ¡ ​ α l(K)\mathchar 60\relax\alpha for all K ∈ body K\in\texttt{body} . Hence
+body ⊆ W P ↑ α \texttt{body}\subseteq W_{P}\!\uparrow\!\alpha , and we obtain A ∈ T P ​ ( W P ↑ α ) A\in T_{P}(W_{P}\!\uparrow\!\alpha) as
+required.
+(Case ii) If ¬ A ∈ I \lnot A\in I , consider the set U U of all atoms B B with
+l ⁡ ( B ) = α l(B)\mathchar 61\relax\alpha and ¬ B ∈ I \lnot B\in I . We show that U U is an unfounded set of
+P P with respect to W P ↑ α W_{P}\!\uparrow\!\alpha , and this suffices since it implies
+¬ A ∈ W P ↑ ( α + 1 ) \lnot A\in W_{P}\!\uparrow\!(\alpha\mathchar 43\relax 1) by the fact that A ∈ U A\in U . So let C ∈ U C\in U
+and let C ← body C\leftarrow\texttt{body} be a clause in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) . Since ¬ C ∈ I \lnot C\in I , we
+have that C C satisfies (WFii) with respect to I I and l l . If there is a
+literal L ∈ body L\in\texttt{body} with ¬ L ∈ I \lnot L\in I and l ⁡ ( L ) ​ ¡ ​ l ​ ( C ) l(L)\mathchar 60\relax l(C) , then by the
+induction hypothesis we obtain ¬ L ∈ W P ↑ α \lnot L\in W_{P}\!\uparrow\!\alpha , so condition (Ui)
+is satisfied for the clause C ← body C\leftarrow\texttt{body} with respect to W P ↑ α W_{P}\!\uparrow\!\alpha
+and U U . In the remaining case we have that C C satisfies condition (WFiia),
+and there exists an atom B ∈ body B\in\texttt{body} with ¬ B ∈ I \lnot B\in I and l ⁡ ( B ) = l ⁡ ( C ) l(B)\mathchar 61\relax l(C) .
+Hence, B ∈ U B\in U showing that condition (Uii) is satisfied for the clause
+C ← body C\leftarrow\texttt{body} with respect to W P ↑ α W_{P}\!\uparrow\!\alpha and U U . Hence U U is an
+unfounded set of P P with respect to W P ↑ α W_{P}\!\uparrow\!\alpha .
+Example 5.2
+Consider the program P P from Example 2.2 . With notation from the
+proof of Theorem 5.1 , we obtain l ⁡ ( p ) = 0 l(p)\mathchar 61\relax 0 , l ⁡ ( q ) = 1 l(q)\mathchar 61\relax 1 , and
+l ⁡ ( s ) = 2 l(s)\mathchar 61\relax 2 .
+As a special case, we consider programs with total well-founded model. The
+following corollary follows without effort from Theorem 5.1 .
+Corollary 5.3
+A normal logic program P P has a total well-founded model if and only if
+there is a total model I I of P P and a (total) level mapping l l such that
+P P satisfies (WF) with respect to I I and l l .
+As a further example for the application of our proof scheme, we use Theorem
+5.1 in order to prove a result by van Gelder [ 53 ]
+which we mentioned in the introduction, concerning the alternating
+fixed-point characterization of the well-founded semantics. Let us first
+introduce some temporary notation, where P P is an arbitrary program.
+L 0 = ∅ G 0 = B P L α + 1 = GL P ​ ( G α ) for any ordinal α G α + 1 = GL P ​ ( L α ) for any ordinal α L α = ⋃ β ​ ¡ ​ α L β for limit ordinal α G α = ⋂ β ​ ¡ ​ α G β for limit ordinal α \begin{array}[]{lcll}L_{0}&\mathchar 61\relax&\emptyset\\
+G_{0}&\mathchar 61\relax&B_{P}\\
+L_{\alpha\mathchar 43\relax 1}&\mathchar 61\relax&\mathrm{GL}_{P}(G_{\alpha})&\mbox{ for any ordinal $\alpha$}\\
+G_{\alpha\mathchar 43\relax 1}&\mathchar 61\relax&\mathrm{GL}_{P}(L_{\alpha})&\mbox{ for any ordinal $\alpha$}\\
+L_{\alpha}&\mathchar 61\relax&\bigcup_{\beta\mathchar 60\relax\alpha}L_{\beta}&\mbox{ for limit ordinal
+$\alpha$}\\
+G_{\alpha}&\mathchar 61\relax&\bigcap_{\beta\mathchar 60\relax\alpha}G_{\beta}&\mbox{ for limit ordinal
+$\alpha$}\end{array}
+Since ∅ ⊆ B P \emptyset\subseteq B_{P} , we obtain L 0 ⊆ L 1 ⊆ G 1 ⊆ G 0 L_{0}\subseteq L_{1}\subseteq G_{1}\subseteq G_{0} and, by transfinite induction, it can easily be shown that
+L α ⊆ L β ⊆ G β ⊆ G α L_{\alpha}\subseteq L_{\beta}\subseteq G_{\beta}\subseteq G_{\alpha} whenever
+α ≤ β \alpha\leq\beta . In order to apply our proof scheme, we need to detect a
+monotonic operator, or at least some kind of monotonic construction,
+underlying the alternative fixed-point characterization. The assignment
+( L α , G α ) ↦ ( L α + 1 , G α + 1 ) (L_{\alpha},G_{\alpha})\mapsto(L_{\alpha\mathchar 43\relax 1},G_{\alpha\mathchar 43\relax 1}) , using the
+temporary notation introduced above, will serve for this purpose. The proof
+of the following theorem is based on it and our general proof scheme, with
+modifications where necessary, for example for accomodating the fact that
+G α + 1 G_{\alpha\mathchar 43\relax 1} is not defined using G α G_{\alpha} , but rather L α L_{\alpha} , and
+that we work with the complements B P ∖ G α B_{P}\setminus G_{\alpha} instead of the
+sets G α G_{\alpha} .
+Theorem 5.4
+Let P P be a normal program. Then M = L P ∪ ¬ ( B P ∖ G P ) M\mathchar 61\relax L_{P}\cup\lnot(B_{P}\setminus G_{P}) is the
+well-founded model of P P .
+Proof 5.5 .
+First, we define an M M -partial level mapping l l . For convenience, we will
+take as image set of l l , pairs ( α , n ) (\alpha,n) of ordinals, where
+n ≤ ω n\leq\omega , with the lexicographic ordering. This can be done without
+loss of generality because any set of pairs of ordinals, lexicographically
+ordered, is certainly well-ordered and therefore order-isomorphic to an
+ordinal. For A ∈ L P A\in L_{P} , let l ⁡ ( A ) l(A) be the pair ( α , n ) (\alpha,n) , where α \alpha
+is the least ordinal such that A ∈ L α + 1 A\in L_{\alpha\mathchar 43\relax 1} , and n n is the least
+ordinal such that A ∈ T P / G α ↑ ( n + 1 ) A\in T_{P/G_{\alpha}}\!\uparrow\!(n\mathchar 43\relax 1) . For B ∉ G P B\not\in G_{P} , let
+l ⁡ ( B ) l(B) be the pair ( β , ω ) (\beta,\omega) , where β \beta is the least ordinal such
+that B ∉ G β + 1 B\not\in G_{\beta\mathchar 43\relax 1} . We show next by transfinite induction that P P
+satisfies (WF) with respect to M M and l l .
+Let A ∈ L 1 = T P / B P ↑ ω A\in L_{1}\mathchar 61\relax T_{P/B_{P}}\!\uparrow\!\omega . Since P / B P P/B_{P} consists of exactly all
+clauses from 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) which contain no negation, we have that A A is
+contained in the least two-valued model for a definite subprogram of P P ,
+namely P / B P P/B_{P} , and (WFi) is satisfied by Theorem 3.1 . Now
+let ¬ B ∈ ¬ ( B P ∖ G P ) \lnot B\in\lnot(B_{P}\setminus G_{P}) be such that B ∈ ( B P ∖ G 1 ) = B P ∖ T P / ∅ ↑ ω B\in(B_{P}\setminus G_{1})\mathchar 61\relax B_{P}\setminus T_{P/\emptyset}\!\uparrow\!\omega . Since P / ∅ P/\emptyset contains
+all clauses from 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with all negative literals removed, we obtain
+that each clause in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with head B B must contain a positive body
+literal C ∉ G 1 C\not\in G_{1} , which, by definition of l l , must have the same
+level as B B , hence (WFiia) is satisfied.
+Assume now that, for some ordinal α \alpha , we have shown that A A satisfies
+(WF) with respect to M M and l l for all n ≤ ω n\leq\omega and all A ∈ B P A\in B_{P}
+with l ⁡ ( A ) ≤ ( α , n ) l(A)\leq(\alpha,n) .
+Let A ∈ L α + 1 ∖ L α = T P / G α ↑ ω ∖ L α A\in L_{\alpha\mathchar 43\relax 1}\setminus L_{\alpha}\mathchar 61\relax T_{P/G_{\alpha}}\!\uparrow\!\omega\setminus L_{\alpha} . Then A ∈ T P / G α ↑ n ∖ L α A\in T_{P/G_{\alpha}}\!\uparrow\!n\setminus L_{\alpha} for some n ∈ ℕ n\in\mathbb{N} ; note that
+all (negative) literals which were removed by the Gelfond-Lifschitz
+transformation from clauses with head A A have level less than
+( α , 0 ) (\alpha,0) . Then the assertion that A A satisfies (WF) with respect to M M
+and l l follows again by Theorem 3.1 .
+Let A ∈ ( B P ∖ G α + 1 ) ∩ G α A\in(B_{P}\setminus G_{\alpha\mathchar 43\relax 1})\cap G_{\alpha} . Then A ∉ T P / L α ↑ ω A\not\in T_{P/L_{\alpha}}\!\uparrow\!\omega . Now for any clause A ← A 1 , … , A k , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{k},\lnot B_{1},\dots,\lnot B_{m} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) , if B j ∈ L α B_{j}\in L_{\alpha} for some j j , then
+l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) . Otherwise, since A ∉ T P / L α ↑ ω A\not\in T_{P/L_{\alpha}}\!\uparrow\!\omega , we
+have that there exists A i A_{i} with A i ∉ T P / L α ↑ ω A_{i}\not\in T_{P/L_{\alpha}}\!\uparrow\!\omega ,
+and hence l ⁡ ( A ) ≥ l ⁡ ( A i ) l(A)\geq l(A_{i}) , and this suffices.
+This finishes the proof that P P satisfies (WF) with respect to M M and
+l l . It therefore only remains to show that M M is greatest with this
+property.
+So assume that M 1 ≠ M M_{1}\not\mathchar 61\relax M is the greatest model such that P P satisfies
+(WF) with respect to M 1 M_{1} and some M 1 M_{1} -partial level mapping l 1 l_{1} .
+Assume L ∈ M 1 ∖ M L\in M_{1}\setminus M and, without loss of generality, let the
+literal L L be chosen such that l 1 ​ ( L ) l_{1}(L) is minimal. We consider the
+following two cases.
+(Case i) If L = A L\mathchar 61\relax A is an atom, then there exists a clause A ← body A\leftarrow\texttt{body} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) such that l 1 ​ ( L ) ​ ¡ ​ l 1 ​ ( A ) l_{1}(L)\mathchar 60\relax l_{1}(A) for all literals L L in body , and
+such that body is true in M 1 M_{1} . Hence, body is true in M M and
+A ← body A\leftarrow\texttt{body} transforms to a clause A ← A 1 , … , A n A\leftarrow A_{1},\dots,A_{n} in P / G P P/G_{P} with
+A 1 , … , A n ∈ L P = T P / G P ↑ ω A_{1},\dots,A_{n}\in L_{P}\mathchar 61\relax T_{P/G_{P}}\!\uparrow\!\omega . But this implies A ∈ M A\in M ,
+contradicting A ∈ M 1 ∖ M A\in M_{1}\setminus M .
+(Case ii) If L = ¬ A ∈ M 1 ∖ M L\mathchar 61\relax\lnot A\in M_{1}\setminus M is a negated atom, then ¬ A ∈ M 1 \lnot A\in M_{1} and A ∈ G P = T P / L P ↑ ω A\in G_{P}\mathchar 61\relax T_{P/L_{P}}\!\uparrow\!\omega , so A ∈ T P / L P ↑ n A\in T_{P/L_{P}}\!\uparrow\!n for
+some n ∈ ℕ n\in\mathbb{N} . We show by induction on n n that this leads to a
+contradiction, to finish the proof.
+If A ∈ T P / L P ↑ 1 A\in T_{P/L_{P}}\!\uparrow\!1 , then there is a unit clause A ← A\leftarrow in P / L P P/L_{P} ,
+and any corresponding clause A ← ¬ B 1 , … , ¬ B k A\leftarrow\lnot B_{1},\dots,\lnot B_{k} in
+𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) satisfies B 1 , … , B k ∉ L P B_{1},\dots,B_{k}\not\in L_{P} . Since ¬ A ∈ M 1 \lnot A\in M_{1} ,
+we also obtain by Theorem 5.1 that there is
+i ∈ { 1 , … , k } i\in\{1,\dots,k\} such that B i ∈ M 1 B_{i}\in M_{1} and l 1 ​ ( B i ) ​ ¡ ​ l 1 ​ ( A ) l_{1}(B_{i})\mathchar 60\relax l_{1}(A) . By
+minimality of l 1 ​ ( A ) l_{1}(A) , we obtain B i ∈ M B_{i}\in M , and hence B i ∈ L P B_{i}\in L_{P} , which
+contradicts B i ∉ L P B_{i}\not\in L_{P} .
+Now assume that there is no ¬ B ∈ M 1 ∖ M \lnot B\in M_{1}\setminus M with B ∈ T P / L P ↑ k B\in T_{P/L_{P}}\!\uparrow\!k for any k ​ ¡ ​ n + 1 k\mathchar 60\relax n\mathchar 43\relax 1 , and let ¬ A ∈ M 1 ∖ M \lnot A\in M_{1}\setminus M with
+A ∈ T P / L P ↑ ( n + 1 ) A\in T_{P/L_{P}}\!\uparrow\!(n\mathchar 43\relax 1) . Then there is a clause A ← A 1 , … , A m A\leftarrow A_{1},\dots,A_{m}
+in P / L P P/L_{P} with A 1 , … , A m ∈ T P / L P ↑ n ⊆ G P A_{1},\dots,A_{m}\in T_{P/L_{P}}\!\uparrow\!n\subseteq G_{P} , and we
+note that we cannot have ¬ A i ∈ M 1 ∖ M \lnot A_{i}\in M_{1}\setminus M for any
+i ∈ { 1 , … , m } i\in\{1,\dots,m\} , by our current induction hypothesis. Furthermore, it is
+also impossible for ¬ A i \lnot A_{i} to belong to M M for any i i , otherwise we
+would have A i ∈ B P ∖ G P A_{i}\in B_{P}\setminus G_{P} . Thus, we conclude that we cannot have
+¬ A i ∈ M 1 \lnot A_{i}\in M_{1} for any i i . Moreover, there is a corresponding clause
+A ← A 1 , … , A m , ¬ B 1 , … , ¬ B m 1 A\leftarrow A_{1},\dots,A_{m},\lnot B_{1},\dots,\lnot B_{m_{1}} in 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) with
+B 1 , … , B m 1 ∉ L P B_{1},\dots,B_{m_{1}}\not\in L_{P} . Hence, by Theorem 5.1 , we
+know that there is i ∈ { 1 , … , m 1 } i\in\{1,\dots,m_{1}\} such that B i ∈ M 1 B_{i}\in M_{1} and
+l 1 ​ ( B i ) ​ ¡ ​ l 1 ​ ( A ) l_{1}(B_{i})\mathchar 60\relax l_{1}(A) . By minimality of l 1 ​ ( A ) l_{1}(A) , we conclude that B i ∈ M B_{i}\in M ,
+so that B i ∈ L P B_{i}\in L_{P} , and this contradicts B i ∉ L P B_{i}\not\in L_{P} .
+Example 5.5
+Consider again the program P P from Examples 2.2 , 2.4 ,
+and 5.2 . With notation from the proof of Theorem 5.4
+we get l ⁡ ( q ) = ( 1 , 0 ) l(q)\mathchar 61\relax(1,0) , l ⁡ ( s ) = ( 1 , 1 ) l(s)\mathchar 61\relax(1,1) , and l ⁡ ( p ) = ( 0 , ω ) l(p)\mathchar 61\relax(0,\omega) .
+6 Weakly Perfect Model Semantics
+By applying our proof scheme, we have obtained new and uniform
+characterizations of the Fitting semantics and the well-founded semantics,
+and argued that the well-founded semantics is a stratified version of the
+Fitting semantics. Our argumentation is based on the key intuition
+underlying the notion of stratification, that recursion should be allowed
+through positive dependencies, but be forbidden through negative
+dependencies. As we have seen in Theorem 5.1 , the well-founded
+semantics provides this for a setting in three-valued logic. Historically, a
+different semantics, given by the so-called weakly perfect model associated
+with each program, was proposed by Przymusinska and Przymusinski [ 44 ]
+in order to carry over the intuition underlying the notion of stratification
+to a three-valued setting. In the following, we will characterize weakly
+perfect models via level mappings, in the spirit of our approach. We will
+thus have obtained uniform characterizations of the Fitting semantics, the
+well-founded semantics, and the weakly perfect model semantics, which makes
+it possible to easily compare them.
+Definition 3 .
+Let P P be a normal logic program, I be a model of P P and l l be an
+I I -partial level mapping for P P . We say that P P satisfies (WS)
+with respect to I I and l l , if each A ∈ 𝖽𝗈𝗆 ⁡ ( l ) A\in\mathsf{dom}(l) satisfies one of
+the following conditions.
+(WSi)
+A ∈ I A\in I and there exists a clause A ← L 1 , … , L n ∈ 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) A\leftarrow L_{1},\dots,L_{n}\in\mathsf{ground}(P) such that L i ∈ I L_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) for all
+i = 1 , … , n i\mathchar 61\relax 1,\dots,n .
+(WSii)
+¬ A ∈ I \lnot A\in I and for each clause A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m ∈ 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m}\in\mathsf{ground}(P) (at least) one of the following three
+conditions holds.
+[(WSiia)]
+(WSiia)
+There exists i i such that ¬ A i ∈ I \lnot A_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( A i ) l(A)\mathchar 62\relax l(A_{i}) .
+(WSiib)
+For all k k we have l ⁡ ( A ) ≥ l ⁡ ( A k ) l(A)\geq l(A_{k}) , for all j j we have
+l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) , and there exists i i with ¬ A i ∈ I \lnot A_{i}\in I .
+(WSiic)
+There exists j j such that B j ∈ I B_{j}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( B j ) l(A)\mathchar 62\relax l(B_{j}) .
+We observe that the condition (WSii) in the above theorem is more general
+than (Fii), and more restrictive than (WFii).
+We will see below in Theorem 6.2 , that Definition 3
+captures the weakly perfect model, in the same way in which Definitions
+1 and 2 capture the Fitting model, respectively
+the well-founded model.
+In order to proceed with this, we first need to recall the definition of
+weakly perfect models due to Przymusinska and Przymusinski [ 44 ] , and
+we will do this next. For ease of notation, it will be convenient to
+consider (countably infinite) propositional programs instead of programs
+over a first-order language. This is both common practice and no
+restriction, because the ground instantiation 𝗀𝗋𝗈𝗎𝗇𝖽 ⁡ ( P ) \mathsf{ground}(P) of a given
+program P P can be understood as a propositional program which may consist
+of a countably infinite number of clauses. Let us remark that our definition
+below differs slightly from the original one, and we will return to this
+point later. It nevertheless leads to exactly the same notion of weakly
+stratified program.
+Let P P be a (countably infinite propositional) normal logic program. An
+atom A ∈ B P A\in B_{P} refers to an atom B ∈ B P B\in B_{P} if B B or ¬ B \lnot B
+occurs as a body literal in a clause A ← body A\leftarrow\texttt{body} in P P . A A refers
+negatively to B B if ¬ B \lnot B occurs as a body literal in such a
+clause. We say that A A depends on B B if the pair ( A , B ) (A,B) is in the
+transitive closure of the relation refers to , and we write this as
+B ≤ A B\leq A . We say that A A depends negatively on B B if there are
+C , D ∈ B P C,D\in B_{P} such that C C refers negatively to D D and the following hold:
+(1) C ≤ A C\leq A or C = A C\mathchar 61\relax A (the latter meaning identity). (2) B ≤ D B\leq D or
+B = D B\mathchar 61\relax D . We write B ​ ¡ ​ A B\mathchar 60\relax A in this case. For A , B ∈ B P A,B\in B_{P} , we write A ∼ B A\sim B if
+either A = B A\mathchar 61\relax B , or A A and B B depend negatively on each other, i.e. if A ​ ¡ ​ B A\mathchar 60\relax B
+and B ​ ¡ ​ A B\mathchar 60\relax A both hold. The relation ∼ \sim is an equivalence relation and its
+equivalence classes are called components of P P . A component is
+trivial if it consists of a single element A A with A ​ ¡̸ ​ A A\not\mathchar 60\relax A .
+Let C 1 C_{1} and C 2 C_{2} be two components of a program P P . We write C 1 ≺ C 2 C_{1}\prec C_{2} if and only if C 1 ≠ C 2 C_{1}\not\mathchar 61\relax C_{2} and for all A 1 ∈ C 1 A_{1}\in C_{1} there is A 2 ∈ C 2 A_{2}\in C_{2} with A 1 ​ ¡ ​ A 2 A_{1}\mathchar 60\relax A_{2} . A component C 1 C_{1} is called minimal if there is
+no component C 2 C_{2} with C 2 ≺ C 1 C_{2}\prec C_{1} .
+Given a normal logic program P P , the bottom stratum S ⁡ ( P ) S(P) of P P is
+the union of all minimal components of P P . The bottom layer of P P
+is the subprogram L ⁡ ( P ) L(P) of P P which consists of all clauses from P P with
+heads belonging to S ⁡ ( P ) S(P) .
+Given a (partial) interpretation I I of P P , we define the reduct of
+P P with respect to I I as the program P / I P/I obtained from P P by
+performing the following reductions. (1) Remove from P P all clauses
+which contain a body literal L L such that ¬ L ∈ I \lnot L\in I or whose head
+belongs to I I . (2) Remove from all remaining clauses all body literals L L
+with L ∈ I L\in I . (3) Remove from the resulting program all non-unit clauses,
+whose heads appear also as unit clauses in the program.
+Definition 4 .
+The weakly perfect model M P M_{P} of a program P P is defined by
+transfinite induction as follows. Let P 0 = P P_{0}\mathchar 61\relax P and M 0 = ∅ M_{0}\mathchar 61\relax\emptyset . For each
+(countable) ordinal α ​ ¿ ​ 0 \alpha\mathchar 62\relax 0 such that programs P δ P_{\delta} and partial
+interpretations M δ M_{\delta} have already been defined for all
+δ ​ ¡ ​ α \delta\mathchar 60\relax\alpha , let
+N α = ⋃ 0 ​ ¡ ​ δ ​ ¡ ​ α M δ , P α = P / N α , R α is the set of all atoms which are undefined in ​ N α and were eliminated from P by reducing it with
+respect to N α , S α = S ⁡ ( P α ) , and L α = L ( P α ) ⋅ \begin{array}[]{lcl}N_{\alpha}&\mathchar 61\relax&\bigcup_{0\mathchar 60\relax\delta\mathchar 60\relax\alpha}M_{\delta},\\
+P_{\alpha}&\mathchar 61\relax&P/N_{\alpha},\\
+R_{\alpha}&\mbox{ is}&\mbox{ the set of all atoms which are undefined in }N_{\alpha}\\
+&&\mbox{and were eliminated from }P\mbox{ by reducing it with
+respect to }N_{\alpha},\\
+S_{\alpha}&\mathchar 61\relax&S\left(P_{\alpha}\right),\mbox{ and}\\
+L_{\alpha}&\mathchar 61\relax&L\left(P_{\alpha}\right)\mathbin{\cdot}\end{array}
+The construction then proceeds with one of the following three cases. (1) If
+P α P_{\alpha} is empty, then the construction stops and M P = N α ∪ ¬ R α M_{P}\mathchar 61\relax N_{\alpha}\cup\lnot R_{\alpha} is the ( total ) weakly perfect model of P P . (2) If
+the bottom stratum S α S_{\alpha} is empty or if the bottom layer L α L_{\alpha}
+contains a negative literal, then the construction also stops and M P = N α ∪ ¬ R α M_{P}\mathchar 61\relax N_{\alpha}\cup\lnot R_{\alpha} is the ( partial ) weakly perfect
+model of P P . (3) In the remaining case L α L_{\alpha} is a definite program,
+and we define M α = H ∪ ¬ R α M_{\alpha}\mathchar 61\relax H\cup\lnot R_{\alpha} , where H H is
+the definite (partial) model of L α L_{\alpha} , and the construction continues.
+For every α \alpha , the set S α ∪ R α S_{\alpha}\cup R_{\alpha} is called the
+α \alpha -th stratum of P P and the program L α L_{\alpha} is called the
+α \alpha -th layer of P P .
+A weakly stratified program is a program with a total weakly perfect
+model. The set of its strata is then called its weak stratification .
+Example 6.1
+Consider the program P P which consists of the following six clauses.
+a ← ¬ b b ← c , ¬ a b ← c , ¬ d c ← b , ¬ e d ← e e ← d \begin{array}[]{lcl}a&\leftarrow&\lnot b\\
+b&\leftarrow&c,\lnot a\\
+b&\leftarrow&c,\lnot d\\
+c&\leftarrow&b,\lnot e\\
+d&\leftarrow&e\\
+e&\leftarrow&d\end{array}
+Then N 1 = M 1 = { ¬ d , ¬ e } N_{1}\mathchar 61\relax M_{1}\mathchar 61\relax\{\lnot d,\lnot e\} and P / N 1 P/N_{1} consists of the clauses
+a ← ¬ b b ← c , ¬ a b ← c c ← b ⋅ \begin{array}[]{lcl}a&\leftarrow&\lnot b\\
+b&\leftarrow&c,\lnot a\\
+b&\leftarrow&c\\
+c&\leftarrow&b\mathbin{\cdot}\end{array}
+Its least component is { a , b , c } \{a,b,c\} . The corresponding bottom layer, which is
+all of P / N 1 P/N_{1} , contains a negative literal, so the construction stops and
+M 2 = N 1 = { ¬ d , ¬ e } M_{2}\mathchar 61\relax N_{1}\mathchar 61\relax\{\lnot d,\lnot e\} is the (partial) weakly perfect model of P P .
+Let us return to the remark made earlier that our definition of weakly
+perfect model, as given in Definition 4 , differs slightly from
+the version introduced by Przymusinska and Przymusinski [ 44 ] . In
+order to obtain the original definition, points (2) and (3) of Definition
+4 have to be replaced as follows: (2) If the bottom stratum
+S α S_{\alpha} is empty or if the bottom layer L α L_{\alpha} has no least
+two-valued model , then the construction stops and M P = N α ∪ ¬ R α M_{P}\mathchar 61\relax N_{\alpha}\cup\lnot R_{\alpha} is the (partial) weakly perfect model of P P . (3) In the remaining
+case L α L_{\alpha} has a least two-valued model , and we define
+M α = H ∪ ¬ R α M_{\alpha}\mathchar 61\relax H\cup\lnot R_{\alpha} , where H H is the partial model of L α L_{\alpha}
+corresponding to its least two-valued model, and the construction continues.
+The original definition is more general due to the fact that every definite
+program has a least two-valued model. However, while the least two-valued
+model of a definite program can be obtained as the least fixed point of the
+monotonic (and even Scott-continuous) operator T P + T_{P}^{\mathchar 43\relax} , we know of no
+similar result, or general operator, for obtaining the least two-valued
+model, if existent, of progams which are not definite. The original
+definition therefore seems to be rather awkward, and indeed, for the
+definition of weakly stratified programs [ 44 ] , the more general
+version was dropped in favour of requiring definite layers. So Definition
+4 is an adaptation taking the original notion of weakly
+stratified program into account, and appears to be more natural. In the
+following, the notion of weakly perfect model will refer to
+Definition 4 .
+To be pedantic, there is another difference, namely that we have made
+explicit the sets R α R_{\alpha} of Definition 4 , which were only
+implicitly treated in the original definition. The result is the same.
+We show next that Definition 3 indeed captures the weakly
+perfect model. The proof basically follows our proof scheme, with some
+alterations, and the monotonic construction which defines the weakly perfect
+model serves in place of a monotonic operator. The technical details of the
+proof are very involved.
+Theorem 6.2
+Let P P be a normal logic program with weakly perfect model M P M_{P} . Then
+M P M_{P} is the greatest model among all models I I , for which there exists an
+I I -partial level mapping l l for P P such that P P satisfies (WS) with
+respect to I I and l l .
+We prepare the proof of Theorem 6.2 by introducing some
+notation, which will make the presentation much more transparent. As for the
+proof of Theorem 5.4 , we will consider level mappings which map
+into pairs ( β , n ) (\beta,n) of ordinals, where n ≤ ω n\leq\omega .
+Let P P be a normal logic program with (partial) weakly perfect model
+M P M_{P} . Then define the M P M_{P} -partial level mapping l P l_{P} as follows:
+l P ​ ( A ) = ( β , n ) l_{P}(A)\mathchar 61\relax(\beta,n) , where A ∈ S β ∪ R β A\in S_{\beta}\cup R_{\beta} and n n is least with
+A ∈ T L β + ↑ ( n + 1 ) A\in T_{L_{\beta}}^{\mathchar 43\relax}\!\uparrow\!(n\mathchar 43\relax 1) , if such an n n exists, and n = ω n\mathchar 61\relax\omega
+otherwise. We observe that if l P ​ ( A ) = l P ​ ( B ) l_{P}(A)\mathchar 61\relax l_{P}(B) then there exists α \alpha
+with A , B ∈ S α ∪ R α A,B\in S_{\alpha}\cup R_{\alpha} , and if A ∈ S α ∪ R α A\in S_{\alpha}\cup R_{\alpha} and
+B ∈ S β ∪ R β B\in S_{\beta}\cup R_{\beta} with α ​ ¡ ​ β \alpha\mathchar 60\relax\beta , then l ⁡ ( A ) ​ ¡ ​ l ​ ( B ) l(A)\mathchar 60\relax l(B) .
+The following definition is again technical and will help to ease notation
+and arguments.
+Definition 5 .
+Let P P and Q Q be two programs and let I I be an interpretation.
+1.
+If C 1 = ( A ← L 1 , … , L m ) C_{1}\mathchar 61\relax(A\leftarrow L_{1},\dots,L_{m}) and C 2 = ( B ← K 1 , … , K n ) C_{2}\mathchar 61\relax(B\leftarrow K_{1},\dots,K_{n}) are
+two clauses, then we say that C 1 C_{1} subsumes C 2 C_{2} , written
+C 1 ≼ C 2 C_{1}\preccurlyeq C_{2} , if A = B A\mathchar 61\relax B and
+{ L 1 , … , L m } ⊆ { K 1 , … , K n } \{L_{1},\dots,L_{m}\}\subseteq\{K_{1},\dots,K_{n}\} .
+2.
+We say that P P subsumes Q Q , written P ≼ Q P\preccurlyeq Q , if for
+each clause C 1 C_{1} in P P there exists a clause C 2 C_{2} in Q Q with
+C 1 ≼ C 2 C_{1}\preccurlyeq C_{2} .
+3.
+We say that P P subsumes Q Q model-consistently ( with
+respect to I I ), written P ≼ I Q P\preccurlyeq_{I}Q , if the following conditions
+hold. (i) For each clause C 1 = ( A ← L 1 , … , L m ) C_{1}\mathchar 61\relax(A\leftarrow L_{1},\dots,L_{m}) in P P there exists a
+clause C 2 = ( B ← K 1 , … , K n ) C_{2}\mathchar 61\relax(B\leftarrow K_{1},\dots,K_{n}) in Q Q with C 1 ≼ C 2 C_{1}\preccurlyeq C_{2} and
+( { K 1 , … , K n } ∖ { L 1 , … , L m } ) ⊆ I (\{K_{1},\dots,K_{n}\}\setminus\{L_{1},\dots,L_{m}\})\subseteq I . (ii) For each
+clause C 2 = ( B ← K 1 , … , K n ) C_{2}\mathchar 61\relax(B\leftarrow K_{1},\dots,K_{n}) in Q Q with { K 1 , … , K n } ∈ I \{K_{1},\dots,K_{n}\}\in I and
+B ∉ I B\not\in I there exists a clause C 1 C_{1} in P P such that C 1 ≼ C 2 C_{1}\preccurlyeq C_{2} .
+A clause C 1 C_{1} subsumes a clause C 2 C_{2} if both have the same head and the
+body of C 2 C_{2} contains at least the body literals of C 1 C_{1} , e.g. p ← q p\leftarrow q
+subsumes p ← q , ¬ r p\leftarrow q,\lnot r . A program P P subsumes a program Q Q if every
+clause in P P can be generated this way from a clause in Q Q , e.g. the
+program consisting of the two clauses p ← q p\leftarrow q and p ← r p\leftarrow r subsumes the
+program consisting of p ← q , ¬ s p\leftarrow q,\lnot s and p ← r , p p\leftarrow r,p . This is also an
+example of a model-consistent subsumption with respect to the interpretation
+{ ¬ s , p } \{\lnot s,p\} . Concerning Example 6.1 , note that
+P / N 1 ≼ N 1 P P/N_{1}\preccurlyeq_{N_{1}}P , which is no coincidence. Indeed, Definition
+5 facilitates the proof of Theorem 6.2 by
+employing the following lemma.
+Lemma 6.6 .
+With notation from Definiton 4 , we have
+P / N α ≼ N α P P/N_{\alpha}\preccurlyeq_{N_{\alpha}}P for all α \alpha .
+Proof 6.7 .
+Condition 3(i) of Definition 5 holds because every clause in
+P / N α P/N_{\alpha} is obtained from a clause in P P by deleting body literals
+which are contained in N α N_{\alpha} . Condition 3(ii) holds because for each
+clause in P P with head A ∉ N α A\not\in N_{\alpha} whose body is true under
+N α N_{\alpha} , we have that A ← A\leftarrow is a fact in P / N α P/N_{\alpha} .
+The next lemma establishes the induction step in part (2) of the proof of
+Theorem 6.2 .
+Lemma 6.8 .
+If I I is a non-empty model of a (infinite propositional normal) logic
+program P ′ P^{\prime} and l l an I I -partial level mapping such that P ′ P^{\prime} satisfies
+(WS) with respect to I I and l l , then the following hold for
+P = P ′ / ∅ P\mathchar 61\relax P^{\prime}/\emptyset .
+[(a)]
+1.
+The bottom stratum S ⁡ ( P ) S(P) of P P is non-empty and consists of trivial
+components only.
+2.
+The bottom layer L ⁡ ( P ) L(P) of P P is definite.
+3.
+The definite (partial) model N N of L ⁡ ( P ) L(P) is consistent with I I in
+the following sense: we have I ′ ⊆ N I^{\prime}\subseteq N , where I ′ I^{\prime} is the restriction
+of I I to all atoms which are not undefined in N N .
+4.
+P / N P/N satisfies (WS) with respect to I ∖ N I\setminus N and l / N l/N , where
+l / N l/N is the restriction of l l to the atoms in I ∖ N I\setminus N .
+Proof 6.9 .
+(a) Assume there exists some component C ⊆ S ⁡ ( P ) C\subseteq S(P) which is not
+trivial. Then there must exist atoms A , B ∈ C A,B\in C with A ​ ¡ ​ B A\mathchar 60\relax B , B ​ ¡ ​ A B\mathchar 60\relax A , and
+A ≠ B A\not\mathchar 61\relax B . Without loss of generality, we can assume that A A is chosen such
+that l ⁡ ( A ) l(A) is minimal. Now let A ′ A^{\prime} be any atom occuring in a clause with
+head A A . Then A ​ ¿ ​ B ​ ¿ ​ A ≥ A ′ A\mathchar 62\relax B\mathchar 62\relax A\geq A^{\prime} , hence A ​ ¿ ​ A ′ A\mathchar 62\relax A^{\prime} , and by minimality of the
+component we must also have A ′ ​ ¿ ​ A A^{\prime}\mathchar 62\relax A , and we obtain that all atoms occuring in
+clauses with head A A must be contained in C C . We consider two cases.
+(Case i) If A ∈ I A\in I , then there must be a fact A ← A\leftarrow in P P , since
+otherwise by (WSi) we had a clause A ← L 1 , … , L n A\leftarrow L_{1},\dots,L_{n} (for some n ≥ 1 n\geq 1 ) with L 1 , … , L n ∈ I L_{1},\dots,L_{n}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) for all i i , contradicting
+the minimality of l ⁡ ( A ) l(A) . Since P = P ′ / ∅ P\mathchar 61\relax P^{\prime}/\emptyset we obtain that A ← A\leftarrow is
+the only clause in P P with head A A , contradicting the existence of
+B ≠ A B\not\mathchar 61\relax A with B ​ ¡ ​ A B\mathchar 60\relax A .
+(Case ii) If ¬ A ∈ I \lnot A\in I , and since A A was chosen minimal with respect
+to l l , we obtain that condition (WSiib) must hold for each clause A ← A 1 , … , A n , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{n},\lnot B_{1},\dots,\lnot B_{m} with respect to I I and l l , and
+that m = 0 m\mathchar 61\relax 0 . Furthermore, all A i A_{i} must be contained in C C , as already
+noted above, and l ⁡ ( A ) ≥ l ⁡ ( A i ) l(A)\geq l(A_{i}) for all i i by (WSiib). Also from (Case
+i) we obtain that no A i A_{i} can be contained in I I . We have now established
+that for all A i A_{i} in the body of any clause with head A A , we have
+l ⁡ ( A ) = l ⁡ ( A i ) l(A)\mathchar 61\relax l(A_{i}) and ¬ A i ∈ I \lnot A_{i}\in I . The same argument holds for all clauses
+with head A i A_{i} , for all i i , and the argument repeats. Now from A ​ ¿ ​ B A\mathchar 62\relax B we
+obtain that there are D , E ∈ C D,E\in C with A ≥ E A\geq E (or A = E A\mathchar 61\relax E ), D ≥ B D\geq B (or
+D = B D\mathchar 61\relax B ), and E E refers negatively to D D . As we have just seen, we obtain
+¬ E ∈ I \lnot E\in I and l ⁡ ( E ) = l ⁡ ( A ) l(E)\mathchar 61\relax l(A) . Since E E refers negatively to D D , there is
+a clause with head E E and ¬ D \lnot D contained in the body of this
+clause. Since (WSii) holds for this clause, there must be a literal L L in
+the body with level less than l ⁡ ( E ) l(E) , hence l ⁡ ( L ) ​ ¡ ​ l ​ ( A ) l(L)\mathchar 60\relax l(A) and L ∈ C L\in C which
+is a contradiction. We thus have established that all components are
+trivial.
+We show next that the bottom stratum is non-empty. Indeed, let A A be an
+atom such that l ⁡ ( A ) l(A) is minimal. We will show that { A } \{A\} is a
+component. So assume it is not, i.e. that there is B B with B ​ ¡ ​ A B\mathchar 60\relax A . Then
+there exist D 1 , … , D k D_{1},\dots,D_{k} , for some k ∈ ℕ k\in\mathbb{N} , such that D 1 = A D_{1}\mathchar 61\relax A , D j D_{j}
+refers to D j + 1 D_{j\mathchar 43\relax 1} for all j = 1 , … , k ​ Γ ​ 1 j\mathchar 61\relax 1,\dots,k\mathchar 0\relax 1 , and D k D_{k} refers negatively to
+some B ′ B^{\prime} with B ′ ≥ B B^{\prime}\geq B (or B ′ = B B^{\prime}\mathchar 61\relax B ).
+We show next by induction that for all j = 1 , … , k j\mathchar 61\relax 1,\dots,k the following
+statements hold: ¬ D j ∈ I \lnot D_{j}\in I , B ​ ¡ ​ D j B\mathchar 60\relax D_{j} , and l ⁡ ( D j ) = l ⁡ ( A ) l(D_{j})\mathchar 61\relax l(A) . Indeed note
+that for j = 1 j\mathchar 61\relax 1 , i.e. D j = A D_{j}\mathchar 61\relax A , we have that B ​ ¡ ​ D j = A B\mathchar 60\relax D_{j}\mathchar 61\relax A and l ⁡ ( D j ) = l ⁡ ( A ) l(D_{j})\mathchar 61\relax l(A) .
+Assuming A ∈ I A\in I , we obtain by minimality of l ⁡ ( A ) l(A) that A ← A\leftarrow is the
+only clause in P = P ′ / ∅ P\mathchar 61\relax P^{\prime}/\emptyset with head A A , contradicting the existence
+of B ​ ¡ ​ A B\mathchar 60\relax A . So ¬ A ∈ I \lnot A\in I , and the assertion holds for j = 1 j\mathchar 61\relax 1 . Now assume
+the assertion holds some j ​ ¡ ​ k j\mathchar 60\relax k . Then obviously D j + 1 ​ ¿ ​ B D_{j\mathchar 43\relax 1}\mathchar 62\relax B . By ¬ D j ∈ I \lnot D_{j}\in I and l ⁡ ( D j ) = l ⁡ ( A ) l(D_{j})\mathchar 61\relax l(A) , we obtain that (WSii) must hold, and by the minimality
+of l ⁡ ( A ) l(A) we infer that (WSiib) must hold and that no clause with head D j D_{j}
+contains negated atoms. So l ⁡ ( D j + 1 ) = l ⁡ ( D j ) = l ⁡ ( A ) l(D_{j\mathchar 43\relax 1})\mathchar 61\relax l(D_{j})\mathchar 61\relax l(A) holds by (WSiib) and
+minimality of l ⁡ ( A ) l(A) . Furthermore, the assumption D j + 1 ∈ I D_{j\mathchar 43\relax 1}\in I can be
+rejected by the same argument as for A A above, because then D j + 1 ← D_{j\mathchar 43\relax 1}\leftarrow
+would be the only clause with head D j + 1 D_{j\mathchar 43\relax 1} , by minimality of
+l ⁡ ( D j + 1 ) = l ⁡ ( A ) l(D_{j\mathchar 43\relax 1})\mathchar 61\relax l(A) , contradicting B ​ ¡ ​ D j + 1 B\mathchar 60\relax D_{j\mathchar 43\relax 1} . This concludes the inductive
+proof.
+Summarizing, we obtain that D k D_{k} refers negatively to B ′ B^{\prime} , and that ¬ D k ∈ I \lnot D_{k}\in I . But then there is a clause with head D k D_{k} and ¬ B ′ \lnot B^{\prime} in its
+body which satisfies (WSii), contradicting the minimality of
+l ⁡ ( D k ) = l ⁡ ( A ) l(D_{k})\mathchar 61\relax l(A) . This concludes the proof of statement (a).
+(b) According to [ 44 ] we have that whenever all components are
+trivial, then the bottom layer is definite. So the assertion follows from
+(a).
+(c) Let A ∈ I ′ A\in I^{\prime} be an atom with A ∉ N A\not\in N , and assume without loss of
+generality that A A is chosen such that l ⁡ ( A ) l(A) is minimal with these
+properties. Then there must be a clause A ← body A\leftarrow\texttt{body} in P P such that all
+literals in body are true with respect to I ′ I^{\prime} , hence with respect to N N
+by minimality of l ⁡ ( A ) l(A) . Thus body is true in N N , and since N N is a
+model of L ⁡ ( P ) L(P) we obtain A ∈ N A\in N , which contradicts our assumption.
+Now let A ∈ N A\in N be an atom with A ∉ I ′ A\not\in I^{\prime} , and assume without loss of
+generality that A A is chosen such that n n is minimal with A ∈ T L ⁡ ( P ) + ↑ ( n + 1 ) A\in T_{L(P)}^{\mathchar 43\relax}\!\uparrow\!(n\mathchar 43\relax 1) . But then there is a definite clause A ← body A\leftarrow\texttt{body} in
+L ⁡ ( P ) L(P) such that all atoms in body are true with respect to
+T L ⁡ ( P ) + ↑ n T_{L(P)}^{\mathchar 43\relax}\!\uparrow\!n , hence also with respect to I ′ I^{\prime} , and since I ′ I^{\prime} is a
+model of L ⁡ ( P ) L(P) we obtain A ∈ I ′ A\in I^{\prime} , which contradicts our
+assumption.
+Finally, let ¬ A ∈ I ′ \lnot A\in I^{\prime} . Then we cannot have A ∈ N A\in N since this
+implies A ∈ I ′ A\in I^{\prime} . So ¬ A ∈ N \lnot A\in N since N N is a total model of L ⁡ ( P ) L(P) .
+(d) From Lemma 6.6 , we know that P / N ≼ N P P/N\preccurlyeq_{N}P . We
+distinguish two cases.
+(Case i) If A ∈ I ∖ N A\in I\setminus N , then there must exist a clause
+A ← L 1 , … , L k A\leftarrow L_{1},\dots,L_{k} in P P such that L i ∈ I L_{i}\in I and l ⁡ ( A ) ​ ¿ ​ l ​ ( L i ) l(A)\mathchar 62\relax l(L_{i}) for
+all i i . Since it is not possible that A ∈ N A\in N , there must also be a clause
+in P / N P/N which subsumes A ← L 1 , … , L k A\leftarrow L_{1},\dots,L_{k} , and which therefore
+satisfies (WSi). So A A satisfies (WSi).
+(Case ii) If ¬ A ∈ I ∖ N \lnot A\in I\setminus N , then for each clause
+A ← body1 A\leftarrow\texttt{body1} in P / N P/N there must be a clause A ← body A\leftarrow\texttt{body} in P P which
+is subsumed by the former, and since ¬ A ∈ I \lnot A\in I , we obtain that
+condition (WSii) must be satisfied by A A , and by the clause
+A ← body A\leftarrow\texttt{body} . Since reduction with respect to N N removes only body
+literals which are true in N N , condition (WSii) is still met.
+We can now proceed with the proof.
+Proof 6.10 (Proof of Theorem 6.2 ) .
+The proof will be established by showing the following facts: (1) P P
+satisfies (WS) with respect to M P M_{P} and l P l_{P} . (2) If I I is a model of P P
+and l l an I I -partial level mapping such that P P satisfies (WS) with
+respect to I I and l l , then I ⊆ M P I\subseteq M_{P} .
+(1) Let A ∈ 𝖽𝗈𝗆 ⁡ ( l P ) A\in\mathsf{dom}(l_{P}) and l P ​ ( A ) = ( α , n ) l_{P}(A)\mathchar 61\relax(\alpha,n) . We consider two cases.
+(Case i) If A ∈ M P A\in M_{P} , then A ∈ T L α + ↑ ( n + 1 ) A\in T_{L_{\alpha}}^{\mathchar 43\relax}\!\uparrow\!(n\mathchar 43\relax 1) . Hence there
+exists a definite clause A ← A 1 , … , A k A\leftarrow A_{1},\dots,A_{k} in L α L_{\alpha} with
+A 1 , … , A k ∈ T L α + ↑ n A_{1},\dots,A_{k}\in T_{L_{\alpha}}^{\mathchar 43\relax}\!\uparrow\!n , so A 1 , … , A k ∈ M P A_{1},\dots,A_{k}\in M_{P} with
+l P ​ ( A ) ​ ¿ ​ l P ​ ( A i ) l_{P}(A)\mathchar 62\relax l_{P}(A_{i}) for all i i . Since P / N α ≼ N α P P/N_{\alpha}\preccurlyeq_{N_{\alpha}}P
+by Lemma 6.6 , there must exist a clause A ← A 1 , … , A k , L 1 , … , L m A\leftarrow A_{1},\dots,A_{k},L_{1},\dots,L_{m} in P P with literals L 1 , … , L m ∈ N α ⊆ M P L_{1},\dots,L_{m}\in N_{\alpha}\subseteq M_{P} , and we obtain l P ​ ( L j ) ​ ¡ ​ l P ​ ( A ) l_{P}(L_{j})\mathchar 60\relax l_{P}(A) for all j = 1 , … , m j\mathchar 61\relax 1,\dots,m . So (WSi) holds
+in this case.
+(Case ii) If ¬ A ∈ M P \lnot A\in M_{P} , then let A ← A 1 , … , A k , ¬ B 1 , … , ¬ B m A\leftarrow A_{1},\dots,A_{k},\lnot B_{1},\dots,\lnot B_{m} be a clause in P P , noting that (WSii) is trivially
+satisfied in case no such clause exists. We consider the following two
+subcases.
+(Subcase ii.a) Assume A A is undefined in N α N_{\alpha} and was eliminated from
+P P by reducing it with respect to N α N_{\alpha} , i.e. A ∈ R α A\in R_{\alpha} . Then,
+in particular, there must be some ¬ A i ∈ N α \lnot A_{i}\in N_{\alpha} or some B j ∈ N α B_{j}\in N_{\alpha} , which yields l P ​ ( A i ) ​ ¡ ​ l P ​ ( A ) l_{P}(A_{i})\mathchar 60\relax l_{P}(A) , respectively l P ​ ( B j ) ​ ¡ ​ l P ​ ( A ) l_{P}(B_{j})\mathchar 60\relax l_{P}(A) ,
+and hence one of (WSiia), (WSiic) holds.
+(Subcase ii.b) Assume ¬ A ∈ H \lnot A\in H , where H H is the definite (partial)
+model of L α L_{\alpha} . Since P / N α P/N_{\alpha} subsumes P P model-consistently with
+respect to N α N_{\alpha} , we obtain that there must be some A i A_{i} with ¬ A i ∈ H \lnot A_{i}\in H , and by definition of l P l_{P} we obtain
+l P ​ ( A ) = l P ​ ( A i ) = ( α , ω ) l_{P}(A)\mathchar 61\relax l_{P}(A_{i})\mathchar 61\relax(\alpha,\omega) , and hence also l P ​ ( A i ′ ) ≤ l P ​ ( A i ) l_{P}(A_{i^{\prime}})\leq l_{P}(A_{i}) for
+all i ′ ≠ i i^{\prime}\not\mathchar 61\relax i . Furthermore, since P / N α P/N_{\alpha} is definite, we obtain that
+¬ B j ∈ N α \lnot B_{j}\in N_{\alpha} for all j j , hence l P ​ ( B j ) ​ ¡ ​ l P ​ ( A ) l_{P}(B_{j})\mathchar 60\relax l_{P}(A) for all j j . So
+condition (WSiib) is satisfied.
+(2) First note that for all models M M , N N of P P with M ⊆ N M\subseteq N we
+have ( P / M ) / N = P / ( M ∪ N ) = P / N (P/M)/N\mathchar 61\relax P/(M\cup N)\mathchar 61\relax P/N and ( P / N ) / ∅ = P / N (P/N)/\emptyset\mathchar 61\relax P/N .
+Let I α I_{\alpha} denote I I restricted to the atoms which are not undefined in
+N α ∪ R α N_{\alpha}\cup R_{\alpha} . It suffices to show the following: For all
+α ​ ¿ ​ 0 \alpha\mathchar 62\relax 0 we have I α ⊆ N α ∪ R α I_{\alpha}\subseteq N_{\alpha}\cup R_{\alpha} , and
+I ∖ M P = ∅ I\setminus M_{P}\mathchar 61\relax\emptyset .
+We next show by induction that if α ​ ¿ ​ 0 \alpha\mathchar 62\relax 0 is an ordinal, then the
+following statements hold. (a) The bottom stratum of P / N α P/N_{\alpha} is
+non-empty and consists of trivial components only. (b) The bottom layer of
+P / N α P/N_{\alpha} is definite. (c) I α ⊆ N α ∪ R α I_{\alpha}\subseteq N_{\alpha}\cup R_{\alpha} . (d)
+P / N α + 1 P/N_{\alpha\mathchar 43\relax 1} satisfies (WS) with respect to I ∖ N α + 1 I\setminus N_{\alpha\mathchar 43\relax 1}
+and l / N α + 1 l/N_{\alpha\mathchar 43\relax 1} .
+Note first that P P satisfies the hypothesis of Lemma 6.8 , hence
+also its consequences. So P / N 1 = P / ∅ P/N_{1}\mathchar 61\relax P/\emptyset satisfies (WS) with respect to
+I ∖ N 1 I\setminus N_{1} and l / N 1 l/N_{1} , and by application of Lemma 6.8 we
+obtain that statements (a) and (b) hold. For (c), note that no atom in R 1 R_{1}
+can be true in I I , because no atom in R 1 R_{1} can appear as head of a clause
+in P P , and apply Lemma 6.8 (c). For (d), apply Lemma
+6.8 , noting that P / N 2 ≼ N 2 P P/N_{2}\preccurlyeq_{N_{2}}P .
+For α \alpha being a limit ordinal, we can show exactly as in the proof of
+Lemma 6.8 (d), that P P satisfies (WS) with respect to
+I ∖ N α I\setminus N_{\alpha} and l / N α l/N_{\alpha} . So Lemma 6.8 is
+applicable and statements (a) and (b) follow. For (c), let A ∈ R α A\in R_{\alpha} . Then every clause in P P with head A A contains a body literal
+which is false in N α N_{\alpha} . By induction hypothesis, this implies that no
+clause with head A A in P P can have a body which is true in I I . So
+A ∉ I A\not\in I . Together with Lemma 6.8 (c), this proves statement
+(c). For (d), apply again Lemma 6.8 (d), noting that
+P / N α + 1 ≼ N α + 1 P P/N_{\alpha\mathchar 43\relax 1}\preccurlyeq_{N_{\alpha\mathchar 43\relax 1}}P .
+For α = β + 1 \alpha\mathchar 61\relax\beta\mathchar 43\relax 1 being a successor ordinal, we obtain by induction
+hypothesis that P / N β P/N_{\beta} satisfies the hypothesis of Lemma
+6.8 , so again statements (a) and (b) follow immediately from this
+lemma, and (c), (d) follow as in the case for α \alpha being a limit
+ordinal.
+It remains to show that I ∖ M P = ∅ I\setminus M_{P}\mathchar 61\relax\emptyset . Indeed by the
+transfinite induction argument just given we obtain that P / M P P/M_{P} satisfies
+(WS) with respect to I ∖ M P I\setminus M_{P} and l / M P l/M_{P} . If I ∖ M P I\setminus M_{P} is
+non-empty, then by Lemma 6.8 the bottom stratum S ⁡ ( P / M P ) S(P/M_{P}) is
+non-empty and the bottom layer L ⁡ ( P / M P ) L(P/M_{P}) is definite with definite
+(partial) model M M . Hence by definition of the weakly perfect model M P M_{P}
+of P P we must have that M ⊆ M P M\subseteq M_{P} which contradicts the fact that
+M M is the definite model of L ⁡ ( P / M P ) L(P/M_{P}) . Hence I ∖ M P I\setminus M_{P} must be
+empty which concludes the proof.
+Of independent interest is again the case, where the model in question is
+total. We see immediately, for example, in the light of Theorem
+3.3 , that the model is then stable.
+Corollary 6.3
+A normal logic program P P is weakly stratified, i.e. has a total weakly
+perfect model, if and only if there is a total model I I of P P and a
+(total) level mapping l l for P P such that P P satisfies (WS) with respect
+to I I and l l .
+We also obtain the following corollary as a trivial consequence of our
+uniform characterizations by level mappings.
+Corollary 6.4
+Let P P be a normal logic progam with Fitting model M F M_{\mbox{F}} , weakly
+perfect model M WP M_{\mbox{WP}} , and well-founded model M WF M_{\mbox{WF}} . Then
+M F ⊆ M WP ⊆ M WF M_{\mbox{F}}\subseteq M_{\mbox{WP}}\subseteq M_{\mbox{WF}} .
+Example 6.5
+Consider the program P P from Example 6.1 . Then
+M F = ∅ M_{\mbox{F}}\mathchar 61\relax\emptyset , M WP = { ¬ d , ¬ e } M_{\mbox{WP}}\mathchar 61\relax\{\lnot d,\lnot e\} , and
+M WF = { a , ¬ b , ¬ c , ¬ d , ¬ e } M_{\mbox{WF}}\mathchar 61\relax\{a,\lnot b,\lnot c,\lnot d,\lnot e\} .
+7 Related Work
+As already mentioned in the introduction, level mappings have been used for
+studying semantic aspects of logic programs in a number of different
+ways. Our presentation suggests a novel application of level mappings,
+namely for providing uniform characterizations of different fixed-point
+semantics for logic programs with negation. Although we believe our
+perspective to be new in this general form, there nevertheless have been
+results in the literature which are very close in spirit to our
+characterizations.
+A first noteable example of this is Fages’ characterization of stable models
+[ 15 ] , which we have stated in Theorem 3.3 .
+Another result which uses level mappings to characterize a semantics is by
+Lifschitz, Przymusinski, Stärk, and McCain [ 37 , Lemma 3] . We
+briefly compare their characterization of the well-founded semantics and
+ours. In fact, this discussion can be based upon two different
+characterizations of the least fixed point of a monotonic operator F F . On
+the one hand, this least fixed point is of course the least of all
+fixed points of F F , and on the other hand, this least fixed point is the
+limit of the sequence of powers ( F ↑ α ) α (F\uparrow\alpha)_{\alpha} , and in this
+latter sense is the least iterate of F F which is also a fixed
+point . Our characterizations of definite, Fitting, well-founded, and weakly
+stratified semantics use the latter approach, which is reflected in our
+general proof scheme, which defines level mappings according to powers, or
+iterates, of the respective operators. The results by Fages [ 20 ] and
+Lifschitz et al. [ 37 ] hinge upon the former approach, i.e. they are
+based on the idea of characterizing the fixed points of an operator —
+GL P \mathrm{GL}_{P} , respectively Ψ P \Psi_{P} [ 46 , 9 ] — and so the sought
+fixed point turns out to be the least of those. Consequently, as can be seen
+in the proof of Theorem 3.3 , the level mapping in Fages’
+characterization, and likewise in the result by Lifschitz et al., arises
+only indirectly from the operator — GL P \mathrm{GL}_{P} , respectively Ψ P \Psi_{P} —
+whose fixed point is sought. Indeed, the level mapping by Fages is defined
+according to iterates of T P / I T_{P/I} , which is the operator for obtaining
+GL P ​ ( I ) \mathrm{GL}_{P}(I) , for any I I . The result by Lifschitz et al. is obtained
+similarly based on a three-valued operator Ψ P \Psi_{P} .
+Unforunately, these characterizations by Fages, in Theorem
+3.3 , respectively by Lifschitz et al. [ 37 ] , seem
+to be applicable only to operators which are defined by least fixed points
+of other operators, as is the case for GL P \mathrm{GL}_{P} and Ψ P \Psi_{P} , and it seems
+that the approach by Lifschitz et al. is unlikely to scale to other
+semantics. For example, we attempted a straightforward characterization of
+the Fitting semantics in the spririt of Lifschitz et al. which failed.
+On a more technical level, a difference between our result, Theorem
+5.1 , and the characterization by Lifschitz et
+al. [ 37 ] of the well-founded semantics is this: In our
+characterization, the model is described using conditions on atoms which are
+true or false (i.e. not undefined ) in the well-founded model, whereas
+in theirs the conditions are on those atoms which are true or undefined
+(i.e. not false ) in the well-founded model. The reason for this is
+that we consider iterates of W P W_{P} , where W P ↑ 0 = ∅ W_{P}\uparrow 0\mathchar 61\relax\emptyset , while
+they use the fact that each fixed point of Ψ P \Psi_{P} is a least fixed point
+of Φ P / I \Phi_{P/I} with respect to the truth ordering on interpretations (note
+that in this case P / I P/I denotes a three-valued generalization of the
+Gelfond-Lifschitz transformation due to Przymusinski [ 46 ] ). In this
+ordering we have Φ P / I ↑ 0 = ¬ B P \Phi_{P/I}\uparrow 0\mathchar 61\relax\neg B_{P} . It is nevertheless nice to
+note that in the special case of the well-founded semantics there exist two
+complementary characterizations using level mappings.
+Since our proposal emphasizes uniformity of characterizations, it is related
+to the large body of work on uniform approaches to logic programming
+semantics, of which we will discuss two in more detail: the algebraic
+approach via bilattices due to Fitting, and the work of Dix.
+Bilattice-based semantics has a long tradition in logic programming theory,
+starting out from the four-valued logic of Belnap [ 7 ] . The
+underlying set of truth values, a four-element lattice, was recognized to
+admit two ordering relations which can be interpreted as truth- and
+knowledge-order. As such it has the structure of a bilattice, a term due to
+Ginsberg [ 23 ] , who was the first to note the importance of
+bilattices for inference in artificial intelligence [ 24 ] . This
+general approach was imported into logic programming theory by Fitting
+[ 17 ] . Although multi-valued logics had been used for logic
+programming semantics before [ 16 ] , bilattices provided an
+interesting approach to semantics as they are capable of incorporating both
+reasoning about truth and reasoning about knowledge, and, more technically,
+because they have nice algebraic behaviour. Using this general framework
+Fitting was able to show interesting relationships between the stable and
+the well-founded semantics [ 18 , 19 , 21 ] .
+Without claiming completeness we note two current developments in the
+bilattice-based approach to logic programming: Fitting’s framework has been
+extended to an algebraic approach for approximating operators by Denecker,
+Marek, and Truszczynski [ 11 ] . The inspiring starting point of this
+work was the noted relationship between the stable model semantics and the
+well-founded semantics, the latter approximating the former. The other line
+of research was pursued mainly by Arieli and Avron [ 5 , 6 , 4 ] ,
+who use bilattices for paraconsistent reasoning in logic programming. The
+above outline of the historical development of bilattices in logic
+programming theory suggests a similar kind of uniformity as we claim for our
+approach. The exact relationship between both approaches, however, is still
+to be investigated. On the one hand, bilattices can cope with
+paraconsistency — an issue of logic programming and deductive databases,
+which is becoming more and more important — in a very convenient way. On
+the other hand, our approach can deal with semantics based on multi-valued
+logics, whose underlying truth structure is not a bilattice. A starting
+point for investigations in this direction could be the obvious meeting
+point of both theories: the well-founded semantics for which we can provide
+a characterization and which is a special case of the general approximation
+theory of Denecker et al. [ 11 ] .
+Another very general, and uniform, approach to logic programming pursues a
+different point of view, namely logic programming semantics as nonmonotonic
+inference. The general theory of nonmonotonic inference and a classification
+of properties of nonmonotonic operators was developed by Kraus, Lehmann, and
+Magidor [ 34 ] , leading to the notion KLM-axioms for these
+properties, and developed further by Makinson [ 39 ] . These axioms
+were adopted to the terminology of logic programming and extended to a
+general theory of logic programming semantics by Dix
+[ 12 , 13 ] . In this framework, different known semantics are
+classified according to strong properties — the KLM-axioms which hold for
+the semantics – and weak properties — specific properties which deal with
+the irregularities of negation-as-failure. As such Dix’ framework is indeed
+a general and uniform approach to logic programming, its main focus being on
+semantic properties of logic programs. Our approach in turn could be called
+semi-syntactic in that definitions that employ level mappings
+naturally take the structure of the logic program into account. As in the
+case of the bilattice-based approaches, it is not yet completely clear
+whether these two approaches can be amalgamated in the sense of a
+correspondence between properties of level mappings, e.g. strict or
+semi-strict descent of the level, etc., on the one hand, and
+KLM-properties of the logic program on the other. However, we believe that
+it is possible to develop a proof scheme for nonmonotonic properties of
+logic programs in the style of the proof scheme presented in the paper,
+which can be used to cast semantics based on monotonic operators into level
+mapping form.
+We finally mention the work by Hitzler and Seda [ 27 ] , which was the
+root and starting point for our investigations. This framework aims at the
+characterization of program classes, such as (locally) stratified programs
+[ 2 , 45 ] , acceptable programs [ 3 ] , or Φ \Phi -accessible
+programs [ 27 ] . Such program classes appear naturally whenever a
+semantics is not defined for all logic programs. In these cases one tries to
+characterize those programs, for which the semantics is well-defined or
+well-behaved. Their main tool were monotonic operators in three-valued
+logic, in the spirit of Fitting’s Φ P \Phi_{P} , rather than level mappings. With
+each operator comes a least fixed point, hence a semantics, and it is easily
+checked that these semantics can be characterized using our approach, again
+by straightforward application of our proof scheme. Indeed, preliminary
+steps in this direction already led to an independent proof of a special
+case of Corollary 6.4 [ 29 ] .
+8 Conclusions and Further Work
+We have proposed a novel approach for obtaining uniform characterizations of
+different semantics for logic programs. We have exemplified this by giving
+new alternative characterizations of some of the major semantics from the
+literature. We have developed and presented a methodology for obtaining
+characterizations from monotonic semantic operators or related
+constructions, and a proof scheme for showing correctness of the obtained
+characterizations. We consider our contribution to be fundamental, with
+potential for extension in many directions.
+Our approach employs level mappings as central tool. The uniformity with
+which our characterizations were obtained and proven to be correct suggests
+that our method should be of wider applicability. In fact, since it builds
+upon the well-known Tarski fixed point theorem, it should scale well to
+most, if not all semantics, which are defined by means of a monotonic
+operator. The main contribution of this paper is thus, that we have
+developed a novel way of presenting logic programming semantics in some kind
+of normal or standard form . This can be used for easy
+comparison of semantics with respect to the syntactic structures that can be
+used with a certain semantics, i.e. to what extent the semantics is able to
+’break up’ positive or negative dependencies or loops between atoms in the
+program, as in Corollary 6.4 .
+However, there are many more requirements which a general and uniform
+approach to logic program semantics should eventually be able to meet,
+including (i) a better understanding of known semantics, (ii) proof schemes
+for deriving properties of semantics, (iii) extendability to new programming
+constructs, and (iv) support for designing new semantics for special
+purposes.
+Requirement (i) is met to some extent by our appoach, since it enables easy
+comparison of semantics, as discussed earlier. However, in order to meet the
+other requirements, i.e. to set up a meta-theory of
+level-mapping-based semantics, a lot of further research is needed. We list
+some topics to be pursued in the future, some of which are under current
+investigation by the authors. There are many properties which are
+interesting to know about a certain semantics, depending on one’s
+perspective. For the nonmonotonic reasoning aspect of logic programming it
+would certainly be interesting to have a proof scheme as flexible and
+uniform as the one presented in this paper. Results and proofs in the
+literature [ 15 , 12 , 51 ] suggest that there is a strong
+dependency between notions of ordering on the Herbrand base, as expressed by
+level mappings, and KLM-properties satisfied by a semantics, which
+constitutes some evidence that a general proof scheme for proving
+KLM-properties from level mapping definitions can be developed. Other
+interesting properties are e.g. the computational complexity of a semantics,
+but also logical characterizations of the behaviour of negation in logic
+programs, a line of research initiated by Pearce [ 42 ] .
+For (iii), it would be desirable to extend our characterizations also to
+disjunctive programs, which could perhaps contribute to the discussion about
+appropriate generalizations of semantics of normal logic programs to the
+disjunctive case.
+We finally want to mention that the elegant mathematical framework of level
+mapping definitions naturally gives rise to the design of new
+semantics. However, at the time being this is only a partial fulfillment of
+(iv): As long as a meta-theory for level-mapping-based semantics is missing,
+one still has to apply conventional methods for extracting properties of the
+respective semantics from its definition.
+References
+Abramsky and
+Jung (1994)
+Abramsky, S. and Jung, A. 1994.
+Domain theory.
+In Handbook of Logic in Computer Science , S. Abramsky,
+D. Gabbay, and T. S. Maibaum, Eds. Vol. 3. Clarendon, Oxford, 1–168.
+Apt
+et al . (1988)
+Apt, K. R. , Blair, H. A. , and Walker, A. 1988.
+Towards a theory of declarative knowledge.
+In Foundations of Deductive Databases and Logic Programming ,
+J. Minker, Ed. Morgan Kaufmann, Los Altos, CA, 89–148.
+Apt and
+Pedreschi (1993)
+Apt, K. R. and Pedreschi, D. 1993.
+Reasoning about termination of pure Prolog programs.
+Information and Computation 106 , 109–157.
+Arieli (2002)
+Arieli, O. 2002.
+Paraconsistent declarative semantics for extended logic programs.
+Annals of Mathematics and Artificial Intelligence 36(4) , 381–417.
+Arieli and
+Avron (1994)
+Arieli, O. and Avron, A. 1994.
+Logical bilattices and inconsistent data.
+In Proceedings of the 9th Annual IEEE Symposium on Logic in
+Computer Science . IEEE Press, 468–476.
+Arieli and
+Avron (1998)
+Arieli, O. and Avron, A. 1998.
+The value of the four values.
+Artificial Intelligence 102, 1, 97–141.
+Belnap (1977)
+Belnap, N. D. 1977.
+A useful four-valued logic.
+In Modern Uses of Multiple-Valued Logic , J. M. Dunn and
+G. Epstein, Eds. Reidel, Dordrecht, 5–37.
+Bezem (1989)
+Bezem, M. 1989.
+Characterizing termination of logic programs with level mappings.
+In Proceedings of the North American Conference on Logic
+Programming , E. L. Lusk and R. A. Overbeek, Eds. MIT Press, Cambridge,
+MA, 69–80.
+Bonnier
+et al . (1991)
+Bonnier, S. , Nilsson, U. , and Näslund, T. 1991.
+A simple fixed point characterization of three-valued stable model
+semantics.
+Information Processing Letters 40, 2, 73–78.
+Cavedon (1991)
+Cavedon, L. 1991.
+Acyclic programs and the completeness of SLDNF-resolution.
+Theoretical Computer Science 86 , 81–92.
+Denecker
+et al . (2000)
+Denecker, M. , Marek, V. W. , and Truszczynski, M. 2000.
+Approximating operators, stable operators, well-founded fixpoints and
+applications in non-monotonic reasoning.
+In Logic-based Artificial Intelligence , J. Minker, Ed. Kluwer
+Academic Publishers, Boston, Chapter 6, 127–144.
+Dix (1995a)
+Dix, J. 1995a.
+A classification theory of semantics of normal logic programs: I.
+Strong properties.
+Fundamenta Informaticae 22, 3, 227–255.
+Dix (1995b)
+Dix, J. 1995b.
+A classification theory of semantics of normal logic programs: II.
+Weak properties.
+Fundamenta Informaticae 22, 3, 257–288.
+Eiter et al . (1997)
+Eiter, T. , Leone, N. , Mateis, C. , Pfeifer, G. , and Scarcello, F. 1997.
+A deductive system for nonmonotonic reasoning.
+In Proceedings of the 4th International Conference on Logic
+Programming and Nonmonotonic Reasoning (LPNMR’97) , J. Dix, U. Furbach,
+and A. Nerode, Eds. Lecture Notes in Artificial Intelligence, vol. 1265.
+Springer, Berlin, 364–375.
+Fages (1994)
+Fages, F. 1994.
+Consistency of Clark’s completion and existence of stable models.
+Journal of Methods of Logic in Computer Science 1 ,
+51–60.
+Fitting (1985)
+Fitting, M. 1985.
+A Kripke-Kleene-semantics for general logic programs.
+The Journal of Logic Programming 2 , 295–312.
+Fitting (1991a)
+Fitting, M. 1991a.
+Bilattices and the semantics of logic programming.
+The Journal of Logic Programming 11 , 91–116.
+Fitting (1991b)
+Fitting, M. 1991b.
+Well-founded semantics, generalized.
+In Logic Programming, Proceedings of the 1991 International
+Symposium . MIT Press, Cambridge, MA, 71–84.
+Fitting (1993)
+Fitting, M. 1993.
+The family of stable models.
+Journal of Logic Programming 17 , 197–225.
+Fitting (1994)
+Fitting, M. 1994.
+Metric methods: Three examples and a theorem.
+The Journal of Logic Programming 21, 3, 113–127.
+Fitting (2002)
+Fitting, M. 2002.
+Fixpoint semantics for logic programming — A survey.
+Theoretical Computer Science 278, 1–2, 25–51.
+Gelfond and
+Lifschitz (1988)
+Gelfond, M. and Lifschitz, V. 1988.
+The stable model semantics for logic programming.
+In Logic Programming. Proceedings of the 5th International
+Conference and Symposium on Logic Programming , R. A. Kowalski and K. A.
+Bowen, Eds. MIT Press, 1070–1080.
+Ginsberg (1986)
+Ginsberg, M. L. 1986.
+Bilattices.
+Tech. Rep. 86-72, Stanford University, KSL.
+Ginsberg (1992)
+Ginsberg, M. L. 1992.
+Multivalued logics: A uniform approach to inference in artificial
+intelligence.
+Computational Intelligence 4, 3, 256–316.
+Hitzler (2001)
+Hitzler, P. 2001.
+Generalized metrics and topology in logic programming semantics.
+Ph.D. thesis, Department of Mathematics, National University of
+Ireland, University College Cork.
+Hitzler (2003)
+Hitzler, P. 2003.
+Towards a systematic account of different logic programming
+semantics.
+In Proceedings of the 26th German Conference on Artificial
+Intelligence, KI2003, Hamburg, September 2003 , A. Günter, R. Krause,
+and B. Neumann, Eds. Lecture Notes in Artificial Intelligence, vol. 2821.
+Springer, Berlin, 355–369.
+Hitzler and
+Seda (1999)
+Hitzler, P. and Seda, A. K. 1999.
+Characterizations of classes of programs by three-valued operators.
+In Logic Programming and Nonmonotonic Reasoning, Proceedings of
+the 5th International Conference on Logic Programming and Non-Monotonic
+Reasoning, LPNMR’99, El Paso, Texas, USA , M. Gelfond, N. Leone, and
+G. Pfeifer, Eds. Lecture Notes in Artificial Intelligence, vol. 1730.
+Springer, Berlin, 357–371.
+Hitzler and
+Seda (2000)
+Hitzler, P. and Seda, A. K. 2000.
+A note on relationships between logic programs and neural networks.
+In Proceedings of the Fourth Irish Workshop on Formal Methods,
+IWFM’00 , P. Gibson and D. Sinclair, Eds. Electronic Workshops in
+Comupting (eWiC). British Computer Society.
+Hitzler and
+Seda (2001)
+Hitzler, P. and Seda, A. K. 2001.
+Unique supported-model classes of logic programs.
+Information 4, 3, 295–302.
+Hitzler and
+Seda (2003a)
+Hitzler, P. and Seda, A. K. 2003a.
+Continuity of semantic operators in logic programming and their
+approximation by artificial neural networks.
+In Proceedings of the 26th German Conference on Artificial
+Intelligence, KI2003 , A. Günter, R. Krause, and B. Neumann, Eds.
+Lecture Notes in Artificial Intelligence, vol. 2821. Springer, 105–119.
+Hitzler and
+Seda (2003b)
+Hitzler, P. and Seda, A. K. 2003b.
+Generalized metrics and uniquely determined logic programs.
+Theoretical Computer Science 305, 1–3, 187–219.
+Hitzler and
+Wendt (2002)
+Hitzler, P. and Wendt, M. 2002.
+The well-founded semantics is a stratified Fitting semantics.
+In Proceedings of the 25th Annual German Conference on
+Artificial Intelligence, KI2002, Aachen, Germany, September 2002 ,
+M. Jarke, J. Koehler, and G. Lakemeyer, Eds. Lecture Notes in
+Artificial Intelligence, vol. 2479. Springer, Berlin, 205–221.
+Hölldobler et al . (1999)
+Hölldobler, S. , Kalinke, Y. , and Störr, H.-P.
+1999.
+Approximating the semantics of logic programs by recurrent neural
+networks.
+Applied Intelligence 11 , 45–58.
+Kraus
+et al . (1990)
+Kraus, S. , Lehmann, D. , and Magidor, M. 1990.
+Nonmonotonic reasoning, preferential models and cumulative logics.
+Artificial Intelligence 44, 1, 167–207.
+Kunen (1987)
+Kunen, K. 1987.
+Negation in logic programming.
+The Journal of Logic Programming 4 , 289–308.
+Lifschitz (2002)
+Lifschitz, V. 2002.
+Answer set programming and plan generation.
+Artificial Intelligence 138 , 39–54.
+Lifschitz et al . (1995)
+Lifschitz, V. , McCain, N. , Przymusinski, T. C. , and
+Stärk, R. F. 1995.
+Loop checking and the well-founded semantics.
+In Logic Programming and Non-monotonic Reasoning, Proceedings of
+the 3rd International Conference, LPNMR’95, Lexington, KY, USA, June 1995 ,
+V. W. Marek and A. Nerode, Eds. Lecture Notes in Computer Science, vol.
+928. Springer, 127–142.
+Lloyd (1988)
+Lloyd, J. W. 1988.
+Foundations of Logic Programming .
+Springer, Berlin.
+Makinson (1994)
+Makinson, D. 1994.
+General patterns of nonmonotonic reasoning.
+In Handbook of Logic in Artificial Intelligence and Logic
+Programming, Vol. 3, Nonmonotonic and Uncertain Reasoning , D. M. Gabbay,
+C. J. Hogger, and J. A. Robinson, Eds. Oxford University Press.
+Marchiori (1996)
+Marchiori, E. 1996.
+On termination of general logic programs with respect to constructive
+negation.
+The Journal of Logic Programming 26, 1, 69–89.
+Marek and
+Truszczyński (1999)
+Marek, V. W. and Truszczyński, M. 1999.
+Stable models and an alternative logic programming paradigm.
+In The Logic Programming Paradigm: A 25-Year Persepective ,
+K. R. Apt, V. W. Marek, M. Truszczyński, and D. S. Warren, Eds.
+Springer, Berlin, 375–398.
+Pearce (1997)
+Pearce, D. 1997.
+A new logical characterisation of stable models and answer sets.
+In Non-Monotonic Extensions of Logic Programming, NMELP ’96 ,
+J. Dix, L. M. Pereira, and T. C. Przymusinski, Eds. Lecture Notes in
+Computer Science, vol. 1216. Springer, 57–70.
+Pedreschi
+et al . (2002)
+Pedreschi, D. , Ruggieri, S. , and Smaus, J.-G. 2002.
+Classes of terminating logic programs.
+Theory and Practice of Logic Programs 2, 3, 369–418.
+Przymusinska
+and Przymusinski (1990)
+Przymusinska, H. and Przymusinski, T. C. 1990.
+Weakly stratified logic programs.
+Fundamenta Informaticae 13 , 51–65.
+Przymusinski (1988)
+Przymusinski, T. C. 1988.
+On the declarative semantics of deductive databases and logic
+programs.
+In Foundations of Deductive Databases and Logic Programming ,
+J. Minker, Ed. Morgan Kaufmann, Los Altos, CA, 193–216.
+Przymusinski (1989)
+Przymusinski, T. C. 1989.
+Well-founded semantics coincides with three-valued stable semantics.
+Fundamenta Informaticae 13, 4, 445–464.
+Seda (1995)
+Seda, A. K. 1995.
+Topology and the semantics of logic programs.
+Fundamenta Informaticae 24, 4, 359–386.
+Seda (1997)
+Seda, A. K. 1997.
+Quasi-metrics and the semantics of logic programs.
+Fundamenta Informaticae 29, 1, 97–117.
+Simons
+et al . (200x)
+Simons, P. , Niemelä, I. , and Soininen, T. 200x.
+Extending and implementing the stable model semantics.
+Artificial Intelligence .
+To appear.
+Stoltenberg-Hansen et al . (1994)
+Stoltenberg-Hansen, V. , Lindström, I. , and Griffor,
+E. R. 1994.
+Mathematical Theory of Domains .
+Cambridge University Press.
+Turner (2001)
+Turner, H. 2001.
+Order-consistent programs are cautiously monotonic.
+Journal of Theory and Practice of Logic Programming 1, 4, 487–495.
+van Gelder (1988)
+van Gelder, A. 1988.
+Negation as failure using tight derivations for general logic
+programs.
+In Foundations of Deductive Databases and Logic Programming ,
+J. Minker, Ed. Morgan Kaufmann, Los Altos, CA, 149–176.
+van Gelder (1989)
+van Gelder, A. 1989.
+The alternating fixpoint of logic programs with negation.
+In Proceedings of the Eighth ACM SIGACT-SIGMOD-SIGART Symposium
+on Principles of Database Systems, Philadelphia, Pennsylvania . ACM Press,
+1–10.
+van Gelder
+et al . (1991)
+van Gelder, A. , Ross, K. A. , and Schlipf, J. S. 1991.
+The well-founded semantics for general logic programs.
+Journal of the ACM 38, 3, 620–650.
+◄
+Feeling
+lucky?
+Conversion
+report
+Report
+an issue
+View original
+on arXiv ►
+Copyright
+Privacy Policy
+Generated by L a T e XML oxide

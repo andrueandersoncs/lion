@@ -1,0 +1,12 @@
+{
+  "every integer is a number, and value/integer? fits value/number?": [
+    "schema/fits?",
+    "value/integer?",
+    "value/number?"
+  ],
+  "every list of integers is a list of numbers, and the one schema fits the other": [
+    "schema/fits?",
+    ["schema/arrayOf", "value/integer?"],
+    ["schema/arrayOf", "value/number?"]
+  ]
+}

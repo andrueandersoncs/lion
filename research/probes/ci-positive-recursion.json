@@ -1,0 +1,31 @@
+[
+  "begin",
+  ["schema", "Loop", ["schema/anyOf", "Loop", "value/integer?"]],
+  [
+    "schema",
+    "Tree",
+    ["schema/anyOf", "value/integer?", ["schema/arrayOf", "Tree"]]
+  ],
+  {
+    "an integer fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      3,
+      "Loop"
+    ],
+    "a string fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      "x",
+      "Loop"
+    ],
+    "a nested list of integers fits a tree schema that recurses into the list": [
+      "schema/fits?",
+      ["quote", [1, [2, [3]]]],
+      "Tree"
+    ],
+    "a nested list with a string in it fits the tree schema": [
+      "schema/fits?",
+      ["quote", [1, ["two"]]],
+      "Tree"
+    ]
+  }
+]
