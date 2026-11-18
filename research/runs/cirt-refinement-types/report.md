@@ -2,7 +2,7 @@
 
 **The paper.** *CIRT: Calculus of Inductive Refinement Types*, by Alessio Ferrarini, Niki Vazou and G. A. Kavvos, posted 16 November 2026 (extended version of a POPL 2027 paper). It gives the first mathematical model (partial equivalence relations over a Scott domain) of a refinement type system that has all four of these at once: subtyping, SMT-style equality that ignores refinements, impredicative polymorphism, and two kinds of recursive datatypes beyond the usual (positive, and stratified by a shrinking index). From the model it proves the system consistent: no program can prove false. It also explains why refinements never change what a program computes ("annotation independence"). It is metatheory for static checkers like Liquid Haskell. It has no algorithm or engine to borrow.
 
-**Short answer.** Lion has no static type checker. Its schemas are refinement predicates checked while the program runs. So most of the paper's machinery has nothing in Lion to work on. One idea carries over directly, though, and testing it found a real bug: **a schema whose own predicate asks whether a value fits that same schema runs Lion out of memory.** The paper's stratification rule is the fix.
+**Short answer.** Lion has no static type checker. Its schemas are refinement predicates checked while the program runs. So most of the paper's machinery has nothing in Lion to work on. One idea carries over directly, though, and testing it found a real bug: **a schema whose own predicate asks whether a value fits that same schema runs Lion out of memory.** The paper's stratification rule is the fix, and Lion has it now (see [After the fix](#after-the-fix)).
 
 This run is steps `24-ci-frame` to `26-ci-probes-now` of the shared model in `research/`. Every verdict below comes from the shared frame's rules, over 66 quoted statements (claims `ci-*`) from 13 sources, plus 2 sources known only through others' citations. Among the 66 are 14 Lion programs (`research/probes/ci-*.json`), run twice: at commit f49b97a (source `lion-probes-ci-f49b97a`) and again at a2324d9, after Lion compiled its evaluation (source `lion-probes-ci`). All 14 gave the same output both times.
 
@@ -46,6 +46,23 @@ Properties to write with the fix:
 1. Every generated schema group's check ends, with an answer or with the error.
 2. A schema that recurses through a predicate only on smaller parts gives the same answer as a TypeScript model that recurses on size.
 3. `EvenList` fits exactly the lists of even length.
+
+## After the fix
+
+You asked whether anything could answer `Bad` without a wrong answer or an error. For `Bad` itself nothing can: no two-valued answer agrees with it, and the research's sources agree on that. But the question showed a better rule than either option I offered. A schema that asks about itself for the same value gets **the least answer that agrees with itself**:
+- Lion first assumes the value does not fit.
+- If the check then says it fits, Lion checks again assuming that it fits.
+- Only when neither assumption agrees does the check fail, saying that whether the value fits has no answer.
+
+So `Self` does not fit, which is the least fixed point the docs promised, and only `Bad` fails. You chose that rule, and chose "only smaller values" for everything else: a lambda that asks about a value no smaller than the one being checked is refused.
+
+Lion has it since commit 8325151, `fix(core): a schema that asks about itself gets its least consistent answer`; the decision record is `history/notes/schema-asks-about-itself.json`. Step `27-ci-fixed` reran this run's probes at commit 5b36704, as source `lion-probes-ci-fixed`, with one more probe for a larger value (`ci-larger-value`). All fifteen finished in about four seconds in all:
+- `Bad` fails with "Whether 1 fits "Bad" has no answer".
+- `Self` does not fit.
+- `EvenList` is unchanged.
+- `Grows` is refused.
+
+The model now says Lion has "recursive schemas whose every check ends". So "Let a schema ask about itself only about a smaller part of the value" is something Lion does already, and the page says the bug was found and fixed. The assumption `ci-ends` stays broken by the probes made before the fix, as the record of what the research found.
 
 ## A surprise between schemas and rules
 

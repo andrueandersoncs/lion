@@ -333,6 +333,18 @@
     [
       "cond",
       [
+        [
+          "restated",
+          {
+            "lion has": "recursive schemas whose every check ends"
+          },
+          "Lion probes",
+          false,
+          true
+        ],
+        " Checking them against Lion found a bug, a schema whose own predicate asked about that same schema, about the same value, never finished, and Lion has since fixed it."
+      ],
+      [
         ["violated", "ci-ends", "?_"],
         " Checking them against Lion found a bug: a schema whose own predicate asks about that same schema, about the same value, never finishes."
       ],
@@ -429,24 +441,43 @@
           "answer": [
             "string/concat",
             [
-              "string/join",
+              "cond",
               [
-                "array/map",
-                ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
                 [
-                  "lambda",
-                  ["pair"],
+                  "and",
+                  ["rank", "?c", "?_"],
+                  ["weighed_in", "?c", "cirt-refinement-types"]
+                ],
+                [
+                  "string/join",
                   [
-                    "string/concat",
-                    ["number/toString", ["array/head", "pair"]],
-                    ". ",
-                    ["title", ["array/head", ["array/tail", "pair"]]],
-                    ". ",
-                    ["case", ["array/head", ["array/tail", "pair"]]]
-                  ]
+                    "array/map",
+                    [
+                      "find",
+                      ["array/make", "?n", "?c"],
+                      [
+                        "and",
+                        ["rank", "?c", "?n"],
+                        ["weighed_in", "?c", "cirt-refinement-types"]
+                      ]
+                    ],
+                    [
+                      "lambda",
+                      ["pair"],
+                      [
+                        "string/concat",
+                        ["number/toString", ["array/head", "pair"]],
+                        ". ",
+                        ["title", ["array/head", ["array/tail", "pair"]]],
+                        ". ",
+                        ["case", ["array/head", ["array/tail", "pair"]]]
+                      ]
+                    ]
+                  ],
+                  " "
                 ]
               ],
-              " "
+              ["else", "Nothing in it is left for Lion to adopt whole."]
             ],
             [
               "cond",
@@ -458,7 +489,7 @@
                 ],
                 [
                   "string/concat",
-                  " Also: ",
+                  " ",
                   [
                     "string/join",
                     [
@@ -483,6 +514,59 @@
                 ]
               ],
               ["else", ""]
+            ],
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  ["weighed_in", "?c", "cirt-refinement-types"],
+                  ["offers", "?c", "?f"],
+                  [
+                    "restated",
+                    {
+                      "lion has": "?f"
+                    },
+                    "Lion probes",
+                    false,
+                    true
+                  ]
+                ],
+                [
+                  "string/concat",
+                  " Lion has since adopted what the research found it lacked: ",
+                  [
+                    "words/listed",
+                    [
+                      "array/map",
+                      [
+                        "aggregate/unique",
+                        [
+                          "find",
+                          "?c",
+                          [
+                            "and",
+                            ["weighed_in", "?c", "cirt-refinement-types"],
+                            ["offers", "?c", "?f"],
+                            [
+                              "restated",
+                              {
+                                "lion has": "?f"
+                              },
+                              "Lion probes",
+                              false,
+                              true
+                            ]
+                          ]
+                        ]
+                      ],
+                      "title"
+                    ]
+                  ],
+                  "."
+                ]
+              ],
+              ["else", ""]
             ]
           ],
           "evidence": [
@@ -492,10 +576,21 @@
               ["weighed_in", "?idea", "cirt-refinement-types"],
               [
                 "or",
-                ["verdict", "?idea", "worth adopting"],
-                ["verdict", "?idea", "worth adopting in part"]
-              ],
-              ["adds", "?idea", "?gives", "?_"]
+                ["adds", "?idea", "?gives", "?_"],
+                [
+                  "and",
+                  ["offers", "?idea", "?gives"],
+                  [
+                    "restated",
+                    {
+                      "lion has": "?gives"
+                    },
+                    "Lion probes",
+                    false,
+                    true
+                  ]
+                ]
+              ]
             ]
           ]
         },
@@ -504,6 +599,101 @@
           "question": "Did checking it against Lion find anything wrong?",
           "answer": [
             "cond",
+            [
+              [
+                "and",
+                ["violated", "ci-ends", "?_"],
+                [
+                  "restated",
+                  {
+                    "lion has": "recursive schemas whose every check ends"
+                  },
+                  "Lion probes",
+                  false,
+                  true
+                ]
+              ],
+              [
+                "string/concat",
+                [
+                  "string/concat",
+                  "Yes. Lion's docs say “",
+                  ["quoteOf", "ci-d-lfp"],
+                  "” But a schema whose own predicate asked whether a value fits that same schema never finished: in ",
+                  [
+                    "words/count",
+                    [
+                      "aggregate/count",
+                      [
+                        "find",
+                        "?c",
+                        [
+                          "claim",
+                          "?c",
+                          "lion-probes-ci",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ]
+                      ]
+                    ],
+                    "probe",
+                    "probes"
+                  ],
+                  [
+                    "cond",
+                    [
+                      [
+                        "and",
+                        [
+                          "claim",
+                          "?_",
+                          "lion-probes-ci",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ],
+                        [
+                          "claim",
+                          "?_",
+                          "lion-probes-ci-f49b97a",
+                          "?_",
+                          {
+                            "lion": "recursive schemas whose every check ends",
+                            "has": false
+                          }
+                        ]
+                      ],
+                      ", both before and after Lion compiled its evaluation,"
+                    ],
+                    ["else", ""]
+                  ],
+                  " Lion stopped with “",
+                  ["quoteOf", "ci-n-bad"],
+                  "” instead of an answer.",
+                  [
+                    "cond",
+                    [
+                      [
+                        "adds",
+                        "stratified-schemas",
+                        "recursive schemas whose every check ends",
+                        "?_"
+                      ],
+                      " The paper's rule for stratified types gives what is missing: a definition may ask about itself only at a strictly smaller index, and for a schema the index is the value it checks."
+                    ],
+                    ["else", ""]
+                  ]
+                ],
+                " Lion has since fixed it: such a schema gets the least answer that agrees with itself, and when none does, the check fails: “",
+                ["quoteOf", "ci-f-bad"],
+                "”"
+              ]
+            ],
             [
               ["violated", "ci-ends", "?_"],
               [
@@ -656,6 +846,21 @@
             ],
             [
               "cond",
+              [
+                [
+                  "stated",
+                  {
+                    "lion has": "recursive schemas whose every check ends"
+                  },
+                  true
+                ],
+                [
+                  "string/concat",
+                  "Through a predicate that asks about the same value, it gets the least answer that agrees with itself, and fails when none does. About a larger value the check is refused: “",
+                  ["quoteOf", "ci-f-grows"],
+                  "”"
+                ]
+              ],
               [
                 [
                   "answer",

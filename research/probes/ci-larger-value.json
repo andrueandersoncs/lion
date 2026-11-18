@@ -1,0 +1,9 @@
+[
+  "begin",
+  [
+    "schema",
+    "Grows",
+    ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "Grows"]]
+  ],
+  ["Grows", 1]
+]

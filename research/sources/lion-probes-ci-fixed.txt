@@ -1,0 +1,341 @@
+Lion programs run for research with @lionlang/cli 0.12.0 built at commit 5b36704 (core 0.13.0), 2026-11-18.
+
+== program ci-annotation-refused.json
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["checked", 2, "lost", "none"]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":2,"status":"lost","note":"none"}: ["and",["checked","?id","?status","?note"],["not",["Order",{"id":"?id","status":"?status","note":"?note"}]]]. {"id":2,"status":"lost","note":"none"} does not fit "Order": "status" must fit ["schema/anyOf","open","paid"] but is "lost".
+
+== program ci-annotation.json
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "plain", ["id", "status", "note"]],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["plain", 1, "open", "gift"], ["plain", 2, "paid", "none"]],
+  ["fact", ["checked", 1, "open", "gift"], ["checked", 2, "paid", "none"]],
+  {
+    "rows of the relation without a schema": [
+      "query",
+      ["plain", "?id", "?status", "?note"],
+      { "order": "id" }
+    ],
+    "rows of the relation with a schema": [
+      "query",
+      ["checked", "?id", "?status", "?note"],
+      { "order": "id" }
+    ]
+  }
+]
+== gives
+{
+  "rows of the relation without a schema": [
+    {
+      "id": 1,
+      "status": "open",
+      "note": "gift"
+    },
+    {
+      "id": 2,
+      "status": "paid",
+      "note": "none"
+    }
+  ],
+  "rows of the relation with a schema": [
+    {
+      "id": 1,
+      "status": "open",
+      "note": "gift"
+    },
+    {
+      "id": 2,
+      "status": "paid",
+      "note": "none"
+    }
+  ]
+}
+
+== program ci-checked-when-run-called.json
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  ["addOne", 1]
+]
+== gives
+
+ERROR
+  Expected number
+  at [1]
+
+== program ci-checked-when-run.json
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  {
+    "a function that adds the string one to a number, defined and never called": "defined without complaint"
+  }
+]
+== gives
+{
+  "a function that adds the string one to a number, defined and never called": "defined without complaint"
+}
+
+== program ci-function-equality.json
+[
+  "begin",
+  ["define", "f", ["lambda", ["x"], "x"]],
+  {
+    "a function equals itself": ["=", "f", "f"],
+    "two lambdas with the same text are equal": [
+      "=",
+      ["lambda", ["x"], "x"],
+      ["lambda", ["x"], "x"]
+    ],
+    "a function fits itself as a schema, when the function is the value 1": [
+      "schema/fits?",
+      1,
+      "f"
+    ]
+  }
+]
+== gives
+{
+  "a function equals itself": true,
+  "two lambdas with the same text are equal": false,
+  "a function fits itself as a schema, when the function is the value 1": false
+}
+
+== program ci-larger-value.json
+[
+  "begin",
+  [
+    "schema",
+    "Grows",
+    ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "Grows"]]
+  ],
+  ["Grows", 1]
+]
+== gives
+
+ERROR
+  Schema "Grows" asks whether [1] fits it while checking 1. A schema may ask about itself again only about a smaller value, so that its check ends.
+
+== program ci-negative-recursion.json
+[
+  "begin",
+  ["schema", "Bad", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Bad"]]]],
+  {
+    "1 fits a schema whose predicate says the value does not fit that same schema": [
+      "schema/fits?",
+      1,
+      "Bad"
+    ]
+  }
+]
+== gives
+
+ERROR
+  Whether 1 fits "Bad" has no answer: checking it asks the same question again, and the value would fit exactly when it does not.
+
+== program ci-positive-recursion.json
+[
+  "begin",
+  ["schema", "Loop", ["schema/anyOf", "Loop", "value/integer?"]],
+  [
+    "schema",
+    "Tree",
+    ["schema/anyOf", "value/integer?", ["schema/arrayOf", "Tree"]]
+  ],
+  {
+    "an integer fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      3,
+      "Loop"
+    ],
+    "a string fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      "x",
+      "Loop"
+    ],
+    "a nested list of integers fits a tree schema that recurses into the list": [
+      "schema/fits?",
+      ["quote", [1, [2, [3]]]],
+      "Tree"
+    ],
+    "a nested list with a string in it fits the tree schema": [
+      "schema/fits?",
+      ["quote", [1, ["two"]]],
+      "Tree"
+    ]
+  }
+]
+== gives
+{
+  "an integer fits a schema that names itself before value/integer?": true,
+  "a string fits a schema that names itself before value/integer?": false,
+  "a nested list of integers fits a tree schema that recurses into the list": true,
+  "a nested list with a string in it fits the tree schema": false
+}
+
+== program ci-positive-through-lambda.json
+[
+  "begin",
+  ["schema", "Self", ["lambda", ["v"], ["schema/fits?", "v", "Self"]]],
+  {
+    "1 fits a schema whose predicate asks whether the value fits that same schema": [
+      "schema/fits?",
+      1,
+      "Self"
+    ]
+  }
+]
+== gives
+{
+  "1 fits a schema whose predicate asks whether the value fits that same schema": false
+}
+
+== program ci-relation-loop-negative.json
+[
+  "begin",
+  ["relation", "item", ["v"]],
+  ["relation", "ok", ["v"]],
+  ["schema", "Okay", "ok"],
+  ["fact", ["item", 1]],
+  ["rule", ["ok", "?v"], ["item", "?v"], ["not", ["Okay", "?v"]]],
+  ["query", ["ok", "?v"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["ok","?v"],["item","?v"],["not",["Okay","?v"]]] asks about "ok", which depends on "ok". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-relation-loop-positive.json
+[
+  "begin",
+  ["relation", "item", ["v"]],
+  ["relation", "ok", ["v"]],
+  ["schema", "Okay", "ok"],
+  ["fact", ["item", 1]],
+  ["rule", ["ok", "?v"], ["item", "?v"], ["Okay", "?v"]],
+  ["query", ["ok", "?v"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["ok","?v"],["item","?v"],["Okay","?v"]] asks about "ok", which depends on "ok". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-rule-negation.json
+[
+  "begin",
+  ["relation", "move", ["from", "to"]],
+  ["relation", "win", ["position"]],
+  ["fact", ["move", "a", "b"], ["move", "b", "c"]],
+  ["rule", ["win", "?x"], ["move", "?x", "?y"], ["not", ["win", "?y"]]],
+  ["query", ["win", "?x"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["win","?x"],["move","?x","?y"],["not",["win","?y"]]] asks about "win", which depends on "win". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-rule-shrinking.json
+[
+  "begin",
+  ["relation", "word", ["letters"]],
+  ["relation", "suffix", ["letters"]],
+  ["fact", ["word", ["quote", ["a", "b", "c"]]]],
+  ["rule", ["suffix", "?xs"], ["word", "?xs"]],
+  [
+    "rule",
+    ["suffix", ["array/tail", "?xs"]],
+    ["suffix", "?xs"],
+    ["number/greaterThan", ["array/length", "?xs"], 0]
+  ],
+  ["query", ["suffix", "?xs"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["suffix",["array/tail","?xs"]],["suffix","?xs"],["number/greaterThan",["array/length","?xs"],0]] computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with aggregate/min, aggregate/max, aggregate/shortest, or aggregate/union.
+
+== program ci-schema-against-schema.json
+{
+  "every integer is a number, and value/integer? fits value/number?": [
+    "schema/fits?",
+    "value/integer?",
+    "value/number?"
+  ],
+  "every list of integers is a list of numbers, and the one schema fits the other": [
+    "schema/fits?",
+    ["schema/arrayOf", "value/integer?"],
+    ["schema/arrayOf", "value/number?"]
+  ]
+}
+== gives
+{
+  "every integer is a number, and value/integer? fits value/number?": false,
+  "every list of integers is a list of numbers, and the one schema fits the other": false
+}
+
+== program ci-stratified-recursion.json
+[
+  "begin",
+  [
+    "schema",
+    "EvenList",
+    [
+      "schema/anyOf",
+      ["quote", []],
+      [
+        "lambda",
+        ["v"],
+        [
+          "and",
+          ["value/array?", "v"],
+          ["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "the empty list fits EvenList": ["schema/fits?", ["quote", []], "EvenList"],
+    "a list of one fits EvenList": ["schema/fits?", ["quote", [1]], "EvenList"],
+    "a list of two fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2]],
+      "EvenList"
+    ],
+    "a list of three fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2, 3]],
+      "EvenList"
+    ]
+  }
+]
+== gives
+{
+  "the empty list fits EvenList": true,
+  "a list of one fits EvenList": false,
+  "a list of two fits EvenList": true,
+  "a list of three fits EvenList": false
+}

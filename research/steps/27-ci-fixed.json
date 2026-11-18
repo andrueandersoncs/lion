@@ -1,0 +1,508 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run for the CIRT research after the schema self-reference fix, at commit 5b36704"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118153015
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-bad"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "Whether 1 fits \"Bad\" has no answer: checking it asks the same question again, and the value would fit exactly when it does not."
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas whose every check ends",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-bad"
+   ],
+   [
+    "quote",
+    "program ci-negative-recursion.json: a schema whose predicate says the value does not fit that same schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-self"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"1 fits a schema whose predicate asks whether the value fits that same schema\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas whose every check ends",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-self"
+   ],
+   [
+    "quote",
+    "program ci-positive-through-lambda.json: a schema whose predicate asks whether the value fits that same schema"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-even"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"a list of three fits EvenList\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "schemas that recurse through not on a smaller part of the value",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-even"
+   ],
+   [
+    "quote",
+    "program ci-stratified-recursion.json: EvenList asks under not whether the list's tail fits EvenList"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-loop"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"a string fits a schema that names itself before value/integer?\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas read as least fixed points",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-loop"
+   ],
+   [
+    "quote",
+    "program ci-positive-recursion.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-refused"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "Adding this fact breaks an invariant, so nothing changed."
+   ],
+   [
+    "quote",
+    {
+     "lion": "schema checks that never change the value they check",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-refused"
+   ],
+   [
+    "quote",
+    "program ci-annotation-refused.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-includes"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"every integer is a number, and value/integer? fits value/number?\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of whether one schema includes another",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-includes"
+   ],
+   [
+    "quote",
+    "program ci-schema-against-schema.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-lambdas"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"two lambdas with the same text are equal\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to compare what two predicates accept",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-lambdas"
+   ],
+   [
+    "quote",
+    "program ci-function-equality.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-funext"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"two lambdas with the same text are equal\": false"
+   ],
+   [
+    "quote",
+    {
+     "lion": "function extensionality",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-funext"
+   ],
+   [
+    "quote",
+    "program ci-function-equality.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-win"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "Rule [\"rule\",[\"win\",\"?x\"],[\"move\",\"?x\",\"?y\"],[\"not\",[\"win\",\"?y\"]]] asks about \"win\", which depends on \"win\". A question, such as a goal under \"not\", cannot go through recursion."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse through not on a smaller argument",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-win"
+   ],
+   [
+    "quote",
+    "program ci-rule-negation.json: win(x) if a move from x reaches a position that does not win"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-win-rule"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "A question, such as a goal under \"not\", cannot go through recursion."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules refused when a question goes through recursion",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-win-rule"
+   ],
+   [
+    "quote",
+    "program ci-rule-negation.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-suffix"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "computes a new value in its head while recursing, which may never finish."
+   ],
+   [
+    "quote",
+    {
+     "lion": "rules that recurse on a smaller value they compute",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-suffix"
+   ],
+   [
+    "quote",
+    "program ci-rule-shrinking.json: each suffix of a word, by array/tail"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-suffix-smaller"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "computes a new value in its head while recursing, which may never finish."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a way to know a computed value is smaller than the one it came from",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-suffix-smaller"
+   ],
+   [
+    "quote",
+    "program ci-rule-shrinking.json: each suffix of a word, by array/tail"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-unchecked"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "\"a function that adds the string one to a number, defined and never called\": \"defined without complaint\""
+   ],
+   [
+    "quote",
+    {
+     "lion": "a type checker that runs before the program",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-unchecked"
+   ],
+   [
+    "quote",
+    "program ci-checked-when-run.json and ci-checked-when-run-called.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ci-f-grows"
+   ],
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "A schema may ask about itself again only about a smaller value, so that its check ends."
+   ],
+   [
+    "quote",
+    {
+     "lion": "recursive schemas whose every check ends",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "ci-f-grows"
+   ],
+   [
+    "quote",
+    "program ci-larger-value.json: a schema whose lambda asks about a list that holds the value"
+   ]
+  ],
+  [
+   "read_for",
+   [
+    "quote",
+    "lion-probes-ci-fixed"
+   ],
+   [
+    "quote",
+    "ci-lion-recursion"
+   ],
+   26
+  ]
+ ],
+ "recorded"
+]
