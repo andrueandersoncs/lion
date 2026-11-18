@@ -1,0 +1,13 @@
+{
+  "claims": [
+    {
+      "quote": "After you commit a change with its pages, run `bun run history write` again and commit what it changed on its own, as `docs: write the project record's pages for <commit>`. Then run it once more and `git commit --amend --no-edit` that pages commit: an amend replaces the commit instead of adding one, so the count now includes it.",
+      "says": {
+        "rule": "pages-count-their-commit",
+        "holds": true,
+        "statement": "A commit that changes the project record's pages is followed by a pages commit, which is written again and amended so that the pages count the commit they are in",
+        "area": "docs"
+      }
+    }
+  ]
+}
