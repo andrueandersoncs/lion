@@ -2,6 +2,15 @@
 
 Research run of 2026-11-18. It covers 46 sources, 203 quoted statements, and 37 publishers, kept in the shared research model in `research/` (steps `02-sl-*` to `09-sl-*`). Every figure below comes from a query of that model.
 
+## Update: all three were built (2026-11-18)
+
+The three ideas ranked worth building are now in Lion:
+- **Record and list rests** (`5ec2b84`): `["schema/open", record, rest]`.
+- **Merging what a key gets** (`5f46e6d`): `{"key": ..., "merge": {column: aggregate}}`.
+- **Asking what would hold** (`48880e4`): `["assuming", change, ..., expression]`.
+
+The probes were run again on the built Lion (`research/sources/lion-probes-built.txt`), and the README's new sentences were recorded (step `10-sl-built`). Lion's latest word now replaces its earlier one, so the model's verdict for each of the three is "Lion does this already". The beliefs that Lion lacked them are now overturned by that evidence. The answer below is the run as it stood before the build.
+
 ## The short answer
 
 The tweet ([@kirancodes, 2026-11-17](https://x.com/kirancodes/status/2122526789918753113)) introduces two ideas from separation logic:

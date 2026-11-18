@@ -62,7 +62,7 @@ A feature name is the same words in every run, so that evidence from different r
 
 | Run | Steps | Question |
 |---|---|---|
-| `separation-logic` (2026-11-18) | `02-sl-*` to `09-sl-*` | What can Lion use from separation logic? |
+| `separation-logic` (2026-11-18) | `02-sl-*` to `10-sl-*` | What can Lion use from separation logic? Step `10-sl-built` records Lion after the three ideas it ranked were built. |
 
 A run's own ids start with its prefix: claims `sl-a1`, leads `sl-terms`, assumptions `sl-records`. Source ids, candidate ids, and feature names have no prefix, because later runs share them. A later run that reads Reynolds 2002 cites `a-reynolds-2002`, and new evidence about the record split adds to the candidate `rest`.
 

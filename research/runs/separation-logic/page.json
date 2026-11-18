@@ -33,7 +33,20 @@
     "count": [
       "lambda",
       ["what"],
-      ["array/head", ["find", "?n", ["stated", { "counted": "what" }, "?n"]]]
+      [
+        "array/head",
+        [
+          "find",
+          "?n",
+          [
+            "stated",
+            {
+              "counted": "what"
+            },
+            "?n"
+          ]
+        ]
+      ]
     ],
     "cases": [
       "lambda",
@@ -50,7 +63,14 @@
           "?p",
           [
             "and",
-            ["answer", { "defines": "term" }, true, "?c"],
+            [
+              "answer",
+              {
+                "defines": "term"
+              },
+              true,
+              "?c"
+            ],
             ["claim", "?c", "?s", "?_", "?_"],
             ["source", "?s", "?_", "?_", "?p", "?_", "?_"]
           ]
@@ -213,19 +233,36 @@
           [
             "and",
             ["offers", "c", "?feature"],
-            ["answer", { "lion has": "?feature" }, "?value", "?statement"]
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
           ],
           [
             "and",
             ["on", "c", "?feature"],
-            ["answer", { "lion has": "?feature" }, "?value", "?statement"]
+            [
+              "answer",
+              {
+                "lion has": "?feature"
+              },
+              "?value",
+              "?statement"
+            ]
           ],
           [
             "and",
             ["uses", "c", "?technique"],
             [
               "answer",
-              { "covers": "?feature", "by": "?technique" },
+              {
+                "covers": "?feature",
+                "by": "?technique"
+              },
               "?value",
               "?statement"
             ],
@@ -251,31 +288,42 @@
       "ways"
     ],
     " weighed to bring separation logic to Lion, ",
-    ["words/number", ["array/length", ["withVerdict", "worth adopting"]]],
-    " are worth building: ",
     [
-      "words/listed",
+      "cond",
       [
-        "array/map",
-        ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+        ["rank", "?_", "?_"],
         [
-          "lambda",
-          ["pair"],
+          "string/concat",
+          ["words/number", ["array/length", ["withVerdict", "worth adopting"]]],
+          " are worth building: ",
           [
-            "string/concat",
-            ["number/toString", ["array/head", "pair"]],
-            ". ",
-            ["title", ["array/head", ["array/tail", "pair"]]]
-          ]
+            "words/listed",
+            [
+              "array/map",
+              ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+              [
+                "lambda",
+                ["pair"],
+                [
+                  "string/concat",
+                  ["number/toString", ["array/head", "pair"]],
+                  ". ",
+                  ["title", ["array/head", ["array/tail", "pair"]]]
+                ]
+              ]
+            ]
+          ],
+          ". "
         ]
-      ]
+      ],
+      ["else", "none is left to build. "]
     ],
-    ". Lion already does ",
+    "Lion does ",
     [
       "words/number",
       ["array/length", ["withVerdict", "Lion does this already"]]
     ],
-    ", ",
+    " already, ",
     [
       "words/number",
       ["array/length", ["withVerdict", "has nothing in Lion to work on"]]
@@ -344,24 +392,50 @@
           "type": "answer",
           "question": "What from separation logic can Lion use?",
           "answer": [
-            "string/join",
+            "cond",
             [
-              "array/map",
-              ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+              ["rank", "?_", "?_"],
               [
-                "lambda",
-                ["pair"],
+                "string/join",
                 [
-                  "string/concat",
-                  ["number/toString", ["array/head", "pair"]],
-                  ". ",
-                  ["title", ["array/head", ["array/tail", "pair"]]],
-                  ". ",
-                  ["case", ["array/head", ["array/tail", "pair"]]]
-                ]
+                  "array/map",
+                  ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+                  [
+                    "lambda",
+                    ["pair"],
+                    [
+                      "string/concat",
+                      ["number/toString", ["array/head", "pair"]],
+                      ". ",
+                      ["title", ["array/head", ["array/tail", "pair"]]],
+                      ". ",
+                      ["case", ["array/head", ["array/tail", "pair"]]]
+                    ]
+                  ]
+                ],
+                " "
               ]
             ],
-            " "
+            [
+              "else",
+              [
+                "string/concat",
+                "Nothing is left to build: Lion now does each idea the evidence favoured, as its own docs and programs show. ",
+                [
+                  "string/join",
+                  [
+                    "array/map",
+                    ["withVerdict", "Lion does this already"],
+                    [
+                      "lambda",
+                      ["c"],
+                      ["string/concat", ["title", "c"], ". ", ["case", "c"]]
+                    ]
+                  ],
+                  " "
+                ]
+              ]
+            ]
           ],
           "evidence": [
             "query",
@@ -370,12 +444,17 @@
               ["adds", "?idea", "?feature", "?technique"],
               [
                 "answer",
-                { "covers": "?feature", "by": "?technique" },
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
                 true,
                 "?statement"
               ]
             ],
-            { "order": ["idea", "feature"] }
+            {
+              "order": ["idea", "feature"]
+            }
           ]
         },
         {
@@ -399,9 +478,18 @@
             [
               "and",
               ["already", "?idea", "?feature"],
-              ["answer", { "lion has": "?feature" }, true, "?statement"]
+              [
+                "answer",
+                {
+                  "lion has": "?feature"
+                },
+                true,
+                "?statement"
+              ]
             ],
-            { "order": ["idea", "feature"] }
+            {
+              "order": ["idea", "feature"]
+            }
           ]
         },
         {
@@ -431,14 +519,24 @@
               [
                 "and",
                 ["moot", "?idea", "?feature"],
-                ["answer", { "lion has": "?feature" }, false, "?statement"]
+                [
+                  "answer",
+                  {
+                    "lion has": "?feature"
+                  },
+                  false,
+                  "?statement"
+                ]
               ],
               [
                 "and",
                 ["moot", "?idea", "?_"],
                 [
                   "answer",
-                  { "needs": "?feature", "by": "?technique" },
+                  {
+                    "needs": "?feature",
+                    "by": "?technique"
+                  },
                   true,
                   "?statement"
                 ]
@@ -448,7 +546,10 @@
                 ["blocks", "?idea", "?feature", "?technique"],
                 [
                   "answer",
-                  { "covers": "?feature", "by": "?technique" },
+                  {
+                    "covers": "?feature",
+                    "by": "?technique"
+                  },
                   false,
                   "?statement"
                 ]
@@ -456,14 +557,20 @@
               [
                 "and",
                 ["blocks", "?idea", "?feature", "?_"],
-                ["answer", { "lion has": "?feature" }, true, "?statement"]
+                [
+                  "answer",
+                  {
+                    "lion has": "?feature"
+                  },
+                  true,
+                  "?statement"
+                ]
               ]
             ]
           ]
         }
       ]
     },
-
     {
       "name": "What the tweet asks",
       "blocks": [
@@ -486,7 +593,9 @@
             "query",
             [
               "answer",
-              { "defines": "separating conjunction" },
+              {
+                "defines": "separating conjunction"
+              },
               true,
               "?statement"
             ]
@@ -507,7 +616,14 @@
             "query",
             [
               "or",
-              ["answer", { "defines": "frame rule" }, true, "?statement"],
+              [
+                "answer",
+                {
+                  "defines": "frame rule"
+                },
+                true,
+                "?statement"
+              ],
               [
                 "answer",
                 {
@@ -545,11 +661,20 @@
               "or",
               [
                 "answer",
-                { "defines": "unital resource algebra" },
+                {
+                  "defines": "unital resource algebra"
+                },
                 true,
                 "?statement"
               ],
-              ["answer", { "defines": "resource algebra" }, true, "?statement"]
+              [
+                "answer",
+                {
+                  "defines": "resource algebra"
+                },
+                true,
+                "?statement"
+              ]
             ]
           ]
         },
@@ -612,7 +737,9 @@
               ["expects", "?belief", "?question", "?expected"],
               ["answer", "?question", "?value", "?statement"]
             ],
-            { "order": "belief" }
+            {
+              "order": "belief"
+            }
           ]
         },
         {
@@ -623,11 +750,24 @@
               "label": "Term",
               "options": [
                 "aggregate/unique",
-                ["find", "?t", ["answer", { "defines": "?t" }, true, "?_"]]
+                [
+                  "find",
+                  "?t",
+                  [
+                    "answer",
+                    {
+                      "defines": "?t"
+                    },
+                    true,
+                    "?_"
+                  ]
+                ]
               ]
             }
           },
-          "example": { "term": "magic wand" },
+          "example": {
+            "term": "magic wand"
+          },
           "answer": [
             "lambda",
             ["term"],
@@ -641,12 +781,21 @@
           "query": [
             "lambda",
             ["term"],
-            ["query", ["answer", { "defines": "term" }, true, "?statement"]]
+            [
+              "query",
+              [
+                "answer",
+                {
+                  "defines": "term"
+                },
+                true,
+                "?statement"
+              ]
+            ]
           ]
         }
       ]
     },
-
     {
       "name": "Each idea for Lion",
       "blocks": [
@@ -659,7 +808,9 @@
               "options": ["find", "?c", ["candidate", "?c", "?_"]]
             }
           },
-          "example": { "idea": "rest" },
+          "example": {
+            "idea": "rest"
+          },
           "answer": [
             "lambda",
             ["idea"],
@@ -684,12 +835,13 @@
               ["verdict", "?idea", "?verdict"],
               ["from", "?idea", "?from_separation_logic"]
             ],
-            { "order": "verdict" }
+            {
+              "order": "verdict"
+            }
           ]
         }
       ]
     },
-
     {
       "name": "Splitting records",
       "blocks": [
@@ -813,7 +965,14 @@
           ],
           "evidence": [
             "query",
-            ["answer", { "counted": "?what" }, "?n", "?statement"]
+            [
+              "answer",
+              {
+                "counted": "?what"
+              },
+              "?n",
+              "?statement"
+            ]
           ]
         },
         {
@@ -843,14 +1002,24 @@
                   "and",
                   [
                     "answer",
-                    { "covers": "?feature", "by": "?system" },
+                    {
+                      "covers": "?feature",
+                      "by": "?system"
+                    },
                     "?v",
                     "?_"
                   ]
                 ],
                 [
                   "and",
-                  ["answer", { "lion has": "?feature" }, "?v", "?_"],
+                  [
+                    "answer",
+                    {
+                      "lion has": "?feature"
+                    },
+                    "?v",
+                    "?_"
+                  ],
                   ["=", "?system", "Lion today"]
                 ]
               ],
@@ -877,7 +1046,9 @@
             "query",
             [
               "answer",
-              { "lion has": "the rest of a record as a value" },
+              {
+                "lion has": "the rest of a record as a value"
+              },
               true,
               "?statement"
             ]
@@ -885,8 +1056,21 @@
         }
       ]
     },
-
-    { "name": "How solid is it", "blocks": [{ "type": "trust" }] },
-    { "name": "Sources", "blocks": [{ "type": "sources" }] }
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
   ]
 }

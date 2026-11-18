@@ -1,0 +1,16 @@
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  {
+    "a reaches d after adding c to d": [
+      "assuming",
+      ["fact", ["edge", "c", "d"]],
+      ["path", "a", "d"]
+    ],
+    "a reaches d as it is": ["path", "a", "d"]
+  }
+]

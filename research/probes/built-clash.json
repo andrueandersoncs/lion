@@ -1,0 +1,15 @@
+[
+  "begin",
+  [
+    "relation",
+    "tag",
+    ["id", "tags", "owner"],
+    { "key": "id", "merge": { "tags": "aggregate/union" } }
+  ],
+  [
+    "fact",
+    ["tag", 1, ["quote", ["a"]], "ana"],
+    ["tag", 1, ["quote", ["b"]], "bo"]
+  ],
+  ["query", ["tag", "?i", "?t", "?o"]]
+]

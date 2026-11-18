@@ -1,0 +1,20 @@
+[
+  "begin",
+  ["relation", "offer", ["sku", "usd"]],
+  [
+    "relation",
+    "best",
+    ["sku", "usd"],
+    { "key": "sku", "merge": { "usd": "aggregate/min" } }
+  ],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4]],
+  ["rule", ["best", "?s", "?u"], ["offer", "?s", "?u"]],
+  ["fact", ["best", "a1", 3], ["best", "b2", 7]],
+  {
+    "facts and a rule merge by the minimum": [
+      "query",
+      ["best", "?sku", "?usd"],
+      { "order": "sku" }
+    ]
+  }
+]
