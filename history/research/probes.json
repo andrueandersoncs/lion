@@ -20719,5 +20719,21 @@
       ],
       ["else", ["quote", "not-printed"]]
     ]
+  },
+  {
+    "case": "skill-eval-agent-folder",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["repo/read", "packages/metrics/skill-eval.ts"],
+          "const WORK = join(tmpdir(), \"lion-skill-eval\");"
+        ],
+        ["quote", "outside-repository"]
+      ],
+      ["else", ["quote", "inside-repository"]]
+    ]
   }
 ]

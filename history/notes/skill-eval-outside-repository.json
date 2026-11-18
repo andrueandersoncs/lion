@@ -1,0 +1,53 @@
+{
+  "title": "A skill eval's agent works outside the repository, and never sees a transcript",
+  "context": "`bun run skill-eval` ran each agent in a folder under `out/skill-eval/`, inside the repository. A headless agent there loads the repository's `CLAUDE.md` and the index of the memory Claude Code keeps for the repository, so every run of the research skill's eval worked with Lion's developer instructions and the maintainer's notes about the skill in context. A trial of the reasoning skill found a second leak: it kept each run's transcripts in the folder the agent worked in, and a later session read the earlier one's transcript instead of the record the trial meant to test.",
+  "decision": "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. When its sessions end, its folder is copied there and graded.",
+  "consequences": "No run reads the repository's instructions, the maintainer's memory, another run's work, or a transcript. Scores of the research skill's eval recorded before this change were taken with the repository's instructions and memory in context, so they are not comparable with later ones. A run's folder is in the system's temporary folder while its sessions run, so a reboot during a run loses that run.",
+  "alternatives": [
+    {
+      "option": "Keep the agents under `out/skill-eval/` and turn the instructions off with settings",
+      "rejected": "Claude Code loads `CLAUDE.md` from the folder it runs in and every folder above it, and keys its memory by the repository. No setting the runner passes stops both, and a new version could start loading something else."
+    },
+    {
+      "option": "Keep each run's transcripts beside its agent's folder",
+      "rejected": "An agent lists the folder above its own. One did, and read the earlier session's transcript."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees.",
+      "says": {
+        "decision": "skill-eval-agent-folder",
+        "chose": "outside-repository",
+        "over": ["inside-repository"],
+        "because": "an agent inside the repository reads its CLAUDE.md and the memory Claude Code keeps of it, and an agent beside its transcripts can read them",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees.",
+      "says": {
+        "rule": "skill-eval-isolated-runs",
+        "holds": true,
+        "statement": "A skill eval's agent works outside the repository, in a folder no other agent can list, and never sees a transcript",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "skill-eval-agent-folder",
+            "is": "outside-repository"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees.",
+      "says": {
+        "behavior": "skill-eval-agent-folder",
+        "is": "outside-repository",
+        "area": "skills",
+        "fixes": true,
+        "was": "inside-repository"
+      }
+    }
+  ]
+}

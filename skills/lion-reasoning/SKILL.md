@@ -21,6 +21,8 @@ The model survives what your context does not. When the conversation is summariz
 
 Use it when being wrong would cost more than a few minutes of bookkeeping. Bugs whose cause is not obvious, changes that must hold in many places, audits, investigations, and long tasks are where it pays.
 
+It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. In the eval `evals/rechecks-what-changed`, where two sessions check documented eval scores and prompts change between them in that way, every run with this skill was right, against none with plain notes and one in four with no record. Where git or the files' times date the changes, or a fact costs nothing to check again, plain notes and no record did as well, for a third to a half of the cost.
+
 Do not use it for a task that a few tool calls settle, or for a question you can answer by reading one file. If you notice an hour has passed in the model and nothing in the task moved, the balance is wrong: the task is the work, and the model is what keeps it honest.
 
 ## Before you start
