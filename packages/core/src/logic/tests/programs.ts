@@ -6,6 +6,7 @@
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import type { LogicDatabase } from "@/logic/database";
+import { render } from "@/logic/terms";
 import { stdlib } from "@/modules";
 
 type Form = readonly unknown[];
@@ -209,6 +210,33 @@ export type Outcome =
   | { readonly ok: false; readonly message: string };
 
 /**
+ * A value as data that tests compare: JSON data as it is, a logic value as
+ * the expression that evaluates to it, and a function, wherever it stands,
+ * as Lion writes it: by its name when it has one, such as a relation's or a
+ * schema's, and otherwise as the form that makes it, such as its lambda.
+ */
+export const reported = (value: unknown): unknown =>
+  JSON.parse(
+    JSON.stringify(value, (_, item: unknown) =>
+      typeof item === "function" ? render(item) : item
+    )
+  );
+
+/** The value of a run as data, or the message of its error. */
+export const outcome = (
+  effect: Effect.Effect<unknown, unknown>
+): Effect.Effect<Outcome> =>
+  effect.pipe(
+    Effect.map((value): Outcome => ({ ok: true, value: reported(value) })),
+    Effect.catch((error) =>
+      Effect.succeed<Outcome>({
+        ok: false,
+        message: String((error as { message?: unknown }).message),
+      })
+    )
+  );
+
+/**
  * Runs a program against a database and reports its value or error. The
  * environment is the standard library unless another is given.
  */
@@ -216,22 +244,7 @@ export const attempt = (
   program: unknown,
   database: LogicDatabase,
   environment: Record<string, unknown> = stdlib
-): Effect.Effect<Outcome> =>
-  run(program, environment, { database }).pipe(
-    Effect.map(
-      (value): Outcome => ({
-        ok: true,
-        value: JSON.parse(JSON.stringify(value)) as unknown,
-      })
-    ),
-    Effect.catch((error) =>
-      Effect.succeed<Outcome>({
-        ok: false,
-        message: String((error as { message?: unknown }).message),
-      })
-    ),
-    Effect.orDie
-  );
+): Effect.Effect<Outcome> => outcome(run(program, environment, { database }));
 
 /** Declares the shared relations, then adds the scenario's setup. */
 export const start = (database: LogicDatabase, { setup }: Scenario) =>

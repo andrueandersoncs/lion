@@ -1,0 +1,22 @@
+{
+  "claims": [
+    {
+      "quote": "The test helper `attempt` reports a function in a program's value as Lion writes it, wherever it stands: `\"even\"` for the relation `even`, `[\"lambda\", [\"n\"], \"n\"]` for a lambda. A program that ended in a declaration, such as `[\"begin\", [\"relation\", \"even\", [\"n\"]]]`, made it throw `\"undefined\" is not valid JSON`, which failed the `why` property about rules that ask no question once in about 300 runs, and a function inside a list or a record was reported as `null` or left out. A property checks that two programs are reported the same only when their values are the same.",
+      "says": {
+        "behavior": "test-report-function-value",
+        "is": "written-as-lion",
+        "area": "tests",
+        "fixes": true,
+        "was": "error"
+      }
+    },
+    {
+      "quote": "The property that a schema keeps the values its names had when it was declared checks every schema beside a `below` shape that decides whether the value fits, so the mutation that lets a shape see `limit` redefined after it is declared fails it within 4 runs. It took 38 to 104 runs before, and 1 run in 8 of 200 inputs passed.",
+      "says": {
+        "measured": "schema-redefined-name-mutation-runs-to-catch",
+        "after": 4,
+        "area": "tests"
+      }
+    }
+  ]
+}
