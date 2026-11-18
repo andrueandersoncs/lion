@@ -21064,5 +21064,69 @@
         ]
       ]
     ]
+  },
+  {
+    "case": "assuming-leaves-database",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["fact", ["edge", "a", "b"]],
+      [
+        "define",
+        "seen",
+        [
+          "assuming",
+          ["fact", ["edge", "b", "c"]],
+          ["find", "?y", ["edge", "b", "?y"]]
+        ]
+      ],
+      [
+        "cond",
+        [
+          [
+            "boolean/and",
+            ["=", "seen", ["quote", ["c"]]],
+            ["=", ["find", "?y", ["edge", "b", "?y"]], ["quote", []]]
+          ],
+          ["quote", "unchanged"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-in-rule",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "node", ["n"]],
+      ["relation", "would", ["n"]],
+      ["fact", ["node", "a"], ["node", "b"]],
+      [
+        "rule",
+        ["would", "?n"],
+        ["node", "?n"],
+        ["assuming", ["fact", ["edge", "?n", "z"]], ["edge", "?n", "z"]]
+      ],
+      [
+        "cond",
+        [
+          ["=", ["find", "?n", ["would", "?n"]], ["quote", ["a", "b"]]],
+          ["quote", "asked-per-answer"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "feature": "assuming",
+    "kind": "special-form",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["assuming", ["fact", ["edge", "a", "b"]], ["edge", "a", "b"]]
+    ]
   }
 ]

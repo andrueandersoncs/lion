@@ -61,6 +61,7 @@ import {
 } from "@/logic/terms";
 import {
   type AndFormSchema,
+  type AssumingFormSchema,
   type ExistsFormSchema,
   type FactFormSchema,
   type FindFormSchema,
@@ -418,6 +419,49 @@ export const evaluateFind = ([_, template, goal]: typeof FindFormSchema.Type) =>
     );
     const find = new LogicForm("find", [templateValue, goalValue]);
     return (yield* isWriting) ? find : yield* answer(find);
+  });
+
+/**
+ * ["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]
+ * is what the expression gives in the database as it would be after the
+ * changes, made in order, each as its form would make it: keys, merges, and
+ * invariants included. The database itself does not change. It is a
+ * question, as a find is: outside of rules it is asked right away, and in a
+ * rule, query, or find it is asked for each answer, with the variables the
+ * rule has bound.
+ */
+export const evaluateAssuming = ([
+  _,
+  ...parts
+]: typeof AssumingFormSchema.Type) =>
+  Effect.gen(function* () {
+    const expression = parts.at(-1);
+    const changes = parts.slice(0, -1);
+    if (expression === undefined || changes.length === 0) {
+      return yield* logicError(
+        `assuming takes fact and retract forms, then the expression to evaluate as if they were made, as in ["assuming", ["fact", ["edge", "c", "d"]], ["path", "a", "d"]].`
+      );
+    }
+    const held: LogicForm[] = [];
+    for (const change of changes) {
+      const [form, ...goals] = change as readonly unknown[];
+      if (!(form === "fact" || form === "retract")) {
+        return yield* logicError(
+          `assuming takes fact and retract forms before its expression, but found ${show(change)}.`
+        );
+      }
+      const values = yield* writing(evaluateAll(goals as LionExpressionType[]));
+      const wrong = values.find((value) => !(value instanceof Atom));
+      if (wrong !== undefined) {
+        return yield* logicError(
+          `assuming takes relation calls in its ${form} forms, but found ${show(wrong)}.`
+        );
+      }
+      held.push(new LogicForm(form, values));
+    }
+    const value = yield* writing(evaluate(expression as LionExpressionType));
+    const question = new LogicForm("assuming", [...held, value]);
+    return (yield* isWriting) ? question : yield* answer(question);
   });
 
 /**

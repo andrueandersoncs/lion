@@ -65,6 +65,7 @@ import {
   isForm,
   isGroundValue,
   type LionFunction,
+  type LogicForm,
   type LogicValue,
   LogicVariable,
   logicKey,
@@ -684,7 +685,7 @@ const renew = (database: LogicDatabase, before: Model | undefined) =>
     if (before === undefined || running) {
       return Effect.void;
     }
-    const next = new Model(database.facts, database.rules);
+    const next = modelOf(database);
     const stale = carry(before, next);
     database.model = next;
     return maintain(next, new Map(), new Map(), stale).pipe(
@@ -1193,6 +1194,64 @@ export const addRules = (
 };
 
 /**
+ * A database that starts as this one is and goes its own way: it shares
+ * the declarations, rules, and invariants, and the facts of each relation
+ * until it changes them, when it changes its own copy.
+ */
+const copyOf = (database: LogicDatabase, changing: Iterable<string>) => {
+  const copy = new LogicDatabase({ goalDirected: database.goalDirected });
+  for (const [name, relation] of database.relations) {
+    copy.relations.set(name, relation);
+  }
+  for (const [name, schema] of database.schemas) {
+    copy.schemas.set(name, schema);
+  }
+  for (const [name, facts] of database.facts) {
+    copy.facts.set(name, facts);
+  }
+  for (const name of changing) {
+    const facts = database.facts.get(name);
+    if (facts !== undefined) {
+      copy.facts.set(name, facts.clone());
+    }
+  }
+  copy.rules = database.rules;
+  copy.invariants = database.invariants;
+  return copy;
+};
+
+/**
+ * What an expression gives in the database as it would be after some
+ * changes, each a `fact` or `retract` form with its relation calls, made in
+ * order as the form would make it. The database itself does not change.
+ */
+const assumeIn =
+  (database: LogicDatabase) =>
+  (changes: readonly LogicForm[], expression: unknown): LogicEffect<unknown> =>
+    Effect.gen(function* () {
+      const calls = (change: LogicForm) => change.parts as readonly Atom[];
+      const copy = copyOf(
+        database,
+        changes.flatMap((change) =>
+          calls(change).map(({ relation }) => relation.name)
+        )
+      );
+      for (const change of changes) {
+        yield* change.form === "fact"
+          ? assertFacts(copy, calls(change))
+          : retractFacts(copy, calls(change));
+      }
+      return yield* reading(copy, (model) => answer(model, expression));
+    });
+
+/** A model of the database's facts and rules, which can ask what it assumes. */
+const modelOf = (database: LogicDatabase) => {
+  const model = new Model(database.facts, database.rules);
+  model.assume = assumeIn(database);
+  return model;
+};
+
+/**
  * Reads the database's model. While `use` runs, the model also answers the
  * questions that waiting forms ask when they run.
  */
@@ -1201,7 +1260,7 @@ const reading = <A>(
   use: (model: Model) => LogicEffect<A>
 ): LogicEffect<A> =>
   Effect.suspend(() => {
-    database.model ??= new Model(database.facts, database.rules);
+    database.model ??= modelOf(database);
     const model = database.model;
     return use(model).pipe(
       Effect.provideService(LionAskerService, {
@@ -1326,6 +1385,9 @@ export const queryDatabase = (
 export const askDatabase = (database: LogicDatabase, question: LogicValue) =>
   reading(database, (model) =>
     Effect.gen(function* () {
+      if (isForm(question, "assuming")) {
+        return yield* term(model, question, new Map());
+      }
       const plans = yield* compiling(() =>
         questionPlans(question, () => false)
       );

@@ -11,6 +11,8 @@ import type { Mutation } from "./mutation.ts";
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
+/** The properties of asking what would hold after some changes. */
+const ASSUMING_TESTS = ["src/logic/tests/assuming.test.ts"];
 /** The properties of relations that merge what a key gets. */
 const MERGE_TESTS = ["src/logic/tests/merging.test.ts"];
 /** The properties of the rest of a record or list, and of the model of schemas. */
@@ -710,6 +712,45 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("evaluation/special-forms/match.ts"),
     find: "      value = yield* answer(value);",
     replace: "      value = true;",
+  },
+  // Asking what would hold after some changes.
+  {
+    name: "assuming makes its changes in the database itself",
+    file: core("logic/database.ts"),
+    find: "      copy.facts.set(name, facts.clone());",
+    replace: "      copy.facts.set(name, facts);",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming leaves out its changes",
+    file: core("logic/database.ts"),
+    find: '        yield* change.form === "fact"\n          ? assertFacts(copy, calls(change))\n          : retractFacts(copy, calls(change));',
+    replace: "        yield* Effect.void;",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming asks its expression of the database as it is",
+    file: core("logic/database.ts"),
+    find: "      return yield* reading(copy, (model) => answer(model, expression));",
+    replace:
+      "      return yield* reading(database, (model) => answer(model, expression));",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming in a rule asks its expression without the values the rule bound",
+    file: core("logic/model.ts"),
+    find: "    const expression = replaceVariables(question.parts.at(-1), (variable) =>",
+    replace:
+      "    const expression = replaceVariables(question.parts.at(-1), (variable) => undefined && ",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming as a goal holds whatever its expression gives",
+    file: core("logic/model.ts"),
+    find: '        typeof value === "boolean"\n          ? Effect.succeed(value)\n          : logicError(\n              `As a goal,',
+    replace:
+      '        typeof value === "boolean"\n          ? Effect.succeed(true)\n          : logicError(\n              `As a goal,',
+    tests: ASSUMING_TESTS,
   },
   // Relations that merge what a key gets.
   {

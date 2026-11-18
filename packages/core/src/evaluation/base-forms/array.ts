@@ -7,6 +7,7 @@ import { evaluateFunctionCall } from "@/evaluation/special-forms/function.ts";
 import { evaluateLambda } from "@/evaluation/special-forms/lambda";
 import {
   evaluateAnd,
+  evaluateAssuming,
   evaluateExists,
   evaluateFact,
   evaluateFind,
@@ -56,6 +57,7 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
     retract: (form) => evaluateRetract(form),
     query: (form) => evaluateQuery(form),
     find: (form) => evaluateFind(form),
+    assuming: (form) => evaluateAssuming(form),
     exists: (form) => evaluateExists(form),
     some: (form) => evaluateSome(form),
     why: (form) => evaluateWhy(form),

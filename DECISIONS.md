@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 160 questions have been decided, 62 records explain them, and of what the records assert, 524 hold when Lion is run, 4 are broken, 274 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 161 questions have been decided, 63 records explain them, and of what the records assert, 528 hold when Lion is run, 4 are broken, 275 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -166,6 +166,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`research-layout`](#research-layout) | `one-shared-model` | [Research runs add to one shared Lion model in `research/`, committed with its sources and the programs that prove its conclusions](#research-compounds) |
 | 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
 | 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
+| 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
 
 <a id="program-representation"></a>
 
@@ -3450,3 +3451,37 @@ Recorded 2026-11-18 in `history/notes/merging-what-a-key-gets.json`.
 - Holds when Lion is run: `merge-joins-facts-and-rules` is `join`. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values."
 - Holds when Lion is run: `merge-fact-retract` is `candidate-removed`. "A fact of such a relation never replaces another, and `retract` takes it back."
 - Holds when Lion is run: `keyed-aggregated-rows-differ` is `error`. "Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were."
+
+<a id="asking-what-would-hold"></a>
+
+## asking-what-would-hold
+
+Now: `assuming-question`.
+
+- 2026-11-18 `asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`: "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is." (`asking-what-would-hold.json`)
+
+<a id="asking-what-would-hold"></a>
+
+### `assuming` asks a question of the database as it would be after some changes
+
+Recorded 2026-11-18 in `history/notes/asking-what-would-hold.json`.
+
+**Context.** A program that wanted to know what would follow from a change had to make the change and undo it, or copy the database, as the lion-research skill's "What if" pattern did with a copy of the model on disk. A rule could not ask it at all. The research run on separation logic (`research/runs/separation-logic/`) found this in the magic wand, P −∗ Q: what holds once the state is extended with a part where P holds. Over facts, which can be used again, that is hypothetical reasoning: Bonner's embedded implications in Datalog, and the implication goals of λProlog and Lolli. Bonner showed that hypothetical additions raise the data complexity of Datalog from PTIME to PSPACE, and keep the fixpoint independent of how it is stratified.
+
+**Decision.** `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. What a change states must be known then, and every other variable of the expression is its own.
+
+**Consequences.** The engine asks an `assuming` by making a database of its own that shares the declarations, rules, invariants, and every fact it does not change, making the changes there, and asking the expression of it. The question rules carry over unchanged: a rule cannot ask, through `assuming`, about a relation that depends on its own head, and `why` shows an `assuming` that held as a check. The interop grid has two new rows, and both give in every place what plain code gives. Each `assuming` in a rule costs a derivation per answer, which the docs say.
+
+**Alternatives considered.**
+
+- Let `assuming` bind the variables of its goal, as a relation call does. Every other question, `not`, `exists`, and a goal used as a value, binds nothing outside it, and `find` gives what it matches; an `assuming` around a `find` gives the values without a second rule for questions.
+- Additions only, as in Bonner's hypothetical Datalog. `retract` is the other half of what a change is in Lion, and Sáenz-Pérez added hypothetical deletion for the same reason; a question that could add but not take away would be a special case of the change forms.
+- Keep making a copy of the database outside the program. A rule cannot ask a copy, and a copy made by hand is a second database whose answers the program cannot check.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `asking-what-would-hold`: `assuming-question`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: `assuming` exists. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: rule `assuming-is-a-question` holds. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."
+- Holds when Lion is run: `assuming-leaves-database` is `unchanged`. "`["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is."
+- Holds when Lion is run: `assuming-in-rule` is `asked-per-answer`. "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place."

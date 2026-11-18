@@ -11,6 +11,7 @@
 - The separation-logic run is the first run in `research/`. (`separation-logic-research` added)
 - `schema/open` takes one or two arguments, and a list of schemas as well as a record. (`schema-open-rest` added)
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`relation-merge-option` added)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming` added)
 
 ### Changed
 
@@ -19,6 +20,8 @@
 - What it leaves over is the rest: the record of the other keys, or the list of the items after. (`schema-open-list-rest` is `the-other-items`)
 - A fact of such a relation never replaces another, and `retract` takes it back. (`merge-fact-retract` is `candidate-removed`)
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. (`merge-joins-facts-and-rules` is `join`)
+- It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (`assuming-in-rule` is `asked-per-answer`)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming-leaves-database` is `unchanged`)
 
 ### Fixed
 
@@ -29,12 +32,14 @@
 - Every research run adds to one Lion model in `research/`. (`research-layout`: `one-shared-model` over `folder-per-run`, `ignored-out-folder`)
 - On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
+- `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`asking-what-would-hold`: `assuming-question` over `binding-assumption`, `additions-only`, `copy-outside`)
 
 ### Rules
 
 - A run starts from what the model holds, reuses its names for features, techniques, sources, and candidates, and gives its own ids a prefix. (rule `research-runs-extend-shared-model`)
 - A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
+- It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

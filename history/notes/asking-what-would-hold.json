@@ -1,0 +1,75 @@
+{
+  "title": "`assuming` asks a question of the database as it would be after some changes",
+  "context": "A program that wanted to know what would follow from a change had to make the change and undo it, or copy the database, as the lion-research skill's \"What if\" pattern did with a copy of the model on disk. A rule could not ask it at all. The research run on separation logic (`research/runs/separation-logic/`) found this in the magic wand, P −∗ Q: what holds once the state is extended with a part where P holds. Over facts, which can be used again, that is hypothetical reasoning: Bonner's embedded implications in Datalog, and the implication goals of λProlog and Lolli. Bonner showed that hypothetical additions raise the data complexity of Datalog from PTIME to PSPACE, and keep the fixpoint independent of how it is stratified.",
+  "decision": "`[\"assuming\", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. What a change states must be known then, and every other variable of the expression is its own.",
+  "consequences": "The engine asks an `assuming` by making a database of its own that shares the declarations, rules, invariants, and every fact it does not change, making the changes there, and asking the expression of it. The question rules carry over unchanged: a rule cannot ask, through `assuming`, about a relation that depends on its own head, and `why` shows an `assuming` that held as a check. The interop grid has two new rows, and both give in every place what plain code gives. Each `assuming` in a rule costs a derivation per answer, which the docs say.",
+  "alternatives": [
+    {
+      "option": "Let `assuming` bind the variables of its goal, as a relation call does",
+      "rejected": "Every other question, `not`, `exists`, and a goal used as a value, binds nothing outside it, and `find` gives what it matches; an `assuming` around a `find` gives the values without a second rule for questions."
+    },
+    {
+      "option": "Additions only, as in Bonner's hypothetical Datalog",
+      "rejected": "`retract` is the other half of what a change is in Lion, and Sáenz-Pérez added hypothetical deletion for the same reason; a question that could add but not take away would be a special case of the change forms."
+    },
+    {
+      "option": "Keep making a copy of the database outside the program",
+      "rejected": "A rule cannot ask a copy, and a copy made by hand is a second database whose answers the program cannot check."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`[\"assuming\", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is.",
+      "says": {
+        "decision": "asking-what-would-hold",
+        "chose": "assuming-question",
+        "over": ["binding-assumption", "additions-only", "copy-outside"],
+        "area": "logic",
+        "because": "a change asked as a question leaves the database as it is, follows every rule a change follows, and works in rules as every question does"
+      }
+    },
+    {
+      "quote": "`[\"assuming\", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is.",
+      "says": {
+        "feature": "assuming",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place.",
+      "says": {
+        "rule": "assuming-is-a-question",
+        "holds": true,
+        "statement": "assuming is a question: asked right away in plain code, and for each answer in a rule, query, or find, with the answer's values in place; the database does not change",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "assuming-leaves-database",
+            "is": "unchanged"
+          },
+          {
+            "behavior": "assuming-in-rule",
+            "is": "asked-per-answer"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "`[\"assuming\", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is.",
+      "says": {
+        "behavior": "assuming-leaves-database",
+        "is": "unchanged",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place.",
+      "says": {
+        "behavior": "assuming-in-rule",
+        "is": "asked-per-answer",
+        "area": "logic"
+      }
+    }
+  ]
+}

@@ -216,6 +216,19 @@ export const EXPRESSIONS: readonly Expression[] = [
   },
   { name: "find", form: ["find", "?y", ["link", X, "?y"]] },
   {
+    name: "assuming",
+    form: [
+      "assuming",
+      ["fact", ["link", X, 9]],
+      ["find", "?y", ["link", X, "?y"]],
+    ],
+  },
+  {
+    name: "goal assuming a retract",
+    form: ["assuming", ["retract", ["small", X]], ["small", X]],
+    boolean: true,
+  },
+  {
     name: "aggregate of a find",
     form: ["aggregate/count", ["find", "?y", ["link", X, "?y"]]],
   },

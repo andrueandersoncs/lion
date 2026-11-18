@@ -233,6 +233,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
+| `["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]` | What the expression gives in the database as it would be after the changes. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
 | `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
@@ -364,6 +365,38 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 - A question sees every row of the relations it asks about, so those are derived in full first. A rule cannot ask about a relation that depends on the rule's own head.
 - Within a rule or query, a name is one variable, also inside the questions nested in it. Give a question nested in another its own names.
 - `["exists", ["?y"], goal]` is a question too, also when its goal has no relation in it, and the variables it lists are its own wherever it stands: as a value, `["value/identity", ["exists", ["?y"], ["=", "?y", 1]]]` is `true`. See [Existential rules](#existential-rules).
+
+#### Asking what would hold
+
+`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact` or `retract` form, made in order as that form would make it, with keys, merges, and invariants. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
+
+```json
+["begin",
+  ["relation", "road", ["from", "to"]],
+  ["relation", "reaches", ["from", "to"]],
+  ["relation", "town", ["name"]],
+  ["relation", "joins", ["from", "to"]],
+  ["fact", ["road", "a", "b"], ["road", "b", "c"], ["town", "a"], ["town", "b"], ["town", "c"], ["town", "d"]],
+  ["rule", ["reaches", "?x", "?y"], ["road", "?x", "?y"]],
+  ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]],
+  ["rule", ["joins", "?x", "?y"],
+    ["town", "?x"], ["town", "?y"],
+    ["not", ["reaches", "a", "?y"]],
+    ["assuming", ["fact", ["road", "?x", "?y"]], ["reaches", "a", "?y"]]],
+  {"with a road from c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "without the road from b to c": ["assuming", ["retract", ["road", "b", "c"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "as it is": ["find", "?t", ["reaches", "a", "?t"]],
+   "one road that would reach d": ["find", "?x", ["joins", "?x", "d"]]}]
+```
+
+Evaluates to `{ "with a road from c to d": ["b", "c", "d"], "without the road from b to c": ["b"], "as it is": ["b", "c"], "one road that would reach d": ["a", "b", "c"] }`.
+
+- `assuming` is a question, as `find` is. In plain code it is asked right away. In a rule, query, or `find` it is asked for each answer, with the values the rule bound in place: `joins` above asks, for each pair of towns, whether a road between them would let `a` reach the second.
+- What a change states must be known when it is asked, so its variables are ones the rule around it binds. Every other variable of the expression is its own, as in any question.
+- As a goal, its expression must be a goal, and it holds when that goal holds after the changes. As a value it is whatever the expression gives, so `["=", "?n", ["assuming", ..., ["aggregate/count", ["find", ...]]]]` counts what would be there.
+- A change the database would refuse fails the question in the same words, as a fact an invariant refuses does. Assumptions nest, and an inner one starts from the database the outer one assumed.
+- Each `assuming` derives what its expression needs in a database of its own, which shares every fact it does not change. Asked for each answer of a rule, it costs one such derivation per answer. Hypothetical reasoning is known to cost more than reasoning over the facts: in Datalog, adding facts hypothetically raises the cost of a question from polynomial to polynomial space.
+- A rule cannot ask, through `assuming`, about a relation that depends on its own head, as for every question.
 
 ### Keys
 

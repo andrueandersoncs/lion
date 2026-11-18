@@ -675,6 +675,9 @@ const checkValues = (
 };
 
 const planQuestion = (question: LogicValue, outer: readonly string[]) => {
+  if (isForm(question, "assuming")) {
+    return planAssuming(question, outer);
+  }
   if (!isForm(question, "find")) {
     return plan(question, outer);
   }
@@ -690,6 +693,31 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
     );
   }
   return planned;
+};
+
+/**
+ * An `assuming` is asked of another database, so here it has nothing to
+ * match: what its changes state must be known when it is asked, and the
+ * questions of its expression must be ones that can be asked there, with
+ * the variables the rule or query around it binds.
+ */
+const planAssuming = (
+  question: LogicValue,
+  outer: readonly string[]
+): readonly Plan[] => {
+  const bound = new Set(outer);
+  const changes = (question as LogicForm).parts.slice(0, -1);
+  checkValues(
+    question,
+    changes.flatMap((change) =>
+      (change as LogicForm).parts.flatMap((call) => (call as Atom).args)
+    ),
+    bound,
+    (names) =>
+      `Unsafe assuming ${show(question)}: what its changes state must be known, but ${names} is not bound by the rule or query around it.`
+  );
+  checkQuestions([(question as LogicForm).parts.at(-1)], bound);
+  return [{ body: [], bound }];
 };
 
 const PLANS = new WeakMap<LogicValue, Map<string, readonly Plan[]>>();
