@@ -1,0 +1,895 @@
+=== RDFox documentation v7.7, section 10 Reasoning (https://docs.oxfordsemantic.tech/reasoning.html), line breaks joined ===
+Introduction 1.
+Welcome to RDFox 2.
+RDFox Features and Requirements 3.
+Getting Started Organization of Data 4.
+Servers 5.
+Data Stores 6.
+Tuple Tables 7.
+Data Sources Functionality 8.
+Import and Export 9.
+Querying 10.
+Reasoning 10.1.
+Rule Languages 10.1.1.
+Datalog 10.1.2.
+Extensions of Datalog 10.1.2.1.
+Negation-as-failure 10.1.2.2.
+Aggregation 10.1.2.3.
+Built-in Functions 10.1.2.4.
+Equality 10.1.2.5.
+Named Graphs and N-ary Relations 10.2.
+Materialization-Based Reasoning 10.3.
+Restrictions on Rule Sets 10.4.
+The Rule Language of RDFox 10.4.1.
+Tuple Table Atom 10.4.1.1.
+Default Graph Atom 10.4.1.2.
+Named Graph Atom 10.4.1.3.
+General Atom 10.4.2.
+Bind Atom 10.4.3.
+Filter Atom 10.4.4.
+Negation 10.4.5.
+Aggregate 10.4.6.
+Grammar 10.5.
+Common Uses of Rules in Practice 10.5.1.
+Computing the Transitive Closure of a Relation 10.5.2.
+Composing Relations 10.5.3.
+Representing SPARQL 1.1 Property Paths 10.5.4.
+Defining a Query as a View 10.5.5.
+Performing Calculations and Aggregating Data 10.5.6.
+Arranging Concepts and Relations in a Hierarchical Structure 10.5.7.
+Detecting Cyclic Relations 10.5.8.
+Defining Attributes and Relationships as Mandatory 10.5.9.
+Expressing Defaults and Exceptions 10.5.10.
+Restructuring Data 10.5.11.
+Representing Ordered Relations 10.5.12.
+Representing Equality Cliques 10.5.13.
+Populating a Knowledge Graph from a Data Source 10.6.
+OWL 2 Support in RDFox 10.6.1.
+OWL 2 Ontologies 10.6.2.
+OWL 2 Ontologies vs.
+RDFox Rules 10.6.3.
+Loading OWL 2 Ontologies into RDFox 10.6.4.
+Associating Ontologies with Named Graphs 10.6.5.
+Loading Ontologies from Triples 10.6.6.
+Subsumption Reasoning 10.6.7.
+Current Limitations 10.7.
+SWRL Support in RDFox 10.7.1.
+SWRL Rules 10.7.2.
+Loading SWRL Rules in RDFox 10.7.3.
+Negation-As-Failure in SWRL 10.7.4.
+Current Limitations 10.8.
+Explaining Reasoning Results 10.8.1.
+Format Encoding Explanation of Reasoning 10.8.2.
+Explanation in the Web Console 10.9.
+Monitoring Reasoning in RDFox 10.9.1.
+Inspecting Rules in RDFox 10.9.2.
+Using Reasoning Monitors in RDFox 10.9.2.1.
+The Summary Reasoning Monitor 10.9.2.2.
+The Reasoning Profiler 10.10.
+Querying the Explicitly given Data 11.
+Transactions 12.
+Access Control 13.
+Persistence Interfaces 14.
+Connections 15.
+RDFox Shell 16.
+APIs 17.
+Javadoc Operations Manual 18.
+RDFox Executable 19.
+RDFox Endpoint 20.
+Logging 21.
+High Availability 22.
+RDFox Docker Images Information Release Notes Security Advisories Acknowledgments RDFox 10.
+Reasoning 10.
+Reasoning  Reasoning in RDF is the ability to calculate the set of triples that logically follow from an RDF graph and a set of rules.
+Such logical consequences are materialized in RDFox® as new triples in the graph.
+The use of rules can significantly simplify the management of RDF data as well as provide a more complete set of answers to user queries.
+Consider, for instance, a graph containing the following triples: :oxford :locatedIn :oxfordshire . :oxfordshire :locatedIn :england .
+The relation :locatedIn is intuitively transitive: from the fact that Oxford is located in Oxfordshire and Oxfordshire is located in England, we can deduce that Oxford is located in England.
+The triple :oxford :locatedIn :england is, however, missing from the graph.
+As a consequence, SPARQL queries asking for all English cities will not return :oxford as an answer.
+We could, of course, add the missing triple by hand to the graph, in which case :oxford would now be returned as an answer to our previous query.
+Doing so, however, has a number of important disadvantages.
+First, there can be millions such missing triples and each of them would need to be manually added, which is cumbersome and error-prone; for instance, if we add to the graph the triple :england :locatedIn :uk , then the following additional triples should also be added: :oxford :locatedIn :uk . :oxfordshire :locatedIn :uk .
+More importantly, by manually adding missing triples we are not capturing the transitive nature of the relation, which establishes a causal link between different triples.
+Indeed, triple :oxford :locatedIn :england holds because triples :oxford :locatedIn :oxfordshire and :oxfordshire :locatedIn :england are part of the data.
+Assume that we later find out that :oxford is not located in :oxfordshire , but rather in the state of Mississippi in the US, and we delete from the graph the triple :oxford :locatedIn :oxfordshire as a result.
+Then, the triples :oxford locatedIn :england and :oxford :locatedIn :uk should also be retracted as they are no longer justified.
+Such situations are very hard to handle manually.
+As we will see next, we can use a rule to faithfully represent the transitive nature of the relation and handle all of the aforementioned challenges in an efficient and elegant way. 10.1.
+Rule Languages  A rule language for RDF determines which syntactic expressions are valid rules, and also provides well-defined meaning to each rule.
+In particular, given an arbitrary set of syntactically valid rules and an arbitrary RDF graph, the set of new triples that follow from the application of the rules to the graph must be unambiguously defined. 10.1.1.
+Datalog  Rule languages have been in use since the 1980s in the fields of data management and artificial intelligence.
+The basic rule language is called Datalog .
+It is a very well understood language, which constitutes the core of a plethora of subsequent rule formalisms equipped with a wide range of extensions.
+In this section, we describe Datalog in the context of RDF.
+A Datalog rule can be seen as an IF … THEN statement.
+In particular, the following is a Datalog rule which faithfully represents the transitive nature of the relation :locatedIn .
+[?x, :locatedIn, ?z] :- [?x, :locatedIn, ?y], [?y, :locatedIn, ?z] .
+The IF part of the rule is also called the body or antecedent ; the THEN part of the rule is called the head or the consequent .
+The head is written first and is separated from the body by the symbol :- .
+Both body and head consist of a conjunction of conditions, where conjuncts are comma-separated and where each conjunct is a triple in which variables may occur.
+Each conjunct in the body or the head is called an atom .
+In our example, the body consists of atoms [?x, :locatedIn, ?y] and [?y, :locatedIn, ?z] , whereas the head consists of the single atom [?x, :locatedIn, ?z] .
+Each rule conveys the idea that, from certain combinations of triples in the input RDF graph, we can logically deduce that some other triples must also be part of the graph.
+In particular, variables in the rule range over all possible nodes in the RDF graph (RDF literals, URIs, blank nodes); whenever these variables are assigned values that make the rule body become subset of the graph, then we see what the value of those variables is, propagate these values to the head of the rule, and deduce that the resulting triples must also be a part of the graph.
+In our example, a particular rule application binds variable ?x to :oxford , variable ?y to :oxfordshire and variable ?z to :england , which then implies that that triple :oxford :locatedIn :england obtained by replacing ?x with :oxford and ?z with :england in the head of the rule holds as a logical consequence.
+A different rule application would bind ?x to :oxfordshire , ?y to :england , and ?z to :uk ; as a result, the triple :oxfordshire :locatedIn :uk can also be derived as a logical consequence.
+An alternative way to understand the meaning of a single Datalog rule application to an RDF graph is to look at it as the execution of an INSERT statement in SPARQL, which adds a set of triples to the graph.
+In particular, the statement INSERT { ?x :locatedIn ?z } WHERE { ?x :locatedIn ?y. ?y :locatedIn ?z } corresponding to our example rule leads to the insertion of triples :oxford :locatedIn :england . :oxfordshire :locatedIn :uk .
+There is, however, a fundamental difference that makes rules more powerful than simple INSERT statements in SPARQL, namely that rules are applied recursively .
+Indeed, after we have derived that Oxford is located in England, we can apply the rule again by matching ?x to :oxford , ?y to :england , and ?z to :uk , to derive :oxford :locatedIn :uk —a triple that is not obtained as a result of the INSERT statement above.
+In this way, the logical consequences of a set of Datalog rules on an input graph are captured by the recursive application of the rules until no new information can be added to the graph.
+It is important to notice that the set of new triples obtained is completely independent from the order in which rule applications are performed as well as of the order in which different elements of rule bodies are given.
+In particular, the following two rules are equivalent:
+[?x, :locatedIn, ?z] :- [?x, :locatedIn, ?y], [?y, :locatedIn, ?z] .
+[?x, :locatedIn, ?z] :- [?y, :locatedIn, ?z], [?x, :locatedIn, ?y] . 10.1.2.
+Extensions of Datalog  A wide range of extensions of Datalog have been proposed and studied in the literature.
+In this subsection we describe the extensions of Datalog implemented in RDFox as well as the restrictions on them that have been put in place in order to ensure that the resulting language is semantically well-defined.
+Later on in this section we will provide many more examples of rules equipped with these extended features. 10.1.2.1.
+Negation-as-failure  Negation-as-failure allows us to make deductions based on information that is not present in the graph.
+For instance, using negation-as-failure we can write a rule saying that someone who works for a company but is not an employee of the company is an external contractor.
+[?x, :contractorFor, ?y] :- [?x, :worksFor, ?y], NOT [?x, :employeeOf, ?y] .
+Here, NOT represents a negation of a body atom.
+Let us consider the logical consequences of this rule when applied to the graph :mary :worksFor :acme . :mary :employeeOf :acme . :bob :worksFor :acme .
+On the one hand, we have that :mary works for :acme , and hence we can satisfy the first atom in the body by assigning :mary to ?x and :acme to ?y ; however, :mary is also an employee of :acme , and hence the second condition is not satisfied, which means that we cannot derive that :mary is a contractor.
+On the other hand, we also have that :bob works for :acme and hence once again we can satisfy the first atom in the body, this time by assigning :bob to ?x and :acme to ?y ; but now, we do not have a triple in the graph stating that :bob is an employee of :acme and hence we can satisfy the second condition in the body and derive the triple :bob :contractorFor :acme .
+Indeed, the query SELECT ?x ?y WHERE { ?x :contractorFor ?y } yields the expected result :bob :acme .
+Note that negation typically means “absence of information”; indeed, we do not know for sure whether :bob is not an employee of :acme ; we only know that this information is not available in the graph (neither explicitly, nor as a consequence of other rule applications).
+Negation-as-failure is intrinsically nonmonotonic .
+In logic, this means that new information may invalidate previous deductions.
+For instance, suppose that :bob becomes an employee of :acme and, to reflect this, we add to our data graph the triple :bob :employeeOf :acme .
+Then, we can no longer infer that :bob is a contractor for :acme and the previous query will now return an empty answer.
+In contrast, rules in plain Datalog are monotonic: adding new triples to the graph cannot invalidate any consequences that we may have previously drawn; for instance, by adding a triple :england :locatedIn :uk to the example in our previous section, cannot invalidate a previous inference such as :oxford :locatedIn :england .
+The syntax for expressing negation in RDFox rules can be found in Section 10.4.4 . 10.1.2.2.
+Aggregation  Aggregation is an important feature in query languages such as SQL or SPARQL.
+It allows one to compute numeric values (such as minimums, maximums, sums, counts or averages) on groups of solutions satisfying certain conditions (e.g., compute an average salary over the group of people working in the accounting department).
+In RDFox, it is possible to define relations based on the result of aggregate calculations.
+For instance, consider the following data. :bob :worksFor :accounting . :bob :salary "50000"^^xsd:integer . :mary :worksFor :hr . :mary :salary "47000"^^xsd:integer . :jen :worksFor :accounting . :jen :salary "60000"^^xsd:integer . :accounting rdf:type :Department . :hr rdf:type :Department .
+We can write an RDFox rule that computes the average salary of each department, and store the result in a newly introduced relation:
+[?d, :deptAvgSalary, ?z] :- [?d, rdf:type, :Department], AGGREGATE( [?x, :worksFor, ?d], [?x, :salary, ?s] ON ?d BIND AVG(?s) AS ?z) .
+Here, each group consists of a department with salaried employees, and for each group the rule computes an average of the salaries involved.
+In particular, suppose that we satisfy the first atom in the body by assigning value :accounting to variable ?d ; then, we can satisfy the aggregate atom by grouping all employees working for :accounting (i.e., :bob and :jen ), compute their average salary (55k) and assigning the resulting value to variable ?z ; as a result, we can propagate the assignment of ?d to :accounting and of ?z to 55,000 to the head and derive the triple :accounting :deptAvgSalary "55000"^^xsd:integer .
+The query SELECT ?d ?s WHERE { ?d rdf:type :Department . ?d :deptAvgSalary ?s } then returns the expected answers :accounting 55000.0 . :hr 47000.0 .
+Similarly to negation, aggregation is also a non-monotonic extension of Datalog.
+In particular, if we were to add a new employee to the accounting department with a salary of 52k, then we would need to withdraw our previous inference that the average accounting salary equals 55k and adjust the average accordingly.
+The syntax for expressing aggregation in RDFox rules can be found in Section 10.4.5 . 10.1.2.3.
+Built-in Functions  Datalog can be extended with the use of functions in rule bodies.
+In particular, one can use all functions described in Section 9.2 , with the exception of NOW , RAND , UUID and STRUUID , whose behavior is non-deterministic.
+We demonstrate the use of functions in rule bodies using the string concatenation function CONCAT .
+The following rule computes the full name of a person as the concatenation of their first name and their family name.
+[?x, :fullName, ?n] :- [?x, :firstName, ?y], [?x, :lastName, ?z], BIND(CONCAT(?y, " ", ?z) AS ?n) .
+Consider the application of this rule to the graph consisting of the following triples: :peter :firstName "Peter" . :peter :lastName "Griffin" .
+Then, the query SELECT ?x ?y WHERE { ?x :fullName ?y } would return the expected answer :peter "Peter Griffin" .
+An important consequence of introducing built-in functions is that rules are now capable of deriving triples mentioning new objects which did not occur in the input data (such as “Peter Griffin” in the above example).
+This is not possible using plain Datalog rules, where the application of a rule may generate new triples, but these triples can only mention objects that were present in the input data.
+If users are not careful, they may write rules using built-in functions that generate infinitely many new constants and hence there may be infinitely many triples that logically follow from the rules and a (finite) input graph.
+For instance, consider the following rule, which creates longer names from shorter names.
+[?person, :hasName, ?longerName] :- [?person, :hasName, ?name], BIND(CONCAT("Longer name: ", ?name) AS ?longerName) .
+If we apply this rule to the input graph consisting of :peter :hasName "Peter" we will derive an infinite “chain” of triples :peter :hasName "Peter" :peter :hasName "Longer name:
+Peter" :peter :hasName "Longer name:
+Longer name:
+Peter" :peter :hasName "Longer name:
+Longer name:
+Longer name:
+Peter" :peter :hasName "Longer name:
+Longer name:
+Longer name:
+Longer name:
+Peter" ...
+In such cases, RDFox will run out of resources trying to compute infinitely many new triples and will therefore not terminate.
+This is not due to a limitation of RDFox as a system, but rather to the well-known fact that Datalog becomes undecidable once extended with built-in functions that can introduce arbitrarily many fresh objects. 10.1.2.4.
+Equality  Equality is a special binary predicate that can be used to identify different resources as representing the same real-world object.
+The equality predicate is referred to as owl:sameAs in the standard W3C languages for the Semantic Web.
+In addition to equality, W3C standard languages also define an inequality predicate, which is referred to as owl:differentFrom .
+By default, two resources with different names are not assumed to be actually different.
+For instance, resources called :marie_curie and :marie_sklodowsca may refer to the same object in the world (the renowned scientist Marie Curie).
+In logic terms we typically say that by default we are not making the unique name assumption (UNA) .
+In some applications, however, it makes sense to make such assumption, and the effect of making the UNA is that we will have implicit owl:differentFrom statements between all pairs of resources mentioned in the data.
+In RDFox we can enable the use of equality by initializing a store accordingly.
+For instance, using the shell, we can initialize a data store with equality reasoning turned on using the shell command dstore create myDataStore equality noUNA initializes a data store with equality reasoning and no UNA.
+Extensions of Datalog with equality allow for the equality and inequality predicates to appear in rules and data.
+For instance, consider the following triples, where the second triple represents the fact that the URIs :marie_curie and :marie_sklodowsca refer to the same person. :marie_curie rdf:type :Scientist . :marie_curie owl:sameAs :marie_sklodowsca .
+A query asking RDFox for all scientists SELECT ?x WHERE { ?x rdf:type :Scientist } will return both :marie_curie and :marie_sklodowsca as a result.
+Equality and inequality can also be used in rules.
+For instance, the following rule establishes that a person can only have one biological mother [?y, owl:sameAs, ?z] :- [?x, :hasMother, ?y], [?x, :hasMother, ?z] .
+The application of this rule to the graph :irene_curie :hasMother :marie_curie . :irene_curie :hasMother :marie_sklodowsca . identifies :marie_curie and :marie_sklodowsca :as the same person.
+The joint use of equality and inequality can lead to logical contradictions.
+For instance, the application of the previous rule to a graph consisting of the following triples would lead to a contradiction: :irene_curie :hasMother :marie_curie . :irene_curie :hasMother :eve_curie . :marie_curie owl:differentFrom :eve_curie .
+Indeed, the application of the rule derives :marie_curie owl:sameAs :eve_curie , which is in contradiction with the data triple :marie_curie owl:differentFrom :eve_curie .
+Such contradictions can be identified in RDFox by querying for the instances of the special owl:Nothing predicate, which is also borrowed from the W3C standard OWL.
+The query SELECT ?x WHERE { ?x rdf:type owl:Nothing } returns :marie_curie and :eve_curie as answers.
+This can be interpreted by the user as: “resources :marie_curie and :irene_curie are involved in a logical contradiction”. 10.1.2.5.
+Named Graphs and N-ary Relations  In all our previous examples, all atoms in rules are evaluated against the default RDF graph .
+RDFox also supports named graphs, which can be populated by importing an RDF dataset encoded as TriG or N-Quads, for example.
+Named graphs can be used both in the body and the head of rules, and hence it is possible to derive new triples as the result of rule application and add them to graphs other than the default graph.
+For instance, consider the following rule: :monthlyPayment[?id, ?m] :Payroll :- [?id, rdf:type, :Employee], :yearlySalary[?id, ?s] :HR, BIND(?s / 12 AS ?m) .
+This rule joins information from the default graph and the named graph called :HR , and it inserts consequences into the named graph called :Payroll .
+Specifically, the first body atom of the rule identifies IDs of employees in the default RDF graph.
+The second body atom is a general atom: it is evaluated in the named graph called :HR , and it matches triples that connect IDs with their yearly salaries.
+The head of the rule contains a named graph atom that refers to the named graph :Payroll , and it derives triples that associate IDs of employees with their respective monthly payments.
+In particular, given as data GRAPH :HR { :a, :yearlySalary, "55000"^^xsd:integer } :a rdf:type :Employee . the rule will compute the monthly payment for employee :a .
+Then, the query SELECT ?s ?p ?o WHERE { GRAPH :Payroll { ?s ?p ?o } } will correctly return the monthly payment for employee :a :a :monthlyPayment 4583.333333333333333 .
+RDFox can also directly represent external data as tuples of arbitrary arity (not just triples) using the same syntax as named graphs.
+Atoms representing such data, however, are only allowed to be used in the body of rules.
+Details on how to access external data from RDFox are given in Section 7 . 10.2.
+Materialization-Based Reasoning  The main computational problem solved by RDFox is that of answering a SPARQL 1.1 query with respect to an RDF graph and a set of rules.
+To solve this problem, RDFox uses materialization-based reasoning to precompute and store all triples that logically follow from the input graph and rules in a query-independent way.
+Both the process of extending the input graph with such newly derived triples and its final output are commonly called materialization .
+After such preprocessing, queries can be answered directly over the materialization, which is usually very efficient since the rules do not need to be considered any further.
+Materializations can be large, but they can usually be stored and handled on modern hardware as the available memory is continually increasing.
+The main challenge of this approach to query answering is that, whenever data triples and/or rules are added and/or deleted, the “old” materialization must be replaced with the “new” materialization that contains all triples that follow from the updated input.
+In this setting, deletion of triples is restricted to those that are explicit in the input graph and hence one does not consider deletion of derived triples—a complex problem known in the literature as belief revision or view update.
+For instance, given as input the RDF graph :oxford :locatedIn :oxfordshire . :oxfordshire :locatedIn :england . :england :locatedIn :uk . and the familiar rule [?x, :locatedIn, ?z] :- [?x, :locatedIn, ?y], [?y, :locatedIn, ?z] .
+RDFox will compute the corresponding materialization, which consists of triples :oxford :locatedIn :oxfordshire . :oxford :locatedIn :england . :oxford :locatedIn :uk . :oxfordshire :locatedIn :england . :oxfordshire :locatedIn :uk . :england :locatedIn :uk .
+RDFox will now handle each SPARQL 1.1 query issued against the input graph and rule by simply evaluating the query directly over the materialization, thus avoiding the expensive reasoning at query time.
+An update could delete a triple explicitly given in the input graph such as the triple :oxfordshire :locatedIn :england, in which case the new materialization consists only of triples :oxford :locatedIn :oxfordshire . :england :locatedIn :uk . since the rule is no longer applicable after deletion.
+In contrast, deleting a derived triple such as :oxford :locatedIn :uk . is not allowed since this triple was not part of the original input.
+RDFox implements sophisticated algorithms for both efficiently computing materializations and maintaining them under addition/deletion updates that may affect both the data and the rules.
+All these algorithms were developed after years of research at Oxford and have been extensively documented in the scientific literature. 10.3.
+Restrictions on Rule Sets  The rule language of RDFox imposes certain restrictions on the structure of rule sets.
+These restrictions ensure that the materialization of a set of rules and an RDF graph is well-defined and unique.
+In particular, the semantics (i.e., the logical meaning) of rule sets involving negation-as-failure and/or aggregation is not straightforward, and numerous proposals exist in the scientific literature.
+There is, however, a general consensus for rule sets in which the use of negation-as-failure and aggregation are stratified .
+Informally, stratification conditions ensure that there are no cyclic dependencies in the rule set involving negation or aggregation.
+Several variants of stratification have been proposed, where some of them capture a wider range of rule sets than others; they all, however, provide similar guarantees.
+We next describe the stratification conditions adopted in RDFox by means of examples.
+For this, let us consider the following rules mentioning negation-as-failure:
+[?x, :contractorFor, ?y] :- [?x, :worksFor, ?y], NOT [?x, :employeeOf, ?y] .
+[?x, :employeeOf, :acme] :- [?x, :worksFor, :acme] .
+The first rule says that people working for a company who are not employees of that company act as contractors.
+The rule establishes two dependencies.
+The first dependency tells us that the presence of a triple having :worksFor in the middle position may contribute to triggering the derivation of a triple having :contractorFor in the middle position.
+In turn, the second dependency tells us that the absence of a triple having :employeeOf in the middle position may also contribute to the derivation of a triple having :contractorFor in the middle position.
+The second rule tells us that everyone working for :acme is an employee of :acme .
+This rule establishes one dependency, namely the presence of a triple having :worksFor in the middle position and :acme in the rightmost position may trigger the derivation of a triple having :employeeOf in the middle position and :acme in the rightmost position.
+We can keep track of such dependencies by means of a dependency graph .
+The nodes of the graph are obtained by replacing variables in individual triple patterns occurring in the rules with the special symbol ANY , which intuitively indicates that the position of the triple where it occurs can adopt any constant value, and leaving constants as they are.
+In particular, our example rules yield a graph having the following five vertices v1—v5: v1:
+ANY :contractorFor ANY v2:
+ANY :worksFor ANY v3:
+ANY :employeeOf ANY v4:
+ANY :worksFor :acme v5:
+ANY :employeeOf :acme The (directed) edges of the graph lead from vertices corresponding to body atoms to vertices corresponding to head atoms and can be either “regular” or “special”.
+Special edges witness the presence of a dependency involving aggregation or negation-as-failure; in our case, we will have a single special edge (v3, v1).
+In turn, each dependency that is not via negation-as-failure/aggregation generates a regular edge; in our case, we will have regular edges (v2,v1) and (v4, v5).
+Finally, the graph will also contain bidirectional regular edges between nodes that unify in the sense of first-order logic: since [?x, :employeeOf, ?y] and [?x, :employeeOf, :acme] unify, we will have regular edges (v3,v5) and (v5, v3); similarly, we will also have regular edges (v2,v4) and (v4,v2).
+Our two example rules are stratified and hence are accepted by RDFox; this is because there is no cycle in the dependency graph involving a special edge (indeed, all cycles involve regular edges only).
+Now suppose that the add the following rule:
+[?x, :employeeOf, ?y] :- [?x, :worksFor, ?y], NOT [?x, :contractorFor, ?y] . which says that people working for a company who are not contractors for the company must be employees of the company.
+The addition of this rule does not change the set of nodes in the dependency graph; however, it adds two more edges: a regular edge (v2, v3) and a special edge (v1, v3).
+As a result, we now have a cycle involving a special edge and the rule set is no longer stratified, which means that the rule set will be rejected by RDFox as a result.
+Due to stratification conditions, the use of the special equality relation owl:sameAs in rules precludes the use of aggregation or negation-as-failure.
+Consider the following rule set, where the second rule tells us that a person cannot be an employee of two different companies:
+[?x, :contractorFor, ?y] :- [?x, :worksFor, ?y], NOT [?x, :employeeOf, ?y] .
+[?y, owl:sameAs, ?z] :- [?x, :employeeOf, ?y], [?x, :employeeOf, ?z] .
+This rule set will be rejected by RDFox as the rule set mentions both NOT and owl:sameAs .
+Informally, this is because equality can affect every single relation, which precludes stratification in most cases.
+In addition to stratification conditions, RDFox also requires certain restrictions to the structure of rules which make sure that each rule can be evaluated by binding the variables in the body of the rule to a data graph.
+To see an example where things go wrong consider the rule:
+[?x, :worksFor, ?y] :- [?y, rdf:type, :Department] .
+The rule cannot be evaluated by first matching the body to the data graph and then propagating the variable bindings to the head; indeed, rule body to an RDF graph will always leave variable ?x of the rule unbound and hence the triple that must be added as a result of applying the rule to the data is undefined.
+As a result, this rule will be rejected by RDFox.
+Binding restrictions in RDFox are rather involved given that the underpinning rule language is rich and there are many subtle corner cases.
+However, rules accepted by the parser can always be unambiguously evaluated. 10.4.
+The Rule Language of RDFox  This section formally describes the rule language of RDFox.
+As already mentioned, the rule language supported by RDFox extends Datalog with stratified negation, stratified aggregation, built-in functions, and more, so as to provide additional data analysis capabilities.
+A rule has the following form, where the formula to the left of the :- operator is the rule head and the formula to the right is the rule body .
+Each Hi , with 1 ≤ i ≤ j , is a tuple table atom , and each Li , with 1 ≤ i ≤ k , is a body formula .
+A body formula can be either an atom , a negation or an aggregate , where an atom is a tuple table atom , a filter atom , or a bind atom .
+Currently, the only tuple table atoms allowed in rule’s heads are default graph atoms and named graph atoms .
+A complete grammar of the rule language is given in Section 10.4.6 .
+H1 , …, Hj :- L1 , …, Lk .
+Informally, a rule says that “if L1 , …, and Lk all hold for some bindings of the rule’s variables to RDF resources, then H1 , …, and Hj also hold for the same bindings.” Rule evaluation is the process of finding all variable bindings for which the rule body holds.
+For every such variable binding, the triples obtained from the rule head by replacing the variables according to their binding are added to the current store.
+A rule can be evaluated, only if each variable in its head can be bound by its body.
+The ordering of the head atoms and/or the body formulas does not affect the meaning of a rule.
+Successful variable bindings are computed by consecutively evaluating the body formulas in the rule.
+The evaluation of a body formula may succeed or fail for the current variable bindings.
+If successfully evaluated, some body formulas can bind previously unbound variables.
+These include tuple table atoms, bind atoms, and aggregates.
+Some body formulas may require that certain variables are bound before they can be evaluated.
+These include bind atoms, filter atoms, and general atoms backed by certain built-in tables and external sources.
+Finally, body formulas may have local variables that are not visible by the rest of the rule.
+These include the negation and the aggregate body formulas.
+Any mentioning of a local variable in a different context is treated as a different variable.
+In the following sections we are going to describe the different constituents of a rule in more detail.
+The word term denotes either an RDF resource or a SPARQL variable . 10.4.1.
+Tuple Table Atom  A tuple table atom can be either a default graph atom , a named graph atom or a general atom .
+Default and named graph atoms are used to refer to RDF data in the current store, while general atoms can refer to built-in tuple tables or data source tuple tables.
+All three types of tuple table atoms provide bindings for the variables that occur in them. 10.4.1.1.
+Default Graph Atom  A default graph atom has the form [t1, t2, t3] , where ti are terms.
+If t2 is an IRI, then the atom [t1, t2, t3] can be written alternatively as t2[t1, t3] .
+Furthermore, when t2 is the special IRI rdf:type and t3 is also an IRI, atom [t1, t2, t3] can be written alternatively as t3[t1] .
+Default graph atoms are evaluated against the triples in the default graph of an RDF dataset, with t1 , t2 and t3 matching the subject, predicate and object of each triple.
+Example A simple rule with default graph atoms only [?x, rdf:type, :Person] :- [?x, :teacherOf, ?y] .
+As we discussed earlier, this is equivalent to: :Person[?x] :- :teacherOf[?x, ?y] .
+The above rule asserts that for every triple (t, :teacherOf, s) in the default graph, a triple (t, rdf:type, :Person) has to be added to the default graph as well. 10.4.1.2.
+Named Graph Atom  A named graph atom is a default graph atom followed by an RDF term representing the named graph.
+Example A rule referring to a named graph :Personnel in an RDF dataset. :Person[?person] :Personnel, :Address[?address] :Personnel :- :hasAddress[?person, ?address] :Personnel.
+The above rule asserts that for every RDF triple (person, :hasAddress, address) in the named graph :Personnel , the two RDF triples (person, rdf:type, :Person) and (address, rdf:type, Address) have to be added to the named graph :Personnel . 10.4.1.3.
+General Atom  A general atom has the form A(t1, …, tn) , where n ≥ 1 , A is a tuple table name in the current store, and t1, …, tn are terms.
+General tuple table atoms can refer to in-memory tuple tables (such as the ones used to store triples in the default and the named graphs), as well as built-in tuple tables and data source tuple tables.
+Example A rule with a general atom :hasFirstName[?person, ?firstName], :hasLastName[?person, ?lastName], :hasAddress[?person, ?address] :- Person(?person, ?firstName, ?lastName, ?address) .
+The rule asserts that, for every tuple (person, firstName, lastName, address) in the table Person , the following RDF triples should be added to the default graph of the current RDF dataset.
+(person, :hasFirstName, firstName) (person, :hasLastName, lastName) (person, :hasAddress, address) 10.4.2.
+Bind Atom  A bind atom has the form BIND(exp AS v) , where exp is an expression and v is a variable not occurring in exp .
+Expressions are constructed from variables, RDF resources, and the operators and functions supported by RDFox (see Section 9 ) with the exception of functions whose values are not determined by values of their arguments (e.g.
+NOW() and RAND() ).
+A bind atom can be evaluated after all variables in its expression have been bound by other body formulas.
+The value of the expression is then assigned to v , if v has not been previously bound.
+Otherwise, the value of the expression is compared with that of the variable, and the evaluation of the bind atom succeeds, if the two values agree.
+A bind atom provides a binding for its target variable v .
+Note Unlike SPARQL 1.1, a bind atom in a rule can be evaluated only if all variables in its expression are bound by other body formulas in the rule.
+Example Using bind atom :cTemperature[?x, ?z] :- :fTemperature[?x, ?y], BIND ((?y - 32) / 1.8 AS ?z) .
+The bind atom in the above rule converts Fahrenheit degrees to Celsius degrees.
+Note that the tuple table atom :fTemperature[?x, ?y] will be evaluated before the bind atom, since that is the only way ?y can be bound.
+This is true even if the above rule is rewritten as follows. :cTemperature[?x, ?z] :- BIND ((?y - 32) / 1.8 AS ?z), :fTemperature[?x, ?y] . 10.4.3.
+Filter Atom  A filter atom has the form FILTER(exp) , where exp is an expression.
+A filter atom can be evaluated only after all variables in its expression have been previously bound.
+The evaluation of a filter atom succeeds if the exp evaluates to true for the current variable bindings.
+Filter atoms provide no variable bindings.
+Note Unlike SPARQL 1.1, a filter atom in a rule can be evaluated only if all variables in its expression are bound by other body formulas in the rule.
+Example Using filter atoms :PositiveNumber[?x] :- :Number[?x], FILTER(?x > 0) .
+The rule says that a number is positive if it is larger than zero.
+Since the order of the body formulas does not matter, the rule can be equivalently written as follows. :PositiveNumber[?x] :- FILTER(?x > 0), :Number[?x] . 10.4.4.
+Negation  A negation has one of the following forms, where k,j ≥ 1 , B1, …, Bk are atoms, and ?V1, …, ?Vj are variables local to the body formula.
+A negation formula can be evaluated only after all its nonlocal variables have been bound.
+The evaluation of a negation succeeds for the given variable bindings, if there are no bindings for ?V1, …, ?Vj to resources that make B1, …, Bk true.
+Each variable in B1, …, Bk has to be ether bound by another body formula in the rule or has to appear in the variable list after EXIST / EXISTS .
+Negation body formulas provide no variable bindings.
+NOT B1 NOT(B1, …, Bk) NOT EXIST ?V1, …, ?Vj IN B1 NOT EXIST ?V1, …, ?Vj IN (B1, …, Bk) NOT EXISTS ?V1, …, ?Vj IN B1 NOT EXISTS ?V1, …, ?Vj IN (B1, …, Bk) Note Negation introduces a new variable scope; that is, all variables ?V1, …, ?Vj listed after EXIST/EXISTS are local to the scope of the negation body formula, and any occurrence of such variables elsewhere in the rule will be treated by RDFox as a different variable (an example is provided below).
+Note RDFox will reject rules that use negation in all equality modes other than off (see Equality ).
+Example Using negation with NOT :hasOptionalComponent[?x, ?y] :- :hasComponent[?x, ?y], NOT :hasMandatoryComponent[?x, ?y] .
+Example Using negation with NOT EXISTS :BasicComponent[?x] :- :Component[?x], NOT EXISTS ?y IN ( :Component[?y], :hasComponent[?x, ?y] ) .
+The rule defines as basic all components that have no subcomponents.
+Example Variable used in different scopes :TopComponent[?x] :- :hasComponent[?x, ?y], NOT EXISTS ?y IN ( :hasComponent[?y, ?x] ) .
+We can see that variable ?y is used both inside and outside the scope of EXISTS .
+As already mentioned, such occurrences will be treated by RDFox as referring to different variables; in particular, we can obtain an equivalent rule by replacing all occurrences of ?y outside the scope of EXISTS with a new variable ?z . :TopComponent[?x] :- :hasComponent[?x, ?z], NOT EXISTS ?y IN ( :hasComponent[?y, ?x] ) . 10.4.5.
+Aggregate  Aggregates are used to compute expressions over sets of values using aggregate functions like COUNT , MIN , and SUM .
+Reasoning supports all aggregate functions described in Section 9.3 with the exception of the non-deterministic functions SAMPLE , SAMPLE_ARGMIN , SAMPLE_ARGMAX , and GROUP_CONCAT .
+An aggregate has the following form AGGREGATE(B1, …, Bk ON ?X1 … ?Xj BIND f1(exp1) AS ?V1 … BIND fn(expn) AS ?Vn) where k ≥ 1, j ≥ 0, n ≥ 0, and B1, …, Bk are atoms, ?X1, …, ?Xj are group variables that appear in B1, …, Bk , exp1, …, expn are (list of) expressions over the variables in B1, …, Bk , optionally prefixed by the keyword DISTINCT , STABLE or RELAXED , f1, …, fn are aggregate functions, and ?V1, …, ?Vn are variables that do not appear in B1, …, Bk .
+Aggregate modes ( STABLE or RELAXED ) can be specified, or defaults will be applied by RDFox.
+RELAXED processes input values in the order in which they are produced.
+This is the fastest mode, but the result of an order-sensitive aggregate can have a slight variance if that order changes (See aggregate modes example ).
+STABLE ensures that input values are processed in a consistent order to preserve correctness.
+You can specify either mode explicitly in an aggregate expression, however, specifying either mode on an intrinsically order-insensitive aggregate has no effect.
+Datalog rules will be STABLE by default.
+RELAXED can be specified on an aggregate function that is commutative and associative but whose result is not necessarily stable under changes to input order because of the datatype and the arithmetic involved.
+In reasoning, this can produce non-deterministic results in certain cases:
+Any xsd:float or xsd:double values are subject to non-deterministic behavior because floating-point arithmetic is not associative.
+Therefore, changing the order in which values are combined can change the result. xsd:integer calculations that are close to the supported underflow or overflow limits may produce different results depending on the order of evaluation.
+Warning Within reasoning, improper use of explicit RELAXED mode can lead to non-deterministic results for input-order-sensitive aggregates.
+This can lead to correctness errors in incremental reasoning for aggregation.
+The evaluation of an aggregate will find all variable bindings that make B1, …, Bk true.
+These bindings are grouped by the values of the group variables, and the aggregate bind expressions are evaluated for each group.
+Non-group variables that appear in B1, …, Bk are local to the aggregate.
+Aggregates provide bindings for the group variables (i.e. ?X1, …, ?Xj ) and the target variables of their aggregate binds (i.e. ?V1, …, ?Vn ).
+Note An aggregate atom introduces a new variable scope.
+In particular, all variables in an aggregate occurring in atoms B1, …, Bk but which are not mentioned group variables are local to the aggregate; any occurrence of such local variables outside the atom will be treated by RDFox as a different variable.
+Note RDFox will reject rules that use aggregation in all equality modes other than off (see Equality ).
+Example Compute the minimum and maximum ages for the members in a family :minAge[?family, ?minAge], :maxAge[?family, ?maxAge] :- :Family[?family], AGGREGATE ( :hasMember[?family, ?member], :hasAge[?member, ?age] ON ?family BIND MIN(?age) AS ?minAge BIND MAX(?age) AS ?maxAge ) .
+The above rule computes the minimum and maximum age of the members of each family.
+Variables ?family , ?minAge and ?maxAge are global to the rule, whereas the variables ?member and ?age are local to the aggregate, as they are variables that occur in the aggregate atoms and are not grouped.
+Example Compute the adult-to-child ratio in each family :hasAdultToChildRatio[?family, ?ratio] :- :Family[?family], AGGREGATE ( :hasMember[?family, ?member], :hasAge[?member, ?age], FILTER(?age >= 18) ON ?family BIND COUNT(?member) AS ?numberOfAdults ), AGGREGATE ( :hasMember[?family, ?member], :hasAge[?member, ?age], FILTER(?age < 18) ON ?family BIND COUNT(?member) AS ?numberOfChildren ), BIND(?numberOfAdults / ?numberOfChildren AS ?ratio) .
+The above rule computes the adult-to-child ratio in each family.
+Note that the variable ?member occurs locally in each of the aggregate atoms, since it is not a group variable.
+As a result, the two occurrences can be thought of as referring to different variables, and the above rule would be equivalent to a rule where the two occurrences of ?member are replaced by ?member1 and ?member2 , respectively.
+Example Define close families :hasCloseFamily[?family1, ?family2] :- AGGREGATE ( :Family[?family1], :hasMember[?family1, ?member1], :Family[?family2], :hasMember[?family2, ?member2], :hasFriend[?member1, ?member2] ON ?family1 ?family2 BIND COUNT(*) AS ?numberOfFriendships ), FILTER (?numberOfFriendships > 3) .
+The above rule defines as close those pairs of families that share more than three friendships between their members.
+Example Using the keyword DISTINCT :hasFamilyFriendsCount[?x, ?cnt] :- :Family[?x], AGGREGATE( :hasMember[?x, ?y], :hasFriend[?y, ?z] ON ?x BIND COUNT(DISTINCT ?z) AS ?cnt) .
+This rule counts the number of distinct family friends; a person is considered a family friend, if they are a friend of a family member.
+Example Compute statistics about maximum age :hasMaxAge[:census, ?maxAge], :hasMaxAgeFrequency[:census, ?maxAgeFrequency], :hasMaxAgeFirstPerson[:census, ?firstWithMaxAge] :- AGGREGATE ( :Person[?person], :hasAge[?person, ?age], :hasName[?person, ?name] BIND MAX(?age) AS ?maxAge BIND COUNT_MAX(?age) AS ?maxAgeFrequency BIND MIN_ARGMAX(?name, ?age) AS ?firstWithMaxAge ).
+The above rule computes the maximum age of all people, how many people have that age and the first person alphabetically that has that age. 10.4.6.
+Grammar  This section presents the RDFox rule language grammar.
+RDFox Rules Grammar  Ruleset := ( PrefixDecl | Rule | Fact ) * Rule := RuleHead ' :- ' RuleBody ' . ' Fact := TupleTableAtom ' . ' RuleHead := TupleTableAtom ( ' , ' TupleTableAtom ) * RuleBody := ( BodyFormula ( ' , ' BodyFormula ) * ) ? BodyFormula := Atom | Negation | Aggregate Atom := TupleTableAtom | FilterAtom | BindAtom TupleTableAtom := DefaultGraphAtom | NamedGraphAtom | GeneralAtom DefaultGraphAtom := DefaultGraphTripleAtom | DefaultGraphPropertyAtom | DefaultGraphClassAtom DefaultGraphTripleAtom := ' [ ' Term ' , ' Term ' , ' Term ' ] ' DefaultGraphPropertyAtom := iri ' [ ' Term ' , ' Term ' ] ' DefaultGraphClassAtom := iri ' [ ' Term ' ] ' NamedGraphAtom := DefaultGraphAtom Graph Graph := Term GeneralAtom := TupleTableName ' ( ' Term ( ' , ' Term ) * ' ) ' TupleTableName := ID | QuotedString Term := var | iri | bnode | RDFLiteral | NumericLiteral | BooleanLiteral FilterAtom := ' FILTER ' ' ( ' Expression ' ) ' BindAtom := ' BIND ' ' ( ' Expression ' AS ' var ' ) ' Expression := any valid SPARQL expression with no EXISTS and NOT EXISTS subexpressions, and with built-in functions restricted to RDFox built-in functions, but excluding NOW , RAND , UUID , STRUUID and aggregate functions Negation := ' NOT ' ExistsClause ? ( Atom | ' ( ' AtomList ' ) ' ) AtomList := Atom ( ' , ' Atom ) * ExistsClause := ( ' EXIST ' | ' EXISTS ' ) var ( ' , ' var ) * ' IN ' Aggregate := ' AGGREGATE ' ' ( ' AtomList OnClause ? AggregateBind * ' ) ' OnClause := ' ON ' var + AggregateBind := ' BIND ' ( AggregateExpression1 | AggregateExpression2 | CountExpression ) ' AS ' var AggregateExpression1 := AggregateFunction1 ' ( ' ( ' DISTINCT ' | ( ' STABLE ' | ' RELAXED ' ) ) ? Expression ' ) ' AggregateExpression2 := AggregateFunction2 ' ( ' ( ' DISTINCT ' | ( ' STABLE ' | ' RELAXED ' ) ) ? Expression ' , ' Expression ' ) ' AggregateFunction1 := ( ' SUM ' | ' MUL ' | ' AVG ' | ' MIN ' | ' COUNT_MIN ' | ' MAX ' | ' COUNT_MAX ' ) AggregateFunction2 := ( ' MIN_ARGMIN ' | ' MAX_ARGMIN ' | ' MIN_ARGMAX ' | ' MAX_ARGMAX ' ) CountExpression := ' COUNT ' ' ( ' ( ' DISTINCT ' ) ? ( ' * ' | ExpressionList ) ? ' ) ' ExpressionList := Expression ( ' , ' Expression ) * 10.5.
+Common Uses of Rules in Practice  This section describes common uses of rules and reasoning in practical applications.
+This section will be especially useful for practitioners who are seeking to understand how the reasoning capabilities provided by RDFox can enhance graph data management. 10.5.1.
+Computing the Transitive Closure of a Relation  In many other situations, we may have a relation that is not transitive, but we are interested in defining a different relation that “transitively closes” it.
+Consider a social network where users follow other users.
+The graph may be represented by the triples next. :alice :follows :bob . :bob :follows :charlie . :diana :follows :alice .
+A common task in social networks is to use existing connections to suggest new ones.
+For example, since Alice follows Bob and Bob follows Charlie, the system may suggest that Alice follow Charlie as well.
+Likewise, the system may suggest that Diana follow Bob; but then, if Diana follows Bob, she may also want to follow Charlie.
+We would like to construct an enhanced social network that contains the actual follows relations plus all the suggested additional links.
+The links in such enhanced social network represent the transitive closure of the original follows relation, which relates any pair of people who are connected by a path in the network.
+The transitive closure of the follows relation can be computed using RDFox by defining the following two rules:
+[?x, :followsClosure, ?y] :- [?x, :follows, ?y] .
+[?x, :followsClosure, ?z] :- [?x, :follows, ?y], [?y, :followsClosure, ?z] .
+The first rule “copies” the contents of the direct follows relation to the new relation.
+The second rule implements the closure by saying that if a person p1 directly follows p2 and p2 (directly or indirectly) follows person p3, then p1 (indirectly) follows p3.
+If we now issue the SPARQL query SELECT ?x ?y WHERE { ?x :followsClosure ?y } we obtain the expected results. :diana :charlie . :alice :charlie . :diana :bob . :alice :bob . :bob :charlie . :diana :alice .
+Finally, we may also be interested in computing the suggested links that were not already part of the original follows relation.
+This can be achieved, for instance, by issuing the SPARQL query SELECT ?x ?y WHERE { ?x :followsClosure ?y .
+FILTER NOT EXISTS { ?x :follows ?y } } The results are the expected ones. :diana :charlie . :alice :charlie . :diana :bob . 10.5.2.
+Composing Relations  An important practical use of knowledge graphs is to power Open Query Answering (Open QA) applications, where the user would pose a question in natural language, which is then automatically answered against the graph.
+Open QA systems often struggle to interpret questions that involve several “hops” in the graph.
+For instance, consider the graph consisting of the triples given next. :douglas_adams :bornIn :uk . :uk rdf:type :Country .
+A user may ask the Open QA system for the country of birth of Douglas Adams.
+To obtain this information, the system would need to construct a query involving two hops in the graph.
+In particular, the SPARQL query SELECT ?c WHERE { :douglas_adams :bornIn ?c . ?c rdf:type :Country . } would return :uk as answer.
+The results of the open QA system would be greatly enhanced if the desired information had been available in just a single hop.
+RDFox rules can be used to provide a clean solution in this situation.
+In particular, we can use rules to define a new :countryOfBirth relation that provides a “shortcut” for directly accessing the desired information.
+[?x, :countryOfBirth, ?y] :- [?x, :bornIn, ?y], [?y, rdf:type, :Country] .
+The rule says that, if a person p is born in a place c, and that place is a country, then c is the country of birth of p.
+As a result, RDFox would derive that the country of birth of Douglas Adams is the UK.
+The Open QA system would now only need to construct the following simpler query, which involves a single hop in the graph, to obtain the desired information.
+SELECT ?x ?y WHERE { ?x :countryOfBirth ?y } 10.5.3.
+Representing SPARQL 1.1 Property Paths  Whilst RDFox does support SPARQL 1.1 property paths, in many situations a user can achieve better performance by encoding them as rules instead.
+Informally, a property path searches through the RDF graph for a sequence of IRIs that form a path conforming to an regular expression.
+For instance, the following query in our familiar social network example SELECT ?x WHERE { ?x :follows+ :bob } returns the set of people that follow :bob directly or indirectly in the network.
+In this case, the property path (?x :follows+ :bob) represents a path of arbitrary length from any node to :bob via the :follows relation, where the + symbol is the familiar one in regular expressions indicating “one or more occurrences”.
+Property paths representing paths of arbitrary length are closely related to computing the transitive closure of a relation.
+In particular, the following rules would compute the set of “Bob followers” as those who follow :bob directly or indirectly.
+[?x, rdf:type, :BobFollower] :- [?x, :follows, :bob] .
+[?x, rdf:type, :BobFollower] :- [?x, :follows, ?y], [?y, rdf:type, :BobFollower] .
+The simple query SELECT ?x WHERE { ?x rdf:type :BobFollower } gives us the same answers as the original query using property paths. 10.5.4.
+Defining a Query as a View  When querying a knowledge graph, we may be interested in materializing the result of a SPARQL query as a new relation in the graph.
+This can be the case, for instance, if the query is interesting in its own right, can be used to define new relations, or simplify the formulation of additional queries.
+We can use an RDFox rule for this purpose, where the SPARQL query that we want to materialize in the graph is represented in the body of the rule and the answer as a new relation in the head.
+For instance, consider again the previous example of a social network, where we were interested in suggesting new followers (recall the Transitive Closure usage pattern).
+Recall that we used a query SELECT ?x ?y WHERE { ?x :followsClosure ?y FILTER NOT EXISTS { ?x :follows ?y } } to obtain the suggested links that were not already part of the original follows relation.
+We may be interested in storing this query as a separate relation in the graph.
+For this, we could rewrite the query as a rule defining a new :suggestFollows relation:
+[?x, :suggestFollows, ?y] :- [?x, :followsClosure, ?y], NOT [?x, :follows, ?y] .
+The body of the rule represents the where clause in the query.
+The filter expression in the query is captured by the negated atom.
+Then, the simple query SELECT ?x ?y WHERE { ?x :suggestFollows ?y } will give us the expected answers :diana :charlie . :alice :charlie . :diana :bob .
+It is worth pointing out that only a subset of SPARQL 1.1 queries can be transformed into an RDFox rule in the way described.
+In particular, all queries involving basic graph patterns, filter expressions, negation ( NOT EXISTS , MINUS ) and aggregation can be represented.
+In contrast, SPARQL queries with more than two answer variables, or using OPTIONAL or UNION in the WHERE clause cannot be represented as rules. 10.5.5.
+Performing Calculations and Aggregating Data  RDFox rules can be used to perform computations over the data in a knowledge graph and store the results in a different relation.
+For instance, consider a graph with the following triples, specifying the height of different people in cm. :alice :height "165"^^xsd:integer . :bob :height "180"^^xsd:integer . :diana :height "168"^^xsd:integer . :emma :height "165"^^xsd:integer .
+We would want to compute their height in feet, and record it in the graph by adding suitable triples over a new relation.
+For this, we can import the following RDFox rule.
+[?x, :heightInFeet, ?y] :- [?x, :height, ?h], BIND(?h*0.0328 AS ?y) .
+The BIND construct evaluates an expression and assigns the value of the expression to a variable.
+We can now query the graph for the newly introduced relation to obtain the list of people and their height in both centimeters and feet.
+SELECT ?x ?m ?f WHERE { ?x :height ?m . ?x :heightInFeet ?f . } and obtain the expected answers :emma 165 5.412 . :diana 168 5.5104 . :bob 180 5.904 . :alice 165 5.412 .
+Rules can also be used to compute aggregated values (e.g., sums, counts, averages, etc) over the graph and store the results in a new relation. :alice :follows :bob . :bob :follows :charlie . :diana :follows :alice . :charlie :follows :alice. :emma :follows :bob . :alice rdf:type :Person . :bob rdf:type :Person . :charlie rdf:type :Person . :diana rdf:type :Person . :emma rdf:type :Person .
+The graph contains also information about people’s hobbies, as represented by the following triples. :alice :likes :tennis . :bob :likes :music . :diana :likes :swimming . :charlie :likes :football . :emma :likes :reading . :tennis rdf:type :Sport . :swimming rdf:type :Sport . :football rdf:type :Sport .
+We would like to count, for each person, the number of followers who enjoy practicing a sport.
+RDFox provides aggregation constructs which enable these kinds of computations.
+[?y, :sportyFollowerCnt, ?cnt] :- [?y, rdf:type, :Person], AGGREGATE( [?x, :follows, ?y], [?x, :likes, ?w], [?w, rdf:type, :Sport] ON ?y BIND COUNT(DISTINCT ?x) AS ?cnt) .
+In particular, the rule states that, if p1 Is a person, then count all distinct people who follow p1 and who like some sport, store the result in a count, and store the result in the new :sportyFollowerCnt relation.
+By issuing the following SPARQL query SELECT ?x ?cnt WHERE { ?x :sportyFollowerCnt ?cnt } We obtain that Bob has one sporty follower (Alice), whereas Alice has 2 sporty followers (Diana and Charlie). :bob 1 . :alice 2 .
+This type of computation is compatible with the computation of the transitive closure of a relation.
+For instance, we may be interested in counting the number of (direct or indirect) followers who are sporty.
+For this, we can use RDFox rules to compute the transitive closure of the follows relation:
+[?x, :followsClosure, ?y] :- [?x, :follows, ?y] .
+[?x, :followsClosure, ?z] :- [?x, :follows, ?y], [?y, :followsClosure, ?z] .
+And use the following rule to compute the desired count.
+[?y, :sportyFollowerClosureCnt, ?cnt] :- [?y, rdf:type, :Person], AGGREGATE( [?x, :followsClosure, ?y], [?x, :likes, ?w], [?w, rdf:type, :Sport] ON ?y BIND COUNT(DISTINCT ?x) AS ?cnt) .
+The following SPARQL query SELECT ?x ?cnt WHERE { ?x :sportyFollowerClosureCnt ?cnt } Then provides the following results. :charlie 3 . :bob 3 . :alice 3 .
+We observe that the count for Charlie does not seem quite right.
+Charlie is followed directly only by Bob (who is not sporty); however, Bob is followed by Alice (a sporty person) and Alice is followed by Diana (another sporty person).
+Naturally, we would have obtained a count of 2; however, Charlie also follows Alice and hence he transitively follows himself, thus the count of 3!.
+If we wanted to prevent this situation, we can modify the second rule implementing transitive closure to eliminate self-loops as follows:
+[?x, :followsClosure, ?z] :- [?x, :follows, ?y], [?y, :followsClosure, ?z], FILTER(?x != ?z) .
+Now, our query before yields the expected results :charlie 2 . :bob 3 . :alice 2 . 10.5.6.
+Arranging Concepts and Relations in a Hierarchical Structure  A common use of ontologies is to arrange concepts (called classes in OWL 2) and relations (called properties in OWL 2) in a subsumption hierarchy.
+For instance, we may want to say that dogs and cats are mammals and that mammals are animals.
+Such subsumption relationships can be easily represented using RDFox rules.
+[?x, rdf:type, :Mammal] :- [?x, rdf:type, :Dog] .
+[?x, rdf:type, :Mammal] :- [?x, rdf:type, :Cat] .
+[?x, rdf:type, :Animal] :- [?x, rdf:type, :Mammal] .
+Suppose that we have a graph with the following triples: :max rdf:type :Dog . :coco rdf:type :Cat . :teddy rdf:type :Mammal .
+Then, RDFox will deduce that Max and Coco are both mammals and therefore also animals, and also that Teddy is an animal.
+In particular, the query SELECT ?x WHERE { ?x rdf:type :Animal } yields the expected results :max . :teddy . :coco .
+It is also often the case that concepts are “assigned” certain properties.
+For instance, mammals have children which are also mammals.
+This is known as a range restriction in the ontology jargon, and can be represented using the following RDFox rule [?y, rdf:type, :Mammal] :- [?x, rdf:type, :Mammal],[?x, :hasChild, ?y] .
+If we now extend the graph with the following triples. :max :hasChild :betsy . :coco :hasChild :minnie .
+RDFox will derive automatically that both Betsy and Minnie are also mammals (and therefore also animals).
+Indeed, the query SELECT ?x WHERE { ?x rdf:type :Mammal } Will yield the expected results. :max . :betsy . :minnie . :teddy . :coco .
+In many applications, it is also useful to represent subsumption relations between the edges in a knowledge graph, to specify that one relation is more specific than the other.
+For instance, we may want to say that the :hasDaughter relation is more specific than the :hasChild relation.
+This can be represented using the following RDFox rule.
+[?x, :hasChild, ?y] :- [?x, :hasDaughter, ?y] .
+If we now add the following triple to the graph :betsy :hasDaughter :luna .
+RDFox can infer that Luna is the child of Betsy and therefore she is also a mammal, and an animal.
+Indeed, the previous query listing all mammals will now also include :luna as an answer. 10.5.7.
+Detecting Cyclic Relations  A common task in knowledge graphs is to identify cyclic relationships.
+For instance, partonomy relations are typically acyclic (e.g., if an engine is part of a car we would not expect the car also to be part of the engine!).
+In these cases, cycle detection may be needed to detect errors in the graph and thus provide data validation.
+A simple case of this pattern is when the relation we are checking for cyclicity is naturally transitive.
+Such is the case, for instance of the partOf relation.
+Consider the following graph: :a :partOf :b . :b :partOf :c . :c :partOf :a .
+The graph contains a cyclic path :a -> :b -> :c -> :a. via the :partOf relation.
+The relationship is naturally transitive and hence we can use the corresponding pattern to define it as such.
+[?x, :partOf, ?z] :- [?x, :partOf, ?y], [?y, :partOf, ?z] .
+The following SPARQL query now gives us which elements are part of others (directly or indirectly) SELECT ?x ?y WHERE { ?x :partOf ?y } Which gives us the following results :a :a . :c :c . :b :b . :a :c . :b :a . :c :b . :c :a . :b :c . :a :b .
+Cyclicity manifests itself by the presence of self-loops (e.g., :a is derived to be a part of itself ).
+Hence, it is possible to detect that the part of relation is cyclic by issuing the following SPARQL query.
+ASK { ?x :partOf ?x } Where the result comes true since the partonomy relation does have a self loop.
+Alternatively, we could have defined the following additional rule.
+[:partOf, rdf:type, :CyclicRelation] :- [?x, :partOf, ?x] .
+Which tells us that if any object is determined to be a part of itself, then the partonomy relation is cyclic.
+We can now issue the following SPARQL query, which retrieves the list of cyclic relations in the graph, which in this case consists of the relation :partOf.
+SELECT ?x WHERE { ?x rdf:type :CyclicRelation } 10.5.8.
+Defining Attributes and Relationships as Mandatory  In knowledge graphs, data is typically incomplete.
+For instance, suppose that the data in a knowledge graph has been obtained from a variety of sources.
+The graph has different types of information about people, such as their name, job title and so on.
+We notice that some people in the graph have a date of birth, whereas others do not.
+Because of the nature of our application, we would like to have the date of birth of each person represented in the graph, and would like to find out which people are missing this information; that is, we would like to make the presence of a date of birth value mandatory for every person in the graph.
+In relational databases this is typically solved by declaring an integrity constraint.
+Consider the following graph. :alice :dob "11/01/1987"^^xsd:string . :alice rdf:type :Person . :bob :dob "23/07/1980"^^xsd:string . :bob rdf:type :Person . :diana :height "168"^^xsd:integer . :diana rdf:type :Person . :emma :dob "10/02/1965"^^xsd:string . :emma rdf:type :Person . :max rdf:type :Dog .
+We can use the following rule to record absence of a date of birth for people.
+[?x, rdf:type, owl:Nothing] :- [?x, rdf:type, :Person], NOT EXISTS ?y IN ([?x, :dob, ?y]) .
+The rule says that if a person p lacks a date of birth d, then p incurs in a constraint violation.
+The constraint violation is recorded by making person p an instance of the special owl:Nothing unary relation, which is also present in the OWL 2 standard.
+The following SPARQL query then correctly reports that Diana violates the constraint (whereas Max does not because he is a dog).
+SELECT ?x WHERE { ?x rdf:type owl:Nothing } This type of computation combines well with type inheritance.
+For instance, suppose that we add the following triple: :charlie rdf:type :Student .
+And the following rule stating that every student is a person [?x, rdf:type, :Person] :- [?x, rdf:type, :Student] .
+Then, the previous query will give as results :charlie . :diana .
+Indeed, since Charlie is a student, he is also a person; furthermore, Charlie lacks date of birth information.
+The meaning of the special class owl:Nothing is different in RDFox and the OWL 2 standard.
+If one can derive from an OWL 2 ontology that that an object is an instance of owl:Nothing, then the ontology is inconsistent and querying the ontology becomes logically meaningless.
+Thus, the OWL 2 standard would require users to modify the data and/or ontology to fix the inconsistency prior to attempting to issue queries.
+Furthermore, it is worth noting that in OWL 2 it is not possible to write statements that check for “absence of information”; this is due to the monotonicity properties of OWL 2 as a fragment of first-order logic.
+In contrast, in RDFox, deriving an instance of owl:Nothing does not lead to a logical inconsistency and the answers to queries remain perfectly meaningful.
+In the pattern we have described, querying for owl:Nothing simply provides users with the list of all nodes in the graph for which mandatory information is missing.
+As a result, the user is warned rather than prevented from carrying out a task such as issuing a query.
+For instance, if we were to ask a query to RDFox such as the following SELECT ?x WHERE { ?x rdf:type :Person } We would still obtain the expected results (see below) despite the fact that there are constraint violations in the data. :alice . :charlie . :emma . :diana . :bob .
+This behavior is also different from relational databases, where the system would typically reject updates that lead to a constraint violation.
+As already mentioned, RDFox continues to operate normally and would accept any updates although constraints are being violated.
+Of course, users are encouraged to query the system in order to detect and rectify such violations. 10.5.9.
+Expressing Defaults and Exceptions  Rules can be used to write default statements (that is, statements that normally hold in the absence of additional information).
+This is especially useful to represent exceptions to rules, which is important, for instance, in legal domains.
+Consider the following graph saying that Tweety is a bird. :tweety rdf:type :Bird .
+Birds typically fly; that is, in the absence of additional information, the fact that Tweety is a bird constitutes sufficient evidence to believe that Tweety flies.
+There may, however, be exceptions.
+For instance, penguins are birds that cannot fly, and hence if we were to find out that Tweety is a penguin, then we would need to withdraw our default assumption that Tweety flies.
+RDFox rules can be used to model this type of default reasoning.
+In particular, consider a rule saying that birds fly unless they are penguins.
+[?x, rdf:type, :FlyingAnimal] :- [?x, rdf:type, :Bird], NOT [?x, rdf:type, :Penguin] .
+We can now issue a SPARQL query asking for the list of flying animals SELECT ?x WHERE { ?x rdf:type :FlyingAnimal } and obtain :tweety as an answer.
+Suppose now that we were to extend the graph with the following triple :tweety rdf:type :Penguin .
+Then, the same query would now give us an empty set of answers since, in the light of the new evidence, we can no longer conclude that Tweety flies. 10.5.10.
+Restructuring Data  Rules can be used to transform the structure of the data in a knowledge graph (e.g., by adding properties to a relationship).
+Consider the following knowledge graph representing employees and their employer. :alice :worksFor :oxford_university . :bob :worksFor :acme . :charlie :worksFor :oxford_university . :charlie :worksFor :acme .
+Suppose that we now want to expand the graph by adding further information about the employment, such as the salary and the start date.
+This information is relative to each specific employment of an employee; for instance, Charlie will have a different salary and start date for his employment with Oxford University and his employment with Acme.
+We can use RDFox rules to automatically restructure the data in the graph to account for the new information.
+To this end, we use the built-in tuple table SKOLEM , which allows us to associate a tuple of elements with a unique blank node.
+[?employment, rdf:type, :Employment], [?employment, :hasEmployee, ?employee], [?employment, :hasEmployer, ?employer] :- [?employee, :worksFor, ?employer], SKOLEM("Employment", ?employee, ?employer, ?employment) .
+For each :worksFor edge connecting a person ?employee with their employer ?employer , the rule creates a blank node ?employment , which is unique for the tuple ("Employment", ?employee, ?employer) .
+Furthermore, the rule relates the blank node ?employment to the entities ?employee and ?employer using the :hasEmployee and :hasEmployer properties, respectively.
+The query SELECT ?employment ?property ?object WHERE { ?employment ?property ?object . ?employment rdf:type :Employment } gives us the new triples generated by the application of the previous rule _:Employment_116_200 :hasEmployer :acme . _:Employment_116_200 :hasEmployee :bob . _:Employment_116_200 rdf:type :Employment . _:Employment_113_199 :hasEmployer :oxford_university . _:Employment_113_199 :hasEmployee :alice . _:Employment_113_199 rdf:type :Employment . _:Employment_156_199 :hasEmployer :oxford_university . _:Employment_156_199 :hasEmployee :charlie . _:Employment_156_199 rdf:type :Employment . _:Employment_156_200 :hasEmployer :acme . _:Employment_156_200 :hasEmployee :charlie . _:Employment_156_200 rdf:type :Employment .
+New data relative to an employment, such as associated salary and start date, can be inserted using rules like the following ones.
+[?z, :hasSalary, "60000"^^xsd:integer] :- SKOLEM("Employment", :alice, :oxford_university, ?z) .
+[?z, :hasSalary, "55000"^^xsd:integer] :- SKOLEM("Employment", :charlie, :oxford_university, ?z) .
+[?z, :hasSalary, "40000"^^xsd:integer] :- SKOLEM("Employment", :charlie, :acme, ?z) .
+[?z, :hasSalary, "45000"^^xsd:integer] :- SKOLEM("Employment", :bob, :acme, ?z) .
+Note that each of these rules uses the SKOLEM built-in table in the rule body to make sure that they match correctly to the generated triples listed above.
+To check that the salary data has been inserted correctly, we can issue the query SELECT ?x (SUM(?y) AS ?income) WHERE { ?e :hasEmployee ?x . ?e :hasSalary ?y } GROUP BY ?x which gives us the total yearly income for each person by summing up the salary of each of their employments, giving the expected results. :alice 60000 . :charlie 95000 . :bob 45000 .
+Data restructuring via reification has multiple applications.
+In particular, RDF can only represent directly binary relations and hence the representation of higher arity relations is only possible through reification.
+Reification is also needed if we want to qualify or annotate edges in a graph (e.g., by adding weights, or dates, or other relevant properties). 10.5.11.
+Representing Ordered Relations  Many relations naturally imply some sort of order, and in such cases we are often interested in finding the first and last elements of such orders.
+For instance, consider the managerial structure of a company. :alice :manages :bob . :bob :manages :jeremy . :bob :manages :emma . :emma :manages :david . :jeremy :manages :monica .
+We would like to recognize which individuals in the company are “top level managers”.
+We can use a rule to define a top level manager as a person who manages someone and is not managed by anyone else.
+[?x, rdf:type, :TopLevelManager] :- [?x, :manages, ?y], NOT EXISTS ?z IN ([?z, :manages, ?x]) .
+The query SELECT ?x WHERE { ?x rdf:type :TopLevelManager } asking for the list of top level managers gives as :alice as the answer.
+We can now use a rule to define “junior employees” as those who have a manager but who themselves do not manage anyone else.
+[?x, rdf:type, :JuniorEmployee] :- [?y, :manages, ?x], NOT EXISTS ?z IN ([?x, :manages, ?z]) .
+The query SELECT ?x WHERE { ?x rdf:type :JuniorEmployee } Gives us :monica and :david as answers.
+Prominent examples of ordered relations where we may be interested in finding the top and bottom elements are partonomies (part-whole relations) and is-a hierarchies. 10.5.12.
+Representing Equality Cliques  When integrating data from multiple sources using a knowledge graph, it is usually the case that objects from different sources are identified to be the same.
+In this setting, we want to be able to answer complex queries that span across the different sources, and to easily identify the source where the information came from.
+Additionally, we may not want to use the equality predicate owl:sameAs to identify the objects since our rule set may contain rules involving aggregation and/or negation-as-failure which cannot be used in conjunction with equality.
+For instance, assume that we are integrating sources s1, s2, and s3 containing information about music artists and records.
+Assume that we have determined (e.g., using entity resolution techniques or exploiting explicit links between the sources) that “John Doe” in s1 is the same as “J.
+H.
+Doe” in s2 and “The Blues King” in s3.
+We can represent these correspondences using a binary relation ost:same which we define as reflexive, symmetric, and transitive using RDFox rules as given next. s1:john_doe rdf:type s1:Artist . s2:john_H_doe rdf:type s2:Performer . s3:blues_king rdf:type s3:Musician . s1:john_doe ost:same s2:john_H_doe . s1:john_doe ost:same s3:blues_king . s2:john_H_doe ost:same s3:blues_king .
+[?x, ost:same, ?x] :- [?x, ost:same, ?y] .
+[?y, ost:same, ?x] :- [?x, ost:same, ?y] .
+[?x, ost:same, ?z] :- [?x, ost:same, ?y], [?y, ost:name, ?z] .
+In these way, the aforementioned objects form a clique in the integrated graph.
+Indeed, the query SELECT ?x ?y WHERE { ?x ost:same ?y } returns the answer s3:blues_king s2:john_H_doe . s2:john_H_doe s3:blues_king . s2:john_H_doe s2:john_H_doe . s3:blues_king s3:blues_king . s2:john_H_doe s1:john_doe . s3:blues_king s1:john_doe . s1:john_doe s1:john_doe . s1:john_doe s3:blues_king . s1:john_doe s2:john_H_doe .
+In order to be able to query across artists from different sources, we want to define a unique representative for the elements in the clique.
+A plausible strategy is to first select the smallest individual according to some pre-defined total order (the order itself is irrelevant, and we can choose for example the order on IRIs provided by RDFox).
+To select the smallest object we introduce the following rules.
+[?x, ost:comesBefore, ?y] :- [?x, ost:same, ?y], FILTER (?x < ?y) .
+[?y, rdf:type, ost:NotSmallestInClique] :- [?x, ost:comesBefore, ?y] .
+[?x, rdf:type, ost:SmallestInClique] :- [?x, ost:comesBefore, ?y], NOT [?x, rdf:type, ost:NotSmallestInClique] .
+The first rule generates an order amongst the elements of the clique.
+The second rule says that if ?x comes before ?y then ?y is not the smallest element.
+The third rule finally identifies the smallest element in the clique.
+The following query SELECT ?x ?y WHERE { ?x ost:comesBefore ?y } reveals the generated order s2:john_H_doe s3:blues_king . s1:john_doe s2:john_H_doe . s1:john_doe s3:blues_king . where s1:john_doe is correctly identified as the smallest element by the query.
+SELECT ?x WHERE { ?x rdf:type ost:SmallestInClique } Now that we have identified an element of the clique we can create a representative of the clique using the built-in table SKOLEM , as given next.
+[?z, rdf:type, ost:Artist], [?z, ost:represents, ?x] :- [?x, rdf:type, ost:SmallestInClique], SKOLEM("OSTArtist", ?x, ?z) .
+[?x, ost:represents, ?z] :- [?x, ost:represents, ?y], [?y, ost:comesBefore, ?z] .
+The first rule creates a blank node that is an ost:Artist and that represents the smallest element in the clique.
+The second rule ensures that the new blank node also represents every other element in the clique.
+The query SELECT ?z ?x WHERE { ?z ost:represents ?x } Yields the expected result. _:OSTArtist_2136 s2:john_H_doe . _:OSTArtist_2136 s3:blues_king . _:OSTArtist_2136 s1:john_doe .
+It is possible to achieve the same results by using an optimized set of rules that generates fewer triples.
+In particular, this optimized representation avoids axiomatizing the ost:same property as reflexive and symmetric.
+Let’s reconsider the data. s1:john_doe rdf:type s1:Artist . s2:john_H_doe rdf:type s2:Performer . s3:blues_king rdf:type s3:Musician . s1:john_doe ost:same s2:john_H_doe . s1:john_doe ost:same s3:blues_king . s2:john_H_doe ost:same s3:blues_king .
+We now redefine directly the ost:comesBefore relation using the following rules [?x, ost:comesBefore, ?y] :- [?x, ost:same, ?y], FILTER(?x > ?y) .
+[?x, ost:comesBefore, ?y] :- [?y, ost:same, ?x], FILTER(?x > ?y) .
+[?x, ost:comesBefore, ?z] :- [?x, ost:comesBefore, ?y], [?y, ost:comesBefore, ?z], FILTER(?x > ?y) .
+[?x, ost:comesBefore, ?y] :- [?z, ost:comesBefore, ?x], [?z, ost:comesBefore, ?y], FILTER(?x > ?y) .
+The query SELECT ?x ?y WHERE { ?x ost:comesBefore ?y } reveals a generated order.
+Once we have the order, we proceed as before. 10.5.13.
+Populating a Knowledge Graph from a Data Source  Rules can be used to bring information from an external data source into a knowledge graph.
+Data feeding a knowledge graph often stems from different types of external data sources, such as relational databases.
+We can use RDFox rules to specify how each record in the external data source corresponds to a set of nodes and edges in the graph.
+RDFox allows us to load the information in an external data source by means of a two-stage process.
+The first step is to register the data source.
+For instance, consider the following data about the employees of ACME corporation in a CSV file named employee.csv . emp_id,emp_name,job_name,hire_date,salary 68319,KAYLING,PRESIDENT,,200000 66928,BLAZE,MANAGER,2017-05-01,90000 67453,JONES,ASSISTANT,2018-05-03,35000 We want to create a data source tuple table to allow access to the file with 5 arguments, one per column in the table, and with name employee .
+This can be achieved using the following commands. dsource register "EmployeeDS" \ type delimitedFile \ file "$(dir.root)csv/employee.csv" \ header true The net result is that the employee.csv file is registered as an RDFox data source.
+We called the data source EmployeeDS.
+Here, file specifies the path to the file, and header indicates whether the file contains a header row.
+At this point, we can check whether the data source has been registered successfully by running the command dsource show EmployeeDS to obtain the expected information Data source type name: delimitedFile Data source name:
+EmployeeDS Parameters: file = employee.csv header = true ------------------------------------------------------------ Table name: employee.csv Column 1: emp_id xsd:integer Column 2: emp_name xsd:string Column 3: job_name xsd:string Column 4: hire_date xsd:string Column 5: salary xsd:integer ------------------------------------------------------------ The next step creates the data source tuple table. tupletable create employee \ "dataSourceName" "EmployeeDS" \ "columns" 5 \ "1" "https://rdfox.com/examples/{1}_{2}" \ "1.datatype" "iri" \ "2" "{emp_name}" \ "2.datatype" "string" \ "3" "{job_name}" \ "3.datatype" "string" \ "4" "{hire_date}" \ "4.datatype" "string" \ "4.if-empty" "absent" \ "5" "{salary}" \ "5.datatype" "integer" \ "5.if-empty" "absent" The name of the new table will be employee and it will contain 5 arguments.
+The first argument provides an identifier for each employee as a composition of the prefix’s IRI, the employee ID (first column in the data source) and the employee name (second column).
+The remaining arguments are obtained from the column of the corresponding name in the data source.
+Since not every employee may have a hiring date or a known salary, the conditions “if-empty” indicate that the corresponding argument in the RDFox relation will be left empty.
+Once the tuple table has been created in RDFox, it can be queried in SPARQL and used in rule bodies.
+To query it in SPARQL, we use an RDFox extension to SPARQL which uses the TT syntax, where TT stands for tuple table.
+The SPARQL query:
+SELECT ?x ?y ?z ?u ?w WHERE { TT employee { ?x ?y ?z ?u ?w } } Will return the following answers: :68319_KAYLING "KAYLING" "PRESIDENT" UNDEF 200000 . :66928_BLAZE "BLAZE" "MANAGER" "01/05/2017" 90000 . :67453_JONES "JONES" "ASSISTANT" "03/05/2018" 35000 .
+As we can see, the UNDEF entry represents that the value of the hiring date for the first employee is missing.
+Now that we have the employee tuple table set up, the next step would be to turn its data in the form of a graph.
+For this we can use the following rule, where the employee tuple table forms the antecedent and the generated edges in the graph based on it are described in the consequent of the rule:
+[?x, rdf:type, :Employee], [?x, :worksFor, :acme], [?x, :hasName, ?y], [?x, :hasJob, ?z], [?x, :hiredOnDate, ?u], [?x, :salary, ?w] :- employee(?x, ?y, ?z, ?u, ?w) .
+The materialization of the rule generates a graph from the data in the employee tuple table.
+The derived facts in the graph can now be used in other rules to define additional concepts and relations.
+For instance, we can add the rules stating that every employee is a person and every person with a salary higher than £50,000 pays tax at a higher-rate.
+[?x, rdf:type, :Person ] :- [?x, rdf:type, :Employee ] .
+[?x, :taxRate, :higher-rate] :- [?x, rdf:type, :Person], [?x, :salary, ?y], FILTER(?y > 50000) .
+Now we can query the graph to obtain, for instance, the list of high income tax payers.
+SELECT ?x WHERE { ?x :taxRate :higher-rate } And obtain the expected results. :68319_KAYLING . :66928_BLAZE .
+Data can be imported from different data sources and merged together in the graph.
+For instance, if we had a different employee table (e.g., for a different department) in another CSV, we could register it as a new RDFox data source and exploit a rule akin to the one before to further populate the binary relations in the graph, as well as to create new ones. 10.6.
+OWL 2 Support in RDFox  This section describes the support in RDFox for OWL 2—the W3C standard language for representing ontologies. 10.6.1.
+OWL 2 Ontologies  An OWL 2 ontology is a formal description of a domain of interest.
+OWL 2 defines three different syntactic categories.
+The first syntactic category are Entities , such as classes , properties and individuals , which are identified by an IRI.
+Classes represent sets of objects in the world; for instance, a class :Person can be used to represent the set of all people.
+Properties represent binary relations, and OWL 2 distinguishes between two different types of properties: data properties describe relationships between objects and literal values (e.g., the data property :age can be used to represent a person’s age), whereas object properties describe relationships between two objects (e.g., an object property :locatedIn can be used to relate places to their locations).
+Finally, individuals in OWL 2 are used to refer to concrete objects in the world; for instance, the individual :oxford can be used to refer to the city of Oxford.
+The second syntactic category are expressions , which can be used to describe complex classes and relations constructed in terms of simpler ones.
+For instance the expression ObjectUnionOf( :Cat :Dog) represents the set of animals that are either cats or dogs.
+The third syntactic category are axioms , which are statements about entities and expressions that are asserted to be true in the domain described.
+For instance, the OWL 2 axiom SubClassOf(:Scientist :Person) states that every scientist is a person by defining the class :Scientist to be a subclass of the class :Person .
+The main component of an OWL 2 ontology is a set of axioms.
+Ontologies can also import other ontologies and contain annotations.
+OWL 2 ontologies can be written using different syntaxes.
+RDFox can currently load ontologies written in the functional syntax as well as ontologies written in the turtle syntax . 10.6.2.
+OWL 2 Ontologies vs.
+RDFox Rules  OWL 2 and the rule language of RDFox are languages for knowledge representation with well-understood formal semantics.
+Both languages share a common core.
+That is, certain types of rules can be equivalently rewritten as OWL 2 axioms and vice-versa.
+For instance, the following axiom and rule both express that every scientist is also a person.
+SubClassOf(:Scientist :Person) [?x, rdf:type, :Person] :- [?x, rdf:type, :Scientist] .
+In particular, the OWL 2 specification describes the OWL 2 RL profile—a subset of the OWL 2 language that is amenable to implementation via rule-based technologies.
+There are, however, many other aspects where OWL 2 and the rule language of RDFox differ, and there are many constructs in OWL 2 that cannot be translated as RDFox rules and vice-versa.
+For instance, OWL 2 can represent disjunctive knowledge , i.e., we can write an OWL 2 axiom saying that every student is either an undergraduate student, a graduate student, or a doctoral student:
+SubClassOf(:Student ObjectUnionOf(:UndergraduateSt :MscSt :DoctoralSt) ) RDFox rules, however, do not support disjunction.
+There are also many kinds of rules in RDFox that cannot be expressed using OWL 2 axioms; these include, for instance, rules involving features such as aggregation, negation-as-failure or certain built-in functions; furthermore, there are also plain Datalog rules that do not have a correspondence in OWL 2. 10.6.3.
+Loading OWL 2 Ontologies into RDFox  RDFox manages OWL ontologies in form of axioms written in the Functional-Style Syntax of OWL.
+For example, one can load the following ontology into RDFox using any of the available APIs for loading data.
+Prefix(:=<http://www.example.com/ontology1#>) Ontology( <http://www.example.com/ontology1> Annotation(rdfox:NamedGraph :graph1) SubClassOf( :Child :Person ) SubClassOf( :Person ObjectUnionOf(:Child :Adult) ) ) This ontology contains two axioms.
+The first axiom states that every child is also a person, and the second axiom states that every person is either a child or an adult.
+The first axiom can be faithfully translated into RDFox rules, whereas the second one cannot.
+RDFox provides a full API for OWL 2 and can parse, store and manage all possible forms of OWL 2 axioms in Functional-Style Syntax.
+As a result, RDFox will load both axioms, even though the second axiom cannot be fully translated into rules.
+To load the ontology in RDFox, we can initialize a data store (see the Getting Started guide) and import a file in the usual way.
+For example, assuming that the above ontology is stored in file ontology.txt , we can import the ontology as follows. import ontology.txt The ontology axioms are now loaded in the data store and kept internally in a separate container for axioms.
+Moreover, after loading, the axioms are translated into rules in order to facilitate reasoning.
+At this point, RDFox will issue a warning saying that the second axiom cannot be translated into rules.
+The rules obtained from axioms are kept separately from the rules imported explicitly, and the two sets of rules are managed separately.
+We can now import a Turtle file containing the following triples: :jen rdf:type :Child . :jen :hasParent :mary .
+Finally, we can import the following RDFox rule saying that the parent of a child is a person.
+[?y, rdf:type, :Person] :- [?x, :hasParent, ?y], [?x, rdf:type, :Child] .
+Now, we are in a position to perform reasoning.
+For this we can issue a SPARQL query asking for the list of all people:
+SELECT ?x WHERE { ?x rdf:type :Person } To answer the query, RDFox will consider all imported triples together with all rules added by the user and all rules obtained by the translation of OWL 2 axioms.
+In particular, the following rules and facts contribute to answering the query, where the first rule comes from the translation of the first ontology axiom as a rule (the second axiom in the ontology is ignored): :jen rdf:type :Child . :jen :hasParent :mary .
+[?x, rdf:type, :Person] :- [?x, rdf:type, :Child] .
+[?y, rdf:type, :Person] :- [?x, :hasParent, ?y], [?x, rdf:type, :Child] .
+As a result, RDFox will return as answers both :jen and :mary .
+Indeed, :jen is a child and hence also a person by the first rule; in turn, :mary is the parent of :jen and hence also a person by the second rule.
+The translation of OWL 2 axioms into rules for the purpose of reasoning is performed on a best-effort basis.
+In particular, sometimes RDFox may not be able to translate the whole of given axiom, but may still be able to translate a part of it.
+For example, suppose that we add to our data store the following axiom saying that every person is a human and also either an adult or a child:
+SubClassOf(:Person ObjectIntersectionOf(:Human ObjectUnionOf(:Child :Adult))) RDFox will load the axiom correctly, but will again issue a warning due to the use of disjunction in the axiom.
+Suppose that we now issue the query SELECT ?x WHERE { ?x rdf:type :Human } RDFox will correctly return both :jen and :mary as answers.
+Indeed, as already explained, RDFox can deduce that both :jen and :mary are persons.
+Now, although the last axiom we imported cannot be fully translated into rules, RDFox will still be able to partly translate it into the following rule:
+[?x, rdf:type, :Human] :- [?x, rdf:type, :Person] . from which we can deduce that :jen and :mary are also humans. 10.6.4.
+Associating Ontologies with Named Graphs  In all examples thus far, all reasoning was performed within the default graph.
+However, RDFox manages a separate set of axioms for each named graph, and these axioms operate only on triples of the corresponding named graph.
+There is no standard way to associate an OWL ontology with a specific named graph.
+Thus, RDFox uses a proprietary extension: an ontology is associated with a named graph by annotating the ontology with the rdfox:NamedGraph annotation property and an IRI or string literal containing the full name of the named graph.
+If an ontology does not contain such an annotation, it is associated with the default graph.
+For example, the annotation on the following ontology instructs RDFox to load the ontology into named graph :graph1 ; after doing so, the axioms are applicable to triples in that named graph.
+Prefix(:=<http://www.example.com/ontology1#>) Prefix(rdfox:=<https://rdfox.com/vocabulary#>) Ontology( <http://www.example.com/ontology1> Annotation(rdfox:NamedGraph :graph1) SubClassOf( :Child :Person ) SubClassOf( :Person ObjectUnionOf(:Child :Adult) ) ) 10.6.5.
+Loading Ontologies from Triples  An OWL 2 ontology can also be loaded from triples that use the standard representation of OWL 2 ontologies as triples .
+This process involves two steps.
+First, the triples are loaded into the default or any named graph.
+Second, RDFox is instructed to parse this named graph, extract the axioms, and add them to the same or a different named graph.
+For example, we can import the following triples into the named graph :Ontology . :Child rdfs:subClassOf :Person . :Person rdfs:subClassOf :Human .
+The following command says to RDFox to parse the graph :Ontology for OWL axioms, and add the result to the graph :Data . importaxioms :Ontology > :Data The effect of this command is the same as if the following OWL axioms in Functional-Style Syntax were imported directly into the :Data named graph.
+SubClassOf( :Child :Person ) SubClassOf( :Person :Human ) As a result of this, RDFox will also transform these axioms into the following rules. :Person[?x] :Data :- :Child[?x] :Data . :Human[?x] :Data :- :Person[?x] :Data .
+These rules will be taken into account when computing the materialisation.
+Thus, if graph :Data contains triple :jen rdf:type :Child . , the following query asking for the list of all humans will return :jen as answer.
+SELECT ?x WHERE { GRAPH :Data { ?x rdf:type :Human } } As with general importation operations, it is possible to specify that the axioms represented as triples in the source named graph should be subtracted from, rather than added to, the axioms of the target named graph.
+The following command achieves the reverse of the example importaxioms command above (assuming that the triples stored in graph :Ontology have not changed in between): importaxioms :Ontology > :Data - The rules derived as a result of the additive import will be automatically retracted as a result of subtractive import. 10.6.6.
+Subsumption Reasoning  OWL 2 reasoners implement a wide range of reasoning services, which are not limited to query answering.
+In particular, OWL reasoners can solve the subsumption problem: given a class, they would compute all its inferred superclasses.
+For example, given SubClassOf( :Child :Person ) SubClassOf( :Person :Human ) an OWL 2 reasoner would be able to infer SubClassOf( :Child :Human ) as a consequence, since from the fact that every child is a person, and every person is a human, that every child is also a human.
+RDFox is a materialization-based query answering system, and it has not been designed for solving problems such as class subsumption.
+RDFox, however, is still able to detect some such subsumption relations should this be required in an application.
+One way to achieve this is to reduce subsumption to query answering.
+In particular, to check whether it is true that every child is a human, we can introduce a fresh object in the data store, which we make an instance of :Child .
+That is, we can import the following triple, where :a_child is a fresh URI. :a_child rdf:type :Child .
+Then, we would test whether :a_child is inferred to be also a human by issuing the query ASK { :a_child rdf:type :Human } which would return true.
+Another way of testing subsumption is to import the ontology as a set of triples: :Child rdfs:subClassOf :Person . :Person rdfs:subClassOf :Human .
+Moreover, one can import a simple, builtin rule set for subsumption reasoning by running the following shell command: import <rdfox:TBoxReasoning> or through equivalent operations for importing from IRIs in REST and Java APIs (as described in Section 16.10.2.2 ).
+Note that this requires the proprietary URL scheme rdfox to appear in the allowed-url-schemes-on-import setting for the containing RDFox Server (as it does by default).
+See Section 4.3 for more information about this and other server parameters.
+The rules of <rdfox:TBoxReasoning> partially encode the semantics of the RDFS and OWL vocabularies; in particular, it will add rules representing the relation rdfs:subClassOf as transitive and reflexive, and also saying that every class is a subclass of owl:Thing .
+As a result, the following SPARQL query SELECT ?x WHERE { :Child rdfs:subClassOf ?x } will correctly return all superclasses of :Child as :Person . :Human . owl:Thing . :Child . 10.6.7.
+Current Limitations  The following details should be taken into account by users of RDFox who rely on OWL 2 ontologies in their applications:
+RDFox currently does not support ontology importation.
+That is, if we load ontology O, which in turns imports O1 and O2, only the contents of O will be loaded (and not those of O1 and O2).
+RDFox also does not support associating axioms to a given ontology.
+In particular, if we load two different ontology files, all the axioms in both ontologies will be added to the same bag of axioms associated with a named graph. 10.7.
+SWRL Support in RDFox  This section describes the support in RDFox for SWRL —a format for representing rules on the Semantic Web. 10.7.1.
+SWRL Rules  The SWRL specification extends the set of OWL axioms to include also Datalog rules.
+It thus enables rules to be combined with an OWL ontology.
+SWRL rules can be written using different syntaxes.
+RDFox can currently load SWRL rules written in the functional syntax as well as rules written in the turtle syntax.
+SWRL rules can be easily expressed as RDFox rules, with the only exception of rules containing certain built-ins which do not have a direct correspondence to SPARQL 1.1 built-in functions. 10.7.2.
+Loading SWRL Rules in RDFox  RDFox treats SWRL as an extension of OWL 2 and hence SWRL rules are loaded and managed in exactly the same way as OWL 2 axioms.
+For instance, consider the following text file swrl-rules.txt containing an ontology written in the functional syntax of SWRL:
+Prefix(:=<http://www.example.com/ontology1#>) Ontology( <http://www.example.com/ontology1> Implies(Antecedent(:Student(I-variable(:x1))) Consequent(:Person(I-variable(:x1)))) ) The ontology consists of a rule stating that every student is a person.
+To load the ontology in RDFox, we can initialize a data store (see the Getting Started guide) and import the the file in the usual way. import swrl-rules.txt The SWRL rule is now loaded in the data store and kept internally in the “axioms bag”.
+We can next import a turtle file containing the triple: :jen rdf:type :Student .
+Now, we are in a position to perform reasoning.
+For this we can issue a SPARQL query asking for the list of all people:
+SELECT ?x WHERE { ?x rdf:type :Person } To answer the query, RDFox will translate SWRL into RDFox rules, and will return :jen as a result.
+SWRL can also be loaded from a turtle file, following the relevant syntax in the SWRL specification.
+For this, RDFox follows exactly the same approach as with OWL 2 axioms expressed as triples (see Section 10.6.5 ). 10.7.3.
+Negation-As-Failure in SWRL  By default SWRL rules that feature ObjectComplementOf are rejected by RDFox, since negation in RDFox is interpreted under the closed-world assumption, while negation in SWRL is interpreted under the open-world assumption.
+This behavior can be overridden by initializing a store with the option swrl-negation-as-failure set to on , as described in Section 5.4.1.7 .
+Example:
+Consider, for example, the following SWRL rule with a suitably defined default prefix Implies ( Antecedent ( :A(I-variable(:x)) ObjectComplementOf(:B)(I-variable(:x)) ) Consequent(:C(I-variable(:x))) ) If a store is initialized with the option swrl-negation-as-failure on , RDFox will convert the above SWRL rule to the following RDFox rule :C[?x] :- :A[?x], NOT :B[?x] .
+The feature is limited to class expressions of the form ObjectComplementOf(C) , where C is a class name.
+The usage of ObjectComplementOf in complex class expressions or in the consequent of a SWRL rule is not supported. 10.7.4.
+Current Limitations  SWRL comes with a large number of built-in functions, but unfortunately only a subset of them maps directly to SPARQL 1.1 built-in functions, which are the those natively supported in RDFox.
+The list of built-in functions not supported is as follows: swrlb:roundHalfToEven , swrlb:normalizeSpace , swrlb:translate , swrlb:anyURI , swrlb:tokenize , swrlb:yearMonthDuration , swrlb:dayTimeDuration , swrlb:dateTime , swrlb:date , swrlb:time , swrlb:addYearMonthDurations , swrlb:subtractYearMonthDurations , swrlb:multiplyYearMonthDuration , swrlb:divideYearMonthDurations , swrlb:addDayTimeDurations , swrlb:subtractDayTimeDurations , swrlb:multiplyDayTimeDurations , swrlb:divideDayTimeDuration , swrlb:subtractDates , swrlb:subtractTimes , swrlb:addYearMonthDurationToDateTime , swrlb:addDayTimeDurationToDateTime , swrlb:subtractYearMonthDurationFromDateTime , swrlb:subtractDayTimeDurationFromDateTime , swrlb:addYearMonthDurationToDate , swrlb:addDayTimeDurationToDate , swrlb:subtractYearMonthDurationFromDate , swrlb:subtractDayTimeDurationFromDate , swrlb:addDayTimeDurationToTime , swrlb:subtractDayTimeDurationFromTime , swrlb:subtractDateTimesYieldingYearMonthDuration , swrlb:subtractDateTimesYieldingDayTimeDuration , swrlb:listConcat , swrlb:listIntersection , swrlb:listSubtraction , swrlb:member , swrlb:length , swrlb:first , swrlb:rest , swrlb:sublist , and swrlb:empty . 10.8.
+Explaining Reasoning Results  RDFox can display a proof of how a given triple has been derived.
+Such proofs can be very useful for explaining reasoning results to users as well as for understanding the reasoning process.
+Consider a data store containing the triple :kiki rdf:type :Cat . and the following rules:
+[?x, rdf:type, :Mammal] :- [?x, rdf:type, :Cat] .
+[?x, rdf:type, :Animal] :- [?x, rdf:type, :Mammal] .
+As a result of reasoning, RDFox will derive the following new triples: :kiki rdf:type :Mammal . :kiki rdf:type :Animal .
+Suppose that we want to understand how triple :kiki rdf:type :Animal has been derived.
+A way to do this in RDFox is to use the explain command in the shell as follows: explain :Animal[:kiki] RDFox will explicate the reasoning process by displaying the following proof of the requested fact: :Animal[:kiki] :Animal[?x] :- :Mammal[?x] . | { ?x -> :kiki } :Mammal[:kiki] :Mammal[?x] :- :Cat[?x] . | { ?x -> :kiki } :Cat[:kiki] EXPLICIT We can read the proof bottom-up.
+Starting from fact :Cat[:kiki] in the data, we apply rule :Mammal[?x] :- :Cat[?x] by matching variable ?x to :kiki and derive the fact :Mammal[:kiki] .
+The application of rule :Animal[?x] :- :Mammal[?x] to fact :Mammal[:kiki] where ?x is matched to :kiki yields the desired result.
+Typically, there will be several different proofs for a given fact.
+To see this, suppose that we add to our data store the triples :kiki :eats :luxury_pet_treat . :luxury_pet_treat rdf:type :PetFood . and the rule [?x, rdf:type, :Animal] :- [?x, :eats, ?y], [?y, rdf:type, :PetFood] .
+Then, in addition to the previous one, the following is also a proof that :kiki is an animal: :Animal[:kiki] :Animal[?x] :- :eats[?x,?y], :PetFood[?y] . | { ?x -> :kiki, ?y -> :luxury_pet_treat } :eats[:kiki,:luxury_pet_treat] EXPLICIT :PetFood[:luxury_pet_treat] EXPLICIT Indeed, we can match rule :Animal[?x] :- :eats[?x, ?y], :PetFood[?y] to the data facts :eats[:kiki, :luxury_pet_treat] and :PetFood[:luxury_pet_treat] by matching variable ?x to :kiki and variable ?y to :luxury_pet_treat to derive :Animal[:kiki] .
+If we run again the explanation command explain :Animal[:kiki] RDFox will display both proofs. :Animal[:kiki] :Animal[?x] :- :Mammal[?x] . | { ?x -> :kiki } :Mammal[:kiki] :Mammal[?x] :- :Cat[?x] . | { ?x -> :kiki } :Cat[:kiki] EXPLICIT :Animal[?x] :- :eats[?x,?y], :PetFood[?y] . | { ?x -> :kiki, ?y -> :luxury_pet_treat } :eats[:kiki,:luxury_pet_treat] EXPLICIT :PetFood[:luxury_pet_treat] EXPLICIT Since the number of possible different proofs for a given fact may be very large, we may be content with just obtaining a single one.
+We can use the explain command to obtain a shortest proof as follows: explain shortest :Animal[:kiki] which will return the following proof :Animal[:kiki] :Animal[?x] :- :eats[?x,?y], :PetFood[?y] . | { ?x -> :kiki, ?y -> :luxury_pet_treat } :eats[:kiki,:luxury_pet_treat] EXPLICIT :PetFood[:luxury_pet_treat] EXPLICIT Indeed, this is the shortest proof as it involves a single rule application, whereas the alternative proof involves two rule applications.
+When using the explanation command, it is important to understand that rules in RDFox can come from different sources User rules such as the ones in our previous example are rules introduced directly by the user.
+User axioms are OWL 2 axioms imported by the user, which are internally translated into rules.
+Special rules are rules that have no direct connection with the information provided by the user and are internally added by RDFox.
+An example of special rules are the rules for subsumption reasoning provided at the end of the previous section, and another example are the rules obtained by axiomatizing equality as a transitive, reflexive and symmetric relation.
+Consider for example a data store where we import the following triple: :kiki rdf:type :Cat . and also the following OWL 2 axioms in functional syntax SubClassOf( :Cat :Mammal ) SubClassOf( :Mammal :Animal ) If we now run the explain command explain :Animal[:kiki] we obtain the same proof as before: :Animal[:kiki] :Animal[?X] :- :Mammal[?X] . | { ?X -> :kiki } :Mammal[:kiki] :Mammal[?X] :- :Cat[?X] . | { ?X -> :kiki } :Cat[:kiki] EXPLICIT It is important to note, however, that the explicitly given OWL 2 axioms are not displayed in the proof, but rather the rules that are obtained from them internally. 10.8.1.
+Format Encoding Explanation of Reasoning  RDFox uses a JSON-based format to capture explanation of reasoning.
+The MIME type of the format is application/x.explanation+json .
+The structure of this format is described in Section 16.17 . 10.8.2.
+Explanation in the Web Console  The Console provides a mode for fetching, and then visualizing, an explanation from RDFox.
+This may be accessed from from a context menu on an edge representing a derived fact in the Explore mode.
+Alternatively the “Explain” mode may be selected on the mode selector at the top right of the Console, and the fact to explain entered in the text field in Datalog syntax.
+The explanation fetched will always be a “shortest proof” ( Section 10.8 ).
+The Explain mode is divided into three panes.
+The proof tree on the left shows the structure of the explanation as a hierarchy of derived facts, where the leaf nodes of the tree are the supporting explicit facts.
+Selecting a derived fact on the tree by clicking it displays the rule that derived it in the details pane.
+If the fact is a triple, a checkbox next to the rule may also be selected to display the fact on the graph view.
+If a fact is both selected in the tree and its checkbox is ticked, then the fact displayed in the graph view is highlighted.
+In addition to facts, noteworthy fragments of rules that derived each fact are displayed beneath each fact, with variables replaced with the substitutions in the explanation.
+The graph view contains the triples checked in the proof tree, and may provide a visual aid to the understanding of the explanation.
+The edges of the graph may be selected to select the corresponding fact in the proof tree.
+Context menus on the nodes and edges allow transition to new “Explore” and “Explain” sessions respectively.
+The details pane displays a Datalog rule associated with the fact or rule fragment selected in the proof tree.
+If a derived fact is selected, the rule that derived the fact is shown, with the relevant head atom highlighted.
+If an explicit fact is selected, the rule which derived the fact immediately above it in the tree is shown, and the relevant body atom (for the selected fact) is highlighted.
+If a filter, aggregate, negation or bind atom is selected, the containing rule is shown with the selected atom highlighted.
+In each case the rule can be shown as Datalog (“Unbound”) or with the substitutions from the explanation in place of the variables (“Grounded”). 10.9.
+Monitoring Reasoning in RDFox  This section gives an overview of the different ways of analyzing the rules in RDFox and monitoring the reasoning progress.
+For this section we will be using the F1 demo dataset . 10.9.1.
+Inspecting Rules in RDFox  We begin by describing how to use the info command to analyze the rules loaded into RDFox.
+First, we create a datastore and import the rules specified in the 6 completed Datalog files from the demo as follows. dstore create f1 active f1 import rules/r1.dlog \ rules/r2.dlog \ rules/r3.dlog \ rules/r4-completed.dlog \ rules/r5.dlog \ rules/r6-completed.dlog To see an overview of the rules that we have imported as a result of the above operations, we can simply issue the following info command. info rulestats The command will produce the following table.
+Producing rule statistics; rules will not be printed. ================================================================================== Number of rules: 6 ------------------------ STATISTICS FOR RULE HEAD ATOMS ------------------------ Stratum Nonrecursive Recursive Total 1 3 0 3 2 2 0 2 3 1 0 1 ---------------------------------------------------------------------------------- Total: 6 0 6 ================================================================================== One can see that the current datastore contains a total of six rules.
+Furthermore, the rules have been partitioned internally into three strata according to how they depend on each other.
+Roughly speaking, a head atom of a rule rule r1 depends on a head atom of a rule r2 if facts matching the head atom of r2 can also be matched to some body atom of r1 .
+Furthermore, a head atom is said to be recursive if it, possibly indirectly via other rules, depends on itself; otherwise, a head atom is said to be non-recursive .
+Thus, a non-recursive head atom can depend only on the head atoms from strata with lower indexes, whereas a recursive head atom can additionally depend on the head atoms from its own stratum.
+In this example, all six rules are non-recursive.
+If all head atoms in a rule are recursive, one often says that the rule is recursive too, and analogously if all head atoms are non-recursive.
+In contrast, one cannot say whether a rule is (non-)recursive if the status of head atoms of a rule is not uniform.
+In addition to the above statistics, one can also list the rules in a data store grouped by strata using the following command. info rulestats print-rules This produces the following output, where the rules are grouped by strata and body size, and where recursive and non-recursive atoms in a stratum are marked using ==> and --> , respectively.
+Producing rule statistics; rules will be printed. ================================================================================== Number of rules: 6 ------------------------ STATISTICS FOR RULE HEAD ATOMS ------------------------ Stratum Nonrecursive Recursive Total 1 3 0 3 2 2 0 2 3 1 0 1 ---------------------------------------------------------------------------------- Total: 6 0 6 ---------------------------------------------------------------------------------- STRATUM: 1 BODY SIZE: 1 --> NONRECURSIVE: 3 --> <https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race] , <https://rdfox.com/examples/f1/result_driver>[?result, ?driver] . --> <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race] , <https://rdfox.com/examples/f1/result_driver>[?result, ?driver] , <https://rdfox.com/examples/f1/result_positionOrder>[?result, ?positionOrder] , FILTER(?positionOrder < 4) . --> <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] :- AGGREGATE(<https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, 1] ON ?driver BIND COUNT(?result) AS ?raceWinCount) . ---------------------------------------------------------------------------------- STRATUM: 2 BODY SIZE: 1 --> NONRECURSIVE: 2 --> <https://rdfox.com/examples/f1/DriverWithoutPodiums>[?driver] :- <https://rdfox.com/examples/f1/driver>[?driver] , NOT EXISTS ?race IN <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] . --> <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] :- AGGREGATE(<https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] ON ?driver BIND COUNT(?race) AS ?raceCount) . ---------------------------------------------------------------------------------- STRATUM: 3 BODY SIZE: 1 --> NONRECURSIVE: 1 --> <https://rdfox.com/examples/f1/hasWinPercentage>[?driver, ?percentage] :- <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] , <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] , BIND(?raceWinCount / ?raceCount AS ?percentage) . ================================================================================== 10.9.2.
+Using Reasoning Monitors in RDFox  In addition to the info command, which allows users to inspect the rules currently loaded into a datastore, RDFox also provides a number of mechanisms for monitoring the reasoning process every time it takes place.
+This is achieved using reasoning monitors , some of which we will describe next.
+Warning Performance considerations:
+The use of reasoning monitors will introduce an overhead during reasoning that depends on the type of monitor.
+Their use should, therefore, be considered carefully in use cases and workflows in which reasoning performance is critical. 10.9.2.1.
+The Summary Reasoning Monitor  The summary reasoning monitor provides a short summary every time reasoning takes place.
+Let us create a new datastore called f1-summary and load the rules as before. dstore create f1-summary active f1-summary import rules/r1.dlog \ rules/r2.dlog \ rules/r3.dlog \ rules/r4-completed.dlog \ rules/r5.dlog \ rules/r6-completed.dlog To activate the summary reasoning monitor, we use the following command: set reason.monitor summary If we now import the dataset 2021-22.ttl using the following command, import data/2021-22.ttl the summary reasoning monitor will produce the following output. ... # Reasoning Summary Monitor Started Evaluating rules.
+Rules will be processed by strata.
+Reasoning time: 0.016000 s. -------------------------------------------------------------------------- Table | Entries | Explicit | All -------------------------------------------------------------------------- DefaultTriples | 26,881 -> 29,441 | 14,820 -> 14,820 | 0 -> 15,759 Quads | 1 -> 1 | 0 -> 0 | 0 -> 0 -------------------------------------------------------------------------- # Reasoning Summary Monitor Finished ...
+The output contains information about how the rules are processed and the amount of time that the reasoning takes.
+The output also contains a table with reasoning related information about each tuple table.
+The column labeled Explicit tells us the number of facts that were explicitly given in the data file.
+In turn the column labeled All indicates the total number of facts in the store after reasoning, i.e. including the facts inferred using the rules.
+In our case, this means that the datastore currently contains 8,899 facts of which 539 were derived through rule applications.
+The column Table indicates the name of each tuple table in the store.
+In this case, we just have the default triple table, but in other cases we may also have other tuple tables such as those obtained from named graphs.
+Each different tuple table will have different numbers of explicit and derived facts.
+Finally, the column labeled Entries indicates the total number of memory slots that were reserved by different threads during reasoning; this number can be larger than the total number of facts in the system as some of these slots may not have been used to store a fact.
+Now, let us update the content of our datastore by adding the data in upTo2020.ttl . import data/upTo2020.ttl The update will trigger another round of reasoning, for which the reasoning monitor will produce the following output. # Reasoning Summary Monitor Started Evaluating rules incrementally.
+Rules will be processed by strata.
+Maximum depth of backward chaining is unbounded.
+Reasoning time: 1.280000 s. ------------------------------------------------------------------------------------------- Table | Entries | Explicit | All ------------------------------------------------------------------------------------------- DefaultTriples | 4,720,641 -> 4,748,801 | 14,820 -> 4,710,491 | 15,759 -> 4,740,705 Quads | 1 -> 1 | 0 -> 0 | 0 -> 0 ------------------------------------------------------------------------------------------- # Reasoning Summary Monitor Finished The user is informed that this update will be handled using incremental reasoning.
+Additionally, the counts of the number of entries, explicit facts and overall facts have been updated accordingly, with reasoning now responsible for the derivation of ~30k non-explicitly stated facts.
+Performance considerations:
+The summary reasoning monitor has little effect on performance of reasoning.
+The main overhead is introduced in the statistics gathering steps immediately before and immediately after reasoning takes place. 10.9.2.2.
+The Reasoning Profiler  In this section we describe the reasoning profiler : a reasoning monitor that allows users to investigate the performance of individual rules.
+We begin by creating a data store f1-profile and importing our set of rules as before. dstore create f1-profile active f1-profile import rules/r1.dlog \ rules/r2.dlog \ rules/r3.dlog \ rules/r4-completed.dlog \ rules/r5.dlog \ rules/r6-completed.dlog We activate the reasoning profiler using the following command: set reason.monitor profile Next, we import the data from the file upTo2020.ttl . import data/upTo2020.ttl As a result, the reasoning monitor will produce the following output at the end of reasoning. # Reasoning Profiler Started ## Final report after 0 seconds +----------------------------------------------------------------------------------------------------------------------------- | # Reasoning Sample Rule Body Iterator Rule Body Fresh Facts Rule of | Phase Count Match Attempts Operations Matches Produced Head Atom +----------------------------------------------------------------------------------------------------------------------------- | 1 Mat 11 24.6 k 203.1 k 3.0 k 3.0 k (0) <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race], <https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, ?positionOrder], FILTER(?positionOrder < 4) . | 2 Mat 11 854 5.5 k 643 643 (0) <https://rdfox.com/examples/f1/DriverWithoutPodiums>[?driver] :- <https://rdfox.com/examples/f1/driver>[?driver], NOT EXISTS ?race IN <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] . | 3 Mat 1 24.6 k 147.7 k 24.6 k 24.5 k (0) <https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race], <https://rdfox.com/examples/f1/result_driver>[?result, ?driver] . | 4 Mat 1 847 3.8 k 108 108 (0) <https://rdfox.com/examples/f1/hasWinPercentage>[?driver, ?percentage] :- <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount], <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount], BIND(?raceWinCount / ?raceCount AS ?percentage) . | 5 Mat 0 1 25.3 k 847 847 (0) <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] :- AGGREGATE(<https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] ON ?driver BIND COUNT(?race) AS ?raceCount) . | 6 Mat 0 1 4.1 k 108 108 (0) <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] :- AGGREGATE(<https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, 1] ON ?driver BIND COUNT(?result) AS ?raceWinCount) . +----------------------------------------------------------------------------------------------------------------------------- # Reasoning Profiler Finished The table contains statistics about rule evaluation.
+Reasoning in RDFox is a complex process which is broken down into multiple phases.
+The reasoning that takes place the first time data is added to the system is called initial materialization and it consists of a single phase denoted as Mat .
+The column Sample Count contains an indicator of how long it took to evaluate a rule.
+The column Rule Body Match Attempts indicates how often a rule body evaluation has been triggered.
+This typically equals the number of times a tuple in the data matches the rule body, with the exception of aggregate rules (e.g. rules 3 and 6), which are evaluated as queries, and are hence triggered once.
+Similar to query evaluation, rule body atoms are compiled down to iterators, which are opened and advanced to produce the rule instantiations, i.e full rule body matches.
+The number of operations performed on the iterators of each rule to produce those matches is given in column Iterator Operations .
+The number of times the body of a rule was fully matched against the data is given in column Rule Body Matches .
+Finally, column Fresh Facts Produced reports how many new facts were produced by each head atom of a rule.
+In our example, rules have only one head atom, so for every rule, we have a single line with head atom index (0) .
+The order of rules within the table reflects the number of operations involved in their evaluation: rules with higher number of operations are reported first.
+Next let us inspect the output of the reasoning profiler when incremental reasoning takes place.
+To this end we add the data in the file 2021-22.ttl . import data/2021-22.ttl The report looks much more involved, which is indicative of the complexity of the algorithms used during incremental reasoning. # Reasoning Profiler Started ## Final report after 0 seconds +----------------------------------------------------------------------------------------------------------------------------- | # Reasoning Sample Rule Body Iterator Rule Body Fresh Facts Rule of | Phase Count Match Attempts Operations Matches Produced Head Atom +----------------------------------------------------------------------------------------------------------------------------- | 1 Addition 0 2.3 k 12.9 k 117 117 (0) <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race], <https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, ?positionOrder], FILTER(?positionOrder < 4) . | 2 Addition 0 1.5 k 7.8 k 780 780 (0) <https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race], <https://rdfox.com/examples/f1/result_driver>[?result, ?driver] . | 3 Addition 0 29 3.8 k 29 29 (0) <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] :- AGGREGATE(<https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] ON ?driver BIND COUNT(?race) AS ?raceCount) . | 4 BwdChain 0 22 3.4 k 0 0 (0) <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] :- AGGREGATE(<https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] ON ?driver BIND COUNT(?race) AS ?raceCount) . | 5 Deletion 0 0 3.3 k 0 | 6 Deletion 0 117 2.0 k 10 4 (0) <https://rdfox.com/examples/f1/DriverWithoutPodiums>[?driver] :- <https://rdfox.com/examples/f1/driver>[?driver], NOT EXISTS ?race IN <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] . | 7 Deletion 0 27 2.8 k 21 21 (0) <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount] :- AGGREGATE(<https://rdfox.com/examples/f1/hasRacedIn>[?driver, ?race] ON ?driver BIND COUNT(?race) AS ?raceCount) . | 8 Addition 0 7 2.7 k 7 7 (0) <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] :- AGGREGATE(<https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, 1] ON ?driver BIND COUNT(?result) AS ?raceWinCount) . | 9 Deletion 0 7 2.2 k 4 4 (0) <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] :- AGGREGATE(<https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, 1] ON ?driver BIND COUNT(?result) AS ?raceWinCount) . | 10 BwdChain 0 4 1.9 k 0 0 (0) <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount] :- AGGREGATE(<https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, 1] ON ?driver BIND COUNT(?result) AS ?raceWinCount) . | 11 Addition 0 35 188 12 12 (0) <https://rdfox.com/examples/f1/hasWinPercentage>[?driver, ?percentage] :- <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount], <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount], BIND(?raceWinCount / ?raceCount AS ?percentage) . | 12 Deletion 0 26 140 9 9 (0) <https://rdfox.com/examples/f1/hasWinPercentage>[?driver, ?percentage] :- <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount], <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount], BIND(?raceWinCount / ?raceCount AS ?percentage) . | 13 BwdChain 0 9 18 0 0 (0) <https://rdfox.com/examples/f1/hasWinPercentage>[?driver, ?percentage] :- <https://rdfox.com/examples/f1/hasRaceCount>[?driver, ?raceCount], <https://rdfox.com/examples/f1/hasRaceWinCount>[?driver, ?raceWinCount], BIND(?raceWinCount / ?raceCount AS ?percentage) . | 14 BwdChain 0 4 12 0 0 (0) <https://rdfox.com/examples/f1/DriverWithoutPodiums>[?driver] :- <https://rdfox.com/examples/f1/driver>[?driver], NOT EXISTS ?race IN <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] . | 15 Deletion 0 0 26 0 0 (0) <https://rdfox.com/examples/f1/hasPodiumInRace>[?driver, ?race] :- <https://rdfox.com/examples/f1/result_race>[?result, ?race], <https://rdfox.com/examples/f1/result_driver>[?result, ?driver], <https://rdfox.com/examples/f1/result_positionOrder>[?result, ?positionOrder], FILTER(?positionOrder < 4) . +----------------------------------------------------------------------------------------------------------------------------- # Reasoning Profiler Finished First note that, in contrast to initial materialization, incremental reasoning has multiple phases: e.g.
+Addition , Deletion , and BwdChain .
+Furthermore, each rule may take part in different phases, and relevant statistics for each of the phases are given separately.
+Finally, note the presence of a deletion phase , responsible for the deletion of facts, and that of a backward chaining phase , responsible for the reproving of deleted facts.
+These take place despite the fact that the operation that we are performing is that of data addition ( import 2021-22.ttl ).
+The reason for this is that the addition of facts could outdate facts derived directly or indirectly by rules with aggregation or negation.
+Next, let us inspect the output of the reasoning profiler when new rules are added to the system.
+To this end, let us add the ontology to the datastore. import axioms/axioms.ttl importaxioms The reasoning profiler produces the following report. # Reasoning Profiler Started ## Final report after 0 seconds +----------------------------------------------------------------------------------------------------------------------------- | # Reasoning Sample Rule Body Iterator Rule Body Fresh Facts Rule of | Phase Count Match Attempts Operations Matches Produced Head Atom +----------------------------------------------------------------------------------------------------------------------------- | 1 RuleAdd 23 1 514.5 k 514.5 k 514.5 k (0) <https://rdfox.com/examples/f1/driver_lapTime>[?X, ?Y] :- <https://rdfox.com/examples/f1/lapTime_driver>[?Y, ?X] . | 2 RuleAdd 23 1 514.5 k 514.5 k 514.5 k (0) <https://rdfox.com/examples/f1/race_lapTime>[?X, ?Y] :- <https://rdfox.com/examples/f1/lapTime_race>[?Y, ?X] . | 3 Addition 12 514.5 k 1.0 M 514.5 k 514.5 k (0) <https://rdfox.com/examples/f1/lapTime_driver>[?X, ?Y] :- <https://rdfox.com/examples/f1/driver_lapTime>[?Y, ?X] . | 4 Addition 12 514.5 k 1.0 M 514.5 k 514.5 k (0) <https://rdfox.com/examples/f1/lapTime_race>[?X, ?Y] :- <https://rdfox.com/examples/f1/race_lapTime>[?Y, ?X] . | 5 RuleAdd 12 1 1.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!<internal:in>(DATATYPE(?X1), xsd:byte, xsd:int, xsd:integer, xsd:long, xsd:negativeInteger, xsd:nonNegativeInteger, xsd:nonPositiveInteger, xsd:positiveInteger, xsd:short, xsd:unsignedByte, xsd:unsignedInt, xsd:unsignedLong, xsd:unsignedShort) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_position>[?X, ?X1] . | 6 RuleAdd 11 1 1.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!<internal:in>(DATATYPE(?X1), xsd:byte, xsd:int, xsd:integer, xsd:long, xsd:negativeInteger, xsd:nonNegativeInteger, xsd:nonPositiveInteger, xsd:positiveInteger, xsd:short, xsd:unsignedByte, xsd:unsignedInt, xsd:unsignedLong, xsd:unsignedShort) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_lap>[?X, ?X1] . | 7 RuleAdd 11 1 1.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!<internal:in>(DATATYPE(?X1), xsd:byte, xsd:int, xsd:integer, xsd:long, xsd:negativeInteger, xsd:nonNegativeInteger, xsd:nonPositiveInteger, xsd:positiveInteger, xsd:short, xsd:unsignedByte, xsd:unsignedInt, xsd:unsignedLong, xsd:unsignedShort) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_milliseconds>[?X, ?X1] . | 8 RuleAdd 10 1 1.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!(DATATYPE(?X1) = xsd:string) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_time>[?X, ?X1] . | 9 RuleAdd 9 1 514.5 k 514.5 k 109.4 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_milliseconds>[?X, ?X1] . | 10 RuleAdd 9 1 514.5 k 514.5 k 108.3 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_lap>[?X, ?X1] . | 11 RuleAdd 9 1 514.5 k 514.5 k 83.7 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_position>[?X, ?X1] . | 12 RuleAdd 9 1 514.5 k 514.5 k 78.2 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_time>[?X, ?X1] . | 13 RuleAdd 9 1 514.5 k 514.5 k 101.4 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_driver>[?X, ?X1] . | 14 RuleAdd 9 1 514.5 k 514.5 k 33.3 k (0) <https://rdfox.com/examples/f1/lapTime>[?X] :- <https://rdfox.com/examples/f1/lapTime_race>[?X, ?X1] . | 0 (0) <https://rdfox.com/examples/f1/race>[?X1] :- <https://rdfox.com/examples/f1/lapTime_race>[?X, ?X1] . | 15 Addition 6 82 164 82 0 (0) <https://rdfox.com/examples/f1/has_relative>[?X, ?Y] :- <https://rdfox.com/examples/f1/has_relative>[?Y, ?X] . | 16 Addition 4 26.4 k 107.9 k 1.0 k 0 (0) <https://rdfox.com/examples/f1/RaceWinner>[?X] :- <https://rdfox.com/examples/f1/driver_result>[?X, ?X1], <https://rdfox.com/examples/f1/Win>[?X1] . | 17 RuleAdd 2 1 33.4 k 33.4 k 33.4 k (0) <https://rdfox.com/examples/f1/driver_driverStanding>[?X, ?Y] :- <https://rdfox.com/examples/f1/driverStanding_driver>[?Y, ?X] . | 18 RuleAdd 2 1 25.4 k 25.4 k 25.4 k (0) <https://rdfox.com/examples/f1/race_result>[?X, ?Y] :- <https://rdfox.com/examples/f1/result_race>[?Y, ?X] . | 19 RuleAdd 2 1 25.4 k 25.4 k 25.4 k (0) <https://rdfox.com/examples/f1/constructor_result>[?X, ?Y] :- <https://rdfox.com/examples/f1/result_constructor>[?Y, ?X] . | 20 RuleAdd 2 1 25.4 k 25.4 k 25.4 k (0) <https://rdfox.com/examples/f1/status_result>[?X, ?Y] :- <https://rdfox.com/examples/f1/result_status>[?Y, ?X] . +----------------------------------------------------------------------------------------------------------------------------- # Reasoning Profiler Finished Note that the axioms in the ontology have been translated into rules.
+The initial handling of added rules is done in the rule addition phase of incremental reasoning.
+Phases deletion and rule deletion are responsible for the handling of fact and rule deletion respectively.
+So far, we have used the reasoning profiler to view runtime statistics about rules.
+In some workflows it may be beneficial to see runtime statistics about rule evaluation on rule plan level .
+This is particularly the case when one is optimizing reasoning performance.
+To specify that the reasoning profiler should collect information on rule plan level, we use the following command. set reason.profiler.log-plans true Since the output for plans is quite verbose, we also change the limit on the number entries that are printed on the screen from the default value of 20 to 2 .
+Note that the latter only affects the number of entries that are being reported, rather than the number of entries for which statistics are being collected. ::::::::::::::: set reason.profiler.entries 2 We can now trigger reasoning using the remat command, which will perform initial materialisation over the whole dataset with the rules currently loaded in the system. ::::::::::::: remat The profiler now outputs the following report. # Reasoning Profiler Started ## Final report after 0 seconds #1 Rule Info +----------------------------------------------------------------------------------------------------------------------------------------- | Reasoning Sample Rule Body Iterator Rule Body Fresh Facts Rule of | Phase Count Match Attempts Operations Matches Produced Head Atom +----------------------------------------------------------------------------------------------------------------------------------------- | Mat 17 514.5 k 2.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!(DATATYPE(?X1) = xsd:string) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_time>[?X, ?X1] . +----------------------------------------------------------------------------------------------------------------------------------------- Plan Info +----------------------------------------------------------------------------------------------------------------------------------------- | Sample Count Iterator Open Iterator Advance Plan Node +----------------------------------------------------------------------------------------------------------------------------------------- | PROJECT ?X1 { --> ?X1 } | 2 514,592 0 CONJUNCTION { --> ?X ?X1 } NestedIndexLoopJoinIterator | 1 514,592 514,592 DELTA [?X, <https://rdfox.com/examples/f1/lapTime_time>, ?X1] { --> ?X ?X1 } DeltaAtomIterator | 12 514,592 0 FILTER ATOM !(DATATYPE(?X1) = xsd:string) || isIRI(?X1) || isBlank(?X1) { ?X ?X1 --> ?X ?X1 } FilterAtomIterator +----------------------------------------------------------------------------------------------------------------------------------------- #2 Rule Info +----------------------------------------------------------------------------------------------------------------------------------------- | Reasoning Sample Rule Body Iterator Rule Body Fresh Facts Rule of | Phase Count Match Attempts Operations Matches Produced Head Atom +----------------------------------------------------------------------------------------------------------------------------------------- | Mat 16 514.5 k 2.0 M 0 0 (0) owl:Nothing[?X1] :- FILTER(!<internal:in>(DATATYPE(?X1), xsd:byte, xsd:int, xsd:integer, xsd:long, xsd:negativeInteger, xsd:nonNegativeInteger, xsd:nonPositiveInteger, xsd:positiveInteger, xsd:short, xsd:unsignedByte, xsd:unsignedInt, xsd:unsignedLong, xsd:unsignedShort) || isIRI(?X1) || isBlank(?X1)), <https://rdfox.com/examples/f1/lapTime_lap>[?X, ?X1] . +----------------------------------------------------------------------------------------------------------------------------------------- Plan Info +----------------------------------------------------------------------------------------------------------------------------------------- | Sample Count Iterator Open Iterator Advance Plan Node +----------------------------------------------------------------------------------------------------------------------------------------- | PROJECT ?X1 { --> ?X1 } | 0 514,592 0 CONJUNCTION { --> ?X ?X1 } NestedIndexLoopJoinIterator | 2 514,592 514,592 DELTA [?X, <https://rdfox.com/examples/f1/lapTime_lap>, ?X1] { --> ?X ?X1 } DeltaAtomIterator | 12 514,592 0 FILTER ATOM !<internal:in>(DATATYPE(?X1), xsd:byte, xsd:int, xsd:integer, xsd:long, xsd:negativeInteger, xsd:nonNegativeInteger, xsd:nonPositiveInteger, xsd:positiveInteger, xsd:short, xsd:unsignedByte, xsd:unsignedInt, xsd:unsignedLong, xsd:unsignedShort) || isIRI(?X1) || isBlank(?X1) { ?X ?X1 --> ?X ?X1 } FilterAtomIterator +----------------------------------------------------------------------------------------------------------------------------------------- # Reasoning Profiler Finished When set up in this way, the reasoning profiler reports statistics on rule plan level.
+Details on how to interpret query/rule plans and runtime statistic associated with them can be found in Monitoring Query Evaluation .
+In heavy workloads in which reasoning takes a very long time, it may be useful to have statistics reports printed on a regular basis.
+This can be done using the log-frequency shell variable.
+For example, the following command will ensure that the reasoning profiler outputs its statistics reports every 10s as well as at the end of reasoning. set log-frequency 10 Performance considerations:
+The reasoning profiler may have a significant impact on the reasoning performance.
+This is particularly true when statistics about rule plans are collected, in which case reasoning time may even double. 10.10.
+Querying the Explicitly given Data  After reasoning, RDFox will by default answer all SPARQL queries with respect to the obtained materialization.
+For instance, suppose that we have a data store with fact :a rdf:type :A and the following rules:
+[?x, rdf:type, :B] :- [?x, rdf:type, :A] .
+[?x, rdf:type, :C] :- [?x, rdf:type, :B] .
+[?x, rdf:type, :D] :- [?x, rdf:type, :B] .
+[?x, rdf:type, :A] :- [?x, rdf:type, :D] .
+The materialization will contain the following facts, where three of them have been derived and only fact :a rdf:type :A was originally in the data: :a rdf:type :A . :a rdf:type :B . :a rdf:type :C . :a rdf:type :D .
+If we issue a query SELECT ?x WHERE { ?x rdf:type :D } we will obtain :a as a result.
+In RDFox it is possible to query only the explicit data even after materialization has been performed.
+For this, we can use the shell command set query.fact-domain explicit If we then issue the previous query again we will obtain the empty answer as a result.
+Previous Next © Copyright 2026, Oxford Semantic Technologies Ltd.
+Cookie Settings Other Versions v: 7.7 Tags 7.7 7.6 7.5 7.4 7.3 7.2 7.1 7.0 

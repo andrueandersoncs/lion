@@ -1,0 +1,14 @@
+$ grep -rci <word> README.md packages/site-runtime/content  (Lion at commit f49b97a; lines that mention each word, summed over the files)
+probabilit: 1 lines
+macro: 0 lines
+worst-case optimal: 0 lines
+well-founded: 0 lines
+tail call: 0 lines
+constrained decoding: 0 lines
+JSON Schema: 1 lines
+
+$ ls packages/core/src/modules  (the standard library's modules)
+aggregate.ts array.ts boolean.ts console.ts func.ts graph.ts index.ts lib number.ts object.ts schema.ts string.ts tests value.ts 
+
+$ git ls-files | grep -c "\.schema\.json$"  (JSON Schema files in the repository)
+0

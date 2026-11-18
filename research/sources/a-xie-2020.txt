@@ -1,0 +1,1701 @@
+Effect Handlers, Evidently
+NINGNING XIE, Microsoft Research, USA
+JONATHAN IMMANUEL BRACHTHÄUSER, University of Tübingen, Germany
+DANIEL HILLERSTRÖM, The University of Edinburgh, United Kingdom
+PHILIPP SCHUSTER, University of Tübingen, Germany
+DAAN LEIJEN, Microsoft Research, USA
+Algebraic effect handlers are a powerful way to incorporate effects in a programming language. Sometimes
+perhaps even too powerful. In this article we define a restriction of general effect handlers with scoped
+resumptions. We argue one can still express all important effects, while improving reasoning about effect
+handlers. Using the newly gained guarantees, we define a sound and coherent evidence translation for effect
+handlers, which directly passes the handlers as evidence to each operation. We prove full soundness and
+coherence of the translation into plain lambda calculus. The evidence in turn enables efficient implementations
+of effect operations; in particular, we show we can execute tail-resumptive operations in place (without needing
+to capture the evaluation context), and how we can replace the runtime search for a handler by indexing with
+a constant offset.
+CCS Concepts:• Software and its engineering →Control structures; Polymorphism; • Theory of
+computation →Type theory.
+Additional Key Words and Phrases: Algebraic Effects, Handlers, Evidence Passing Translation
+ACM Reference Format:
+Ningning Xie, Jonathan Immanuel Brachthäuser, Daniel Hillerström, Philipp Schuster, and Daan Leijen.
+2020. Effect Handlers, Evidently. Proc. ACM Program. Lang. 4, ICFP, Article 99 (August 2020), 30 pages.
+https://doi.org/10.1145/3408981
+1 INTRODUCTION
+Algebraic effects [Plotkin and Power 2003] and the extension with handlers [Plotkin and Pret-
+nar 2013], are a powerful way to incorporate effects in programming languages. Algebraic effect
+handlers can express any free monad in a concise and composable way, and can be used to express
+complex control-flow, like exceptions, asynchronous I/O, local state, backtracking, and many more.
+Even though there are many language implementations of algebraic effects, like Koka [Lei-
+jen 2014], Eff [Pretnar 2015], Frank [Lindley et al. 2017], Links [Lindley and Cheney 2012], and
+Multicore OCaml [Dolan et al. 2015], the implementations may not be as efficient as one might
+hope. Generally, handling effect operations requires a linear search at runtime to the innermost
+handler. This is a consequence of the core operational rule for algebraic effect handlers:
+handlem h E[perform op v] −→ f v k
+Authors’ addresses: Ningning Xie, Microsoft Research, USA, nnxie@cs.hku.hk; Jonathan Immanuel Brachthäuser, University
+of Tübingen, Germany, jonathan.brachthaeuser@uni-tuebingen.de; Daniel Hillerström, The University of Edinburgh,
+United Kingdom, daniel.hillerstrom@ed.ac.uk; Philipp Schuster, University of Tübingen, Germany, philipp.schuster@uni-
+tuebingen.de; Daan Leijen, Microsoft Research, USA, daan@microsoft.com.
+Permission to make digital or hard copies of part or all of this work for personal or classroom use is granted without fee
+provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and
+the full citation on the first page. Copyrights for third-party components of this work must be honored. For all other uses,
+contact the owner/author(s).
+© 2020 Copyright held by the owner/author(s).
+2475-1421/2020/8-ART99
+https://doi.org/10.1145/3408981
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99
+99:2 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+requiring that (op →f )is in the handler h and that op is not in the bound operations in the
+evaluation context E (so the innermost handler gets to handle the operation). The operation clause f
+gets passed the operation argument v and the resumption k= 𝜆x. handlem h E[x]. The reduction
+rule suggests that implementations need to search through the evaluation context to find the
+innermost handler, capture the context up to that point as the resumption, and can only then invoke
+the actual operation clause f . This search often is linear in the size of the stack, or in the number
+of intermediate handlers in the context E.
+In prior work, it has been shown that the vast majority of operations can be implemented much
+more efficiently, often in time constant in the stack size. Doing so, however, requires an intricate
+runtime system [Dolan et al. 2015; Leijen 2017a] or explicitly passing handler implementations,
+instead of dynamically searching for them [Brachthäuser et al. 2018; Schuster et al. 2020; Zhang and
+Myers 2019]. While the latter appears to be an attractive alternative to implement effect handlers,
+a correspondence between handler passing and dynamic handler search has not been formally
+established in the literature.
+In this article, we make this necessary connection and thereby open up the way to efficient
+compilation of effect handlers. We identify a simple restriction of general effect handlers, called
+scoped resumptions, and show that under this restriction we can perform a sound and coherent
+evidence translation for effect handlers. In particular:
+•The ability of effect handlers to capture the resumption k as a first-class value is very powerful
+– perhaps too powerful as it can interfere with the ability to reason about the program. We
+define the notion of scoped resumptions (Section 2.2) as a restriction of general effect handlers
+where resumptions can only be applied in the very scope of their original handler context.
+We believe all important effect handlers can be written with scoped resumptions, while at
+the same time ruling out many “wild” applications that have non-intuitive semantics. In
+particular, it rules out handlers that change semantics of other operations than the ones it
+handles itself. This improves the ability to reason about effects, and the coherence of evidence
+translation turns out to only be preserved under scoped resumptions (more precisely: an
+evidence translated program does not get stuck if resumptions are scoped). In this paper,
+we focus on the evidence translation and use a dynamic check in our formalism. We show
+various designs on how to check this property statically, but leave full exploration of such a
+check to future work.
+•To open up the way to more efficient implementations, we define a type-directed evidence
+translation (Section 4) where a vector of handlers is passed down as an implicit parame-
+ter to all operation invocations; similar to the dictionary translation in Haskell for type
+classes [Jones 1992], or capability passing in Effekt [Brachthäuser et al. 2020; Brachthäuser
+et al. 2020]. This turns out to be surprisingly tricky to get right, and we describe various
+pitfalls in Section 4.2. We prove that our translation is sound (Theorem 4 and 7) and coherent
+(Theorem 8), and that the evidence provided at runtime indeed always corresponds exactly
+to the dynamic innermost handler in the evaluation context (Theorem 5). In particular, on an
+evaluation step:
+handlem h E[perform op v] −→ f v k with op ̸∈bop(E) ∧(op →f ) ∈h
+the provided evidence ev will be exactly the pair (m, h), uniquely identifying the actual
+(dynamic) handler m and its implementation h. This is the essence to enabling further
+optimizations for efficient algebraic effect handlers.
+Building on the coherent evidence translation, we describe various techniques for more efficient
+implementations (Section 6):
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+ev 
+Effect Handlers, Evidently 99:3
+•In practice, the majority of effects is tail resumptive, that is, their operation clauses have
+the form op →𝜆x.𝜆k. k e with k ̸∈fv(e). That is, they always resume once in the end with
+the operation result. Note that e may use x or perform operations itself, as it has already
+captured (closed over) the specific evidence it needs when the handler was instantiated. We
+can execute such tail resumptive operation clauses in place, e.g.
+perform op (m, h)v −→ f v (𝜆x. x) (optail →f ) ∈h
+This is an important optimization that enables truly efficient effect operations at a cost similar
+to a virtual method call (since we can implement handlers h as a vector of function pointers
+where op is at a constant offset such that f= h.op).
+•Generally, evidence is passed as an evidence vector w where each element is the evidence
+for a specific effect. That means we still need to select the right evidence at run-time which
+is a linear time operation (much like the dynamic search for the innermost handler in the
+evaluation context). We show that by keeping the evidence vectors in canonical form, we
+can index the evidence in the vector at a constant offset for any context where the effect is
+non-polymorphic.
+•Since the evidence provides the handler implementation directly, it is no longer needed in
+the context. We can follow Brachthäuser and Schuster [2017] and implement handlers using
+multi-prompt delimited continuations [Dyvbig et al. 2007; Gunter et al. 1995] instead. Given
+evidence (m, h), we directly yield to a specific prompt m:
+handlem h E[perform op (m, h)v]
+⇝
+promptm E[yieldm (𝜆k. (h.op)v k)]
+We define a monadic multi-prompt translation (Section 5) from an evidence translated program
+(in Fev) into standard call-by-value polymorphic lambda calculus (Fv) where the monad
+implements the multi-prompt semantics, and we prove that this monadic translation is sound
+(Theorem 10) and coherent (Theorem 11). Such translation is very important, as it provides
+the missing link between traditional implementations based on dynamic search for the
+handler [Dolan et al. 2015; Leijen 2014; Lindley et al. 2017] and implementations of lexical
+effect handlers using multi-prompt delimited control [Biernacki et al. 2019; Brachthäuser
+and Schuster 2017; Zhang and Myers 2019]. Since all effects become explicit, we can compile
+programs with a standard backend applying the usual optimizations that would not hold
+under algebraic effect semantics, directly. For example, as all handlers become regular data
+types, and evidence is a regular parameter, standard optimizations like inlining can often
+completely inline the operation clauses at the call site without any special optimization rules
+for effect handlers [Pretnar et al. 2017; Schuster et al. 2020]. Moreover, no special runtime
+system for capturing the evaluation context is needed anymore, such as split-stacks [Dolan
+et al. 2015] or stack copying [Leijen 2017a], and we can generate code directly for any host
+platform (including C or WebAssembly). In particular, recent advances in compilation guided
+reference counting [Ullrich and Moura 2019] can readily be used. Such reference counting
+transformations cannot be applied to traditional effect handler semantics since any effect
+operation may not resume (or resume more than once), making it impossible to track the
+reference counts directly.
+We start by giving an overview of algebraic effects and handlers and their semantics in an untyped
+calculus 𝜆𝜖 (Section 2), followed by a typed polymorphic formalization F𝜖 (Section 3) for which we
+prove various theorems like soundness, preservation, and the meaning of effect types. In Section 4
+we define an extension of F𝜖 with explicit evidence vector parameters, called Fev, define a formal
+evidence passing translation, and prove this translation is coherent and preserves the original
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:4 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Expressions
+e ::= v (value)
+| e e (application)
+| handle h e (handling)
+Values
+v ::= x (variables)
+| 𝜆x. e (functions f )
+| handler h (effect handler)
+| perform op (operation)
+Handlers h ::= {op1 →f1, . . ., opn
+→fn } (operation clauses)
+Evaluation Context F ::= □ |F e |v F (pure evaluation)
+E ::= □ |E e |v E |handle h E (effectful computation)
+(app) (𝜆x. e)v −→ e[x:=v]
+(handler) (handler h)v −→ handle h·v ()
+(return) handle h·v −→ v
+(perform) handle h·E ·(perform op)v −→ f v k iff op ̸∈bop(E) ∧ (op →f ) ∈h
+where k= 𝜆x. (handle h·E·x)
+e −→e′
+E·e ↦−→E·e′ [step] bop(□)= ∅
+bop(E e)= bop(E)
+bop(v E)= bop(E)
+bop(handle h E)= bop(E) ∪{op |(op →f ) ∈h }
+Fig. 1. 𝜆𝜖 : Untyped Algebraic Effect Handlers
+semantics. Using the evidence translated programs, we define a coherent monadic translation in
+Section 5 (based on multi-prompt semantics) that translates into standard call-by-value polymorphic
+lambda-calculus (called Fv). Section 6 discusses various immediate optimization techniques enabled
+by evidence passing, in particular tail-resumption optimization, effect-selective monadic translation,
+and bind-inlining to avoid explicit allocation of continuations.
+For space reasons, all evaluation context type rules and the full proofs of all stated lemmas and
+theorems can be found in a separate extended technical report [Xie et al. 2020], which also includes
+further discussion of possible extensions.
+2 UNTYPED ALGEBRAIC EFFECT HANDLERS
+We begin by formalizing a minimal calculus of untyped algebraic effect handlers, called 𝜆𝜖 . The
+formalization helps introducing the background, sets up the notations used throughout the paper,
+and enables us to discuss examples in a more formal way.
+The formalization of 𝜆𝜖 is given in Figure 1. It essentially is a standard call-by-value lambda
+calculus extended with syntax to perform operations and to handle them. It corresponds closely to
+the untyped semantics of Forster et al. [2019], and the effect calculus presented by Leijen [2017c].
+Sometimes, effect handler semantics are given in a form that does not use evaluation contexts, e.g.
+[Kammar and Pretnar 2017; Pretnar 2015], but in the end both formulations are equivalent (except
+that using evaluation contexts turns out to be convenient for our proofs).
+There are two differences to earlier calculi: we leave out return clauses (for simplicity) and instead
+of one handle h expression we distinguish between handle h e (as an expression) and handler h (as
+a value). A (handler h)v evaluates to handle h (v ())and just invokes its given function v with
+a unit value under a handle h frame. As we will see later, handler is generative and instantiates
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:5
+handle frames with a unique marker. As such, we treat handle as a strictly internal frame that only
+occurs during evaluation.
+The evaluation contexts consist of pure evaluation contexts F and effectful evaluation contexts
+E that include handle h E frames. We assume a set of operation names op. The (perform op)v
+construct calls an effect operation op by passing it a value v. Operations are handled by handle h e
+expressions, which can be seen in the (perform)rule. Here, the condition op ̸∈bop(E)ensures
+that the innermost handle frame handles an operation. To evaluate an operation call, evaluation
+continues with the body of the operation clause (op →f ), passing the argument value v and the
+resumption k to f . Note that f v k is not evaluated under the handler h, while the resumption always
+resumes under the handler h again; this describes the semantics of deep handlers and correspond
+to a fold in a categorical sense, as opposed to shallow handlers that are more like a case [Kammar
+et al. 2013].
+For conciseness, we often use dot notation to decompose and compose evaluation contexts, which
+also conveys more clearly that an evaluation context essentially corresponds to a runtime stack.
+Dot notation is defined as:
+E·e E[e]
+□e·E E e
+v □·E v·E v E
+handle h □·E handle h·E handle h E
+For example, we would write v·handle h·E·e as a shorthand for v (handle h (E[e])).
+2.1 Examples
+Here are some examples of common effect handlers. Many practical uses of effect handlers are a
+variation of these.
+Exception: Assuming we have data constructors just and nothing, we can define a handler for
+exceptions that converts any exceptional computation e to either just v on success, or nothing on
+an exception:
+handler {throw →𝜆x. 𝜆k. nothing }(𝜆
+_
+. just e)
+For example using e = perform throw ()evaluates to nothing while e = 1 evaluates to just 1.
+Reader: In the exception example we just ignored the argument and the resumption of the
+operation but the reader effect uses the resumption to resume with a result:
+handler {get →𝜆x. 𝜆k. k 1 }(𝜆
+_
+. perform get () +perform get ())
+Here we handle the get operation to always return 1 so the evaluation proceeds as:
+handler {get →𝜆x. 𝜆k. k 1 }(𝜆
+_
+. perform get () +perform get ())
+↦−→∗handle h·perform get () +perform get ()
+↦−→∗(𝜆x. handle h ·(□+perform get ())·x)1
+↦−→ handle h ·(□+perform get ())·1
+↦−→∗handle h ·(1 +□)·1
+↦−→∗2
+State: We present three variants of how to encode state using effect handlers. The first variant is
+quite involved as we return functions from the operation clauses – like the state monad (variant 1):
+h= {get →𝜆x. 𝜆k. (𝜆y. k y y), set →𝜆x. 𝜆k. (𝜆y. k ()x)}
+(handler h (𝜆
+_
+. (perform set 21; x ←perform get (); (𝜆y. x +x)))0
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:6 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Here we assume x ←e1; e2 as a shorthand for (𝜆x. e2)e1, and e1; e2 for (_
+←e1; e2). The evaluation
+of an operation clause now always returns directly with a function that takes the current state as
+its input; which is then used to resume with:
+(handler h (𝜆
+_
+. perform set 21; x ←perform get (); (𝜆y. x +x)))0
+↦−→∗(□0)·handle h ·(□; x ←perform get (); (𝜆y. x +x))·perform set 21
+↦−→∗(□0)·(𝜆y. k ()21) with k= 𝜆x. handle h ·(□; x ←perform get (); (𝜆y. x +x))·x
+= (𝜆y. k ()21)0
+↦−→ k ()21
+↦−→ (handle h ·(□; x ←perform get (); (𝜆y. x +x))·())21
+= (□21)·handle h ·((); x ←perform get (); (𝜆y. x +x))
+↦−→∗42
+Clearly, defining local state as a function is quite cumbersome, so usually one allows for parame-
+terized handlers [Leijen 2016; Plotkin and Pretnar 2013] that keep a local parameter p with their
+handle frame, where the evaluation rules become:
+phandler h v′v −→phandle h v′
+·v ()
+phandle h v′
+·E·perform op v −→f v′v k iff op ̸∈bop(E) ∧ (op →f ) ∈h
+where k= 𝜆y x. (phandle h y·E·x). Here the handler parameter v′is passed to the operation
+clause f and later restored in the resumption which now takes a fresh parameter y besides the
+result value x. With a parameterized handler the state effect can be concisely defined as (variant 2):
+h= {get →𝜆y x k. k y y, set →𝜆y x k. k x ()}
+phandler h 0 (𝜆
+_
+. perform set 21; x ←perform get (); x +x)
+Another important advantage in this implementation is that the state effect is now tail resumptive
+which is beneficial for performance (as shown in the introduction).
+Finally, there is another elegant way to implement local state by Biernacki et al. [2017], who
+define get and set operations in separate handlers (variant 3):
+h1 = {get →𝜆
+_
+k. k 0 }
+h2 = {set →𝜆x k. handler {get →𝜆
+_
+k. k x }(𝜆
+_
+. k ())}
+handler h1 (𝜆
+_
+. handler h2 (𝜆
+_
+. perform set 42; x ←perform get (); x +x))
+Every set operation installs a fresh handler for the get operation and resumes under that (so the
+innermost get handler always contains the latest state). Even though elegant, there are some
+drawbacks to this encoding: a naïve implementation may use n handler frames for n set operations,
+typing this example is tricky and usually requires masking [Biernacki et al. 2017; Hillerström and
+Lindley 2016], and, as we will see, it does not use scoped resumptions and thus cannot be used with
+evidence translation.
+Backtracking: By resuming more than once, we can implement backtracking using algebraic
+effects. For example, the amb effect handler collects all possible results in a list by resuming the
+flip operation first with true as result, and later again with false as result
+handler {flip →𝜆
+_
+k. xs ←k true; ys ←k false; xs ++ys }
+(𝜆
+_
+. x ←perform flip (); y ←perform flip (); [x && y])
+returning the list [true, false, false, false]in our example. A similar technique can also be used to
+express probabilistic programming [Kiselyov and Shan 2009] with effect handlers.
+Async: We can use resumptions k as first-class values and for example store them into a queue
+to implement cooperative threads [Dolan et al. 2017] or asynchronous I/O [Leijen 2017b]. Assuming
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:7
+we have a state handler hqueue that maintains a queue of pending resumptions, we can implement a
+scheduler as:
+hasync = {fork →𝜆f k. perform enqueue k; schedule f ; next ()
+yield→𝜆
+_
+k. perform enqueue k; next ()}
+next = 𝜆
+_
+. k ←perform dequeue (); k ()
+Here, we assume enqueue enqueues a resumption k, and dequeue ()returns one, or returns an
+identity function if the queue is empty. The schedule function runs a new action f under the async
+handler:
+schedule= 𝜆f. handler hasync (𝜆
+_
+. f ())
+async= 𝜆f. handler hqueue (𝜆
+_
+. schedule f )
+The main wrapper async schedules an action under a fresh scheduler queue handler hqueue, which
+is shared by all forked actions under it.
+2.2 Scoped Resumptions
+The ability of effect handlers to capture the resumption as a first-class value is very powerful –
+and can be considered as perhaps too powerful. In particular, it can be (ab)used to define handlers
+that change the semantics of other handlers that were defined and instantiated orthogonally. Take
+for example an operation op1 that is expected to always return the same result, say 1. We can now
+define another operation opevil that changes the return value of op1 after it is invoked! Consider
+the following program where we leave f and hevil undefined for now:
+h1 = {op1 →𝜆x k. k 1 }
+e = perform op1 (); perform opevil (); perform op1 ()
+f (handler h1 (𝜆
+_
+. handler hevil (𝜆
+_
+. e)))
+Even though h1 is defined as a pure reader effect and defined orthogonal to any other effect, the
+opevil operation can still cause the second invocation of op1 to return 2 instead of 1! In particular,
+we can define f and hevil as 1:
+hevil = {opevil →𝜆x k. k }
+h2 = {op1 →𝜆x k. k 2 }
+f= 𝜆k. handler h2 (𝜆
+_
+. k ())
+The trick is that the handler hevil does not directly resume but instead returns the resumption k as
+is, after unwinding through h1 it is passed to f which now invokes the resumption k under a fresh
+handler h2 for op1 causing all subsequent op1 operations to be handled by h2 instead.
+We consider this behavior undesirable in practice as it limits the ability to do local reasoning.
+In particular, a programmer may not expect that calling opevil changes the semantics of op1. Yet
+there is no way to forbid it. Moreover, it also affects static analysis and it turns out for example
+that efficient evidence translation (with its subsequent performance benefits) is not possible if we
+allow resumptions to be this dynamic.
+The solution we propose in this paper is to limit resumptions to be scoped only: that is, a
+resumption can only be applied under the same handler context as it was captured. The handler context
+is the evaluation context where we just consider the handler frames, e.g. for any evaluation context
+E of the form F0·handle h1·F1·
+. . .
+·handle hn·Fn, the handler context, hctx(E), is h1·h2·
+. . .
+·hn.
+In particular, the evil example is rejected as it does not use a scoped resumption: k is captured
+under h1 but applied under h2.
+Our definition of scoped resumption is minimal in the sense that it is the minimal requirement
+needed in the proofs to maintain coherence of evidence translation. In this paper, we guarantee
+1Note that this example is fine in 𝜆𝜖 but cannot be typed in F𝜖 as is – we discuss a properly typed version in Section 4.5.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:8 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+scoped resumptions using a dynamic runtime check in evidence translated programs (called guard),
+but it is also possible to check it statically. It is beyond the scope of this paper to give a particular
+design, but some ways of doing this are:
+•Lexical scoping: a straightforward approach is to syntactically restrict the use of the resump-
+tion to be always in the lexical scope of the handler: i.e. fully applied within the operation
+clause and no occurrences under a lambda (so it cannot escape or be applied in nested handler).
+This can perhaps already cover all reasonable effects in practice, especially in combination
+with parameterized handlers2
+.
+•A more sophisticated solution could use generative types for handler names, together with a
+check that those types do not escape the lexical scope as described by Zhang and Myers [2019]
+and also used by Biernacki et al. [2019] and Brachthäuser et al. [2020]. Another option could
+be to use rank-2 types to prevent the resumption from escaping the lexical scope in which
+the handler is defined [Leijen 2014; Peyton Jones and Launchbury 1995].
+In the seminal work on algebraic effect handlers by Plotkin and Pretnar [2013] the resumptions k
+are in a separate syntactic class, always fully applied, and checked under a context K separate from
+Γ. However, they still allow occurrences under a lambda, allowing a resumption to escape. If we
+would adapt just the lambda rule to check the premise under an empty environment K, then all
+resumptions are scoped (implementing the lexical scoping rule).
+2.3 Expressiveness
+Scoped resumptions bring easier-to-reason control flow, and, as we will see, open up new design
+space for algebraic effects compilation. However, one might worry about the expressiveness of
+scoped resumptions. We believe that all important effect handlers in practice can be defined in
+terms of scoped resumptions. In particular, note that it is still allowed for a handler to grow its
+context with applicative forms, for example:
+handler {tick →𝜆x k. 1 +k ()}(𝜆
+_
+. perform tick (); perform tick (); 1)
+evaluates to 3 by keeping (1 +□)frames above the resumption. In this example, even though the
+full context has grown, k is still a scoped resumption as it resumes under the same (empty) handler
+context. Similarly, the async scheduler example that stores resumptions in a stateful queue is also
+accepted since each resumption is applied under the same handler context (with the state queue
+handler on top). Multiple resumptions as in the backtracking example are also admitted.
+We identify three classes of programs that cannot be expressed with scoped resumptions. First,
+the state variant 3 based on two separate handlers does not use scoped resumptions since the set
+resumption resumes always under a handler context extended with a get handler. However, we can
+always use, and due to the reasons we have mentioned we may actually prefer, the normal state effect
+or the parameterized state effect. Second, shallow handlers do not resume under their own handler
+and as a result generally resume under a different handler context than they captured. Fortunately,
+any program with shallow handler can be expressed with deep handlers as well [Hillerström and
+Lindley 2018; Kammar et al. 2013] and thus avoid the unscoped resumptions. Finally, Kiselyov
+et al. [2006] show an example of code migration that resumes locally captured continuations on
+another host, possibly under different handlers.
+3 EXPLICITLY TYPED EFFECT HANDLERS IN SYSTEM F𝜖
+To prepare for a type directed evidence translation, we first define a typed version of the untyped
+calculus 𝜆𝜖 called System F𝜖 – a call-by-value effect handler calculus extended with (higher-rank
+2The lexical approach could potentially be combined with an “unsafe” resumption that uses a runtime check as done in this
+article to cover any remaining situations.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+| handle h e (handler instance)
+Effect Handlers, Evidently 99:9
+Expressions
+e ::= v (value)
+| e e (application)
+| e[𝜎] (type application)
+Values
+v ::= x (variables)
+| 𝜆𝜖 x : 𝜎. e (abstraction)
+| Λ𝛼k
+. v (type abstraction)
+| handler𝜖 h (effect handler)
+| perform𝜖 op 𝜎 (operation)
+Handlers h ::= {op1 →f1, . . ., opn
+→fn }
+Evaluation Context F ::= □ |F e |v F |F [𝜎]
+E ::= □ |E e |v E |E [𝜎] |handle𝜖 h E
+(app) (𝜆𝜖 x : 𝜎. e)v −→ e[x:=v]
+(tapp) (Λ𝛼k
+. v)[𝜎] −→ v[𝛼:=𝜎]
+(handler) (handler𝜖 h)v −→ handle𝜖 h·v ()
+(return) handle𝜖 h·v −→ v
+(perform) handle𝜖 h·E·perform op 𝜎 v −→ f [𝜎]v k iff op ̸∈bop(E) ∧ (op →f ) ∈h
+where op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+k= 𝜆𝜖 x : 𝜎2 [𝛼:=𝜎]. handle𝜖 h·E·x
+Fig. 2. System F𝜖 : explicitly typed algebraic effect handlers. Figure 3 defines the types.
+Types
+𝜎 ::= 𝛼k (type variables of kind k)
+| ck 𝜎 . . . 𝜎 (type constructor of kind k)
+| 𝜎 →𝜖 𝜎 (function type)
+| ∀𝛼k. 𝜎 (quantified type)
+Kinds
+k ::= ∗ (value type)
+| k →k (type constructors)
+| eff (effect type (𝜇,𝜖))
+| lab (basic effect (l))
+Effect signature sig ::= {op1 : ∀𝛼1. 𝜎1 →𝜎′
+1, . . ., opn : ∀𝛼n. 𝜎n →𝜎′
+n}
+Effect signatures Σ ::= {l1 : sig1, . . ., ln : sign }
+Type Constructors ⟨⟩ : eff empty effect row (total)
+⟨_ |_⟩ : lab →eff →eff effect row extension
+Syntax ⟨l1, . . ., ln⟩ ⟨l1 |. . . |⟨ln |⟨⟩⟩. . . ⟩
+⟨l1, . . ., ln |𝜇⟩ ⟨l1 |. . . |⟨ln |𝜇⟩. . . ⟩
+𝜖 ::= 𝜎eff
+, 𝜇 ::= 𝛼eff
+, l ::= clab
+Fig. 3. System F𝜖 : types
+𝜖1 ≡𝜖2 𝜖2 ≡𝜖3
+[refl]
+[eq-trans]
+𝜖 ≡𝜖
+l1 ≠ l2 𝜖1 ≡𝜖2
+⟨l1, l2 |𝜖1⟩≡⟨l2, l1 |𝜖2⟩ [eq-swap]
+𝜖1 ≡𝜖3
+𝜖1 ≡𝜖2
+⟨l |𝜖1⟩≡⟨l |𝜖2⟩ [eq-head]
+Fig. 4. Equivalence of row-types.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:10 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+impredicative) polymorphic types and higher kinds à la System F𝜔 , and row based effect types.
+Figure 2 defines the extended syntax and evaluation rules with the syntax of types and kinds
+in Figure 3. System F𝜖 serves as an explicitly typed calculus that can be the target language of
+compilers and, for this article, serves as the basis for type directed evidence translation.
+Being explicitly typed, we now have type applications e[𝜎]and abstractions Λ𝛼k
+. v. Also,
+𝜆𝜖 x : 𝜎.e, handle𝜖 h e, handler𝜖 h, and perform𝜖 op 𝜎 all carry an effect type 𝜖. Effect types are
+(extensible) rows of effect labels l (like exn or state). In the types, every function arrow 𝜎1 →𝜖 𝜎2
+takes three arguments: the input type 𝜎1, the output type 𝜎2, and its effects 𝜖 when it is evaluated.
+When 𝜖 is an empty row, we often omit the effect annotation.
+Since we have effect rows, effect labels, and regular value types, we use a basic kind system to
+keep them apart and to ensure well-formedness (⊢wf) of types (as defined in the technical report [Xie
+et al. 2020]).
+3.1 Effect Rows
+An effect row is either empty ⟨⟩(the total effect), a type variable 𝜇 (of kind eff), or an extension
+⟨l |𝜖⟩where 𝜖 is extended with effect label l. We call effects that end in an empty effect closed, i.e.
+⟨l1, . . ., ln⟩; and effects that end in a polymorphic tail open, i.e. ⟨l1, . . ., ln |𝜇⟩. Following Leijen [2014]
+and Biernacki et al. [2017], we use simple effect rows where labels can be duplicated, and where an
+effect ⟨l, l ⟩is not equal to ⟨l ⟩. We consider rows equivalent up to the order of the labels as defined
+in Figure 4. Note rule eq-swap only swaps distinct labels. Following Leijen [2014], we disallow
+polymorphism over labels. There exists a complete and sound unification algorithm for these row
+types [Leijen 2005] and thus these are also very suitable for Hindley-Milner style type inference.
+We consider using simple row-types with duplicate labels a suitable choice for a core calculus
+since it extends System F typing seamlessly as we only extend the notion of equality between
+types. There are other approaches to typing effects but all existing approaches depart from standard
+System F typing in significant ways. Row typing without duplicate labels leads to the introduction
+of type constraints, as in T-REX for example [Gaster and Jones 1996], or kinds with presence
+variables (Rémy style rows) as in Links for example [Hillerström and Lindley 2016; Rémy 1994].
+Another approach is using effect subtyping [Bauer and Pretnar 2014] but that requires a subtype
+relation between types instead of simple equality.
+The reason we need equivalence between row types up to order of effect labels is due to poly-
+morphism. Suppose we have two functions that each use different effects:
+f1 : ∀𝜇. ()→⟨l1 |𝜇⟩() f2 : ∀𝜇. ()→⟨l2 |𝜇⟩()
+We would still like to be able to express choose f1 f2 where choose : ∀𝛼. 𝛼 →𝛼 →𝛼. Using row
+types we can type this naturally as:
+Λ𝜇. choose[()→⟨l1, l2 |𝜇⟩()](f1 [⟨l2 |𝜇⟩])(f2 [⟨l1 |𝜇⟩])
+where the types of the arguments are now equivalent ⟨l1 |⟨l2 |𝜇⟩⟩≡⟨l2 |⟨l1 |𝜇⟩⟩(without needing
+subtype constraints or polymorphic label flags).
+Similarly, duplicate labels can easily arise due to type instantiation. For example, a catch handler
+for exceptions can have type:
+catch : ∀𝜇 𝛼. (()→⟨exn |𝜇⟩𝛼)→(string →𝜇 𝛼)→𝜇 𝛼
+where catch takes an action that can raise exceptions, and a handler function that is called when
+an exception is caught. Suppose though an exception handler itself raises an exception, and has
+type h : ∀𝜇. string →⟨exn |𝜇⟩int. The application catch action h is then explicitly typed as:
+Λ𝜇. catch[⟨exn |𝜇⟩, int]action h[𝜇]
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:11
+where the type application gives rise to the type:
+catch[⟨exn |𝜇⟩, int]: (()→⟨exn, exn |𝜇⟩int)→(string →⟨exn |𝜇⟩int)→⟨exn |𝜇⟩int
+naturally leading to duplicate labels in the type. As we will see, simple row types also correspond
+naturally to the shape of the runtime evidence vectors that we introduce in Section 4.1 (where
+duplicated labels correspond to nested handlers).
+3.2 Operations
+We assume that every effect l has a unique set of operations op1 to opn with a signature sig that gives
+every operation its input and output types, opi : ∀𝛼i. 𝜎i →𝜎′
+i . There is a global map Σ that maps
+each effect l to its signature. Since we assume that each op is uniquely named, we use the notation
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)to denote the type of op that belongs to effect l, and also op ∈Σ(l)to
+signify that op is part of effect l. Moreover, we use the notation h : Σ(l)to mean that h corresponds
+to l (for any op ∈h, op ∈Σ(l)).
+Note that we allow operations to be polymorphic. Therefore perform op 𝜎 v contains the instan-
+tiation types 𝜎 which are passed to the operation clause f in the evaluation rule for (perform)
+(Figure 2). This means that operations can be used polymorphically, but the handling clause itself
+must be polymorphic in the operation types (and use them as abstract types).
+3.3 Quantification and Equivalence to the Untyped Dynamic Semantics
+Erasing types from System F𝜖 should not affect operational semantics, i.e.
+Theorem 1. (System F𝜖 has untyped dynamic semantics)
+If e1 −→e2 in System F𝜖 , then either e∗
+1 −→e∗
+2 or e∗
+1 = e∗
+2.
+where e∗stands for the term e with all types, type abstractions, and type applications removed.
+This seems an obvious property but there is a subtle interaction with quantification. Suppose we
+(wrongly) allow quantification over expressions instead of values, like Λ𝛼. e, then consider:
+h= {tick →𝜆x : ()k : (()→⟨⟩int). 1 +k ()}
+handle h ((𝜆x : ∀𝛼. int. x[int] +x[bool])(Λ𝛼. tick (); 1))
+In the typed semantics, this would evaluate the argument x at each instantiation (since the whole
+Λ𝛼. tick (); 1 is passed as a value), resulting in 4. On the other hand, if we perform type erasure, the
+untyped dynamic semantics evaluates to 3 instead (evaluating the argument before applying). Not
+only do we lose untyped dynamic semantics, but we also break parametricity (as we can observe
+instantiations). So, it is quite important to only allow quantification over values, much like the ML
+value restriction [Kammar and Pretnar 2017; Pitts 1998; Wright 1995]. In the proof of Theorem 1
+we use in particular the following (seemingly obvious) lemma:
+Lemma 1. (Type erasure of values)
+If v is a value in System F𝜖 then v∗is a value in 𝜆𝜖
+.
+Not all systems in the literature adhere to this restriction; for example Biernacki et al. [2017]
+and Leijen [2016] allow quantification over expressions as Λ𝛼. e, where both ensure soundness
+of the effect type system by disallowing type abstraction over effectful expressions. However, we
+believe that this remains a risky affair since Lemma 1 does not hold; and thus a typed evaluation
+may take more reduction steps than the type-erased term, i.e. seemingly shared argument values
+may be computed more than once.
+3.4 Type Rules for System F𝜖
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:12 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Γ
+↑
+; w
+↑
+Fev
+⊢ e
+↑
+F𝜖
+: 𝜎
+↓ |𝜖
+↑
+⇝e′
+↓
+Fev
+Γ
+↑
+⊢val v
+↑
+F𝜖
+: 𝜎
+↓
+⇝v′
+↓
+Fev
+Γ
+↑
+⊢ops h
+↑
+F𝜖
+: 𝜎
+↓ |l
+↓|𝜖
+↑
+⇝h′
+↓
+Fev
+[var]
+x : 𝜎 ∈Γ
+Γ ⊢val x : 𝜎 ⇝x
+Γ ⊢val v : 𝜎 ⇝v′
+Γ; w ⊢ v : 𝜎 |𝜖 ⇝v′ [val]
+Γ; w ⊢ e1 : 𝜎1 →𝜖 𝜎 |𝜖 ⇝e′
+1
+Γ; w ⊢ e2 : 𝜎1 |𝜖 ⇝e′
+2
+Γ, x : 𝜎1 ; z ⊢ e : 𝜎2 |𝜖 ⇝e′ fresh z
+Γ ⊢val 𝜆𝜖 x : 𝜎1. e : 𝜎1 →𝜖 𝜎2 ⇝𝜆𝜖 z : evv 𝜖, x : ⌈𝜎1⌉. e′ [abs]
+Γ ⊢val v : 𝜎 ⇝v′ k ≠ lab
+Γ ⊢val Λ𝛼k
+. v : ∀𝛼k. 𝜎 ⇝Λ𝛼k
+. v′ [tabs]
+Γ; w ⊢ e1 e2 : 𝜎 |𝜖 ⇝e′
+1 w e′
+2
+[app]
+Γ; w ⊢ e : ∀𝛼k. 𝜎1 |𝜖 ⇝e′ ⊢wf 𝜎 : k
+Γ; w ⊢ e[𝜎]: 𝜎1 [𝛼:=𝜎]|𝜖 ⇝e′[⌈𝜎⌉] [tapp]
+op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∈ftv(Γ)
+[perform]
+Γ ⊢val perform𝜖 op 𝜎 : 𝜎1 [𝛼:=𝜎]→⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]⇝perform𝜖 op 𝜎
+opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∩ftv(𝜖 𝜎)
+Γ ⊢val fi : ∀𝛼. 𝜎1 →𝜖 ((𝜎2 →𝜖 𝜎)→𝜖 𝜎)⇝f′
+i
+Γ ⊢ops {op1 →f1, . . ., opn
+→fn }: 𝜎 |l |𝜖 ⇝{opi →f′
+i } [ops]
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′
+Γ ⊢val handler𝜖 h : (()→⟨l |𝜖⟩𝜎)→𝜖 𝜎 ⇝handler𝜖 h′ [handler]
+Γ ⊢ops h : 𝜎 |l |𝜖 ⇝h′ Γ; ⟨l : (m, h′)|w⟩ ⊢ e : 𝜎 |⟨l |𝜖⟩⇝e′ m fresh
+Γ; w ⊢ handle𝜖 h e : 𝜎 |𝜖 ⇝handlew
+m h′e′ [handle]
+Fig. 5. Type Rules for System F𝜖 combined with type directed evidence translation to Fev (in gray.)
+Figure 5 defines the typing rules for System F𝜖 . The rules are of the form Γ; w ⊢ e : 𝜎 |𝜖 ⇝e′for
+expressions where the variable context Γ and the effect 𝜖 are inherited (↑), and 𝜎 is synthesized (↓).
+The gray parts define the evidence translation, which we describe in Section 4, and can be ignored
+for now. Values are not effectful and are typed as Γ ⊢val v : 𝜎 ⇝v′. Since effects are inherited,
+lambda expressions need an effect annotation that is passed to the body derivation (abs). In the
+rule app we use standard equality between types and require that all effects match. The val rule
+goes from a value to an expression (opposite of abs) and allows any inherited effect. The handler
+rule takes an action with effect ⟨l |𝜖⟩and handles l leaving effect 𝜖. The handle rule is similar, but
+is defined over an expression e and types e under an extended effect ⟨l |e⟩in the premise. In the
+rule ops, we implicitly assume {op1, . . ., opn}= Σ(l).
+See the technical report [Xie et al. 2020] for the full type rules for evaluation contexts. The
+judgement Γ ⊢ec E : 𝜎1 →𝜎2 |𝜖 signifies that a context E can be typed as a function from a term
+of type 𝜎1 to 𝜎2 where the resulting expression has effect 𝜖. These rules are not needed to check
+programs but are very useful in proofs and theorems. In particular,
+Lemma 2. (Evaluation context typing)
+If ∅⊢ec E : 𝜎1 →𝜎 |𝜖 and ∅ ⊢ e : 𝜎1 |⟨⌈E⌉𝑙 |𝜖⟩, then ∅ ⊢ E[e]: 𝜎 |𝜖 .
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:13
+where ⌈E⌉l extracts all labels l from a context in reverse order:
+⌈F0·handle h1·F1·
+. . .
+·handle hn·Fn⌉l = ⟨ln, . . ., l1⟩iff hi : Σ(li)
+The above lemma shows we can plug well-typed expressions in a suitable context. The next lemma
+uses this to show the correspondence between the dynamic evaluation context and the static effect
+type:
+Lemma 3. (Effect corresponds to the evaluation context)
+If ∅ ⊢ E[e]: 𝜎 |𝜖 then there exists 𝜎1 such that ∅ ⊢ec E : 𝜎1 →𝜎 |𝜖, and ∅ ⊢ e : 𝜎1 |⟨⌈E⌉𝑙 |𝜖⟩.
+Here we see that the rules guarantee that exactly the effects ⌈E⌉𝑙 in e are handled by the context E.
+3.5 Progress and Preservation
+We establish two essential lemmas about the meaning of effect types. First, in any well-typed total
+System F𝜖 expression, all operations are handled (and thus, evaluation cannot get stuck):
+Lemma 4. (Well typed operations are handled)
+If ∅ ⊢ E[perform op 𝜎 v]: 𝜎 |⟨⟩then E has the form E1·handle𝜖 h·E2 with op ̸∈bop(E2)and
+op →f ∈h.
+Moreover, effect types are meaningful in the sense that an effect type fully reflects all possible
+effects that may happen during evaluation:
+Lemma 5. (Effects types are meaningful)
+If ∅ ⊢ E[perform op 𝜎 v]: 𝜎 |𝜖 with op ̸∈bop(E), then op ∈Σ(l)and l ∈𝜖, i.e. effect types
+cannot be discarded without a handler.
+Using these lemmas, we can show that evaluation can always make progress and that the typings
+are preserved during evaluation.
+Theorem 2. (Progress)
+If ∅ ⊢ e1 : 𝜎 |⟨⟩then either e1 is a value, or e1 ↦−→e2.
+Theorem 3. (Preservation)
+If ∅ ⊢ e1 : 𝜎 |⟨⟩and e1 ↦−→e2, then ∅ ⊢ e2 : 𝜎 |⟨⟩.
+4 POLYMORPHIC EVIDENCE TRANSLATION TO SYSTEM Fev
+Having established a sound explicitly typed core calculus, we are ready to present evidence transla-
+tion. The goal of evidence translation is to pass handler implementations as part of an evidence
+vector. The handler implementation is passed from the point where the handler was introduced to
+the point where the effect operation is performed. Passing evidence explicitly will in turn enable
+other optimizations (as described in Section 6) since we can now locally inspect the evidence instead
+of searching in the dynamic evaluation context.
+Following Brachthäuser and Schuster [2017], we represent evidence ev for an effect l as a pair
+(m, h), consisting of a unique marker m and the corresponding handler implementation h. The
+markers uniquely identify each handler frame in the context which is now marked as handlem h. The
+reason for introducing the separate handler h construct is now apparent: it instantiates handlem h
+frames with a unique m. This representation of evidence allows for two important optimizations: (1)
+We can change the operational rule for perform to directly yield to a particular handler identified
+by m (instead of needing to search for the innermost one), shown in Section 5.1, and (2) It allows
+local inspection of the actual handler h so we can evaluate tail resumptive operations in place,
+shown in Section 6.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:14 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Evidence Syntax m Expressions
+e ::= v (value)
+| e[𝜎] (type application)
+| e w e (evidence application)
+| handlew
+m h e (handler instance)
+Values
+v ::= x (variables)
+| 𝜆𝜖 z : evv 𝜖, x : 𝜎. e (evidence abstraction)
+| Λ𝛼k
+. v (type abstraction)
+| handler𝜖 h (effect handler)
+| perform𝜖 op 𝜎 (operation)
+| guardw E 𝜎 (guarded abstraction)
+Type Constructors marker : eff →∗→∗ handler instance marker (m)
+evv : eff →∗ evidence vector (w,z)
+ev : lab →∗ evidence (ev)
+: marker 𝜖 𝜎 handler instance marker
+(m, h) : ev l evidence
+⟨⟩ : evv ⟨⟩ empty evidence vector
+⟨l1 : ev1, . . ., ln : evn⟩ : evv ⟨l1, . . ., ln⟩ evidence vector, with li ⩽li+1
+(app) (𝜆𝜖 z : evv 𝜖, x : 𝜎. e)w v −→ e[z:=w, x:=v]
+(tapp) (Λ𝛼k
+. v)[𝜎] −→ v[𝛼:=𝜎]
+(handler) (handler𝜖 h)w v −→ handlew
+m h (v ⟨l : (m, h)|w⟩())
+where m is unique and h : Σ(l)
+(return) handlew
+m h·v −→ v
+(perform) handlew
+m h·E·perform𝜖 op 𝜎 w′v
+−→ f [𝜎]w v w k iff op ̸∈bop(E) ∧ (op →f ) ∈h
+where op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+k= guardw (handlew
+m h·E)(𝜎2 [𝛼:=𝜎])
+(guard) (guardw E 𝜎)w v −→ E[v]
+Fig. 6. System Fev Typed operational semantics with evidence
+However, passing the evidence to each operation turns out to be surprisingly tricky to get right
+and we took quite a few detours before arriving at the current solution. At first, we thought we
+could represent evidence for each label l in the effect of a function as separate argument ev l. For
+example,
+f1 : ∀𝜇. int →⟨l1 |𝜇⟩int = Λ𝜇. 𝜆x. perform op1 x
+would be translated as:
+f1 : ∀𝜇. ev l1 →int →⟨l1 |𝜇⟩int = Λ𝜇. 𝜆ev. 𝜆x. perform op1 ev x
+This does not work though as type instantiation can now cause the runtime representation to
+change as well! For example, if we instantiate 𝜇 to ⟨l2⟩as f1 [⟨l2⟩]the type becomes int →⟨l1, l2⟩int
+which now takes two evidence parameters. Even worse, such instantiation can be inside arbitrary
+types, like a list of such functions, where we cannot construct evidence transformers in general.
+Another design that does not quite work is to regard evidence translation as an instance of
+qualified types [Jones 1992] and use a dictionary passing translation. In essence, in the theory of
+qualified types, the qualifiers are scoped over monomorphic types, which does not fit well with
+effect handlers. Suppose we have a function foo with a qualified evidence types as:
+foo : Ev l1 ⇒ (int →⟨l1⟩int)→⟨l1⟩int
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:15
+Note that even though foo is itself qualified, the argument it takes is a plain function int →⟨l1⟩int
+and has already resolved its own qualifiers. That is too eager for our purposes. For example, if
+we apply foo (f1 [⟨⟩]), under dictionary translation we would get foo ev1 (f1 [⟨⟩]ev1). However, it
+may well be that foo itself applies f1 under a new handler for the l1 effect and thus needs to pass
+different evidence than ev1! Effectively, dictionary translation may partially apply functions with
+their dictionaries which is not legal for handler evidence. The qualified type we really require for
+foo uses higher-ranked qualifiers, something like Ev l1 ⇒ (Ev l1 ⇒ int →⟨l1⟩int)→⟨l1⟩int.
+4.1 Evidence Vectors
+The design we present here instead passes all evidence as a single evidence vector to each (effectful)
+function: this keeps the runtime representations stable under type instantiation, and we can ensure
+syntactically that functions are never partially applied to evidence.
+Figure 6 defines our target language Fev as an explicitly typed calculus with evidence passing.
+All applications are now of the form e1 w e2 where we always pass an evidence vector w with the
+original argument e2. Therefore, all lambdas are of the form 𝜆𝜖 z : evv 𝜖, x : 𝜎. e and always take an
+evidence vector z besides their regular parameter x. Also, handlem frames now carry the evidences
+and become handlew
+m. We also extend application forms in the evaluation context to take evidence
+parameters. The double arrow notation is used do denote the type of these “tupled” lambdas:
+𝜎1 ⇒𝜖 𝜎2 evv 𝜖 →𝜎1 →𝜖 𝜎2
+During evidence translation, every effect type 𝜖 on an arrow is translated to an explicit runtime
+evidence vector of type evv 𝜖, and we translate type annotations as:
+⌈·⌉: k →k
+⌈∀𝛼.𝜎⌉= ∀𝛼. ⌈𝜎⌉ ⌈𝛼⌉= 𝛼
+⌈𝜏1 →𝜖 𝜏2⌉= ⌈𝜏1⌉⇒𝜖 ⌈𝜏2⌉ ⌈c 𝜏1 . . . 𝜏n⌉= c ⌈𝜏1⌉. . . ⌈𝜏n⌉
+Evidence vectors ⟨l1 : ev1, . . ., ln : evn⟩are essentially a map from effect labels to evidence. Later we
+want to be able to select evidence from a vector with a constant offset instead of searching for the
+label, so we are going to keep them in a canonical form ordered by the effect types l. That is, we
+have every li ⩽li+1. We also use the notation ⟨l : ev, w⟩to decompose an evidence vector into a
+head label l with evidence ev and a tail evidence vector w (maintaining canonical forms). An empty
+evidence vector is denoted as ⟨⟩.
+During evaluation we need to be able to select evidence from an evidence vector, and to insert
+new evidence when a handler is instantiated, and we define the following two operations:
+_
+.l : ∀𝜇. evv ⟨l |𝜇⟩→ev l (select evidence from a vector)
+⟨l :
+_ |_⟩ : ∀𝜇. ev l →evv 𝜇 →evv ⟨l |𝜇⟩ (evidence insertion)
+Where we assume the following two laws that relate selection and insertion:
+⟨l : ev |w⟩.l= ev
+⟨l′: ev |w⟩.l= w.l iff l ≠ l′
+The evidence insertion operation inserts an evidence into an evidence vector in an ordered way:
+⟨l :
+_ |_⟩: ∀𝜇. ev l →evv 𝜇 →evv ⟨l |𝜇⟩
+⟨l : ev |⟨⟩⟩= ⟨l : ev⟩
+⟨l : ev |⟨l′: ev′
+, w⟩⟩= ⟨l′: ev′
+, ⟨l : ev |w⟩⟩iff l > l′
+⟨l : ev |⟨l′: ev′
+, w⟩⟩= ⟨l : ev, l′: ev′
+, w⟩ iff l ⩽l′
+Note how the dynamic representation as vectors of labeled evidence nicely corresponds to the
+static effect row-types, in particular with regard to duplicate labels, which correspond to nested
+handlers at runtime. Here we see why we cannot swap the position of equal effect labels as we need
+the evidence to correspond to their actual order in the evaluation context. Inserting all evidence in
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:16 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+a vector w1 into another vector w2 is defined inductively as following. We reuse the same notation
+of inserting a single evidence.
+⟨⟨⟩|w2⟩= w2
+⟨⟨l : ev, w1⟩|w2⟩= ⟨l : ev |⟨w1 |w2⟩⟩
+and evidence selection can be defined as:
+_
+.l : ∀𝜇. evv ⟨l |𝜇⟩→ev l
+⟨l : ev, _⟩.l= ev
+⟨l′: ev, w⟩.l= w.l iff l ≠ l′
+⟨⟩.l= (cannot happen)
+4.2 Evidence Translation
+The evidence translation is already defined in Figure 5, in the gray parts of the rules. The full rules
+for expressions are of the form Γ; w ⊢ e : 𝜎 |𝜖 ⇝e′where given a context Γ, the expression e
+has type 𝜎 with effect 𝜖. The rules take the current evidence vector w for the effect 𝜖, of type evv 𝜖,
+and translate to an expression e′of System Fev
+.
+The translation in itself is straightforward where we only need to ensure extra evidence is passed
+during applications and abstracted again on lambdas. The abs rule abstracts fully over all evidence
+in a function as 𝜆𝜖 z : evv 𝜖, x : 𝜎1. e′, where the evidence vector is abstracted as z and passed to its
+premise. Note that since we are translating, z is not part of Γ here (which scopes over F𝜖 terms).
+The type rules for Fev, discussed below, do track such variables in the context. The dual of this is
+rule app which passes the effect evidence w as an extra argument to every application as e′
+1 w e′
+2.
+To prove preservation and coherence of the translation, we also include a translation rule for
+handle, even though we assume these are internal. Otherwise there are no surprises here and the
+main difficulty lies in the operational rules, which we discuss in detail in Section 4.4.
+To prove additional properties about the translated programs, we define a more restricted set of
+typing rules directly over System Fev in Figure 9 of the form Γ; w ⊩ e : 𝜎 |𝜖 (ignoring the gray
+parts), such that Γ ⊢ w : evv 𝜖. Using this, we prove that the translation is sound:
+Theorem 4. (Evidence translation is Sound in Fev)
+If ∅; ⟨⟩ ⊢ e : 𝜎 |⟨⟩⇝e′then ∅; ⟨⟩ ⊩ e′ : ⌈𝜎⌉|⟨⟩.
+4.3 Correspondence
+The evidence translation maintains a strong correspondence between the effect types, the evidence
+vectors, and the evaluation contexts. To make this precise, we define the (reverse) extraction of all
+handlers in a context E as ⌈E⌉where:
+⌈F1·handlew1
+m1 h1·
+. . .
+·Fn·handlewn
+mn
+hn·F⌉= ⟨ln : (mn, hn)|. . . |l1 : (m1, h1)⟩iff hi : Σ(li)
+⌈F1·handlew1
+m1 h1·
+. . .
+·Fn·handlewn
+mn
+hn·F⌉𝑙 = ⟨ln, . . ., l1⟩
+⌈F1·handlew1
+m1 h1·
+. . .
+·Fn·handlewn
+mn
+hn·F⌉𝑚= {mn, . . ., m1}
+With this we can characterize the correspondence between the evaluation context and the evidence
+used at perform:
+Lemma 6. (Evidence corresponds to the evaluation context)
+If ∅; w ⊩ E[e]: 𝜎 |𝜖 then for some 𝜎1 we have ∅; ⟨⌈E⌉|w⟩ ⊩ e : 𝜎1 |⟨⌈E⌉𝑙 |𝜖⟩,
+and ∅; w ⊩ E : 𝜎1 →𝜎 |𝜖.
+Lemma 7. (Well typed operations are handled)
+If ∅; ⟨⟩ ⊩ E[perform op 𝜎 v]: 𝜎 |⟨⟩then E has the form E1·handlew
+m h·E2 with op ̸∈bop(E2)
+and op →f ∈h.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:17
+These brings us to our main theorem which states that the evidence passed to an operation
+corresponds exactly to the innermost handler for that operation in the dynamic evaluation context:
+Theorem 5. (Evidence Correspondence)
+If ∅; ⟨⟩ ⊩ E[perform op 𝜎 w v]: 𝜎 |⟨⟩then E has the form E1·handlew′
+m h·E2 with op ∈Σ(l),
+op ̸∈bop(E2), op →f ∈h, and the evidence corresponds exactly to dynamic execution context
+such that w.l= (m, h).
+4.4 Operational Rules of System Fev
+The operational rules for System Fev are defined in Figure 6. Since every application now always
+takes an evidence vector argument w the new (app)and (handler)rules now only reduce when
+both arguments are present (and the syntax does not allow for partial evidence applications).
+The (handler)rule differs from System F𝜖 in two significant ways. First, it saves the current
+evidence in scope (passed as w) in the handle frame itself as handlew
+m. Secondly, the evidence vector
+it passes on to its action is now extended with its own unique evidence, as ⟨l : (m, h)|w⟩.
+In the (perform)rule, the operation clause (op →f ) ∈h is now translated itself, and we need
+to pass evidence to f . Since it takes two arguments, the operation payload x and its resumption k,
+the application becomes (f [𝜎]w x)w k. The evidence we pass to f is the evidence of the original
+handler context saved as handlew in the (handler)rule. In particular, we should not pass the evidence
+w′of the operation, as that is the evidence vector of the context in which the operation itself
+evaluates (and an extension of w). In contrast, we evaluate each clause under their original context
+and need the evidence vector corresponding to that. In fact, we can even ignore the evidence vector
+w′completely for now as we only need to use it later for implementing optimizations.
+4.5 Guarded Context Instantiation and Scoped Resumptions
+The definition of the resumption k in the (perform)rule differs quite a bit from the original definition
+in System F𝜖 (Figure 2), which was:
+k= 𝜆𝜖 x : 𝜎2 [𝛼:=𝜎]. handle𝜖 h·E·x
+while the Fev definition now uses:
+k= guardw (handlew
+m h·E)(𝜎2 [𝛼:=𝜎])
+where we use a the new Fev value term guardw E 𝜎. Since k has a regular function type, it now
+needs to take an extra evidence vector, and we may have expected a more straightforward extension
+without needing a new guard rule, something like:
+k= 𝜆𝜖 z : evv 𝜖, x : 𝜎2 [𝛼:=𝜎]. handle𝜖 h·E·x
+but then the question becomes what to do with that passed in evidence z? This is the point where
+it becomes more clear that resumptions are special and not quite like a regular lambda since they
+restore a captured context. In particular, the context E that is restored has already captured the
+evidence of the original context in which it was captured (as w), and thus may not match the evidence
+of the context in which it is resumed (as z)!
+The new guarded application rule makes this explicit and only restores contexts that are resumed
+under the exact same evidence, in other words, only scoped resumptions are allowed:
+(guardw E 𝜎)w v −→E[v]
+If the evidence does not match, the evaluation is stuck in Fev
+.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:18 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+As an example of how this can happen, we return to our evil example in Section 2.2 which uses
+non-scoped resumptions to change the meaning of op1. Since we are now in a typed setting, we
+modify the example to return a data type of results to make everything well-typed:
+data res = again : (()→⟨one⟩res)→res
+| done : int →res
+Σ= {one : {op1 : ()→int }, evil : {opevil : ()→()}}
+with the following helper definitions:
+h1 = {op1 →𝜆x k. k 1 } h2 = {op1 →𝜆x k. k 2 } f (again k)= handler h2 (𝜆
+_
+. k ()); 0
+f (done x)= x
+hevil= {opevil →𝜆x k. (again k)}
+body= perform op1 (); perform opevil (); perform op1 (); done 0
+and where the main expression is evidence translated as:
+f (handler h1 (𝜆
+_
+. handler hevil (𝜆
+_
+. body)))
+⇝f ⟨⟩(handler h1 ⟨⟩(𝜆z, _
+. handler hevil z
+(𝜆z : evv ⟨one, evil⟩, _
+. perform op1 z (); perform opevil z (); perform op1 z (); done 0)))
+Starting evaluation in the translated expression, we can now derive:
+↦−→∗ f ⟨⟩·handle⟨⟩
+m1 h1·handlew1
+m2 hevil ·(□; perform op1 w2 (); done 0)·perform opevil w2 ()
+with w1 = ⟨one : (m1, h1)⟩, w2 = ⟨evil : (m2, hevil), one : (m1, h1)⟩
+↦−→∗ f ⟨⟩·handle⟨⟩
+m1 h1 ·(𝜆z x z k. (again k))w1 ()w1 k
+with k= guardw1 (handlew1
+m2 hevil ·(□; perform op1 w2 (); done 0))
+↦−→∗ f ⟨⟩·handle⟨⟩
+m1 h1 ·(again k)
+↦−→∗ f ⟨⟩(again k)
+↦−→ handler h2 ⟨⟩(𝜆z
+_
+. k z ())
+↦−→∗ handle⟨⟩
+m3 h2·k w3 () with w3 = ⟨one : (m3, h2)⟩
+= handle⟨⟩
+m3 h2·guardw1 (handlew1
+m2 hevil ·(□; perform op1 w2 (); done 0))w3 ()
+At this point, the guard rule gets stuck as we have captured the context originally under evidence
+w1, but we try to resume with evidence w3, and w1 = ⟨one : (m1, h1)⟩≠ ⟨one : (m3, h2)⟩= w3.
+If we allow the guarded context instantiation anyways we get into trouble when we try to
+perform op1 again:
+↦−→ handle⟨⟩
+m3 h2·handlew1
+m2 hevil ·((); perform op1 w2 (); done 0)
+↦−→∗handle⟨⟩
+m3 h2·handlew1
+m2 hevil ·(□; done 0)·perform op1 w2 ()
+in that case the innermost handler for op1 is now h2 while the evidence w2.l is (m1, h1)and it
+no longer corresponds to the dynamic context! (and that would void our main correspondence
+Theorem 5 and in turn invalidate optimizations based on this).
+4.6 Uniqueness of Handlers
+It turns out that to guarantee coherence of the translation to plain polymorphic lambda calculus,
+as discussed in Section 5, we need to ensure that all m’s in an evaluation context are always
+unique. This is a tricky property; for example, uniqueness of markers does not hold for arbitrary
+Fev expressions: markers may be duplicated inside lambdas outside of the evaluation context, and
+we can also construct an expression manually with duplicated markers, e.g. handlew
+m·handlew
+m·e.
+However, we can prove that if we only consider initial Fev expressions without handlew
+m, or any
+expressions reduced from that during evaluation, then it is guaranteed that all m’s are always
+unique in the evaluation context – even though the (handler)rule introduces handlew
+m during
+evaluation, and the (app)rule may duplicate markers.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:19
+Definition 1. (Handle-safe expressions)
+A handle-safe Fev expression is a well-typed closed expression that either (1) contains no handlew
+m
+term; or (2) is itself reduced from a handle-safe expression.
+Theorem 6. (Uniqueness of handlers)
+For any handle-safe Fev expression e, if e = E1·handlew1
+m1 h·E2·handlew2
+m2 h·e0, then m1 ≠ m2.
+4.7 Preservation and Coherence
+As exemplified above, the guard rule is also essential to prove the preservation of evidence typings
+under evaluation. In particular, we can show:
+Theorem 7. (Preservation of evidence typing)
+If ∅; ⟨⟩ ⊩ e1 : 𝜎 |⟨⟩and e1 ↦−→e2, then ∅; ⟨⟩ ⊩ e2 : 𝜎 |⟨⟩.
+Even more important though is to show that our translation
+e1 e2 e3
+F𝜖 F𝜖
+e′
+3
+e′
+2 e′′
+3
+F𝑒𝑣
+F𝑒𝑣 F𝑒𝑣
+e′
+1 e′′
+2 e′′′
+3
+is coherent, that is, if we take an evaluation step in System
+F𝜖 , the evidence translated expression will take a similar
+step such that the resulting expression is again a translation
+of the reduced F𝜖 expression:
+Theorem 8. (Evidence translation is coherent)
+If ∅; ⟨⟩ ⊢ e1 : 𝜎 |⟨⟩⇝e′
+1 and e1 ↦−→e2, and (due to
+preservation) ∅; ⟨⟩ ⊢ e2 : 𝜎 |⟨⟩⇝e′
+2, then there exists
+a e′′
+2 , such that e′
+1 ↦−→e′′
+2 and e′′
+2 e′
+2.
+stuck
+Interestingly, the theorem states that the translated e′
+2 is only
+coherent under an equivalence relation to the reduced
+Fig. 7. Coherence
+expression e′′
+2 , as illustrated in Figure 7. The reason that e′
+2
+and e′′
+2 are not directly equal is due to guard expressions only being generated by reduction. In
+particular, if we have a F𝜖 reduction of the form:
+handle𝜖 h·E·perform op 𝜎 v −→f 𝜎 v k with k= 𝜆𝜖 x : 𝜎′
+. handle𝜖 h·E·x
+then the translation takes the following Fev reduction:
+handlew
+m h·E′
+·perform op ⌈𝜎⌉w′v′−→f′⌈𝜎⌉w v′w k′with k′
+= guardw (handlew
+m h′
+·E′)𝜎′
+At this point the translation of f 𝜎 v k will be of the form f′⌈𝜎⌉w′v′w′k′′where
+k′′
+= 𝜆𝜖 z : evv 𝜖, x. handle𝜖 h′
+·E′′
+·x
+i.e. the resumption k is translated as a regular lambda now and not as guard! Also, since E is
+translated now under a lambda, the resulting E′′differs in all evidence terms w in E′which will be
+z instead.
+However, we know that if the resumption k′is ever applied, the argument is either exactly w,
+in which case E′′[z:=w]= E′, or not equal to w in which case the evidence translated program
+gets stuck. This is captured by relation which is the smallest transitive and reflexive congruence
+among well-typed Fev expressions, up to renaming of unique markers, satisfying the eq-guard rule,
+which captures the notion of guarded context instantiation.
+e[z:=w] E[x]
+[eq-guard]
+𝜆𝜖 z, x : 𝜎. e guardw E 𝜎
+Now, is this definition of equivalence strong enough? Yes, because we can show that if two translated
+expressions are equivalent, then they stay equivalent under reduction (or get stuck):
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:20 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Expressions e ::= v |e e |e[𝜎]
+Values v ::= x |𝜆x : 𝜎. e |Λ𝛼k
+. v
+(app) (𝜆𝜖 x : 𝜎. e)v −→e[x:=v]
+(tapp) (Λ𝛼k
+. v)[𝜎]−→v[𝛼:=𝜎]
+x : 𝜎 ∈Γ
+Γ ⊢F v : 𝜎
+Context F ::= □ |F e |v F |F [𝜎]
+E ::= F
+Γ, x : 𝜎1 ⊢F e : 𝜎2
+[fvar]
+[ftabs]
+[fabs]
+Γ ⊢F x𝜎 : 𝜎
+Γ ⊢F Λ𝛼k
+. v : ∀𝛼k. 𝜎
+Γ ⊢F e1 : 𝜎1 →𝜎 Γ ⊢ e2 : 𝜎
+[fapp]
+Γ ⊢F e1 e2 : 𝜎
+Γ ⊢F 𝜆x : 𝜎1. e : 𝜎1 →𝜎2
+Γ ⊢F e : ∀𝛼k. 𝜎1 ⊢wf 𝜎 : k
+Γ ⊢F e[𝜎]: 𝜎1 [𝛼:=𝜎] [ftapp]
+Fig. 8. System Fv: explicitly typed (higher kinded) polymorphic lambda calculus with strict evalua-
+tion. Types as in Figure 3 with no effects on the arrows.
+Lemma 8. (Operational semantics preserves equivalence, or gets stuck)
+If e1 e2, and e1 −→e′
+1, then either e2 is stuck, or we have e′
+2 such that e2 −→e′
+2 and e′
+1 e′
+2.
+This establishes the full coherence of our evidence translation: if a translated expression reduces
+under Fev without getting stuck, the final value is equivalent to the value reduced under System F𝜖
+.
+Moreover, the only way an evidence translated expression can get stuck is if it uses non-scoped
+resumptions.
+Note that the evidence translation never produces guard terms, so the translated expression can
+always take an evaluation step; however, subsequent evaluation steps may lead to guard terms, so
+after the first step, it may get stuck if a resumption is applied under a different handler context
+than where it was captured.
+5 TRANSLATION TO CALL-BY-VALUE POLYMORPHIC LAMBDA CALCULUS
+Now that we have a strong correspondence between evidence and the dynamic handler context, we
+can translate System Fev expressions all the way to the call-by-value polymorphic lambda calculus,
+System Fv. This is important in practice as it removes all the special evaluation and type rules
+of algebraic effect handlers; this in turn means we can apply all the optimizations that regular
+compilers perform, like inlining, known case expansion, common sub-expression elimination etc.
+as usual without needing to keep track of effects. Moreover, it means we can compile directly to
+most common host platforms, like C or WebAssembly without needing a special runtime system to
+support capturing the evaluation context.
+There has been previous work that performs such translation [Forster et al. 2019; Hillerström et
+al. 2017; Leijen 2017c], as well as various libraries that embed effect handlers as monads [Kammar
+et al. 2013; Wu et al. 2014] but without evidence translation such embeddings require either a
+sophisticated runtime system [Dolan et al. 2017 2015; Leijen 2017a], or are not quite as efficient
+as one might hope. The translation presented here allows for better optimization as it maintains
+evidence and has no special runtime requirements (it is just F!).
+5.1 Translating to Multi-Prompt Delimited Continuations
+As a first step, we show that we do not need explicit handle frames anymore that carry around the
+handler operations h, but can translate to multi-prompt delimited continuations [Brachthäuser and
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:21
+Γ
+↑
+; w
+↑
+Fev
+; w′
+↑
+Fv
+⊩ e
+↑
+Fev
+: 𝜎
+↓ |𝜖
+↑
+⇝e′
+↓
+Fv
+Γ
+↑
+⊩val v
+↑
+Fev
+: 𝜎
+↓
+⇝v′
+↓
+Fv
+Γ
+↑
+⊩ops h
+↑
+Fev
+: 𝜎
+↓ |l
+↓|𝜖
+↑
+⇝h′
+↓
+Fv
+x : 𝜎 ∈Γ
+Γ ⊩val x : 𝜎 ⇝x
+(Γ, z : evv 𝜖, x : 𝜎1); z; z ⊩ e : 𝜎2 |𝜖 ⇝e′
+Γ ⊩val 𝜆𝜖 z : evv 𝜖, x : 𝜎1. e : 𝜎1 ⇒𝜖 𝜎2 ⇝𝜆z x. e′ [mabs]
+[mvar]
+Γ ⊩val v : 𝜎 ⇝v′
+Γ ⊩val Λ𝛼. v : ∀𝛼. 𝜎 ⇝Λ𝛼. v′ [mtabs]
+Γ; w; w′ ⊩ e : ∀𝛼. 𝜎1 |𝜖 ⇝e′
+Γ; w; w′ ⊩ e[𝜎]: 𝜎1 [𝛼:=𝜎]|𝜖 ⇝e′▷ (𝜆x. pure (x[⌊𝜎⌋])) [mtapp]
+Γ; w; w′ ⊩ e1 : 𝜎2 ⇒𝜖 𝜎 |𝜖 ⇝e′
+1 Γ; w; w′ ⊩ e2 : 𝜎2 |𝜖 ⇝e′
+2
+Γ; w; w′ ⊩ e1 w e2 : 𝜎 |𝜖 ⇝e′
+1 ▷ (𝜆f. (e′
+2 ▷ f w′)) [mapp]
+[mguard]
+Γ ⊩val v : 𝜎 ⇝v′
+Γ; w; w′ ⊩ v : 𝜎 |𝜖 ⇝pure[⌊𝜎⌋]v′ [mval]
+Γ; w; w′ ⊩ec E : 𝜎1 →𝜎2 |𝜖 ⇝e′ Γ ⊩val w : evv 𝜖 ⇝w′
+Γ ⊩val guardw E 𝜎1 : 𝜎1 ⇒𝜖 𝜎2 ⇝guard w′e′ op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+Γ ⊩val perform𝜖 op 𝜎 : 𝜎1 [𝛼:=𝜎]⇒ ⟨l |𝜖⟩𝜎2 [𝛼:=𝜎]⇝performop [⟨l |𝜖⟩, ⌊𝜎⌋] [mperform]
+opi : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l) 𝛼 ̸∩ftv(𝜖 𝜎)
+Γ ⊩val fi : ∀𝛼. 𝜎1 ⇒𝜖 (𝜎2 ⇒𝜖 𝜎)⇒𝜖 𝜎 ⇝f′
+i
+Γ ⊩ops {op1 →f1, . . ., opn
+→fn }: 𝜎 |l |𝜖 ⇝{op1 →f′
+1 , . . ., opn
+Γ ⊩ops h : 𝜎 |l |𝜖 ⇝h′
+→f′
+n } [mops]
+[mhandler]
+Γ ⊩val handler𝜖 h : (()⇒ ⟨l |𝜖⟩𝜎)⇒𝜖 𝜎 ⇝handlerl [𝜖, ⌊𝜎⌋]h′
+Γ ⊩ops h : 𝜎 |l |𝜖 ⇝h′
+Γ; ⟨l : (m, h)|w⟩; ⟨l : (m, h′)|w′⟩ ⊩ e : 𝜎 |⟨l |𝜖⟩⇝e′
+Γ; w; w′ ⊩ handlew
+m h e : 𝜎 |𝜖 ⇝prompt[𝜖, ⌊𝜎⌋]m w′e′ [mhandle]
+Fig. 9. Monadic translation to System-Fv. ((▷)is monadic bind).
+Schuster 2017]. Gunter, Rémy, and Riecke [1995] present the set and cupto operators for named
+prompts m with the following “control-upto” rule:
+set m in·E·cupto m as k in e −→(𝜆k. e)(𝜆x. E·x) m ̸∈⌈E⌉𝑚
+This effectively exposes “shallow” multi-prompts: the continuation bound to k is not delimited by
+m. For our purposes, we always need “deep” handling where the resumption evaluates under the
+same prompt again and we define
+promptm e set m in e
+yieldm f cupto m as k in (f (𝜆x. set m in (k x)))
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:22 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+which gives us the following derived evaluation rule:
+promptm·E·yieldm f −→f (𝜆x. promptm·E·x) m ̸∈⌈E⌉𝑚
+Additionally, our control operators also need to take evidence w into account and use guard instead
+of a plain lambda to apply the resumption, i.e.,
+promptw
+m·E·yieldm f −→f w (guardw (promptw
+m·E)) m ̸∈⌈E⌉𝑚
+Therefore, we take prompt and yield as primitive control operators with the above evaluation rule.
+Using the correspondence property (Theorem 5), we can use evidence to locally inspect the
+handler on perform and no longer need to keep it in the handle frame. We can now translate both
+perform op v w and handlew
+m h in terms of the simpler yieldm and promptw
+m, as:
+⌈handlew
+m h⌉= promptw
+m
+⌈perform op w′v⌉= yieldm (𝜆w k. f w v w k) with (m, h)= w′
+.l and (op →f ) ∈h
+We prove that this is a sound interpretation of effect handling:
+Theorem 9. (Evidence Translation to Multi-Prompt Delimited Continuations is Sound)
+For any evaluation step e1 ↦−→e2 in Fev, we have ⌈e1⌉↦−→∗⌈e2⌉with multi-prompt delimited
+continuations.
+Dolan et al. [2015] describe the multi-core OCaml runtime system with split stacks; in such setting
+we could use the pointers to a split point as markers m, and directly yield to the correct handler
+with constant time capture of the context. Even with such runtime, it may still be beneficial to do a
+monadic translation as well in order to be able to use standard compiler optimizations [Schuster et
+al. 2020].
+5.2 Monadic Multi-Prompt Translation to System Fv
+With the relation to multi-prompt delimited control established, we can now translate Fev to Fv in
+a monadic style, where we use standard techniques [Dyvbig et al. 2007] to implement the delimited
+control as a monad. Assuming notation for data types and matching, we can define a multi-prompt
+monad mon as follows:
+data mon 𝜇 𝛼=
+|pure : 𝛼 →mon 𝜇 𝛼
+|yield : ∀𝛽 r 𝜇′
+. marker 𝜇′r →(evv 𝜇′→(evv 𝜇′→𝛽 →mon 𝜇′r)→mon 𝜇′r)
+→(mon 𝜇 𝛽 →mon 𝜇 𝛼)→mon 𝜇 𝛼
+pure x= pure x
+yield m clause= yield m clause id
+The pure case is used for value results, while the yield implements yielding to a prompt. A
+yield m f cont has three arguments, (1) the marker m : marker 𝜇′r bound to a prompt in some
+context with effect 𝜇′and answer type r; (2) the operation clause which receives the resumption
+(of type 𝛽 →mon 𝜇′r)where 𝛽 is the type of the operation result; and finally (3) the current
+continuation cont which is the runtime representation of the context. When binding a yield, the
+continuation keeps being extended until the full context is captured:
+(f◦g)x = f (g x) (function composition)
+(f•g)x = g x ▷ f (Kleisli composition)
+(pure x)▷ g= g x (monadic bind)
+(yield m f cont)▷ g= yield m f (g •cont)
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:23
+The hoisting of yields corresponds closely to operation hoisting as described by Bauer and Pret-
+nar [2015]. The prompt operation has three cases to consider:
+prompt : ∀𝜇 𝛼. marker 𝜇 𝛼 →evv 𝜇 →mon ⟨l |𝜇⟩𝛼 →mon 𝜇 𝛼
+prompt m w (pure x)= pure x
+prompt m w (yield m′f cont)= yield m′f (prompt m w ◦cont) if m ≠ m′
+prompt m w (yield m f cont)= f w (guard w (prompt m w ◦cont))
+In the pure case, we are at the (value)rule and return the result as is. If we find a yield that yields
+to another prompt we also keep yielding but remember to restore our prompt when resuming in its
+current continuation, as (prompt m w ◦cont). The final case is when we yield to the prompt itself,
+in that case we are in the (yield)transition and continue with f passing the context evidence w
+and a guarded resumption3
+.
+The guard operation simply checks if the evidence matches and either continues or gets stuck:
+guard w1 cont w2 x= if (w1 == w2)then cont (pure x)else stuck
+Note that due to the uniqueness property (Theorem 6) we can check the equality w1 == w2 efficiently
+by only comparing the markers m (and ignoring the handlers). The handle and perform can be
+translated directly into prompt and yield as shown in the previous section, where we generate a
+handlerl definition per effect l, and a performop for every operation:
+handlerl
+: ∀𝜇 𝛼. hndl 𝜇 𝛼 →evv 𝜇 →(evv ⟨l |𝜇⟩→()→mon ⟨l |𝜇⟩𝛼)→mon 𝜇 𝛼
+performop : ∀𝜇 𝛼. evv ⟨l |𝜇⟩→𝜎1 →mon ⟨l |𝜇⟩𝜎2 with op : ∀𝛼. 𝜎1 →𝜎2 ∈Σ(l)
+handlerl h w f= freshm (𝜆m →prompt m w (f ⟨l : (m, h)|w⟩()))
+performop w x = let (m, h)= w.l in yield m (𝜆w k. ((h.op)w x ▷ (𝜆f. f w k)))
+The handler creates a fresh marker and passes on new evidence under a new prompt. The perform
+can now directly select the evidence (m, h)from the passed evidence vector and yield to m directly.
+The function passed to yield is a bit complex since each operation clause is translated normally and
+has a nested monadic type, so we need to bind the first partial application to x before passing the
+continuation k.
+Finally, for every effect signature l : sig ∈Σ we declare a corresponding data type hndl 𝜖 r that
+is a record of operation clauses:
+l : {op1 : ∀𝛼1. 𝜎1 →𝜎′
+1, . . ., opn : ∀𝛼n. 𝜎n →𝜎′
+n }
+⇝data hndl 𝜇 r = hndl {op1 : ∀𝛼1. op 𝜎1 𝜎′
+1 𝜇 r, . . ., opn : ∀𝛼n. op 𝜎n 𝜎′
+n 𝜇 r }
+where operations op are a type alias defined as:
+alias op 𝛼 𝛽 𝜇 r evv 𝜇 →𝛼 →mon 𝜇 (evv 𝜇 →(evv 𝜇 →𝛽 →mon 𝜇 r)→mon 𝜇 r)
+With these definitions in place, we can do a straightforward type directed translation from Fev to
+Fv by just lifting all operations into the prompt monad, as shown in Figure 9. Types are translated
+by making all effectful functions monadic:
+⌊∀𝛼. 𝜎⌋= ∀𝛼. ⌊𝜎⌋ ⌊𝜎1 ⇒𝜖 𝜎2⌋= evv 𝜖 →⌊𝜎1⌋→mon 𝜖 ⌊𝜎2⌋
+⌊𝛼⌋= 𝛼 ⌊c 𝜎1 . . . 𝜎n⌋= c ⌊𝜎1⌋. . . ⌊𝜎n⌋
+We prove that these definitions are correct, and that the resulting translation is fully coherent,
+where a monadic program evaluates to the same result as a direct evaluation in Fev
+.
+Theorem 10. (Monadic Translation is Sound)
+If ∅; ⟨⟩; ⟨⟩ ⊩ e : 𝜎 |⟨⟩⇝e′, then ∅ ⊢F e′ : mon ⟨⟩⌊𝜎⌋.
+3Typing the third case needs a dependent match on the markers m′ : marker 𝜇′r and m = marker 𝜇 𝛼 where their equality
+implies 𝜇= 𝜇′and r = 𝛼. This can be done in Haskell with the Equal GADT, or encoded in Fv using explicit equality
+witnesses [Baars and Swierstra 2002].
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:24 𝜆𝜖
+𝜎
+F𝜖
+𝑤
+Fev
+▷
+Fv
+Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Progress (Thm. 2)
+steps to (Fig. 1) or=
+e∗
+1 e∗
+2
+Correspondence (Thm. 1)
+erase∗ erase∗
+Γ; 𝑤 ⊢e1 : 𝜎 |𝜖
+(Fig. 5)
+steps to (Fig. 2)
+Γ; 𝑤 ⊢e2 : 𝜎 |𝜖
+Preservation (Thm. 3)
+Soundness (Thm. 4) Soundness (Thm. 4)
+Γ; 𝑤 ⊩e′
+1 : ⌈𝜎 ⌉|𝜖
+(Fig. 9)
+Γ; 𝑤 ⊩e′′′
+2 : ⌈𝜎 ⌉|𝜖
+Preservation (Thm. 7)
+(Fig. 7)
+Coherence (Thm. 8)
+Γ; 𝑤 ⊩e′
+2 : ⌈𝜎 ⌉|𝜖
+Soundness (Thm. 10) Soundness (Thm. 10)
+Γ ⊢F e′′
+1 : mon 𝜖 ⌊𝜎 ⌋
+steps to (Fig. 8)
+*
+(Fig. 8) Γ ⊢F e′′
+2 : mon 𝜖 ⌊𝜎 ⌋
+Coherence (Thm. 11)
+steps to (Fig. 6)
+Fig. 10. An overview how the various theorems establish the relations between the different calculi
+Theorem 11. (Coherence of the Monadic Translation)
+If ∅; ⟨⟩; ⟨⟩ ⊩ e1 : 𝜎 |⟨⟩⇝e′
+1 and e1 −→e2, then ∅; ⟨⟩; ⟨⟩ ⊩ e2 : 𝜎 |⟨⟩⇝e′
+2 where e′
+1 −→∗e′
+2.
+Together with earlier results we establish full soundness and coherence from the original typed effect
+handler calculus F𝜖 to the evidence based monadic translation into plain call-by-value polymorphic
+lambda calculus Fv. See Figure 10 for how our theorems relate these systems to each other.
+6 OPTIMIZATIONS
+With a fully coherent evidence translation to plain polymorphic lambda calculus in hand, we can
+now apply various transformations in that setting to optimize the resulting programs.
+6.1 Partially Applied Handlers
+In the current performop implementation, we yield with a function that takes evidence w to pass on
+to the operation clause f , as:
+𝜆w k. ((h.op)w x ▷ (𝜆f. f w k))
+However, the w that is going to be passed in is always that of the handlew
+m frame, as explained in
+Section 4.4. When we instantiate the handlew
+m we can in principle map the w in advance over all
+operation clause so these can be partially evaluated over the evidence vector:
+handlerl h w f= freshm (𝜆m →prompt m w (f ⟨l : (m, pmapl w h |w⟩()))
+pmapl w (hndl f1. . . fn)= phndl (partial w f1). . . (partial w fn)
+partial : evv 𝜇 →op 𝛼 𝛽 𝜇 r →pop 𝛼 𝛽 𝜇 r
+partial w f= 𝜆x k. (f w x ▷ (𝜆f′
+. f′w k))
+The pmapl function creates a new handler data structure phndl where every operation is now
+partially applied to the evidence which results in simplified type for each operation (as expressed
+by the pop type alias):
+alias pop 𝛼 𝛽 𝜇 r 𝛼 →(evv 𝜇 →𝛽 →mon 𝜇 r)→mon 𝜇 r
+The perform is now simplified as well as it no longer needs to bind the intermediate application:
+performop w x= let (m, h)= w.l in yield m (𝜆k. (h.op)x k)
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:25
+Finally, the prompt case where the marker matches no longer needs to pass evidence as well:
+. . .
+prompt m w (yield m f cont)= f (guard w (prompt m w ◦cont))
+By itself, the impact of this optimization will be modest, just allowing inlining of evidence in f
+clauses, but it opens up the way to do tail resumptive operations in-place. As pointed out by Schuster
+et al. [2020], if the continuation of an effect call is (partially) known statically, inlining the operation
+clauses might also open up additional opportunity to inline the continuation into the handler
+implementation.
+6.2 Evaluating Tail Resumptive Operations In Place
+In practice, almost all important effects are tail-resumptive. The main exceptions we know of are
+asynchronous I/O (but that is dominated by I/O anyways) and the ambiguity effect for resuming
+multiple times. As such, we expect the vast majority of operations to be tail-resumptive, and being
+able to optimize them well is important. We can extend the partially evaluated handler approach to
+optimize tail resumptions as well. First we extend the pop type to be a data type that signifies if an
+operation clause is tail resumptive or not:
+data pop 𝛼 𝛽 𝜇 r = tail : (𝛼 →mon 𝜇 𝛽)→pop 𝛼 𝛽 𝜇 r
+| normal : (𝛼 →(evv 𝜇 →𝛽 →mon 𝜇 r)→mon 𝜇 r)→pop 𝛼 𝛽 𝜇 r
+The partial function now creates tail terms for any clause f that the compiler determined to be tail
+resumptive (i.e. of the form 𝜆x k. k e with k ̸∈fv(e)):
+partial w f= tail (𝜆x. (f w x ▷ (𝜆f′
+. f′w pure)) if f is tail resumptive
+partial w f= normal (𝜆x k. (f w x ▷ (𝜆f′
+. f′w k)) otherwise
+Note that even if f is tail resumptive, it may still use x. Moreover, since f has already captured its
+evidence w, it can still perform operations itself.
+Instead of passing in an “real” resumption function k, we just pass pure directly, leading to
+𝜆x. (e ▷ pure)– and such clause we can now evaluate in-place without needing to yield and
+capture our resumption context explicitly. The performop can directly inspect the form of the
+operation clause from its evidence, and evaluate in place when possible:
+performop w x = let (m, h)= w.l in case h.op of | tail f →f x
+| normal f →yield m (f x)
+Moreover, if a known handler is applied over some expression, regular optimizations like inlining
+and known-case evaluation, can often inline the operations fully. As everything has been translated
+to regular functions and regular data types without any special evaluation rules, there is no need
+for special optimization rules for handlers either.
+6.3 Using Constant Offsets in Evidence Vectors
+The performop operation is now almost as efficient as a virtual method call for tail resumptive
+operations (just check if it is tail and do in indirect call), except that it still needs to do a dynamic
+lookup for the evidence as w.l.
+The idea is to take advantage of the canonical order of the evidence in a vector, where the location
+of the evidence in a vector of a closed effect type is fully determined. In particular, for any evidence
+vector w of type evv ⟨l |𝜖⟩where 𝜖 is closed, we can replace w.l by a direct index w[ofs]where
+(l in 𝜖)= ofs, defined as:
+l in ⟨⟩= 0
+l in ⟨l′|𝜖⟩= l in 𝜖 iff l ⩽l′
+l in ⟨l′|𝜖⟩= 1 + (l in 𝜖) iff l > l′
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:26 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+This means for any functions with a closed effect, the offset of all evidence is constant. Only
+functions that are polymorphic in the effect tail need to index dynamically. Details are beyond
+the scope of this paper and are left to future work, but we believe that even in those cases we can
+index by a direct offset: following the same approach as TREX [Gaster and Jones 1996], we can
+use qualified types internally to propagate (l in 𝜇)constraints where the “dictionary” is simply the
+offset in the evidence vector (and these constraints can be hidden from the user as we can always
+solve them).
+6.4 Reducing Continuation Allocation
+The monadic translation still produces inefficiencies as it captures the continuation at every
+point where an operation may yield. For example, when calling an effectful function foo, as in
+x ←foo (); e, the monadic translation produces a bind which takes an allocated lambda as a second
+argument to represent the continuation e explicitly, as foo ()▷ (𝜆x. e).
+First of all, we can do a selective monadic translation [Leijen 2017c] where we leave out the
+binds if the effect of a function can be guaranteed to never produce a yield, e.g. total functions (like
+arithmetic), all effects provided by the host platform (like I/O), and all effects that are statically
+guaranteed to be tail resumptive (called linear effects). It turns out that many (leaf) functions satisfy
+this property so this removes the vast majority of binding.
+Secondly, since we expect the vast majority of operations to be tail resumptive, almost always
+the effectful functions will not yield at all. It therefore pays off to always inline the bind operation
+and perform a direct match on the result and inline the continuation directly, e.g., we can expand
+x ←foo (); e to:
+case foo ()of |yield m f cont →yield m f ((𝜆x. e)•cont)
+|pure x →e
+This can be done very efficiently, and is close to what a C or Go programmer would write: returning
+a (yielding) flag from every function and checking the flag before continuing. Of course, this is also
+a dangerous optimization as it duplicates the expression e, and more research is needed to evaluate
+the impact of code duplication and finding a good inlining heuristic.
+As a closing remark, the above optimization is why we prefer the monadic approach over
+continuation passing style (CPS). With CPS, our example would pass the continuation directly
+as foo ()(𝜆x. e). This style may be more efficient if one often yields (as the continuation is more
+efficiently composed versus bubbling up through the binds [Ploeg and Kiselyov 2014]) but it prohibits
+our optimization where we can inspect the result of foo (without knowing its implementation) and
+to only allocate a continuation if it is really needed. In future work, to open up more opportunities
+for program specialization, we would like to explore the combination of evidence translation with
+an iterated CPS translation [Schuster and Brachthäuser 2018].
+6.5 Implementation
+We have an initial implementation of the evidence-passing translation in the Koka language [Lei-
+jen 2019] using the JavaScript backend4. The original runtime implementation uses a combination
+of CPS translation [Leijen 2017c] and an internal shadow stack of handlers where the operations
+propagate through this stack. The runtime part is about 1000 lines of JavaScript. The new imple-
+mentation based on evidence-passing translation requires just a few primitives though (about 100
+lines of JavaScript to handle evidence vectors efficiently).
+While a systematic evaluation of efficient implementation strategies using evidence translation
+is beyond the scope of this paper, the initial benchmark results look promising. In particular, using
+4In the dev-ev branch in the Koka repository [Leijen 2019].
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:27
+benchmarks by Kiselyov et al. [2013] and Kammar et al. [2013], we compiled the same source
+with the original compiler (runtime) and with the new evidence translating compiler (evidence),
+and compare against the direct implementation of the benchmark that uses no handlers. We
+summarize the benchmark results in the following table. The table presents the relative speed of
+each implementation compared to the runtime compiler5
+.
+runtime evidence direct description
+counter count-mod5 1.00× 1.00× 1.94× 1.28× 2.14× 0.83× A counter in a loop.
+Fold over a list and increment a counter on
+every 5th element.
+layered 1.00× 2.23× 2.34× Use a state handler above five other reader
+effect handlers.
+nqueens 1.00× 46.09× 76.20× The n-queens problem.
+In counter, evidence is almost twice as fast as runtime, executing the tail resumptive increment in
+place. It is also getting close to direct. In count-mod5, the improvement is more modest. Note that
+direct is slower here due to the need to propagate the counter explicitly as an extra argument. The
+layered benchmark can impact performance if searching linearly for a handler. This time evidence
+is more than twice as fast, and again close to direct. Finally, on nqueens, evidence is much faster
+and about two thirds the speed of direct. Since evidence translation as such does not speed up
+the capturing and restoring of backtracking resumptions as used in nqueens, this result is a bit
+surprising. We conjecture that the explicit representation of continuations and evidence also helps
+the JavaScript compiler to optimize well, while the internal shadow stack handling in the runtime
+implementation may prohibit such optimizations here.
+7 RELATED WORK
+Throughout the paper, we compare with most related work, inline. Here, we discuss closely relevant
+work related to explicit passing of handlers.
+Recent work by Biernacki et al. [2019] introduces labeled effect handlers, allowing handlers to
+being explicitly referred to by name; the generative semantics with labels l is similar to our runtime
+markers m, but these labels are not guaranteed to be unique in the evaluation context (and they
+use the innermost handler in such case). Biernacki et al. also distinguish between the generative
+handler (as handlea), and the expression form handlem (as handlel).
+Brachthäuser et al. use capability passing to perform operations directly on a specific han-
+dler [Brachthäuser and Schuster 2017; 2018; 2020; Schuster et al. 2020]. This is also similar to the
+work of Zhang and Myers [2019] where handlers are passed by name as well. While they pass
+evidence individually for each handler, we uniformly pass a vector of handlers. Both of these
+approaches can be viewed as programming with explicit evidence (capabilities) and we can imagine
+extending our calculus to allow a programmer to refer explicitly to the evidence (name) of a handler.
+Recently, Brachthäuser et al. [2020] describe a new approach to effect safety, enabling them to
+translate programs into explicit capabilty-passing style. They impose a restriction similar to scoped
+resumptions, by treating resumptions as second-class [Osvald et al. 2016], which prevents them
+from escaping the handler scope. However, this restriction comes with a cost and rules out some
+useful programs, which can be expressed in our work. At the same time, resumptions in the work
+of Brachthäuser et al. [2020] can be used under additional handlers, which are simply ignored. In
+5The relative speed is adjusted for any speed differences between the direct versions with the runtime and evidence compiler.
+This compensates for any other differences in optimizations between the compiler versions (where the evidence compiler is
+usually a tad faster on the direct version).
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:28 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+future work, it would be interesting to further investigate the relative expressiveness of second-class
+resumptions compared to scoped resumptions.
+The work by Forster et al. [2019] is close to our work as it shows how delimited control, monads,
+and effect handlers can express each other. They show in particular a monadic semantics for effect
+handlers, but also prove that there does not exist a typed translation in their monomorphic setting.
+They conjecture a polymorphic translation may exist, and this paper proves that such translation is
+indeed possible.
+Finally, we present a Haskell library [Xie and Leijen 2020] of effect handlers based on the evidence
+translation technique as described in this paper. While in this paper we encode effects using a
+row type system, the Haskell library encodes effects using a combination of a type list and type
+class constraints. It is shown that the library delivers good performance, and tends to outperform
+monads and alternative Haskell libraries when combining multiple effects.
+8 CONCLUSION
+We have shown a full formal and coherent translation from a polymorphic core calculus for effect
+handlers (F𝜖 ) to a polymorphic lambda calculus (Fv) based on evidence translation (through Fev),
+and we have characterized the relation to multi-prompt delimited continuations precisely. Besides
+giving a new framework to reason about semantics of effect handlers, we are also hopeful that these
+techniques will be used to create efficient implementations of effect handlers in practice. Moreover,
+from a language design perspective, we expect that the restriction to scoped resumptions will be
+more widely adopted. Currently we are working on an efficient backend for the Koka language to C
+code using evidence translation. As part of that work, we are investigating an extension of evidence
+translation that can potentially handle non-scoped resumptions as well. As future work, we are
+also interested in a systematic evaluation of efficient implementation strategies using evidence
+translation.
+REFERENCES
+Arthur I. Baars, and S. Doaitse Swierstra. 2002. Typing Dynamic Typing. In Proceedings of the Seventh ACM SIGPLAN
+International Conference on Functional Programming, 157–166. ICFP’02. Pittsburgh, PA, USA. doi:10.1145/581478.581494.
+Andrej Bauer, and Matija Pretnar. 2014. An Effect System for Algebraic Effects and Handlers. Logical Methods in Computer
+Science 10 (4).
+Andrej Bauer, and Matija Pretnar. 2015. Programming with Algebraic Effects and Handlers. J. Log. Algebr. Meth. Program. 84
+(1): 108–123. doi:10.1016/j.jlamp.2014.02.001.
+Dariusz Biernacki, Maciej Piróg, Piotr Polesiuk, and Filip Sieczkowski. Dec. 2017. Handle with Care: Relational Interpretation
+of Algebraic Effects and Handlers. Proc. ACM Program. Lang. 2 (POPL’17 issue): 8:1–8:30. doi:10.1145/3158096.
+Dariusz Biernacki, Maciej Piróg, Piotr Polesiuk, and Filip Sieczkowski. Dec. 2019. Binders by Day, Labels by Night: Effect
+Instances via Lexically Scoped Handlers. Proc. ACM Program. Lang. 4 (POPL). Association for Computing Machinery,
+New York, NY, USA. doi:10.1145/3371116.
+Jonathan Immanuel Brachthäuser, and Philipp Schuster. Oct. 2017. Effekt: Extensible Algebraic Effects in Scala. In Scala’17.
+Vancouver, CA.
+Jonathan Immanuel Brachthäuser, Philipp Schuster, and Klaus Ostermann. Oct. 2018. Effect Handlers for the Masses. Proc.
+ACM Program. Lang. 2 (OOPSLA). Association for Computing Machinery, New York, NY, USA. doi:10.1145/3276481.
+Jonathan Immanuel Brachthäuser, Philipp Schuster, and Klaus Ostermann. 2020. Effekt: Lightweight Effect Polymor-
+phism for Handlers. Technical Report. University of Tübingen, Germany. http://ps.informatik.uni-tuebingen.
+de/publications/brachthaeuser20effekt.
+Jonathan Immanuel Brachthäuser, Philipp Schuster, and Klaus Ostermann. 2020. Effekt: Capability-Passing Style for Type-
+and Effect-Safe, Extensible Effect Handlers in Scala. Journal of Functional Programming. Cambridge University Press.
+Stephen Dolan, Spiros Eliopoulos, Daniel Hillerström, Anil Madhavapeddy, KC Sivaramakrishnan, and Leo White. May
+2017. Concurrent System Programming with Effect Handlers. In Proceedings of the Symposium on Trends in Functional
+Programming. TFP’17.
+Stephen Dolan, Leo White, KC Sivaramakrishnan, Jeremy Yallop, and Anil Madhavapeddy. Sep. 2015. Effective Concurrency
+through Algebraic Effects. In OCaml Workshop.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+Effect Handlers, Evidently 99:29
+R Kent Dyvbig, Simon Peyton Jones, and Amr Sabry. 2007. A Monadic Framework for Delimited Continuations. Journal of
+Functional Programming 17 (6). Cambridge University Press: 687–730. doi:10.1017/S0956796807006259.
+Yannick Forster, Ohad Kammar, Sam Lindley, and Matija Pretnar. 2019. On the Expressive Power of User-Defined Effects:
+Effect Handlers, Monadic Reflection, Delimited Control. Journal of Functional Programming 29. Cambridge University
+Press: 15. doi:10.1017/S0956796819000121.
+Ben R. Gaster, and Mark P. Jones. 1996. A Polymorphic Type System for Extensible Records and Variants. NOTTCS-TR-96-3.
+University of Nottingham.
+Carl A. Gunter, Didier Rémy, and Jon G. Riecke. 1995. A Generalization of Exceptions and Control in ML-like Languages. In
+Proceedings of the Seventh International Conference on Functional Programming Languages and Computer Architecture,
+12–23. FPCA ’95. ACM, La Jolla, California, USA. doi:10.1145/224164.224173.
+Daniel Hillerström, and Sam Lindley. 2016. Liberating Effects with Rows and Handlers. In Proceedings of the 1st International
+Workshop on Type-Driven Development, 15–27. TyDe 2016. Nara, Japan. doi:10.1145/2976022.2976033.
+Daniel Hillerström, and Sam Lindley. 2018. Shallow Effect Handlers. In 16th Asian Symposium on Programming Languages
+and Systems (APLAS’18), 415–435. Springer.
+Daniel Hillerström, Sam Lindley, Bob Atkey, and KC Sivaramakrishnan. Sep. 2017. Continuation Passing Style for Effect
+Handlers. In Proceedings of the Second International Conference on Formal Structures for Computation and Deduction.
+FSCD’17.
+Mark P. Jones. Feb. 1992. A Theory of Qualified Types. In 4th. European Symposium on Programming (ESOP’92), 582:287–306.
+Lecture Notes in Computer Science. Springer-Verlag, Rennes, France. doi:10.1007/3-540-55253-7_17.
+Ohad Kammar, Sam Lindley, and Nicolas Oury. 2013. Handlers in Action. In Proceedings of the 18th ACM SIGPLAN International
+Conference on Functional Programming, 145–158. ICFP ’13. ACM, New York, NY, USA. doi:10.1145/2500365.2500590.
+Ohad Kammar, and Matija Pretnar. Jan. 2017. No Value Restriction Is Needed for Algebraic Effects and Handlers. Journal of
+Functional Programming 27 (1). Cambridge University Press. doi:10.1017/S0956796816000320.
+Oleg Kiselyov, Amr Sabry, and Cameron Swords. 2013. Extensible Effects: An Alternative to Monad Transform-
+ers. In Proceedings of the 2013 ACM SIGPLAN Symposium on Haskell, 59–70. Haskell ’13. Boston, Massachusetts,
+USA. doi:10.1145/2503778.2503791.
+Oleg Kiselyov, and Chung-chieh Shan. 2009. Embedded Probabilistic Programming. In Domain-Specific Languages.
+doi:10.1007/978-3-642-03034-5_17.
+Oleg Kiselyov, Chung-chieh Shan, and Amr Sabry. 2006. Delimited Dynamic Binding. In Proceedings of the Eleventh ACM
+SIGPLAN International Conference on Functional Programming, 26–37. ICFP ’06. Association for Computing Machinery,
+New York, NY, USA. doi:10.1145/1159803.1159808.
+Daan Leijen. 2005. Extensible Records with Scoped Labels. In Proceedings of the 2005 Symposium on Trends in Functional
+Programming, 297–312.
+Daan Leijen. 2014. Koka: Programming with Row Polymorphic Effect Types. In MSFP’14, 5th Workshop on Mathematically
+Structured Functional Programming. doi:10.4204/EPTCS.153.8.
+Daan Leijen. Aug. 2016. Algebraic Effects for Functional Programming. MSR-TR-2016-29. Microsoft Research technical report.
+Extended version of [Leijen 2017c].
+Daan Leijen. 2017a. Implementing Algebraic Effects in C: Or Monads for Free in C. Edited by Bor-Yuh Evan Chang.
+Programming Languages and Systems, LNCS, 10695 (1). Springer International Publishing, Suzhou, China: 339–363.
+APLAS’17.
+Daan Leijen. 2017b. Structured Asynchrony with Algebraic Effects. In Proceedings of the 2nd ACM SIGPLAN International
+Workshop on Type-Driven Development, 16–29. TyDe 2017. Oxford, UK. doi:10.1145/3122975.3122977.
+Daan Leijen. Jan. 2017. Type Directed Compilation of Row-Typed Algebraic Effects. In Proceedings of the 44th ACM SIGPLAN
+Symposium on Principles of Programming Languages (POPL’17), 486–499. Paris, France. doi:10.1145/3009837.3009872.
+Daan Leijen. 2019. Koka Repository. https://github.com/koka-lang/koka.
+Sam Lindley, and James Cheney. 2012. Row-Based Effect Types for Database Integration. In Proceedings of the 8th ACM
+SIGPLAN Workshop on Types in Language Design and Implementation, 91–102. TLDI’12. doi:10.1145/2103786.2103798.
+Sam Lindley, Connor McBride, and Craig McLaughlin. Jan. 2017. Do Be Do Be Do. In Proceedings of the 44th ACM SIGPLAN
+Symposium on Principles of Programming Languages (POPL’17), 500–514. Paris, France. doi:10.1145/3009837.3009897.
+Leo Osvald, Grégory Essertel, Xilun Wu, Lilliam I González Alayón, and Tiark Rompf. 2016. Gentrification Gone Too Far?
+Affordable 2nd-Class Values for Fun and (co-) Effect. In Conference on Object-Oriented Programming, Systems, Languages
+and Applications (OOPSLA), 234–251. ACM press, NewYork.
+Simon L Peyton Jones, and John Launchbury. 1995. State in Haskell. Lisp and Symbolic Comp. 8 (4): 293–341.
+doi:10.1007/BF01018827.
+Andrew M. Pitts. 1998. Existential Types: Logical Relations and Operational Equivalence. In In Proceedings of the 25th
+International Colloquium on Automata, Languages and Programming, 309–326. Springer-Verlag.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.
+99:30 Xie, Brachthäuser, Hillerström, Schuster, and Leijen
+Atze van der Ploeg, and Oleg Kiselyov. 2014. Reflection without Remorse: Revealing a Hidden Sequence to Speed up Monadic
+Reflection. In Proceedings of the 2014 ACM SIGPLAN Symposium on Haskell, 133–144. Haskell’14. Göthenburg, Sweden.
+doi:10.1145/2633357.2633360.
+Gordon D. Plotkin, and John Power. 2003. Algebraic Operations and Generic Effects. Applied Categorical Structures 11 (1):
+69–94. doi:10.1023/A:1023064908962.
+Gordon D. Plotkin, and Matija Pretnar. 2013. Handling Algebraic Effects. In Logical Methods in Computer Science, volume 9.
+4. doi:10.2168/LMCS-9(4:23)2013.
+Matija Pretnar. Dec. 2015. An Introduction to Algebraic Effects and Handlers. Invited Tutorial Paper. Electron. Notes Theor.
+Comput. Sci. 319 (C). Elsevier Science Publishers: 19–35. doi:10.1016/j.entcs.2015.12.003.
+Matija Pretnar, Amr Hany Shehata Saleh, Axel Faes, and Tom Schrijvers. 2017. Efficient Compilation of Algebraic Effects and
+Handlers. CW Reports. Department of Computer Science, KU Leuven; Leuven, Belgium. https://lirias.kuleuven.
+be/retrieve/472230.
+Didier Rémy. 1994. Type Inference for Records in Natural Extension of ML. In Theoretical Aspects of Object-Oriented
+Programming, 67–95. doi:10.1.1.48.5873.
+Philipp Schuster, and Jonathan Immanuel Brachthäuser. 2018. Typing, Representing, and Abstracting Control. In TyDe,
+14–24. ACM press, NewYork. doi:10.1145/3240719.3241788.
+Philipp Schuster, Jonathan Immanuel Brachthäuser, and Klaus Ostermann. 2020. Compiling Effect Handlers in Capability-
+Passing Style. In To Appear in the Proceedings of the International Conference on Functional Programming. ACM, New York,
+NY, USA.
+Sebastian Ullrich, and Leonardo de Moura. Sep. 2019. Counting Immutable Beans – Reference Counting Optimized for
+Purely Functional Programming. In Proceedings of the 31st Symposium on Implementation and Application of Functional
+Languages (IFL’19). Singapore.
+Andrew Wright. 1995. Simple Imperative Polymorphism. In LISP and Symbolic Computation, 343–356.
+Nicolas Wu, Tom Schrijvers, and Ralf Hinze. 2014. Effect Handlers in Scope. In Proceedings of the 2014 ACM SIGPLAN
+Symposium on Haskell, 1–12. Haskell ’14. Göthenburg, Sweden. doi:10.1145/2633357.2633358.
+Ningning Xie, Jonathan Brachthäuser, Daniel Hillerström, Philipp Schuster, and Daan Leijen. Jul. 2020. Effect Handlers,
+Evidently. MSR-TR-2020-23. Microsoft Research. Extended version with proofs.
+Ningning Xie, and Daan Leijen. Aug. 2020. Effect Handlers in Haskell, Evidently. In Proceedings of the 2020 ACM SIGPLAN
+Symposium on Haskell. Haskell’20. Jersey City, NJ. doi:10.1145/3406088.3409022.
+Yizhou Zhang, and Andrew C. Myers. Jan. 2019. Abstraction-Safe Effect Handlers via Tunneling. Proc. ACM Program. Lang.
+3 (POPL). ACM. doi:10.1145/3290318.
+Proc. ACM Program. Lang., Vol. 4, No. ICFP, Article 99. Publication date: August 2020.

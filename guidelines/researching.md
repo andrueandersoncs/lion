@@ -21,6 +21,7 @@ Research here means any run of the [lion-research skill](../skills/lion-research
 - **Reuse the vocabulary.**
   - Name a feature, a technique, a source, or a candidate the way earlier runs named it, so that evidence from different runs meets on one question. Ask the model for the names it holds before choosing new ones.
   - A run's own ids, of claims, leads, and assumptions, start with the run's prefix.
+  - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says.
 - **Prove each conclusion with a Lion program.**
   - What Lion does is a claim quoting the output of a program in `research/probes/`, saved as a source with `research/probes/run.mjs`, or a sentence of Lion's docs.
   - A conclusion is derived by a rule in a step, never typed in.

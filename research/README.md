@@ -45,12 +45,18 @@ Build the CLI first with `bunx turbo build --filter=@lionlang/cli`. The replay r
 | `{"defines": term}` | a source explains a term |
 | `{"raises": term}` | a source asks about a term |
 | `{"counted": what, "n": integer}` | a figure a program gave |
+| `{"result": technique, "measure": what, "bound": bound, "times"/"percent"/"count": number}` | a result a source reports for a technique, such as a speedup |
+| `{"lion measured": workload, "ms"/"s": number}` | how long Lion took on a workload |
+| `{"lion grows": workload, "power": number}` | how Lion's time grows with the size of a workload |
+
+What a program run on Lion says about what Lion has overrules what its docs say: where the publisher `Lion probes` gives one value and the docs another, only the probes' value is `stated`.
 
 It also holds the rules that judge an idea for Lion:
-- A `candidate` is a proposed change to Lion, with the techniques it `uses` and the features it `offers`.
-- The model derives what each candidate `adds` that Lion lacks, what Lion has `already`, what it `folds` into one rule, and what `blocks` it or leaves it `moot`.
+- A `candidate` is a proposed change to Lion, with the techniques it `uses` and the features it `offers`. `weighed_in` names the runs that weighed it, so a run's page can keep to its own.
+- The model derives what a candidate's techniques `give`, and of that what Lion has, which they `handle`, and what it lacks, which they `bring`.
+- It derives what each candidate `adds` that Lion lacks among what it offers, what Lion has `already`, what it `folds` into one rule, and what `blocks` it or leaves it `moot`.
 - From those it derives a `verdict`, a `rank`, `caveat`s, and `precedent`s.
-- An assumption `expects` a question to have a value, and the model finds the evidence that `violated` it.
+- An assumption `expects` a question to have a value, or `expects_cover`s: expects some technique a candidate uses to cover a feature. The model finds the evidence that `violated` it, and calls it `unsettled` while no evidence bears on it.
 
 A feature name is the same words in every run, so that evidence from different runs meets on one question. Before you name a feature, ask the model which names exist:
 
@@ -63,8 +69,11 @@ A feature name is the same words in every run, so that evidence from different r
 | Run | Steps | Question |
 |---|---|---|
 | `separation-logic` (2026-11-18) | `02-sl-*` to `10-sl-*` | What can Lion use from separation logic? Step `10-sl-built` records Lion after the three ideas it ranked were built. |
+| `lion-improvements` (2026-11-17) | `11-li-*` to `22-li-*` | What to improve in Lion next? It weighs seven directions, such as one algebra of changes (DBSP) and annotated relations, by net reasons: Lion features one mechanism would take over, capabilities it would add, and measured gaps a published speedup applies to. Its own frame, `11-li-frame`, ranks them as `net_rank` from `tally`. |
 
 A run's own ids start with its prefix: claims `sl-a1`, leads `sl-terms`, assumptions `sl-records`. Source ids, candidate ids, and feature names have no prefix, because later runs share them. A later run that reads Reynolds 2002 cites `a-reynolds-2002`, and new evidence about the record split adds to the candidate `rest`.
+
+A run's page asks about its own candidates through `weighed_in` and its own beliefs and claims by their prefix, since the model holds every run's. Its trust and sources views show the whole model.
 
 ## Lion as a source
 
@@ -78,3 +87,5 @@ When Lion changes, run the probes again under a new source id, and record what t
 ```bash
 node research/probes/run.mjs lion-probes-2026-12-01 records keys-rules split-model
 ```
+
+A probe that models a proposed rule beside Lion's engine is a TypeScript program in a folder of its own, run with `bun` in that folder: `chase-model/` (invented unknowns and equality, saved as `chase-model-tests`) and `algebra-model/` (annotations as aggregated columns, saved as `algebra-model-tests`).

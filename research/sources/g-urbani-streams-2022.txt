@@ -1,0 +1,123 @@
+Skip to main content
+Search
+Submit
+Donate
+Log in
+Search arXiv
+Press Enter to search &middot; Advanced search
+Computer Science > Artificial Intelligence
+arXiv:2205.02220 (cs)
+[Submitted on 4 May 2022]
+Title: Chasing Streams with Existential Rules
+Authors: Jacopo Urbani , Markus Krötzsch , Thomas Eiter
+View a PDF of the paper titled Chasing Streams with Existential Rules, by Jacopo Urbani and 2 other authors
+View PDF
+HTML (experimental)
+Abstract: We study reasoning with existential rules to perform query answering over streams of data. On static databases, this problem has been widely studied, but its extension to rapidly changing data has not yet been considered. To bridge this gap, we extend LARS, a well-known framework for rule-based stream reasoning, to support existential rules. For that, we show how to translate LARS with existentials into a semantics-preserving set of existential rules. As query answering with such rules is undecidable in general, we describe how to leverage the temporal nature of streams and present suitable notions of acyclicity that ensure decidability.
+Comments:
+Accepted at KR 2022
+Subjects:
+Artificial Intelligence (cs.AI) ; Databases (cs.DB)
+Cite as:
+arXiv:2205.02220 [cs.AI]
+(or
+arXiv:2205.02220v1 [cs.AI] for this version)
+https://doi.org/10.48550/arXiv.2205.02220
+Focus to learn more
+arXiv-issued DOI via DataCite
+Submission history
+From: Jacopo Urbani [ view email ]
+[v1]
+Wed, 4 May 2022 17:53:17 UTC (46 KB)
+Full-text links:
+Access Paper:
+View a PDF of the paper titled Chasing Streams with Existential Rules, by Jacopo Urbani and 2 other authors
+View PDF
+HTML (experimental)
+TeX Source
+view license
+Additional Features
+Audio Summary
+Current browse context:
+cs.AI
+< prev
+|
+next >
+new
+|
+recent
+| 2022-05
+Change to browse by:
+cs
+cs.DB
+References & Citations
+SciX
+Google Scholar
+Semantic Scholar
+export BibTeX citation
+Loading...
+BibTeX formatted citation
+&times;
+loading...
+Data provided by:
+Bookmark
+Bibliographic Tools
+Bibliographic and Citation Tools
+Bibliographic Explorer Toggle
+Bibliographic Explorer ( What is the Explorer? )
+Connected Papers Toggle
+Connected Papers ( What is Connected Papers? )
+Litmaps Toggle
+Litmaps ( What is Litmaps? )
+scite.ai Toggle
+scite Smart Citations ( What are Smart Citations? )
+Code, Data, Media
+Code, Data and Media Associated with this Article
+alphaXiv Toggle
+alphaXiv ( What is alphaXiv? )
+Links to Code Toggle
+CatalyzeX Code Finder for Papers ( What is CatalyzeX? )
+DagsHub Toggle
+DagsHub ( What is DagsHub? )
+GotitPub Toggle
+Gotit.pub ( What is GotitPub? )
+Huggingface Toggle
+Hugging Face ( What is Huggingface? )
+ScienceCast Toggle
+ScienceCast ( What is ScienceCast? )
+Demos
+Demos
+Replicate Toggle
+Replicate ( What is Replicate? )
+Spaces Toggle
+Hugging Face Spaces ( What is Spaces? )
+Spaces Toggle
+TXYZ.AI ( What is TXYZ.AI? )
+Related Papers
+Recommenders and Search Tools
+Link to Influence Flower
+Influence Flower ( What are Influence Flowers? )
+Core recommender toggle
+CORE Recommender ( What is CORE? )
+Author
+Venue
+Institution
+Topic
+About arXivLabs
+arXivLabs: experimental projects with community collaborators
+arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+Which authors of this paper are endorsers? |
+Disable MathJax ( What is MathJax? )
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

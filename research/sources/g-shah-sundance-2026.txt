@@ -1,0 +1,201 @@
+PLDI 2026 Mon 15 - Fri 19 June 2026 Boulder, Colorado, United States
+Toggle navigation
+Attending Venue: Limelight Boulder
+Registration
+Sponsorship
+Information for Presenters
+Information for Session Chairs
+Information for Attendees
+PLDI Live Streams
+Visa Letter
+Lodging
+Travel Information
+Explore Boulder
+Program PLDI Program
+Your Program
+Mon 15 Jun
+Tue 16 Jun
+Wed 17 Jun
+Thu 18 Jun
+Fri 19 Jun
+Tracks PLDI 2026
+PLDI Keynotes
+PLDI Research Papers
+PLDI Events
+Diversity, Equity and Inclusion
+PLDI Meetups
+Student Research Competition
+Tutorials
+- ACT: End-to-End Compiler Infrastructure for Emerging AI Accelerators
+- A guided tour through Oxidized OCaml
+- Deep dive into the AWS Nitro Isolation Engine
+- Implementing an Integrated Development Environment: a Quick Start Guide for PL Researchers
+- Mechanized Specifications for Real-World Programming Languages
+- Writing Performance-Portable Kernels Simplified with Helion
+Research Artifacts
+Workshops and Tutorials
+Volunteering
+Co-hosted Conferences
+ISMM Memory Management
+LCTES Programming Languages and Embedded Systems
+Workshops
+ARRAY Array-oriented Programming
+CP Choreographic Programming
+EGRAPHS Equality Graphs
+PAgE Principles Of Agentic Engineering
+PLMW @ PLDI PL Mentoring Workshop
+PROPL Programming for the Planet
+SOAP State Of the Art in Program Analysis
+Tom Ball @ Sixty Tom Ball at 60
+Organization PLDI 2026 Committees
+Organizing Committee
+AV Committee
+Track Committees
+PLDI Research Papers
+Student Research Competition
+Research Artifacts
+Contributors
+People Index
+Co-hosted Conferences
+ISMM Memory Management Organizing Committee
+Program Committee
+LCTES Programming Languages and Embedded Systems Organizing Committee
+Program Committee
+Steering Committee
+Workshops
+ARRAY Array-oriented Programming Organizing Committee
+Program Committee
+CP Choreographic Programming Organizing Committee
+Program Committee
+EGRAPHS Equality Graphs Organizing Committee
+Program Committee
+PAgE Principles Of Agentic Engineering Organizing Committee
+Program Committee
+PLMW @ PLDI PL Mentoring Workshop Organizing Committee
+PROPL Programming for the Planet Organizing Committee
+Program Committee
+SOAP State Of the Art in Program Analysis Organizing Committee
+Keynote Speakers
+Program Committee
+Tom Ball @ Sixty Organizing Committee
+Program Committee
+Search
+Series Series
+PLDI 2027
+PLDI 2026
+PLDI 2025
+PLDI 2024
+PLDI 2023
+PLDI 2022
+PLDI 2021
+PLDI 2020
+PLDI 2019
+PLDI 2018
+PLDI 2017
+PLDI 2016
+PLDI 2015
+Sign in
+Sign up
+PLDI 2026 ( series ) / EGRAPHS 2026 ( series ) / EGRAPHS / Relational E-matching in an SMT solver
+Who Amar Shah , Marijn Heule , Bryan Parno , Max Willsey
+Track EGRAPHS 2026
+Program Display Configuration
+Time Zone
+The program is currently displayed in (GMT-06:00) Mountain Time (US & Canada) . Use conference time zone: (GMT-06:00) Mountain Time (US & Canada) Select other time zone (GMT-12:00) AoE (Anywhere On Earth) (GMT-11:00) Midway Island, Samoa (GMT-09:00) Hawaii-Aleutian (GMT-10:00) Hawaii (GMT-09:30) Marquesas Islands (GMT-09:00) Gambier Islands (GMT-08:00) Alaska (GMT-07:00) Tijuana, Baja California (GMT-08:00) Pitcairn Islands (GMT-07:00) Pacific Time (US & Canada) (GMT-06:00) Mountain Time (US & Canada) (GMT-06:00) Chihuahua, La Paz, Mazatlan (GMT-07:00) Arizona (GMT-06:00) Saskatchewan, Central America (GMT-06:00) Guadalajara, Mexico City, Monterrey (GMT-06:00) Easter Island (GMT-05:00) Cancun (GMT-05:00) Central Time (US & Canada) (GMT-04:00) Eastern Time (US & Canada) (GMT-04:00) Cuba (GMT-05:00) Bogota, Lima, Quito, Rio Branco (GMT-04:00) Caracas (GMT-04:00) Santiago (GMT-04:00) La Paz (GMT-03:00) Faukland Islands (GMT-04:00) Manaus, Amazonas, Brazil (GMT-03:00) Atlantic Time (Goose Bay) (GMT-03:00) Atlantic Time (Canada) (GMT-02:30) Newfoundland (GMT-03:00) UTC-3 (GMT-03:00) Montevideo (GMT-02:00) Miquelon, St. Pierre (GMT-01:00) Greenland (GMT-03:00) Buenos Aires (GMT-03:00) Brasilia, Distrito Federal, Brazil (GMT-02:00) Mid-Atlantic (GMT-01:00) Cape Verde Is. (GMT) Azores (UTC) Coordinated Universal Time (GMT+01:00) Belfast (GMT+01:00) Dublin (GMT+01:00) Lisbon (GMT+01:00) London (GMT) Monrovia, Reykjavik (GMT+02:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna (GMT+02:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague (GMT+02:00) Brussels, Copenhagen, Madrid, Paris (GMT+01:00) West Central Africa (GMT+02:00) Windhoek (GMT+03:00) Athens (GMT+03:00) Beirut (GMT+03:00) Cairo (GMT+03:00) Gaza (GMT+02:00) Harare, Pretoria (GMT+03:00) Jerusalem (GMT+03:00) Minsk (GMT+03:00) Syria (GMT+03:00) Moscow, St. Petersburg, Volgograd (GMT+03:00) Nairobi (GMT+03:30) Tehran (GMT+04:00) Abu Dhabi, Muscat (GMT+04:00) Yerevan (GMT+04:30) Kabul (GMT+05:00) Ekaterinburg (GMT+05:00) Tashkent (GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi (GMT+05:45) Kathmandu (GMT+06:00) Astana, Dhaka (GMT+07:00) Novosibirsk (GMT+06:30) Yangon (Rangoon) (GMT+07:00) Bangkok, Hanoi, Jakarta (GMT+07:00) Krasnoyarsk (GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi (GMT+08:00) Irkutsk, Ulaan Bataar (GMT+08:00) Perth (GMT+08:45) Eucla (GMT+09:00) Osaka, Sapporo, Tokyo (GMT+09:00) Seoul (GMT+09:00) Yakutsk (GMT+09:30) Adelaide (GMT+09:30) Darwin (GMT+10:00) Brisbane (GMT+10:00) Hobart (GMT+10:00) Vladivostok (GMT+10:30) Lord Howe Island (GMT+11:00) Solomon Is., New Caledonia (GMT+11:00) Magadan (GMT+11:00) Norfolk Island (GMT+12:00) Anadyr, Kamchatka (GMT+12:00) Auckland, Wellington (GMT+12:00) Fiji, Kamchatka, Marshall Is. (GMT+12:45) Chatham Islands (GMT+13:00) Nuku'alofa (GMT+14:00) Kiritimati
+The GMT offsets shown reflect the offsets at the moment of the conference .
+Time Band
+By setting a time band, the program will dim events that are outside this time window. This is useful for (virtual) conferences with a continuous program (with repeated sessions).
+The time band will also limit the events that are included in the personal iCalendar subscription service. Display full program Specify a time band -
+Save
+Close
+When Mon 15 Jun 2026 15:50 - 16:15 at Meadows CD - Session 4
+Abstract E-matching is the problem of finding all matches of a pattern in an e-graph. Relational e-matching, a recent approach inspired by the databases community, has found succcess in equality saturation engines such as egglog. However, until now, this technique has not been implemented in a Satisfiability Modulo Theories (SMT) solver. The key difficulty of implementing relational e-matching in an SMT solver is \emph{backtracking}, i.e., the ability to undo previous matching decisions. We provide an initial implementation of a backtrackable, relational e-matching algorithm in Sundance, an SMT solver currently in development. We describe our approach of maintaining backtrackable indices and our e-matching algorithm based on a left-deep binary join. We evaluate our implementation on a set of synthetic benchmarks and show a median speedup of $25.0 \times$ over a top-down e-matching algorithm. However, when considering a set of benchmarks from the program verifier Verus, we see a median slowdown of $1.77 \times$. We conclude with a discussion of future work to close this gap and make relational e-matching a practical component of an SMT solver.
+Link to Preprint https://amarshah1.github.io/papers/relationalematching-paper.pdf
+Amar Shah
+Carnegie Mellon University
+United States
+Marijn Heule
+Carnegie Mellon University
+Bryan Parno
+Carnegie Mellon University
+United States
+Max Willsey
+University of California at Berkeley
+United States
+Program Display Configuration
+Time Zone
+The program is currently displayed in (GMT-06:00) Mountain Time (US & Canada) . Use conference time zone: (GMT-06:00) Mountain Time (US & Canada) Select other time zone (GMT-12:00) AoE (Anywhere On Earth) (GMT-11:00) Midway Island, Samoa (GMT-09:00) Hawaii-Aleutian (GMT-10:00) Hawaii (GMT-09:30) Marquesas Islands (GMT-09:00) Gambier Islands (GMT-08:00) Alaska (GMT-07:00) Tijuana, Baja California (GMT-08:00) Pitcairn Islands (GMT-07:00) Pacific Time (US & Canada) (GMT-06:00) Mountain Time (US & Canada) (GMT-06:00) Chihuahua, La Paz, Mazatlan (GMT-07:00) Arizona (GMT-06:00) Saskatchewan, Central America (GMT-06:00) Guadalajara, Mexico City, Monterrey (GMT-06:00) Easter Island (GMT-05:00) Cancun (GMT-05:00) Central Time (US & Canada) (GMT-04:00) Eastern Time (US & Canada) (GMT-04:00) Cuba (GMT-05:00) Bogota, Lima, Quito, Rio Branco (GMT-04:00) Caracas (GMT-04:00) Santiago (GMT-04:00) La Paz (GMT-03:00) Faukland Islands (GMT-04:00) Manaus, Amazonas, Brazil (GMT-03:00) Atlantic Time (Goose Bay) (GMT-03:00) Atlantic Time (Canada) (GMT-02:30) Newfoundland (GMT-03:00) UTC-3 (GMT-03:00) Montevideo (GMT-02:00) Miquelon, St. Pierre (GMT-01:00) Greenland (GMT-03:00) Buenos Aires (GMT-03:00) Brasilia, Distrito Federal, Brazil (GMT-02:00) Mid-Atlantic (GMT-01:00) Cape Verde Is. (GMT) Azores (UTC) Coordinated Universal Time (GMT+01:00) Belfast (GMT+01:00) Dublin (GMT+01:00) Lisbon (GMT+01:00) London (GMT) Monrovia, Reykjavik (GMT+02:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna (GMT+02:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague (GMT+02:00) Brussels, Copenhagen, Madrid, Paris (GMT+01:00) West Central Africa (GMT+02:00) Windhoek (GMT+03:00) Athens (GMT+03:00) Beirut (GMT+03:00) Cairo (GMT+03:00) Gaza (GMT+02:00) Harare, Pretoria (GMT+03:00) Jerusalem (GMT+03:00) Minsk (GMT+03:00) Syria (GMT+03:00) Moscow, St. Petersburg, Volgograd (GMT+03:00) Nairobi (GMT+03:30) Tehran (GMT+04:00) Abu Dhabi, Muscat (GMT+04:00) Yerevan (GMT+04:30) Kabul (GMT+05:00) Ekaterinburg (GMT+05:00) Tashkent (GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi (GMT+05:45) Kathmandu (GMT+06:00) Astana, Dhaka (GMT+07:00) Novosibirsk (GMT+06:30) Yangon (Rangoon) (GMT+07:00) Bangkok, Hanoi, Jakarta (GMT+07:00) Krasnoyarsk (GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi (GMT+08:00) Irkutsk, Ulaan Bataar (GMT+08:00) Perth (GMT+08:45) Eucla (GMT+09:00) Osaka, Sapporo, Tokyo (GMT+09:00) Seoul (GMT+09:00) Yakutsk (GMT+09:30) Adelaide (GMT+09:30) Darwin (GMT+10:00) Brisbane (GMT+10:00) Hobart (GMT+10:00) Vladivostok (GMT+10:30) Lord Howe Island (GMT+11:00) Solomon Is., New Caledonia (GMT+11:00) Magadan (GMT+11:00) Norfolk Island (GMT+12:00) Anadyr, Kamchatka (GMT+12:00) Auckland, Wellington (GMT+12:00) Fiji, Kamchatka, Marshall Is. (GMT+12:45) Chatham Islands (GMT+13:00) Nuku'alofa (GMT+14:00) Kiritimati
+The GMT offsets shown reflect the offsets at the moment of the conference .
+Time Band
+By setting a time band, the program will dim events that are outside this time window. This is useful for (virtual) conferences with a continuous program (with repeated sessions).
+The time band will also limit the events that are included in the personal iCalendar subscription service. Display full program Specify a time band -
+Save
+Close
+Session Program Mon 15 Jun
+Displayed time zone: Mountain Time (US & Canada) change
+15:50 - 17:30
+Session 4 EGRAPHS at Meadows CD
+15:50
+25m
+Talk
+Relational E-matching in an SMT solver EGRAPHS
+Amar Shah Carnegie Mellon University , Marijn Heule Carnegie Mellon University , Bryan Parno Carnegie Mellon University , Max Willsey University of California at Berkeley
+Pre-print
+16:15
+25m
+Talk
+E-Stitch: Top-Down Library Learning for E-Graphs EGRAPHS
+Kavi Gupta MIT , Maddy Bowers Massachusetts Institute of Technology , Armando Solar-Lezama Massachusetts Institute of Technology
+File Attached
+16:40
+25m
+Talk
+Optimizing Optimizations, Declaratively: Optimizing the Higher-Order Functions in Mathematical Optimization with egglog EGRAPHS
+Hiromi Ishii JIJ
+Pre-print File Attached
+17:05
+25m
+Talk
+Poseidon: Profile-Guided Numerical Rewriting at Full-Application Scale EGRAPHS
+Siyuan Brant Qian University of Illinois at Urbana-Champaign , Vimarsh Sathia University of Illinois Urbana Champaign , Ivan Ivanov Institute of Science Tokyo , Jan Hueckelheim Argonne National Laboratory , Paul Hovland Argonne National Laboratory , William S. Moses University of Illinois Urbana-Champaign
+x Wed 18 Nov 13:44
+PLDI 2026
+contact form
+using conf.researchr.org ( v1.76.1 )
+Support page
+Tracks
+PLDI Keynotes
+PLDI Research Papers
+PLDI Events
+Diversity, Equity and Inclusion
+PLDI Meetups
+Student Research Competition
+Tutorials
+Research Artifacts
+Workshops and Tutorials
+Volunteering
+Co-hosted Conferences
+ISMM 2026
+LCTES 2026
+Workshops
+ARRAY 2026
+CP 2026
+EGRAPHS 2026
+PAgE 2026
+PLMW @ PLDI 2026
+PROPL 2026
+SOAP 2026
+Tom Ball @ Sixty
+Attending
+Venue: Limelight Boulder
+Registration
+Sponsor PLDI
+Information for Presenters
+Information for Session Chairs
+Information for Attendees
+PLDI Live Streams
+Visa Letter
+Lodging
+Travel Information
+Explore Boulder
+Sign Up

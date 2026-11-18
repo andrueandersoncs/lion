@@ -52,6 +52,46 @@
     ["adds", "?candidate", "?feature", "?technique"]
   ],
   "Candidates with no verdict yet": ["find", "?c", ["unjudged", "?c"]],
+  "Which Lion features would one of a candidate's techniques also handle?": [
+    "query",
+    ["handles", "?candidate", "?feature", "?technique"],
+    {
+      "order": ["candidate", "feature"]
+    }
+  ],
+  "What would a candidate's techniques bring that Lion lacks?": [
+    "query",
+    ["brings", "?candidate", "?feature", "?technique"],
+    {
+      "order": ["candidate", "feature"]
+    }
+  ],
+  "What does a candidate's technique not cover that Lion has?": [
+    "query",
+    ["limit", "?candidate", "?feature", "?technique", "?claim"]
+  ],
+  "Which measured Lion gaps does each candidate target?": [
+    "query",
+    ["gap", "?candidate", "?workload", "?ms"]
+  ],
+  "What published results back each candidate?": [
+    "query",
+    ["payoff", "?candidate", "?technique", "?question", "?value"],
+    {
+      "order": "candidate"
+    }
+  ],
+  "Ranking on net reasons": [
+    "query",
+    [
+      "and",
+      ["net_rank", "?candidate", "?position"],
+      ["tally", "?candidate", "?reasons", "?against", "?net", "?publishers"]
+    ],
+    {
+      "order": "position"
+    }
+  ],
   "Blocked": ["query", ["blocks", "?candidate", "?guarantee", "?technique"]],
   "Moot": ["query", ["moot", "?candidate", "?condition"]],
   "Terms the tweet raises, and who defines them": [
@@ -165,5 +205,9 @@
       ["and", ["exhausted", "?lead"], ["=", "?why", "set aside"]]
     ]
   ],
-  "Disputed": ["query", ["disputed", "?question", "?values"]]
+  "Disputed": ["query", ["disputed", "?question", "?values"]],
+  "Which figures are not written in the words quoted?": [
+    "query",
+    ["unquoted", "?claim", "?field", "?value"]
+  ]
 }

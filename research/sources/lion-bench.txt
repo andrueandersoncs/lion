@@ -1,0 +1,21 @@
+$ bun run bench plain   (Lion core at commit f49b97a, 2026-11-17)
+benchmark                                                        now
+plain: fib(17) through a recursive lambda                    45.6 ms
+plain: array/map and array/reduce over 20,000 items         117.0 ms
+explaining: why 200 rows hold or do not, over 20,000 facts   80.7 ms
+
+$ bun run scale --sizes 1000,4000,16000 --limit 60 triangles
+workload                                      n = 1,000  n = 4,000  n = 16,000  grows  peak  kept
+join: triangles among n edges over n/4 nodes       5 ms      11 ms       34 ms  n^0.8  0 MB  6 MB
+
+$ lion loop.json   (a tail-recursive lambda counting down from n, published CLI v0.12.0, wall time including start-up)
+n = 1,000: real 0.25 s
+n = 10,000: real 0.47 s
+n = 100,000: real 2.56 s
+
+$ lion hubs-<m>.json   (published CLI v0.12.0; m nodes each linked to and from 2 hub nodes, plus m random edges; counts triangles with one find over three edge goals; wall time)
+2,484 edges, 2,953 triangles: real 0.49 s
+4,980 edges, 5,930 triangles: real 1.17 s
+9,982 edges, 11,941 triangles: real 3.74 s
+19,983 edges, 23,950 triangles: real 14.22 s
+time grows about n^1.9 between the two largest sizes

@@ -1,0 +1,2389 @@
+Skip to main content
+Search
+Submit
+Donate
+Log in
+Search arXiv
+Press Enter to search &middot; Advanced search
+Computer Science > Programming Languages
+arXiv:2501.02413 (cs)
+[Submitted on 5 Jan 2025]
+Title: Semantic foundations of equality saturation
+Authors: Dan Suciu , Yisu Remy Wang , Yihong Zhang
+View a PDF of the paper titled Semantic foundations of equality saturation, by Dan Suciu and 2 other authors
+View PDF
+HTML (experimental)
+Abstract: Equality saturation is an emerging technique for program and query optimization developed in the programming language community. It performs term rewriting over an E-graph, a data structure that compactly represents a program space. Despite its popularity, the theory of equality saturation lags behind the practice. In this paper, we define a fixpoint semantics of equality saturation based on tree automata and uncover deep connections between equality saturation and the chase. We characterize the class of chase sequences that correspond to equality saturation. We study the complexities of terminations of equality saturation in three cases: single-instance, all-term-instance, and all-E-graph-instance. Finally, we define a syntactic criterion based on acyclicity that implies equality saturation termination.
+Comments:
+To appear at ICDT 2025
+Subjects:
+Programming Languages (cs.PL) ; Databases (cs.DB)
+Cite as:
+arXiv:2501.02413 [cs.PL]
+(or
+arXiv:2501.02413v1 [cs.PL] for this version)
+https://doi.org/10.48550/arXiv.2501.02413
+Focus to learn more
+arXiv-issued DOI via DataCite
+Submission history
+From: Yihong Zhang [ view email ]
+[v1]
+Sun, 5 Jan 2025 01:46:42 UTC (1,411 KB)
+Full-text links:
+Access Paper:
+View a PDF of the paper titled Semantic foundations of equality saturation, by Dan Suciu and 2 other authors
+View PDF
+HTML (experimental)
+TeX Source
+view license
+Additional Features
+Audio Summary
+Current browse context:
+cs.PL
+< prev
+|
+next >
+new
+|
+recent
+| 2025-01
+Change to browse by:
+cs
+cs.DB
+References & Citations
+SciX
+Google Scholar
+Semantic Scholar
+export BibTeX citation
+Loading...
+BibTeX formatted citation
+&times;
+loading...
+Data provided by:
+Bookmark
+Bibliographic Tools
+Bibliographic and Citation Tools
+Bibliographic Explorer Toggle
+Bibliographic Explorer ( What is the Explorer? )
+Connected Papers Toggle
+Connected Papers ( What is Connected Papers? )
+Litmaps Toggle
+Litmaps ( What is Litmaps? )
+scite.ai Toggle
+scite Smart Citations ( What are Smart Citations? )
+Code, Data, Media
+Code, Data and Media Associated with this Article
+alphaXiv Toggle
+alphaXiv ( What is alphaXiv? )
+Links to Code Toggle
+CatalyzeX Code Finder for Papers ( What is CatalyzeX? )
+DagsHub Toggle
+DagsHub ( What is DagsHub? )
+GotitPub Toggle
+Gotit.pub ( What is GotitPub? )
+Huggingface Toggle
+Hugging Face ( What is Huggingface? )
+ScienceCast Toggle
+ScienceCast ( What is ScienceCast? )
+Demos
+Demos
+Replicate Toggle
+Replicate ( What is Replicate? )
+Spaces Toggle
+Hugging Face Spaces ( What is Spaces? )
+Spaces Toggle
+TXYZ.AI ( What is TXYZ.AI? )
+Related Papers
+Recommenders and Search Tools
+Link to Influence Flower
+Influence Flower ( What are Influence Flowers? )
+Core recommender toggle
+CORE Recommender ( What is CORE? )
+Author
+Venue
+Institution
+Topic
+About arXivLabs
+arXivLabs: experimental projects with community collaborators
+arXivLabs is a framework that allows collaborators to develop and share new arXiv features directly on our website.
+Both individuals and organizations that work with arXivLabs have embraced and accepted our values of openness, community, excellence, and user data privacy. arXiv is committed to these values and only works with partners that adhere to them.
+Have an idea for a project that will add value for arXiv's community? Learn more about arXivLabs .
+Which authors of this paper are endorsers? |
+Disable MathJax ( What is MathJax? )
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)
+Major funding support from
+(opens in new tab)
+(opens in new tab)
+(opens in new tab)
+Skip to main content
+Report GitHub Issue
+×
+Title:
+Content selection saved. Describe the issue below:
+Description:
+Submit without GitHub
+Submit in GitHub
+Why HTML?
+Report Issue
+Back to Abstract
+Download PDF
+Contents
+Reading mode
+Colour theme
+Acknowledgements
+Abstract
+1 Introduction
+Open problems about EqSat
+Our contribution
+2 Background
+2.1 Term Rewriting Systems
+2.2 Tree automata
+3 E-graphs and Equality Saturation
+3.1 E-graphs
+3.2 Operations over E-graphs
+Least upper bound of E-graphs
+3.3 Equality saturation
+Properties of equality saturation
+4 Equality saturation and the chase
+4.1 The Chase Procedure
+Databases and conjunctive queries
+Dependencies
+The chase
+4.2 Reducing the Skolem chase to equality saturation
+4.3 Reducing equality saturation to the standard chase
+5 The termination theorems of equality saturation
+6 Weak term acyclity for equality saturation termination
+7 Conclusion
+References
+A Proof basic properties of E-graphs and EqSat
+A.1 Proof for
+A.2 Proof for
+A.3 Proof for
+B Proof for the finite convergence lemma
+C Proof for the reductions between EqSat and the chase
+C.1 Proof for
+C.2 Proof for
+D Proof for the termination theorems
+D.1 Proof for and
+Turing machine
+Alphabet of the constructed string rewriting system
+D.2 Proof for
+E Weak term acyclicity and EqSat termination
+License: CC BY 4.0
+arXiv:2501.02413v1 [cs.PL] 05 Jan 2025
+University of Washington, Seattlesuciu@cs.washington.eduhttps://orcid.org/0000-0002-4144-0868
+University of California, Los Angelesremywang@cs.ucla.eduhttps://orcid.org/0000-0002-6887-9395
+University of Washington, Seattleyz489@cs.washington.eduhttps://orcid.org/0009-0006-5928-4396
+{CCSXML} ¡ccs2012¿
+¡concept¿
+¡concept_id¿10003752.10003790.10003798¡/concept_id¿
+¡concept_desc¿Theory of computation Equational logic and rewriting¡/concept_desc¿
+¡concept_significance¿500¡/concept_significance¿
+¡/concept¿
+¡concept¿
+¡concept_id¿10003752.10003766.10003767.10003769¡/concept_id¿
+¡concept_desc¿Theory of computation Rewrite systems¡/concept_desc¿
+¡concept_significance¿300¡/concept_significance¿
+¡/concept¿
+¡/ccs2012¿
+This work is supported by NSF IIS 2314527 and NSF SHF 2312195.
+\addto \extrasUKenglish \declaretheorem
+[name=Theorem]thm
+\declaretheorem [name=Lemma,sibling=thm]lem
+\declaretheorem [name=Definition,sibling=thm]dfn
+\declaretheorem [name=Corollary,sibling=thm]cor
+\declaretheorem [name=Example,sibling=thm]exm
+\declaretheorem [name=Fact,sibling=thm]fac
+Semantic foundations of equality saturation
+Dan Suciu
+  
+Yisu Remy Wang
+  
+Yihong Zhang
+Abstract
+Equality saturation is an emerging technique for program and query optimization
+developed in the programming language community.
+It performs term rewriting over an E-graph,
+a data structure that compactly represents a program space.
+Despite its popularity,
+the theory of equality saturation lags behind the practice.
+In this paper,
+we define a fixpoint semantics of equality saturation based on tree automata
+and uncover deep connections between equality saturation and the chase.
+We characterize the class of chase sequences that correspond to equality saturation.
+We study the complexities of terminations of equality saturation
+in three cases: single-instance, all-term-instance, and all-E-graph-instance.
+Finally, we define a syntactic criterion based on acyclicity that
+implies equality saturation termination.
+ccs
+Theory of computation Equational logic and rewriting
+ccs
+Theory of computation Rewrite systems
+keywords
+the chase,
+equality saturation,
+term rewriting,
+tree automata,
+query optimization
+† † runningauthor: D. Suciu, Y. R. Wang, and Y. Zhang † † copyright: Dan Suciu, Yisu Remy Wang, and Yihong Zhang † † editors: John Q. Open and Joan R. Access † † event-title: 42nd Conference on Very Important Topics (CVIT 2016) † † event-shorttitle: CVIT 2016 † † event-acronym: CVIT † † year: 2016 † † event-date: December 24–27, 2016 † † event-location: Little Whinging, United Kingdom † † series-volume: 42 † † articleno: 23
+1 Introduction
+Given a set of identities between terms, the word problem
+asks whether the identities imply two ground terms t 1 , t 2 t_{1},t_{2}
+are equivalent, i.e. t 1 ≈ t 2 t_{1}\approx t_{2} . This fundamental problem
+has applications including automated theorem proving, program
+verification, and query equivalence checking. In his Ph.D. thesis, Nelson [ 23 ] introduced a data structured called E-graph for efficiently answering the word problem.
+At the core, an E-graph is a compact representation of an
+equivalence relation over a possibly infinite set of ground terms.
+During the 2000s, researchers applied E-graphs to program
+optimization [ 15 , 28 ] . The compiler populates an E-graph with many
+equivalent programs, using axiomatic rewrites, then extracts the
+best program from the equivalent ones.
+In particular, Tate et.al. [ 28 ] coined the term equality
+saturation (EqSat) and gave a procedural description of the
+algorithm. In 2021, Willsey et al. [ 32 ] proposed egg , which
+introduced important algorithmic improvements and made EqSat
+practical.
+Since 2021, EqSat has been applied to a
+wide range of topics in domain-specific program optimization,
+including floating-point computation [ 25 ] computational
+fabrication [ 21 ] , machine learning
+systems [ 33 ] , and hardware design
+[ 29 , 4 ] . There is also a growing
+interest in using EqSat for query optimization in data management.
+For example, EqSat is used to optimize queries in
+OLAP [ 6 ] , linear algebra [ 30 ] , tensor
+algebra [ 26 ] , and Datalog [ 31 ] .
+The equality saturation procedure consists of
+repeatedly selecting an identity u ≈ v u\approx v from the given set,
+matching the term u u with the E-graph, then adding the term v v to
+the E-graph, if it wasn’t already there. Equality saturation
+terminates when no new terms can be added. There are striking
+connections between equality saturation and database concepts.
+Zhang et al. [ 35 ] observed that the matching step is the same as conjunctive query evaluation, and
+described significant speedups in egg by using a Worst Case Optimal
+Join algorithm [ 24 ] for matching. A
+recent system, egglog [ 34 ] , unified EqSat and Datalog
+to improve egg ’s support for program optimization
+and program analysis.
+In this paper we study another deep connection between equality
+saturation and the chase procedure for Tuple Generating Dependencies
+(TGDs) and Equality Generating Dependencies
+(EGDs) [ 8 ] . Our hope is that these results will help
+solve some of the open problems in equality saturation by using
+techniques and results for the chase procedure. Before describing
+our results we give a gentle introduction to EqSat and
+describe some of its open problems.
+{exm}
+Consider a simple language with two binary operators f , g f,g
+and constant a a . We want to optimize the following term
+t t (the “8th power” of f f on a a ):
+t = \displaystyle t=
+f ⁡ ( f ⁡ ( f ⁡ ( a , a ) , f ⁡ ( a , a ) ) , f ⁡ ( f ⁡ ( a , a ) , f ⁡ ( a , a ) ) ) \displaystyle f(f(f(a,a),f(a,a)),f(f(a,a),f(a,a)))
+(1)
+We are given a single identity, f ⁡ ( x , x ) ≈ g ⁡ ( x , x ) f(x,x)\approx g(x,x) , which
+says two terms f ⁡ ( t 1 , t 2 ) f(t_{1},t_{2}) and
+g ⁡ ( t 1 , t 2 ) g(t_{1},t_{2}) are equivalent, provided that t 1 , t 2 t_{1},t_{2} are
+equivalent.
+Starting with the initial term t t ,
+EqSat constructs an E-graph G G and grows it
+to represent all terms equivalent to t t .
+The literature defines an E-graph as a set of
+E-classes , where each E-class is a set of E-nodes , and
+each E-node is labeled with a function symbol and has a number of
+E-class children equal to the arity of the symbol. EqSat
+starts by constructing an E-graph G G representing t t , shown on the left in
+Figure 1 . There are 4 E-classes, each consisting of
+one single E-node; the E-class c 4 c_{4} represents precisely the term
+t t . Next, EqSat repeatedly applies the identity
+f ⁡ ( x , x ) ≈ g ⁡ ( x , x ) f(x,x)\approx g(x,x) , by matching the left-hand side f ⁡ ( x , x ) f(x,x) to the
+E-graph, then adding the right-hand side g ⁡ ( x , x ) g(x,x) to the E-graph: we formalize
+this in section 3 . The resulting E-graph H H is on
+right of Figure 1 . There are 4 E-classes,
+c 1 , … , c 4 c_{1},\ldots,c_{4} , each consisting of 1 or 2 E-nodes. For
+example, c 4 c_{4} has two E-nodes, and represents two equivalent
+terms, f ⁡ ( t 1 , t 2 ) ≈ g ⁡ ( t 1 , t 2 ) f(t_{1},t_{2})\approx g(t_{1},t_{2}) , where t 1 , t 2 t_{1},t_{2} are any
+terms represented by c 3 c_{3} . By continuing this reasoning, we
+observe that c 4 c_{4} , represents a total of 2 7 2^{7} possible terms,
+namely all terms of the form:
+h ⁡ ( h ⁡ ( h ⁡ ( a , a ) , h ⁡ ( a , a ) ) , h ⁡ ( h ⁡ ( a , a ) , h ⁡ ( a , a ) ) ) h(h(h(a,a),h(a,a)),h(h(a,a),h(a,a)))
+where each h h can be either f f or g g .
+G : G:
+H : H:
+Figure 1 : Two E-graphs G , H G,H , before and after EqSat.
+Open problems about EqSat
+We still understand very little about equality saturation.
+Most descriptions of EqSat focus on
+an imperative understanding 1 1
+1
+A notable exception is egglog [ 34 ] , whose semantics is based on fixpoints
+instead of implementation details.
+Some early works also define E-graphs (under a different name like abstract congruence closure)
+as tree automata similar to ours [ 27 , 2 , 13 ] .
+of equality saturation and E-graphs.
+E-graphs are described by their individual components (e.g., a hashconsing data structure,
+a union-find, etc.),
+and EqSat is commonly defined in pseudocode as a sequence of operations.
+In other words, the semantics of EqSat is the output of the
+specific algorithm, if it terminates; if the algorithm diverges, the
+semantics is undefined.
+We also do not know much about when EqSat terminates.
+The termination problem asks, given a set of rewrite rules,
+whether EqSat terminates on a given input E-graph, or whether it terminates
+on all input E-graphs.
+This is a fundamental problem of EqSat and has applications in program/query optimization
+and equivalence checking:
+If EqSat terminates on the symmetric closure of a set of (variable-preserving) rewrite rules ℛ {\mathcal{R}} ,
+it decides the word problem of the equational theory defined by ℛ {\mathcal{R}} ( 12 ).
+With an appropriate cost model,
+EqSat can further pick the optimal program among all programs
+equivalent to the input, e.g. by using Knuth’s
+algorithm [ 16 ] .
+Our contribution
+After a review of some background material
+in section 2 , we introduce E-graphs and EqSat
+in section 3 . Our definition,
+in subsection 3.1 , applies even to the cases when equality
+saturation does not terminate and, for that purpose, we define the
+E-graph to be a reachable, deterministic tree automaton, with
+possibly infinitely many states. By explicitly allowing infinite
+E-graphs we can define a formal semantics even when EqSat does not
+terminate. We show that concepts in tree automata are in 1-1
+correspondence with those in E-graphs: the automaton states
+correspond to E-classes, and the transitions correspond to
+E-nodes. A term is represented by an E-graph iff it is accepted
+by the E-graph viewed as a standard tree automaton.
+We prove that, for any
+two E-graphs there exists at most one homomorphism between them, and,
+therefore, E-graphs are rigid tree automata.
+Next, in subsection 3.2 , we define a few basic
+operations on E-graphs, such as E-matching, insertion, congruence
+closure, and least upper bounds, by relying on tree-automata concepts.
+Using these operations, we define in subsection 3.3
+an immediate consequence operator (ICO) , and define EqSat
+formally as the least fixpoint of the ICO. The least
+fixpoint always exists and is unique, even if the fixpoint
+procedure does not terminate, in which case the least fixpoint may
+be infinite.
+Finally, we prove an important lemma, called the Finite
+Convergence Lemma , stating that, if the least fixpoint is
+finite, then equality saturation procedure converges in
+finitely many steps. This is not
+immediately obvious because, while E-matching and insertion strictly
+increase the size of the E-graph, congruence closure may decrease it.
+A similar proposition fails for TGDs and EGDs: there exists an infinite
+chase where all instances have bounded size, hence its “limit” is
+finite.
+Next, in section 4 we describe the connection
+between EqSat and the chase. After a brief review of the
+chase in subsection 4.1 , we start by
+presenting a reduction from the Skolem chase to equality saturation,
+denoted SklCh ⇒ EqSat \textsc{SklCh}\Rightarrow\textsc{EqSat} ( subsection 4.2 ), then
+from equality saturation to the standard chase, denoted EqSat ⇒ StdCh \textsc{EqSat}\Rightarrow\textsc{StdCh} ( subsection 4.3 ).
+For SklCh ⇒ EqSat \textsc{SklCh}\Rightarrow\textsc{EqSat} ,
+given a set of dependencies,
+we show there exists a set of rewrite rules
+where EqSat produces an encoded result of the Skolem chase and has the same termination behavior.
+For EqSat ⇒ StdCh \textsc{EqSat}\Rightarrow\textsc{StdCh} ,
+we show that, given a set of rewrite rules,
+there exists a set of dependencies
+where the standard chase produces an encoded result of EqSat (whether it terminates).
+Since the standard chase is a non-deterministic process,
+we characterize the type of chase sequences that terminate
+when EqSat terminates ( 17 ).
+We call them EGD-fair chase sequences.
+Intuitively, a chase sequence is called EGD-fair if it applies EGDs to a fixpoint frequently enough.
+We show in 17 that,
+EqSat terminates
+⇔ \Leftrightarrow one chase sequence terminates
+⇔ \Leftrightarrow
+all EGD-fair chase sequences terminate.
+The notion of EGD-fair chase sequences is of independent interest.
+Finally, we present our main decidability results for EqSat in
+section 5 : we show that the single-instance
+termination problem of EqSat, denoted as 𝒯 G EqSat \mathcal{T}^{\textsc{EqSat}}_{G} , is
+R.E.-complete, and the all-term-instance termination problem of EqSat,
+denoted as 𝒯 ∀ t EqSat \mathcal{T}^{\textsc{EqSat}}_{\forall t} , is Π 2 \Pi_{2} -complete. Our
+proof is based on a non-trivial reduction from the Turing machine,
+first presented in the undecidability proof of the finiteness of
+congruence classes defined by string rewriting
+systems [ 22 ] . While the single-instance
+case easily follows from the undecidability of Skolem chase
+termination, our approach allows us to also prove the
+Π 2 \Pi_{2} -completeness of the all-term-instance termination case by a
+reduction from the universal halting problem. We also show the
+all-E-graph-instance termination problem of EqSat, denoted as
+𝒯 ∀ G EqSat \mathcal{T}^{\textsc{EqSat}}_{\forall G} , is undecidable, although the exact
+upper bound is open.
+We contrast the termination problems of EqSat with those of the Skolem chase and the standard chase.
+The single-instance termination problems are R.E.-complete in all three cases [ 19 , 5 ] ,
+and the all-instance termination of the Skolem chase ( 𝒯 ∀ SklCh \mathcal{T}^{\textsc{SklCh}}_{\forall} ) is R.E.-complete
+as well [ 19 , 11 ] .
+This shows that 𝒯 ∀ SklCh \mathcal{T}^{\textsc{SklCh}}_{\forall} is easier than 𝒯 ∀ t EqSat \mathcal{T}^{\textsc{EqSat}}_{\forall t} .
+The case for the standard chase is more interesting.
+There are two all-instance termination problems
+of the standard chase: for all database instances, whether all chase sequences terminate
+in finitely many steps ( 𝒯 ∀ , ∀ StdCh \mathcal{T}^{\textsc{StdCh}}_{\forall,\forall} ),
+and whether there exists at least one chase sequence that terminate
+( 𝒯 ∀ , ∃ StdCh \mathcal{T}^{\textsc{StdCh}}_{\forall,\exists} ).
+It has been shown
+𝒯 ∀ , ∃ StdCh \mathcal{T}^{\textsc{StdCh}}_{\forall,\exists} is Π 2 \Pi_{2} -complete [ 12 ] ,
+but the exact complexity of 𝒯 ∀ , ∀ StdCh \mathcal{T}^{\textsc{StdCh}}_{\forall,\forall} is open.
+Grahne and Onet showed if we allow one denial constraint ,
+𝒯 ∀ , ∀ StdCh \mathcal{T}^{\textsc{StdCh}}_{\forall,\forall} is Π 2 \Pi_{2} -complete [ 12 ] ,
+although Gogacz and Marcinkowski [ 11 ] conjectured
+that this problem is indeed in R.E.
+In section 6 we propose a sufficient syntactic criterion
+that guarantees EqSat termination, called weak term
+acyclicity , which is based on the classic notion of weak
+acyclicity [ 8 ] . If a set of rewrite rules is
+weakly term acyclic, then EqSat terminates for all input E-graphs.
+2 Background
+2.1 Term Rewriting Systems
+We review briefly the standard definition of a term rewriting system
+from [ 1 ] . A signature is a finite set Σ \Sigma of
+function symbols with given arities. If V V is a set of variables,
+then T ⁡ ( Σ , V ) T(\Sigma,V) denotes the set of terms constructed inductively
+using symbols from Σ \Sigma and variables from V V . Members of
+T ⁡ ( Σ , V ) T(\Sigma,V) are called patterns , and members of
+T ⁡ ( Σ ) = def T ⁡ ( Σ , ∅ ) T(\Sigma)\stackrel{{\scriptstyle\text{def}}}{{=}}T(\Sigma,\emptyset) are called ground
+terms , or simply terms thereafter. A substitution is
+a function σ : V → T ⁡ ( Σ ) \sigma:V\rightarrow T(\Sigma) ; if u u is a pattern,
+then we denote by u ⁡ [ σ ] u[\sigma] the term obtained by applying the
+substitution σ \sigma to u u . A rewrite rule r r has the form
+lhs → rhs \textit{lhs}\rightarrow\textit{rhs} where lhs and rhs are patterns and the
+variables in rhs are a subset of those lhs ,
+Var ​ ( rhs ) ⊆ Var ​ ( lhs ) \textit{{Var}}(\textit{rhs})\subseteq\textit{{Var}}(\textit{lhs}) . A term rewriting system
+(TRS), ℛ {\mathcal{R}} , is a set of rewrite rules. ℛ {\mathcal{R}} defines a
+rewrite relation → ℛ \rightarrow_{{\mathcal{R}}} as follows:
+lhs [ σ ] → ℛ rhs [ σ ] \textit{lhs}[\sigma]\rightarrow_{{\mathcal{R}}}\textit{rhs}[\sigma] for any substitution
+σ \sigma and rule lhs → rhs \textit{lhs}\rightarrow\textit{rhs} in ℛ {\mathcal{R}} , and, if
+u → ℛ v u\rightarrow_{{\mathcal{R}}}v then
+f ( w 1 , … , w i − 1 , u , w i + 1 , … w k ) → ℛ f ( w 1 , … , w i − 1 , v , w i + 1 , … w k ) f(w_{1},\ldots,w_{i-1},u,w_{i+1},\ldots w_{k})\rightarrow_{{\mathcal{R}}}f(w_{1},\ldots,w_{i-1},v,w_{i+1},\ldots w_{k}) for any function symbol
+f ∈ Σ f\in\Sigma of arity k k , and any terms w j w_{j} , j = 1 , k ; j ≠ i j=1,k;j\neq i .
+Let → ℛ ∗ \rightarrow_{{\mathcal{R}}}^{*} be the reflexive and transitive closure of
+→ ℛ \rightarrow_{{\mathcal{R}}} . We define
+( ← ℛ ) = def ( → ℛ ) − 1 (\leftarrow_{{\mathcal{R}}})\stackrel{{\scriptstyle\text{def}}}{{=}}(\rightarrow_{{\mathcal{R}}})^{-1} ,
+( ↔ ℛ ) = def ( → ℛ ) ∪ ( ← ℛ ) (\leftrightarrow_{{\mathcal{R}}})\stackrel{{\scriptstyle\text{def}}}{{=}}(\rightarrow_{{\mathcal{R}}})\cup(\leftarrow_{{\mathcal{R}}}) , and
+( ≈ ℛ ) = def ( ↔ ℛ ∗ ) (\approx_{{\mathcal{R}}})\stackrel{{\scriptstyle\text{def}}}{{=}}(\leftrightarrow_{{\mathcal{R}}}^{*}) . ≈ ℛ \approx_{{\mathcal{R}}}
+is a congruence relation. We define the set of reachable terms
+R ∗ ( t ) = { t ′ ∣ t → ℛ ∗ t ′ } R^{*}(t)=\{t^{\prime}\mid t\rightarrow_{{\mathcal{R}}}^{*}t^{\prime}\} . If a term rewriting
+system ℛ {\mathcal{R}} is variable-preserving (i.e.,
+Var ​ ( lhs ) = Var ​ ( rhs ) \textit{{Var}}(\textit{lhs})=\textit{{Var}}(\textit{rhs}) for all rules), we define
+ℛ − 1 = { rhs → lhs ∣ ( lhs → rhs ) ∈ ℛ } {\mathcal{R}}^{-1}=\{{\textit{rhs}\rightarrow\textit{lhs}}\mid{(\textit{lhs}\rightarrow\textit{rhs})\in{\mathcal{R}}}\} . It follows that
+( → ( ℛ − 1 ) ) = ( ← ℛ ) (\rightarrow_{\left({\mathcal{R}}^{-1}\right)})=(\leftarrow_{{\mathcal{R}}}) .
+2.2 Tree automata
+Let Σ \Sigma be a signature. A (bottom-up) tree automaton is a tuple
+𝒜 = ⟨ Q , Σ , Q final , Δ ⟩ \mathcal{A}=\langle Q,\Sigma,Q_{\textit{final}},\Delta\rangle ,
+where Q Q is a (potentially infinite) 2 2
+2
+In this paper, we
+allow tree automata (and thus E-graphs) to have an infinite number
+of states and transitions. Talking about infinite E-graphs allow us
+to define the semantics of equality saturation even when the
+algorithm does not terminate. set of states,
+Q final ⊆ Q Q_{\textit{final}}\subseteq Q is a set of final states, and
+Δ \Delta is a set of transitions of the form
+f ⁡ ( q 1 , … , q n ) → q f(q_{1},\ldots,q_{n})\rightarrow q where q , q 1 , … , q n ∈ Q q,q_{1},\ldots,q_{n}\in Q , and
+f ∈ Σ f\in\Sigma . Denote by Σ ∪ Q \Sigma\cup Q the signature Σ \Sigma
+extended with Q Q where each state is viewed as a symbol of arity
+0. Then Δ \Delta is a term rewriting system for Σ ∪ Q \Sigma\cup Q , and
+we will denote by → 𝒜 ∗ \rightarrow_{\mathcal{A}}^{*} (rather than
+→ Δ ∗ \rightarrow_{\Delta}^{*} ) the rewrite relation defined by Δ \Delta . A
+term t ∈ T ⁡ ( Σ ) t{\in T(\Sigma)} is accepted by a state q q if
+t → 𝒜 ∗ q t\rightarrow_{\mathcal{A}}^{*}q , and we write ℒ ⁡ ( q ) \mathcal{L}(q) for the set of
+terms accepted by q q . The language accepted by 𝒜 \mathcal{A} is
+ℒ ( 𝒜 ) = def { t ∈ T ( Σ ) ∣ ∃ q f ∈ Q final , t → 𝒜 ∗ q f } \mathcal{L}(\mathcal{A})\stackrel{{\scriptstyle\text{def}}}{{=}}\{{t{\in T(\Sigma)}}\mid{\exists q_{f}\in Q_{\textit{final}},\,t\rightarrow^{*}_{\mathcal{A}}q_{f}}\} . A
+tree language L ⊆ T ⁡ ( Σ ) L\subseteq T(\Sigma) is called regular if it is
+accepted by some finite tree automaton.
+Fix two tree automata
+𝒜 = ⟨ Q , Σ , Q final , Δ ⟩ , ℬ = ⟨ Q ′ , Σ , Q final ′ , Δ ′ ⟩ \mathcal{A}=\langle Q,\Sigma,Q_{\textit{final}},\Delta\rangle,\mathcal{B}=\langle Q^{\prime},\Sigma,Q^{\prime}_{\textit{final}},\Delta^{\prime}\rangle . A homomorphism ,
+h : 𝒜 → ℬ h:\mathcal{A}\rightarrow\mathcal{B} , is a function h : Q → Q ′ h:Q\rightarrow Q^{\prime} that
+maps final states to final states, and, for every transition
+f ⁡ ( c 1 , … , c k ) → c f(c_{1},\ldots,c_{k})\rightarrow c in 𝒜 \mathcal{A} there exists a transition
+f ⁡ ( h ⁡ ( c 1 ) , … , h ⁡ ( c k ) ) → h ⁡ ( c ) f(h(c_{1}),\ldots,h(c_{k}))\rightarrow h(c) in ℬ \mathcal{B} . An
+isomorphism 3 3
+3
+Notice
+that a bijective homomorphism is not necessarily an isomorphism. is a homomorphism h : 𝒜 → ℬ h:\mathcal{A}\rightarrow\mathcal{B} for
+which there exists an inverse homomorphism
+h − 1 : ℬ → 𝒜 h^{-1}:\mathcal{B}\rightarrow\mathcal{A} such that h − 1 ∘ h = i ​ d 𝒜 h^{-1}\circ h=id_{\mathcal{A}}
+and h ∘ h − 1 = i ​ d ℬ h\circ h^{-1}=id_{\mathcal{B}} .
+The following holds:
+Lemma 1 .
+Let h : 𝒜 → ℬ h:\mathcal{A}\rightarrow\mathcal{B} be a homomorphism,
+t ∈ T ⁡ ( Σ ) t\in T(\Sigma) , and c c be a state of 𝒜 \mathcal{A} .
+If t → ∗ 𝒜 c t\rightarrow^{*}_{\mathcal{A}}c , then t → ℬ ∗ h ( c ) t\rightarrow^{*}_{\mathcal{B}}h(c) .
+In particular, ℒ ⁡ ( 𝒜 ) ⊆ ℒ ⁡ ( ℬ ) \mathcal{L}(\mathcal{A})\subseteq\mathcal{L}(\mathcal{B}) .
+Proof 2.1 .
+We prove the statement by induction on the structure of the term
+t ∈ T ⁡ ( Σ ) t\in T(\Sigma) . Assuming t = f ⁡ ( t 1 , … , t k ) t=f(t_{1},\ldots,t_{k}) for k ≥ 0 k\geq 0 4 4
+4
+The base case is covered by the case k = 0 k=0 .
+and t → ∗ 𝒜 c t\rightarrow^{*}_{\mathcal{A}}c , then there exists states
+c 1 , … , c k c_{1},\ldots,c_{k} such that t i → ∗ 𝒜 c i t_{i}\rightarrow^{*}_{\mathcal{A}}c_{i} and
+𝒜 \mathcal{A} contains the transition f ⁡ ( c 1 , … , c k ) → c f(c_{1},\ldots,c_{k})\rightarrow c .
+By induction hypothesis t i → ℬ ∗ h ( c i ) t_{i}\rightarrow^{*}_{\mathcal{B}}h(c_{i}) for
+i = 1 , … , k i=1,\ldots,k , and since h h is a homomorphism, there exists a transition
+f ⁡ ( h ⁡ ( c 1 ) , … , h ⁡ ( c k ) ) → h ⁡ ( c ) f(h(c_{1}),\ldots,h(c_{k}))\rightarrow h(c) in ℬ \mathcal{B} , proving that
+t → ℬ ∗ h ( c ) t\rightarrow^{*}_{\mathcal{B}}h(c) .
+We write 𝒜 ⊑ ℬ \mathcal{A}\sqsubseteq\mathcal{B} whenever there exists a homomorphism
+𝒜 → ℬ \mathcal{A}\rightarrow\mathcal{B} . Observe that ⊑ \sqsubseteq is a preorder
+relation.
+In the next section, we show that
+this preorder relation ⊑ \sqsubseteq becomes a partial order when restricted to E-graphs ( 5 ).
+We call an automaton 𝒜 \mathcal{A} deterministic if
+t → ∗ 𝒜 q 1 t\rightarrow^{*}_{\mathcal{A}}q_{1} and t → ∗ 𝒜 q 2 t\rightarrow^{*}_{\mathcal{A}}q_{2} implies
+q 1 = q 2 q_{1}=q_{2} for states q 1 , q 2 q_{1},q_{2} . We call 𝒜 \mathcal{A} reachable if every state q q
+accepts some ground term: ∃ t ∈ T ⁡ ( Σ ) \exists t\in T(\Sigma) ,
+t → ∗ 𝒜 q t\rightarrow^{*}_{\mathcal{A}}q .
+3 E-graphs and Equality Saturation
+Most papers discussing E-graphs use an operational definition not
+suitable for a theoretical analysis. We introduce an
+equivalent definition of E-graphs in terms of tree
+automata, similar to Kozen’s partial tree automata [ 18 ] .
+Throughout this section we fix the signature Σ \Sigma .
+3.1 E-graphs
+{dfn}
+An E-graph is a deterministic
+and reachable tree automaton G = ⟨ Q , Σ , Δ ⟩ G=\langle Q,\Sigma,\Delta\rangle
+(without a set of final state Q final Q_{\textit{final}} ).
+Our definition maps one-to-one to the classical definition
+of E-graphs: An E-class is a state c ∈ Q c\in Q of the tree automaton,
+and an E-node is a transition f ⁡ ( c 1 , … , c k ) → c f(c_{1},\ldots,c_{k})\rightarrow c . A
+term t t is represented by the E-class c c if t t is accepted
+by c c , i.e. t → ∗ G c t\rightarrow^{*}_{G}c . In the literature, the sets of
+E-classes and E-nodes are denoted C C and N N respectively. We will
+use states/E-classes and transitions/E-nodes interchangeably in this
+paper. E-graphs do not define a set of “final” E-classes, and for
+that reason we omit the final states Q final Q_{\textit{final}}
+from subsection 3.1 5 5
+5
+Alternatively, consider Q final = Q Q_{\textit{final}}=Q .
+, similarly to [ 18 ] .
+{exm}
+The E-graph H H in Figure 1 is the automaton
+⟨ Q , Σ , Δ ⟩ \langle Q,\Sigma,\Delta\rangle , where
+Σ = { a , f ⁡ ( ⋅ , ⋅ ) , g ⁡ ( ⋅ , ⋅ ) } \Sigma=\{a,f(\cdot,\cdot),g(\cdot,\cdot)\} , there are four
+states Q = { c 1 , … , c 4 } Q=\{c_{1},\ldots,c_{4}\} , and Δ \Delta consists of seven
+transitions:
+a ⁡ ( ) → \displaystyle a()\rightarrow
+c 1 \displaystyle c_{1}
+f ⁡ ( c 1 , c 1 ) → \displaystyle f(c_{1},c_{1})\rightarrow
+c 2 \displaystyle c_{2}
+g ⁡ ( c 1 , c 1 ) → \displaystyle g(c_{1},c_{1})\rightarrow
+c 2 \displaystyle c_{2}
+… \displaystyle\ldots
+f ⁡ ( c 3 , c 3 ) → \displaystyle f(c_{3},c_{3})\rightarrow
+c 4 \displaystyle c_{4}
+g ⁡ ( c 3 , c 3 ) → \displaystyle g(c_{3},c_{3})\rightarrow
+c 4 \displaystyle c_{4}
+An example of rewritings is
+f ( a , a ) → H f ( c 1 , a ) → H f ( c 1 , c 1 ) → H c 2 f(a,a)\rightarrow_{H}f(c_{1},a)\rightarrow_{H}f(c_{1},c_{1})\rightarrow_{H}c_{2} , showing that the term f ⁡ ( a , a ) f(a,a) is represented
+by the E-class c 2 c_{2} .
+It is folklore that E-graphs represent equivalences of
+terms. We make this observation formal, by defining the semantics
+of an E-graph to be a certain partial congruence. A partial
+equivalence relation , or PER, on a set A A is a binary relation
+≈ \approx that is symmetric and transitive. Its support is the
+set supp ​ ( ≈ ) = def { x ∣ x ≈ x } ⊆ A \textit{supp}(\approx)\stackrel{{\scriptstyle\text{def}}}{{=}}\{{x}\mid{x\approx x}\}\subseteq A .
+Equivalently, a PER can be described by its support and an equivalence
+relation on the support.
+A PER on the set of terms T ⁡ ( Σ ) T(\Sigma) is congruent if
+s i ≈ t i s_{i}\approx t_{i} for i = 1 , … , n i=1,\ldots,n and
+f ⁡ ( s 1 , … , s n ) ∈ supp ​ ( ≈ ) f(s_{1},\ldots,s_{n})\in\textit{supp}(\approx) implies
+f ⁡ ( s 1 , … , s n ) ≈ f ⁡ ( t 1 , … , t n ) f(s_{1},\ldots,s_{n})\approx f(t_{1},\ldots,t_{n}) . A PER is reachable if
+f ⁡ ( s 1 , … , s n ) ∈ supp ​ ( ≈ ) f(s_{1},\ldots,s_{n})\in\textit{supp}(\approx) implies
+s i ∈ supp ​ ( ≈ ) s_{i}\in\textit{supp}(\approx) , for i = 1 , … , n i=1,\ldots,n . A Partial
+Congruence Relation (PCR) 6 6
+6
+PCRs are studied in the
+literature as congruences on partial algebras
+(e.g., [ 18 ] ). on T ⁡ ( Σ ) T(\Sigma) is a congruent and
+reachable PER.
+An E-graph G G induces a PCR ≈ G \approx_{G} defined as follows:
+t 1 ≈ t 2 t_{1}\approx t_{2} if there exists some E-class c c in G G that accepts
+both t 1 t_{1} and t 2 t_{2} , i.e.
+t 1 → ∗ G c ← ∗ G t 2 t_{1}\rightarrow^{*}_{G}c\mathchoice{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.03922pt{G}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-8.6392pt{G}\kern 5.77623pt}}}t_{2} . We check
+that ≈ G \approx_{G} is a PCR:
+≈ G \approx_{G} is symmetric by definition, and transitivity follows from
+determinacy, because
+t 1 → ∗ G c ← ∗ G t 2 t_{1}\rightarrow^{*}_{G}c\mathchoice{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.03922pt{G}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-8.6392pt{G}\kern 5.77623pt}}}t_{2} and
+t 2 → ∗ G c ′ ← ∗ G t 3 t_{2}\rightarrow^{*}_{G}c^{\prime}\mathchoice{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.03922pt{G}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-8.6392pt{G}\kern 5.77623pt}}}t_{3} implies
+t 1 → ∗ G c = c ′ ← ∗ G t 3 t_{1}\rightarrow^{*}_{G}c=c^{\prime}\mathchoice{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.03922pt{G}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-8.6392pt{G}\kern 5.77623pt}}}t_{3} . Suppose
+f ( s 1 , … , s n ) → G ∗ c f(s_{1},\ldots,s_{n})\rightarrow^{*}_{G}c : then there exists states
+c i c_{i} s.t. s i → ∗ G c i s_{i}\rightarrow^{*}_{G}c_{i} , and a transition
+f ⁡ ( c 1 , … , c n ) → c f(c_{1},\ldots,c_{n})\rightarrow c , proving reachability; if, in
+addition, s i ≈ G t i s_{i}\approx_{G}t_{i} for i = 1 , … , n i=1,\ldots,n , then
+t i → ∗ G c i t_{i}\rightarrow^{*}_{G}c_{i} , which implies
+f ( t 1 , … , t n ) → G ∗ c f(t_{1},\ldots,t_{n})\rightarrow^{*}_{G}c , proving congruence,
+f ( s 1 , … , s n ) ≈ G f ( t 1 , … , t n ) f(s_{1},\ldots,s_{n})\approx_{G}f(t_{1},\ldots,t_{n}) .
+{dfn}
+The semantics of an E-graph G G is the PCR ≈ G \approx_{G} .
+Theorem 2 .
+For any PCR ≈ \approx over T ⁡ ( Σ ) T(\Sigma) there exists a
+unique G G such that ( ≈ G ) = ( ≈ ) (\approx_{G})=(\approx) .
+Proof 3.2 .
+The states of G G are the equivalence classes
+of ≈ \approx , denoted as [ t ] [t] for t ∈ supp ​ ( ≈ ) t\in\textit{supp}(\approx) , and the
+transitions are
+f ⁡ ( [ t 1 ] , … , [ t n ] ) → [ f ⁡ ( t 1 , … , t n ) ] f([t_{1}],\ldots,[t_{n}])\rightarrow[f(t_{1},\ldots,t_{n})] for all
+t 1 , … , t n , f ⁡ ( t 1 , … , t n ) t_{1},\ldots,t_{n},f(t_{1},\ldots,t_{n}) in the support of ≈ \approx .
+One can check by induction on the size of t t that
+t ∈ supp ​ ( ≈ ) t\in\textit{supp}(\approx) iff t ∈ supp ( ≈ G ) t\in\textit{supp}(\approx_{G}) , and
+t → G ∗ [ s ] t\rightarrow^{*}_{G}[s] iff t ≈ s t\approx s , proving that
+( ≈ G ) = ( ≈ ) (\approx_{G})=(\approx) .
+Thus, the semantics of an E-graph G G is a PCR ≈ G \approx_{G} , which is a
+congruence on ℒ ( G ) = def supp ( ≈ G ) \mathcal{L}(G)\stackrel{{\scriptstyle\text{def}}}{{=}}\textit{supp}(\approx_{G}) . We say that G G
+represents the set of terms ℒ ⁡ ( G ) \mathcal{L}(G) .
+{exm}
+Continuing section 1 , the semantics of the
+E-graph H H in Figure 1 is the PCR ≈ H \approx_{H} that
+equates a ≈ H a a\approx_{H}a (witnessed by state c 1 c_{1} ),
+f ( a , a ) ≈ H g ( a , a ) f(a,a)\approx_{H}g(a,a) (by state c 2 c_{2} ),
+f ( f ( a , a ) , g ( a , a ) ) ≈ H g ( f ( a , a ) , f ( a , a ) ) f(f(a,a),g(a,a))\approx_{H}g(f(a,a),f(a,a)) (by state c 3 c_{3} ),
+etc.
+{exm}
+Let Σ = { a , f ⁡ ( ⋅ ) } \Sigma=\{a,f(\cdot)\} . Consider the E-graph G G with a
+single state c c and transitions a ⁡ ( ) → c a()\rightarrow c ,
+f ⁡ ( c ) → c f(c)\rightarrow c . It represents infinitely many terms,
+f ( k ) ​ ( a ) f^{(k)}(a) , for k ≥ 0 k\geq 0 , and its semantics is the PCR
+a ≈ G f ( a ) ≈ G f ( f ( a ) ) ≈ G ⋯ a\approx_{G}f(a)\approx_{G}f(f(a))\approx_{G}\cdots
+{exm}
+Let Σ = { a , f ⁡ ( ⋅ ) , g ⁡ ( ⋅ ) } \Sigma=\{a,f(\cdot),g(\cdot)\} and consider the infinite
+E-graph G G with states c , c 0 , c 1 , c 2 , … c,c_{0},c_{1},c_{2},\ldots and transitions
+a → \displaystyle a\rightarrow
+c 0 \displaystyle c_{0}
+f ⁡ ( c i ) → \displaystyle f(c_{i})\rightarrow
+c i + 1 \displaystyle c_{i+1}
+g ⁡ ( c i ) → \displaystyle g(c_{i})\rightarrow
+c \displaystyle c
+i = 0 , 1 , 2 , … \displaystyle i=0,1,2,\ldots
+The PCR consists of
+g ( a ) ≈ G g ( f ( a ) ) ≈ G g ( f ( f ( a ) ) ) ≈ G … g(a)\approx_{G}g(f(a))\approx_{G}g(f(f(a)))\approx_{G}\ldots ,
+defined by the state c c . No other distinct terms are in
+≈ G \approx_{G} , for example f ( a ) ≉ G f ( f ( a ) ) f(a)\not\approx_{G}f(f(a)) because they
+are represented by the distinct states c 1 c_{1} and c 2 c_{2} respectively.
+Although G G represents a regular language,
+{ f ( k ) ​ ( a ) ∣ k ≥ 0 } ∪ { g ⁡ ( f ( k ) ​ ( a ) ) ∣ k ≥ 0 } \{{f^{(k)}(a)}\mid{k\geq 0}\}\cup\{{g(f^{(k)}(a))}\mid{k\geq 0}\} ,
+its semantics ≈ G \approx_{G} cannot be captured by a finite E-graph.
+This example shows that ≈ G \approx_{G} differs from the Myhill-Nerode
+equivalence relation
+[ 17 ] , under which all terms f ( k ) ​ ( a ) f^{(k)}(a) would be
+equivalent. It also illustrates the subtle distinction between tree
+automata and E-graphs. An optimizer that wants to use the identity
+g ⁡ ( x ) = g ⁡ ( f ⁡ ( x ) ) g(x)=g(f(x)) , but not x = f ⁡ ( x ) x=f(x) , needs this E-graph to represent
+all terms equivalent to g ⁡ ( a ) g(a) , and cannot use the finite tree
+automaton accepting the regular language ℒ ⁡ ( c ) \mathcal{L}(c) because that
+would incorrectly equate all terms f ( k ) ​ ( a ) f^{(k)}(a) .
+Recall the definitions of tree automata homomorphisms in subsection 2.2 .
+When restricted to E-graphs, homomorphisms have some interesting properties:
+Lemma 3 .
+If h : G → H h:G\rightarrow H is a
+homomorphism, then
+( ≈ G ) ⊆ ( ≈ H ) \left(\approx_{G}\right)\subseteq\left(\approx_{H}\right) .
+Proof 3.3 .
+Assume t 1 ≈ G t 2 t_{1}\approx_{G}t_{2} . Then there exists some E-class c c where
+t 1 → ∗ G c ← ∗ G t 2 t_{1}\rightarrow^{*}_{G}c\mathchoice{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.2122pt{G}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.03922pt{G}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{G}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-8.6392pt{G}\kern 5.77623pt}}}t_{2} . By
+1 ,
+t 1 → H ∗ h ( c ) ← H ∗ t 2 t_{1}\rightarrow^{*}_{H}h(c)\mathchoice{\hphantom{{}^{{{*}}}_{{{H}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.83081pt{H}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{H}}}}\leftarrow^{{\kern-12.80959pt{*}\kern 10.24847pt}}_{{\kern-14.83081pt{H}\kern 10.24847pt}}}{\hphantom{{}^{{{*}}}_{{{H}}}}\leftarrow^{{\kern-9.03735pt{*}\kern 7.17624pt}}_{{\kern-10.4811pt{H}\kern 7.17624pt}}}{\hphantom{{}^{{{*}}}_{{{H}}}}\leftarrow^{{\kern-7.63734pt{*}\kern 5.77623pt}}_{{\kern-9.08109pt{H}\kern 5.77623pt}}}t_{2} , implying
+t 1 ≈ H t 2 t_{1}\approx_{H}t_{2} .
+Lemma 4 .
+There exists at most one homomorphism h : G → H h:G\rightarrow H .
+Proof 3.4 .
+Call the weight of a state c c in G G the size of the smallest
+term t t such that t → ∗ G c t\rightarrow^{*}_{G}c . Since G G is reachable,
+every state has a finite weight. Given two homomorphisms
+h 1 , h 2 : G → H h_{1},h_{2}:G\rightarrow H , we prove by induction on the weight of
+c c that h 1 ​ ( c ) = h 2 ​ ( c ) h_{1}(c)=h_{2}(c) . Let t t be a term of minimal size such
+that t → ∗ G c t\rightarrow^{*}_{G}c , and assume t = f ⁡ ( t 1 , … , t k ) t=f(t_{1},\ldots,t_{k}) ,
+for k ≥ 0 k\geq 0 . Then there exists states c 1 , … , c k c_{1},\ldots,c_{k} such
+that t i → ∗ G c i t_{i}\rightarrow^{*}_{G}c_{i} , i = 1 , k i=1,k , and a transition
+f ⁡ ( c 1 , … , c k ) → c f(c_{1},\ldots,c_{k})\rightarrow c in G G . By induction hypothesis
+h 1 ​ ( c i ) = h 2 ​ ( c i ) h_{1}(c_{i})=h_{2}(c_{i}) for i = 1 , k i=1,k . By the definition of a
+homomorphism, H H contains both transitions
+f ⁡ ( h 1 ​ ( c 1 ) , … , h 1 ​ ( c k ) ) → h 1 ​ ( c ) f(h_{1}(c_{1}),\ldots,h_{1}(c_{k}))\rightarrow h_{1}(c) and
+f ⁡ ( h 2 ​ ( c 1 ) , … , h 2 ​ ( c k ) ) → h 2 ​ ( c ) f(h_{2}(c_{1}),\ldots,h_{2}(c_{k}))\rightarrow h_{2}(c) , and we conclude
+h 1 ​ ( c ) = h 2 ​ ( c ) h_{1}(c)=h_{2}(c) because H H is deterministic.
+We call a tree automaton 𝒜 \mathcal{A} rigid [ 14 ] if the identity mapping is the
+only homomorphism 𝒜 → 𝒜 \mathcal{A}\rightarrow\mathcal{A} . It follows from
+4 that every E-graph is a rigid tree
+automaton.
+Lemma 5 .
+⊑ \sqsubseteq over E-graphs forms a partial order up to isomorphism.
+Proof 3.5 .
+Obviously ⊑ \sqsubseteq is reflexive and transitive. To prove
+anti-symmetry, assume two homomorphisms h : G → H h:G\rightarrow H ,
+h ′ : H → G h^{\prime}:H\rightarrow G . The composition h ′ ∘ h h^{\prime}\circ h is a
+homomorphism G → G G\rightarrow G , and, by uniqueness, it must be the
+identity on G G ; similarly, h ∘ h ′ h\circ h^{\prime} is the identity on H H ,
+proving that h h is an isomorphism, thus G , H G,H are isomorphic.
+Next, we define models for term rewriting systems.
+{dfn}
+We say that an E-graph H = ⟨ Q , Σ , Δ ⟩ H=\langle Q,\Sigma,\Delta\rangle is a
+model of a TRS ℛ {\mathcal{R}} if, for every rule
+lhs → rhs \textit{lhs}{}\rightarrow\textit{rhs}{} in ℛ {\mathcal{R}} and any substitution
+σ : Var ​ ( lhs ) → Q \sigma:\textit{{Var}}(\textit{lhs})\rightarrow Q , if
+lhs [ σ ] → G ∗ c \textit{lhs}[\sigma]\rightarrow^{*}_{G}c then
+rhs [ σ ] → G ∗ c \textit{rhs}[\sigma]\rightarrow^{*}_{G}c .
+If G G is another E-graph, then we say that H H is a model for
+the pair ℛ , G {\mathcal{R}},G if G ⊑ H G\sqsubseteq H and H H is a model of
+ℛ {\mathcal{R}} . H H is a universal model if for any other model H ′ H^{\prime} ,
+it holds that H ⊑ H ′ H\sqsubseteq H^{\prime} .
+When it exists, the universal model is unique up to isomorphism,
+because H ⊑ H ′ H\sqsubseteq H^{\prime} and H ′ ⊑ H H^{\prime}\sqsubseteq H implies H , H ′ H,H^{\prime} are
+isomorphic.
+Continuing subsection 3.1 , let ℛ {\mathcal{R}}
+consists of the rule f ⁡ ( x , x ) → g ⁡ ( x , x ) f(x,x)\rightarrow g(x,x) , and let G , H G,H be
+the E-graphs in Figure 1 . G G is not a model of ℛ {\mathcal{R}} ,
+because for the substitution σ ⁡ ( x ) = c 1 \sigma(x)=c_{1} we have
+lhs [ σ ] = f ( c 1 , c 1 ) → G c 2 \textit{lhs}[\sigma]=f(c_{1},c_{1})\rightarrow_{G}c_{2} , but
+rhs [ σ ] = g ( c 1 , c 1 ) ↛ G ∗ c 2 \textit{rhs}[\sigma]=g(c_{1},c_{1})\not\rightarrow^{*}_{G}c_{2} . On the other
+hand, one can check that H H is a model of ℛ {\mathcal{R}} ; in fact it is a
+model of ℛ , G {\mathcal{R}},G , because G ⊑ H G\sqsubseteq H .
+Given an E-graph G G and a TRS ℛ {\mathcal{R}} , equality saturation
+constructs a universal model H H of ℛ , G {\mathcal{R}},G , by repeatedly
+applying some simple operations on G G , which we define next.
+3.2 Operations over E-graphs
+E-matching, Insertion, and Rebuilding are the building blocks of
+equality saturation. They defined in the literature
+operationally [ 20 ] . We provide here a formal
+definition, using tree automata terminology. Throughout this
+section we fix an E-graph G = ⟨ Q , Σ , Δ ⟩ G=\langle Q,\Sigma,\Delta\rangle .
+E-matching a rule lhs → rhs ∈ ℛ \textit{lhs}{}\rightarrow\textit{rhs}{}\in{\mathcal{R}} in G G
+returns the set of pairs ( σ , c ) (\sigma,c) , where
+σ : Var ​ ( lhs ) → Q \sigma:\textit{{Var}}(\textit{lhs})\rightarrow Q is a substitution such that
+lhs [ σ ] → G ∗ c \textit{lhs}[\sigma]\rightarrow^{*}_{G}c . For example, considering the
+E-graph on the left of Figure 1 and the rule
+f ⁡ ( x , x ) → g ⁡ ( x , x ) f(x,x)\rightarrow g(x,x) , E-matching returns
+( { x ↦ c i , y ↦ c i } , c i + 1 ) (\{x\mapsto c_{i},y\mapsto c_{i}\},c_{i+1}) for
+i = 1 , 2 , 3 i=1,2,3 . E-matching is analogous to computing the triggers for a TGD
+or EGD (Sec. 4.1 ).
+The Insertion of a pair ( t , c ) (t,c) into G G , where
+t ∈ T ⁡ ( Σ ∪ Q ) t\in T(\Sigma\cup Q) and c ∈ Q c\in Q , returns an automaton 𝒜 \mathcal{A}
+such that G ⊑ 𝒜 G\sqsubseteq\mathcal{A} such that t → ∗ 𝒜 c t\rightarrow^{*}_{\mathcal{A}}c .
+To define 𝒜 \mathcal{A} , we need the following:
+{dfn}
+Fix a term t ∈ T ⁡ ( Σ ∪ Q ) t\in T(\Sigma\cup Q) and a state c ∈ Q c\in Q .
+The flattening for t t with root c c , in notation
+FL ( t → ∗ c ) \textsf{FL}(t\rightarrow^{*}c) , or just FL when t , c t,c are clear
+from the context, is an E-graph that has one distinct state q u q_{u}
+for each subterm u u of t t , and has a transition
+f ⁡ ( q u 1 , … , q u k ) → q u f(q_{u_{1}},\ldots,q_{u_{k}})\rightarrow q_{u} , for all subterms u u
+of the form u = f ⁡ ( u 1 , … , u k ) u=f(u_{1},\ldots,u_{k}) and f ∈ Σ f\in\Sigma . Moreover,
+it is enforced that the state of the root node is c c (i.e.,
+q t = c q_{t}=c ). One can check that t → ∗ FL c t\rightarrow^{*}_{\textsf{FL}}c , and
+that ≈ FL \approx_{\textsf{FL}} is the identity on all subterms of
+t t . Flattening is also called normalization [ 9 ] .
+G : G:
+𝒜 : \mathcal{A}:
+H : H:
+Figure 2 : Example E-graphs on insertion and rebuilding.
+The result of inserting ( t , c ) (t,c) in G G is
+𝒜 = def G ∪ FL ( t → ∗ c ) \mathcal{A}\stackrel{{\scriptstyle\text{def}}}{{=}}G\cup\textsf{FL}(t\rightarrow^{*}c) (i.e. we take the
+set-union of all states and all transitions). The result 𝒜 \mathcal{A} is a
+reachable tree automaton, but it is non-deterministic in general, thus
+it is not an E-graph; the next operation, rebuilding, converts it back
+into an E-graph. G ⊑ 𝒜 G\sqsubseteq\mathcal{A} holds, because the inclusion
+G → 𝒜 G\rightarrow\mathcal{A} is a homomorphism.
+As an example, if we insert the pair ( f ⁡ ( c a ) , c b ) (f(c_{a}),c_{b}) in the E-graph
+G G in Figure 2 , the result is 𝒜 \mathcal{A} in the center
+of the figure;
+flattening FL ​ ( f ⁡ ( c a ) → c b ) \textsf{FL}(f(c_{a})\rightarrow c_{b}) has a single transition
+f ⁡ ( c a ) → c b f(c_{a})\rightarrow c_{b} .
+Rebuilding converts 𝒜 \mathcal{A} into a deterministic automaton.
+Formally, let 𝒜 \mathcal{A} be any reachable tree automaton, and recall that
+𝒜 \mathcal{A} may be infinite. The congruence closure
+CC ​ ( 𝒜 ) \textsf{CC}(\mathcal{A}) is an E-graph (i.e. deterministic, reachable
+automaton) such that 𝒜 ⊑ CC ​ ( 𝒜 ) \mathcal{A}\sqsubseteq\textsf{CC}(\mathcal{A}) and, for any
+other E-graph G ′ G^{\prime} , if 𝒜 ⊑ G ′ \mathcal{A}\sqsubseteq G^{\prime} , then
+CC ​ ( 𝒜 ) ⊑ G ′ \textsf{CC}(\mathcal{A})\sqsubseteq G^{\prime} . We prove the following in Section A.1 :
+Lemma 6 .
+For any reachable tree automaton 𝒜 \mathcal{A} , CC ​ ( 𝒜 ) \textsf{CC}(\mathcal{A})
+exists and is unique.
+The procedure of computing CC ​ ( 𝒜 ) \textsf{CC}(\mathcal{A}) , also known as
+rebuilding in EqSat literature [ 32 ] , can be done
+efficiently in the finite case, for instance with Tarjan’s algorithm
+[ 7 ] . The idea is to repeatedly find violating
+transitions f ⁡ ( c 1 , … , c k ) → c f(c_{1},\ldots,c_{k})\rightarrow c and
+f ⁡ ( c 1 , … , c k ) → c ′ f(c_{1},\ldots,c_{k})\rightarrow c^{\prime} with c ≠ c ′ c\neq c^{\prime} , and replace every
+occurrence of c c with c ′ c^{\prime} , until fixpoint. This is similar
+to determinizing 𝒜 \mathcal{A} , but instead of constructing powerset
+states like { c 1 , c 4 , c 7 } \{c_{1},c_{4},c_{7}\} , we equate states c 1 = c 4 = c 7 c_{1}=c_{4}=c_{7} ;
+thus, CC ​ ( 𝒜 ) \textsf{CC}(\mathcal{A}) has at most as many states as 𝒜 \mathcal{A} , and the
+procedure always terminates for finite 𝒜 \mathcal{A} , as merging shrinks
+the number of states.
+{exm}
+The tree automaton 𝒜 \mathcal{A} in Figure 2 is
+non-deterministic, because f ( a ) → ∗ c b f(a)\rightarrow^{*}c_{b} and
+f ( a ) → ∗ c f f(a)\rightarrow^{*}c_{f} . The congruence closure algorithm merges
+c b c_{b} and c f c_{f} , and produces the E-graph H H in
+Figure 2 . Notice that H H represents strictly more
+terms than 𝒜 \mathcal{A} . For example, H H represents g ⁡ ( b , b ) g(b,b) , because
+g ( b , b ) → H ∗ c g g(b,b)\rightarrow^{*}_{H}c_{g} , but 𝒜 \mathcal{A} does not represent
+g ⁡ ( b , b ) g(b,b) .
+Least upper bound of E-graphs
+Let ( G i ) i ∈ I (G_{i})_{i\in I} be a (possibly infinite) family of E-graphs.
+Recall that their least upper bound G G is an E-graph such that G G is
+an upper bound for every E-graph in the set, G i ⊑ G G_{i}\sqsubseteq G for
+all i ∈ I i\in I , and for any other upper bound G ′ G^{\prime} , it holds that
+G ⊑ G ′ G\sqsubseteq G^{\prime} . We prove the following in
+Section A.2 :
+Lemma 7 (Least upper bound) .
+The least upper bound exists and is given by CC ​ ( 𝒜 ) \textsf{CC}\left(\mathcal{A}\right) ,
+where 𝒜 \mathcal{A} is the automaton consisting of the disjoint union of
+the states and the disjoint union of the transitions of all E-graphs
+G i G_{i} .
+We will denote the least upper bound by ⨆ i ∈ I G i \bigsqcup_{i\in I}G_{i} . It
+is also possible to show that every family of E-graphs admits a
+greatest lower bound, by using a product
+construction [ 13 ] , but we do not need it in this
+paper.
+3.3 Equality saturation
+The standard definition of equality saturation in the
+literature is procedural: given an E-graph
+G = ⟨ Q , Σ , Δ ⟩ G=\langle Q,\Sigma,\Delta\rangle and TRS ℛ {\mathcal{R}} , equality
+saturation repeatedly applies matching/insertion/rebuilding. EqSat
+is undefined when this process does not terminate. We provide here
+an alternative definition, as the least fixpoint of an immediate
+consequence operator (ICO), and prove that it always exists. We start
+by introducing the ICO:
+ICO ℛ = def \displaystyle\textsf{ICO}_{{\mathcal{R}}}\stackrel{{\scriptstyle\text{def}}}{{=}}\
+CC ∘ T ℛ \displaystyle\textsf{CC}\circ T_{{\mathcal{R}}}
+(2)
+T ℛ T_{{\mathcal{R}}} is the match/apply operator: it computes all E-matches then
+inserts the rhs ’s into G G :
+T ℛ ( G ) = def G ∪ ⋃ { FL ( rhs [ σ ] → G ∗ c ) ∣ ( lhs → rhs ) ∈ ℛ , σ : Var ( lhs ) → Q , lhs [ σ ] → G ∗ c } \displaystyle T_{{\mathcal{R}}}(G)\stackrel{{\scriptstyle\text{def}}}{{=}}G\cup\bigcup\{{\textsf{FL}(\textit{rhs}[\sigma]\rightarrow^{*}_{G}c)}\mid{(\textit{lhs}\rightarrow\textit{rhs})\in{\mathcal{R}},\sigma:\textit{{Var}}(\textit{lhs})\rightarrow Q,\textit{lhs}[\sigma]\rightarrow^{*}_{G}c}\}
+CC is the rebuilding operator
+of 6 .
+Lemma 8 .
+ICO ℛ \textsf{ICO}_{{\mathcal{R}}} is inflationary
+( G ⊑ ICO ℛ ​ ( G ) G\sqsubseteq\textsf{ICO}_{{\mathcal{R}}}(G) for all G G ) and monotone.
+Proof 3.6 .
+That ICO ℛ \textsf{ICO}_{{\mathcal{R}}} is inflationary follows from
+G ⊑ T ℛ ​ ( G ) ⊑ CC ​ ( T ℛ ​ ( G ) ) G\sqsubseteq T_{{\mathcal{R}}}(G)\sqsubseteq\textsf{CC}(T_{{\mathcal{R}}}(G)) . We
+prove that both T ℛ T_{{\mathcal{R}}} and CC are monotone. Let
+H = def ⋃ { FL ( rhs [ σ ] → ∗ c ) ∣ ( lhs → rhs ) ∈ ℛ , σ : Var ( lhs ) → Q , lhs [ σ ] → G ∗ c } H\stackrel{{\scriptstyle\text{def}}}{{=}}\bigcup\{\textsf{FL}(\textit{rhs}[\sigma]\rightarrow^{*}c)\mid(\textit{lhs}\rightarrow\textit{rhs})\in{\mathcal{R}},\sigma:\textit{{Var}}(\textit{lhs})\rightarrow Q,\textit{lhs}[\sigma]\rightarrow^{*}_{G}c\} , thus T ℛ ​ ( G ) = G ∪ H T_{{\mathcal{R}}}(G)=G\cup H .
+Any homomorphism G → G ′ G\rightarrow G^{\prime} can be extended to a
+homomorphism G ∪ H → G ′ ∪ H G\cup H\rightarrow G^{\prime}\cup H , which proves that
+T ℛ T_{{\mathcal{R}}} is monotone.
+Consider two automata 𝒜 , 𝒜 ′ \mathcal{A},\mathcal{A}^{\prime} and assume
+𝒜 ⊑ 𝒜 ′ \mathcal{A}\sqsubseteq\mathcal{A}^{\prime} , i.e. there exists a homomorphism from
+𝒜 \mathcal{A} to 𝒜 ′ \mathcal{A}^{\prime} . Denote G = def CC ​ ( 𝒜 ) G\stackrel{{\scriptstyle\text{def}}}{{=}}\textsf{CC}(\mathcal{A}) ,
+G ′ = def CC ​ ( 𝒜 ′ ) G^{\prime}\stackrel{{\scriptstyle\text{def}}}{{=}}\textsf{CC}(\mathcal{A}^{\prime}) . Then,
+𝒜 ⊑ 𝒜 ′ ⊑ G ′ \mathcal{A}\sqsubseteq\mathcal{A}^{\prime}\sqsubseteq G^{\prime} , which implies
+𝒜 ⊑ G ′ \mathcal{A}\sqsubseteq G^{\prime} . By the definition of G = CC ​ ( 𝒜 ) G=\textsf{CC}(\mathcal{A}) ,
+we have G ⊑ G ′ G\sqsubseteq G^{\prime} , proving that CC is monotone.
+With Lemmas 7 and 8 ,
+we show the following in Section A.3 :
+Theorem 9 .
+Fix an E-graph G G , and consider the class 𝒞 G \mathcal{C}_{G} of
+E-graphs G ′ ⊒ G G^{\prime}\sqsupseteq G . Then
+ICO ℛ : 𝒞 G → 𝒞 G \textsf{ICO}_{{\mathcal{R}}}:\mathcal{C}_{G}\rightarrow\mathcal{C}_{G} has a least fixpoint,
+given by
+EqSat ​ ( ℛ , G ) = def \displaystyle\textsc{EqSat}({\mathcal{R}},G)\stackrel{{\scriptstyle\text{def}}}{{=}}
+⨆ i ≥ 0 ICO ℛ ( i ) ​ ( G ) \displaystyle\bigsqcup_{i\geq 0}\textsf{ICO}_{{\mathcal{R}}}^{(i)}(G)
+(3)
+Furthermore, EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) is a universal model of ℛ , G {\mathcal{R}},G ; we
+call it equality saturation.
+Given G , ℛ G,{\mathcal{R}} , our semantics of EqSat is the least fixpoint
+in ( 3 ), which is also the unique universal model of
+G , ℛ G,{\mathcal{R}} . When EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) is finite, then this coincides
+with the standard procedural definition in the literature. A
+common case (e.g., in program and query optimization settings) is when
+G G represents a single term t t , more precisely
+G = FL ( t → ∗ c ) G=\textsf{FL}(t\rightarrow^{*}c) with fresh state c c ; in that case we
+denote EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) as EqSat ​ ( ℛ , t ) \textsc{EqSat}({\mathcal{R}},t) .
+Properties of equality saturation
+We establish several basic facts of EqSat .
+Lemma 10 (Inflationary) .
+G ⊑ EqSat ​ ( ℛ , G ) G\sqsubseteq\textsc{EqSat}({\mathcal{R}},G) .
+Corollary 11 .
+ℒ ⁡ ( G ) ⊆ ℒ ⁡ ( EqSat ​ ( ℛ , G ) ) \mathcal{L}(G)\subseteq\mathcal{L}(\textsc{EqSat}({\mathcal{R}},G)) and ( ≈ G ) ⊆ ( ≈ EqSat ​ ( ℛ , G ) ) (\approx_{G})\subseteq(\approx_{\textsc{EqSat}({\mathcal{R}},G)}) .
+10 follows
+from 8 , while 11
+follows from 1
+and 3 . Thus, EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) represents
+more terms than G G , and identifies more pairs of terms than G G .
+Next, we examine the relationship between the PCR defined by
+EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) and the relations ℛ ∗ {\mathcal{R}}^{*} and ≈ ℛ \approx_{{\mathcal{R}}}
+defined by the TRS ℛ {\mathcal{R}} (see subsection 2.1 ). If
+≈ 1 , ≈ 2 \approx_{1},\approx_{2} are two PCRs, then we denote by
+≈ 1 ∨ ≈ 2 \approx_{1}\vee\approx_{2} the smallest PCR that contains both. We
+prove:
+Lemma 12 (Representation) .
+Let w ∈ T ⁡ ( Σ ) w\in T(\Sigma) be a term represented by some state of the
+E-graph H = def EqSat ​ ( ℛ , G ) H\stackrel{{\scriptstyle\text{def}}}{{=}}\textsc{EqSat}({\mathcal{R}},G) . The following hold:
+ℛ ∗ ( w ) ⊆ [ w ] ≈ H ⊆ [ w ] ≈ ℛ ∨ ≈ G {\mathcal{R}}^{*}(w)\subseteq[w]_{\approx_{H}}\subseteq[w]_{\approx_{{\mathcal{R}}}\vee\approx_{G}} .
+Proof 3.7 .
+The definitions of E-matching and insertion imply that, if
+u → ℛ v u\rightarrow_{\mathcal{R}}v and u u is represented by some state c c of
+some E-graph K K , then v v is represented by the same state of the
+E-graph ICO ​ ( K ) = CC ​ ( T ℛ ​ ( K ) ) \textsf{ICO}(K)=\textsf{CC}(T_{{\mathcal{R}}}(K)) . Therefore, if
+u → ℛ v u\rightarrow_{\mathcal{R}}v and u u is represented by some state of H H ,
+then v v is represented by the same state of ICO ​ ( H ) = H \textsf{ICO}(H)=H (because
+H H is a fixpoint of ICO ). This implies that
+ℛ ∗ ( w ) ⊆ [ w ] ≈ H {\mathcal{R}}^{*}(w)\subseteq[w]_{\approx_{H}} .
+For the second part, we denote by G k = ICO ( k ) ​ ( G ) G_{k}=\textsf{ICO}^{(k)}(G) , and check
+by induction on k k that [ w ] ≈ G k ⊆ [ w ] ≈ ℛ ∨ ≈ G [w]_{\approx_{G_{k}}}\subseteq[w]_{\approx_{{\mathcal{R}}}\vee\approx_{G}} . When k = 0 k=0 then G 0 = G G_{0}=G and
+the claim is obvious. For the inductive step we observe that the
+only new identities introduced by G k + 1 G_{k+1} are justified by ℛ {\mathcal{R}} .
+In other words, if w → ∗ ℛ v w\rightarrow^{*}_{{\mathcal{R}}}v , then
+EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) will equate w w with v v ; and if EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G)
+equates w w with v v then this can be derived from ≈ ℛ \approx_{{\mathcal{R}}}
+and ≈ G \approx_{G} . In general, w ≈ ℛ v w\approx_{{\mathcal{R}}}v does not imply
+w ≈ H v w\approx_{H}v . For a simple example, let
+ℛ = { a → b } {\mathcal{R}}=\{a\rightarrow b\} , thus a ≈ ℛ b a\approx_{{\mathcal{R}}}b , and let
+G G represent only the term b b . Then H = EqSat ​ ( ℛ , G ) = G H=\textsc{EqSat}({\mathcal{R}},G)=G
+represents only the term b b , thus a ≉ H b a\not\approx_{H}b .
+{exm}
+For some TRS, the starting E-graph G G determines
+whether EqSat terminates in a finite number of steps. For a
+simple example, consider Σ = { f ⁡ ( ⋅ ) , g ⁡ ( ⋅ ) , a } \Sigma=\{f(\cdot),g(\cdot),a\} ,
+ℛ = { f ( g ( x ) ) → g ( f ( x ) ) } {\mathcal{R}}=\{f(g(x))\rightarrow g(f(x))\} . If the initial E-graph G G
+represents only the term f ⁡ ( g ⁡ ( a ) ) f(g(a)) (and its subterms),
+then EqSat terminates, and the
+resulting H = def EqSat ​ ( ℛ , G ) H\stackrel{{\scriptstyle\text{def}}}{{=}}\textsc{EqSat}({\mathcal{R}},G) represents a PCR where
+f ( g ( a ) ) ≈ H g ( f ( a ) ) f(g(a))\approx_{H}g(f(a)) . On the other hand, if G G is the
+E-graph with states c f , c g c_{f},c_{g} and transitions
+{ g ( c f ) → c g , f ( c g ) → c f , a → c f } \{g(c_{f})\rightarrow c_{g},f(c_{g})\rightarrow c_{f},a\rightarrow c_{f}\} , then G G already represents infinitely many terms
+ℒ ⁡ ( c f ) ∪ ℒ ⁡ ( c g ) \mathcal{L}(c_{f})\cup\mathcal{L}(c_{g}) , where
+ℒ ⁡ ( c f ) = { a , f ⁡ ( g ⁡ ( a ) ) , f ⁡ ( g ⁡ ( f ⁡ ( g ⁡ ( a ) ) ) ) , … } \mathcal{L}(c_{f})=\{a,f(g(a)),f(g(f(g(a)))),\ldots\} and
+ℒ ⁡ ( c g ) = { g ⁡ ( a ) , g ⁡ ( f ⁡ ( g ⁡ ( a ) ) ) , … } \mathcal{L}(c_{g})=\{g(a),g(f(g(a))),\ldots\} . After equality
+saturation, H = EqSat ​ ( ℛ , G ) H=\textsc{EqSat}({\mathcal{R}},G) represents all terms in
+T ⁡ ( Σ ) T(\Sigma) where the numbers of occurrences # ​ f , # ​ g \#f,\#g of
+f , g f,g satisfy # ​ f ≤ # ​ g ≤ # ​ f + 1 \#f\leq\#g\leq\#f+1 . This is not a regular
+language, hence H H is infinite, and EqSat will not terminate in a
+finite number of steps.
+{exm}
+We show that both inclusions
+in 12 can be strict. Let
+ℛ = { a → b , c → b } {\mathcal{R}}=\{a\rightarrow b,c\rightarrow b\} and let G G be the
+E-graph representing a single term f ⁡ ( a , b ) f(a,b) with transitions
+{ a → c a , b → c b , f ( c a , c b ) → c f } \{\ a\rightarrow c_{a},b\rightarrow c_{b},f(c_{a},c_{b})\rightarrow c_{f}\ \} . Then H = EqSat ​ ( ℛ , G ) H=\textsc{EqSat}({\mathcal{R}},G) has transitions:
+{ a → c a , b → c a ¯ , f ( c a , c a ¯ ) → c f } \{\ a\rightarrow c_{a},b\rightarrow\underline{c_{a}},f(c_{a},\underline{c_{a}})\rightarrow c_{f}\} . We have: 7 7
+7
+We use f ⁡ ( a | b , b ) f(a|b,b) as a shorthand for
+{ f ⁡ ( t , b ) ∣ t = a ∨ t = b } \{f(t,b)\mid t=a\lor t=b\} (as in regular expressions) and
+similarly for other terms. ℛ ∗ ​ ( f ⁡ ( a , b ) ) = f ⁡ ( a | b , b ) {\mathcal{R}}^{*}(f(a,b))=f(a|b,b) ,
+[ f ( a , b ) ] ≈ H = f ( a | b , a | b ) [f(a,b)]_{\approx_{H}}=f(a|b,a|b) , and
+[ f ( a , b ) ] ≈ ℛ ∨ ≈ G = [ f ( a , b ) ] ≈ t ​ r ​ s = f ( a | b | c , a | b | c ) [f(a,b)]_{\approx_{{\mathcal{R}}}\vee\approx_{G}}=[f(a,b)]_{\approx_{trs}}=f(a|b|c,a|b|c) . All three sets are different.
+However, the three expressions in 12 are
+equal in an important special case:
+Corollary 13 .
+Suppose ℛ {\mathcal{R}} is a variable-preserving term rewriting system. Let
+Sym ​ ( ℛ ) = ℛ ∪ ℛ − 1 \textit{Sym}\left({\mathcal{R}}\right)={\mathcal{R}}\cup{\mathcal{R}}^{-1} , and let
+w ∈ T ⁡ ( Σ ) w\in T(\Sigma) be a term represented by some state of the E-graph
+H ↔ = def EqSat ​ ( Sym ​ ( ℛ ) , G ) H^{\leftrightarrow}\stackrel{{\scriptstyle\text{def}}}{{=}}\textsc{EqSat}(\textit{Sym}({\mathcal{R}}),G) . The following
+hold:
+( Sym ( ℛ ) ) ∗ ( w ) = [ w ] ≈ H ↔ = [ w ] ≈ ℛ ∨ ≈ G \left(\textit{Sym}\left({\mathcal{R}}\right)\right)^{*}(w)=[w]_{\approx_{H^{\leftrightarrow}}}=[w]_{\approx_{\mathcal{R}}\vee\approx_{G}} .
+Let G G be a finite E-graph. If EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) is infinite, then
+EqSat does not terminate in a finite number of
+steps. Somewhat surprisingly, the converse does hold: if
+EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) is finite, then EqSat terminates in
+a finite number of steps. This follows from the next lemma, whose
+proof is deferred to Appendix B .
+Lemma 14 (Finite convergence) .
+Let 𝒢 : G 1 ⊏ G 2 ⊏ … \mathcal{G}:G_{1}\sqsubset G_{2}\sqsubset\ldots be an ascending sequence of finite E-graphs.
+If G ∞ = ⨆ i G i G_{\infty}=\bigsqcup_{i}G_{i} is finite,
+then the sequence 𝒢 \mathcal{G} is finite.
+Corollary 15 (Finite convergence of EqSat) .
+Let ℛ {\mathcal{R}} be a term rewriting system and G G be a finite E-graph.
+If EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) is finite,
+EqSat converges in a finite number of steps.
+4 Equality saturation and the chase
+In this section, we briefly review necessary background on databases and the chase.
+Then, we will show the fundamental connections between equality saturation and the chase.
+4.1 The Chase Procedure
+Databases and conjunctive queries
+A relational database schema is a tuple of relation names
+𝒮 = ( R 1 , … , R m ) \mathcal{S}=(R_{1},\ldots,R_{m}) with associated arities ar ​ ( R i ) \textit{ar}(R_{i}) .
+A database instance is a tuple of relation instances
+I = ( R 1 I , … , R m I ) I=(R_{1}^{I},\ldots,R_{m}^{I}) , where R i I ⊆ Dom ar ​ ( R i ) R_{i}^{I}\subseteq\textsf{Dom}^{\textit{ar}(R_{i})}
+for some domain Dom . We allow an instance to be
+infinite. We often view a tuple a → \vec{a} in R i I R_{i}^{I} as an atom
+R i ​ ( a → ) R_{i}(\vec{a}) , and view the instance I I as a set of atoms. The
+domain Dom is the disjoint union of set of constants and a
+set of marked nulls .
+A conjunctive query λ ⁡ ( x → ) \lambda(\vec{x}) is a formula with free
+variables x → \vec{x} of the form
+R 1 ​ ( x 1 → ) ∧ … ∧ R k ​ ( x k → ) R_{1}(\vec{x_{1}})\land\ldots\land R_{k}(\vec{x_{k}}) , where each
+x → i \vec{x}_{i} is a tuple of variables from x → \vec{x} . The
+canonical database of a conjunctive query consists of all the
+tuples R i ​ ( x i → ) R_{i}(\vec{x_{i}}) , where the variables x → \vec{x} are considered
+marked nulls.
+Let I I , J J be two database instances. A homomorphism from I I
+to J J , in notation h : I → J h:I\rightarrow J , is a a function
+h : Dom ​ ( I ) → Dom ​ ( J ) h:\textsf{Dom}(I)\rightarrow\textsf{Dom}(J) that is the identity on the set of
+constants, and maps each atom R ⁡ ( a → ) ∈ I R(\vec{a})\in I to an atom
+R ⁡ ( h ⁡ ( a → ) ) ∈ J R(h(\vec{a}))\in J . The notion of homomorphism immediately
+extends to conjunctive queries and/or database instances. The output
+of a conjunctive query λ ⁡ ( x → ) \lambda(\vec{x}) on a database I I is defined
+as the set of homomorphisms from λ ⁡ ( x → ) \lambda(\vec{x}) to I I . We say
+that a database instance I I satisfies a conjunctive query
+λ ⁡ ( x → ) \lambda(\vec{x}) , denoted by
+I ⊧ ∃ x → ​ λ ​ ( x → ) I\models\exists\vec{x}\lambda(\vec{x}) , if there exists a
+homomorphism λ ⁡ ( x → ) → I \lambda(\vec{x})\rightarrow I .
+Dependencies
+TGDs and EGDs describe semantic constraints between relations.
+A TGD is a first-order formula of the form λ ⁡ ( x → , y → ) → ∃ z → . ρ ⁡ ( x → , z → ) \lambda(\vec{x},\vec{y})\rightarrow\exists\vec{z}.\rho(\vec{x},\vec{z})
+where λ ⁡ ( x → , z → ) \lambda(\vec{x},\vec{z}) and ρ ⁡ ( x → , y → ) \rho(\vec{x},\vec{y}) are conjunctive queries with free variables
+in x → ∪ y → \vec{x}\cup\vec{y} and x → ∪ z → \vec{x}\cup\vec{z} .
+An EGD is a first-order formula of the form λ ⁡ ( x → ) → x i = x j \lambda(\vec{x})\rightarrow x_{i}=x_{j}
+where λ ⁡ ( x → ) \lambda(\vec{x}) is a conjunctive query with free variables in x → \vec{x} and { x i , x j } ⊆ x → \{x_{i},x_{j}\}\subseteq\vec{x} .
+Fix a set of TGDs and EGDs Γ \Gamma . If I I is a database instance
+and d ∈ Γ d\in\Gamma , then a trigger for d d in I I is a
+homomorphism from λ ⁡ ( x → , y → ) \lambda(\vec{x},\vec{y}) (resp. λ ⁡ ( x → ) \lambda(\vec{x}) ) to I I . An active trigger is a trigger h h
+such that, if d d is a TGD, then no extension h h to a homomorphism
+h ′ : ρ ⁡ ( x → , z → ) → I h^{\prime}:\rho(\vec{x},\vec{z})\rightarrow I exists, and, if d d is an
+EGD, then h ⁡ ( x i ) ≠ h ⁡ ( x j ) h(x_{i})\neq h(x_{j}) . We say that I I is model for Γ \Gamma ,
+and write I ⊧ Γ I\models\Gamma , if it has no active triggers.
+Given Γ \Gamma and I I we say that some database instance J J is a
+model for Γ , I \Gamma,I , if J ⊧ Γ J\models\Gamma and there exists a
+homomorphism I → J I\rightarrow J . J J is called universal model
+if there is a homomorphism from J J to every model of Γ \Gamma and
+I I . Universal models are unique up to homomorphisms.
+The chase
+The chase is a fixpoint algorithm for computing universal models.
+We consider two variants of the chase here: the
+standard chase and Skolem chase .
+Both the standard chase and the Skolem chase produce a universal model
+of Γ , I \Gamma,I [ 8 , 3 , 19 ] .
+The standard chase computes answers by deriving a sequence of
+chase steps until all dependencies are satisfied. A chase
+step, denoted as I → d , h J I\xrightarrow{d,h}J , takes as inputs an
+instance I I , a homomorphism h h , and a dependency d d , where h h
+is an active trigger of d d in I I , and produces an output instance
+J J by adding some tuples (for TGDs) or collapsing some elements (for
+EGDs). Specifically, if d d is a TGD, the chase step extends I I with
+the tuple h ′ ​ ( ρ ​ ( x → , z → ) ) h^{\prime}(\rho(\vec{x},\vec{z})) , where h ′ h^{\prime} is an extension of
+h h that maps the variables z → \vec{z} on which h h is undefined to
+fresh marked nulls. If d d is an EGD, if h ⁡ ( x i ) h(x_{i}) (or h ⁡ ( x j ) h(x_{j}) ) is a
+marked null, a chase step replaces in I I every occurrence of h ⁡ ( x i ) h(x_{i})
+with h ⁡ ( x j ) h(x_{j}) (or h ⁡ ( x j ) h(x_{j}) with h ⁡ ( x i ) h(x_{i}) ). If neither h ⁡ ( x i ) h(x_{i}) nor
+h ⁡ ( x j ) h(x_{j}) is a marked null and h ⁡ ( x i ) ≠ h ⁡ ( x j ) h(x_{i})\neq h(x_{j}) , then the chase
+fails.
+A standard chase sequence starting at I 0 I_{0} is a sequence of
+successful chase steps
+I 0 → d 1 , h 1 I 1 → d 2 , h 2 ⋯ I_{0}\xrightarrow{d_{1},h_{1}}I_{1}\xrightarrow{d_{2},h_{2}}\cdots that is
+fair : for all i ≥ 0 i\geq 0 , for each dependency d d and active
+trigger h h of d d in I i I_{i} , some j ≥ i j\geq i must exist such that h h
+is no longer an active trigger of d d in I j I_{j} . The result of
+a (possibly infinite) chase sequence is
+⋃ i ≥ 0 ⋂ j ≥ i I j \bigcup_{i\geq 0}\bigcap_{j\geq i}I_{j} [ 3 ] .
+A chase sequence is
+terminating if it ends with I n I_{n} and I n ⊧ Γ I_{n}\models\Gamma , in
+which case I n I_{n} is the result of the chase sequence. The standard
+chase is non-deterministic: depending on the order of firing, the
+chase sequence can be different. Different chase sequences can even
+differ on whether they terminate.
+The Skolem chase, discussed in [ 19 ] , differs
+from the standard chase in several ways. It first skolemizes
+each TGD
+d : λ ⁡ ( x → , y → ) → ∃ z → . ρ ⁡ ( x → , z 1 , … , z k ) d:\lambda(\vec{x},\vec{y})\rightarrow\exists\vec{z}.\rho(\vec{x},z_{1},\ldots,z_{k}) to
+λ ⁡ ( x → , y → ) → ρ ⁡ ( x → , f z 1 d ​ ( x → ) , … , f z k d ​ ( x → ) ) , \lambda(\vec{x},\vec{y})\rightarrow\rho(\vec{x},f^{d}_{z_{1}}(\vec{x}),\ldots,f^{d}_{z_{k}}(\vec{x})), where
+each f z j d f^{d}_{z_{j}} is an uninterpreted function from Dom | x → | \textsf{Dom}^{|\vec{x}|}
+to Dom . The result of the Skolem chase, denoted as SklCh ​ ( Γ , I ) \textsc{SklCh}(\Gamma,I) , is the least fixpoint of
+the immediate consequence operator (ICO) of the Skolemized TGDs.
+Note that the Skolem chase does not directly handle EGDs but uses a technique
+called singularization [ 19 ]
+to simulate EGDs with TGDs.
+4.2 Reducing the Skolem chase to equality saturation
+In this section, we show how to reduce
+the Skolem chase to EqSat.
+We only consider TGDs,
+since in the Skolem chase,
+EGDs are modeled as TGDs
+using singularization [ 19 ] .
+We show an encoding
+where
+there exists a simple mapping
+from E-graphs to database instances, defined by
+ξ ⁡ ( G ) = { R ⁡ ( c 1 , … , c k ) ∈ ℒ ⁡ ( G ) ∣ R ​ is a relation symbol in ​ 𝒮 } {\xi(G)=\{R(c_{1},\ldots,c_{k})\in\mathcal{L}(G)\mid R\text{ is a relation symbol in }\mathcal{S}\}}
+such that,
+given a set of dependencies Γ \Gamma ,
+running EqSat on an encoded term rewriting system from Γ \Gamma
+corresponds to running the Skolem chase on the set of dependencies via ξ \xi .
+Intuitively, given an E-grpah,
+ξ \xi collects every term that corresponds to a tuple
+from the language of G G .
+An illustration of ξ \xi is shown in Figure 3 .
+Theorem 16 .
+Given a database schema 𝒮 = ( R 1 , … , R m ) \mathcal{S}=(R_{1},\ldots,R_{m}) , a set of TGDs Γ \Gamma ,
+and an initial database I I ,
+it is possible to define
+a signature Σ \Sigma , a term rewriting system ℛ {\mathcal{R}} over Σ \Sigma ,
+and an initial term t t such that
+ξ ⁡ ( EqSat ​ ( ℛ , t ) ) = SklCh ​ ( Γ , I ) . \xi(\textsc{EqSat}({\mathcal{R}},t))=\textsc{SklCh}(\Gamma,I).
+Moreover, the Skolem chase terminates
+if and only if equality saturation terminates.
+The intuition for the construction is that we can uniformly
+treat relational atoms as E-nodes contained in a special E-class,
+and Skolem functions naturally correspond to terms in EqSat.
+More specifically,
+•
+Add symbols { ⊤ , ∧ ( ⋅ , ⋅ ) } \{\boldsymbol{\top},\boldsymbol{\land}(\cdot,\cdot)\} to the signature Σ \Sigma .
+Add rewrite r ⊤ : ⊤ → ∧ ( ⊤ , ⊤ ) r_{\boldsymbol{\top}}:\boldsymbol{\top}\rightarrow\boldsymbol{\land}(\boldsymbol{\top},\boldsymbol{\top}) to ℛ {\mathcal{R}} .
+Let the initial term t t be ⊤ \boldsymbol{\top} .
+•
+Add every Skolem function symbol to Σ \Sigma , and for every n n -ary relational symbol R ∈ 𝒮 R\in\mathcal{S} , add a n n -ary function symbol
+to Σ \Sigma , and add rewrite rule r R : R ( x 1 , … , x n ) → ⊤ r_{R}:R(x_{1},\ldots,x_{n})\rightarrow\boldsymbol{\top} .
+•
+For every Skolemized TGD
+d : R 1 ​ ( x 1 → , y 1 → ) ∧ … ∧ R n ​ ( x n → , y n → ) → R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) ∧ … ∧ R m ′ ​ ( x m ′ → , f z d → m ) , d:\ R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right)\land\ldots\land R_{n}\left(\vec{x_{n}},\vec{y_{n}}\right)\rightarrow R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right)\land\ldots\land R^{\prime}_{m}\left(\vec{x^{\prime}_{m}},\vec{f^{d}_{z}}_{m}\right),
+replace the conjunctions in the head and body with nested applications of
+∧ \boldsymbol{\land} and ⊤ \boldsymbol{\top} :
+r d : ∧ ( R 1 ​ ( x 1 → , y 1 → ) , ∧ ( … ∧ ( R n ​ ( x n → , y n → ) , ⊤ ) ) ) → ∧ ( R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) , ∧ ( … ∧ ( R m ′ ​ ( x m ′ → , f z d → m ) , ⊤ ) ) ) r_{d}:\ \boldsymbol{\land}\left(R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right),\boldsymbol{\land}\left(\ldots\boldsymbol{\land}\left(R_{n}\left(\vec{x_{n}},\vec{y_{n}}\right),\boldsymbol{\top}\right)\right)\right)\rightarrow\boldsymbol{\land}\left(R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right),\boldsymbol{\land}\left(\ldots\boldsymbol{\land}\left(R^{\prime}_{m}\left(\vec{x^{\prime}_{m}},\vec{f^{d}_{z}}_{m}\right),\boldsymbol{\top}\right)\right)\right)
+and add r d r_{d} to ℛ {\mathcal{R}} .
+•
+For each constant c c in the input database I I ,
+add a nullary function symbol c c to Σ \Sigma .
+For each tuple t = R ⁡ ( c 1 , … , c n ) t=R(c_{1},\ldots,c_{n}) in the input database I I ,
+add rewrite r t : ⊤ → R ( c 1 , … , c n ) r_{t}:\boldsymbol{\top}\rightarrow R(c_{1},\ldots,c_{n}) .
+Figure 3 : Mapping results of encoded EqSat back to database instances.
+Proof 4.8 (Proof of 16 ) .
+See Section C.1 .
+4.3 Reducing equality saturation to the standard chase
+We show how to reduce
+equality saturation to the standard chase.
+The encoding itself is straightforward.
+However, the standard chase is non-deterministic and can have different chase sequences,
+so a natural question is what kind of the chase sequence will converge finitely,
+given that EqSat terminates, and vice versa.
+We show that as long as the chase sequence applies EGDs frequent enough,
+the chase sequence will always converge.
+We capture this notion as EGD-fairness.
+{dfn}
+Given a database schema 𝒮 \mathcal{S} , a set of dependencies Γ \Gamma over 𝒮 \mathcal{S} ,
+and an initial database I 0 I_{0} .
+We call a chase sequence I 0 , I 1 , … I_{0},I_{1},\ldots of Γ \Gamma and I I EGD-fair if
+for every i i , either I i I_{i} is a model of Γ \Gamma and the chase terminates,
+or there exists some j > i j>i such that I j I_{j} is a model of the EGD subset of Γ \Gamma .
+Given that EqSat terminates,
+what can we say about chase sequences that are not EGD-fair?
+In fact, such chase sequences may not terminate.
+Despite this,
+it can be shown that the result of such chase sequences, terminating or not,
+is isomorphic to the result of equality saturation (when encoded as a database).
+On the other hand,
+to show that equality saturation terminates,
+it is sufficient to show an arbitrary chase sequence terminates.
+The following theorem shows the connection between EqSat and the standard chase.
+Theorem 17 .
+Given signature Σ \Sigma , a set of rewrite rules ℛ {\mathcal{R}} over Σ \Sigma ,
+and an initial E-graph G G ,
+it is possible to define
+a relational schema 𝒮 \mathcal{S} , a set of dependencies Γ \Gamma over 𝒮 \mathcal{S} ,
+and an initial database I I over 𝒮 \mathcal{S} .
+The following three statements are equivalent:
+1.
+Equality saturation terminates for ℛ {\mathcal{R}} and t t .
+2.
+There exists a terminating chase sequence of the standard chase for Γ \Gamma and I I .
+3.
+All EGD-fair chase sequences of the standard chase terminate for Γ \Gamma and I I .
+Moreover, denote the result of an arbitrary chase sequence as I ∞ I_{\infty} .
+If equality saturation terminates,
+I ∞ I_{\infty} is isomorphic to the database encoding the resulting E-graph of EqSat ​ ( ℛ , G ) \textsc{EqSat}({\mathcal{R}},G) .
+The encoding consists of two steps.
+First, we can encode an E-graph as a database.
+Second, we encode the match/apply operator and congruence closure operator
+as a set of TGDs and EGDs.
+To encode an E-graph as a database:
+•
+Take the domain Dom to be the set of all E-classes, which are treated as marked nulls.
+•
+For every function symbol f f of arity n n ,
+add relation symbol R f R_{f} of arity n + 1 n+1 to 𝒮 \mathcal{S} .
+•
+For every E-node f ⁡ ( c 1 , … , c n ) → c f(c_{1},\ldots,c_{n})\rightarrow c ,
+add a tuple R f ​ ( c 1 , … , c n , c ) R_{f}(c_{1},\ldots,c_{n},c) to the database I I .
+Under this encoding, each E-class is treated as a marked null, and
+each E-node is treated as a tuple.
+The encoding of the match/apply operator and congruence closure operator is plain:
+•
+For every function symbol f f of arity n n ,
+add a functional dependency
+R f ​ ( x 1 , … , x n , x ) ∧ R f ​ ( x 1 , … , x n , x ′ ) → x = x ′ R_{f}(x_{1},\ldots,x_{n},x)\land R_{f}(x_{1},\ldots,x_{n},x^{\prime})\rightarrow x=x^{\prime}
+to Γ \Gamma .
+•
+For every rewrite rule lhs → rhs \textit{lhs}\rightarrow\textit{rhs} in ℛ {\mathcal{R}} ,
+flatten the left- and right-hand side into conjunctions of relational atoms,
+unify the variable denoting the root node of lhs with that of rhs ,
+and add existential quantifiers to the head accordingly.
+For example, rule f ⁡ ( f ⁡ ( x , y ) , z ) → f ⁡ ( x , f ⁡ ( y , z ) ) f(f(x,y),z)\rightarrow f(x,f(y,z)) is
+flattened into R f ​ ( x , y , w 1 ) ∧ R f ​ ( w 1 , z , r ) → ∃ w 2 , R f ​ ( x , y , w 2 ) ∧ R f ​ ( w 2 , v , r ) R_{f}(x,y,w_{1})\land R_{f}(w_{1},z,r)\rightarrow\exists w_{2},R_{f}(x,y,w_{2})\land R_{f}(w_{2},v,r) .
+There are two corner cases to the above translations.
+First, if lhs is a single variable x x ,
+we need to introduce n n rules of the form R f ​ ( y 1 , … , y k , x ) → … R_{f}(y_{1},\ldots,y_{k},x)\rightarrow\ldots ,
+one for each function symbol,
+to “ground” x x .
+For instance, suppose Σ = { f ⁡ ( ⋅ , ⋅ ) , g ⁡ ( ⋅ ) } \Sigma=\{f(\cdot,\cdot),g(\cdot)\} ,
+rewrite rule x → g ⁡ ( x ) x\rightarrow g(x) is flattened into
+two dependencies: R f ​ ( y 1 , y 2 , x ) → R g ​ ( x , x ) R_{f}(y_{1},y_{2},x)\rightarrow R_{g}(x,x)
+and R g ​ ( y 1 , x ) → R g ​ ( x , x ) R_{g}(y_{1},x)\rightarrow R_{g}(x,x) .
+Second, in the case that the right-hand side is a single variable x x ,
+we need to add an EGD instead of a TGD.
+For example,
+rule f ⁡ ( x , y ) → x f(x,y)\rightarrow x is encoded as an EGD R f ​ ( x , y , r ) → x = r R_{f}(x,y,r)\rightarrow x=r .
+Proof 4.9 (Proof of 17 ) .
+See Section C.2 .
+5 The termination theorems of equality saturation
+Finally, we present our main results here.
+Theorem 18 (Single-instance termination) .
+The following problem is R.E.-complete:
+•
+Instance: A term rewriting system R R , a term t t .
+•
+Question: Does EqSat terminate with R R and t t ?
+Theorem 19 (All-term-instance termination) .
+The following problem is Π 2 \Pi_{2} -complete:
+•
+Instance: A term rewriting system R R .
+•
+Question: Does EqSat terminate with R R and t t for all terms t t ?
+While 18 follows immediately from the fact the the Skolem chase is undecidable,
+our proof in Appendix D.1
+is based on Narendran et al. [ 22 ] ,
+which allows us to also show 19 .
+We encode a Turing machine as a term rewriting system with the property that
+the congruence classes of initial configurations corresponds to traces of running such configurations,
+and that EqSat terminates if and only if congruence class is finite.
+For the all-term-instance case,
+we then show that the congruence class of an arbitrary term is infinite
+if and only if the congruence class of an initial configuration is.
+The actual proof is slightly more involved so we refer the reader to Section D.1
+for more details.
+The technique above does not apply to the all-E-graph-instance case,
+however.
+The all-E-graph-instance termination can be thought of as
+having inputs both a term and a set of ground identities,
+and we have no control over the latter.
+Still, we are able to prove that this problem is undecidable
+by a reduction from the Post correspondence problem ( Section D.2 ),
+while the exact upper bound is unknown.
+Theorem 20 (All-E-graph-instance termination) .
+The following problem is undecidable:
+•
+Instance: A term rewriting system R R .
+•
+Question: Does EqSat terminate with R R and G G for all E-graphs G G ?
+6 Weak term acyclity for equality saturation termination
+(a) section 6
+(b) section 6
+Figure 4 :
+Example weak term dependency graphs.
+Special edges are marked with ∗ \ast .
+We can adapt the classic weak acyclicity criterion [ 8 ] ,
+which is used to show the termination of the chase algorithm,
+to equality saturation.
+The adapted criterion, which we call weak term acyclicity ,
+is more powerful
+than simply translating EqSat rules to
+TGDs/EGDs and applying weak acyclicity.
+We demonstrate weak term acyclicity with two examples,
+and the full definition can be found at Appendix E .
+{exm}
+Consider ℛ = { f ( f ( x , y ) , z ) → g ( f ( z , x ) ) } {\mathcal{R}}=\{f(f(x,y),z)\rightarrow g(f(z,x))\} .
+This ruleset is weakly term acyclic, with the weak term dependency graph shown in 4(a) .
+Note however if we derive the dependencies Γ \Gamma using the method in subsection 4.3 from ℛ {\mathcal{R}} ,
+Γ \Gamma is not weakly acyclic.
+{exm}
+Consider ℛ = { g ( f ( x 1 , y 1 ) , f ( z 1 , x 1 ) ) → g ( z 1 , f ( y 1 , x 1 ) ) , g ( x 2 , y 2 ) → h ( y 2 , g ( y 2 , x 2 ) ) } {\mathcal{R}}=\{g(f(x_{1},y_{1}),f(z_{1},x_{1}))\allowbreak\rightarrow g(z_{1},f(y_{1},x_{1})),g(x_{2},y_{2})\rightarrow h(y_{2},g(y_{2},x_{2}))\} .
+This ruleset is weakly term acyclic. Its weak term dependency graph is shown in 4(b) .
+7 Conclusion
+We have presented a semantic foundation for E-graphs and EqSat:
+We identified E-graphs as reachable and deterministic tree automata
+and defined the result of EqSat as the least fixpoint according to E-graph homomoprhisms.
+We defined the universal model of E-graphs and showed
+the fixpoint EqSat produces is the universal model ( 9 ).
+We showed several basic properties about E-graphs,
+including a finite convergence lemma ( 14 ).
+We then established connections between EqSat and the chase in both directions ( section 4 )
+and characterize chase sequences that correspond to EqSat with EGD-fairness ( subsection 4.3 ).
+Our main results are on the terminations of EqSat in three cases: single-instance, all-term-instance, and all-E-graph-instance.
+Finally, adapting ideas from weak acyclicity for the chase,
+we defined weak term acyclicity which implies EqSat termination.
+The correspondence
+between EqSat and the chase established in this paper may help
+further port the rich results of database theory to EqSat,
+as the current paper only scratches the surface of the deep literatures of the chase.
+Another direction is to use
+our better understanding of EqSat to design more efficient and expressive EqSat tools
+and better support downstream applications
+of EqSat.
+Finally, many problems about EqSat are still open.
+For example, the exact upper bound of the all-E-graph-instance termination is not known.
+Other problems include
+rule scheduling, evaluation algorithm, and E-graph extraction.
+References
+[1]
+Franz Baader and Tobias Nipkow.
+Term Rewriting and All That .
+Cambridge University Press, USA, 1999.
+[2]
+Leo Bachmair, Ashish Tiwari, and Laurent Vigneron.
+Abstract congruence closure.
+J. Autom. Reason. , 31(2):129–168, 2003.
+[3]
+Michael Benedikt, George Konstantinidis, Giansalvatore Mecca, Boris Motik,
+Paolo Papotti, Donatello Santoro, and Efthymia Tsamoura.
+Benchmarking the chase.
+In Proceedings of the 36th ACM SIGMOD-SIGACT-SIGAI Symposium on
+Principles of Database Systems , PODS ’17, page 37–52, New York, NY, USA,
+2017. Association for Computing Machinery.
+doi:10.1145/3034786.3034796 .
+[4]
+Samuel Coward, George A. Constantinides, and Theo Drane.
+Automating constraint-aware datapath optimization using e-graphs.
+2023 60th ACM/IEEE Design Automation Conference (DAC) , pages
+1–6, 2023.
+URL: https://api.semanticscholar.org/CorpusID:257353847 .
+[5]
+Alin Deutsch, Alan Nash, and Jeff Remmel.
+The chase revisited.
+In Proceedings of the Twenty-Seventh ACM SIGMOD-SIGACT-SIGART
+Symposium on Principles of Database Systems , PODS ’08, page 149–158, New
+York, NY, USA, 2008. Association for Computing Machinery.
+doi:10.1145/1376916.1376938 .
+[6]
+RisingLight developers.
+RisingLight: An Educational OLAP Database System, 12 2022.
+URL: https://github.com/risinglightdb/risinglight .
+[7]
+Peter J. Downey, Ravi Sethi, and Robert Endre Tarjan.
+Variations on the common subexpression problem.
+Journal of the ACM , 27(4):758–771, October 1980.
+doi:10.1145/322217.322228 .
+[8]
+Ronald Fagin, Phokion G. Kolaitis, Renée J. Miller, and Lucian Popa.
+Data exchange: semantics and query answering.
+Theoretical Computer Science , 336(1):89–124, 2005.
+Database Theory.
+URL:
+https://www.sciencedirect.com/science/article/pii/S030439750400725X ,
+doi:https://doi.org/10.1016/j.tcs.2004.10.033 .
+[9]
+Thomas Genet.
+Termination criteria for tree automata completion.
+Journal of Logical and Algebraic Methods in Programming , 85(1,
+Part 1):3–33, 2016.
+Rewriting Logic and its Applications.
+URL:
+https://www.sciencedirect.com/science/article/pii/S2352220815000504 ,
+doi:https://doi.org/10.1016/j.jlamp.2015.05.003 .
+[10]
+Rémy Gilleron and Sophie Tison.
+Regular tree languages and rewrite systems.
+Fundam. Inf. , 24(1–2):157–175, apr 1995.
+[11]
+Tomasz Gogacz and Jerzy Marcinkowski.
+All–instances termination of chase is undecidable.
+In Javier Esparza, Pierre Fraigniaud, Thore Husfeldt, and Elias
+Koutsoupias, editors, Automata, Languages, and Programming , pages
+293–304, Berlin, Heidelberg, 2014. Springer Berlin Heidelberg.
+[12]
+Gösta Grahne and Adrian Onet.
+Anatomy of the chase.
+Fundam. Informaticae , 157(3):221–270, 2018.
+doi:10.3233/FI-2018-1627 .
+[13]
+Sumit Gulwani, Ashish Tiwari, and George C. Necula.
+Join algorithms for the theory of uninterpreted functions.
+In Kamal Lodaya and Meena Mahajan, editors, FSTTCS 2004:
+Foundations of Software Technology and Theoretical Computer Science , pages
+311–323, Berlin, Heidelberg, 2005. Springer Berlin Heidelberg.
+[14]
+Pavol Hell and Jaroslav Nesetril.
+Images of rigid digraphs.
+Eur. J. Comb. , 12(1):33–42, 1991.
+doi:10.1016/S0195-6698(13)80005-4 .
+[15]
+Rajeev Joshi, Greg Nelson, and Keith Randall.
+Denali: A goal-directed superoptimizer.
+SIGPLAN Not. , 37(5):304–314, May 2002.
+URL: http://doi.acm.org/10.1145/543552.512566 , doi:10.1145/543552.512566 .
+[16]
+Donald E. Knuth.
+A generalization of dijkstra’s algorithm.
+Inf. Process. Lett. , 6(1):1–5, 1977.
+doi:10.1016/0020-0190(77)90002-3 .
+[17]
+Dexter Kozen.
+On the myhill-nerode theorem for trees.
+Bulletin of the EATCS , 47:170–173, 1992.
+[18]
+Dexter Kozen.
+Partial Automata and Finitely Generated Congruences: An
+Extension of Nerode’s Theorem , pages 490–511.
+Birkhäuser Boston, Boston, MA, 1993.
+doi:10.1007/978-1-4612-0325-4_16 .
+[19]
+Bruno Marnette.
+Generalized schema-mappings: From termination to tractability.
+In Proceedings of the Twenty-Eighth ACM SIGMOD-SIGACT-SIGART
+Symposium on Principles of Database Systems , PODS ’09, page 13–22, New
+York, NY, USA, 2009. Association for Computing Machinery.
+doi:10.1145/1559795.1559799 .
+[20]
+Leonardo Moura and Nikolaj Bjørner.
+Efficient e-matching for smt solvers.
+In Proceedings of the 21st International Conference on Automated
+Deduction: Automated Deduction , CADE-21, page 183–198, Berlin, Heidelberg,
+2007. Springer-Verlag.
+URL: https://doi.org/10.1007/978-3-540-73595-3_13 , doi:10.1007/978-3-540-73595-3\_13 .
+[21]
+Chandrakana Nandi, Max Willsey, Adam Anderson, James R. Wilcox, Eva Darulova,
+Dan Grossman, and Zachary Tatlock.
+Synthesizing structured CAD models with equality saturation and
+inverse transformations.
+In Proceedings of the 41st ACM SIGPLAN Conference on Programming
+Language Design and Implementation , PLDI 2020, page 31–44, New York, NY,
+USA, 2020. Association for Computing Machinery.
+doi:10.1145/3385412.3386012 .
+[22]
+Paliath Narendran, Colm Ó’Dúnlaing, and Heinrich Rolletschek.
+Complexity of certain decision problems about congruential languages.
+Journal of Computer and System Sciences , 30(3):343–358, 1985.
+URL:
+https://www.sciencedirect.com/science/article/pii/0022000085900510 ,
+doi:https://doi.org/10.1016/0022-0000(85)90051-0 .
+[23]
+Charles Gregory Nelson.
+Techniques for Program Verification .
+PhD thesis, Stanford University, Stanford, CA, USA, 1980.
+AAI8011683.
+[24]
+Hung Q. Ngo, Christopher Ré, and Atri Rudra.
+Skew strikes back: new developments in the theory of join algorithms.
+SIGMOD Rec. , 42(4):5–16, 2013.
+doi:10.1145/2590989.2590991 .
+[25]
+Pavel Panchekha, Alex Sanchez-Stern, James R. Wilcox, and Zachary Tatlock.
+Automatically improving accuracy for floating point expressions.
+SIGPLAN Not. , 50(6):1–11, June 2015.
+doi:10.1145/2813885.2737959 .
+[26]
+Maximilian Schleich, Amir Shaikhha, and Dan Suciu.
+Optimizing tensor programs on flexible storage, 2022.
+URL: https://arxiv.org/abs/2210.06267 , doi:10.48550/ARXIV.2210.06267 .
+[27]
+Wayne Snyder.
+A fast algorithm for generating reduced ground rewriting systems from
+a set of ground equations.
+J. Symb. Comput. , 15(4):415–450, apr 1993.
+doi:10.1006/jsco.1993.1029 .
+[28]
+Ross Tate, Michael Stepp, Zachary Tatlock, and Sorin Lerner.
+Equality saturation: A new approach to optimization.
+In Proceedings of the 36th Annual ACM SIGPLAN-SIGACT Symposium
+on Principles of Programming Languages , POPL ’09, pages 264–276, New York,
+NY, USA, 2009. ACM.
+URL: http://doi.acm.org/10.1145/1480881.1480915 , doi:10.1145/1480881.1480915 .
+[29]
+Alexa VanHattum, Rachit Nigam, Vincent T. Lee, James Bornholt, and Adrian
+Sampson.
+Vectorization for Digital Signal Processors via Equality
+Saturation , page 874–886.
+Association for Computing Machinery, New York, NY, USA, 2021.
+URL: https://doi.org/10.1145/3445814.3446707 .
+[30]
+Yisu Remy Wang, Shana Hutchison, Jonathan Leang, Bill Howe, and Dan Suciu.
+SPORES: Sum-product optimization via relational equality saturation
+for large scale linear algebra.
+Proceedings of the VLDB Endowment , 2020.
+[31]
+Yisu Remy Wang, Mahmoud Abo Khamis, Hung Q Ngo, Reinhard Pichler, and Dan
+Suciu.
+Optimizing recursive queries with program synthesis.
+arXiv preprint arXiv:2202.10390 , 2022.
+[32]
+Max Willsey, Chandrakana Nandi, Yisu Remy Wang, Oliver Flatt, Zachary Tatlock,
+and Pavel Panchekha.
+Egg: Fast and extensible equality saturation.
+Proc. ACM Program. Lang. , 5(POPL), jan 2021.
+doi:10.1145/3434304 .
+[33]
+Yichen Yang, Phitchaya Mangpo Phothilimtha, Yisu Remy Wang, Max Willsey, Sudip
+Roy, and Jacques Pienaar.
+Equality saturation for tensor graph superoptimization.
+In Proceedings of Machine Learning and Systems , 2021.
+arXiv:2101.01332 .
+[34]
+Yihong Zhang, Yisu Remy Wang, Oliver Flatt, David Cao, Philip Zucker, Eli
+Rosenthal, Zachary Tatlock, and Max Willsey.
+Better together: Unifying datalog and equality saturation.
+Proc. ACM Program. Lang. , 7(PLDI), jun 2023.
+doi:10.1145/3591239 .
+[35]
+Yihong Zhang, Yisu Remy Wang, Max Willsey, and Zachary Tatlock.
+Relational e-matching.
+Proc. ACM Program. Lang. , 6(POPL), jan 2022.
+doi:10.1145/3498696 .
+Appendix A Proof basic properties of E-graphs and EqSat
+A.1 Proof for 6
+See 6
+Proof A.10 .
+Suppose 𝒜 = ⟨ Q , Σ , Q final , Δ ⟩ \mathcal{A}=\langle Q,\Sigma,Q_{\textit{final}},\Delta\rangle and let L = ⋃ { ℒ ⁡ ( c ) ∣ c ∈ 𝒜 } L=\bigcup\{\mathcal{L}(c)\mid c\in\mathcal{A}\} , the set of terms represented by any state of 𝒜 \mathcal{A} .
+Define ( ≈ L ) ⊆ L × L (\approx_{L})\subseteq L\times L
+as the smallest equivalence relation satisfying
+t 1 ≈ L t 2 t_{1}\approx_{L}t_{2} if some state c c accepts both t 1 t_{1} and t 2 t_{2} .
+Let C C be the set of equivalence classes of ≈ L \approx_{L} .
+Let
+N = { f ( [ t 1 ] ≈ L , … , [ t k ] ≈ L → [ f ( t 1 , … , t k ) ] ≈ L ) ∣ f ( t 1 , … , t k ) ∈ L } . N=\{{f([t_{1}]_{\approx_{L}},\ldots,[t_{k}]_{\approx_{L}}\rightarrow[f(t_{1},\ldots,t_{k})]_{\approx_{L}})}\mid{f(t_{1},\ldots,t_{k})\in L}\}.
+We claim that G = ⟨ C , Σ , N ⟩ G=\langle C,\Sigma,N\rangle is such an E-graph.
+G G is an E-graph as we can show G G is deterministic and reachable.
+We can also show that
+if two terms t 1 t_{1} and t 2 t_{2} are accepted by the same state of 𝒜 \mathcal{A} ,
+it holds that t 1 ≈ L t 2 t_{1}\approx_{L}t_{2} ,
+and that if two terms t 1 ≈ L t 2 t_{1}\approx_{L}t_{2} ,
+t 1 t_{1} and t 2 t_{2} are accepted by the same E-class of G G .
+Therefore,
+terms accepted by the same state of 𝒜 \mathcal{A} are accepted by the same E-class of G G .
+Denote this mapping h h .
+It can be shown that h h is a homomorphism from 𝒜 \mathcal{A} and G G .
+Let G ′ G^{\prime} be another E-graph and u u be a homomorphism from 𝒜 \mathcal{A} to G ′ G^{\prime} .
+We need to show there is a homomorphism from G G to G ′ G^{\prime} .
+This can be done by noticing that
+if t 1 ≈ L t 2 t_{1}\approx_{L}t_{2} , t 1 t_{1} and t 2 t_{2} are accepted by the same E-class of G ′ G^{\prime} .
+We can then define h ′ ( [ t ] ≈ L ) = c h^{\prime}([t]_{\approx_{L}})=c where t t is accepted by c c in G ′ G^{\prime}
+and show h ′ h^{\prime} is a homomorphism from G G to G ′ G^{\prime} .
+The uniqueness of G G follows from the anti-symmetry of ⊑ \sqsubseteq .
+A.2 Proof for 7
+See 7
+Proof A.11 .
+G i ⊑ G G_{i}\sqsubseteq G since there is an identity homomorphism from G i G_{i} to 𝒜 ⊔ \mathcal{A}_{\sqcup}
+and a homomorphism, denoted as h CC h_{\textsf{CC}} , from 𝒜 ⊔ \mathcal{A}_{\sqcup} to G G by 6 .
+Next, we show if G ′ G^{\prime} is an E-graph such that ∀ i . G i ⊑ G ′ \forall i.G_{i}\sqsubseteq G^{\prime} ,
+G ⊑ G ′ G\sqsubseteq G^{\prime} .
+Denote the homomorphism from G i G_{i} to G ′ G^{\prime} as h i h_{i} .
+There is a homomorphism from 𝒜 ⊔ \mathcal{A}_{\sqcup} to G ′ G^{\prime} ,
+defined by h ​ ( c ) = h i ​ ( c ) h(c)=h_{i}(c) for c c is an E-class of G i G_{i} .
+By 6 ,
+there is a homomorphism h ′ h^{\prime} from G G to G ′ G^{\prime} .
+A.3 Proof for 9
+See 9
+Proof A.12 .
+By definition, H H is a model of ℛ , G {\mathcal{R}},G iff
+G ⊑ H G\sqsubseteq H and H H is a fixpoint of ICO ℛ \textsf{ICO}_{{\mathcal{R}}} .
+Therefore, it suffices to prove that
+H = def ⨆ i ≥ 0 ICO ℛ ( i ) ​ ( G ) H\stackrel{{\scriptstyle\text{def}}}{{=}}\bigsqcup_{i\geq 0}\textsf{ICO}_{{\mathcal{R}}}^{(i)}(G) is the least
+fixpoint. We first prove that H H is a fixpoint.
+H ⊑ ICO ℛ ​ ( H ) H\sqsubseteq\textsf{ICO}_{{\mathcal{R}}}(H) since ICO ℛ \textsf{ICO}_{{\mathcal{R}}} is inflationary,
+so we prove the opposite. Apply definition of T ℛ T_{{\mathcal{R}}} ,
+T ℛ ​ ( H ) = H ∪ ( ⋃ FL ) T_{{\mathcal{R}}}(H)=H\cup(\bigcup\textsf{FL}) , where ⋃ FL \bigcup\textsf{FL}
+abbreviates the union of E-matches into H H . Since ℛ {\mathcal{R}} is finite
+and every E-match σ : Var ​ ( lhs ) → Q \sigma:\textit{{Var}}(\textit{lhs})\rightarrow Q uses a finite
+number of states, there exists an i i such that all E-matches use
+only the states of ICO ℛ ( i ) ​ ( G ) \textsf{ICO}_{{\mathcal{R}}}^{(i)}(G) . This implies
+( ⋃ FL ) ⊑ ICO ℛ ( i ) ​ ( G ) ⊑ H (\bigcup\textsf{FL})\sqsubseteq\textsf{ICO}_{{\mathcal{R}}}^{(i)}(G)\sqsubseteq H ,
+proving that T ℛ ​ ( H ) ⊑ H T_{{\mathcal{R}}}(H)\sqsubseteq H . It follows that
+ICO ℛ ​ ( H ) = CC ​ ( T ℛ ​ ( H ) ) ⊑ CC ​ ( H ) = H \textsf{ICO}_{{\mathcal{R}}}(H)=\textsf{CC}(T_{{\mathcal{R}}}(H))\sqsubseteq\textsf{CC}(H)=H
+because H H is deterministic. Thus, H H is a fixpoint. We prove
+that it is the least: let H ′ H^{\prime} be another fixpoint. We use
+induction on i i to prove ICO ℛ ( i ) ​ ( G ) ⊑ H ′ \textsf{ICO}_{{\mathcal{R}}}^{(i)}(G)\sqsubseteq H^{\prime} :
+assuming this holds for i i , we derive
+ICO ℛ ​ ( ICO ℛ ( i ) ​ ( G ) ) ⊑ ICO ℛ ​ ( H ′ ) = H ′ \textsf{ICO}_{{\mathcal{R}}}(\textsf{ICO}_{{\mathcal{R}}}^{(i)}(G))\sqsubseteq\textsf{ICO}_{{\mathcal{R}}}(H^{\prime})=H^{\prime}
+thus it holds for i + 1 i+1 . Therefore
+H = ⨆ i ≥ 0 ICO ℛ ( i ) ​ ( G ) ⊑ H ′ H=\bigsqcup_{i\geq 0}\textsf{ICO}_{{\mathcal{R}}}^{(i)}(G)\sqsubseteq H^{\prime} ,
+completing the proof.
+Appendix B Proof for the finite convergence lemma
+See 14
+Proof B.13 .
+For the sake of contradiction we assume 𝒢 \mathcal{G} is infinite.
+Let us first the define the rank of an E-class as follows.
+rank G ​ ( c ) \displaystyle\textit{rank}_{G}(c)
+= min ( f ⁡ ( c 1 , … , c n ) → c ) ∈ N ⁡ rank G ​ ( f ⁡ ( c 1 , … , c n ) ) \displaystyle=\min_{\left(f\left(c_{1},\ldots,c_{n}\right)\rightarrow c\right)\in N}\textit{rank}_{G}(f(c_{1},\ldots,c_{n}))
+rank G ​ ( f ⁡ ( c 1 , … , c n ) ) \displaystyle\textit{rank}_{G}(f(c_{1},\ldots,c_{n}))
+= 1 + max ⁡ { 0 , rank G ​ ( c 1 ) , … ​ rank G ​ ( c n ) } \displaystyle=1+\max\{0,\textit{rank}_{G}(c_{1}),\ldots\textit{rank}_{G}(c_{n})\}
+Intuitively, the rank of an E-class is the smallest depth of the terms represented by this E-class.
+By E-graph’s reachability, every E-class has a finite rank.
+We define the rank of an E-graph as the greatest rank of its E-classes.
+Some observations about E-graph ranks:
+{fac}
+Every finite E-graph has a finite rank.
+{fac}
+The set of E-graphs with a bounded rank is finite. 8 8
+8
+To see this, E-graph rank bounds the number of E-classes an E-graph can have.
+{fac}
+Ranks only decrease:
+Let G G and H H be two E-graphs and h : G → H h:G\rightarrow H a homomorphism.
+rank G ​ ( c ) ≥ rank H ​ ( h ⁡ ( c ) ) \textit{rank}_{G}(c)\geq\textit{rank}_{H}(h(c)) .
+Let us denote the homomorphism between G i G_{i} and G j G_{j} as h i , j h_{i,j} for all i ≤ j i\leq j ,
+and the homomorphism between G i G_{i} and G ∞ G_{\infty} as h i , ∞ h_{i,\infty} .
+Since G ∞ G_{\infty} is finite, denote its rank as N N .
+We sat a homomorphism h : G → H h:G\rightarrow H is Union N \textit{Union}_{N} if there exist
+two E-classes c 1 c_{1} and c 2 c_{2} such that
+rank G ​ ( c 1 ) ≤ N \textit{rank}_{G}(c_{1})\leq N , rank G ​ ( c 2 ) ≤ N \textit{rank}_{G}(c_{2})\leq N ,
+and h ⁡ ( c 1 ) = h ⁡ ( c 2 ) h(c_{1})=h(c_{2}) .
+In other words, H H “unions” two E-classes with rank ≤ N \leq N of G G .
+We claim there exists some lower bound M M such that for all M ≤ i ≤ j M\leq i\leq j , h i , j h_{i,j} is not Union N \textit{Union}_{N} .
+This is because every Union N \textit{Union}_{N} homomorphism necessarily merges two equivalence classes with rank ≤ N \leq N ,
+and this cannot happen indefinitely because each such equivalence class need to be backed by a term with depth ≤ N \leq N , which is finite.
+Find a 1 > M a_{1}>M such that G a 1 G_{a_{1}} contains an E-class c 1 c_{1} with rank N + 1 N+1 .
+This is always possible by B.13 and
+the fact that any E-graph with rank > N >N must contain some E-classes with rank N + 1 N+1 .
+Let n 1 = f 1 ​ ( 𝐜 → 1 ) → c 1 n_{1}=f_{1}({\vec{\mathbf{c}}_{1}})\rightarrow c_{1} be an E-node of E-class c 1 c_{1}
+such that max i ⁡ rank G ​ ( ( 𝐜 1 → ) i ) ≤ N \max_{i}\textit{rank}_{G}(\left(\vec{\mathbf{c}_{1}}\right)_{i})\leq N .
+Since all E-classes of G ∞ G_{\infty} have rank ≤ N \leq N ,
+there must exist some b 1 > a 1 b_{1}>a_{1} such that
+h a 1 , b 1 ​ ( c ) h_{a_{1},b_{1}}(c) in G b 1 G_{b_{1}} has rank ≤ N \leq N .
+Next, find an a 2 > b 1 a_{2}>b_{1} such that G a 2 G_{a_{2}} contains an E-class c 2 c_{2} with rank N + 1 N+1 .
+Repeat the same process to obtain a sequence 𝒩 \mathcal{N} of
+E-nodes
+f 1 ​ ( 𝐜 → 1 ) → c 1 ∈ G a 1 \displaystyle f_{1}({\vec{\mathbf{c}}_{1}})\rightarrow c_{1}\quad\in\quad G_{a_{1}}
+f 2 ​ ( 𝐜 → 2 ) → c 2 ∈ G a 2 \displaystyle f_{2}({\vec{\mathbf{c}}_{2}})\rightarrow c_{2}\quad\in\quad G_{a_{2}}
+… \displaystyle\ldots\quad\quad
+that satisfies rank G a i ​ ( c i ) = N + 1 \textit{rank}_{G_{a_{i}}}(c_{i})=N+1 , max j ⁡ ( 𝐜 → i ) j ≤ N \max_{j}\left(\vec{\mathbf{c}}_{i}\right)_{j}\leq N ,
+and rank G b i ​ ( h ​ a i , b i ​ ( c i ) ) ≤ N \textit{rank}_{G_{b_{i}}}(h{a_{i},b_{i}}(c_{i}))\leq N .
+Note by B.13 ,
+it also holds that for all k > b i k>b_{i} , h a i , k ​ ( c i ) h_{a_{i},k}(c_{i}) also has rank ≤ N \leq N .
+For the rest of the proof, we claim that for all i i and j j , h a i , ∞ ​ ( f i ​ ( 𝐜 → i ) ) ≠ h a j , ∞ ​ ( f j ​ ( 𝐜 → j ) ) h_{a_{i},\infty}(f_{i}(\vec{\mathbf{c}}_{i}))\neq h_{a_{j},\infty}(f_{j}(\vec{\mathbf{c}}_{j})) ,
+which implies G ∞ G_{\infty} has infinitely many distinct E-classes as 𝒢 \mathcal{G} is infinite.
+This is a contradiction to the fact that G ∞ G_{\infty} is finite.
+To prove this claim, we assume i < j i<j without loss of generality.
+Observe that h a i , a j ​ ( c i ) h_{a_{i},a_{j}}(c_{i}) has rank ≤ N \leq N and c j c_{j} has rank N + 1 N+1 in G a j G_{a_{j}} ,
+so
+h a i , a j ​ ( c i ) ≠ c j . h_{a_{i},a_{j}}(c_{i})\neq c_{j}.
+By determinacy of E-graphs,
+h a i , a j ​ ( f i ​ ( 𝐜 → i ) ) ≠ f j ​ ( 𝐜 → j ) . h_{a_{i},a_{j}}(f_{i}(\vec{\mathbf{c}}_{i}))\neq f_{j}(\vec{\mathbf{c}}_{j}).
+Because E-classes in 𝐜 → i \vec{\mathbf{c}}_{i} and 𝐜 → j \vec{\mathbf{c}}_{j} has rank ≤ N \leq N ,
+it holds that for all k ≥ a j k\geq a_{j} ,
+h a j , k ​ ( h a i , a j ​ ( f i ​ ( 𝐜 → i ) ) ) ≠ h a j , k ​ ( f j ​ ( 𝐜 → j ) ) \displaystyle h_{a_{j},k}(h_{a_{i},a_{j}}(f_{i}(\vec{\mathbf{c}}_{i})))\neq h_{a_{j},k}(f_{j}(\vec{\mathbf{c}}_{j}))
+h a i , k ​ ( f i ​ ( 𝐜 → i ) ) ≠ h a j , k ​ ( f j ​ ( 𝐜 → j ) ) \displaystyle h_{a_{i},k}(f_{i}(\vec{\mathbf{c}}_{i}))\neq h_{a_{j},k}(f_{j}(\vec{\mathbf{c}}_{j}))
+since h a j , k h_{a_{j},k} is not Union N \textit{Union}_{N} .
+This inequality is preserved ad infinitum.
+By virtue of G ∞ G_{\infty} being the least upper bound,
+h a i , ∞ ​ ( f i ​ ( 𝐜 → i ) ) ≠ h a j , ∞ ​ ( f j ​ ( 𝐜 → j ) ) . h_{a_{i},\infty}(f_{i}(\vec{\mathbf{c}}_{i}))\neq h_{a_{j},\infty}(f_{j}(\vec{\mathbf{c}}_{j})).
+Appendix C Proof for the reductions between EqSat and the chase
+C.1 Proof for 16
+See 16
+r ⊤ : ⊤ → ∧ ( ⊤ , ⊤ ) r R : R ( x 1 , … , x n ) → ⊤ for relation symbol R ∈ σ r d : ∧ ( R 1 ​ ( x 1 → , y 1 → ) , … ) → ∧ ( R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) , … ) for dep. d : R 1 ​ ( x 1 → , y 1 → ) ∧ … → R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) ∧ … ∈ Γ r t : ⊤ → R ( c 1 , … , c n ) for initial tuple t = R ⁡ ( c 1 , … , c n ) ∈ I \begin{array}[]{ccr}r_{\boldsymbol{\top}}:&\ \boldsymbol{\top}\rightarrow\boldsymbol{\land}(\boldsymbol{\top},\boldsymbol{\top})\\
+r_{R}:&\ R(x_{1},\ldots,x_{n})\rightarrow\boldsymbol{\top}&\text{for relation symbol $R\in\sigma$}\\
+r_{d}:&\ \begin{array}[]{@{}l@{}}\boldsymbol{\land}\left(R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right),\ldots\right)\rightarrow\\
+\boldsymbol{\land}\left(R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right),\ldots\right)\end{array}&\text{for dep.~
+$d:\begin{array}[]{c}R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right)\land\ldots\rightarrow\\
+R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right)\land\ldots\end{array}\in\Gamma$}\\
+r_{t}:&\ \boldsymbol{\top}\rightarrow R(c_{1},\ldots,c_{n})&\text{for initial tuple $t=R(c_{1},\ldots,c_{n})\in I$}\end{array}
+Figure 5 : A summary of encoded rewrite rules in 16
+for the given Γ \Gamma and I I . The initial term to equality saturation is ⊤ \boldsymbol{\top} .
+Proof C.14 .
+Denote G = EqSat ​ ( ℛ , t ) G=\textsc{EqSat}({\mathcal{R}},t) and I = SklCh ​ ( Γ , I ) I=\textsc{SklCh}(\Gamma,I) .
+Denote the E-class of G G that represents ⊤ \boldsymbol{\top} as c ⊤ c_{\boldsymbol{\top}} .
+We show the following holds between G G and I I :
+A tuple R ⁡ ( c 1 , … , c n ) R(c_{1},\ldots,c_{n}) is in I I if and only if
+R ⁡ ( c 1 , … , c n ) R(c_{1},\ldots,c_{n}) is represented by G G ,
+where R R is a function symbol in Σ \Sigma
+and c 1 , … , c n c_{1},\ldots,c_{n} are Skolem terms or constants.
+•
+⇒ \Rightarrow : We prove by induction on
+the iteration of applying match/apply operator T ℛ T_{\mathcal{R}} when a tuple is first derived in I I .
+–
+Base case: this is clear from Figure 3 .
+Denote the E-graph after applying the first iteration of equality saturation as
+G 1 G_{1} .
+In the first iteration of equality saturation,
+rules that are applied are ⊤ → ∧ ( ⊤ , ⊤ ) \boldsymbol{\top}\rightarrow\boldsymbol{\land}(\boldsymbol{\top},\boldsymbol{\top}) and
+⊤ → R ( c 1 , … , c n ) \boldsymbol{\top}\rightarrow R(c_{1},\ldots,c_{n}) for each tuple in the initial database,
+so every tuple R ⁡ ( c 1 , … , c n ) R(c_{1},\ldots,c_{n}) in the input database is represented G 1 G_{1} .
+Since G 1 ⊑ G G_{1}\sqsubseteq G , every tuple is also represented by G G .
+–
+Inductive case:
+Assume a tuple R i ​ ( h ⁡ ( x i ′ → ) , h ⁡ ( f z d → i ) ) R_{i}(h(\vec{x^{\prime}_{i}}),h(\vec{f^{d}_{z}}_{i})) is produced at the n n -th iteration of T ℛ T_{\mathcal{R}}
+by dependency
+d : R 1 ​ ( x 1 → , y 1 → ) ∧ … ∧ R n ​ ( x n → , y n → ) → R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) ∧ … ∧ R m ′ ​ ( x m ′ → , f z d → m ) d:\ R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right)\land\ldots\land R_{n}\left(\vec{x_{n}},\vec{y_{n}}\right)\rightarrow R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right)\land\ldots\land R^{\prime}_{m}\left(\vec{x^{\prime}_{m}},\vec{f^{d}_{z}}_{m}\right)
+and substitution h h .
+By inductive hypothesis, every tuple R i ​ ( h ⁡ ( x i → ) , h ⁡ ( y i → ) ) R_{i}(h(\vec{x_{i}}),h(\vec{y_{i}}))
+in the substituted body of d d is also represented by c ⊤ c_{\boldsymbol{\top}} of G G .
+It is straightforward to see that G G contains E-nodes ⊤ → c ⊤ \boldsymbol{\top}\rightarrow c_{\boldsymbol{\top}} and
+∧ ( ⊤ , ⊤ ) → c ⊤ \boldsymbol{\land}(\boldsymbol{\top},\boldsymbol{\top})\rightarrow c_{\boldsymbol{\top}} .
+As a result,
+∧ ( R 1 ( h ( x 1 → ) , h ( y 1 → ) ) , … , ∧ ( R n ( h ( x n → ) , h ( y n → ) ) , ⊤ ) ) → ∗ \displaystyle\boldsymbol{\land}\left(R_{1}\left(h\left(\vec{x_{1}}\right),h\left(\vec{y_{1}}\right)\right),\ldots,\boldsymbol{\land}\left(R_{n}\left(h\left(\vec{x_{n}}\right),h\left(\vec{y_{n}}\right)\right),\boldsymbol{\top}\right)\right)\rightarrow^{*}
+∧ ( c ⊤ , … , ∧ ( c ⊤ , c ⊤ ) ) \displaystyle\boldsymbol{\land}\left(c_{\boldsymbol{\top}},\ldots,\boldsymbol{\land}\left(c_{\boldsymbol{\top}},c_{\boldsymbol{\top}}\right)\right)
+→ ∗ \displaystyle\rightarrow^{*}
+c ⊤ \displaystyle\;c_{\boldsymbol{\top}}
+Therefore, to reach fixpoint,
+equality saturation would also add the substituted right-hand side
+∧ ( R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) , … , ∧ ( R m ′ ​ ( x m ′ → , f z d → m ) , ⊤ ) ) \boldsymbol{\land}\left(R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right),\ldots,\boldsymbol{\land}\left(R^{\prime}_{m}\left(\vec{x^{\prime}_{m}},\vec{f^{d}_{z}}_{m}\right),\boldsymbol{\top}\right)\right)
+to c ⊤ c_{\boldsymbol{\top}} .
+Similarly, equality saturation would fire series of rules of the form r R : R ( x 1 , … , x n ) → ⊤ r_{R}:R(x_{1},\ldots,x_{n})\rightarrow\boldsymbol{\top} ,
+so R i ​ ( h ⁡ ( x i ′ → ) , h ⁡ ( f z d → i ) ) R_{i}(h(\vec{x^{\prime}_{i}}),h(\vec{f^{d}_{z}}_{i})) would be represented by c ⊤ c_{\boldsymbol{\top}} of G G .
+•
+⇐ \Leftarrow :
+It can be shown that every term R ⁡ ( c → ) R(\vec{c}) that is inserted into the E-graph at iteration n n
+will be unioned with the c ⊤ c_{\boldsymbol{\top}} at iteration n + 1 n+1 .
+Therefore, we only need to show that for every term R ⁡ ( c → ) R(\vec{c}) represented by some E-class of G G ,
+R ⁡ ( c → ) R(\vec{c}) is in I I .
+Similar to the first case,
+let us prove by inducting on the first time a R R -term R ⁡ ( c → ) R(\vec{c}) is inserted into the E-graph.
+–
+Base case: At iteration 1, all terms R ⁡ ( c 1 , … , c n ) R(c_{1},\ldots,c_{n}) inserted correspond to tuples from the initial database.
+–
+Inductive case: Suppose at iteration i > 1 i>1 , a R R -term R ​ ( c → ) ​ [ σ ] R(\vec{c})[\sigma] is inserted into the E-graph
+because of some rewrite rule r r and E-class substitution σ \sigma .
+By definition, the rewrite rule r r has to be of the form
+r d : ∧ ( R 1 ​ ( x 1 → , y 1 → ) , … ) → ∧ ( R 1 ′ ​ ( x 1 ′ → , f z d → 1 ) , … ) . r_{d}:\boldsymbol{\land}\left(R_{1}\left(\vec{x_{1}},\vec{y_{1}}\right),\ldots\right)\rightarrow\boldsymbol{\land}\left(R^{\prime}_{1}\left(\vec{x^{\prime}_{1}},\vec{f^{d}_{z}}_{1}\right),\ldots\right).
+By inductive hypothesis,
+all tuples R i ​ ( c i → ) R_{i}(\vec{c_{i}}) represented by R i ​ ( x i → , y i → ) ​ [ σ ] R_{i}(\vec{x_{i}},\vec{y_{i}})[\sigma] are in I I ,
+so the dependency that r r is mapped from would be fired and
+tuples represented by R ​ ( c → ) ​ [ σ ] R(\vec{c})[\sigma] are added to I I .
+Next, we show that the Skolem chase terminates if and only if equality saturation terminates:
+if equality saturation terminates,
+an E-graph with a finite number of transitions is produced,
+so the mapped database is finite.
+Since the Skolem chase monotonically adds tuples to the database,
+the Skolem chase has to terminate as well.
+On the other hand, if the Skolem chase is finite,
+the produced E-graph needs to be finite as well,
+since it only contains ⊤ → c ⊤ \boldsymbol{\top}\rightarrow c_{\boldsymbol{\top}}
+and ∧ ( ⊤ , ⊤ ) → c ⊤ \boldsymbol{\land}(\boldsymbol{\top},\boldsymbol{\top})\rightarrow c_{\boldsymbol{\top}}
+besides E-nodes that are in one-to-one correspondence with the databases.
+By 14 , equality saturation terminates as well.
+C.2 Proof for 17
+See 17
+To prove this theorem, we show the following lemma. Recall that a database is a core
+if every homomorphism from the database to itself is an isomorphism.
+Two homomorphically equivalent cores are isomorphic.
+Lemma 21 .
+Given a set of rewrite rules Σ \Sigma ,
+let I I be a database instance that encodes an E-graph
+and Γ \Gamma be a set of dependencies encoding EqSat of Σ \Sigma , both using the encoding in subsection 4.3 .
+Suppose I k I_{k} is a database obtained after a finite number of chase steps of Γ \Gamma and I I .
+If I k I_{k} is closed under the EGD subset of Γ \Gamma , I k I_{k} is a core database instance.
+Consider the tree automaton 𝒜 \mathcal{A} encoded by I k I_{k} .
+Because I k I_{k} is closed under EGDs, 𝒜 \mathcal{A} is deterministic.
+Since every dependency of Σ \Sigma preserves reachability of the encoded E-graph,
+𝒜 \mathcal{A} is reachable, so 𝒜 \mathcal{A} is an E-graph.
+Therefore, 𝒜 \mathcal{A} is a core tree automaton.
+The definition of homomorphisms is preserved under our encoding,
+so the only homomorphism from I k I_{k} to I k I_{k} is the identity mapping.
+Therefore I k I_{k} is a core.
+Corollary 22 .
+Fix Σ \Sigma , I I , Γ \Gamma as above.
+Let I ∞ I_{\infty} be the result of a (potentially non-terminating) chase sequence of Σ \Sigma and I I .
+I ∞ I_{\infty} is a core database instance.
+I ∞ I_{\infty} is closed under the EGD subset of Γ \Gamma . By the above lemma we only need to consider
+the case where I ∞ I_{\infty} is the result of a non-terminating chase.
+Since I ∞ I_{\infty} is closed under the EGDs, it encodes a deterministic tree automaton 𝒜 \mathcal{A} .
+Suppose for the sake of contradiction that 𝒜 \mathcal{A} is not reachable,
+with some state q q that does not accept any term.
+There must exist a finite number m m where q q stays unreachable for all ≥ m \geq m iterations.
+However, this is impossible, since the head of each dependency of Γ \Gamma preserves reachability.
+Proof C.15 (Proof of 17 ) .
+We use the encoding in subsection 4.3 and
+treat every tuple R f ​ ( c 1 , … , c n , c ) R_{f}(c_{1},\ldots,c_{n},c) as an E-node f ⁡ ( c 1 , … , c n ) → c f(c_{1},\ldots,c_{n})\rightarrow c
+in an E-graph.
+It is straightforward to see that every insertion of the match/apply operator
+corresponds to a chase step of some TGD (EGD if rhs is a single-variable)
+of the above the encoding,
+and every merge by CC corresponds to a chase step of some FD.
+Therefore, a terminating run of equality saturation
+corresponds to a terminating chase sequence ((1) ⟹ \implies (2)).
+Denote this chase sequence as the EqSat-encoding chase sequence ℐ EqSat \mathcal{I}_{\textsc{EqSat}} .
+and the resulting database is isomorphic to the E-graph (when encoded as a database).
+Suppose there is a terminating chase sequence that produces some database instance I I .
+By our lemma I I is core.
+Let J J be the database instance produced by ℐ EqSat \mathcal{I}_{\textsc{EqSat}} .
+J J is also a core, since it encodes an E-graph.
+Because I I and J J are both universal models, they are homomorphically equivalent.
+Homomorphically equivalent cores are isomorphic, I I and J J has to be isomorphic.
+Since I I is finite, J J is also finite.
+By 14 ,
+equality saturation also terminates ((2) ⟹ \implies (1)).
+The fact that (3) ⟹ \implies (1) is obvious,
+since ℐ EqSat \mathcal{I}_{\textsc{EqSat}} is EGD-fair.
+To show (1) ⟹ \implies (3),
+let 𝒥 : J 0 , J 1 ​ … \mathcal{J}:J_{0},J_{1}\ldots be an arbitrary
+EGD-fair chase sequence with result J ∞ J_{\infty} ,
+and consider the EqSat-encoding chase sequence ℐ EqSat : I 0 , … , I n \mathcal{I}_{\textsc{EqSat}}:I_{0},\ldots,I_{n} .
+We claim that for all i i , there exists a finite j j such that
+there is a homomorphism from I i I_{i} to J j J_{j} and J j J_{j} is closed under EGDs.
+This can be proved by induction on i i .
+The case for i = 0 i=0 holds trivially.
+Suppose I i ⊑ J j I_{i}\sqsubseteq J_{j} for some j j . The fact that
+some j ′ j^{\prime} exists such that there is a homomorphism from I i + 1 I_{i+1} to J j ′ J_{j^{\prime}}
+follows from fairness of chase sequences.
+With EGD-fairness, it is then possible to find another j ′′ > j ′ j^{\prime\prime}>j^{\prime}
+such that J j ′′ J_{j^{\prime\prime}} is closed under EGDs and J j ⊑ J j ′ ⊑ J j ′′ J_{j}\sqsubseteq J_{j^{\prime}}\sqsubseteq J_{j^{\prime\prime}} .
+As a result, some m m exists such that
+there is a homomorphism from I n I_{n} to J m J_{m} .
+There is also a homomorphism from J m J_{m} to J ∞ J_{\infty}
+from the chase sequence and a homomorphism from J ∞ J_{\infty} to I n I_{n}
+since J ∞ J_{\infty} is a universal model.
+By our lemma I n I_{n} , J m J_{m} , J ∞ J_{\infty} are all core models.
+Since they are homomorphically equivalent, they have to be isomorphic.
+so J m J_{m} and J ∞ J_{\infty} coincide.
+Therefore, The chase sequence 𝒥 : J 0 , J 1 , … , J m \mathcal{J}:J_{0},J_{1},\ldots,J_{m} stops in m m steps
+((1) ⟹ \implies (3)).
+It is left to show that if EqSat terminates, any arbitrary chase sequence,
+terminating or not, has result
+isomorphic to the output of equality saturation.
+This can be shown similarly by noticing that J ∞ J_{\infty}
+is a core model and homomorphically equivalent to the result of EqSat,
+so they have to be isomorphic.
+Appendix D Proof for the termination theorems
+Before we proceed to the proofs, let us complement the backgrounds on term rewriting system.
+Given a term rewriting system ℛ {\mathcal{R}} , a normal form is a term that cannot be rewritten any further.
+We say n n is a normal form of t t if t t reduces to n n and n n is a normal form.
+A TRS ℛ {\mathcal{R}} is terminating if there is no infinite rewriting chain t 1 → ℛ t 2 → … t_{1}\rightarrow_{{\mathcal{R}}}t_{2}\rightarrow\ldots .
+A TRS ℛ {\mathcal{R}} is confluent if for all t , t 1 , t 2 t,t_{1},t_{2} ,
+t 1 ← ℛ ∗ t → ℛ ∗ t 2 t_{1}\leftarrow_{{\mathcal{R}}}^{*}t\rightarrow_{{\mathcal{R}}}^{*}t_{2} implies there exists a t ′ t^{\prime} such that t 1 → ℛ ∗ t ′ ← ℛ ∗ t 2 t_{1}\rightarrow_{{\mathcal{R}}}^{*}t^{\prime}\leftarrow_{{\mathcal{R}}}^{*}t_{2} .
+We call a confluent and terminating TRS convergent .
+Every term in a terminating TRS has at least one normal form,
+every term in a confluent TRS has at most one normal form,
+and every term in a convergent TRS has exactly one normal form.
+D.1 Proof for 18 and 19
+See 18
+This problem is in R.E. since we can simply run
+EqSat with ℛ {\mathcal{R}} and t t to test whether it terminates. To show this
+problem is R.E.-hard, we reduce the halting problem of Turing
+machines to the termination of EqSat. The proof follows that of
+Narendran et al. [ 22 ] .
+In this proof, we consider a degenerate form of EqSat that works with
+string rewriting systems instead of TRS. A string can be viewed as a degenerate term, and a string rewriting rule
+can be viewed as
+a degenerate term rewriting rule. For example, the string u ​ v ​ w uvw corresponds to a term
+u ⁡ ( v ⁡ ( w ⁡ ( ϵ ) ) ) u(v(w(\epsilon))) , where u , v , w u,v,w are unary
+functions and ϵ \epsilon is a special constant marking the end of a string.
+A string rewriting rule
+u ​ v ​ w → v ​ u ​ w uvw\rightarrow vuw corresponds to a (linear) term rewriting rule
+u ⁡ ( v ⁡ ( w ⁡ ( x ) ) ) → v ⁡ ( u ⁡ ( w ⁡ ( x ) ) ) u(v(w(x)))\rightarrow v(u(w(x))) where x x is a variable.
+For each Turing machine
+ℳ \mathcal{M} , we produce a string rewriting system ℛ {\mathcal{R}} such that
+the congruence closure of R R ,
+( ≈ ℛ ) (\approx_{\mathcal{R}}) , satisfies that each
+congruent class of ≈ ℛ \approx_{\mathcal{R}} corresponds to a trace of the Turing
+machine. As a result, informally, the following statements are equivalent:
+1.
+the Turing machine halts;
+2.
+the trace of the Turing machine is finite;
+3.
+the congruent class in ≈ ℛ \approx_{\mathcal{R}} is finite;
+4.
+EqSat terminates.
+A first simple idea is to encode the transition relation of a Turing machine
+directly as a string rewriting system,
+so that the congruence class of the initial configuration w 0 w_{0} contains the trace.
+For example, consider transition q i ​ a ​ b ​ R ​ q j q_{i}abRq_{j} ,
+which says if the current state if q i q_{i} and the symbol being scanned is a a , then write b b to the tape, move right, and change the state to q j q_{j} .
+It is tempting to encode this transition as a string rewriting rule
+q i a → ℛ b q j q_{i}a\rightarrow_{\mathcal{R}}bq_{j} .
+The issue, however, is that two different initial configurations
+can lead to the same configuration.
+For example, consider a Turing machine that clears its input and then halts.
+Every input string leads to the same configuration,
+so its termination on an input does not imply the finiteness of its congruent class.
+To address this issue, following Narendran et al. [ 22 ] ,
+we require the string rewrite rule not only encode the transition relation,
+but also stores the history of the computation.
+As a result, even if two different initial configurations lead to the same configuration,
+the rewritten strings that correspond to the same configuration are different,
+so different initial configurations lead to different congruent classes.
+More specifically,
+we introduce dummy symbols that stores states and symbols before transitions.
+Turing machine
+A Turing machine ℳ = ( Q , Σ , Π , Δ , q 0 , β ) \mathcal{M}=(Q,\Sigma,\Pi,\Delta,q_{0},\beta) consists of a set of states Q Q ,
+the input and the tape alphabet Σ \Sigma and Π \Pi (with Σ ⊆ Π \Sigma\subseteq\Pi ),
+a set of transitions Δ \Delta , an initial state q 0 ∈ Q q_{0}\in Q ,
+and a special blank symbol β ∈ Π \beta\in\Pi . Each transition in Δ \Delta is a quintuple in
+Q × Π × Π × { L , R } × Q Q\times\Pi\times\Pi\times\{L,R\}\times Q .
+For example, transition q i ​ a ​ b ​ R ​ q j q_{i}abRq_{j} means if the current state is q i q_{i} and the symbol
+being scanned is a a , then replace a a with b b , move the head to the right,
+and transit to state q j q_{j} .
+We assume the Turing machine is two-way infinite
+(so that the head can move in both directions indefinitely)
+and deterministic.
+Each configuration of ℳ \mathcal{M} can be represented as ⊳ u ​ q i ​ v ⊲ \rhd uq_{i}v\lhd ,
+where ⊳ \rhd , ⊲ \lhd are left and right end markers,
+u u is the string to the left of the read/write head
+q i q_{i} is the current state,
+v v is the string to the right.
+If v v is non-empty, the first character of v v is the symbol being scanned.
+Otherwise, the symbol being scanned is the blank symbol β \beta .
+We say w 1 ⊢ ℳ w 2 w_{1}\vdash_{\mathcal{M}}w_{2} if configuration w 1 w_{1} can transition
+to configuration w 2 w_{2} in a Turing machine ℳ \mathcal{M} , and we omit ℳ \mathcal{M} when it’s clear from the context.
+We say a configuration w w is halting configuration
+if it cannot be transited further.
+We say a configuration w w is mortal if there exists a finite sequence of configurations
+w = w 0 ⊢ w 1 ⊢ … ⊢ w n w=w_{0}\vdash w_{1}\vdash\ldots\vdash w_{n} such that w n w_{n} is a halting configuration.
+Alphabet of the constructed string rewriting system
+Compared to a direct encoding of the transition relation,
+the string rewriting system ℛ {\mathcal{R}} we construct has the following characteristics:
+•
+It distinguishes between symbols to the left and to the right of the current state:
+Define Π ¯ = { a ¯ ∣ a ∈ Π } \overline{\Pi}=\{{\overline{a}}\mid{a\in\Pi}\} as the alphabet used exclusively to the left of the state (and Π \Pi to the right).
+•
+We introduce new dummy symbol to store information about the states and symbols.
+Define D L = { L z ∣ z ∈ Π ¯ ∪ { ⊲ } ​ or ​ z ∈ { ⊳ } ∪ Π ¯ } D_{L}=\{{L_{z}}\mid{z\in\overline{\Pi}\cup\{\lhd\}\text{ or }z\in\{\rhd\}\cup\overline{\Pi}}\} and D R D_{R} similarly.
+Similar to Π ¯ \overline{\Pi} and Π \Pi , D L D_{L} (resp. D R D_{R} ) is
+used exclusively for dummy symbols to the left (resp. right) of the state symbol.
+•
+Similar to q i ∈ Q q_{i}\in Q , of which the symbol in Π \Pi to the immediate right
+is being scanned, we also define the “left” counterpart Q ¯ i = { q i ¯ ∣ q i ∈ Q i } \overline{Q}_{i}=\{{\overline{q_{i}}}\mid{q_{i}\in Q_{i}}\} ,
+where the symbol being scanned is to the immediate left of q i ¯ \overline{q_{i}} .
+For instance, in the string representation ⊳ u ​ a ​ q i ¯ ​ v ⊲ \rhd u\overline{aq_{i}}v\lhd , the current state is q i q_{i}
+and the symbol being scanned a a .
+In summary, the rewriting system we construct works over the following
+regular string language
+​ C ​ O ​ N ​ F ​ I ​ G = ⊳ ( Π ¯ ∪ D L ) ∗ ​ ( Q ∪ Q ¯ ) ​ ( Π ∪ D ℛ ) ∗ ⊲ \emph{CONFIG}{}=\rhd(\overline{\Pi}\cup D_{L})^{*}(Q\cup\overline{Q})(\Pi\cup D_{\mathcal{R}})^{*}\lhd
+Strings in CONFIG are in a many-to-one mapping to configurations
+of a Turing machine. We denote this mapping as π \pi : π ⁡ ( w ) \pi(w)
+converts each a ¯ ​ q i ¯ \overline{a}\overline{q_{i}} to q i ​ a q_{i}a
+(and ⊳ q i ¯ \rhd\overline{q_{i}} to ⊳ q i ​ β \rhd q_{i}\beta ),
+removes dummy
+symbols L z L_{z} and R z R_{z} , and replace a ¯ \overline{a} with a a . For
+example,
+π ⁡ ( ⊳ L q 0 , a ​ b ¯ ​ L q 1 , b ​ c ​ q 3 ¯ ​ d ​ R q i , ⊲ ⊲ ) = ⊳ b ​ q 3 ​ c ​ d ⊲ \pi(\rhd L_{q_{0},a}\overline{b}L_{q_{1},b}\overline{cq_{3}}dR_{q_{i},\lhd}\lhd)=\rhd bq_{3}cd\lhd
+Now, for each transitions in ℳ \mathcal{M} , our string
+rewriting system R R is defined in Figure 6 .
+transitions in ℳ rewrites in R q i ​ a ​ b ​ R ​ q j q i a → ℛ L q i , a b ¯ q j a ¯ q i ¯ → ℛ L a ¯ , q i ¯ b ¯ q j q i ​ β ​ b ​ R ​ q j q i ⊲ → ℛ L q i , ⊲ b ¯ q j ⊲ ⊳ q i ¯ → ℛ ⊳ L ⊳ , q i ¯ b ¯ q j q i ​ a ​ b ​ L ​ q j q i a → ℛ q j ¯ b R q i , a a ¯ q i ¯ → ℛ q j ¯ b R a ¯ , q i ¯ q i ​ β ​ b ​ L ​ q j q i ⊲ → ℛ q j ¯ b R q i , ⊲ ⊲ ⊳ q i ¯ → ℛ ⊳ q j ¯ b R ⊳ , q i ¯ ∪ for each z q i R z → ℛ L z L z q i L z q i ¯ → ℛ q i ¯ R z R z \begin{array}[]{|c|c|}\hline\cr\text{transitions in $\mathcal{M}$}&\text{rewrites in $R$}\\
+\hline\cr q_{i}abRq_{j}&q_{i}a\rightarrow_{\mathcal{R}}L_{q_{i},a}\overline{b}q_{j}\\
+&\overline{a}\overline{q_{i}}\rightarrow_{\mathcal{R}}L_{\overline{a},\overline{q_{i}}}\overline{b}q_{j}\\
+\hline\cr q_{i}\beta bRq_{j}&q_{i}\lhd\rightarrow_{\mathcal{R}}L_{q_{i},\lhd}\overline{b}q_{j}\lhd\\
+&\rhd\overline{q_{i}}\rightarrow_{\mathcal{R}}\rhd L_{\rhd,\overline{q_{i}}}\overline{b}q_{j}\\
+\hline\cr q_{i}abLq_{j}&q_{i}a\rightarrow_{\mathcal{R}}\overline{q_{j}}bR_{q_{i},a}\\
+&\overline{a}\overline{q_{i}}\rightarrow_{\mathcal{R}}\overline{q_{j}}bR_{\overline{a},\overline{q_{i}}}\\
+\hline\cr q_{i}\beta bLq_{j}&q_{i}\lhd\rightarrow_{\mathcal{R}}\overline{q_{j}}bR_{q_{i},\lhd}\lhd\\
+&\rhd\overline{q_{i}}\rightarrow_{\mathcal{R}}\rhd\overline{q_{j}}bR_{\rhd,\overline{q_{i}}}\\
+\hline\cr\end{array}\quad\cup\quad\begin{array}[]{|c|c|}\hline\cr\text{for each $z$}&q_{i}R_{z}\rightarrow_{\mathcal{R}}L_{z}L_{z}q_{i}\\
+&L_{z}\overline{q_{i}}\rightarrow_{\mathcal{R}}\overline{q_{i}}R_{z}R_{z}\\
+\hline\cr\end{array}
+Figure 6 : The string rewriting system R R derived from a Turing machine ℳ \mathcal{M} .
+It consists of two parts.
+The first part encodes each transition rule of ℳ \mathcal{M}
+as two rewrite rules, one for the case when the state symbol is q i ∈ Q q_{i}\in Q ,
+and one for the case when the state symbol is q i ¯ ∈ Q ¯ \overline{q_{i}}\in\overline{Q} .
+It also introduces dummy symbols to store the the source configuration of each transition.
+Moreover, for each z z , we have the two additional sets of
+rewrite rules
+q i ​ R z \displaystyle q_{i}R_{z}
+→ ℛ L z L z q i \displaystyle\rightarrow_{\mathcal{R}}L_{z}L_{z}q_{i}
+L z ​ q i ¯ \displaystyle L_{z}\overline{q_{i}}
+→ ℛ q i ¯ R z R z . \displaystyle\rightarrow_{\mathcal{R}}\overline{q_{i}}R_{z}R_{z}.
+They are used to ensure that the state symbol is adjacent to the symbol being scanned
+and shuffling dummy symbols around.
+To explain what these dummy symbol–shuffling rules do more precisely, let us define two types of strings of CONFIG .
+{dfn}
+Type-A strings are strings in CONFIG
+where the symbol being scanned is to the
+immediate right of q i q_{i} or to the immediate left of
+q i ¯ \overline{q_{i}} .
+In other words, we call a string s s a type-A
+string if s s contains q i ​ a q_{i}a or a ​ q i ¯ \overline{aq_{i}} .
+Type-B strings
+are strings in CONFIG that are not type-A.
+The rewrite
+rules above convert any type-B strings into type-A in a finite number of
+steps.
+Now, we observe that the string rewriting system R R we constructed above has several properties:
+1.
+Reverse convergence: the critical pair lemma states that if a
+rewriting system is terminating and all its critical pairs are
+convergent, it is convergent. Define R − 1 R^{-1} to be a string rewriting system derived
+from R R by swapping left- and right-hand side of each rewrite rule.
+R − 1 R^{-1} is
+terminating since rewrite rules in R − 1 R^{-1} decreases the sizes of
+terms, and R − 1 R^{-1} has no critical pairs. Therefore, R − 1 R^{-1} is
+convergent.
+2.
+For each type-A string w w , then either
+•
+there exists no w ′ w^{\prime} with w → ℛ w ′ w\rightarrow_{\mathcal{R}}w^{\prime} and π ⁡ ( w ) \pi(w) is
+a halting configuration;
+•
+there exists a unique w ′ w^{\prime} such that w → ℛ w ′ w\rightarrow_{\mathcal{R}}w^{\prime} .
+Moreover, it holds that
+w ′ ∈ ​ C ​ O ​ N ​ F ​ I ​ G w^{\prime}\in\emph{CONFIG} and π ⁡ ( w ) ⊢ π ⁡ ( w ′ ) \pi(w)\vdash\pi(w^{\prime}) .
+3.
+For each type-B string w w , there exists a unique w ′ w^{\prime} such that
+w → ℛ w ′ w\rightarrow_{\mathcal{R}}w^{\prime} . It holds that w ′ w^{\prime} is in CONFIG and π ⁡ ( w ) = π ⁡ ( w ′ ) \pi(w)=\pi(w^{\prime}) .
+Moreover, if
+w 0 → ℛ w 1 → ℛ … w_{0}\rightarrow_{\mathcal{R}}w_{1}\rightarrow_{\mathcal{R}}\ldots is a sequence of type-B
+strings, the sequence must be bounded in length, since the state
+symbols q i q_{i} and q i ¯ \overline{q_{i}} move towards one end according
+to the auxillary rules above.
+4.
+From 2 and 3, it follows that → ℛ \rightarrow_{\mathcal{R}} closed under
+​ C ​ O ​ N ​ F ​ I ​ G \emph{CONFIG}{} (i.e., w ∈ ​ C ​ O ​ N ​ F ​ I ​ G w\in\emph{CONFIG} and w → ℛ w ′ w\rightarrow_{\mathcal{R}}w^{\prime} implies w ′ ∈ ​ C ​ O ​ N ​ F ​ I ​ G w^{\prime}\in\emph{CONFIG} )
+and is deterministic over CONFIG (i.e.,
+w → ℛ w 1 w\rightarrow_{\mathcal{R}}w_{1} and w → ℛ w 2 w\rightarrow_{\mathcal{R}}w_{2} implies
+w 1 = w 2 w_{1}=w_{2} ).
+These observations allow us to prove the following lemma
+Lemma 23 .
+Given a Turing machine
+ℳ \mathcal{M} , construct a string rewriting system R R as above.
+Let w 0 w_{0} be a string in CONFIG .
+π ⁡ ( w 0 ) \pi(w_{0}) is a mortal configuration of ℳ \mathcal{M} if and only if [ w 0 ] ℛ [w_{0}]_{\mathcal{R}} , the
+equivalence class of w 0 w_{0} in R R , is finite.
+Proof D.16 .
+Without loss of generality,
+we assume w 0 w_{0} is a normal form with respect to R − 1 R^{-1} .
+If this is not the case, since R − 1 R^{-1} is convergent, w 0 w_{0} has a unique normal form w 0 ′ w_{0}^{\prime} .
+Moreover, [ w 0 ] = [ w 0 ′ ] [w_{0}]=[w^{\prime}_{0}] and π ( w 0 ′ ) ⊢ ℳ ∗ π ( w 0 ′ ) \pi(w^{\prime}_{0})\vdash_{\mathcal{M}}^{*}\pi(w_{0}^{\prime}) ,
+so it suffices to consider w 0 ′ w_{0}^{\prime} .
+•
+⇐ \Leftarrow : Suppose [ w 0 ] ℛ [w_{0}]_{\mathcal{R}} is finite.
+Since the size of each rewrite rule is strictly increasing,
+no cycle in the rewriting sequence is possible.
+Therefore, there must exist a finite sequence of
+W : w 0 → ℛ w 1 → ℛ … → ℛ w n W:w_{0}\rightarrow_{\mathcal{R}}w_{1}\rightarrow_{\mathcal{R}}\ldots\rightarrow_{\mathcal{R}}w_{n} such
+that w n w_{n} is a normal form of ℛ {\mathcal{R}} .
+By our observation above, since w n w_{n} cannot be rewritten further,
+w n w_{n} is a type-A string, and π ⁡ ( w n ) \pi(w_{n}) is a halting configuration.
+Take the subsequence of S S consisting of all type-A strings:
+w a 0 → ℛ ∗ w a 1 → ℛ ∗ … → ℛ ∗ w a k = w n . w_{a_{0}}\rightarrow_{\mathcal{R}}^{*}w_{a_{1}}\rightarrow_{\mathcal{R}}^{*}\ldots\rightarrow_{\mathcal{R}}^{*}w_{a_{k}}=w_{n}.
+We have π ⁡ ( w a i ) ⊢ π ⁡ ( w a i + 1 ) \pi(w_{a_{i}})\vdash\pi(w_{a_{i+1}}) for all i i and
+π ⁡ ( w a k ) \pi(w_{a_{k}}) is a halting configuration.
+This implies a finite trace of the Turing machine:
+π ⁡ ( w 0 ) = π ⁡ ( w a 0 ) ⊢ π ⁡ ( w a 1 ) ⊢ … ⊢ π ⁡ ( w a n ) , \pi(w_{0})=\pi(w_{a_{0}})\vdash\pi(w_{a_{1}})\vdash\ldots\vdash\pi(w_{a_{n}}),
+which implies w 0 w_{0} is a mortal configuration of ℳ \mathcal{M} .
+•
+⇒ \Rightarrow : Suppose otherwise π ⁡ ( w 0 ) \pi(w_{0}) is a mortal configuration
+of ℳ \mathcal{M}
+and [ w 0 ] ℛ [w_{0}]_{\mathcal{R}} is infinite.
+Since w 0 w_{0} is a normal form with respect to
+ℛ − 1 {\mathcal{R}}^{-1} and ℛ − 1 {\mathcal{R}}^{-1} is convergent,
+for any w w with w ≈ ℛ w 0 w\approx_{{\mathcal{R}}}w_{0} ,
+w → ℛ − 1 ∗ w 0 w\rightarrow_{{\mathcal{R}}^{-1}}^{*}w_{0} ,
+or equivalently w 0 → ℛ ∗ w w_{0}\rightarrow_{\mathcal{R}}^{*}w .
+Since [ w 0 ] ℛ [w_{0}]_{\mathcal{R}} is infinite,
+there are infinitely many w w satisfying
+w 0 → ℛ ∗ w w_{0}\rightarrow_{\mathcal{R}}^{*}w .
+By König’s lemma,
+there exists an infinite rewriting sequence:
+W : w a 0 → ℛ w 1 → ℛ … W:w_{a_{0}}\rightarrow_{\mathcal{R}}w_{1}\rightarrow_{\mathcal{R}}\ldots .
+Again, take the subsequence
+of S S consisting of every type-A string:
+W ′ : w a 0 → ℛ ∗ w a 1 → ℛ ∗ … . W^{\prime}:w_{a_{0}}\rightarrow_{\mathcal{R}}^{*}w_{a_{1}}\rightarrow_{\mathcal{R}}^{*}\ldots.
+Since every type-B subsequence of W W is bounded in length,
+W ′ W^{\prime} is necessarily infinite.
+This implies an
+infinite trace of the Turing machine:
+π ⁡ ( w 0 ) = π ⁡ ( w a 0 ) ⊢ π ⁡ ( w a 1 ) ⊢ … , \pi(w_{0})=\pi(w_{a_{0}})\vdash\pi(w_{a_{1}})\vdash\ldots,
+which is a contradiction.
+An overview of the rewriting sequences starting at w 0 w_{0} of ℛ {\mathcal{R}}
+is shown in Figure 7 .
+Rw
+w 0 → ℛ … → ℛ w a 0 − 1 ⏟ finite \underbrace{w_{0}\rightarrow_{\mathcal{R}}\ldots\rightarrow_{\mathcal{R}}w_{a_{0}-1}}_{\text{finite}}
+→ ℛ \rightarrow_{\mathcal{R}}
+w a 0 {w_{a_{0}}}
+w a 1 + 1 → ℛ … → ℛ w a 1 − 1 ⏟ finite \underbrace{w_{a_{1}+1}\rightarrow_{\mathcal{R}}\ldots\rightarrow_{\mathcal{R}}w_{a_{1}-1}}_{\text{finite}}
+→ ℛ \rightarrow_{\mathcal{R}}
+w a 1 {w_{a_{1}}}
+… \ldots
+Type
+B … \ldots B
+A
+B … \ldots B
+A
+Config
+π ⁡ ( w 0 ) = … = π ⁡ ( w a 0 − 1 ) \pi(w_{0})=\ldots=\pi(w_{a_{0}-1})
+⊢ ℳ \vdash_{\mathcal{M}}
+π ⁡ ( w a 0 ) {\pi(w_{a_{0}})}
+π ⁡ ( w a 0 + 1 ) = … = π ⁡ ( w a 1 − 1 ) \pi(w_{a_{0}+1})=\ldots=\pi(w_{a_{1}-1})
+⊢ ℳ \vdash_{\mathcal{M}}
+π ⁡ ( w a 1 ) {\pi(w_{a_{1}})}
+… \ldots
+Figure 7 : Rewriting sequence for a string w 0 w_{0} over ℛ {\mathcal{R}} .
+We are ready to prove the undecidability of the termination problem of
+EqSat.
+Proof D.17 (Proof of 18 ) .
+Given a Turing machine ℳ \mathcal{M} . We construct the following
+two-tape Turing machine ℳ ′ \mathcal{M}^{\prime} :
+{dfn}
+ℳ ′ \mathcal{M}^{\prime} alternates between the following two steps:
+1.
+Simulate one transition of ℳ \mathcal{M} on its first tape.
+2.
+Read the string on its second tape as a number, compute the next prime
+number, and write it to the second tape.
+ℳ ′ \mathcal{M}^{\prime} halts when the simulation of ℳ \mathcal{M} reaches an
+accepting state.
+It is known that a two-tape Turing machine can be simulated using a
+standard Turing machine, so we assume ℳ ′ \mathcal{M}^{\prime} is a standard
+Turing machine and takes input string ( s 1 , s 2 ) (s_{1},s_{2}) , where s 1 s_{1} is
+the input to its first tape and s 2 s_{2} is the input to its second tape.
+Let ℛ ′ {\mathcal{R}}^{\prime} be the string rewriting system derived from ℳ ′ \mathcal{M}^{\prime}
+using the encoding we introduced in the lemma.
+Given a string s s , let w w be the initial configuration
+⊳ q 0 ​ ( s , 2 ) ⊲ \rhd q_{0}(s,2)\lhd . The following conditions are equivalent:
+1.
+ℳ \mathcal{M} halts on input s s .
+2.
+ℳ ′ \mathcal{M}^{\prime} halts on input ( s , 2 ) (s,2) .
+3.
+[ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is finite.
+4.
+[ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is regular.
+(1) and (2) are equivalent by our construction, and
+(2) and (3) are equivalent by 23 .
+(3) implies (4) trivially, and (4) implies (3) because if
+[ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is infinite, the trace of
+ℳ ′ \mathcal{M}^{\prime} will compute every prime number, which is not regular.
+Run EqSat with initial string w w and string rewriting system
+ℛ ′ ∪ ℛ ′ − 1 {\mathcal{R}}^{\prime}\cup{\mathcal{R}}^{\prime-1} .
+We claim EqSat terminates if and only if
+ℳ \mathcal{M} halts on s s :
+•
+⇒ \Rightarrow : Suppose EqSat terminates with output E-graph G G .
+By 13 , [ w ] G = [ w ] ℛ ′ [w]_{G}=[w]_{{\mathcal{R}}^{\prime}} .
+Since every finite E-graph represents a regular language, [ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is regular.
+Therefore, ℳ \mathcal{M} halts on s s .
+•
+⇐ \Leftarrow : Suppose ℳ \mathcal{M} halts on s s .
+Let G G be the E-graph output by EqSat.
+By 13 , [ w ] G = [ w ] ℛ ′ [w]_{G}=[w]_{{\mathcal{R}}^{\prime}} .
+By the equivalences above, [ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is finite.
+Because the set of represented terms increases in every iteration of EqSat,
+EqSat has to stop in a finite number of iterations.
+By the undecidability of the halting problem, the
+termination problem of EqSat is undecidable.
+Therefore, the termination problem of EqSat is R.E.-complete.
+See 19
+It does not suffice to just use 23 to prove this theorem,
+since 23 only states properties of strings in ​ C ​ O ​ N ​ F ​ I ​ G \emph{CONFIG}{} ,
+while all-instance termination considers all possible strings (i.e. strings in Σ ∗ \Sigma^{*} ).
+To address this mismatch,
+the following lemma by Narendran et al. bridges the gap between Σ ∗ \Sigma^{*} and ​ C ​ O ​ N ​ F ​ I ​ G \emph{CONFIG}{} .
+Lemma 24 ( [ 22 ] ) .
+Given a Turing machine ℳ \mathcal{M} ,
+let ℛ {\mathcal{R}} be the term rewriting system
+constructed using the encoding in the proof of 18 .
+If there exists a string w ∈ Σ ∗ w\in\Sigma^{*} such that [ w ] ℛ [w]_{{\mathcal{R}}} is infinite,
+then there exists a string s ∈ ​ C ​ O ​ N ​ F ​ I ​ G s\in\emph{CONFIG} such that [ s ] ℛ [s]_{{\mathcal{R}}} is infinite.
+Proof D.18 .
+Suppose such a string w 0 w_{0} exists in Σ ∗ \Sigma^{*} .
+Since ℛ {\mathcal{R}} is reverse convergent,
+we can assume that w 0 w_{0} is a normal form of ℛ − 1 {\mathcal{R}}^{-1} and
+has infinitely many reachable terms w ′ w^{\prime} ( w 0 → ℛ w ′ w_{0}\rightarrow_{{\mathcal{R}}}w^{\prime} ).
+By König’s lemma, there exists an infinite rewrite sequence
+w 0 → ℛ w 1 → ℛ … . w_{0}\rightarrow_{{\mathcal{R}}}w_{1}\rightarrow_{{\mathcal{R}}}\ldots.
+Note that the left-hand side and the right-hand side of each rule of ℛ {\mathcal{R}} each contain
+exactly one state symbol, so all w i w_{i} has the same number of state symbols, denoted as k k .
+Moreover, the new state symbols in w i + 1 w_{i+1} and
+the old state symbol in w i w_{i} have the same relative positions
+to other state symbols.
+For each r r such that 1 ≤ r ≤ k 1\leq r\leq k ,
+we define the r r -th segment of w i w_{i} , denoted as w i r w_{i}^{r} ,
+as the longest substring of w i w_{i} that contains r r th state symbol
+that is
+in the regular language
+⊳ { 0 , 1 } ( Π ¯ ∪ D L ) ∗ ( Q ∪ Q ¯ ) ( Π ∪ D ℛ ) ∗ ⊲ { 0 , 1 } \rhd^{\{0,1\}}(\overline{\Pi}\cup D_{L})^{*}(Q\cup\overline{Q})(\Pi\cup D_{\mathcal{R}})^{*}\lhd^{\{0,1\}} .
+The only difference between this language and ​ C ​ O ​ N ​ F ​ I ​ G \emph{CONFIG} is that
+the left and right end marker is optional.
+It follows that if the reduction w i → ℛ w i + 1 w_{i}\rightarrow_{{\mathcal{R}}}w_{i+1} involves the r r th state symbol,
+then for 1 ≤ j ≤ r 1\leq j\leq r , if j ≠ r j\neq r , then w i j = w i + 1 j w_{i}^{j}=w_{i+1}^{j} ,
+and w i r → ℛ w i + 1 r w_{i}^{r}\rightarrow_{{\mathcal{R}}}w_{i+1}^{r} .
+Therefore, it is possible to find some index r r such that
+there is an infinite rewrite sequence w a 1 r → ℛ w a 2 r → ℛ … w_{a_{1}}^{r}\rightarrow_{{\mathcal{R}}}{w_{a_{2}}^{r}\rightarrow_{{\mathcal{R}}}\ldots} .
+Since rewrite rules of ℛ {\mathcal{R}} preserve the number of endmarkers,
+it is possible to uniformly add endmarkers to the left and right of each w a i r w_{a_{i}}^{r} .
+Denote the result as w a i ′ w^{\prime}_{a_{i}} , which is in CONFIG .
+w ′ a 1 → ℛ w ′ a 2 → ℛ w^{\prime}_{a_{1}}\rightarrow_{{\mathcal{R}}}w^{\prime}_{a_{2}}\rightarrow_{{\mathcal{R}}}
+is an infinite rewrite sequence in ​ C ​ O ​ N ​ F ​ I ​ G \emph{CONFIG} ,
+and [ w a 1 ′ ] ℛ [w^{\prime}_{a_{1}}]_{{\mathcal{R}}} is infinite.
+The other direction of 24 is trivial.
+With this lemma, we can prove 19 .
+Proof D.19 (Proof of 19 ) .
+This problem is in Π 2 \Pi_{2} since we can formulate this problem as
+a ∀ ∃ \forall\exists -sentence in first-order logic.
+Given a Turing machine ℳ \mathcal{M} , construct another Turing machine ℳ ′ \mathcal{M}^{\prime}
+and term rewriting system ℛ ′ {\mathcal{R}}^{\prime} derived from ℳ ′ \mathcal{M^{\prime}} same as in the proof of 18 .
+The Π 2 \Pi_{2} -hardness follows from the following equivalences:
+1.
+Every configuration of ℳ \mathcal{M} is mortal.
+2.
+[ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is finite for all string w ∈ ​ C ​ O ​ N ​ F ​ I ​ G w\in\emph{CONFIG} .
+3.
+[ w ] ℛ ′ [w]_{{\mathcal{R}}^{\prime}} is finite for all string w w .
+4.
+Equality saturation terminates on ℛ ′ ∪ ℛ ′ − 1 {\mathcal{R}}^{\prime}\cup{\mathcal{R}}^{\prime-1} for all string w w .
+The equivalence between (1) and (2) follows from 23 .
+The equivalence between (2) and (3) follows from 24 .
+For any string w w , the equivalence between (3) and (4)
+can be proved similarly to the proof of 18 .
+Since the universal halting problem is Π 2 \Pi_{2} -hard,
+the all-instance termination problem of EqSat is Π 2 \Pi_{2} -hard.
+D.2 Proof for 20
+See 20
+Proof D.20 .
+Our proof is inspired by Gilleron and Tison [ 10 ] .
+We reduce the Post correspondence problem (PCP) to this problem.
+Let A A be an alphabet. The input to the problem is two finite lists of A A -words
+α 1 , … , α n \alpha_{1},\ldots,\alpha_{n} and β 1 , … , β n \beta_{1},\ldots,\beta_{n} .
+PCP asks if there exists a non-empty sequence of indices i 1 , … , i k i_{1},\ldots,i_{k}
+such that
+α i 1 ​ … ​ α i k = β i 1 ​ … ​ β i k \alpha_{i_{1}}\ldots\alpha_{i_{k}}=\beta_{i_{1}}\ldots\beta_{i_{k}} .
+We use unary functions and a special nullary functions ϵ \epsilon
+to represent strings as terms. A word is represented as consecutive applications
+of unary symbols.
+The ruleset we construct simulates runs of PCP. Let ℛ PCP {\mathcal{R}}_{\textit{PCP}} be
+k ⁡ ( x , y ) → k ⁡ ( i ⁡ ( x ) , α i ​ ( y ) ) \displaystyle k(x,y)\rightarrow k(i(x),\alpha_{i}(y))\quad
+for ​ i = 1 , … , n \displaystyle\text{for }i=1,\ldots,n
+k ⁡ ( i ⁡ ( x ) , y ) → r ⁡ ( i ⁡ ( x ) , y ) \displaystyle k(i(x),y)\rightarrow r(i(x),y)\quad
+for ​ i = 1 , … , n \displaystyle\text{for }i=1,\ldots,n
+r ⁡ ( i ⁡ ( x ) , β i ​ ( z ) ) → r ⁡ ( x , z ) \displaystyle r(i(x),\beta_{i}(z))\rightarrow r(x,z)\quad
+for ​ i = 1 , … , n \displaystyle\text{for }i=1,\ldots,n
+r ⁡ ( ϵ , ϵ ) → goal \displaystyle r(\epsilon,\epsilon)\rightarrow\textit{goal}\quad
+Intuitively,
+we think of the term rewriting starts with term k ⁡ ( ϵ , ϵ ) k(\epsilon,\epsilon) .
+The first rule explores different choices of indices and stores the corresponding
+α \alpha sequence,
+and the third rule verifies if the given choice of indices is an acceptable solution.
+The second rule is to make sure the solution is non-empty.
+ℛ PCP {\mathcal{R}}_{\textit{PCP}} involves a special nullary function goal
+which, once populated in the E-graph,
+will be rewritten to every other term.
+Let ℛ goal {\mathcal{R}}_{\textit{goal}} be
+goal → ϵ \displaystyle\textit{goal}\rightarrow\epsilon
+goal → i ⁡ ( goal ) \displaystyle\textit{goal}\rightarrow i(\textit{goal})
+for ​ i = 1 , … , n \displaystyle\quad\text{for }i=1,\ldots,n
+goal → s ⁡ ( goal ) \displaystyle\textit{goal}\rightarrow s(\textit{goal})
+for ​ s ∈ A \displaystyle\quad\text{for }s\in A
+goal → k ⁡ ( goal , goal ) \displaystyle\textit{goal}\rightarrow k(\textit{goal},\textit{goal})
+goal → r ⁡ ( goal , goal ) . \displaystyle\textit{goal}\rightarrow r(\textit{goal},\textit{goal}).
+To handle inputs that do not represent k ⁡ ( ϵ , ϵ ) k(\epsilon,\epsilon) ,
+let ℛ st {\mathcal{R}}_{\textit{st}} be
+k ⁡ ( x , y ) → k ⁡ ( ϵ ) \displaystyle k(x,y)\rightarrow k(\epsilon)
+r ⁡ ( x , y ) → k ⁡ ( ϵ ) . \displaystyle r(x,y)\rightarrow k(\epsilon).
+Let ℛ = ℛ PCP ∪ ℛ goal ∪ ℛ st {\mathcal{R}}={\mathcal{R}}_{\textit{PCP}}\cup{\mathcal{R}}_{\textit{goal}}\cup{\mathcal{R}}_{\textit{st}} .
+We claim that equality saturation terminates on ℛ {\mathcal{R}} and G G
+for all E-graph G G
+if and only if PCP has a solution.
+•
+⇒ \Rightarrow : Let G G be an E-graph representing a single term
+k ⁡ ( ϵ , ϵ ) k(\epsilon,\epsilon) . It is easy to see that in this case
+EqSat terminates if and only if goal is populated
+if and only if there is a solution to PCP.
+•
+⇐ \Leftarrow : Suppose PCP has a solution. It follows that
+if an E-graph contains k ⁡ ( ϵ , ϵ ) k(\epsilon,\epsilon) , goal
+will be populated by 12 and EqSat will terminate.
+Note that for EqSat to not terminate, the input E-graph
+has to represent at least some k k - or r r - term.
+By ℛ st {\mathcal{R}}_{\textit{st}} , however, if an E-graph represents any k k - or r r - term it will
+be rewritten to k ⁡ ( ϵ , ϵ ) k(\epsilon,\epsilon) , so EqSat terminates for arbitrary E-graphs.
+Appendix E Weak term acyclicity and EqSat termination
+Given a signature Σ \Sigma , we define a position as a pair ( f , i ) (f,i) ,
+where f f is a n n -ary function symbol in Σ \Sigma and 1 ≤ i ≤ n 1\leq i\leq n .
+For u , v ∈ T ⁡ ( Σ , V ) u,v\in T(\Sigma,V) ,
+we define Pos u ​ ( v ) \text{Pos}_{u}(v) as the set of positions ( f , i ) (f,i)
+satisfying f ⁡ ( p 1 , … , p i − 1 , v , p i + 1 , … ​ p n ) f(p_{1},\ldots,p_{i-1},v,p_{i+1},\ldots p_{n}) is a sub-pattern of u u .
+For instance, Pos g ⁡ ( f ⁡ ( x ) , x ) ​ ( x ) = { ( f , 1 ) , ( g , 2 ) } \text{Pos}_{g(f(x),x)}(x)=\{(f,1),(g,2)\} .
+A rule is called non-degenerate
+if its left-hand side is not solely variables.
+Any degenerate rule x → rhs x\rightarrow\textit{rhs} can be made into a set of non-degenerate rules
+by substituting x x with f ⁡ ( x 1 , … , x n ) f(x_{1},\ldots,x_{n}) for each function symbol f ∈ Σ f\in\Sigma .
+{dfn}
+[Weak term acyclicity]
+Let Σ \Sigma be a signature.
+Let ℛ {\mathcal{R}} be a set of non-degenerate rewrite rules over Σ \Sigma .
+The weak term dependency graph of ℛ {\mathcal{R}}
+consists of positions as nodes.
+Moreover,
+for each rewrite rule lhs → rhs \textit{lhs}\rightarrow\textit{rhs} in ℛ {\mathcal{R}} ,
+1.
+for each variable x ∈ Var ​ ( rhs ) x\in\textit{{Var}}(\textit{rhs}) ,
+add an edge from u u to v v for every combination of u ∈ Pos lhs ​ ( x ) u\in\text{Pos}_{\textit{lhs}}(x) and v ∈ Pos rhs ​ ( x ) v\in\text{Pos}_{\textit{rhs}}(x) .
+2.
+for each proper, non-variable sub-pattern p p of rhs ,
+if p p does not occur in lhs ,
+for each variable x ∈ Var ​ ( p ) x\in\textit{{Var}}(p) ,
+add a special edge from u u to v v for
+every combination of u ∈ Pos rhs ​ ( x ) u\in\text{Pos}_{\textit{rhs}}(x) and v ∈ Pos rhs ​ ( p ) v\in\text{Pos}_{\textit{rhs}}(p) .
+ℛ {\mathcal{R}} is called weakly term acyclic if
+no cycle of ℛ {\mathcal{R}} ’s weak term dependency graph contain a special edge.
+The definition of weak term acyclicity
+follows the structure of the definition of
+weak acyclicity.
+For example, proper, non-leaf sub-patterns of rhs
+in our case act like existentially quantified variables.
+However, some key differences allow weak term acyclicity to
+capture termination of more rules
+than applying weak acyclicity on TGDs/EGDs directly derived from EqSat rules.
+If a sub-pattern in rhs already occurs in lhs ,
+it will not introduce new E-classes.
+Moreover, in the chase,
+for a TGD λ ⁡ ( x → , y → ) → ∃ z → . ρ ⁡ ( x → , z → ) \lambda(\vec{x},\vec{y})\rightarrow\exists\vec{z}.\rho(\vec{x},\vec{z}) ,
+values assigned to
+existential variables z → \vec{z} depend on x → \vec{x} .
+In EqSat,
+because of functional dependencies,
+the E-classes that a pattern u = f ⁡ ( p 1 , … , p n ) u=f(p_{1},\ldots,p_{n}) can be instantiated to are
+fully determined by Var ​ ( u ) \textit{{Var}}(u) , a subset of all free variables of lhs .
+Theorem 25 .
+If a term rewriting system ℛ {\mathcal{R}} is weakly term acyclic, then
+equality saturation (defined in ( 3 )) converges in steps polynomial to the size of the input E-graph.
+Proof E.21 .
+The proof is essentially the same as the proof of weak acyclicity from Fagin et al. [ 8 ] .
+We provide a sketch here.
+Define an incoming path of position ( f , i ) (f,i)
+to be any path of the weak term dependency graph ending at ( f , i ) (f,i) ,
+and define the rank 9 9
+9
+Ranks in a weak term dependency graph
+are not related to ranks in an E-graph.
+of a position ( f , i ) (f,i)
+as the maximum number of special edges on any incoming path to ( f , i ) (f,i) .
+Since the weak term dependency graph is weakly term acyclic,
+the rank of any position is finite.
+We can prove by induction on the ranks of positions that
+there exists a polynomial P i P_{i} that bounds the total number
+of distinct E-classes at all positions of rank k k
+at any intermediary E-graph produced by EqSat at some iteration.
+There are three kinds of E-classes at positions of rank i i :
+E-classes that are already present at such positions in the input E-graph,
+E-classes that are copied over from positions of ranks < i <i ,
+and new E-classes created at positions of rank i i .
+The last kind is bound by the number of special edges,
+multiplied by the number of distinct E-classes at positions of ranks < i <i .
+Denote by P P the sum of all P i P_{i} . P P is a polynomial that bounds
+the number of distinct E-classes of any E-graph produced by EqSat at any iteration.
+Let ar be the maximum arity of any function symbol in Σ \Sigma .
+Q ar + 1 Q^{\textit{ar}+1} bounds the number of distinct E-nodes.
+Since any E-graph G = ⟨ Q , Σ , Δ ⟩ G=\langle Q,\Sigma,\Delta\rangle
+is fully determined by its E-classes and E-nodes,
+at most Q ⋅ Q ar + 1 = Q ar + 2 Q\cdot Q^{\textit{ar}+1}=Q^{\textit{ar}+2} distinct E-graphs can occur during EqSat.
+Since EqSat is inflationary, it terminates in at most Q ar + 2 Q^{\textit{ar}+2} iterations.
+Experimental support, please
+view the build logs
+for errors. Generated by
+L
+A
+T
+E
+xml
+.
+Instructions for reporting errors
+We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+methods listed below:
+Click the "Report Issue" ( ) button, located in the page header.
+Tip: You can select the relevant text first, to include it in your report.
+Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+all.
+Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+We gratefully acknowledge support from our major funders ,
+member institutions , ,
+and all contributors.
+About &middot;
+Help &middot;
+Contact &middot;
+Subscribe &middot;
+Copyright &middot;
+Privacy &middot;
+Accessibility &middot;
+Operational Status (opens in new tab)

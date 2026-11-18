@@ -1,0 +1,312 @@
+▼ Binding as Sets of Scopes
+1 Background: Scope and Macros
+2 Scope Sets for Pattern- Based Macros
+3 Scope Sets for Procedural Macros and Modules
+4 Implementation and Experience
+5 Model
+6 Defining Hygiene
+7 Other Related Work
+8 Conclusion
+Acknowledgments
+References
+► 4 Implementation and Experience
+4.1 Initial Compatibility Results
+4.2 Longer- Term Compatibility Considerations
+4.3 Benefits for New Macros
+4.4 Debugging Support
+4.5 Scope Sets for Java Script
+On this page:
+4.1 Initial Compatibility Results
+4.2 Longer- Term Compatibility Considerations
+4.3 Benefits for New Macros
+4.4 Debugging Support
+4.5 Scope Sets for Java Script
+&larr; prev up next &rarr;
+4 Implementation and Experience
+Scope sets have an intuitive appeal as a model of binding, but a true
+test of the model is whether it can accommodate a Racket-scale use of
+macros— for constructing everything from simple syntactic abstractions
+to entirely new languages. Indeed, the set-of-scopes model
+was motivated in part by a fraying of Racket’s old macro expander at
+the frontiers of its implementation, e.g., for
+submodules ( Flatt 2013 ). For an example of a bug report about
+submodules, see
+problem report 14521 .
+The example program fails with the old expander, due to
+problems meshing mark-oriented module scope with renaming-oriented
+local scope, but the example works with the set-of-scopes expander.
+We released the new macro expander as part of Racket version 6.3
+(released November 2015), while Racket developers started using the
+expander about four months earlier. Compared to the previous release,
+build times, memory use, and bytecode footprint were essentially
+unchanged compared to the old expander. Getting performance on par
+with the previous system required about two weeks of performance tuning, which
+we consider promising in comparison to a system that has been tuned
+over the past 15 years.
+4.1 Initial Compatibility Results
+At the time that Racket developers switched to the new expander,
+packages in Racket’s main distribution had been adjusted to build
+without error (including all documentation), and most tests in the
+corresponding test suite passed; 43 out of 7501 modules failed.
+Correcting those failures before version 6.3 required small changes to
+accommodate the new macro expander.
+See the
+POPL’16
+artifact for a detailed record of the initial
+compatibility results.
+Achieving the initial level of success required small changes to 15
+out of about 200 packages in the distribution, plus several
+substantial macro rewrites in the core package:
+Changed macros in the core package include the unit ,
+class , and define-generics macros, all of
+which manipulate scope in unusual ways.
+The Typed Racket implementation, which is generally sensitive
+to the details of macro expansion, required a handful of
+adjustments to deal with changed expansions of macros and the
+new scope-pruning behavior of quote-syntax .
+Most other package changes involve languages implementations
+that generate modules or submodules and rely on a
+non-composable treatment of module scopes by the old
+expander (which creates trouble for submodules in other
+contexts).
+In about half of all cases, the adjustments for set-of-scopes
+expansion are compatible with the existing expander. In the other
+half, the macro adjustments were incompatible with the previous
+expander and the two separate implementations seem substantially
+easier to produce than one unified implementation.
+Besides porting the main Racket distribution to a set-of-scopes
+expander, we tried building and testing all packages registered at
+http://pkgs.racket-lang.org/ . There were 46 failures out of about 400 packages, as opposed to
+to 21 failures for the same set of packages with the previous
+Racket release. Many failures involved
+packages that implement non-S-expression readers and relied on
+namespace-interaction details (as discussed in The Top Level )
+that change with scope sets; the language implementations were
+adjusted to use a different technique that is compatible with both
+expanders. See the
+discussion
+on compatibility of a reader implementation on the Racket mailing
+list . All of those packages were repaired before the version 6.3
+release.
+4.2 Longer-Term Compatibility Considerations
+As the initial experiments confirmed, most Racket programs expand and
+run the same with a set-of-scope expander as with the old
+expander. Pattern-based macros are rarely affected. When changes are needed to accommodate the
+set-of-scopes expander, those changes often can be made compatible
+with the existing expander. In a few cases,
+incompatibilities appear unavoidable.
+Macros that manipulate bindings or scope in unusual ways can easily
+expose the difference between the macro systems.
+As an example, the following program produces 1 with
+Racket’s old expander, but it provokes an ambiguous-binding error
+with the set-of-scopes expander:
+( define-syntax-rule ( define1 id )
+( begin
+( define x 1 )
+; stash a reference to the introduced identifier:
+( define-syntax id #' x ) ) )
+( define-syntax ( use stx )
+( syntax-case stx ( )
+[ ( _ id )
+( with-syntax ( [ old-id ( syntax-local-value #' id ) ] )
+#' ( begin
+( define x 2 )
+; reference to old-id ends up ambiguous:
+old-id ) ) ] ) )
+( define1 foo )
+( use foo )
+In the set-of-scopes model, define1 and use
+introduce bindings from two separate macro expansions, and they also
+arrange for a reference to be introduced by both of those
+macros, hence the ambiguity. Arguably, in this case, the use
+macro is broken, as illustrated in a variant of the program without
+define1 that produces 2 with both expanders:
+( begin
+( define x 1 )
+( define-syntax foo #' x ) )
+( define-syntax ( use stx )
+( syntax-case stx ( )
+[ ( _ id )
+( with-syntax ( [ old-id ( syntax-local-value #' id ) ] )
+#' ( begin
+( define x 2 )
+old-id ) ) ] ) )
+( use foo )
+The use macro can be fixed for both expanders and both
+contexts by applying syntax-local-introduce to the result of
+( syntax-local-value #' id ) , which cancels the macro-introduction scope on the identifier, since the identifier conceptually
+exists outside of this macro’s expansion. Such an application of
+syntax-local-introduce is typically needed and typically
+present in existing Racket macros that bring stashed identifiers into
+a new context.
+The example above illustrates a typical level of macro complexity
+needed to expose differences between the existing and set-of-scopes expanders.
+Here are some specific other ways in with existing Racket code may fail with
+a set-of-scopes expander:
+In the old macro system, a module form for a
+submodule is expanded by first discarding all lexical
+context. The set-of-scopes expander instead removes only the
+scope of the enclosing module. As a result, some macros that
+expand to submodules must more precisely manage their contexts.
+In the old expander, removing all lexical context ensures
+that no binding outside the module can be referenced directly,
+but to support re-expansion of the submodule, a property is
+added on a module to disable context stripping on future
+expansions and to skip over the module when adding context for
+an enclosing module. No special treatment is needed for
+re-expansion in the set-of-scopes expander, but the more
+limited context stripping means that certain (non-hygienic)
+submodule-producing macros no longer work.
+For example, the macro
+( define-syntax-rule ( gen e )
+( module generated racket/base e ) )
+used to expand so that racket/base is available for
+reference by e , but with the set-of-scopes expander,
+racket/base retains its macro-introduced scope and
+does not bind the use-site replacement for e .
+At the same time, with the set-of-scopes expander, a macro from
+one module that expands to a submodule in another module runs
+the risk of provoking an out-of-context error, since the
+macro’s module context is not removed form the generated
+submodule.
+Along the same lines as expanding to a submodule form, a
+pattern-matching macro that expands to a unit form
+can behave differently if a mentioned signature or definition
+are not both introduced by the macro or from the macro use
+site. In other words, adjustments to the unit macro to
+work with the set-of-scopes expander have regularized
+questionable scoping behavior of the unit form itself,
+particularly as it interacts with other macros.
+Macros that use explicit internal-definition contexts are among
+the most likely to need adaptation. As described in
+First-Class Definition Contexts , such macros typically need to use
+syntax-local-identifier-as-binding on identifiers that
+are inspected and manipulated as bindings. Macros that use
+internal-definition contexts to create unusual binding patterns
+(e.g., splicing-let-syntax ) may need more radical
+changes, since internal-definition contexts formerly made
+distinctions among specific identifiers— the ones explicitly
+registered to create renamings— while the distinction now is
+more uniform. Some such macros can switch to a simpler creation
+of a fresh scope (formerly “mark”), while others require a
+completely different strategy.
+In the old macro system, if unbound identifiers with the
+same symbolic name are pulled from different modules into a new
+one, and if the introducing macros arrange for the identifiers
+to have no distinct macro-introduction marks (e.g., by using
+syntax-local-introduce ), then either of those
+identifiers can bind the other (since neither had a binding).
+With the set-of-scopes system, the two identifiers do no bind
+each other, since they have different scopes from their
+original modules.
+With the old macro expander, the #%top form is
+implicitly wrapped around any use of an identifier outside a
+module when the identifier does not refer to a macro. The new
+expander uses #%top only for identifiers that have no
+binding (which makes top-level expansion slightly more
+consistent with module expansion).
+The documentation for Racket’s old macro system avoids references
+to the underlying mark-and-rename model. As a result, the documentation is often too
+imprecise to expose differences created by a change to set-of-scope
+binding. One goal of the new model is to allow the specification and
+documentation of Racket’s macro expander to be tightened; scope sets
+are precise enough for specification, but abstract enough to allow
+high-level reasoning.
+4.3 Benefits for New Macros
+Certain existing macros in the Racket distribution had to be
+reimplemented wholesale for the set-of-scopes expander. A notable
+example is the package macro, which simulates the module
+system of Chez Scheme ( Waddell and Dybvig 1999 ). The implementation of
+package for the old Racket macro expander uses
+first-class definition contexts, rename transformers, and a facility
+for attaching mark changes to a rename transformer (to make an
+introduced name have marks similar to the reference). The
+implementation with the set-of-scopes expander is considerably
+simpler, using only scope-set operations and basic rename
+transformers. Scope sets more directly implement the idea of packages
+as nested lexical environments. The new implementation is 345 lines
+versus 459 lines for the original implementation; both versions share
+much of the same basic structure, and the extra 100 lines of the old
+implementation represent especially complex pieces.
+A similar example was discussed on the Racket mailing list. The
+in-package form is intended to simulate Common Lisp
+namespaces, where definitions are implicitly prefixed with a package
+name, a package can import unprefixed names from a different package
+with use-package , and a package can stop using
+unprefixed names for the remainder its body with
+unuse-package . In this case, an implementation for the
+old expander ( in-package.rkt ) uses marks, but the
+implementation is constrained so that macros exported by one package
+cannot expand to definitions in another package. Again, the
+set-of-scopes expander ( in-package-scopes.rkt ) is
+conceptually simpler, more directly reflects binding regions with
+scopes, and allows definition-producing macros to be used across
+package boundaries. The version for the old expander also works
+with the set-of-scopes expander, although with the same limitations as
+for the old expander; in fact, debugging output from the
+set-of-scopes expander was instrumental in making that version of
+in-package work.
+These two anecdotes involve similar macros that better fit the
+set-of-scopes model for essentially the same reason, but out
+experience with others macros— the unit macro,
+class macro, and define-generics macro— has been
+similarly positive. In all cases, the set-of-scopes model has felt
+easier to reason about, and the expander could more readily provide
+tooling in support of the conceptual model.
+4.4 Debugging Support
+Although the macro debugger ( Culpepper and Felleisen 2010 ) has proven to be a
+crucial tool for macro implementors, binding resolution in Racket’s
+old macro expander is completely opaque to macro implementers.
+When something goes wrong, the expander or macro debugger can report
+little more than “unbound identifier” or “out of context”, because
+the process of replaying renamings and the encodings used for the
+renamings are difficult to unpack and relate to the programmer.
+A set-of-scopes expander is more frequently in a position to report
+“unbound identifier, but here are the identifier’s scopes, and here
+are some bindings that are connected to those scopes.” In the case of
+ambiguous bindings, the expander can report the referencing
+identifier’s scopes and the scopes of the competing bindings. These
+details are reported in a way similar to stack traces: subject to
+optimization and representation choices, and underspecified as a
+result, but invaluable for debugging purposes.
+For example, when placed in a module named m , the
+ambigious-reference error from Longer-Term Compatibility Considerations produces an error
+like this one:
+x: identifier's binding is ambiguous
+context...:
+#(1772 module) #(1773 module m 0) #(2344 macro)
+#(2358 macro)
+matching binding...:
+#<module-path-index:()>
+#(1772 module) #(1773 module m 0) #(2344 macro)
+matching binding...:
+#<module-path-index:()>
+#(1772 module) #(1773 module m 0) #(2358 macro)
+in: x
+Each scope is printed as a Racket vector, where the vector starts with
+a number that is distinct for every scope. A symbol afterward provides
+a hint at the scope’s origin: ' module for a module
+scope, ' macro for a macro-introduction scope,
+' use-site for a macro use-site scope, or ' local for
+a local binding form. In the case of a ' module scope that
+corresponds to the inside edge, the module’s name and a phase (since
+an inside-edge scope is generated for each phase) are shown.
+The #<module-path-index:()> s in the error correspond to the
+binding, and they mean “in this module.” Overall, the message shows
+that x has scopes corresponding to two different macro
+expansions, and it’s bound by definitions that were produced by
+the expansions separately.
+4.5 Scope Sets for JavaScript
+Although the set-of-scopes model of binding was developed with Racket
+as a target, it is also intended as a more understandable model of
+macros to facilitate the creation of macro systems for other
+languages. In fact, the Racket implementation was not the first
+implementation of the model to become available.
+Based on an early draft of this report, Tim Disney revised the
+Sweet.js macro implementation for JavaScript ( Disney et al. 2014 ; Disney et al. 2015 ) See
+pull
+request 461 . to use scope sets even before the initial Racket
+prototype was complete. Disney reports that the implementation of
+hygiene for the macro expander is now “mostly understandable” and
+faster.
+&larr; prev up next &rarr;

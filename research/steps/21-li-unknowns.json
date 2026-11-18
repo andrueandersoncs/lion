@@ -1,0 +1,1346 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "g-chabin-incremental-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2302.06246"
+   ],
+   [
+    "quote",
+    "Incremental Consistent Updating of Incomplete Databases"
+   ],
+   [
+    "quote",
+    "Chabin, Halfeld Ferrari, Hiot, Laurent (LIFO Orléans, ETIS)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230213
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-hu-modular-2019"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/1811.02304"
+   ],
+   [
+    "quote",
+    "Modular Materialisation of Datalog Programs"
+   ],
+   [
+    "quote",
+    "Motik, Horrocks et al. (Oxford)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20181106
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-green-update-exchange-2007"
+   ],
+   [
+    "quote",
+    "https://www.cs.ucdavis.edu/~green/papers/vldb07.pdf"
+   ],
+   [
+    "quote",
+    "Update Exchange with Mappings and Provenance"
+   ],
+   [
+    "quote",
+    "Green, Karvounarakis, Tannen (UPenn)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20070923
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-urbani-streams-2022"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2205.02220"
+   ],
+   [
+    "quote",
+    "Chasing Streams with Existential Rules"
+   ],
+   [
+    "quote",
+    "Urbani, Krötzsch, Eiter (VU Amsterdam, TU Dresden, TU Wien)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20220504
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-rdfox-docs-reasoning"
+   ],
+   [
+    "quote",
+    "https://docs.oxfordsemantic.tech/reasoning.html"
+   ],
+   [
+    "quote",
+    "RDFox documentation v7.7: Reasoning"
+   ],
+   [
+    "quote",
+    "Motik, Horrocks et al. (Oxford)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20260101
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-nieuwenhuis-dpllt-2006"
+   ],
+   [
+    "quote",
+    "https://cs.uwaterloo.ca/~david/cl/smt.pdf"
+   ],
+   [
+    "quote",
+    "Solving SAT and SAT Modulo Theories: From an Abstract Davis-Putnam-Logemann-Loveland Procedure to DPLL(T)"
+   ],
+   [
+    "quote",
+    "Nieuwenhuis, Oliveras, Tinelli (UPC Barcelona, Iowa)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20061101
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-holm-connectivity-2001"
+   ],
+   [
+    "quote",
+    "https://www.cs.princeton.edu/courses/archive/fall09/cos521/Handouts/polylogarithmic.pdf"
+   ],
+   [
+    "quote",
+    "Poly-Logarithmic Deterministic Fully-Dynamic Algorithms for Connectivity, Minimum Spanning Tree, 2-Edge, and Biconnectivity"
+   ],
+   [
+    "quote",
+    "Holm, de Lichtenberg, Thorup (Copenhagen, AT&T)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20010701
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-singher-colored-2023"
+   ],
+   [
+    "quote",
+    "https://arxiv.org/abs/2305.19203"
+   ],
+   [
+    "quote",
+    "Colored E-Graph: Equality Reasoning with Conditions"
+   ],
+   [
+    "quote",
+    "Singher, Itzhaky (Technion)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20230530
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-egglog-docs"
+   ],
+   [
+    "quote",
+    "https://docs.rs/egglog-ast/1.0.0/src/egglog_ast/generic_ast.rs.html"
+   ],
+   [
+    "quote",
+    "egglog AST documentation (delete, subsume, push, pop)"
+   ],
+   [
+    "quote",
+    "Willsey, Tatlock, Zhang, Wang et al. (UW PLSE)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20251019
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "g-shah-sundance-2026"
+   ],
+   [
+    "quote",
+    "https://pldi26.sigplan.org/details/egraphs-2026-papers/10/Relational-E-matching-in-an-SMT-solver"
+   ],
+   [
+    "quote",
+    "Relational E-matching in an SMT solver (EGRAPHS 2026)"
+   ],
+   [
+    "quote",
+    "Shah, Heule, Parno, Willsey (CMU, UC Berkeley)"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20260615
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-order-probe"
+   ],
+   [
+    "quote",
+    "the lion command on one program with its two equality rules in either order"
+   ],
+   [
+    "quote",
+    "One Lion program with its two equality rules in either order"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "research/probes/chase-model"
+   ],
+   [
+    "quote",
+    "Property tests of an executable model of Lion's chase with keys and equality rules"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261118
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g1"
+   ],
+   [
+    "quote",
+    "g-chabin-incremental-2023"
+   ],
+   [
+    "quote",
+    "First, a backward chase is used to find the constraints impacted by the required update."
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "incremental chase with marked nulls (chabin)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g2"
+   ],
+   [
+    "quote",
+    "g-chabin-incremental-2023"
+   ],
+   [
+    "quote",
+    "we propose incremental algorithms, so as to deal with as few nulls as possible, based on those involved in the update processing."
+   ],
+   [
+    "quote",
+    {
+     "covers": "existential rules",
+     "by": "incremental chase with marked nulls (chabin)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g3"
+   ],
+   [
+    "quote",
+    "g-chabin-incremental-2023"
+   ],
+   [
+    "quote",
+    "tuple-generating dependencies (tgd), i.e., implications of the form"
+   ],
+   [
+    "quote",
+    {
+     "covers": "equality rules",
+     "by": "incremental chase with marked nulls (chabin)",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g4"
+   ],
+   [
+    "quote",
+    "g-chabin-incremental-2023"
+   ],
+   [
+    "quote",
+    "In this case, the processing is carried on by deleting all atoms responsible of the generation of the atom to be deleted."
+   ],
+   [
+    "quote",
+    {
+     "covers": "view-update deletion",
+     "by": "incremental chase with marked nulls (chabin)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g5"
+   ],
+   [
+    "quote",
+    "g-hu-modular-2019"
+   ],
+   [
+    "quote",
+    "maintains a connected component for the clique"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "modular materialisation (symmetric-transitive module)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g6"
+   ],
+   [
+    "quote",
+    "g-hu-modular-2019"
+   ],
+   [
+    "quote",
+    "Moreover, many of these approaches cannot handle deletion of input facts, which is a key problem in incremental reasoning."
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "specialised closure algorithms",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g7"
+   ],
+   [
+    "quote",
+    "g-green-update-exchange-2007"
+   ],
+   [
+    "quote",
+    "we rely on Skolem functions to specify the placeholders"
+   ],
+   [
+    "quote",
+    {
+     "covers": "existential rules",
+     "by": "orchestra update exchange",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g8"
+   ],
+   [
+    "quote",
+    "g-green-update-exchange-2007"
+   ],
+   [
+    "quote",
+    "our deletion algorithm is faster than a full recomputation even when deleting up to approximately 80% of the instance"
+   ],
+   [
+    "quote",
+    {
+     "result": "orchestra update exchange",
+     "measure": "share of the instance deleted at which provenance-based incremental deletion still beats full recomputation",
+     "bound": "up to",
+     "percent": 80
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g9"
+   ],
+   [
+    "quote",
+    "g-green-update-exchange-2007"
+   ],
+   [
+    "quote",
+    "two placeholder values will be the same if and only if they were generated with the same Skolem function with the same arguments"
+   ],
+   [
+    "quote",
+    {
+     "covers": "nulls named by description",
+     "by": "skolem chase",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g10"
+   ],
+   [
+    "quote",
+    "g-urbani-streams-2022"
+   ],
+   [
+    "quote",
+    "its extension to rapidly changing data has not yet been considered"
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "existential rule reasoning",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g11"
+   ],
+   [
+    "quote",
+    "g-rdfox-docs-reasoning"
+   ],
+   [
+    "quote",
+    "RDFox will reject rules that use negation in all equality modes other than off"
+   ],
+   [
+    "quote",
+    {
+     "covers": "stratified negation",
+     "by": "rdfox equality modes",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g12"
+   ],
+   [
+    "quote",
+    "g-rdfox-docs-reasoning"
+   ],
+   [
+    "quote",
+    "A plausible strategy is to first select the smallest individual according to some pre-defined total order"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deterministic representatives",
+     "by": "rdfox clique-representative rules",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g13"
+   ],
+   [
+    "quote",
+    "g-rdfox-docs-reasoning"
+   ],
+   [
+    "quote",
+    "the built-in tuple table SKOLEM , which allows us to associate a tuple of elements with a unique blank node."
+   ],
+   [
+    "quote",
+    {
+     "covers": "existential rules",
+     "by": "rdfox skolem",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g14"
+   ],
+   [
+    "quote",
+    "g-rdfox-docs-reasoning"
+   ],
+   [
+    "quote",
+    "Phases deletion and rule deletion are responsible for the handling of fact and rule deletion respectively."
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "rdfox",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g15"
+   ],
+   [
+    "quote",
+    "g-nieuwenhuis-dpllt-2006"
+   ],
+   [
+    "quote",
+    "Ask SolverT to undo the last n notifications that a literal has been set to true."
+   ],
+   [
+    "quote",
+    {
+     "covers": "lifo retraction of equalities",
+     "by": "dpll(t) theory solver interface",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g16"
+   ],
+   [
+    "quote",
+    "g-nieuwenhuis-dpllt-2006"
+   ],
+   [
+    "quote",
+    "modern incremental, backtrackable congruence closure algorithm"
+   ],
+   [
+    "quote",
+    {
+     "covers": "congruence closure",
+     "by": "nieuwenhuis-oliveras congruence closure",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g17"
+   ],
+   [
+    "quote",
+    "g-holm-connectivity-2001"
+   ],
+   [
+    "quote",
+    "by fully dynamic, we mean that the graph may be updated by insertion and deletion of edges"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "holm-de lichtenberg-thorup dynamic connectivity",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g18"
+   ],
+   [
+    "quote",
+    "g-holm-connectivity-2001"
+   ],
+   [
+    "quote",
+    "A query min-key(v) returns a minimal key from the tree containing v"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deterministic representatives",
+     "by": "et-trees",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g19"
+   ],
+   [
+    "quote",
+    "g-holm-connectivity-2001"
+   ],
+   [
+    "quote",
+    "Incremental connectivity is the union-find problem"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "union-find",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g20"
+   ],
+   [
+    "quote",
+    "g-singher-colored-2023"
+   ],
+   [
+    "quote",
+    "A colored e-graph is a memory-efficient equivalent of multiple copies of an e-graph, with a much lower overhead."
+   ],
+   [
+    "quote",
+    {
+     "covers": "equalities under assumptions",
+     "by": "colored e-graphs",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g21"
+   ],
+   [
+    "quote",
+    "g-singher-colored-2023"
+   ],
+   [
+    "quote",
+    "It should be noted, though, that it is still a monotone framework, and does not allow backtracking or simultaneous exploration of alternative assumptions."
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "egglog",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "attributed",
+   [
+    "quote",
+    "li-g21"
+   ],
+   [
+    "quote",
+    "e-zhang-egglog-2023"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g22"
+   ],
+   [
+    "quote",
+    "g-singher-colored-2023"
+   ],
+   [
+    "quote",
+    "we see roughly around 10 × \\times lower overheads"
+   ],
+   [
+    "quote",
+    {
+     "result": "colored e-graphs",
+     "measure": "lower e-node overhead per assumption than separate e-graph copies",
+     "bound": "about",
+     "times": 10
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g23"
+   ],
+   [
+    "quote",
+    "g-egglog-docs"
+   ],
+   [
+    "quote",
+    "Be wary! Only delete entries that are guaranteed to be not useful."
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "egglog delete",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g24"
+   ],
+   [
+    "quote",
+    "g-egglog-docs"
+   ],
+   [
+    "quote",
+    "push the current egraph n times so that it is saved."
+   ],
+   [
+    "quote",
+    {
+     "covers": "lifo retraction of equalities",
+     "by": "egglog push/pop",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g25"
+   ],
+   [
+    "quote",
+    "g-shah-sundance-2026"
+   ],
+   [
+    "quote",
+    "We provide an initial implementation of a backtrackable, relational e-matching algorithm in Sundance"
+   ],
+   [
+    "quote",
+    {
+     "covers": "lifo retraction of equalities",
+     "by": "sundance relational e-matching",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g26"
+   ],
+   [
+    "quote",
+    "g-shah-sundance-2026"
+   ],
+   [
+    "quote",
+    "show a median speedup of $25.0 \\times$ over a top-down e-matching algorithm"
+   ],
+   [
+    "quote",
+    {
+     "result": "sundance relational e-matching",
+     "measure": "speedup over top-down e-matching (synthetic benchmarks)",
+     "bound": "median",
+     "times": 25
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g27"
+   ],
+   [
+    "quote",
+    "g-shah-sundance-2026"
+   ],
+   [
+    "quote",
+    "we see a median slowdown of $1.77 \\times$"
+   ],
+   [
+    "quote",
+    {
+     "result": "sundance relational e-matching",
+     "measure": "slowdown versus top-down e-matching (Verus benchmarks)",
+     "bound": "median",
+     "times": 1.77
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g28"
+   ],
+   [
+    "quote",
+    "c-benedikt-chasebench-2017"
+   ],
+   [
+    "quote",
+    "To make this choice deterministic, one can totally order all values so that all constant values are smaller than all labeled nulls, and then always replace the larger value with the smaller one (line 12)."
+   ],
+   [
+    "quote",
+    {
+     "covers": "deterministic representatives",
+     "by": "egd determinization (chasebench)",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g29"
+   ],
+   [
+    "quote",
+    "c-benedikt-chasebench-2017"
+   ],
+   [
+    "quote",
+    "Known acyclicity conditions [20] ensure termination of the parallel chase, and the solution is deterministic"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "parallel chase",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g30"
+   ],
+   [
+    "quote",
+    "c-benedikt-chasebench-2017"
+   ],
+   [
+    "quote",
+    "Finally, EGD steps are not monotonic"
+   ],
+   [
+    "quote",
+    {
+     "covers": "monotonicity",
+     "by": "egd chase steps",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g31"
+   ],
+   [
+    "quote",
+    "d-motik-equality-2015"
+   ],
+   [
+    "quote",
+    "π(c) = min Ec(U) for each constant c"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deterministic representatives",
+     "by": "backward-forward",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g32"
+   ],
+   [
+    "quote",
+    "d-motik-equality-2015"
+   ],
+   [
+    "quote",
+    "An update may lead to the deletion of equalities, which may require adding facts to I."
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "backward-forward",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g33"
+   ],
+   [
+    "quote",
+    "d-motik-equality-2015"
+   ],
+   [
+    "quote",
+    "that the rewriting is unique for U"
+   ],
+   [
+    "quote",
+    {
+     "covers": "results independent of rule order",
+     "by": "backward-forward",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g34"
+   ],
+   [
+    "quote",
+    "d-mcsherry-dd-2013"
+   ],
+   [
+    "quote",
+    "the smallest label in its connected component"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deterministic representatives",
+     "by": "differential dataflow",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-g35"
+   ],
+   [
+    "quote",
+    "c-nappa-eqrel-2019"
+   ],
+   [
+    "quote",
+    "Note that Datalog relations are growing monotonically [1], and hence no deletion operations are required."
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "souffle eqrel",
+     "is": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u1"
+   ],
+   [
+    "quote",
+    "lion-readme"
+   ],
+   [
+    "quote",
+    "So the result does not depend on the order rules or facts were added in."
+   ],
+   [
+    "quote",
+    {
+     "lion": "order-independent merges",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "li-u1"
+   ],
+   [
+    "quote",
+    "Existential rules"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u2"
+   ],
+   [
+    "quote",
+    "lion-order-probe"
+   ],
+   [
+    "quote",
+    "With the rules in one order, every unknown becomes the unknown of mother c; in the other order, the unknown of mother b."
+   ],
+   [
+    "quote",
+    {
+     "lion": "order-independent merges",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u3"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "view mode is independent of rule and fact order: yes, 10000 programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "order-independent merges",
+     "by": "least-member classes",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u4"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "C. the classes operator equals from-scratch classes after each of 25348 random insertions and deletions"
+   ],
+   [
+    "quote",
+    {
+     "covers": "deletion of equalities",
+     "by": "least-member classes",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u5"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "same answer 328, same rows and same sharing under other names 14, different 0"
+   ],
+   [
+    "quote",
+    {
+     "result": "least-member classes",
+     "measure": "random programs Lion accepts that give Lion's exact answer",
+     "bound": "exact",
+     "count": 328
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u6"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "same answer 328, same rows and same sharing under other names 14, different 0"
+   ],
+   [
+    "quote",
+    {
+     "result": "least-member classes",
+     "measure": "random programs Lion accepts that give Lion's rows with another unknown naming a class",
+     "bound": "exact",
+     "count": 14
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u7"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "B. Lion adding facts one by one then retracting one, vs from scratch: same 223"
+   ],
+   [
+    "quote",
+    {
+     "lion": "correct maintenance with unknowns",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "li-u8"
+   ],
+   [
+    "quote",
+    "chase-model-tests"
+   ],
+   [
+    "quote",
+    "lion mode is independent of rule and fact order: NO, counterexample after 157 runs"
+   ],
+   [
+    "quote",
+    {
+     "result": "lion 0.13 merging",
+     "measure": "random programs until one gave an answer that depends on rule order",
+     "bound": "exact",
+     "count": 157
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

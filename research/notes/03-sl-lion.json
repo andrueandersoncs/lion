@@ -58,7 +58,7 @@
     },
     {
       "id": "lion-shared-algebra",
-      "url": "out/research/lion-improvements/shared-algebra.md",
+      "url": "research/runs/lion-improvements/shared-algebra.md",
       "title": "Rows, weights, and annotations: the algebra DBSP and annotated relations share",
       "publisher": "Lion project (earlier research, 2026-11-18)",
       "kind": "secondary",

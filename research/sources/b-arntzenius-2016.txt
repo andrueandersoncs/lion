@@ -1,0 +1,1708 @@
+Datafun: A Functional Datalog
+Michael Arntzenius Neelakantan R. Krishnaswami
+University of Birmingham (UK)
+{daekharel, neelakantan.krishnaswami}@gmail.com
+Abstract
+Datalog may be considered either an unusually powerful query lan-
+guage or a carefully limited logic programming language. Datalog
+is declarative, expressive, and optimizable, and has been applied
+successfully in a wide variety of problem domains. However, most
+use-cases require extending Datalog in an application-specific man-
+ner. In this paper we define Datafun, an analogue of Datalog sup-
+porting higher-order functional programming. The key idea is to
+track monotonicity with types.
+Categories and Subject Descriptors F.3.2 [Logics and Meanings
+of Programs]: Semantics of Programming Languages
+Keywords Prolog, Datalog, logic programming, functional pro-
+gramming, domain-specific languages, type theory, denotational
+semantics, operational semantics, adjoint logic
+1. Introduction
+The phrase “declarative programming” is as popular as it is am-
+biguous, with seemingly hundreds of disparate senses in which it is
+used. However, two of those usages stand out for popularity: both
+functional and logic programming languages are generally deemed
+declarative languages. Despite this shared epithet, the logic and
+functional programming traditions have largely evolved indepen-
+dently of one another (with a few honorable exceptions such as
+Mercury (Somogyi et al. 1994), Curry (Antoy and Hanus 2010) and
+Kanren (Friedman et al. 2005)). This could be seen as an occasion
+for sorrow, but we prefer to view it as an opportunity: as functional
+language designers, we can look to logic languages to discover new
+ideas to steal.
+A Prolog program can be understood as a collection of logical
+axioms formulated as Horn clauses (i.e., first-order formulas of the
+form ∀⃗x.P1 ∧...∧Pn →Q, where Pi and Qare atomic formulas).
+Execution of a Prolog program can be understood as running a proof
+search algorithm on these clauses to figure out whether a particular
+formula is derivable or not.
+In other words, functional and logic programming languages
+embody the Curry-Howard correspondence in two different ways. In
+a functional language, types are propositions, terms are proofs, and
+program evaluation corresponds to proof normalization. On the other
+hand, for logic programming languages, terms are propositions, and
+program evaluation corresponds to proof search.
+Since proof search is in general undecidable, designers of logic
+programming languages must be careful both about the kinds
+of formulas they admit as programs, and about the proof search
+algorithm they implement. Prolog offers a very expressive language
+— full Horn clauses — and so faces an undecidable proof search
+problem. Therefore, Prolog specifies its proof search strategy: depth-
+first goal-directed/top-down search. This lets Prolog programmers
+reason about the behaviour of their programs; however, it also means
+many logically natural programs fail to terminate. Notoriously,
+transitive closure calculations are much less elegant in Prolog
+than one might hope, since their most natural specification is best
+computed with a bottom-up (aka “forwards chaining”) proof search
+strategy.
+This view of Prolog suggests other possible design choices,
+such as restricting the logical language so as to make proof search
+decidable. One of the oldest such variants is Datalog (Gallaire and
+Minker 1978), a subset of Prolog satisfying three restrictions:
+1. Programs must be constructor-free: only atomic terms and
+variables are permitted to appear as arguments to predicates.
+This ensures that deduction will not introduce terms that do not
+occur in the source of the program.
+2. Clauses are range-restricted: all variables in the consequent
+(head) of a clause must also occur positively in its premises
+(body).
+3. Programs are limited to stratified negation: the negation of a
+predicate may be used in a definition only if it has already
+been fully defined. That is, within the recursive definition of
+a predicate, it cannot be used in negated form.
+These restrictions make Datalog Turing-incomplete: all queries
+are decidable. As functional programmers are well aware, though,
+there is power in restraint: for example, in a total functional language,
+the compiler may switch between strict and lazy evaluation at will.
+Similarly, in Datalog decidability means that implementations are
+free to use forwards chaining, and so can easily support queries (like
+reachability and transitive closure) which are difficult to implement
+in ordinary Prolog.
+Over the last decade or so, this freedom has been put to good
+use, with Datalog appearing at the heart of a a wild variety of
+applications in both research and industry. For example, Whaley
+and Lam (Whaley et al. 2005; Whaley 2007) implemented pointer
+analysis algorithms in Datalog, and found that they could reduce
+their analyses from thousands of lines of C code to tens of lines of
+Datalog code, while retaining competitive performance. Semmle
+has developed the .QL language (de Moor et al. 2007; Schäfer and
+de Moor 2010) based on Datalog for analysing source code (which
+was used to analyze the code for NASA’s Curiosity Mars rover), and
+LogicBlox has developed the LogiQL (Aref et al. 2015) language
+for business analytics. The Boom project at Berkeley has developed
+the Bloom language for distributed programming (Alvaro et al.
+2011), and the Datomic cloud database (Hickey et al.) uses Datalog
+(embedded in Clojure) as its query language. Microsoft’s SecPAL
+language (Becker et al. 2010) uses Datalog as the foundation of its
+decentralised authorization specification language.
+In all of these cases, the use of Datalog permits giving speci-
+fications and implementations which are dramatically shorter and
+clearer than alternatives implemented in more conventional lan-
+guages. However, while all of these applications are built on a
+foundation of Datalog, they all also extend it significantly. For ex-
+ample, it is impossible even to implement arithmetic in Datalog,
+since adding 2 and 3 produces 5, which is a new term not equal
+to either 2 or 3! As a result, even though Datalog has a very clean
+semantics, its metatheory needs to be re-established once again for
+each application-specific extension to it.
+As a result, it would be very desirable to understand what
+makes Datalog tick, so that we can embed it into a more expressive
+language without sacrificing the properties that make it so powerful
+within its domain. In this way, extensions can become “a small
+matter of programming”, without having to do a custom redesign of
+the language for each application.
+In this paper, we present Datafun, a typed functional language
+which permits programming in the style of Datalog, while still
+supporting the full power of higher-order functional programming.
+Contributions
+•We describe Datafun, a typed language capturing the expres-
+sive power of Datalog and extending it to support higher-order
+functional programming. Datafun’s key feature is to track mono-
+tonicity with types. This permits us to use typing to analyze fixed
+point computations in a way ensuring their termination.
+•We present examples illustrating the expressive power of Data-
+fun, including relational-algebra-style operations, transitive clo-
+sure, CYK parsing, and dataflow analysis. Some of these ex-
+amples are familiar from Datalog, but many of them go well
+beyond what can be expressed in it, illustrating the benefits of
+our approach.
+•We identify the semantic structures underpinning Datalog, and
+use this to give a denotational semantics for Datafun in terms of
+a pair of adjunctions between Set, Poset, SemiLat.
+•We have a prototype implementation of Datafun in Racket,
+which has been used to implement all of the examples in
+this paper, and is available at https://github.com/rntz/
+datafun/.
+2. Datafun, Informally
+We give the core syntax of Datafun in Figure 1. Datafun is a simply-
+typed λ-calculus extended in four major ways:
+1. We add a type of finite sets, {A}.
+2. We add a type of monotone functions, A +
+→B. Consequently
+Datafun has two flavors of variable: ordinary variables, which we
+call discrete, and monotone variables. We write discrete variables
+in scriptand monotone variables in bold.
+In order for “monotone” to have meaning, our types are implic-
+itly partially ordered:
+•Booleans 2are ordered false <true.
+•Natural numbers N have the usual order: 0<1<2<....
+•We have no particular use-case for comparing strings str in
+this paper, so we order them discretely; a≤biff a= b.
+•Pairs and functions are ordered pointwise:
+(a,x) ≤(b,y) iff a≤b∧ x≤y
+A,B ::= 2| N | str | {A} | A+ B| A×B
+types A→B| A +
+→B
+L,M ::= 2| N | {A} | L×M| A→L| A +
+→L
+semilattice types
+eqA,eq
+B ::= 2| N | str | {eq
+A} | eq
+A+
+B| eq
+A×
+B
+eq
+eq
+eqtypes
+finA,fin
+B ::= 2| {fin
+A} | fin
+A+
+fin
+B| fin
+A×
+B
+fin
+finite eqtypes
+∆ ::= ·| ∆,x: A
+Γ ::= ·| Γ,x : A
+contexts
+e ::= x| x | λx.e| λx.e| ee
+terms (e,e) | π1 e| π2 e| in1 e| in2 e
+caseeof in1 x e; in2 x e
+caseeof in1 x e; in2 x e
+true | false | if etheneelsee
+{e} | ε| e∨ e| (x∈e) e
+fixx ise| fixx ≤eise
+Figure 1. Syntax of core Datafun
+f≤giff ∀x.fx≤gx
+•Sum types are ordered disjointly: ini a≤ini biff a≤b,
+but in1 aand in2 bare never comparable.
+•Sets are ordered by inclusion: a≤biff a⊆b.
+3. We add a term (fix x is e) denoting the least fixed point
+of the monotone function (λx.e). This is computed (modulo
+optimizations) by iteration, starting from the smallest value of
+the desired type and halting once a fixed point is found. This
+strategy constrains the types of fixterms in several ways:
+•The type must have a smallest value. We enforce this using
+semilattice types (see item 4, below).
+•The type must support equality tests, to determine when
+a fixed point has been reached. We call a type supporting
+equality tests an eqtype.
+•To ensure termination, the type must have finite height.1 We
+conservatively approximate this property by limiting fixto
+finite types.
+In summary, fixmay only be used at finite semilattice eqtypes.
+4. Generalizing the empty set ∅and union ∪, we identify a subset
+of types that have a least element εand a least upper bound
+operator ∨. We call these semilattice types2, and denote them by
+the metavariables L,M.
+Semilattice types serve two purposes. First, as already men-
+tioned, they guarantee the presence of a least element, needed to
+compute fixterms.
+Second, they provide a natural eliminator for sets. Given e1 : {A},
+we write (x∈e1) e2 for the least upper bound, over all
+elements x∈e1, of e2, provided e2 has some semilattice type L.
+1 The height of a poset is the cardinality of its largest chain (totally-ordered
+subset).
+2 Technically, the partial orderings on these types form join-semilattices
+with a least element. For brevity’s sake, we call these structures simply
+“semilattices.”
+terms e ::=
+...| {⃗
+e} | {e| L} | (L) e
+C⃗
+e| caseeof [p e]∗
+patterns p ::= | x| !e| (p,p) | true | false | C⃗
+p
+constructors C are abstract identifiers
+loops L ::= L,L| p∈e| e
+{} expand
+−−−→ ε
+{e,⃗
+ei} expand
+−−−→ {e} ∨ {⃗
+ei}
+{e| L} expand
+−−−→ (L) {e}
+expand
+(L1,L2) e
+−−−→ (L1) (L2) e
+expand
+(p∈e1) e2
+−−−→ (x∈e1) casexof p e2; ε
+expand
+(e1) e2
+−−−→ if e1 thene2 elseε
+¬ : 2→2
+= :
+A→
+A→2
+eq
+eq
+≤ :
+A→
+A +
+→2
+eq
+eq
+range : N →N +
+→{N}
+length : str →N
+substring : str →N →N →str
+Figure 4. Primitive functions and their type schemes
+Figure 2. Syntax sugar
+casee1 of
+expand
+x e3;
+−−−→ let x= e1 in e3
+e4
+casee1 of
+expand
+!e2 e3;
+−−−→ if e1 = e2 thene3 elsee4
+e4
+casee1 of
+expand
+e3;
+−−−→ e3
+e4
+casee1 of let (x,y) = e1 in
+(p,p′) e3;
+expand
+−−−→ casexof
+e4 p (caseyof p′ e3; e4);
+e4
+casee1 of casee1 of
+expand
+in1 p e3;
+−−−→ in1 x→(casexof p e3; e4);
+e4 in2 y→e4
+casee1 of casee1 of
+expand
+in2 p e3;
+−−−→ in1 x→e4;
+e4 in2 y→(caseyof p e3; e4)
+Figure 3. Pattern matching expansion
+If e2 is a set, for example, this provides the set type’s monadic
+“bind” operation. For example, (x∈{1,2,3}) {10·x,x2}
+denotes the set {1,4,9,10,20,30}.
+3. Examples
+For purposes of these examples, we use a simple Haskell-like
+syntax for top-level type and function definitions. We also permit
+ourselves infix notation, let-binding, n-ary tuples, n-ary sum types
+with named constructors, and a restricted form of pattern-matching
+(including non-linear patterns), and additional syntax sugar given
+in Figures 2 and 3. These figures also show how to expand the
+sugar into our core language. Full expansion for case-analysis is
+complicated, so we include only the fragment for expressions of the
+form casee1 of p e2; e3, as that is all we use in this paper.
+All of these conveniences are supported (with slightly different
+concrete syntax) in our implementation.
+For clarity, we set the names of top-level variables in sans-serif;
+discrete variables in scriptor italic (for long variable names); and
+monotone variables in bold. Although Datafun as presented does
+not have polymorphism, we give our examples their most general
+possible type schemes.
+3.1 Filtering, Mapping, and Cross Products
+Armed with the syntactic sugar given in Figure 2, basic set opera-
+tions such as map, filter, and cross-product are easy first examples:
+map : (A→B) →{A} +
+→{B}
+map fA= {fx| x∈A}
+filter : (A→2) +
+→{A} +
+→{A}
+filter f A= {x| x∈A,f x}
+(×) : {A} +
+→{B} +
+→{A×B}
+A ×B= {(a,b) | a∈A,b∈B}
+Worth noting here are the subtleties of monotonicity typing. For
+example, mapis not monotone in its function argument, while filter
+is. Recalling that sets are ordered by inclusion, this is straightforward
+enough — observe, for example, that:
+map (≤0) {0,1} ̸⊆ map (≤1) {0,1}
+filter (≤0) {0,1} ⊆ filter (≤1) {0,1}
+However, it is perhaps unclear how Datafun’s type system “knows”
+filteris monotone in f. In brief, Datafun knows that application (f x)
+is monotone in the function, and moreover, testing a boolean guard
+(f x) in a set-comprehension such as {x| x∈A,f x} is monotone in
+the guard expression. The full explanation is in Section 4.
+3.2 Equality, Membership, and Intersection
+So long as the type of a set’s elements supports equality, we can test
+whether the set contains a value xas follows:
+(∈?) : eq
+A→{eq
+A} +
+→2
+x∈? A= (y∈A) x= y
+The expression (y∈A) x= ytakes the least upper bound,
+at boolean type, for every y ∈A, of the value of x = y. Since
+booleans are ordered false <true, “least upper bound” is simply
+logical disjunction!
+Similarly, we can define set intersection by testing for equality:
+(∩) : {eq
+A} +
+→{eq
+A} +
+→{eq
+A}
+A ∩B= {x| x∈A,y∈B,x= y}
+However, explicitly binding multiple variables only to test for
+equality can become tedious, so we support a form of equality
+patterns. The grammar of patterns includes the form !e, which
+means the term at that position equals the value of e. So we can
+indicate that a pattern must have an equal value at different positions
+by binding the first one to a variable x, and then marking later
+positions with a !x. Now, the intersection can be written as:
+(∩) : {eq
+A} +
+→{eq
+A} +
+→{eq
+A}
+A ∩B= {x| x∈A,!x∈B}
+Since !ximplies the use of an equality test, the condition that the
+set’s element type support equality remains in force.
+3.3 Composition of Relations
+One extremely useful operator it is convenient to define using
+nonlinear pattern matching is composition of finite relations (that is,
+sets of pairs):
+(•) : {A×
+B} +
+eq
+→{eq
+B×C} +
+→{A×C}
+R •S= {(a,c) | (a,b) ∈R,(!b,c) ∈S}
+This already demonstrates a capability Datafun has that Datalog does
+not: defining operators over relations. A Datalog program defining
+binary predicates r and s which wished to compose those predicates
+would have to define a new top-level predicate:
+r(X,Y) :- (...).
+s(X,Y) :- (...).
+rs(A,C) :- r(A,B), s(B,C).
+In Datafun, we simply define (•) and use it inline as needed. We
+shall see the use of this in later examples.
+3.4 Transitive Closure
+Consider the following Datalog program, authored perhaps by a
+J.R.R. Tolkien aficionado wishing to trace the geneologies of their
+favorite work, The Silmarillion:
+parent(earendil, elrond).
+parent(elrond, arwen).
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Z) :- ancestor(X, Y), ancestor(Y, Z).
+This defines a binary parent relation, along with its transitive
+closure, ancestor. The Datafun equivalent is:
+data person= EÄRENDIL | ELROND | ARWEN
+parent, ancestor : {person×person}
+parent= {(EÄRENDIL,ELROND),(ELROND,ARWEN)}
+ancestor = fixX isparent∨ (X •X)
+The type personrepresents the domain of our parentand ancestor
+relations. parent is simply a list of parent-child pairs. ancestor is
+where the action is at: since the Datalog predicate ancestor is
+defined recursively, ancestor is defined as a least fixed point — in
+this case, of the the equation
+X= parent∨ (X •X)
+Informally, we may read this as stating that a pair is in X if it is
+in either parent or the composition of X with itself. This requires
+that X contain the transitive closure of parent. And since we take
+the least fixed point of this equation, ancestor contains exactly the
+transitive closure of parent. Voilà!
+3.4.1 Transitive Closure with an Upper Bound
+The preceding explanation glosses over a critical requirement: fix
+may only be used at finite semilattice eqtypes. ancestor has type
+{person ×person}. Does this suffice? It’s certainly a semilattice,
+since it’s a set type. Since person is effectively a sum of units, it
+supports equality, and sets and products of eqtypes are themselves
+eqtypes. Likewise, personis finite, and products and sets of finite
+types are themselves finite.
+So we are in the clear, but in general the restriction of fixto finite
+types can be quite limiting. So Datafun provides a more general way
+to take a fixed-point: specify an upper bound which the fixed point
+may not exceed. For this we write (fix x ≤e⊤is e), where e⊤is
+our upper bound.
+Suppose, for example, we represent our dramatis personae as
+strings (an infinite type). We may write:
+persons : {str}
+persons= {"eärendil","elrond","arwen"}
+parent,ancestor : {str×str}
+parent= {("eärendil","elrond"),("elrond","arwen")}
+ancestor = fixX ≤(persons×persons) isparent∨ (X •X)
+Instead of a persontype, we have personsset, which we use to
+construct an upper bound on our fixed-point: (persons×persons),
+the complete binary relation. Since all strings in parent are in
+persons, the transitive closure of parentcannot exceed the bound.
+However, this invariant is left to the programmer to check. What
+if a sloppy programmer should mistakenly include a person in
+parent not present in persons? More generally, what if the fixed
+point (fixx ≤e⊤ise) is trying to compute exceeds e⊤? (Or indeed,
+no such fixed point exists?)
+In that case, the value of (fix x ≤e⊤is e) is clamped to the
+upper bound e⊤. This ensures Datafun programs terminate even in
+the presence of sloppy programmers, and although they may not
+have the value you expect, that value is at least predictable.
+3.4.2 Generic Transitive Closure
+Thus far we have only considered taking the transitive closure of a
+relation we have already defined. But consider: for any finite eqtype
+A, we may write:
+fin
+trans : {fin
+A×
+A} +
+fin
+→{fin
+A×
+A}
+fin
+transE= fixX isE ∨ (X •X)
+Similarly, for any eqtype eq
+A, we may write:
+trans : {eq
+A} +
+→{eq
+A×
+A} +
+eq
+→{eq
+A×
+A}
+eq
+transV E= fixS ≤(V ×V) isE ∨ (S •S)
+In this way, we can abstract away from choice of underlying
+relation and define transitive closure generically. Using functions
+as a means of abstraction is of course familiar and unremarkable to
+functional programmers, but it is simply not possible in Datalog.
+3.5 CYK Parsing
+Parsing can be understood logically, with a parse tree representing
+a proof that a certain string belongs to a language described by a
+context-free grammar. As a result, it is possible to formulate parsing
+in terms of proof search (Shieber et al. 1995). One of the simplest
+algorithms for parsing context free grammars is the Cocke-Younger-
+Kasami (CYK) algorithm for parsing with grammars in Chomsky
+normal form.3 Given a grammar G, we begin by introducing a family
+of predicates (sometimes called facts or items) A(i,j), with one A
+for each nonterminal, and iand jrepresenting indices into a string.
+Given a word w, we write w[i,n] for the n-element substring of w
+3 In Chomsky normal form, each production is of the form A → B·C
+or A→
+⃗
+a, with A,B,Cranging over nonterminals, and⃗
+aover strings of
+terminals.
+beginning at position i. Then, we can specify the CYK algorithm
+with the following two inference rules:
+B(i,j) C(j,k) (A→BC) ∈G
+(A→
+A(i,k)
+⃗
+a) ∈G w[i,n] =⃗
+a
+A(i,i+ n)
+Then, the predicate A(i,j) means that A is derivable from the
+substring of wrunning from ito j, and so the whole word wis
+derivable from the start symbol Sif S(0,length w) is derivable.
+In Datafun, this rule-based description of the algorithm can be
+transliterated almost directly into code. We begin by introducing a
+few basic types.
+type sym= str
+data rule= STRING str | CONCAT symsym
+type grammar= {sym×rule}
+type fact= sym×N ×N
+The sym type is a type synonym representing nonterminal names
+with strings. The rule type is the type of the right-hand-sides of
+productions in Chomsky normal form – either a string, or a pair
+of nonterminals. A grammar is just a set of productions – a set of
+pairs of nonterminals paired with their rules. The type fact is the
+type representing the atomic facts derived by the CYK inference
+system – they are triples of the rulename, the start position, and the
+end position.
+With these types in hand, we can write the CYK algorithm as a
+fixed point computation. In fact, it is convenient to break it into two
+pieces, by first defining the function whose fixed point we take. So
+we can write down the iter function, which represents one step of
+the fixed point iteration.
+iter : str →grammar
++
+→{fact} +
+→{fact}
+iter text G chart=
+{(a,i,k) | (a,CONCAT bc) ∈G,
+(!b,i,j) ∈chart,
+(!c,!j,k) ∈chart}
+∨ {(a,i,i+ length s)
+| (a,STRING s) ∈G,
+i∈range 0(n− length s),
+s= substring text i(i+ length s)}
+This function works by taking a string text and a grammar G, and
+then taking a set of facts chart, and taking a union. The first clause
+is a set comprehension, saying that we return (a,i,k) if (b,i,j)
+and (c,j,k) are in chart – this corresponds to applications of the
+first rule. The second clause corresponds to the second rule above,
+saying that (a,i,i+ length s) is a generated fact if sis a substring
+of text at position i.
+We can then use iter to implement the parsefunction.
+parse : str →grammar
+parse text G=
+letn= length text
+bound= {(a,i,j) | (a, +
+→{sym}
+) ∈G,
+i∈range 0n,
+j∈range in}
+chart= fixC ≤bound isiter text G C
+in{a| (a,0,!n) ∈chart}
+This function just takes the fixed point of iter – almost. Because
+facts are triples sym ×N ×N, sets of facts may in general grow
+unboundedly. To ensure termination, we construct a set bound to
+bound the sets of facts we consider in our fixed point computation,
+by bounding the symbols to names found in the grammar G, and
+the indices to positions of the string. Since all of these are finite, we
+know that the computation of chart as a bounded fixed point will
+terminate. Then, having computed the fixed point, we can check
+chart to see if (a,0,length text) is derivable.
+There are three things worth noting about this program. First, it
+is not expressible in Datalog. Because Datalog provides no way to
+represent a grammar as a piece of data (it’s compound, not an atom),
+there is simply no way in Datalog to express a generic parser taking
+a grammar as an input. This demonstrates one of the key benefits of
+moving to a functional language like Datafun.
+Moreover, Datalog programs must be constructor-free, to ensure
+all relations are finite. Primitives such as rangeand substringviolate
+this restriction (as relations, they are infinite); it is not immediately
+obvious that Datalog programs extended with these primitives
+remain terminating. Our use of bounded fixed-points to guarantee
+termination is robust under such extensions; as long as all primitive
+functions are total, Datafun programs always terminate.
+Finally, having computed a set via a fixed point, we can test
+whether or not an element is in that set or not – the ability to test for
+negative information after the fixed point computation completes
+corresponds to a use of stratified negation in Datalog.
+3.6 Dataflow Analysis
+In this section, we show how some simple dataflow analyses can be
+expressed in Datafun. We begin with the types in these programs.
+type var = str
+type label= N
+data oper= EQ | LE | ADD | SUB | MUL | DIV
+data atom = VAR var | NUM N
+data expr= ATOM atom | APPLY oper atom atom
+data stmt = ASSIGN var expr | IF expr label label
+type program= {label×stmt}
+The basic idea is that we represent a program as a kind of control
+flow graph. Each node of this graph has a label, which is a natural
+number, and contains a statement of type stmt, which is either an
+assignment of an expression (of type expr) to a variable (of type
+var), or a conditional jump. A program is then just the set of nodes
+– i.e., a set of label, statement pairs – with the invariant that the
+relation is functional (i.e., if (l,s) and (l,s′) are both in a program,
+then s= s′).
+In what follows, we use a few trivial functions whose definitions
+are omitted for space reasons.
+labels : program →{label}
+vars : program →{var}
+uses : stmt →{var}
+defines : stmt →{var}
+The labels function returns the set of labels in a program. The
+vars function returns the set of variables used in a program (both
+in expressions and as targets for assignments). The uses function
+returns the set of variables used by the expressions in a statement.
+The defines function returns the set of variables defined by a
+statement (i.e., at most one variable – the target of the assignment).
+Given a program, we define the 1-step control flow graph with
+the flow function.
+type flow= {label×label}
+flow : program →flow
+flow c= ((i,s) ∈c)
+casesof IF jk {(i,j),(i,k)}
+| {(i,i+ 1) | i+ 1∈? labels c}
+It says that if (i,s) is a node of the program, then if sis a conditional
+jump IF jk, then control can flow from ito j, and from ito k–
+i.e., we add both (i,j) and (i,k) to the set of edges. Otherwise, it’s
+an assignment, and control flows to the next statement (i.e., we add
+(i,i+ 1) to the set of edges).
+Now, we can define liveness analysis, one of the classic “back-
+wards” dataflow analyses. The type of livesay that given a program
+and its flow graph, it returns a set of label/variable pairs, which
+determine a relation saying for each label which variables are live.
+live : program →flow →{label×var}
+live code flow=
+fixLive ≤labels code ×vars code is
+((i,stmt) ∈code)
+( {(i,v) | v∈uses stmt}
+∨ {(i,v) | (!i,j) ∈flow,
+(!j,v) ∈Live,
+¬(v∈? defines stmt)})
+For a statement stmt at label i, we say that the variable vis live at i
+if vis used by stmt. The variable vis also live at iif control flows
+from ito j, and and vis live at j, assuming that stmt isn’t a definition
+site for v.
+When computing this analysis, we again need to use a bounded
+fixed point, which we do by taking the Cartesian product of the
+labels and variables occuring in the program.
+Next, we give one of the classic forwards dataflow analyses,
+reaching definitions. This analysis is used to figure out whether
+an assignment (a “definition”) can influence the value of later
+expressions or not.
+reachingDefinitions : program →flow →{(label×var) ×label}
+reachingDefinitions code flow=
+fixRD ≤(labels code ×vars code) ×labels code is
+((i,stmt) ∈code)
+( {((i,v),i) | v∈defines stmt}
+∨ {((l,v),i) | (j,!i) ∈flow,
+((l,v),!j) ∈RD,
+¬(v∈? defines stmt)})
+We define a function reachingDefinitions which takes a program
+and a set of flows as arguments, and returns a relation of type
+{(label ×var) ×label}. An entry ((l,v),i) in this relation means
+the definition of vat lreaches program point i.
+This is then computed as a fixed point of two clauses. First, if
+there is a definition vat program point i, then iis reached by that
+definition. Second, if (l,v) reaches j, and jflows to i, then (l,v)
+reaches ias long as vis not re-defined at i.
+As Whaley et al. (2005) observed, Datalog makes it very easy to
+express dataflow analyses, and it is similarly easy in Datafun.
+∆; Γ ⊢L⇒∆′, which says that “in the contexts ∆and Γ, the
+comprehension clauses in Lbind the variables in ∆′”.
+4.1 Functions and Application
+Two function types require two function introduction rules: the
+discrete λand the monotone λ+. These simply introduce variables
+into their respective contexts. Monotone function application APP+
+is perfectly standard, but discrete function application APP has a
+pecularity: the argument e2 gets an empty monotone context.
+To understand why, recall our gloss: the application e1 e2 must
+be monotone in Γ. But e1 is a discrete, and in general non-monotone,
+function A →B: there is no guarantee that it respect any order
+on its argument. (Suppose, for example, e2 were some monotone
+variable x : A ∈Γ.) We work around this scoff-law behavior on
+e1’s part by ensuring its argument e2 is constant with respect to
+Γ—which we accomplish by simply prohibiting e2 from using any
+of Γ’s variables.
+This technique of wiping clean the monotone context to guaran-
+tee constancy4 of a subterm recurs in several other rules. Readers
+familiar with linear logic’s ! comonad (Girard 1987) or with judg-
+mental formulations of modal logics of necessity (Pfenning and
+Davies 2001) may notice a feeling of déjà vu; indeed, there is a
+hidden comonad at work here. But we are getting ahead of ourselves.
+For more on that, turn to Section 5.
+4.2 Products and Sums
+The pairing and projection rules, PAIR and π, are completely
+standard, as is the IN rule for sum introduction. Sum elimination,
+however, splits into two rules, CASE and CASE+
+. CASE+ requires
+its branches to be monotone in the variable x it introduces, and
+consequently its subject e is permitted access to the monotone
+context Γ. CASE, however, analyses its subject e as a constant
+— wiping clean its monotone context — and thus is allowed to
+introduce the variable xinto the discrete context ∆.
+4.3 Booleans
+While TRUE and FALSE are straightforward, there are two rules for
+boolean elimination, IF and IF+. This is because in Datafun, 1plus 1
+does not equal 2: booleans are not a sum of units.5 At the type 1+ 1,
+in1⟨⟩and in2⟨⟩are incomparable. But in Datafun, true > false.
+Therefore, to eliminate a boolean in a monotone fashion, one must
+ensure one’s then-branch is always greater than one’s else-branch.
+Thus Datafun has two if rules. First, IF, where the boolean e
+being analysed is constant (has an empty monotone context), and so
+the branches e1, e2 may be arbitrary expressions.
+Second, IF+, where the subject ehas full access to Γ, but the
+if-expression must have semilattice type, and the else-branch is
+constrained to be ε— the least value, thus smaller than e1.
+This is a conservative approach: there are many semantically
+monotone, but untypeable, if-terms. However, it is complete for
+semilattice types, for in that case (if ethen e1 else e2) may be
+rewritten (e2 ∨ if ethen e1 else ε); as long as e1 ≥e2 and so
+e2 ∨ e1 = e1, this will not change the meaning of the expression,
+only (potentially) its execution efficiency.
+Thus the only meaningful restriction here is to semilattice types.
+In practice, we have yet to find a case where this is problematic.
+4. Type System
+Datafun’s typing judgment ∆; Γ ⊢e: Ais defined by the inference
+rules given in Figure 5. We gloss ∆; Γ ⊢ e : A as follows:
+“expression ehas type Ausing variables from ∆∪Γ, and moreover
+the value of eis monotone with respect to the variables in Γ”.
+The context ∆types discrete variables; Γ, monotone variables.
+Both admit the usual structural rules of exchange, weakening, and
+contraction. Variables from either context may be used freely (rules
+VAR, VAR+).
+For clarity, we also give typing rules for our syntax sugar, in
+Figure 6. These use the auxilliary judgments ∆; Γ ⊢p: A⇒∆′
+,
+which can be read as saying that “in the contexts ∆ and Γ, the
+pattern ptypechecks at type A, binding the variables in ∆′”; and
+4 Wherever we write “constant” in this section, substitute “constant with
+respect to the monotone context”. The discrete context is never “wiped
+clean”, and behaves entirely as it would in a simply-typed λ-calculus.
+5 For simplicity, we have omitted the unit type 1 from our presentation of
+Datafun, but it is easy enough to imagine including it.
+x: A∈∆
+∆; Γ ⊢x: A VAR
+∆; Γ,x : A⊢e: B
+∆; Γ ⊢λx.e: A +
+→B
+∆; Γ ⊢e: Ai
+λ+ IN
+∆; Γ ⊢ini e: A1 + A2
+∆; Γ ⊢true : 2 TRUE ∆; Γ ⊢ε: L ε
+∆; Γ ⊢caseeof in1 x e1; in2 x e2 : C
+∆; Γ ⊢false : 2 FALSE
+∆; Γ ⊢ei : L
+∆; Γ ⊢e1 ∨ e2 : L ∨
+∆; Γ,x : L⊢e:
+L
+fin
+FIX
+x : A∈Γ
+∆; Γ ⊢x : A VAR+ ∆; Γ ⊢λx.e: A→B λ
+∆,x: A; Γ ⊢e: B
+∆; Γ ⊢e1 : A→B ∆; ·⊢e2 : A
+∆; Γ ⊢e1 e2 : B APP
+∆; Γ ⊢e1 : A +
+→B ∆; Γ ⊢e2 : A
+∆; Γ ⊢e1 e2 : B APP+
+∆; Γ ⊢ei : Ai
+∆; Γ ⊢(e1,e2) : A1 ×A2
+PAIR
+∆; Γ ⊢e: A1 ×A2
+∆; Γ ⊢πi e: Ai
+π
+∆; ·⊢e: A1 + A2 ∆,x: Ai; Γ ⊢ei : C
+CASE
+∆; Γ ⊢e: A1 + A2 ∆; Γ,x : Ai ⊢ei : C
+∆; Γ ⊢caseeof in1 x e1; in2 x e2 : C CASE+
+∆; ·⊢e: 2 ∆; Γ ⊢ei : A
+∆; Γ ⊢if ethene1 elsee2 : A
+IF
+∆; Γ ⊢e: 2 ∆; Γ ⊢e1 : L
+∆; Γ ⊢if ethene1 elseε: L IF+
+∆; ·⊢e: A
+∆; Γ ⊢{e} : {A} {}
+∆; Γ ⊢e1 : {A} ∆,x: A; Γ ⊢e2 : L
+∆; Γ ⊢ (x∈e1) e2 : L
+∆; Γ ⊢e1 :
+L ∆; Γ,x :
+eq
+L⊢e2 :
+eq
+L
+eq
+FIX≤
+∆; Γ ⊢fixx ise:
+L
+fin
+∆; Γ ⊢fixx ≤e1 ise2 :
+L
+eq
+Figure 5. Typing rules for core Datafun
+Pfin
+∆; Γ ⊢L⇒∆′ ∆,∆′; Γ ⊢e: L
+∆; Γ ⊢ (L) e: L
+∆; Γ ⊢L⇒∆′ ∆,∆′; Γ ⊢e: A
+∆; ·⊢e: A ∆; Γ ⊢{e| L} : {A}
+∆; Γ ⊢p: A⇒∆′ ∆,∆′; Γ ⊢e1 : C Disc
+F
+Set Poset SemiLat
+⊥
+⊥
+|−|
+U
+∆; Γ ⊢e2 : C
+∆; Γ ⊢caseeof p e1; e2 : C
+∆; Γ ⊢L1 ⇒∆1 ∆; Γ ⊢L2 ⇒∆2
+∆; Γ ⊢e: 2
+∆; Γ ⊢L1,L2 ⇒∆1,∆2
+∆; Γ ⊢e: {A} ∆; Γ ⊢p: A⇒∆
+∆; Γ ⊢e⇒·
+∆; Γ ⊢p∈e⇒∆′ ∆; Γ ⊢x: A⇒x: A
+∆; Γ ⊢ : A⇒·
+∆; Γ ⊢p1 : A1 ⇒∆1 ∆; Γ ⊢p1 : A2 ⇒∆2
+∆; Γ ⊢(p1,p2) : A1 ×A2 ⇒∆1,∆2
+∆; Γ ⊢e:
+A
+eq
+∆; Γ ⊢p: Ai ⇒∆′
+∆; Γ ⊢!e:
+A⇒·
+eq
+∆; Γ ⊢ini p: A1 + A2 ⇒∆′
+Figure 6. Typing rules for syntax sugar
+4.4 Semilattices and Sets
+The semilattice εand ∨ operations are typed by the rules of the
+same name. As ∨ is monotone, its arguments have full access to the
+monotone context Γ.
+Recall that sets are ordered by inclusion: although 2 ≤ 3,
+nonetheless {2} ̸≤{3}. For this reason the rule {} for constructing
+a singleton set {e} wipes clean its element e’s monotone context.
+Datafun does not need empty-set or union operators, since εand ∨
+generalize them.
+Finally, we come to , the set-comprehension rule. This rule has
+the flavor of a monadic “bind” operation, but generalized to a result
+of any semilattice type. This operation is naturally monotone both in
+the set e1 being iterated over and in the expression e2 which we are
+Figure 7. Semantic categories of Datafun
+taking the least upper bound of. Since sets are ordered by inclusion
+regardless of the ordering on their elements, e2 is not required to be
+monotone in the variable x.
+4.5 Fixed Points
+The reason Datafun tracks monotonicity is to permit taking fixed-
+points of monotone functions. FIX expresses exactly that. As men-
+tioned in Section 2, however, it is limited to types of the form fin
+L:
+finite semilattice eqtypes.
+FIX≤loosens this restriction by letting us take fixed points at
+(not-necessarily-finite) semilattice eqtypes eq
+L, as long as we provide
+an upper bound e1 :
+Lwhich we can check we do not exceed.
+eq
+5. Denotational Semantics
+We give a denotational semantics for Datafun in terms of three
+categories (Set, Poset, and SemiLat) and two adjunctions between
+them (see Figure 7). We present the notation we use in Figure 8; we
+take care to distinguish between sets and posets, and since posets
+are more central to our semantics, most of our notation concerns
+them. We take less care to distinguish posets and semilattices, since
+while a set can be partially ordered in many ways, a poset either is
+or is not a semilattice.
+5.1 The Category SemiLat
+SemiLat is the category of join-semilattices with least elements,
+which we call simply “semilattices”.
+Directly, a semilattice is a poset L, with a least element ε, in
+which any two elements a,bhave a least-upper-bound a∨ b. From
+|P| Underlying set of the poset P
+S Set of strings
+1 One-element poset {⟨⟩}
+2 Two-element poset {ﬀ,tt}, with ﬀ <tt
+N≤ The naturals N, as a (totally ordered) poset
+P+ Q Disjointly-ordered poset on disjoint union of P,Q
+P×Q Pointwise poset on pairs of Ps and Qs
+P⇒Q Pointwise poset on monotone maps Poset(P,Q)
+FP Free semilattice on a poset P
+UL Underlying poset of a semilattice L
+Disc A Discrete poset on underlying set A
+Pfin A Free semilattice on a set A; same as F(Disc A)
+↓(x: P) The sub-poset of Pbelow x: {y∈P| y≤x}
+Figure 8. Semantic notation
+A ∈ Poset0
+2= 2
+N= N≤
+str = Disc S
+A×B= A × B
+A+ B= A + B
+A +
+→B= A ⇒ B
+A→B= Disc | A | ⇒ B
+{A}= Pfin | A |
+∆ , Γ ∈ Poset0
+· = 1
+∆,x: A= ∆ × A
+Γ,x : A= Γ × A
+Figure 9. Denotations of Datafun types and contexts
+εand ∨ it follows that any finite subset X⊆fin |L| has a least upper
+bound, written X.
+A morphism f∈SemiLat(L,M) is a function from |L| to |M|
+satisfying:
+f(a∨A b) = f(a) ∨B f(b)
+f(εA) = εB
+SemiLatis a subcategory of Poset; every SemiLat-morphism f
+is monotone, since a≤b ⇐⇒ a∨ b= b, and so from a≤bwe
+know f(a) ∨ f(b) = f(a∨ b) = f(b), thus f(a) ≤f(b). Since it
+is a subcategory, we will typically not explicitly write the forgetful
+functor ULwhich sends semilattices to posets by forgetting the
+lattice structure.
+5.2 Denotation of Datafun Types
+Datafun types and contexts denote posets as shown in Figure 9. To
+complete our semantics, we will need a few simple lemmas about
+the denotations of Datafun types. First, we need to know that our
+semilattice types are semilattices, and that our finite types are finite:
+Lemma 1. The denotation L of a semilattice type Lis a semilat-
+tice.
+Lemma 2. The poset fin
+A denoted by a finite eqtype fin
+Ais finite.
+Second, to show that bounded fixed-points (fix x ≤e⊤ is e)
+terminate, we need any possible e⊤to pick out a finite-height sub-
+poset:
+Lemma 3. For any semilattice equality type eq
+L, for any x∈
+L , the
+eq
+height of ↓(x:
+L ) is finite.
+eq
+All of these are trivial to prove by induction over types and the
+definition of−
+.
+5.3 Denotation of Datafun Terms
+In Figure 10 we give a denotation for typing derivations with the
+following signature:
+∆; Γ ⊢e: A ∈ Set(| ∆ |,Poset( Γ , A ))
+Colloquially, ∆; Γ ⊢e: Adenotes a function from ∆ × Γ to
+A that must be monotone in Γ (but not in ∆ ).
+Our semantics requires the following lemma regarding fixed-
+points of monotone functions:
+Lemma 4 (Fixed points in finite-height pointed posets). Any mono-
+tone map f: P→Pon a poset Pof finite height with a least element
+εhas a least fixed point of the form fn(ε).
+Proof. Consider the sequence ε,f(ε),f2(ε),f3(ε),.... Note that
+ε≤f(ε), so by monotonicity of fand induction fi(ε) ≤fi+1(ε).
+Thus this sequence forms an ascending chain. Since Phas finite
+height, this chain cannot be infinite; thus there is an nsuch that
+fn(ε) = fn+1(ε), i.e. fn(ε) is a fixed-point of f.
+Now consider any fixed-point xof f. Since ε≤x, by monotonic-
+ity of f, induction, and x= f(x), we have fn(ε) ≤x. Thus fn(ε) is
+the least fixed point of f.
+We write (lfp f∈L) for the least fixed point of a monotone map
+fon a semilattice Lof finite height.
+5.4 Metatheory
+We have proven the following theorems:
+Theorem 1 (Weakening and exchange). ∆; Γ ⊢e: A
+WEAK
+The rules
+∆2,∆1; Γ2,Γ1 ⊢e: A
+∆1,∆2; Γ1,Γ2 ⊢e: A XCHG
+∆,∆′; Γ,Γ′⊢e: A
+are admissible.
+Theorem 2 (Substitution, discrete). From
+•∆; ·⊢e1 : A,
+•and ∆,x: A; Γ ⊢e2 : B,
+it follows that
+•∆; Γ ⊢[e1/x] e2 : B,
+•and [e1/x] e2 δγ= e2 ⟨δ, e1 δγ⟩γ.
+Theorem 3 (Substitution, monotone). From
+•∆; Γ ⊢e1 : A,
+•and ∆; Γ,x : A⊢e2 : B
+it follows that
+•∆; Γ ⊢[e1/x] e2 : B,
+•and [e1/x] e2 δγ= e2 δ⟨γ, e1 δγ⟩.
+5.5 Discussion
+It has been known for a very long time that database queries have a
+monadic structure arising from the adjunction between Set and
+SemiLat — indeed, the very name of the Kleisli (Wong 2000)
+database system was chosen to reflect this fact!
+However, our decomposition of this adjunction into two smaller
+adjunctions, with an intermediate way-station in Posetis new. By
+interpreting our types in the intermediate category Poset, we gain
+access to the comonad Disc |A|. This lets us distinguish between
+Derivation Denotation
+∆; Γ ⊢e: A ∈ Set(| ∆ |,Poset( Γ , A ))
+x1 : A1,...,xn : AN; Γ ⊢xi : Ai δγ= πi δ
+∆; x1 : L1,...,xn : Ln ⊢xi : Li δγ= πi γ
+∆,x: A; Γ ⊢e: B
+∆; Γ ⊢λx.e: A→B δγ= x→ e ⟨δ,x⟩γ
+∆; Γ,x : A⊢e: B
+∆; Γ ⊢λx.e: A +
+→B δγ= x→ e δ⟨γ,x⟩
+∆; Γ ⊢e1 : A→B ∆; ·⊢e2 : A
+∆; Γ ⊢e1 e2 : B δγ= e1 δγ( e2 δ⟨⟩)
+∆; Γ ⊢e1 : A +
+→B ∆; Γ ⊢e2 : B
+∆; Γ ⊢e1 e2 : B δγ= e1 δγ( e2 δγ)
+∆; Γ ⊢ei : Ai
+∆; Γ ⊢(e1,e2) : A1 ×A2
+δγ= ⟨e1 δγ, e2 δγ⟩
+∆; Γ ⊢e: A1 + A2
+∆; Γ ⊢πi e: Ai
+δγ= πi ( e δγ)
+∆; Γ ⊢e: Ai
+∆; Γ ⊢ini e: A1 + A2
+δγ= ini ( e δγ)
+∆; ·⊢e: A1 + A2 ∆,x: Ai; Γ ⊢ei : B
+∆; Γ ⊢caseeof in1 x e1; in2 x e2 : B δγ=
+e1 ⟨δ,x⟩γ if e δ⟨⟩= in1 x
+e2 ⟨δ,x⟩γ if e δ⟨⟩= in2 x
+∆; Γ ⊢e: A1 + A2 ∆; Γ,x : Ai ⊢ei : B
+∆; Γ ⊢caseeof in1 x e1; in2 x e2 : B δγ=
+e1 δ⟨γ,x⟩ if e δγ= in1 x
+e2 δ⟨γ,x⟩ if e δγ= in2 x
+∆; Γ ⊢true : 2 δγ= tt
+∆; Γ ⊢false : 2 δγ= ﬀ
+∆; ·⊢e: 2 ∆; Γ ⊢ei : A
+∆; Γ ⊢if ethene1 elsee2 : A δγ=
+e1 δγ if e δ⟨⟩= tt
+e2 δγ if e δ⟨⟩= ﬀ
+∆; Γ ⊢e: 2 ∆; Γ ⊢e1 : L
+∆; Γ ⊢if ethene1 elseε: L δγ=
+e1 δγ if e δγ= tt
+εL if e δγ= ﬀ
+∆; Γ ⊢ε: L δγ= εL
+∆; Γ ⊢ei : L
+∆; Γ ⊢e1 ∨ e2 : L δγ= e1 δγ∨ L e2 δγ
+∆; ·⊢e: A
+∆; Γ ⊢{e} : {A} δγ= { e δ⟨⟩}
+∆; Γ ⊢e1 : {A} ∆,x: A; Γ ⊢e2 : L
+∆; Γ ⊢ (x∈e1) e2 : L δγ= { e2 ⟨δ,x⟩γ| x∈ e1 δγ}
+∆; Γ,x :
+L⊢e:
+L
+fin
+fin
+∆; Γ ⊢fixx ise:
+fin
+L δγ= lfp (x→ e δ⟨γ,x⟩) ∈
+fin
+L
+∆; Γ ⊢e1 :
+L ∆; Γ,x :
+L⊢e2 :
+L
+eq
+eq
+eq
+∆; Γ ⊢fixx ≤e1 ise2 :
+eq
+L δγ= lfp x→
+e2 δ⟨γ,x⟩ if it’s ≤ e1 δγ
+e1 δγ otherwise ∈↓( e1 δγ:
+L )
+eq
+Figure 10. Denotations of Datafun typing derivations
+monotone and non-monotone computations, which is the critical
+property letting us interpret fixed points in a sensible way. Indeed,
+it would also have been possible to directly reflect the adjunctions
+in the syntax (in the style of Benton and Wadler (1996)), but we
+chose not to because the explicit coercions were somewhat noisy in
+practice. However, the ghost of this logic persists, as can be seen in
+the context-clearing actions in our typing rules.
+6. An Operational Semantics
+We consider the denotational semantics to be primary in Datafun; as
+with Datalog, any implementation technique is valid so long as it
+lines up with these semantics. As a proof of concept, however, we
+present a simple call-by-value structural operational semantics in
+Figure 11 and show that all well-typed terms terminate.
+In our operational semantics we:
+1. Assume all semilattice operations (ε, ∨, , and fix) are sub-
+scripted with their type.
+2. Drop the distinction between discrete and monotone variables,
+and write x,yfor arbitrary variables.
+3. Add iter expressions, which occur as intermediate forms in the
+evaluation of fix.
+4. Classify some expressions eas values v, and add a value-form
+{⃗
+v} for finite sets.
+We use a small-step operational semantics using evaluation
+contexts Eafter the style of Felleisen and Hieb (1992) to enforce
+a call-by-value evaluation order; an evaluation context E is an
+expression with a hole in it (written [ ]) such that whatever is in
+the hole is next in line to be evaluated (if it is not a value already).
+To fill the hole [ ] in an evaluation context Ewith the expression e,
+we write E[e].
+We define a relation e→e′for expressions ewhose outermost
+structure is immediately reducible; we extend this relation to all
+expressions with the rule
+e→e′
+E[e] →E[e′]
+In our rules for e→e′where eis an iter expression we make
+use of a decidable ordering test on values, v ⊑ u :
+A, and a
+eq
+corresponding equality test v ≡ u :
+A. We define these using
+eq
+inference rules, but they are easily seen to be decidable by induction
+on
+A. The quantifiers in the premise of the rule ⊆range over finite
+eq
+domains, and thus pose no issue.
+6.1 Computing fix-ed Points via iter-ation
+Our implementation strategy for fixxiseis exactly that suggested
+by the proof of Lemma 4: starting from ε, iteratively apply λx.e
+until a fixed point is reached.
+To model this iteration, we introduce iter forms into our syntax.
+The fixed point expression fix
+L xiseimmediately steps to the form
+fin
+iter
+L(ε
+L; x.e), which can be thought of as an initial state of the
+fin
+fin
+iteration, starting with ε
+L.
+fin
+The intuition for iterating to the fixed point is that we apply
+the body and then check to see if the result changed. This is why
+we also introduce the two-place version iter
+A(v1; e2; x.e) which
+eq
+remembers the old value v1, so that we can test it against e2 (when
+it reaches a value v2) to determine whether we’ve reached a fixed
+point. If not, we can continue to iterate from v2 with iter
+L(v2; x.e).
+fin
+The iter≤ forms are similar, but additionally check that the
+iteration value never exceeds their first argument, to implement
+the clamping behavior of fixx≤e⊤ise.
+6.2 A Logical Relation for Termination
+To prove that all well-typed terms terminate according to our
+operational semantics, we use a logical relations argument.
+The standard approach of interpreting each type as a partial
+equivalence relation (PER) on closed terms turns out not to be
+sufficient in our case, and we need to extend it to prove termination.
+Just as posets are sets equipped with an order structure, we define
+our semantic types as PERs equipped with a preorder respecting
+the PER structure. The intuition is that since we needed the order
+structure in the denotational semantics to prove the definedness of
+fixed points, we will similarly need an order structure on the syntax
+to prove the termination of fixed points. Therefore, we inductively
+define relations a ⊑b | Afor each type A, then show how to
+understand these relations as preordered PERs.
+As a matter of notation, a,b,crange over closed expressions;
+γ,σ over substitutions containing only closed expressions; and
+Ctx(Γ) is the set of all substitutions of closed expressions for the
+variables in Γ.
+Because it simplifies our definitions and proofs, we introduce an
+additional pseudo-type A, which orders Adiscretely, x≤y ⇐⇒
+x= y.
+types A ::=
+...| A
+This represents the Disc |− | comonad on Poset present in our
+denotational semantics. Observe that under this interpretation A→
+Bis just A +
+→B. In particular, if we let A= Disc | A | then
+A→B= A +
+→B= Disc | A | ⇒ B .
+We define the following relations:
+a⊑b| A definition given below
+γ⊑σ| Γ iff ∀(x: A∈Γ) γ(x) ⊑σ(x) | A
+(for γ,σ∈Ctx(Γ))
+Γ ⊢e1 ⊑e2 | A γ1,e1 ⊑γ2,e2 | A iff iff ∀(γ1 ⊑γ2 | Γ) γ1,e1 ⊑γ2,e2 | A
+∀(i= 1,2) γi(e1) ⊑γi(e2) | A
+∧ γ1(ei) ⊑γ2(ei) | A
+γ1,e1 ⊑γ2,e2 | Amay be seen as a transitive square:
+γ1(e1) γ1(e2)
+⊑
+⊑
+⊑
+γ2(e1) γ2(e2)
+⊑
+As a matter of notation, for any relation Y⊑Z| X, we write:
+Y≡Z| X iff Y⊑Z| X∧ Z⊑Y| X
+Y| X iff Y⊑Y| X
+We now give the definition of a⊑b| Aby induction on A:
+a⊑b| A iff a≡b| A
+a⊑b| 2 iff a→∗v∧ b→∗u∧ v⊑u: 2
+a⊑b| {A} iff a→∗{⃗
+vi} ∧ b→∗{⃗
+ui}
+∧ ∀vi ∃uj (vi ≡uj | A)
+a⊑b| A1 + A2 iff a→∗ini v∧ b→∗ini u∧ v⊑u| Ai
+a⊑b| A1 ×A2 iff a→∗(v1,v2) ∧ b→∗(u1,u2)
+∧ ∀i(vi ⊑ui | Ai)
+a⊑b| A→B iff a⊑b| A +
+→B
+a⊑b| A +
+→B iff a→∗λx.e1 ∧ b→∗λx.e2
+∧ (x: A⊢e1 ⊑e2 | B)
+It may not be immediately obvious that (for a given A) the
+relation a⊑b| Acan be seen as a preordered PER. This requires
+the following two theorems, proven by induction on A:
+Theorem 4 (Partial reflexivity). If a⊑b| Athen a⊑a| Aand
+b⊑b| A.
+Additional syntax
+e,f,g ::=
+...| {⃗
+v} | εL | e∨L e| L(x∈e) e
+expressions fix
+L xise| fix
+L x≤eise
+fin
+eq
+iter
+A(e; x.e) | iter
+A(e; e; x.e)
+eq
+eq
+iter≤eq
+A(e; e; x.e) | iter≤eq
+A(e; e; e; x.e)
+::= λx.e| (v,v) | ini v| true | false | {⃗
+v}
+v,u,w values
+E ::= [ ] | Ee| vE| (E,e) | (v,E) | ini E| πi E
+evaluation E∨L e| v∨L E| L(x∈E) e
+contexts if Etheneelsee
+caseEof in1 x e; in2 x e
+iter
+A(E; x.e) | iter
+A(v; E; x.e)
+eq
+eq
+iter≤eq
+A(E; e; x.e) | iter≤eq
+A(v; E; x.e)
+iter≤eq
+A(v; v; E; x.e)
+β-reductions
+(λx.e1) e2 → [e2/x] e1
+πi (v1,v2) → vi
+caseini vof−−−−−−→
+inj xj ej → [v/xi] ei
+if truethene1 elsee2 → e1
+if falsethene1 elsee2 → e2
+Evaluating ε
+ε2 → false
+ε{A} → {}
+εL×M → (εL,εM)
+εA→L → λx.εL
+εA+
+→L
+→ λx.εL
+Evaluating ∨
+false∨2 v → v
+true∨2 v → true
+{⃗
+v} ∨{A} {⃗
+u} → {⃗
+v,⃗
+u}
+(v1,v2) ∨L×M (u1,u2) → (v1 ∨L u1,v2 ∨M u2)
+v∨A→L u → λx.vx∨L ux
+v∨
+A+
+→L u → λx.vx∨L ux
+Rules for v⊑u:
+Aand v≡u:
+eq
+A
+eq
+false ⊑false : 2 false ⊑true : 2 ∀vi ∃uj (vi ≡uj :
+A)
+eq
+{⃗
+vi} ⊑{⃗
+ui} : {eq
+A} ⊆
+v⊑u:
+Ai
+eq
+true ⊑true : 2
+v1 ⊑v2 :
+A u1 ⊑u2 :
+eq
+(v1,u1) ⊑(v2,u2) : eq
+A×
+B
+eq
+B
+eq
+v⊑u:
+A u⊑v:
+eq
+A
+eq
+≡
+v≡u:
+A
+eq
+ini v⊑ini u:
+A1 +
+eq
+A2
+eq
+Evaluating
+L(x∈{}) e → εL
+L(x∈{v,⃗
+u}) e → [v/x] e∨L L(x∈{⃗
+u}) e
+Evaluating fixand iter
+fix
+L xise → iter
+L(ε
+L; x.e)
+fin
+fin
+fin
+iter
+A(v; x.e) → iter
+A(v; [v/x] e; x.e)
+eq
+eq
+iter
+A(v1; v2; x.e) →
+v1 if v1 ≡v2 :
+A
+eq
+eq
+iter
+A(v2; x.e) otherwise
+eq
+fix
+eq
+L x≤e⊤ise → iter≤eq
+L(e⊤; ε
+L; x.e)
+eq
+iter≤eq
+A(v⊤; v; x.e) →
+iter≤eq
+A(v⊤; v; [v/x] e; x.e) if v⊑v⊤:
+v⊤ otherwise
+iter≤eq
+A(v⊤; v1; v2; x.e) →
+v1 if v1 ≡v2 :
+A
+eq
+iter≤eq
+A(v⊤; v2; x.e) otherwise
+A
+eq
+Theorem 5 (Transitivity). If a ⊑b | Aand b ⊑c | A, then
+a⊑c| A.
+From these it follows immediately that a≡b| Ais a PER, and
+a⊑b| Aforms a preorder over this PER which respects it.
+Theorem 6 (Termination). If a| Athen a→∗v.
+Proof. By cases on the definition of a⊑a| A.
+Theorem 7 (Fundamental theorem). If ∆; Γ ⊢e: Athen ∆,Γ ⊢
+a| A.
+Proof. By induction on ∆; Γ ⊢ e : A; full proof available at
+https://github.com/rntz/datafun/. The key case is the fixed
+point rule, whose proof is a syntactic version of the proof of
+definedness of fixed points in the denotational semantics.
+It follows as immediate corollary of termination and the funda-
+mental property that every closed, well-typed program terminates.
+Figure 11. Operational semantics
+7. Comparing Datalog and Datafun
+At this point, we have demonstrated by example that Datafun
+programs are rather similar to Datalog programs, and we have given
+the typing and denotational semantics of Datafun. However, we still
+need to explain why our semantics lets us express Datalog-style
+programs.
+To understand this, recall that Datalog is a bottom-up logic
+programming language. A program consists of a primitive database
+of facts, along with a set of rules the rules the programmer wrote.
+A Datalog program executes by using the rules to derive new
+conclusions from the database, and extending the database with
+them, until no additional conclusions can be drawn. Then the query
+can be checked simply by seeing if it occurs in the final database.
+This is, essentially, a fixed point computation – each stage of
+execution of a Datalog program takes a database and returns an
+extended database, until a fixed point is reached. The stratified
+negation restriction essentially ensures that the database transformer
+defined by a Datalog program is a monotone function on the set of
+facts. This is why the type system of Datafun tracks the monotonicity
+of functions — since we permit both higher-order definitions and
+taking fixed points, we need to ensure that the body of a fixed point
+definition is monotone in order to guarantee that the recursion is
+well-founded.
+This ensures that the recursive definition is well-defined, but is
+not sufficient by itself to guarantee termination. To manage this,
+Datalog depends upon the other two restrictions described in the
+introduction. By restricting terms occuring in predicates to consist
+of either atoms or variables, Datalog ensures that quantifiers need
+only be instantiated with the atoms used in a program. By requiring
+every variable in the consequent of rules to also occur in the premise
+of a rule, it ensures that every consequent will also only feature
+atoms occuring in the original program.
+Then, since there can only be finitely many atoms in a finite
+program, this means that the set of possible arguments to a predicate
+is itself finite. Then the lattice of sets of atomic predicates ordered
+by inclusion will be finite, and so fixed point iteration is guaranteed
+to terminate.
+Instead of this (rather indirect) scheme, Datafun directly tracks
+the finiteness of types, permitting recursion only if it is over a
+finite type, or is bounded explicitly. These two approaches achieve
+the same effect, albeit in different ways. Datalog’s approach has
+the benefit that no type discipline is needed to ensure finiteness.
+One advantage of our choice is that we permit recursion over any
+semilattice, not just the semilattice of sets. A much more serious
+advantage of our approach is that it makes it much easier to write
+fixed-point computations which actually compute with the data they
+see (for example, the CYK parser we wrote computed lengths of
+substrings).
+8. Implementation
+We have built a proof-of-concept implementation of Datafun in
+Racket, available at https://github.com/rntz/datafun/. In
+addition to core Datafun, it supports pattern-matching, variant
+types, record types, dictionaries, subtyping, antitone functions, and
+unbounded (potentially nonterminating) fixed points. We implement
+everything in a naïve style, and perform no optimizations.
+Type inference As a practical matter, type-checking needs to
+distinguish between discrete and monotone λ, application, case,
+let, and if. In our implementation we solve this in two ways:
+1. Bidirectional type inference (Pierce and Turner 2000) determines
+whether λs and applications are discrete or monotone.
+2. For if, case, and let, the programmer annotates which form is
+intended; for example, (if ethene1 elseε) is written (when e
+then e1) to indicate the rule IF+ applies.
+We believe that this scheme could be extended to support
+polymorphism in the style of Dunfield and Krishnaswami (2013).
+However, it would not be an entirely off-the-shelf affair, since
+we would want to add support for polymorphism over the tones
+of function, so that, for example, λf.λx.f xcan be assigned the
+principal type ∀o: tone.∀α,β: type.(α
+o
+→β) +
+→(α
+o
+→β), where
+o
+→indicates a function of tone o; a tone may be empty (for a discrete
+function) or + for a monotone function.
+9. Related and Future Work
+Aggregation Aggregation of values — for example, taking the
+sum x∈A f x of a function f across a set A — is a useful
+and ubiquitous database operation. Datafun naturally supports
+semilattice aggregation via , but many natural operations such
+as summation do not form semilattices on their underlying type.
+There are several potential ways to add support for aggregations to
+Datafun:
+•Common aggregations can be provided as primitive functions,
+for example size : {eq
+A} +
+→N or sum : (eq
+A→N) →{eq
+A} +
+→N.
+•In the style of Machiavelli (Ohori et al. 1989), one could add
+a general operator hom : B →(A →B →B) →{A} →B,
+which effectively linearizes a set in an unspecified order. The
+semantics of homare, alas, necessarily nondeterministic.
+•One could augment Datafun with a type of bags (multisets) A∗;
+bags naturally support a much broader class of aggregation —
+commutative monoids — than sets. See, for example, Budiu and
+Plotkin (2014) and Gibbons et al. (2015).
+Optimization Because Datalog is so strongly constrained, there
+has been a lot of very successful work on optimizing it, ranging
+from compilation into binary decision diagrams (Bryant 1992) by
+Whaley et al. (2005), to the famous “magic sets” (Bancilhon et al.
+1986) algorithm.
+From our perspective, magic sets are a natural next step for in-
+vestigation into how to optimize Datafun. Intuitively, the magic
+sets algorithm exploits the fact that Datalog (as a total logic lan-
+guage) has both a top-down and bottom-up reading, and rewrites
+the program so that it does bottom-up search, while using top-down
+reasoning to strategically avoid adding useless facts to the database.
+Transplanting this analysis to Datafun would essentially give us opti-
+mized implementations of fixed points, but extending the magic sets
+algorithm is likely to be very subtle, since Datafun has higher-order
+functions and Datalog does not. As a result, our goal is to first see if
+magic sets can be applied to first-order Datafun programs, and then
+use defunctionalization (Reynolds 1998) to extend it to full Datafun.
+Very recently, Madsen et al. (2016) have introduced the Flix lan-
+guage, which extends the semantics of Datalog to support defining
+relations valued in arbitrary lattices (rather than just the power-
+set of atoms). Like Datafun, this lets Flix support using monotone
+functions (on suitable lattices) in program expressions. Unlike Data-
+fun, Flix does not yet have monotonicity checking for programmer-
+defined operators. However, because Flix does not extend Datalog
+to higher order, efficient Datalog implementation strategies (such as
+semi-naive evaluation) continue to apply.
+Databases Datalog has sometimes been described as “relational
+algebra plus fixed points”, and there is a long line of work on em-
+bedding database query languages into general-purpose languages,
+including pioneering efforts such as Machiavelli (Ohori et al. 1989)
+and Kleisli (Wong 2000), as well as more recent systems such as
+Ferry (Grust et al. 2009) and LINQ in C# (Cheney et al. 2013).
+The focus of this work has been on embedding query languages
+based on relational algebra into general purpose languages, with
+an emphasis on statically compiling higher-order queries into the
+first-order queries supported by existing database systems (Cheney
+et al. (2014) is a representative example).
+Our approach is a little bit different. Instead of embedding
+Datalog into a general purpose language, Datafun is also a “little
+language”, albeit one that happens to be a higher-order functional
+language. We very deliberately did not try to embed Datafun into an
+existing language, because that would have greatly complicated the
+context-management operations needed to ensure monotonicity.
+In fact, from a language designer’s perspective, Datafun can be
+seen as an argument in favor of extending functional languages to
+support programming with user-defined, non-strong comonads.
+Deletion Ganzinger and McAllester (2002) showed how forward-
+chaining logic programming permits concise and elegant expression
+of a wide variety of algorithms, including a natural cost semantics.
+However, they noted that there were some algorithms (such as union-
+find and greedy algorithms) which could be formulated in this style,
+if there were additionally support for deleting facts from a database.
+Later, Simmons and Pfenning (2009) went on to show how deletion
+could be given a logical interpretation by formulating in terms of
+linear logic programming.
+This naturally raises the question of whether we could identify a
+“linear Datafun” corresponding to this style of programming, where
+we might linear types to model features like deletion. There are
+many nontrivial semantic issues (e.g., how to define monotonicity),
+but it seems a promising question for future work.
+Termination Datafun as presented is Turing-incomplete. This is
+advantageous for optimization; for example, one powerful opti-
+mization technique is loop reordering (in SQL terminology, join
+reordering), that is, taking advantage of the equation
+(x∈e1) (y∈e2) e = (y∈e2) (x∈e1) e
+when x,y /∈FV(e1) ∪FV(e2). But this equation does not always
+hold in the presence of nontermination; for example, if e1 = εand
+e2 diverges.
+Nonetheless, without adding advanced facilities for termination
+checking, there are many functions it is difficult to implement
+without use of general recursion. So a natural direction for future
+work is to study how to add support for general recursion to Datafun.
+Because domains (Abramsky and Jung 1994) can be understood as
+partial orders with directed joins, there are likely many interesting
+categorical structures connecting the category of domains to the
+category of posets, some of which will hopefully lead to a principled
+type-theoretic integration of partial functions into Datafun.
+User-Defined Posets and Semilattices The two fundamental semi-
+lattice types Datafun provides are booleans and sets; products
+and functions merely preserve semilattice structure where they
+find it. One might contemplate allowing the programmer to de-
+fine their own semilattice structures using something like Haskell’s
+newtype/instance. In general, this is a difficult problem, because
+we may need to do serious mathematical reasoning to prove that
+a comparison function implements a partial ordering, or that a
+datatype can be equipped with a semilattice structure obeying this
+partial ordering which is commutative, associative and idempotent.
+One example of such a family of types are the lexicographic
+sum types. Given two posets Pand Q, their disjoint union P+ Qis
+also a poset, with left values compared by the P-ordering, and right
+values compared by the Q-ordering, and no ordering between left
+and right values. However, this is not the only way that the disjoint
+union could be equipped with an order structure.
+For example, we could define the lexicographic sum P Q,
+which has the same elements as the sum, but extending the coproduct
+order relation with the additional facts that in1(p) ≤in2(q). Indeed,
+we already have a special case of this: as we noted earlier, our
+boolean type is not 1+ 1, but it is 1 1.
+But as our Booleans already show, giving good syntax for their
+eliminators is difficult, because we have to show that not just a term
+is monotone, but that the different branches of a lexicographic case
+expression are ordered with respect to each other. For the case of
+ordered Booleans, we were able to give a special eliminator which
+guaranteed it, but in general it requires proof.
+One natural direction for future work is to extend the syntax
+of Datafun with support for these kinds of proofs, perhaps taking
+inspiration from dependent type theory.
+Acknowledgments
+Thank you to:
+•Chris Martens, for helpful feedback and discussion on connec-
+tions to logic programming.
+•The anonymous ICFP reviewers, for pointing out areas which
+were previously unclear or incomplete.
+References
+S. Abramsky and A. Jung. Domain theory. Handbook of logic in computer
+science, 3:1–168, 1994.
+P. Alvaro, N. Conway, J. M. Hellerstein, and W. R. Marczak. Consistency
+analysis in Bloom: a CALM and collected approach. In CIDR 2011, Fifth
+Biennial Conference on Innovative Data Systems Research, Asilomar, CA,
+USA, January 9-12, 2011, Online Proceedings, pages 249–260, 2011.
+S. Antoy and M. Hanus. Functional logic programming. Communications
+of the ACM, 53(4):74–85, Apr. 2010. ISSN 0001-0782.
+M. Aref, B. ten Cate, T. J. Green, B. Kimelfeld, D. Olteanu, E. Pasalic,
+T. L. Veldhuizen, and G. Washburn. Design and implementation of
+the LogicBlox system. In Proceedings of the 2015 ACM SIGMOD
+International Conference on Management of Data, Melbourne, Victoria,
+Australia, May 31 - June 4, 2015, pages 1371–1382, 2015.
+F. Bancilhon, D. Maier, Y. Sagiv, and J. D. Ullman. Magic sets and
+other strange ways to implement logic programs (extended abstract).
+In Proceedings of the Fifth ACM SIGACT-SIGMOD Symposium on
+Principles of Database Systems, PODS ’86, pages 1–15, New York,
+NY, USA, 1986. ACM. ISBN 0-89791-179-2. doi: 10.1145/6012.15399.
+URL http://doi.acm.org/10.1145/6012.15399.
+M. Y. Becker, C. Fournet, and A. D. Gordon. Secpal: Design and semantics
+of a decentralized authorization language. Journal of Computer Security,
+18(4):619–665, 2010.
+P. N. Benton and P. Wadler. Linear logic, monads and the lambda calculus.
+In Proceedings, 11th Annual IEEE Symposium on Logic in Computer
+Science, New Brunswick, New Jersey, USA, July 27-30, 1996, pages 420–
+431, 1996.
+R. E. Bryant. Symbolic boolean manipulation with ordered binary-decision
+diagrams. ACM Computing Surveys (CSUR), 24(3):293–318, 1992.
+M. Budiu and G. Plotkin. Multilinear programming with big data. Festschrift
+for Luca Cardelli, September 2014. URL http://budiu.info/work/
+budiu-festschrift14.pdf.
+J. Cheney, S. Lindley, and P. Wadler. A practical theory of language-
+integrated query. In ACM SIGPLAN International Conference on Func-
+tional Programming, ICFP’13, Boston, MA, USA - September 25 - 27,
+2013, pages 403–416, 2013.
+J. Cheney, S. Lindley, and P. Wadler. Query shredding: efficient relational
+evaluation of queries over nested multisets. In International Conference
+on Management of Data, SIGMOD 2014, Snowbird, UT, USA, June 22-27,
+2014, pages 1027–1038, 2014.
+O. de Moor, D. Sereni, M. Verbaere, E. Hajiyev, P. Avgustinov, T. Ekman,
+N. Ongkingco, and J. Tibble. .QL: Object-oriented queries made easy. In
+Generative and Transformational Techniques in Software Engineering II,
+International Summer School, GTTSE 2007, Braga, Portugal, July 2-7,
+2007. Revised Papers, pages 78–133, 2007.
+J. Dunfield and N. R. Krishnaswami. Complete and easy bidirectional type-
+checking for higher-rank polymorphism. In International Conference on
+Functional Programming (ICFP), Sept. 2013. arXiv:1306.6032[cs.
+PL].
+M. Felleisen and R. Hieb. The revised report on the syntactic theories of
+sequential control and state. Theor. Comput. Sci., 103(2):235–271, Sept.
+1992. ISSN 0304-3975. doi: 10.1016/0304-3975(92)90014-7. URL
+http://dx.doi.org/10.1016/0304-3975(92)90014-7.
+D. P. Friedman, W. E. Byrd, and O. Kiselyov. The reasoned schemer. MIT
+Press, 2005. ISBN 978-0-262-56214-0.
+H. Gallaire and J. Minker, editors. Logic and Data Bases, Symposium on
+Logic and Data Bases, Centre d’études et de recherches de Toulouse,
+1977, Advances in Data Base Theory, New York, 1978. Plemum Press.
+ISBN 0-306-40060-X.
+H. Ganzinger and D. A. McAllester. Logical algorithms. In Logic
+Programming, 18th International Conference, ICLP 2002, Copenhagen,
+Denmark, July 29 - August 1, 2002, Proceedings, pages 209–223, 2002.
+J. Gibbons, F. Henglein, R. Hinze, and N. Wu. Relational algebra
+by way of adjunctions. In Database Programming Languages, Oc-
+tober 2015. URL http://www.cs.ox.ac.uk/jeremy.gibbons/
+publications/reladj-dbpl.pdf. Talk only.
+J. Girard. Linear logic. Theor. Comput. Sci., 50:1–102, 1987. doi: 10.
+1016/0304-3975(87)90045-4. URL http://dx.doi.org/10.1016/
+0304-3975(87)90045-4.
+T. Grust, M. Mayr, J. Rittinger, and T. Schreiber. FERRY: database-supported
+program execution. In Proceedings of the ACM SIGMOD International
+Conference on Management of Data, SIGMOD 2009, Providence, Rhode
+Island, USA, June 29 - July 2, 2009, pages 1063–1066, 2009.
+R. Hickey, S. Halloway, and J. Gehtland. Datomic: The fully transactional,
+cloud-ready, distributed database. http://www.datomic.com. Ac-
+cessed: 11 March 2016.
+M. Madsen, M. Yee, and O. Lhoták. From datalog to flix: a declarative
+language for fixed points on lattices. In C. Krintz and E. Berger, editors,
+Proceedings of the 37th ACM SIGPLAN Conference on Programming
+Language Design and Implementation, PLDI 2016, Santa Barbara, CA,
+USA, June 13-17, 2016, pages 194–208. ACM, 2016. ISBN 978-1-4503-
+4261-2. doi: 10.1145/2908080.2908096. URL http://doi.acm.org/
+10.1145/2908080.2908096.
+A. Ohori, P. Buneman, and V. Breazu-Tannen. Database programming in
+Machiavelli—a polymorphic language with static type inference. In
+Proceedings of the 1989 ACM SIGMOD International Conference on
+Management of Data, SIGMOD ’89, pages 46–57, New York, NY, USA,
+1989. ACM. ISBN 0-89791-317-5. doi: 10.1145/67544.66931. URL
+http://doi.acm.org/10.1145/67544.66931.
+F. Pfenning and R. Davies. A judgmental reconstruction of modal logic.
+Mathematical Structures in Computer Science, 11(4):511–540, 2001. doi:
+10.1017/S0960129501003322. URL http://dx.doi.org/10.1017/
+S0960129501003322.
+B. C. Pierce and D. N. Turner. Local type inference. ACM Trans. Program.
+Lang. Syst., 22(1):1–44, 2000.
+J. C. Reynolds. Definitional interpreters for higher-order programming
+languages. Higher-Order and Symbolic Computation, 11(4):363–397,
+1998.
+M. Schäfer and O. de Moor. Type inference for datalog with complex
+type hierarchies. In Proceedings of the 37th ACM SIGPLAN-SIGACT
+Symposium on Principles of Programming Languages, POPL 2010,
+Madrid, Spain, January 17-23, 2010, pages 145–156, 2010.
+S. M. Shieber, Y. Schabes, and F. C. N. Pereira. Principles and implementa-
+tion of deductive parsing. J. Log. Program., 24(1&2):3–36, 1995.
+R. J. Simmons and F. Pfenning. Linear logical approximations. In Proceed-
+ings of the 2009 ACM SIGPLAN Symposium on Partial Evaluation and
+Semantics-based Program Manipulation, PEPM 2009, Savannah, GA,
+USA, January 19-20, 2009, pages 9–20, 2009.
+Z. Somogyi, F. Henderson, and T. C. Conway. The implementation of mer-
+cury, an efficient purely declarative logic programming language. In ILPS
+1994, Workshop 4: Implementation Techniques for Logic Programming
+Languages, Ithaca, New York, USA, November 17, 1994, 1994.
+J. Whaley. Context-Sensitive Pointer Analysis using Binary Decision
+Diagrams. PhD thesis, Stanford University, Mar. 2007.
+J. Whaley, D. Avots, M. Carbin, and M. S. Lam. Using Datalog and binary
+decision diagrams for program analysis. In K. Yi, editor, Proceedings
+of the 3rd Asian Symposium on Programming Languages and Systems,
+volume 3780. Springer-Verlag, Nov. 2005.
+L. Wong. Kleisli, a functional query system. J. Funct. Program., 10(1):
+19–56, 2000.

@@ -1,0 +1,15 @@
+$ bun test.ts 1000   (out/research/lion-improvements/chase-model; Lion core 0.13.0)
+1. The counterexample, rule order swapped:
+   lion: DIFFERENT
+   view: same
+   model (lion mode) agrees with Lion on both orders: true
+2. view mode is independent of rule and fact order: yes, 10000 programs
+2. lion mode is independent of rule and fact order: NO, counterexample after 157 runs
+3. against Lion's engine, 1000 random programs (Lion refused 138; the model alone refused 0):
+   lion mode: same answer 856, same rows but another unknown names a class 6, different rows 0
+   view mode: same answer 833, same rows but another unknown names a class 29, different rows 0
+
+$ bun test2.ts 400
+A. proposed semantics vs Lion, 400 programs (Lion refused 58): same answer 328, same rows and same sharing under other names 14, different 0
+B. Lion adding facts one by one then retracting one, vs from scratch: same 223, other names 0, different rows 0, only one of the two refused 0
+C. the classes operator equals from-scratch classes after each of 25348 random insertions and deletions

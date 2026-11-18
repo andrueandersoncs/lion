@@ -1,0 +1,1020 @@
+Data Exchange: Semantics and Query Answering (Fagin, Kolaitis, Miller, Popa; ICDT 2003 / TCS 2005). Copy: https://www.cs.cornell.edu/~mshong/DDG_Fall05/DataExchange.pdf (line breaks joined)
+Data Exchange: Semantics and Query Answering ⋆ Ronald Fagina Phokion G.
+Kolaitis b,1 Ren´ee J.
+Miller c,1 Lucian Popaa aIBM Almaden Research Center {fagin,lucian}@almaden.ibm.com bUniversity of California at Santa Cruz kolaitis@cs.ucsc.edu cUniversity of Toronto miller@cs.toronto.edu Abstract Data exchange is the problem of taking data structured under a source schema and creating an instance of a target schema that reflects the source data as accurately as possible.
+In this paper, we address foundational and algorithmic issues related to the semantics of data exchange and to the query answering problem in the context of data exchange.
+These issues arise because, given a source instance, there may be many target instances that satisfy the constraints of the data exchange problem.
+We give an algebraic specification that selects, among all solutions to the data exchange problem, a special class of solutions that we call universal.
+We show that a universal so- lution has no more and no less data than required for data exchange and that it represents the entire space of possible solutions.
+We then identify fairly general, and practical, condi- tions that guarantee the existence of a universal solution and yield algorithms to compute a canonical universal solution efficiently.
+We adopt the notion of the “certain answers” in indefinite databases for the semantics for query answering in data exchange.
+We investi- gate the computational complexity of computing the certain answers in this context and also address other algorithmic issues that arise in data exchange.
+In particular, we study the problem of computing the certain answers of target queries by simply evaluating them on a canonical universal solution, and we explore the boundary of what queries can and cannot be answered this way, in a data exchange setting.
+Key words: data exchange, data integration, dependencies, universal solution, chase, query answering, certain answers, computational complexity, first-order inexpressibility ⋆ To appear: Theoretical Computer Science.
+A preliminary version of this paper ap- peared in the 2003 International Conference on Database Theory [FKMP03].
+1 Research carried out while these authors were visiting scientists at the IBM Almaden 1 Introduction In data exchange, data structured under one schema (which we call a source schema) must be restructured and translated into an instance of a different schema (a target schema).
+Data exchange is used in many tasks that require data to be transferred between existing, independently created applications.
+The first systems supporting the restructuring and translation of data were built several decades ago.
+An early such system was EXPRESS [SHT+77], which performed data exchange between hierarchical schemas.
+The need for systems supporting data exchange has persisted over the years.
+Recently this need has become more pronounced, as the terrain for data exchange has expanded with the proliferation of web data that are stored in different formats, such as traditional relational database schemas, semi-structured schemas (for example, DTDs or XML schemas), and various scientific formats.
+In this paper, we address several foundational and algorithmic issues related to the semantics of data exchange and to the query answering problem in the context of data exchange.
+The data exchange problem.
+In a data exchange setting, we have a source schema S and a target schema T, where we assume that S and T are disjoint.
+Since T can be an independently created schema, it may have its own constraints that are given as a set Σt of sentences in some logical formalism over T.
+In addition, we must have a way of modeling the relationship between the source and target schemas.
+This essential element of data exchange is captured by source-to-target dependen- cies that specify how and what source data should appear in the target.
+These de- pendencies are assertions between a source query and a target query.
+Formally, we have a set Σst of source-to-target dependencies of the form ∀x(φS(x)→ χT(x)), where φS(x) is a formula in some logical formalism over S and χT(x) is a formula in some (perhaps different) logical formalism over T.
+Consider a fixed data exchange setting determined by S, T, Σst, and Σt as above.
+This setting gives rise to the following data exchange problem: given an instance I over the source schema S, materialize an instance J over the target schema T such that the target dependencies Σt are satisfied by J, and the source-to-target dependencies Σst are satisfied by I and J together.
+The first crucial observation is that there may be many solutions (or none) for a given instance of the data exchange problem.
+Hence, several conceptual and technical questions arise concerning the semantics of data exchange.
+First, when does a solution exist? If many solutions exist, which solution should we materialize and what properties should it have, so that it reflects the source data as accurately as possible? Finally, can such a “good” solution be efficiently computed? We consider the semantics of the data exchange problem to be one of the two main issues in data exchange.
+We believe that the other main issue is query answering.
+Specifically, suppose that q is a query over the target schema T and I is an instance Research Center.
+Kolaitis was also partially supported by NSF Grant IIS-9907419.
+Miller was also partially supported by a research grant from NSERC.
+2 over the source schema S.
+What does answering q with respect to I mean? Clearly, there is an ambiguity arising from the fact that, as mentioned earlier, there may be many solutions J for I and, as a result, different such solutions J may produce dif- ferent answers q(J).
+This conceptual difficulty was first encountered in the context of incomplete or indefinite databases (see, for instance, [vdM98]), where one has to find the “right” answers to a query posed against a set of “possible” databases.
+There is general agreement that in the context of incomplete databases, the “right” answers are the certain answers, that is, the answers that occur in the intersection of all q(J)’s, as J varies over all “possible” databases.
+This notion makes good sense for data exchange as well, where the “possible” databases are the solutions J for the instance I.
+It also has the benefit that the query semantics is independent of the specific solution we select for data exchange.
+We thus adopt the certain answers as the semantics of query answering in the data exchange setting and investigate the complexity of computing the certain answers in the data exchange setting.
+A related important question is whether the certain answers of a query can be computed by query evaluation on the “good” target instance that we chose to materialize.
+Data exchange vs.
+data integration.
+Before describing our results on data ex- change, we briefly compare and contrast data exchange with data integration.
+Fol- lowing the terminology and notation in the recent overview [Len02], a data inte- gration system is a triple ⟨G, S, M⟩, where G is the global schema, S is the source schema, and M is a set of assertions relating elements of the global schema with elements of the source schema.
+Both G and S are specified in suitable languages that may allow for the expression of various constraints.
+In this generality, a data exchange setting (S, T, Σst, Σt) can be thought of as a data integration system in which S is the source schema, T and Σt form the global schema, and the source-to- target dependencies in Σst are the assertions of the data integration system.
+In prac- tice, however, most data integration systems studied to date are either LAV (local- as-view) systems or GAV (global-as-view) systems [Hal01,Len02,LMSS95].
+In a LAV system, each assertion in M relates one element of the source schema S to a query (a view) over the global schema G; moreover, it is typically assumed that there are no target constraints (Σt = ∅).
+In a GAV system the reverse holds, that is, each assertion in M relates one element of the global schema G to a query (a view) over the source schema S.
+Since the source-to-target dependencies Σst relate a query over the source schema S to a query over the target schema T, a data ex- change setting is neither a LAV nor a GAV system.
+Instead, it can be thought of as a GLAV (global-and-local-as-view) system [FLM99,Len02].
+The above similarities notwithstanding, there are important differences between data exchange and data integration.
+As mentioned earlier, in data exchange sce- narios, the target schema is often independently created and comes with its own constraints.
+In data integration, however, the global schema G is commonly as- sumed to be a reconciled, virtual view of a heterogeneous collection of sources and, as such, has no constraints.
+In fact, with the notable exception of [CCGL02], which studied the impact of key and foreign key constraints on query answering in a GAV system, most research on data integration has not taken target constraints 3 into account.
+Still, a more significant difference is that in a data exchange setting we have to actually materialize a finite target instance that best reflects the given source instance.
+In data integration no such exchange of data is required.
+For query answering, both data exchange and data integration use the certain answers as the standard semantics of queries over the target (global) schema.
+In data integration, the source instances are used to compute the certain answers of queries over the global schema.
+In contrast, in a data exchange setting, it may not be feasible to couple applications together in a manner that data may be retrieved and shared on- demand at query time.
+This may occur, for instance, in peer-to-peer applications that must share data, yet maintain a high degree of autonomy.
+Hence, queries over the target schema may have to be answered using the materialized target instance alone, without reference to the original source instance.
+This leads to the following problem in data exchange: under what conditions and for which queries can the certain answers be computed using just the materialized target instance? Motivation from Clio.
+The results presented here were motivated by our expe- rience with Clio, a prototype schema mapping and data exchange tool to whose development some of us have contributed [MHH00,PVM+02].
+In Clio, source-to- target dependencies (forming a GLAV system) are (semi)-automatically generated from a set of correspondences between the source schema and the target schema; these dependencies can then be used in a data integration system to compute the certain answers to target queries.
+Most of the applications we considered, however, were decoupled applications that would have had to be rewritten to operate cooper- atively, as required in data integration.
+For this reason, early on in the development of Clio, we recognized the need to go farther and, given a source instance, gener- ate a single “universal” target instance (satisfying the target dependencies) that was the result of the schema mapping.
+In designing the algorithms of Clio for creating the target instance, we were guided mainly by our intuition rather than by formal considerations.
+It should be noted that there is a long history of work on data trans- lation that focuses on taking high-level, data-independent translation rules and gen- erating efficient, executable translation programs [SHL75,SHT+77,ACM97].
+Yet, we could not find a formal justification for the intuitive choices we made in creat- ing the target instance.
+In seeking to formalize this intuition and justify the choices made in Clio, we were led to explore foundational and algorithmic issues related to the semantics of data exchange and query answering in this setting.
+Clio supports schemas that are relational or nested (XML).
+However, challenging issues already arise in the relational case.
+For this reason, here we focus exclusively on data ex- change between relational schemas; extending this work to other types of schemas is the subject of on-going investigation.
+Summary of Results.
+In Section 2, we formally introduce the data exchange prob- lem.
+We then give an algebraic specification that selects, among all possible solu- tions for a given source instance, a special class of solutions that we call universal.
+More precisely, a solution for an instance of the data exchange problem is universal if it has homomorphisms to all solutions for that instance.
+We show that a universal solution has “good” properties that justify its choice for the semantics of the data 4 exchange problem.
+We note that Cal`ı et al.
+[CCGL02] studied GAV systems with key and foreign key constraints at the target.
+By means of a logic program that sim- ulates the foreign key constraints, they constructed a canonical database, which turns out to be a particular instance of our notion of universal solution.
+Given the declarative specification of universal solutions, we go on in Section 3 to identify fairly general, yet practical, sufficient conditions that guarantee the ex- istence of a universal solution and yield algorithms to compute such a solution efficiently.
+Towards this goal, we use the concept of a weakly acyclic set of tar- get dependencies; this concept is broad enough to contain as special cases both sets of full tuple-generating dependencies (full tgds) [BV84] and acyclic sets of inclusion dependencies [CK86].
+In Section 3 we prove that if (S, T, Σst, Σt) is a data exchange setting such that Σst is a set of tuple-generating dependencies (tgds) and Σt is the union of a weakly acyclic set of tgds with a set of equality gener- ating dependencies (egds), then, given a source instance, a universal solution to the data exchange problem exists if and only if a solution exists.
+Moreover, for each data exchange setting (S, T, Σst, Σt) satisfying the above conditions, there is a polynomial-time algorithm that, given a source instance, determines whether a solution to the data exchange problem exists and, if so, produces a particular uni- versal solution, which we call the canonical universal solution.
+These results make use of the classical chase procedure [MMS79,BV84].
+We note that, even though the chase has been widely used in reasoning about dependencies, we have not been able to find any explicit references to the fact that the chase can produce instances that have homomorphisms to all instances satisfying the dependencies under con- sideration.
+After this, in Sections 4 and 5, we study query answering in a data exchange set- ting.
+We adopt the notion of the certain answers as the semantics of target queries (that is, queries posed over the target schema) and we investigate two separate, but interlinked, issues.
+The first issue is to determine for which target queries the cer- tain answers can be obtained using the materialized target instance alone, while the second is to analyze the computational complexity of computing the certain answers of target queries.
+Note that the study of query answering in this context involves three different parameters: a data exchange setting (S, T, Σst, Σt), a target query q, and a source instance I.
+Here, we focus on what could be called (following Vardi’s [Var82] taxonomy) the data complexity of target queries in an arbitrary, but fixed, data exchange setting.
+This means that we have a fixed data exchange setting (S, T, Σst, Σt) and, for each target query q, we are interested in the computational complexity of the following problem: given a source instance I, find the certain answers of q with respect to I.
+On the positive side, if the target query q is a union of conjunctive queries, then it is easy to show that the certain answers of q can indeed be obtained by evaluating q on an arbitrary universal solution.
+Moreover, universal solutions are the only solutions possessing this property; this can be seen as further justification for our choice to use universal solutions for data exchange.
+It also follows that, whenever a universal solution can be computed in polynomial time, the certain answers of unions of 5 conjunctive queries can be computed in polynomial time (in particular, this is true when the dependencies in Σst and Σt satisfy the conditions identified in Section 3).
+On the negative side, a dramatic change occurs when queries have inequalities.
+To begin with, Abiteboul and Duschka [AD98] showed that in a LAV data inte- gration system and with conjunctive queries as views, computing the certain an- swers of conjunctive queries with inequalities is a coNP-complete problem.
+Since this LAV setting is a special case of a data exchange setting in which the canoni- cal universal solution can be computed in polynomial time, it follows that, unless P=NP, we cannot compute the certain answers of conjunctive queries with in- equalities by evaluating them on the canonical universal solution (or on any other polynomial-time computable universal solution).
+We take a closer look at conjunc- tive queries with inequalities by focusing on the number of inequalities.
+In [AD98], it was claimed that in a LAV setting with conjunctive queries as views, computing the certain answers of conjunctive queries with a single inequality is a coNP-hard problem.
+The reduction given in that paper, however, is not correct; a different re- duction in the unpublished full version [AD00] shows that computing the certain answers of conjunctive queries with six (or more) inequalities is a coNP-complete problem.
+We conjecture that the minimum number of inequalities that give rise to such coNP-hardness results is two.
+Towards this, we show that in the same LAV setting, computing the certain answers of unions of conjunctive queries with at most two inequalities per disjunct is a coNP-complete problem.
+We also show that the problem of computing the certain answers for unions of conjunctive queries with inequalities remains in coNP, as long as we consider data exchange settings (S, T, Σst, Σt) in which Σst is a set of egds and Σt is a union of a set of egds with a weakly acyclic set of tgds.
+In proving this upper-bound result, we make use use of an extension of the chase that can handle disjunctive egds, in addition to tgds and egds.
+We call this chase the disjunctive chase; it is a special case of the “disjunctive chase” defined in [DT01].
+In contrast with the above mentioned intractability results for the case of two in- equalities or more, we then show that for the data exchange setting, there is a polynomial-time algorithm for computing the certain answers of unions of con- junctive queries with at most one inequality per disjunct (thus, the claim in [AD98] is false, unless P=NP).
+Moreover, even when the link between the source and the target has been severed, the certain answers of unions of conjunctive queries with at most one inequality per disjunct can be computed in time polynomial in the size of a given universal solution.
+We point out, however, that this computation cannot be carried out by simply evaluating such queries on the canonical universal solution.
+Thus, the question arises as to whether the certain answers of unions of conjunctive queries with at most one inequality per disjunct can be computed by evaluating some other (perhaps more complex) first-order query on the canonical universal solution.
+Our final theorem is an impossibility result, which provides a strong negative answer to this question.
+It shows that there is a simple conjunc- tive query q with one inequality for which there is no first-order query q∗ such that the certain answers of q can be computed by evaluating q∗ on the canonical uni- 6 versal solution.
+The proof of this theorem makes use of a novel combination of Ehrenfeucht-Fra¨ıss´e games and the chase.
+This result shows that, although there is a polynomial-time algorithm for finding the certain answers of q, there is no SQL query q∗ that returns the certain answers of q when evaluated by a database engine on the canonical universal solution.
+There is another way to view this impossibility result.
+Abiteboul and Duschka’s co- NP completeness result implies that if P ̸=NP, then there is a conjunctive query q with inequalities whose certain answers cannot be obtained by evaluating any first- order query q∗ on the canonical universal solution.
+We prove that the same conclu- sion holds even without the assumption that P ̸=NP.
+Moreover, it holds even for a query q with only one inequality, where we showed that there is a polynomial-time algorithm for obtaining the certain answers, and hence the assumption P ̸=NP cannot help.
+2 The Data Exchange Problem A schema is a finite collection R= {R1,...,Rk}s of relation symbols.
+An instance I over the schema R is a function that associates to each relation symbol Ri a relation I(Ri).
+In the sequel, we will on occasion abuse the notation and use Ri to denote both the relation symbol and the relation that interprets it.
+Given a tuple t occurring in a relation R, we denote by R(t) the association between t and R and call it a fact.
+An instance can be conveniently represented by its set of facts.
+If R is a schema, then a dependency over R is a sentence in some logical formalism over R.
+Let S= {S1,...,Sn} and T= {T1,...,Tm} be two disjoint schemas.
+We refer to S as the source schema and to the Si’s as the source relation symbols.
+We refer to T as the target schema and to the Tj’s as the target relation symbols.
+Similarly, instances over S will be called source instances, while instances over T will be called target instances.
+If I is a source instance and J is a target instance, then we write ⟨I,J⟩ for the instance K over the schema S∪ T such that K(Si)=I(Si) and K(Tj)=J(Tj), for i ≤ n and j ≤ m.
+A source-to-target dependency is a dependency of the form ∀x(φS(x)→ χT(x)), where φS(x) is a formula, with free variables x, of some logical formalism over S and χT(x) is a formula, with free variables x, over some logical formalism over T (these two logical formalisms may be different).
+We use the notation x for a vector of variables x1,...,xk.Atarget dependency is a dependency over the target schema T (the formalism used to express a target dependency may be dif- ferent from those used for the source-to-target dependencies).
+The source schema may also have dependencies that we assume are satisfied by every source instance.
+While the source dependencies may play an important role in deriving source-to- target dependencies [PVM+02], they do not play any direct role in data exchange, because we take the source instance to be given.
+7 Definition 2.1 A data exchange setting (S, T, Σst, Σt) consists of a source schema S, a target schema T, a set Σst of source-to-target dependencies, and a set Σt of target dependencies.
+The data exchange problem associated with this setting is the following: given a finite source instance I, find a finite target instance J such that ⟨I,J⟩ satisfies Σst and J satisfies Σt.
+Such a J is called a solution for I or, simply a solution if the source instance I is understood from the context.
+The set of all solutions for I is denoted by Sol(I).
+Note that the input to a data exchange problem is a source instance only; the data exchange setting itself (that is, source schema, target schema, and dependencies) is considered fixed.
+For most practical purposes, and for most of the results of this paper 2 , each source- to-target dependency in Σst is a tuple generating dependency (tgd) [BV84] of the form ∀x(φS(x) →∃yψT(x, y)), where φS(x) is a conjunction of atomic formulas over S and ψT(x, y) is a con- junction of atomic formulas over T.
+Moreover, each target dependency in Σt is either a tuple-generating dependency (tgd) (of the form shown below left) or an equality-generating dependency (egd) [BV84] (shown below right): ∀x(φT(x) →∃yψT(x, y)) ∀x(φT(x)→ (x1 = x2)) In the above, φT(x) and ψT(x, y) are conjunctions of atomic formulas over T, and x1, x2 are among the variables in x.
+Note that data exchange settings with tgds as source-to-target dependencies include as special cases both LAV and GAV data integration systems in which the views are sound [Len02] and are defined by conjunctive queries.
+It is natural to take the target dependencies to be tgds and egds: these two classes together comprise the (embedded) implicational dependen- cies [Fag82], which seem to include essentially all of the naturally-occurring con- straints on relational databases.
+However, it is somewhat surprising that tgds, which were originally “designed” for other purposes (as constraints), turn out to be ideally suited for describing desired data transfer.
+For simplicity of presentation, we do not allow for constants to occur anywhere inside the tgds and egds.
+However, all results of this paper can be suitably extended for such dependencies.
+Also, in the rest of the paper we will usually drop the univer- sal quantifiers in front of a dependency, and implicitly assume such quantification.
+However, we will write down all existential quantifiers.
+The next example shows that there may be more than one possible solution for a given data exchange problem.
+The natural question is then which solution to choose.
+Example 2.2 Consider a data exchange problem in which the source schema has three relation symbols P,Q,R, each of them with attributes A, B, C, while the 2 Except for Proposition 4.2.
+8 target schema has one relation symbol T also with attributes A, B, C.
+We assume that Σt = ∅.
+The source-to-target dependencies and the source instance are: Σst : P(a, b, c) →∃Y ∃ZT(a, Y, Z) Q(a, b, c) →∃X∃UT(X,b,U) R(a, b, c) →∃V ∃WT(V,W,c) I= { P(a0,b′ 0,c′ 0), Q(a ′′ 0,b0,c ′′ 0), R(a′′′ 0 ,b′′′ 0 ,c0) } We observe first that the dependencies in Σst do not completely specify the target instance.
+Indeed, the first dependency requires an A-value of a tuple in P to appear in the A column of T, but it does not specify any particular values for the B and C attributes.
+It should be noted that such incomplete specification arises naturally in many practical scenarios of data exchange (or data integration for that matter; see [Hal01,Len02]).
+For our example, one possible solution is: J= {T(a0,Y0,Z0),T(X0,b0,U0),T(V0,W0,c0)}, where X0,Y0,...
+represent “unknown” values, that is values that do not occur in the source instance.
+We will call such values labeled nulls and we will introduce them formally in the next section.
+The second observation is that there may be more than one solution.
+For example, the following are solutions as well: J1 = {T(a0,b0,c0)} J2 = {T(a0,b0,Z1),T(V1,W1,c0)} In the above, Z1,V1 and W1 are labeled nulls.
+Note that J1 does not use labeled nulls; instead, source values are used to witness the existentially quantified vari- ables in the dependencies.
+Solution J1 seems to be less general than J, since it “assumes” that all three tuples required by the dependencies are equal to the tu- ple (a0,b0,c0).
+This assumption, however, is not part of the specification.
+Similarly, solution J2 has extra information that is not a consequence of the dependencies in Σst for the given source data.
+We argue that neither J1 nor J2 should be used for data exchange.
+In contrast, J is the “best” solution: it contains no more and no less than what the specification requires.
+We formalize this intuition next.
+2.1 Universal Solutions We next give an algebraic specification that selects, among all possible solutions, a special class of solutions that we call universal.
+As we will see, a universal solution has several “good” properties that justify its choice for the semantics of data ex- change.
+Before presenting the key definition, we introduce some terminology and notation.
+We denote by Const the set of all values that occur in source instances and we also call them constants.
+In addition, we assume an infinite set Var of values, which we call labeled nulls, such that Var∩Const= ∅.
+We reserve the symbols I,I′,I1,I2,...
+for instances over the source schema S and with values in Const.
+We also reserve 9 the symbols J, J′,J1,J2,...for instances over the target schema T and with values in Const ∪ Var.
+If R= {R1,...,Rk) is a schema and K is an instance over R with values in Const ∪ Var, then Var(K) denotes the set of labelled nulls occurring in relations in K.
+Definition 2.3 Let K1 and K2 be two instances over R with values in Const ∪ Var.
+1.
+A homomorphism h : K1 → K2 is a mapping from Const∪ Var(K1) to Const ∪ Var(K2) such that: (1) h(c)=c, for every c ∈ Const; (2) for every fact Ri(t) of K1, we have that Ri(h(t)) is a fact of K2 (where, if t =(a1,...,as), then h(t)=(h(a1),...,h(as))).
+2.
+K1 is homomorphically equivalent to K2 if there is a homomorphism h : K1 → K2 and a homomorphism h′ : K2 → K1.
+Definition 2.4 (Universal solution) Consider a data exchange setting (S, T, Σst, Σt).
+If I is a source instance, then a universal solution for I is a solution J for I such that for every solution J′ for I, there exists a homomorphism h : J → J′ .
+Example 2.5 The instances J1 and J2 in Example 2.2 are not universal.
+In partic- ular, there is no homomorphism from J1 to J and also there is no homomorphism from J2 to J.
+This fact makes precise our earlier intuition that the instances J1 and J2 contain “extra” information.
+In contrast, there exist homomorphisms from J to both J1 and J2.
+Actually, it can be easily shown that J has homomorphisms to all other solutions.
+Thus, J is universal.
+From an algebraic standpoint, being a universal solution is a property akin to being an initial structure [Mak87] for the set of all solutions (although an initial structure for a set K of structures is required to have unique homomorphisms to all other structures in K).
+Initial structures are ubiquitous in several areas of computer sci- ence, including semantics of programming languages and term rewriting, and are known to have good properties (see [Mak87]).
+The next result asserts that universal solutions have good properties as well.
+Proposition 2.6 Let (S, T, Σst, Σt) be a data exchange setting.
+1.
+If I is a source instance and J, J′ are universal solutions for I, then J and J′ are homomorphically equivalent.
+2.
+Assume that Σst is a set of tgds.
+Let I, I′ be two source instances, J a universal solution for I, and J′ a universal solution for I′.
+Then Sol(I) ⊆ Sol(I′) if and only if there is a homomorphism h : J′ → J.
+Consequently, Sol(I)=Sol(I′) if and only if J and J′ are homomorphically equivalent.
+Proof.
+The first part follows immediately from the definitions.
+For the second part, assume first that Sol(I) ⊆ Sol(I′).
+Since J ∈ Sol(I), it follows that J ∈ Sol(I′) and, hence, there is a homomorphism h : J′ → J because J′ is a universal solution for I′.
+Next, assume that there is a homomorphism h : J′ → J.
+Let J∗ be a solution for I.
+We must show that J∗ is a solution for I′, which amounts to showing that 10 ⟨I′,J∗⟩|=Σst and J∗ |=Σt.
+Since J∗ is a solution for I, we already have that J∗ |=Σt, so it suffices to show that ⟨I′,J∗⟩|=Σst.
+Consider a tgd ∀x(φS(x)→ ∃yψT(x, y)) in Σst.
+Since ⟨I′,J′⟩ satisfies this tgd, for every vector a of constants from I′ such that I′ |= φS(a), there is a vector b of elements of J′ such that J′ |= ψT(a, b).
+Since J is a universal solution for I, there is a homomorphism h∗ : J → J∗.
+Hence, the composition h∗ ◦ h is a homomorphism from J′ to J∗ .
+Since atomic formulas are preserved under homomorphisms and h∗ ◦ h(a)=a,it follows that J∗ |= ψT(a,h∗ ◦ h(b)).
+Thus, ⟨I′,J∗⟩|= ∀x(φS(x) →∃yψT(x, y)).
+The first part of Proposition 2.6 asserts that universal solutions are unique up to homomorphic equivalence.
+The second part implies that if J is a universal solution for two source instances I and I′, then Sol(I)=Sol(I′).
+Thus, in a certain sense, each universal solution precisely embodies the space of solutions.
+3 Computing Universal Solutions Checking the conditions in Definition 2.4 requires implicitly the ability to check the (infinite) space of all solutions.
+Thus, it is not clear, at first hand, to what ex- tent the notion of universal solution is a computable one.
+This section addresses the question of how to check the existence of a universal solution and how to compute one (if one exists).
+In particular, we show that the classical chase can be used for data exchange and that every finite chase, if it does not fail, constructs a universal solution.
+If the chase fails, then no solution exists.
+However, in general, for arbi- trary sets of dependencies, there may not exist a finite chase.
+Hence, in Section 3.2 we introduce the class of weakly acyclic sets of tgds, for which the chase is guaran- teed to terminate in polynomial time.
+For such sets of dependencies, we show that: (1) the existence of a universal solution can be checked in polynomial time, (2) a universal solution exists if and only if a solution exists, and (3) a universal solution (if solutions exist) can be produced in polynomial time.
+3.1 Chase: Canonical Generation of Universal Solutions Intuitively, we apply the following procedure to produce a universal solution: start with an instance ⟨I,∅⟩ that consists of I, for the source schema, and of the empty in- stance, for the target schema; then chase ⟨I,∅⟩ by applying the dependencies in Σst and Σt for as long as they are applicable 3 .
+This process may fail (as we shall see shortly, if an attempt to identify two constants is made) or it may never terminate.
+But if it does terminate and if it does not fail, then the resulting instance is guaran- teed to satisfy the dependencies and, moreover, to be universal (Theorem 3.3).
+3 It is possible to apply first Σst as long as applicable and then apply Σt as long as appli- cable.
+11 We next define chase steps.
+Similar to homomorphisms between instances, a ho- momorphism from a conjunctive formula φ(x) to an instance J is a mapping from the variables x to Const ∪ Var(J) such that for every atom R(x1,...,xn) of φ, the fact R(h(x1),..., h(xn)) is in J.
+The chase that we use is a slight variation of the classical notion of chase with tgds and egds of [BV84] in the sense that we chase instances rather than symbolic tableaux.
+Definition 3.1 (Chase step) Let K be an instance.
+(tgd) Let d be a tgd φ(x) →∃yψ(x, y).
+Let h be a homomorphism from φ(x) to K such that there is no extension of h to a homomorphism h′ from φ(x)∧ ψ(x, y) to K.
+We say that d can be applied to K with homomorphism h.
+Let K′ be the union of K with the set of facts obtained by: (a) extending h to h′ such that each variable in y is assigned a fresh labeled null, followed by (b) taking the image of the atoms of ψ under h′.
+We say that the result of applying d to K with h is K′, and write K −→ K′ d,h .
+(egd) Let d be an egd φ(x)→ (x1 = x2).
+Let h be a homomorphism from φ(x) to K such that h(x1) ̸= h(x2).
+We say that d can be applied to K with homomor- phism h.
+We distinguish two cases.
+• If both h(x1) and h(x2) are in Const then we say that the result of applying d to K with h is “failure”, and write K d,h−→ ⊥.
+• Otherwise, let K′ be K where we identify h(x1) and h(x2) as follows: if one is a constant, then the labeled null is replaced everywhere by the constant; if both are labeled nulls, then one is replaced everywhere by the other.
+We say that the result of applying d to K with h is K′, and write K d,h −→ K′ .
+In the definition, K d,h −→ K′ (including the case where K′ is ⊥) defines one single chase step.
+We next define chase sequences and finite chases.
+Definition 3.2 (Chase) Let Σ be a set of tgds and egds, and let K be an instance.
+• A chase sequence of K with Σ is a sequence (finite or infinite) of chase steps di,hi Ki −→ Ki+1, with i =0, 1,..., with K= K0 and di a dependency in Σ.
+d,h • A finite chase of K with Σ is a finite chase sequence Ki −→ Ki+1, 0 ≤ i<m, with the requirement that either (a) Km = ⊥ or (b) there is no dependency di of Σ and there is no homomorphism hi such that di can be applied to Km with hi.
+We say that Km is the result of the finite chase.
+We refer to case (a) as the case of a failing finite chase and we refer to case (b) as the case of a successful finite chase.
+In general, there may not exist a finite chase of an instance (cyclic sets of dependen- cies could cause infinite application of chase steps).
+Infinite chases can be defined as well, but for this paper we do not need to do so.
+Also, different chase sequences may yield different results.
+However, each result, if not ⊥, satisfies Σ.
+For data exchange, we note first that, due to the nature of our dependencies, any 12 chase sequence that starts with ⟨I,∅⟩ does not change or add tuples in I.
+Then, if a finite chase exists, its result ⟨I,J⟩ is such that J is a solution.
+Furthermore, J is universal, a fact that does not seem to have been explicitly noted in the literature on the chase.
+The next theorem states this, and also states that the chase can be used to check the existence of a solution.
+Theorem 3.3 Assume a data exchange setting where Σst consists of tgds and Σt consists of tgds and egds.
+1.
+Let ⟨I,J⟩ be the result of some successful finite chase of ⟨I,∅⟩ with Σst ∪ Σt.
+Then J is a universal solution.
+2.
+If there exists some failing finite chase of ⟨I,∅⟩ with Σst ∪ Σt, then there is no solution.
+The proof of the theorem makes use of the following basic property of a chase step.
+(This property was implicitly proved and used in [BV84,MUV84], in slightly more restricted settings than ours and in different contexts.) d,h Lemma 3.4 Let K1 −→ K2 be a chase step where K2 ̸= ⊥.
+Let K be an instance such that: (i) K satisfies d and (ii) there exists a homomorphism h1 : K1 → K.
+Then there exists a homomorphism h2 : K2 → K.
+Proof.
+Case 1: d is a tgd φ(x) →∃yψ(x, y).
+By the definition of the chase step, h : φ(x)→ K1 is a homomorphism.
+Composing homomorphisms yields homo- morphisms; thus h1 ◦ h : φ(x)→ K is a homomorphism.
+Since K satisfies d there exists a homomorphism h′ : φ(x) ∧ ψ(x, y)→ K such that h′ is an extension of h1 ◦ h, that is h′(x)=h1(h(x)).
+For each variable y in y, denote by Λy the labeled null replacing y in the chase step.
+Define h2 on Var(K2) as follows: h2(Λ) = h1(Λ), if Λ ∈ Var(K1), and h2(Λy)=h′(y) for y in y.
+We need to show that h2 is a homomorphism from K2 to K, that is, h2 maps facts of K2 to facts of K while preserving relation symbols.
+For facts of K2 that are also in K1 this is true because h1 is a homomorphism.
+Let T(x0, y0) be an arbitrary atom in the conjunction ψ.
+(Here x0 and y0 contain variables in x and y, respectively.) Then K2 contains, in addition to any facts of K1, a fact T(h(x0), Λy0 ).
+The image under h2 of this fact is, by definition of h2, the fact T(h1(h(x0)),h′(y0)).
+Since h′(x0)=h1(h(x0)), this is the same as T(h′(x0),h′(y0)).
+But h′ homomorphically maps all atoms of φ ∧ ψ, in particular T(x0, y0), into facts of K.
+Thus, h2 is a homomorphism.
+Case 2: d is an egd φ(x)→ (x1 = x2).
+As in Case 1, h1 ◦ h : φ(x)→ K is a homomorphism.
+We take h2 to be h1.
+We need to ensure that h1 is still a homomorphism when considered from K2 to K.
+The only way that h1 can fail to be a homomorphism is if h1 fails to be a function, by mapping h(x1) and h(x2) 13 into two different constants or labeled nulls of K.
+But this is not the case since K satisfies d, and so h1(h(x1)) = h1(h(x2)).
+The proof of Theorem 3.3 is based on Lemma 3.4 and on the observation that the identity mapping is a homomorphism from ⟨I,∅⟩ to ⟨I,J′⟩, for any solution J′.We give the full details next.
+Proof of Theorem 3.3.
+Part 1: It follows from Definition 3.2 that ⟨I,J⟩ satisfies Σst ∪ Σt.
+Since Σt uses only target relation symbols, it follows that J satisfies Σt.
+Let J′ be an arbitrary solution.
+Thus, ⟨I,J′⟩ satisfies Σst∪Σt.
+Moreover, the identity mapping id : ⟨I,∅⟩ → ⟨I,J′⟩ is a homomorphism.
+By applying Lemma 3.4 at each chase step, we obtain a homomorphism h : ⟨I,J⟩→⟨I,J′⟩.
+In particular, h is also a homomorphism from J to J′.
+Thus, J is universal.
+Part 2: Let ⟨I,J⟩ d,h−→ ⊥ be the last chase step of a failing chase.
+Then d must be an egd of Σt, say φ(x)→ (x1 = x2), and h : φ(x)→ J is a homomorphism such that h(x1) and h(x2) are two distinct constants c1 and, respectively, c2.
+Suppose that there exists a solution J′.
+Following the same argument as in Part 1, we see that the identity homomorphism id : ⟨I,∅⟩ → ⟨I,J′⟩ implies, by Lemma 3.4, the existence of a homomorphism g : ⟨I,J⟩→⟨I,J′⟩.
+Then g ◦ h : φ(x)→ J′ is a homomorphism.
+Since J′ is assumed to satisfy d, it must be the case that g(h(x1)) = g(h(x2)) and thus g(c1)=g(c2).
+Homomorphisms are identities on Const, therefore c1 = c2, which is a contradiction.
+For part 1 of Theorem 3.3 we refer to such J as a canonical universal solution.
+In further examples and proofs, when such J is unique, we will also use the term the canonical universal solution.
+We note that a canonical universal solution is similar, in its construction, to the representative instance defined in the work on the universal relation (see [MUV84]).
+It is also similar to the canonical database of [CCGL02] defined in a more restricted setting, that of GAV with key and foreign key constraints.
+The following is an example of cyclic set of inclusion dependencies for which there is no finite chase; thus, we cannot produce a universal solution by the chase.
+Still, a finite solution does exist.
+This illustrates the need for introducing restrictions in the class of dependencies that are allowed in the target.
+Example 3.5 Consider the data exchange setting (S, T, Σst, Σt) as follows (this scenario is also graphically but informally shown in Figure 1).
+The source schema S has one relation DeptEmp(dpt id, mgr name, eid) listing departments with their managers and their employees.
+The target schema T has a relation Dept (dpt id, mgr id, mgr name) for departments and their managers, and a sepa- rate relation for employees Emp (eid, dpt id).
+The source-to-target and target dependencies are: Σst = { DeptEmp(d, n, e) →∃M.Dept(d, M, n) ∧ Emp(e, d) } Σt = { Dept(d, m, n) →∃D.Emp(m, D), Emp(e, d) →∃M∃N.Dept(d, M, N) } 14 DeptEmp dpt_id mgr_name eid Dept dpt_id mgr_id mgr_name Emp eid dpt_id I = { DeptEmp (CS, Mary, E003) } Fig.
+1.
+Data exchange with infinite chase.
+Assume now that the source instance I has one tuple in DeptEmp, for department CS with manager Mary and employee E003.
+Chasing ⟨I,∅⟩ with Σst yields the target instance: J1 = {Dept(CS,M,Mary), Emp(E003,CS)} where M is a labeled null that instantiates the existentially quantified variable of the tgd, and encodes the unknown manager id of Mary.
+However, J1 does not satisfy Σt; therefore, the chase does not stop at J1.
+The first tgd in Σt requires M to appear in Empas an employee id.
+Thus, the chase will add Emp(M,D) where D is a labeled null representing the unknown department in which Mary is employed.
+Then the second tgd becomes applicable, and so on.
+It is easy to see that there is no finite chase.
+Satisfying all the dependencies would require building an infinite instance: J={Dept(CS,M,Mary), Emp(E003,CS), Emp(M,D), Dept(D,M′,N′),...} On the other hand, finite solutions exist.
+Two such examples are: J′ J′′ = {Dept(CS,E003,Mary), Emp(E003,CS)} = {Dept(CS,M,Mary), Emp(E003,CS), Emp(M,CS)} However, neither J′ nor J′′ are universal: there is no homomorphism from J′ to J′′ and there is no homomorphism from J′′ to J′.
+We argue that neither should be used for data exchange.
+In particular, J′ makes the assumption that the manager id of Mary is equal to E003, while J′′ makes the assumption that the department in which Mary is employed is the same as the department (CS) that Mary manages.
+Neither assumption is a consequence of the given dependencies and source instance.
+It can be shown that no finite universal solution exists for this example.
+We next consider sets of dependencies for which every chase sequence is guaran- teed to reach its end after at most polynomially many steps (in the size of the input instance).
+For such sets of dependencies it follows that checking the existence of a solution, as well as generating a universal solution, can be carried out in polynomial time.
+15 3.2 Polynomial-Length Chase We first discuss sets of full tgds (tgds with no existentially quantified variables).
+It has been proven in [BV84] that every chase sequence with a set Σ of full tgds has at most finite length.
+Moreover every chase has the same result.
+It is simple to show that the length of the chase is bounded by a polynomial in the size of the input instance (the dependencies and the schema are fixed).
+Also, any set of egds can be added to Σ without affecting the uniqueness of the result or the polynomial bound.
+Although full tgds enjoy nice properties, they are not very useful in practice.
+Most dependencies occurring in real schemas are non-full, for example, foreign key con- straints or, more generally, inclusion dependencies [CFP84].
+It is well known that chasing with inclusion dependencies may not terminate in general.
+Acyclic sets of inclusion dependencies [CK86] are a special case for which every chase sequence has a length that is polynomial in the size of the input instance.
+Such dependencies can be described by defining a directed graph in which the nodes are the relation symbols, and such that there exists an edge from R to S whenever there is an in- clusion dependency from R to S.
+A set of inclusion dependencies is acyclic if there is no cycle in this graph.
+We define next a weakly acyclic sets of tgds, a notion that strictly includes both sets of full tgds and acyclic sets of inclusion dependencies.
+This notion is inspired by the definition of weakly recursive ILOG [HY90], even though the latter is not directly related to dependencies.
+Informally, a set of tgds is weakly acyclic if it does not allow for cascading of labeled null creation during the chase.
+This concept first arose in a conversation between the last author and A.
+Deutsch in 2001.
+Preliminary reports on this concept appeared independently in [FKMP03] (the conference version of this article) and in [DT03] (in the latter paper, under the term constraints with stratified-witness).
+Definition 3.6 (Weakly acyclic set of tgds) Let Σ be a set of tgds over a fixed schema.
+Construct a directed graph, called the dependency graph, as follows: (1) there is a node for every pair (R,A) with R a relation symbol of the schema and A an attribute of R; call such pair (R,A) a position; (2) add edges as follows: for every tgd φ(x) →∃yψ(x, y) in Σ and for every x in x that occurs in ψ: • For every occurence of x in φ in position (R,Ai): (a) for every occurence of x in ψ in position (S, Bj), add an edge (R,Ai)→ (S, Bj) (if it does not already exist).
+(b) in addition, for every existentially quantified variable y and for every oc- currence of y in ψ in position (T,Ck), add a special edge (R,Ai)∗ → (T,Ck) (if it does not already exist).
+Note that there may be two edges in the same direction between two nodes, if exactly one of the two edges is special.
+Then Σ is weakly acyclic if the dependency graph has no cycle going through a special edge.
+Intuitively, part (a) keeps track of the fact that a value may propagate from position 16 (Dept, dpt_id) (Dept, mgr_id) (Emp, eid) (Emp, eid) * * * (Emp, dpt_id) * * (Emp, dpt_id) (Dept, mgr_name) (Dept, dpt_id) (Dept, mgr_id) (Dept, mgr_name) (a) (b) Fig.
+2.
+Dependency graphs for: (a) a set of tgds that is not weakly acyclic, (b) a weakly acyclic set of tgds.
+(R,Ai) to position (S, Bj) during the chase.
+Part (b), moreover, keeps track of the fact that propagation of a value into (S, Bj) also creates a labeled null in any po- sition that has an existentially quantified variable.
+If a cycle goes through a special edge, then a labeled null appearing in a certain position during the chase may deter- mine the creation of another labeled null, in the same position, at a later chase step.
+This process may thus continue forever.
+Note that the definition allows for cycles as long as they do not include special edges.
+In particular, a set of full tgds is a special case of a weakly acyclic set of tgds (there are no existentially quantified variables, and hence no special edges).
+Example 3.7 Recall Example 3.5.
+The dependency graph of Σt is shown in Fig- ure 2(a).
+The graph contains a cycle with two special edges.
+Hence Σt is not weakly acyclic and therefore a finite chase may not exist (as seen in Example 3.5).
+On the other hand, let us assume that we know that each manager of a department is em- ployed by the same department.
+Then, we replace the set Σt by the set Σ′ t, where Σ′ t = { Dept(d, m, n)→ Emp(m, d), Emp(e, d) →∃M∃N.Dept(d, M, N) } The dependency graph of Σ′ t, shown in Figure 2(b), has no cycles going through a special edge.
+Thus, Σ′ t is weakly acyclic.
+As Theorem 3.8 will show, it is guaranteed that every chase sequence is finite.
+For Example 3.5, one can see that the chase of J1 with Σ′ t stops with result J′′.
+Thus J′′ is universal.
+Note that for J′′ to be universal it was essential that we explicitly encoded in the dependencies the fact that managers are employed by the department they manage.
+Finally, we remark that Σ′ t is an example of a set of inclusion dependencies that, although weakly acyclic, is cyclic according to the definition of [CK86].
+We now state the main results regarding weakly acyclic sets of tgds.
+Theorem 3.8 Let Σ be the union of a weakly acyclic set of tgds with a set of egds, and let K be an instance.
+Then there exists a polynomial in the size of K that bounds the length of every chase sequence of K with Σ.
+Proof.
+We give the proof for the case when Σ does not have any egds.
+The addition of egds does not essentially change the argument and we leave the details to the interested reader.
+For every node (R,A) in the dependency graph of Σ, define an incoming path to be any (finite or infinite) path ending in (R,A).
+Define the rank of (R,A), denoted by rank(R,A), as the maximum number of special edges on any 17 such incoming path.
+Since Σ is weakly acyclic, there are no cycles going through special edges.
+Thus rank(R,A) is finite.
+Let r be the maximum, over all positions (R,A), of rank(R,A), and let p be the total number of positions (R,A) in the schema (equal to the number of nodes in the graph).
+The latter number is a constant, since the schema is fixed.
+Moreover, r is at most p.
+Thus r is not only finite but bounded by a constant.
+The next observation is that we can partition the nodes in the dependency graph, according to their rank, into subsets N0,N1,...,Nr, where Ni is the set of all nodes with rank i.
+Let n be the total number of distinct values (constants or labeled nulls) that occur in the instance K.
+Let K′ be any instance obtained from K after some arbitrary chase sequence.
+We prove by induction on i the following claim: For every i there exists a polynomial Qi such that the number of distinct values that occur in all positions (R,A) of Ni,inK′, is at most Qi(n).
+Base case: If (R,A) is a position in N0, then there are no incoming paths with special edges.
+Thus no new values are ever created at position (R,A) during the chase.
+Hence the values occurring at position (R,A) in K′ are among the n values of the original instance K.
+Since this is true for all the positions in N0, we can then take Q0(n)=n.
+Inductive case: The first kind of values that may occur at a position of Ni,inK′, are those that already occur at the same position in K.
+The number of such values is at most n.
+In addition, a value may occur at a position of Ni,inK′, for two reasons: by being copied from some position in Nj with j ̸= i, during a chase step, or by being generated as a new value (labeled null), also during a chase step.
+We count first how many values can be generated.
+Let (R,A) be some position of Ni.
+A new value can be generated in (R,A) during a chase step only due to special edges.
+But any special edge that may enter (R,A) must start at a node in N0 ∪...∪ Ni−1.
+Applying the inductive hypothesis, the number of distinct values that can exist in all the nodes in N0∪...∪Ni−1 is bounded by P(n)=Q0(n)+...+Qi−1(n).
+Let d be the maximum number of special edges that enter a position, over all positions in the schema.
+Then for any distinct d-tuple of values in N0 ∪ ...Ni−1 and for any dependency in Σ there is at most one new value that can be generated at position (R,A).
+(This is a consequence of the chase step definition and of how the special edges have been defined.) Thus the total number of new values that can be generated in (R,A) is at most (P(n))d × D, where D is the number of dependencies in Σ.
+Since the schema and Σ are fixed, this is still a polynomial in n.
+If we consider all positions (R,A) in Ni, the total number of values that can be generated is at most pi × (P(n))d × D where pi is the number of positions in Ni.
+Let G(n)=pi×(P(n))d×D.
+Obviously, G is a polynomial.
+We count next the number of distinct values that can be copied to positions of Ni from positions of Nj with j ̸= i.
+Such copying can happen only if there are non-special edges from positions in Nj with j ̸= i to positions in Ni.
+We observe first that such non-special edges can originate only at nodes in N0 ∪...∪ Ni−1, that is, they cannot originate at nodes in Nj with j>i.
+Otherwise, assume that 18 there exists j>iand there exists a non-special edge from some position of Nj to a position (R,A) of Ni.
+Then the rank of (R,A) would have to be larger than i, which is a contradiction.
+Hence the number of distinct values that can be copied in positions of Ni is bounded by the total number of values in N0 ∪...∪ Ni−1, which is P(n) from our previous consideration.
+Putting it all together, we can take Qi(n)=n + G(n)+P(n).
+Since Qi is a polynomial, the claim is proven.
+In the above claim, i is bounded by the maximum rank r, which is a constant.
+Hence there exists a fixed polynomial Q such that the number of distinct values that can exist, over all positions, in K′, is bounded by Q(n).
+In particular, the number of distinct values that can exist, at a single position, in K′ is also bounded by Q(n).
+Then the total number of tuples that can exist in K′ is at most (Q(n))p, (recall that p is the total number of positions in the schema).
+This is also a polynomial since p is constant.
+Since every chase step with a tgd adds at least some tuple to K′ it follows that the length of any chase sequence is at most (Q(n))p .
+Corollary 3.9 Assume a data exchange setting where Σst is a set of tgds, and Σt is the union of a weakly acyclic set of tgds with a set of egds.
+The existence of a solution can be checked in polynomial time.
+If a solution exists, then a universal solution can be produced in polynomial time.
+4 Query Answering As stated earlier, we adopt the notion of certain answers for the semantics of query answering.
+We first give the formal definition of this notion and then address the problem of whether and to what extent the certain answers of a query over the target schema can be computed by evaluating some query (same or different) on a universal solution.
+Definition 4.1 Let (S, T, Σst, Σt) be a data exchange setting.
+• Let q be a k-ary query over the target schema T and I a source instance.
+The certain answers of q with respect to I, denoted by certain(q,I), is the set of all k-tuples t of constants from I such that for every solution J of this instance of the data exchange problem, we have that t ∈ q(J).
+• Let q be a Boolean query over the target schema T and I a source instance.
+We write certain(q,I)=true to denote that for every solution J of this in- stance of the data exchange problem, we have that q(J)=true.
+We also write certain(q,I)=false to denote that there is a solution J such that q(J)=false.
+On the face of it, the definition of certain answers entails a computation over the entire set of solutions of a given instance of the data exchange problem.
+Since this set may very well be infinite, it is desirable to identify situations in which the certain answers of a query q can be computed by evaluating q on a particular fixed solution and then keeping only the tuples that consist entirely of constants.
+More formally, if q is a k-ary query and J is a target instance, then q(J)↓ is the set of all k-tuples 19 t of constants such that t ∈ q(J).
+We extend the notation to Boolean queries by agreeing that if q is a Boolean query, then q(J)↓= q(J) (= true or false).
+The next proposition characterizes universal solutions with respect to query an- swering, when the queries under consideration are unions of conjunctive queries.
+First, it shows that certain(q,I)=q(J)↓ whenever J is a universal solution and q is a union of conjunctive queries.
+Concrete instances of this result in the LAV set- ting have been established in [AD98].
+Another instance of this result has also been noted for the GAV setting with key/foreign key constraints in [CCGL02].
+Thus, evaluation of conjunctive queries on an arbitrarily chosen universal solution gives precisely the set of certain answers.
+Moreover, the second statement of the proposi- tion shows that the universal solutions are the only solutions that have this property.
+This is further justification for using universal solutions for data exchange.
+Proposition 4.2 Consider a data exchange setting with S as the source schema, T as the target schema, and such that the dependencies in the sets Σst and Σt are arbitrary.
+1.
+Let q be a union of conjunctive queries over the target schema T.IfI is a source instance and J is a universal solution, then certain(q,I)=q(J)↓.
+2.
+Let I be a source instance and J be a solution such that for every conjunctive query q over T, we have that certain(q,I)=q(J)↓.
+Then J is a universal solution.
+Proof.
+Part 1.
+Let q be a k-ary query that is a union of conjunctive queries and let t be a k-tuple of constants from the source instance I.Ift ∈ certain(q,I), then t ∈ q(J), since J is a solution.
+Conversely, assume that t ∈ q(J)↓.
+Then t consists only of constants.
+Also there exists a term φ(x) in q and a homomorphism g : φ(x)→ J such that g(x)=t.
+Let J′ be an arbitrary solution.
+Since J is a universal solution, there is a homomorphism h : J → J′.
+Then h◦ g is a homomorphism from φ(x) to J′.
+Homomorphisms are identities on constants, hence h(g(x)) = h(t)=t.
+Thus t ∈ q(J′).
+Part 2.
+Let qJ be the canonical conjunctive query associated with J (i.e., qJ is the Boolean conjunctive query obtained by taking the conjunction of all the facts of J in which the labeled nulls are replaced by existentially quantified variables).
+Now certain(qJ,I)=qJ(J)↓= qJ(J), where the first equality follows from our assumption about J, and where the second equality follows from the fact that qJ is a Boolean query.
+Since also qJ(J)=true,wehavecertain(qJ,I)=true.
+Therefore, if J′ is an arbitrary solution, then qJ(J′)=true.
+As first shown by Chandra and Merlin [CM77], this implies the existence of a homomorphism h : J → J′.
+Hence, J is universal.
+In the preceding Proposition 4.2, the query q can be a finite or an infinite union of conjunctive queries.
+Thus, this proposition holds for arbitrary Datalog queries.
+The following result follows from Corollary 3.9 and Part 1 of Proposition 4.2.
+Corollary 4.3 Assume a data exchange setting where Σst is a set of tgds, and Σt is the union of a weakly acyclic set of tgds with a set of egds.
+Let q be a union 20 of conjunctive queries.
+For every source instance I, the set certain(q,I) can be computed in polynomial time in the size of I.
+Conjunctive queries with inequalities.
+The state of affairs changes dramatically when conjunctive queries with inequalities are considered.
+The next proposition shows that there is a simple Boolean conjunctive query q with inequalities such that no universal solution can be used to obtain the certain answers of q by evaluating q on that universal solution.
+This proposition also shows that in this particular case, there is another conjunctive query q∗ with inequalities such that the certain answers of q can be obtained by evaluating q∗ on the canonical universal solution.
+Proposition 4.4 Let S be a binary source relation symbol, T a binary target re- lation symbol, S(x, y) →∃z(T(x, z) ∧ T(z,y)) a source-to-target dependency, and q the following Boolean conjunctive query with one inequality: ∃x∃y(T(x, y) ∧(x ̸= y)).
+1.
+There is a source instance I such that certain(q,I)=false,butq(J)=true for every universal solution J.
+2.
+Let q∗ be the query ∃x∃y∃z(T(x, z) ∧ T(z,y) ∧ (x ̸= y)).IfI is a source instance and J is the canonical universal solution, then certain(q,I)=q∗(J).
+Proof: Part 1.
+Let I be the source instance with I(S)={(a, a)}, where a is some constant.
+Note that certain(q,I)=false, because J1(T)={(a, a)} is a solution and q(J1)=false.
+Let J be an arbitrary universal solution.
+We will prove that q(J)=true by showing that J(T) must contain two tuples (a, X) and (X,a) with a ̸= X.
+Towards this goal, first note that J must contain two tuples of the form (a, X) and (X,a), because J is a solution.
+Consider now the solution J2 with J2(T)={(a, b), (b, a)}, where b ̸= a.
+Since J is a universal solution, there is a homomorphism h from J to J2.
+It follows that J(T) must contain two tuples of the form (a, X) and (X,a) with X ̸= a, since, otherwise, (a, a) ∈ J(T) and (h(a),h(a)) = (a, a) ̸∈ J2(T).
+Part 2.
+Let I be a source instance and J be the canonical universal solution.
+We have to show that certain(q,I)=q∗(J).
+For this, we consider two cases.
+Case 1: I(S) has a tuple (a, b) with a ̸= b.IfJ′ is an arbitrary solution, then J′(T) contains two tuples (a, X) and (X,b).IfX= a, then J′(T) contains (a, b) with a ̸= b;ifX ̸= a, then J′(T) contains (a, X) with a ̸= X.
+In either case, we have that q(J′)=true, hence certain(q,I)=true.
+Moreover, in either case we have that q∗(J)=true, since J being a solution must contain two tuples of the form (a, X) and (X,b), and a ̸= b.
+Note that the only property of J we used here was that it is a solution.
+Case 2: I(S) has no tuple (a, b) with a ̸= b.
+Hence, I(S) is a relation consist- ing entirely of reflexive tuples (a, a).IfJ′ is the solution with J′(T)=I(S), then q(J′)=false and, consequently, certain(q,I)=false.
+At the same time, the canonical solution J consists of tuples of the form (a, Xa), (Xa,a) such that (a, a) ∈ I(S), where a different labeled null Xa is used for each constant a.
+Con- sequently, q∗(J)=false.
+21 In view of Proposition 4.4, we address next the question of whether, given a con- junctive query with inequalities, it is always possible to find a query (not necessar- ily the same) that computes the certain answers when evaluated on the canonical universal solution.
+5 Query Answering: Complexity and Inexpressibility It is known that in LAV data integration systems, computing the certain answers of conjunctive queries with inequalities is a coNP-hard problem [AD98].
+It follows that in the data exchange setting, it is not possible to compute the certain answers of such queries q by evaluating q (or any associated query q∗ with polynomial- time evaluation) on the canonical universal solution or on any universal solution that is generated in polynomial time (unless P=NP).
+We take in Section 5.1 a closer look at conjunctive queries with inequalities.
+First we show (Theorem 5.2) that, in the data exchange setting, the problem of computing the certain answers for unions of conjunctive queries with inequalities is in coNP.
+Surprisingly, we show (Theorem 5.12) that there is a polynomial-time algorithm that computes the certain answers of unions of conjunctive queries with at most one inequality per disjunct.
+This is an optimal result because we also show (Theorem 5.11) that it is coNP-hard to compute the certain answers of unions of conjunctive queries with at most two inequalities per disjunct.
+In the case of unions of conjunctive queries with at most one inequality per disjunct, the certain answers can be computed in polynomial time from an arbitrary univer- sal solution.
+However, Section 5.2 shows (with no unproven complexity-theoretic assumptions such as P ̸=NP) that there is a conjunctive query q with one in- equality whose certain answers cannot be computed by rewriting q to a first-order query q∗ and then evaluating q∗ on the canonical universal solution.
+We begin by formally introducing the decision problem associated with the computation of the set of certain answers.
+Definition 5.1 Let (S, T, Σst, Σt) be a data exchange setting.
+1.
+Let q be a k-ary query over the target schema T.
+Computing the certain answers of q is the following decision problem: given a source instance I over S and a k-tuple t of constants from I, is it the case that t ∈ certain(q,I)? 2.
+Let q be a Boolean query over the target schema T.
+Computing the certain answers of q is the following decision problem: given a source instance I over S, is it the case that certain(q,I)=true? 3.
+Let C be a complexity class and Q a class of queries over the target schema T.
+We say that computing the certain answers of queries in Q is in C if for every query q ∈Q, computing the certain answers of q is in C.
+We say that computing the certain answers of queries in Q is C-complete if it is in C and there is at least one query q ∈Qsuch that computing the certain answers of q is a C-complete problem.
+22 Thus, computing the certain answers of a k-ary query q is a decision problem.
+One can also consider a related function problem: given a source instance I, find the set certain(q,I).
+The latter problem has a polynomial-time reduction to the former, since there are polynomially many k-tuples from I and so we can compute the set certain(q,I) by going over each such k-tuple t and deciding whether or not t ∈ certain(q,I).
+5.1 Computational Complexity Since the complexity-theoretic lower bounds and inexpressibility results presented in the sequel hold for LAV data integration systems with sound views defined by conjunctive queries, we review the definition of this type of data integration sys- tem first.
+A LAV data integration system with sound views defined by conjunc- tive queries is a special case of a data exchange setting (S, T, Σst, Σt) in which Σt = ∅ and each source-to-target dependency in Σst is a tgd of the form Si(x)→ ∃yψT(x, y), where Si is some relation symbol of the source schema S and ψT is an arbitrary conjunction of atomic formulas over the target schema T.
+In what follows we will refer to such a setting simply as a LAV setting.
+5.1.1 An Upper Bound Abiteboul and Duschka [AD98] showed that in the LAV setting, computing the certain answers of unions of conjunctive queries with inequalities is in coNP.
+We extend this by showing that the same upper bound holds in the general data ex- change setting, provided Σst is a set of tgds and Σt is a union of a set of egds with a weakly acyclic set of tgds.
+Theorem 5.2 Consider a data exchange setting in which Σst is a set of tgds and Σt is a union of a set of egds with a weakly acyclic set of tgds.
+Let q be a union of conjunctive queries with inequalities.
+Then computing the certain answers of q is in coNP.
+We first note that, in the particular case when all the tgds in Σt are full, the theorem can be proved by using the “small model property” (essentially this argument was used in [AD98] for the LAV setting).
+However, for the more general case when the tgds in Σt may have existentially quantified variables, the proof is more involved.
+It is based on an extension of the chase, that we call the disjunctive chase and define shortly.
+To decide whether t ∈ certain(q,I), we substitute t into the query q to obtain a Boolean query.
+We thereby reduce the problem of deciding whether t ∈ certain(q,I) for arbitrary queries q to the problem of deciding whether certain(q,I)=true for Boolean queries q.
+Hence, we can assume that q is a Boolean query.
+We know that q is equivalent to a query of the form q1 ∨ q2, where q1 is the disjunction of a set C of conjunctive queries with no inequalities, and q2 is the disjunction of a set C′ of conjunctive queries each with at least one inequality.
+Each element of C′ has the 23 form: ∃x(φ(x) ∧ ( (x1 i ̸= x2 i ))) i where φ(x) is a conjunction of atomic formulas.
+Hence, it is easy to see that the negation of q2 is equivalent to the conjunction of a set E of formulas of the form: ∀x(φ(x)→ ( (x1 i = x2 i ))) i We will call such formulas disjunctive egds.
+As in the case of tgds and egds, for simplicity, we will drop the universal quantifiers in front of a disjunctive egd.
+Note that an egd is a particular case of a disjunctive egd where the right-hand side of the logical implication sign has only one equality.
+We observe next the following fact (easy to verify): Lemma 5.3 The following statements are equivalent: (1) certain(q,I)=false.
+(2) There exists a solution J∗ for I such that J∗ satisfies E and J∗ does not satisfy any of the conjunctive queries in C.
+Next we will show that the problem of deciding the above condition (2) is in NP, under the conditions stated in Theorem 5.2.
+Theorem 5.2 follows then immediately.
+To prove the membership in NP of the aforementioned problem, we need to define first the disjunctive chase.
+Deutsch and Tannen [DT01] introduced an extension of the classical chase in order to make use, in the process of query optimization, of a very general class of dependencies with disjunction, called disjunctive embedded dependencies (DEDs).
+For our purposes, we only need an extension to deal with disjunctive egds, which are a particular case of DEDs.
+Hence, the next definition is a particular case of the definition in [DT01].
+We note, however, that the subsequent properties of the chase that we prove and then make use in this subsection are new.
+Definition 5.4 (Disjunctive chase step) Let K be an instance and let e be a dis- junctive egd φ(x)→ ((x1 1 = x2 1) ∨...
+∨ (x1 l = x2 l )).
+Denote by e1,...,el the following egds obtained from e: φ(x)→ (x1 1 = x2 1), ..., φ(x)→ (x1 l = x2 l ), and call them the egds associated to e.
+Let h be a homomorphism from φ(x) to K such that h(x1 1) ̸= h(x2 1),...,h(x1 l ) ̸= h(x2 l ).
+We say that e can be applied to K with homomorphism h.
+Note that it is also the case that each of e1,...,el can be applied to K with homomorphism h,by Definition 3.1.
+For each i =1,...,l, let Ki be the result of applying ei to K with homomorphism h (i.e., K ei,h −→ Ki) according to Definition 3.1.
+(Note that some of the Ki’s can be ⊥.) We distinguish two cases: • If all of K1,...,Kl are ⊥ then we say that the result of applying e to K with h is “failure” and write K e,h−→ {⊥}, or simply K e,h−→ ⊥.
+• Otherwise, let Ki1 ,...,Kip be those elements in the set {K1,...,Kl} that are not ⊥.
+We say that the result of applying e to K with h is the set {Ki1 ,...,Kip }, and write K e,h−→ {Ki1 ,...,Kip }.
+24 Note that in the case when e has only one term in the disjunction the above defi- nition degenerates to Definition 3.1.
+Thus a chase step with an egd is a particular case of a disjunctive chase step.
+For such chase step, we will use, as convenience may dictate, either the notation K e,h −→ Ki1 as in Definition 3.1 or the full notation K e,h−→ {Ki1 }.
+In addition to chase steps with (disjunctive) egds, we will continue to use chase steps with tgds as in Definition 3.1.
+For such chase steps we will use either the notation K d,h −→ K′ or the notation K d,h−→ {K′}.
+We next define the finite disjunctive chase.
+Definition 5.5 (Disjunctive chase) Let Σ be a set of tgds and egds and let E be a set of disjunctive egds, and let K be an instance.
+• A chase tree of K with Σ ∪ E is a tree (finite or infinite) such that: • the root is K, and • for every node Kj in the tree, let {Kj1 ,...,Kjr } be the set of its children.
+Then there must exist some dependency d in Σ ∪ E and homomorphism h such that Kj d,h−→ {Kj1 ,...,Kjr }.
+4 • A finite disjunctive chase of K with Σ ∪ E is a finite chase tree with the re- quirement that each leaf Km satisfies either (a) Km = ⊥ or (b) there is no dependency d in Σ ∪ E and there is no homomorphism h such that d can be applied to Km with h.
+As with the traditional chase, there may not exist in general a finite disjunctive chase of an instance.
+However, if the tgds involved are required to form a weakly acyclic set then we can prove the following proposition, which is similar to Theo- rem 3.8.
+Proposition 5.6 Let Σ be the union of a weakly acyclic set of tgds with a set of egds.
+Let E be a set of disjunctive egds, and let K be a instance.
+Then every chase tree of K with Σ ∪ E is finite.
+Moreover, there exists a polynomial in the size of K that bounds the depth of every such chase tree.
+Proof: Let E′ be the set of all egds that are associated with some disjunctive egd of E.
+Let T be an arbitrary chase tree of K with Σ∪E.
+Then every path of T that starts at the root forms a chase sequence of K, in the sense of Definition 3.1, where the dependencies involved are from Σ ∪ E′.
+Since the tgds in Σ form a weakly acyclic set, we can then use Theorem 3.8 to conclude that there exists a polynomial in the size of K that bounds the length of every such path.
+We prove next that condition (2) in Lemma 5.3 can be verified by verifying first that a universal solution exists (by Corollary 3.9 this can be done in polynomial time under the given assumption that the tgds of the data exchange setting form a weakly acyclic set) and then by using the disjunctive chase on the universal solution.
+More precisely, we prove the following proposition.
+4 Note that such chase step can be either a disjunctive chase step as in Definition 5.4 (if d is a disjunctive egd) or a “traditional” chase step as in Definition 3.1 (if d is an egd or tgd, and so {Kj1 ,...,Kjr } is a singleton set).
+25 Proposition 5.7 Assume a data exchange setting where Σst is a set of tgds, and Σt is the union of a weakly acyclic set of tgds with a set of egds.
+Moreover, on the target schema, assume a set E of disjunctive egds and a set C of Boolean conjunctive queries.
+Let I be a source instance.
+Then the following are equivalent: (i) There exists a solution J∗ for I such that J∗ satisfies E and J∗ does not satisfy any of the conjunctive queries in C.
+(ii) There exists a universal solution J for I, there exists a finite disjunctive chase T of J with Σt ∪ E, and there exists a leaf J∗ ̸= ⊥ of T such that J∗ does not satisfy any of the conjunctive queries in C.
+The proof of Proposition 5.7 uses the following extension of Lemma 3.4, for the case of a chase step with a (disjunctive) egd.
+To handle chase steps with tgds, the proof of Proposition 5.7 will use directly Lemma 3.4.
+Lemma 5.8 Let K e,h−→ {Ki1 ,...,Kip } be a non-failing disjunctive chase step.
+Let K∗ be an instance such that: (i) K∗ satisfies e and (ii) there exists a homomorphism g : K → K∗.
+Then there exists j ∈{i1,...,ip} and there exists homomorphism gj : Kj → K∗ .
+Proof: Assume that the disjunctive egds e is: φ(x)→ ((x1 1 = x2 1) ∨...
+∨ (x1 l = x2 l )).
+Then h is a homomorphism from φ(x) to K, and {i1,...,ip} is the set of those indices j among {1,...,l} such that K ej ,h −→ Kj and Kj ̸= ⊥.
+We first note that g ◦ h : φ(x)→ K∗ is a homomorphism.
+Since K∗ satisfies e, there exists j ∈{1,...,l} such that g(h(x1 j)) = g(h(x2 j)).
+We show next that j ∈{i1,...,ip}.
+In other words, j is such that Kj ̸= ⊥.
+Suppose towards a contradiction that Kj= ⊥.
+Since Kj is the result of applying the egd ej to K with homomorphism h, it must be the case that h(x1 j )=c1 and h(x2 j )=c2, where c1 and c2 are two dis- tinct constants.
+On the other hand, we have g(c1)=g(c2), which implies c1 = c2 (since homomorphisms preserve constants).
+We have thus reached a contradiction.
+Hence j ∈{i1,...,ip}.
+We then take gj to be g.
+We need to ensure that g is still a homomorphism when considered from Kj to K∗.
+The only difference between Kj and K is the identification of h(x1 j ) and h(x2 j ) within Kj.
+Hence, the only way that g can fail to be a homomorphism on Kj is if g fails to be a function, by mapping h(x1 j ) and h(x2 j ) into two different constants or labeled nulls of K∗.
+But this cannot happen, since g(h(x1 j)) = g(h(x2 j )).
+Proof of Proposition 5.7: We prove first that (i) implies (ii).
+Assume that (i) is true.
+Since the tgds in Σt form a weakly acyclic set, it is the case that any chase with Σst ∪ Σt of ⟨I,∅⟩ terminates (by Theorem 3.8).
+Moreover there can be no failing chase, since otherwise there would be no solution at all, by Theorem 3.3, and hence (i) would be false.
+Thus, the result of the chase (any chase) with Σst ∪ Σt provides a universal solution J.
+Proposition 5.6 implies that a finite disjunctive chase T of J with Σt ∪ E must exist.
+We prove next that T contains a leaf satisfying the properties required in (ii).
+Let J∗ be the instance guaranteed to exist by (i).
+Since J∗ is a solution, it must be the case that there exists a homomorphism g : J → J∗.
+Applying either 26 Lemma 5.8 or Lemma 3.4 at each level in the chase tree, we must find in T a path J, J1,...,Jm, with Jm ̸= ⊥, such that there exists a homomorphism gm : Jm → J∗ and such that either (a) Jm is a leaf or (b) Jm e,h−→ ⊥, for some e in Σt ∪ E and homomorphism h.
+Suppose towards a contradiction that (b) is true.
+We note that e must be a (disjunctive) egd for the chase step of Jm to fail.
+Assuming e is φ(x)→ ((x1 1 = x2 1) ∨...
+∨ (x1 l = x2 l )), we have that h is a homomorphism from φ(x) to Jm.
+Then, for every j ∈{1,...,l}, we have that h(x1 j ) and h(x2 j ) are two distinct constants of Jm (otherwise the chase step would not produce ⊥).
+We also have that gm ◦ h is a homomorphism from φ(x) to J∗.
+Moreover, since homomorphisms preserve constants, it follows that, that gm(h(x1 j )) and gm(h(x2 j )) are two distinct constants of J∗, for every j ∈{1,...,l}.
+This contradicts the fact that J∗ satisfies e.
+Thus, we proved that T contains a leaf Jm (Jm ̸= ⊥) such that there exists a homomorphism gm : Jm → J∗.
+The existence of gm ensures that Jm cannot satisfy any of the conjunctive queries in C, or otherwise J∗ would satisfy some conjunctive query of C.
+Hence, Jm can play the role of J∗ required by (ii).
+Finally, we prove that (ii) implies (i).
+We show that the leaf J∗ guaranteed to exist, by (ii), satisfies the requirements of (i).
+In particular, J∗ satisfies the dependencies in Σt and E because it is a leaf in the chase tree.
+It is also easy to see that the disjunctive chase with Σt ∪E does not affect the satisfaction of the source-to-target dependencies (i.e., J∗ continues to satisfy Σst, as the universal solution J does).
+Proof of Theorem 5.2: Based on Proposition 5.7 and Lemma 5.3, we can check that certain(q,I)=false by checking that there exists a universal solution J for I, there exists a finite disjunctive chase T of J with Σt ∪ E and there exists a leaf J∗ ̸= ⊥ of T such that J∗ does not satisfy any of the conjunctive queries in C.
+All this can be verified, non-deterministically, in polynomial time.
+More precisely, suppose that certain(q,I)=false.
+Then we produce, in polynomial time (by The- orem 3.8), a universal solution J.
+Next we guess the sequence of dependencies and homomorphisms to be applied during the disjunctive chase as well as the branch that we pick at each step.
+We therefore non-deterministically find a finite disjunc- tive chase T and path within T leading to the “right” leaf J∗.
+The sequence of guesses is of polynomial length, by Proposition 5.6.
+Verifying that J ∗ is a leaf (i.e., that no dependency d in Σt ∪ E and no homomorphism h exist such that d can be applied to J∗ with h) can be done in polynomial time.
+In addition, verifying that J∗ does not satisfy any of the conjunctive queries in C can be done in polynomial time.
+Conversely, suppose that certain(q,I)=true.
+Then either no universal so- lution exists (and no solution exists) or a universal solution exists but no sequence of guesses as above exists that could lead to acceptance.
+Hence, deciding whether certain(q,I)=false is in NP.
+Therefore, computing the certain answers, under the conditions of Theorem 5.2, is in coNP.
+5.1.2 Lower Bounds Theorem 5.2 yields an upper bound in a fairly general data exchange setting for the complexity of computing the certain answers of unions of conjunctive queries with 27 inequalities.
+It turns out, as we discuss next, that this upper bound is tight, even in fairly restricted data exchange settings.
+Specifically, computing certain answers for such queries is coNP-complete.
+Therefore no polynomial algorithm exists for computing the certain answers when the input is a universal solution, unless P= NP.
+Abiteboul and Duschka [AD98] showed that in the LAV setting, computing cer- tain answers of conjunctive queries with inequalities is coNP-complete.
+They also sketched a proof which, if correct, would establish that this problem is coNP- complete even for conjunctive queries with a single inequality.
+Unfortunately, the reduction is erroneous.
+A correct reduction cannot be produced without increasing the number of inequalities, since here we show that in the LAV setting, there is a polynomial-time algorithm for computing the certain answers of unions of conjunc- tive queries with at most one inequality per disjunct.
+Still, the result of Abiteboul and Duschka [AD98] is correct; in fact, the unpublished full version [AD00] of that paper contains a proof to the effect that in the LAV setting, computing certain answers of Boolean conjunctive queries with six inequalities is coNP-complete.
+A different proof of the same result can be extracted by slightly modifying the proof of Theorem 3.2 in van der Meyden [vdM97].
+Thus, the next result provides a matching lower bound for the complexity of computing the certain answers of conjunctive queries with inequalities.
+Theorem 5.9 [AD98] In the LAV setting, computing the certain answers of Boolean conjunctive queries with six or more inequalities is coNP-complete.
+It is an interesting technical problem to determine the minimum number of inequal- ities needed to give rise to a coNP-complete problem in this setting.
+Conjecture 5.10 In the LAV setting, computing the certain answers of Boolean conjunctive queries with two inequalities is coNP-complete.
+We have not been able to settle this conjecture, but have succeeded in pinpointing the complexity of computing the certain answers of unions of Boolean conjunctive queries with at most two inequalities per disjunct.
+Theorem 5.11 In the LAV setting, computing the certain answers of unions of Boolean conjunctive queries with at most two inequalities per disjunct is coNP- complete.
+In fact, this problem is coNP-complete even for the union of two queries the first of which is a conjunctive query and the second of which is a conjunctive query with two inequalities.
+Proof: As mentioned earlier in this section, membership in coNP was first estab- lished by [AD98].
+This membership also follows from Theorem 5.2 proved in Section 5.1.1 for the more general data exchange setting.
+The coNP-hardness is established by a reduction from the complement of POSITIVE-NOT-ALL-EQUAL- 3SAT, which is the following decision problem: given a 3CNF-formula ϕ con- sisting entirely of positive clauses (x ∨ y ∨ z), is there a truth assignment to the variables of ϕ such that for every clause of ϕ at least one variable is assigned value “true” and at least one variable is assigned value “false”? This problem is known to 28 be NP-complete (for instance, this can be derived easily from Schaefer’s [Sch78] results on the complexity of GENERALIZED SATISFIABILITY problems).
+Before embarking on the description of the reduction, we give some intuition for one of the key constructs in the reduction.
+Suppose that a database schema contains a binary relation symbol L′ and consider an instance in which L′(u,0) and L′(v,1) hold, where u and v are two distinct elements.
+Suppose also that in this instance there is an element t such that L′(u,t) and L′(v,t) hold.
+Consequently, u or v is guaranteed to have two distinct L′-neighbors (it is possible that both u and v have two distinct L′-neighbors).
+This will make it possible to simulate disjunction and then extract a truth assignment.
+It should be noted that variants of this construct were first used by van der Meyden [vdM97].
+Let S be the source schema consisting of a ternary relation symbol P, a ternary relation symbol A, and a binary relation symbol L.
+Intuitively, P will consist of all triples of variables occurring in clauses of a given 3CNF-formula, while A and L will be used to assign truth values to the variables of the formula.
+Let T be the target schema consisting of a ternary relation symbol P ′, a ternary relation symbol A′, and a binary relation symbol L′.
+Let Σst be the set of the following four source- to-target dependencies: P(x, y, z)→ P′(x, y, z) A(x, u, v)→ A′(x, u, v) L(u,v)→ L′(u,v) A(x, u, v)→∃t(L′(u,t) ∧ L′(v,t)) Finally, let q= q1 ∨ q2 be the union of the following two queries over the target schema T: q1 :− (∃x, u, v, t1,t2,t)(A′(x, u, v) ∧ L′(u,t1) ∧ L′(v,t2) ∧L′(u,t) ∧ L′(v,t) ∧ (t ̸= t1) ∧ (t ̸= t2)) q2 :− (∃x1,x2,x3,u1,v1,u2,v2,u3,v3,t)(P′(x1,x2,x3) ∧ 3 (A′(xi,ui,vi) ∧ L′(ui,t) ∧ L′(vi,t))) i=1 Given a positive 3CNF-formula ϕ, let Iϕ be the source instance defined as fol- lows: • The elements of Iϕ are: 0, 1, all variables of ϕ, and for each variable x of ϕ, two distinct elements ux and vx (different such elements are used for different variables).
+• The relations of Iϕ are: Iϕ(P)={(x, y, z):(x ∨ y ∨ z) is a clause of ϕ} Iϕ(A)={(x, ux,vx):x is a variable of ϕ} Iϕ(L)={(ux, 0), (vx, 1) : x is a variable of ϕ} 29 We now claim that ϕ is NOT-ALL-EQUAL satisfiable if and only if certain(q,Iϕ)= false.
+This means that we have to show that the following two statements are equiv- alent: (1) There is a truth assignment such that, for every clause of ϕ, at least one variable is assigned value “true” and at least one variable is assigned value “false”.
+(2) There is a target instance J that is a solution to the data exchange problem for Iϕ and is such that q(J)=false.
+Of the two directions in the claimed equivalence above, (2) ⇒ (1) is the more in- teresting one.
+Suppose that J is a solution such that q(J)=false, which means that q1(J)=false and q2(J)=false.
+Since J satisfies the source-to-target dependen- cies in Σst, but fails to satisfy q1, it follows that for every variable x, we have that L′(ux, 0) and L′(ux, 1) hold or that L′(vx, 0) and L′(vx, 1) hold (it is conceivable that both ux and vx have 0 and 1 as L′-neighbors).
+We now assign value true to a variable x if L′(ux, 0) and L′(ux, 1) hold.
+Using the fact that q2(J)=false,itisnot hard to verify that, for each clause of ϕ, at least one variable is assigned value true and at least one variable is assigned value false.
+5.1.3 A Polynomial-Time Case For unions of conjunctive queries with inequalities, Theorem 5.11 delineates the boundary of intractability, because the next theorem asserts that computing certain answers of unions of conjunctive queries with at most one inequality per disjunct can be solved in polynomial time by an algorithm that runs on universal solutions.
+Theorem 5.12 Assume a data exchange setting in which Σst is a set of tgds, and Σt is the union of a weakly acyclic set of tgds with a set of egds.
+Let q be a union of con- junctive queries with at most one inequality per disjunct.
+Let I be a source instance and let J be an arbitrary universal solution for I.
+Then there is a polynomial-time algorithm with input J that computes certain(q,I).
+Proof: As in the proof of Theorem 5.2, we can assume without loss of generality that q is a Boolean query.
+We know that q is equivalent to a query of the form q1 ∨q2, where q1 is the disjunction of a set C of conjunctive queries with no inequalities, and q2 is the disjunction of conjunctive queries with exactly one inequality.
+As in the proof of Theorem 5.2 we note that the negation of q2 is equivalent to the conjunction of a set E of disjunctive egds.
+However, differently from that proof, we use next the fact q2 has exactly one inequality per disjunct.
+Hence, it is easy to see that for each egd in E the number of equalities that participate in the disjunction is one.
+Therefore, E is a set of egds in the traditional sense (i.e., no disjunction).
+We now describe the algorithm, and then show that it runs in polynomial time and is correct.
+The algorithm is based on the chase, as in the proof of Theorem 5.2.
+However, since there is no disjunction in E, the chase used is the traditional one (as defined in Section 3) and not the disjunctive chase used in the proof of Theorem 5.2.
+The algorithm begins by chasing the universal solution J with Σt ∪ E.
+30 1.
+If the chase fails (by trying to equate two constants), then halt and say that certain(q,I)=true.
+2.
+If the chase does not fail, then call the result K.
+See if K satisfies at least one of the conjunctive queries in C.
+(a) If K satisfies at least one of the conjunctive queries in C, then halt and say that certain(q,I)=true.
+(b) If K does not satisfy any of the conjunctive queries in C, then halt and say that certain(q,I)=false.
+Since there is a polynomial-time algorithm for doing the chase (Theorem 3.8), and since there is a polynomial-time algorithm for deciding satisfiability of conjunctive queries, it follows easily that the algorithm runs in polynomial time.
+We now show that the algorithm is correct.
+Case 1: The algorithm halts in step 1.
+Since every solution is a homomorphic image of J and satisfies Σt, there is no solution that satisfies E.
+By definition of E, this tells us that certain(q2,I)=true, and hence certain(q,I)=true.
+Case 2: The algorithm halts in step 2(a).
+Since J is a universal solution, it is easy to see that K is a universal solution for targets that satisfy E (in addition to the requirements on Σst and Σt).
+Thus, every solution that satisfies E (that is, where q2 fails) is a homomorphic image of K.
+Also, if K satisfies some conjunctive query in C, then so does every homomorphic image of K.
+Putting these facts together, we see that if K satisfies some conjunctive query in C, then so does every solution that satisfies E, that is, every solution where q2 fails.
+So if K satisfies some conjunctive query in C, then every solution where q2 fails satisfies some conjunctive query in C, and so satisfies q1.
+Therefore, every solution satisfies either q2 or q1, and hence satisfies q.
+Hence, certain(q,I)=true.
+Case 3: The algorithm halts in step 2(b).
+As mentioned in Case 2, K is a universal solution for targets that satisfy E.
+In particular, K is a solution for the original data exchange problem (which does not include E).
+Since K does not satisfy any of the conjunctive queries in C, it does not satisfy q1.
+On the other hand, K satisfies all of the egds in E, and hence does not satisfy q2.
+Hence, K does not satisfy q.
+Since K is a solution, it follows that certain(q,I)=false.
+Corollary 5.13 Assume a data exchange setting in which Σst is a set of tgds, and Σt is the union of a weakly acyclic set of tgds with a set of egds.
+Let q be a union of conjunctive queries with at most one inequality per disjunct.
+Then there is a polynomial-time algorithm for computing the certain answers of q.
+Proof: We construct a two-phase algorithm.
+First, a canonical universal solution is constructed, by the chase, in polynomial time (see Corollary 3.9).
+Then we run, on this universal solution, the polynomial-time algorithm of Theorem 5.12, to compute the certain answers.
+31 5.2 First-Order Inexpressibility The following theorem shows that, in general, even for a conjunctive query q with just one inequality, there is no first-order query q∗ that computes the certain an- swers when evaluated on the canonical universal solution.
+This is in strong contrast with the polynomial-time algorithm that we have seen earlier (Theorem 5.12).
+It is also in contrast with the second part of Proposition 4.4, where we have seen a particular example for which such a q∗ exists.
+The proof of the theorem combines Ehrenfeucht-Fra¨ıss´e games with the chase procedure.
+Theorem 5.14 There is a LAV setting with source I and there is a Boolean con- junctive query q with one inequality, for which there is no first-order query q∗ over the canonical universal solution J such that certain(q,I)=q∗(J).
+Proof: The source schema consists of a unary relation schema M, and two binary relation schemas R and Q.
+The target schema consists of a unary relation schema N and a binary relation schema P.
+The set Σst of source-to-target dependencies consists of: M(x)→ N(x) Q(x, y)→ P(x, y) R(x, y)→∃z(P(x, z) ∧ P(z,y) ∧ N(z)) The set Σt of target dependencies is empty.
+The query q is: ∃x∃y∃z(P(x, y) ∧ P(y,z) ∧ N(x) ∧ N(z) ∧ (x ̸= z)) We now define two source instances I1 and I2, both based on a positive integer pa- rameter k that will be taken to be “sufficiently large” (explained later).
+Both I1 and I2 have the same domain, which consists of the 4k +2distinct points (values) c, d, e1,..., e2k, f1,..., f2k.
+In both I1 and I2, the unary relation corresponding to M contains the two points c and d.
+In both I1 and I2, the binary relation corresponding to R is the disjoint union of two cycles, each of size 2k, where the first cycle con- tains the edges (tuples) (ei,ei+1) for 1 ≤ i<2k, along with the edge (e2k,e1), and the second cycle contains the edges (fi,fi+1) for 1 ≤ i<2k, along with the edge (f2k,f1).
+The only difference between I1 and I2 is that in I1, the binary relation corresponding to Q contains the two tuples (e1,c) and (ek,d), whereas in I2, the binary relation corresponding to Q contains the two tuples (e1,c) and (f1,d).
+Thus, in I1, the points connecting to c and d are in the same cycle (but “far apart”), while in I2, the points connecting to c and d are in different cycles.
+Thus, if we ignore the directions of the edges, then c and d are connected by a path in I1, but not in I2.
+It is easy to see that in the canonical universal solution J1 of I1, in addition to the constants c, d, e1,..., e2k, f1,..., f2k, there are nulls e′ 1,..., e′ 2k, f′ 1,..., f′ 2k, such that the relation corresponding to P has the following tuples: • (ei,e′ i) for 1 ≤ i ≤ 2k 32 • (e′ i,ei+1) for 1 ≤ i<2k • (e′ 2k,e1) • (fi,f′ i) for 1 ≤ i ≤ 2k • (f′ i,fi+1) for 1 ≤ i<2k • (f′ 2k,f1) • (e1,c) • (ek,d) Intuitively, this relation consists of two cycles, each of size 4k, along with two dangling edges that point to c and d respectively and that each hang off the first cycle and are far apart.
+The relation corresponding to N in the canonical universal solution J1 contains the points c, d, e′ 1,..., e′ 2k, f′ 1,..., f′ 2k.
+Thus, this relation contains c and d, along with the nulls.
+Similarly, in the canonical universal solution J2 of I2, in addition to the constants c, d, e1,...,e2k,f1,...,f2k, there are nulls e′′ 1,..., e′′ 2k, f′′ 1 ,..., f′′ 2k, such that the relation corresponding to P has the following tuples: • (ei,e′′ i ) for 1 ≤ i ≤ 2k • (e′′ i ,ei+1) for 1 ≤ i<2k • (e′′ 2k,e1) • (fi,f′′ i ) for 1 ≤ i ≤ 2k • (f′′ i ,fi+1) for 1 ≤ i<2k • (f′′ 2k,f1) • (e1,c) • (f1,d) Intuitively, this relation consists of two cycles, each of size 4k, along with two dangling edges that point to c and d respectively, where the two dangling edges hang off of different cycles.
+The relation corresponding to N in the canonical universal solution J2 contains the points c, d, e′′ 1,..., e′′ 2k, f′′ 1 ,..., f′′ 2k.
+Thus, this relation contains c and d, along with the nulls.
+Let q∗ be an arbitrary first-order query.
+We now show that if k is sufficiently large, then q∗(J1)=q∗(J2).
+We shall also show that certain(q,I1)=true and certain(q,I2)=false.
+This shows that q∗ does not play the role demanded of it in the statement of the theorem (that certain(q,I)=q∗(J)).
+The theorem then follows.
+We begin by showing that if k is sufficiently large, then q∗(J1)=q∗(J2).
+This fol- lows easily by making use of Ehrenfeucht-Fra¨ıss´e games, and in particular utilizing Hanf’s technique [FSV95].
+33 We now show that certain(q,I1)=true.
+Note that¬q is equivalent to the egd P(x, y) ∧ P(y,z) ∧ N(x) ∧ N(z)→ (x = z).
+To show that certain(q,I1)=true, it is sufficient to show that if we chase J1 with ¬q, the chase fails.
+This is because, as it is easy to see, the failure of the chase implies that no homomorphic image of J1, and hence no target instance, can satisfy ¬q.
+In the chase, we first apply¬q to J′ with the homomorphism h where h(x)=e′ 2k, h(y)=e1, and h(z)=c, and thereby replace e′ 2k by c.
+We then apply¬q with the homomorphism h where h(x)=c (which e′ 2k has been replaced by), h(y)=e1, and h(z)=e′ 1, and therefore replace e′ 1 by c.
+We then apply¬q with the homomorphism h where h(x)=c (which e′ 1 has been replaced by), h(y)=e2, and h(z)=e′ 2, and therefore replace e′ 2 by c.
+Continuing in this manner, we replace e′ 3, e′ 4,..., e′ k−1 by c.
+Finally, we apply¬q with the homomorphism h where h(x)=c (which e′ k−1 has been replaced by), h(y)=ek, and h(z)=d, and try to replace d by c, which leads to failure, as desired.
+We close by showing that certain(q,I2)=false.
+We first define a target instance K2.
+The relation corresponding to P has the following tuples: • (ei,c) for 1 ≤ i ≤ 2k • (c, ei) for 1 ≤ i ≤ 2k • (fi,d) for 1 ≤ i ≤ 2k • (d, fi) for 1 ≤ i ≤ 2k • (e1,c) • (f1,d) The relation corresponding to N contains only c and d.
+Define the function f mapping J2 onto K2 by letting f(a)=a for each of the constants a, namely c, d, e1,..., e2k, letting f(e′′ i )=c, for 1 ≤ i ≤ 2k, and letting f(f′′ i )=d, for 1 ≤ i ≤ 2k.
+It is easy to verify that f is a homomorphism, and that q(K2)=false.
+Hence, certain(q,I2)=false.
+This was to be shown.
+It follows from the above proof that the result holds even if we allow the first-order formula q∗ to contain the predicate const that distinguishes between constants and nulls.
+The next result, of particular interest to query answering in the data integration context, is a corollary to the proof of Theorem 5.14.
+It shows that for conjunctive queries with just one inequality we cannot in general find any first-order query over the source schema that, when evaluated on the source instance, computes the certain answers.
+Corollary 5.15 There is a LAV setting with source I and there is a Boolean con- junctive query q with one inequality, for which there is no first-order query q∗ over the source schema such that certain(q,I)=q∗(I).
+34 6 Concluding Remarks Given a source instance, there may be many universal solutions.
+This naturally brings up the question of whether there is a “best” universal solution, and hence a best solution for data exchange.
+In a follow-up paper [FKP03], we address this question and answer it by considering the well-known notion of the core of a struc- ture, a notion that was first studied in graph theory (see, for instance, [HN92]), but has also played a role in conjunctive-query processing [CM77].
+There are a number of issues remaining.
+There is a need for further investigation of how universal solutions can be used for query answering in the data exchange setting.
+We wish to explore conditions under which a query q can be rewritten to a first-order query q∗ such that the certain answers of q can be computed by evaluating q∗ on a universal solution.
+Finally, we wish to go back to our original motivation from Clio, an XML-based schema mapping tool.
+The results we presented here are about data exchange between relational schemas.
+We would like to study data exchange between XML schemas and, in particular, investigate how the notion of universal solution can be extended to cover XML schemas.
+Acknowledgments.
+We would like to thank Val Tannen and Moshe Y.
+Vardi for helpful suggestions.
+References [ACM97] S.
+Abiteboul, S.
+Cluet, and T..
+Milo.
+Correspondence and Translation for Heterogeneous Data.
+In Proceedings of the International Conference on Database Theory (ICDT), pages 351–363, 1997.
+[AD98] S.
+Abiteboul and O.
+M.
+Duschka.
+Complexity of Answering Queries Using Materialized Views.
+In Proceedings of the ACM Symposium on Principles of Database Systems (PODS), pages 254–263, 1998.
+[AD00] S.
+Abiteboul and O.
+M.
+Duschka.
+Complexity of Answering Queries Using Materialized Views.
+Unpublished full version of [AD98], 2000.
+[BV84] C.
+Beeri and M.
+Y.
+Vardi.
+A Proof Procedure for Data Dependencies.
+Journal of the ACM, 31(4):718–741, 1984.
+[CCGL02] A.
+Cal`ı, D.
+Calvanese, G.
+De Giacomo, and M.
+Lenzerini.
+Data Integration under Integrity Constraints.
+In Proceedings of the International Conference on Advanced Information Systems Engineering (CAiSE), pages 262–279, 2002.
+[CFP84] M.
+A.
+Casanova, R.
+Fagin, and C.
+H.
+Papadimitriou.
+Inclusion Dependencies and their Interaction with Functional Dependencies.
+Journal of Computer and System Sciences, 28(1):29–59, 1984.
+[CK86] S.
+S.
+Cosmadakis and P.
+C.
+Kanellakis.
+Functional and Inclusion Dependencies: A Graph Theoretic Approach.
+In Advances in Computing Research, volume 3, pages 163–184.
+1986.
+35 [CM77] A.
+K.
+Chandra and P.
+M.
+Merlin.
+Optimal Implementation of Conjunctive Queries in Relational Data Bases.
+In Proceedings of the ACM Symposium on Theory of Computing (STOC), pages 77–90, 1977.
+[DT01] A.
+Deutsch and V.
+Tannen.
+Optimization Properties of Conjunctive Regular Path Queries.
+In Int’l Workshop on Database Programming Languages, pages 21–39, 2001.
+[DT03] A.
+Deutsch and V.
+Tannen.
+Reformulation of XML Queries and Constraints.
+In Proceedings of the International Conference on Database Theory (ICDT), pages 225–241, 2003.
+[Fag82] R.
+Fagin.
+Horn Clauses and Database Dependencies.
+Journal of the ACM, 29(4):952–985, October 1982.
+[FKMP03] R.
+Fagin, P.
+G.
+Kolaitis, R.
+J.
+Miller, and L.
+Popa.
+Data Exchange: Semantics and Query Answering.
+In Proceedings of the International Conference on Database Theory (ICDT), pages 207–224, 2003.
+[FKP03] R.
+Fagin, Ph.
+G.
+Kolaitis, and L.
+Popa.
+Data Exchange: Getting to the Core.
+In Proceedings of the ACM Symposium on Principles of Database Systems (PODS), 2003.
+To appear.
+[FLM99] M.
+Friedman, A.
+Y.
+Levy, and T.
+D.
+Millstein.
+Navigational Plans For Data Integration.
+In Proceedings of the National Conference on Artificial Intelligence (AAAI), pages 67–73, 1999.
+[FSV95] R.
+Fagin, L.
+Stockmeyer, and M.
+Y.
+Vardi.
+On Monadic NP vs.
+Monadic co-NP.
+Information and Computation, 120(1):78–92, July 1995.
+[Hal01] A.
+Halevy.
+Answering Queries Using Views: A Survey.
+VLDB Journal, pages 270–294, 2001.
+[HN92] P.
+Hell and J.
+Neˇsetˇril.
+The Core of a Graph.
+Discrete Mathematics, 109:117– 126, 1992.
+[HY90] R.
+Hull and M.
+Yoshikawa.
+ILOG: Declarative Creation and Manipulation of Object Identifiers.
+In Proceedings of the International Conference on Very Large Data Bases (VLDB), pages 455–468, 1990.
+[Len02] M.
+Lenzerini.
+Data Integration: A Theoretical Perspective.
+In Proceedings of the ACM Symposium on Principles of Database Systems (PODS), pages 233– 246, 2002.
+[LMSS95] A.
+Y.
+Levy, A.
+O.
+Mendelzon, Y.
+Sagiv, and D.
+Srivastava.
+Answering Queries Using Views.
+In Proceedings of the ACM Symposium on Principles of Database Systems (PODS), pages 95–104, May 1995.
+[Mak87] J.
+A.
+Makowsky.
+Why Horn Formulas Matter in Computer Science: Initial Structures and Generic Examples.
+Journal of Computer and System Sciences, 34(2/3):266–292, April/June 1987.
+36 [MHH00] R.
+J.
+Miller, L.
+M.
+Haas, and M.
+Hern´andez.
+Schema Mapping as Query Discovery.
+In Proceedings of the International Conference on Very Large Data Bases (VLDB), pages 77–88, 2000.
+[MMS79] D.
+Maier, A.
+O.
+Mendelzon, and Y.
+Sagiv.
+Testing Implications of Data Dependencies.
+ACM Transactions on Database Systems (TODS), 4(4):455– 469, December 1979.
+[MUV84] D.
+Maier, J.
+D.
+Ullman, and M.
+Y.
+Vardi.
+On the Foundations of the Universal Relation Model.
+ACM Transactions on Database Systems (TODS), 9(2):283– 308, June 1984.
+[PVM+02] L.
+Popa, Y.
+Velegrakis, R.
+J.
+Miller, M.
+A.
+Hernandez, and R.
+Fagin.
+Translating Web Data.
+In Proceedings of the International Conference on Very Large Data Bases (VLDB), pages 598–609, 2002.
+[Sch78] T.J.
+Schaefer.
+The Complexity of Satisfiability Problems.
+In Proceedings of the ACM Symposium on Theory of Computing (STOC), pages 216–226, 1978.
+[SHL75] N.
+C.
+Shu, B.
+C.
+Housel, and V.
+Y.
+Lum.
+CONVERT: A High Level Translation Definition Language for Data Conversion.
+Communications of the ACM, 18(10):557–567, 1975.
+[SHT+77] N.
+C.
+Shu, B.
+C.
+Housel, R.
+W.
+Taylor, S.
+P.
+Ghosh, and V.
+Y.
+Lum.
+EXPRESS: A Data EXtraction, Processing, amd REStructuring System.
+ACM Transactions on Database Systems (TODS), 2(2):134–174, 1977.
+[Var82] M.
+Y.
+Vardi.
+The complexity of relational query languages.
+In Proceedings of the ACM Symposium on Theory of Computing (STOC), pages 137–146, 1982.
+[vdM97] R.
+van der Meyden.
+The Complexity of Querying Indefinite Data about Linearly Ordered Domains.
+Journal of Computer and System Sciences, 54:113– 135, 1997.
+[vdM98] R.
+van der Meyden.
+Logical Approaches to Incomplete Information: A Survey.
+In Logics for Databases and Information Systems, pages 307–356.
+Kluwer, 1998.
+37 

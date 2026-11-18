@@ -23,7 +23,18 @@
     "withVerdict": [
       "lambda",
       ["v"],
-      ["aggregate/unique", ["find", "?c", ["verdict", "?c", "v"]]]
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?c",
+          [
+            "and",
+            ["verdict", "?c", "v"],
+            ["weighed_in", "?c", "separation-logic"]
+          ]
+        ]
+      ]
     ],
     "quoteOf": [
       "lambda",
@@ -283,7 +294,10 @@
     "Of the ",
     [
       "words/count",
-      ["aggregate/count", ["find", "?c", ["candidate", "?c", "?_"]]],
+      [
+        "aggregate/count",
+        ["find", "?c", ["weighed_in", "?c", "separation-logic"]]
+      ],
       "way",
       "ways"
     ],
@@ -346,7 +360,10 @@
               "label": "Ideas weighed",
               "value": [
                 "words/number",
-                ["aggregate/count", ["find", "?c", ["candidate", "?c", "?_"]]]
+                [
+                  "aggregate/count",
+                  ["find", "?c", ["weighed_in", "?c", "separation-logic"]]
+                ]
               ]
             },
             {
@@ -369,7 +386,15 @@
                 "words/number",
                 [
                   "aggregate/countUnique",
-                  ["find", "?s", ["claim", "?_", "?s", "?_", "?_"]]
+                  [
+                    "find",
+                    "?s",
+                    [
+                      "and",
+                      ["claim", "?c", "?s", "?_", "?_"],
+                      ["string/startsWith", "?c", "sl-"]
+                    ]
+                  ]
                 ]
               ],
               "note": [
@@ -378,7 +403,15 @@
                   "words/count",
                   [
                     "aggregate/count",
-                    ["find", "?c", ["claim", "?c", "?_", "?_", "?_"]]
+                    [
+                      "find",
+                      "?c",
+                      [
+                        "and",
+                        ["claim", "?c", "?_", "?_", "?_"],
+                        ["string/startsWith", "?c", "sl-"]
+                      ]
+                    ]
                   ],
                   "statement",
                   "statements"
@@ -688,7 +721,15 @@
               "string/join",
               [
                 "array/map",
-                ["find", "?a", ["confirmed", "?a"]],
+                [
+                  "find",
+                  "?a",
+                  [
+                    "and",
+                    ["confirmed", "?a"],
+                    ["string/startsWith", "?a", "sl-"]
+                  ]
+                ],
                 [
                   "lambda",
                   ["a"],
@@ -705,7 +746,11 @@
             [
               "cond",
               [
-                ["violated", "?_", "?_"],
+                [
+                  "and",
+                  ["violated", "?a", "?_"],
+                  ["string/startsWith", "?a", "sl-"]
+                ],
                 [
                   "string/concat",
                   " Overturned: ",
@@ -719,6 +764,7 @@
                         [
                           "and",
                           ["violated", "?a", "?_"],
+                          ["string/startsWith", "?a", "sl-"],
                           ["assumption", "?a", "?s"]
                         ]
                       ]
@@ -805,7 +851,11 @@
           "choose": {
             "idea": {
               "label": "Idea",
-              "options": ["find", "?c", ["candidate", "?c", "?_"]]
+              "options": [
+                "find",
+                "?c",
+                ["weighed_in", "?c", "separation-logic"]
+              ]
             }
           },
           "example": {
@@ -966,12 +1016,16 @@
           "evidence": [
             "query",
             [
-              "answer",
-              {
-                "counted": "?what"
-              },
-              "?n",
-              "?statement"
+              "and",
+              [
+                "answer",
+                {
+                  "counted": "?what"
+                },
+                "?n",
+                "?statement"
+              ],
+              ["string/startsWith", "?statement", "sl-"]
             ]
           ]
         },

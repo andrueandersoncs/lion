@@ -1,0 +1,459 @@
+Search for:
+Association for Logic Programming
+Main menu
+Skip to content
+ALP
+Mission and Vision
+ALP History
+ALP Board
+ALP News
+ALP Awards
+ALP by laws
+ALP Policies
+ALP EC Elections
+Diversity and Inclusion Policy
+ALP Sponsorship Guidelines
+Conference Policy
+For referees
+ICLP
+TPLP
+Scope and submission
+Content
+Accepted papers
+Book Reviews
+Alain Colmerauer Prize
+Theses and Dissertations
+PhD Theses
+Master’s theses
+Systems and Links
+Prolog Community
+ALP ISSUE , Feature Articles
+Datalog+/-: A New Family of Languages for Ontology Querying
+by Editors &bull; December 31, 2010 &bull; Comments Off on Datalog+/-: A New Family of Languages for Ontology Querying
+By Andrea Calì (2,3), Georg Gottlob (1,3),
+Thomas Lukasiewicz (1), and Andreas Pieris (1)
+(1) Computing Laboratory University of Oxford, UK
+(2) Department of Information Systems and Computing Brunel University, UK
+(3) Oxford-Man Institute of Quantitative Finance University of Oxford, UK
+PDF Version
+Abstract
+We briefly report on Datalog ± , a family of recently introduced variants of Datalog. In Datalog ± languages, Datalog is extended by allowing features such as existential quantifiers, the equality predicate, and the truth constant false to appear in rule heads. At the same time, the resulting language is syntactically restricted, so as to achieve decidability and in some relevant cases even tractability.
+Datalog (see, e.g., [ 1 ] ) has been used as a paradigmatic database programming and query language for over three decades. Rules in Datalog ± are so-called tuple-generating dependencies (TGDs) , i.e., Datalog (Horn) rules with the possibility of having existentially quantified variables in the head. For example, the rule person ( X ) →∃ Y father ( X,Y ) (with the universal quantifiers omitted) expresses the fact that every person has a father. Existential quantification in Datalog ± rules allows us to overcome the shortcomings of Datalog as an ontology language [ 15 ] .
+In the following, we will consider the ontological query answering problem as that of answering Boolean conjunctive queries (BCQs) against a database instance D (a set of ground facts) under an ontology Σ constituted by rules. The (decision) problem is to calculate whether q is entailed by D and Σ, written as D ∪ Σ q , or, equivalently, whether q has positive answer against D and Σ. Notice that considering BCQs is without loss of generality regarding complexity.
+Unfortunately, already for sets Σ of TGDs alone, most basic reasoning and query answering problems are undecidable. In particular, given an ontology constituted by a set Σ of TGDs, and a set of ground facts D , checking whether D ∪ Σ q is undecidable when q is a ground fact [ 3 ] . Worse than that, there exist a fixed set of TGDs and a BCQ, and only the database is given as input, where undecidability still holds [ 4 ] . Languages in the Datalog ± family have various restrictions on the form of the rule bodies, and this allows for decidability of query answering, and in some cases tractability in data complexity , i.e., the complexity when the only input is the instance D , while all the rest is considered fixed.
+Guardedness [ 2 ] is a well-known restriction of first-order logic that ensures decidability. Based on this notion, guarded TGDs (GTGDs) have been introduced [ 6 , 4 ] . In a guarded TGD, the rule body is required to have an atom that contains as arguments all body variables of the rule. This class of TGDs ensures polynomial-time data complexity of query answering. The more restricted class of linear TGDs (LTGDs) is the class of TGDs having a single body-atom. Such a class has even better computational properties than GTGDs; in fact, linear TGDs are first-order rewritable , which means that any set Σ of LTGDs, and any BCQ q , can be transformed into a first-order query q Σ such that D q Σ iff D ∪ Σ q , for every database D . This property, introduced in [ 13 ] in the context of description logics, is essential if D is a very large database, which is the usual case. It means that query answering can be deferred to a standard query language such as (basic, non-recursive) SQL. GTGDs can be enriched by stratified negation , a simple non-monotonic form of negation often used in the context of Datalog [ 6 ] . GTGDs are extended by weakly-guarded sets of TGDs [ 4 ] , where the guardedness condition for rule bodies is somewhat relaxed.
+Stickiness, a completely different paradigm for decidable and tractable query answering, was introduced in [ 9 ] . The class of sticky sets of TGDs is defined in [ 9 ] by a syntactic criterion that is easily testable. Sticky sets of TGDs are first-order rewritable. Extensions of sticky sets of TGDs are studied in [ 11 ] .
+Negative constraints are rules whose head is the truth constant false , denoted by ⊥ . It turns out, as shown in [ 6 ] , that negative constraints can be added to TGDs without any increase of complexity. The reason is that checking whether a rule ρ : body → ⊥ is satisfied by a database D , given a Datalog ± program Σ, is tantamount to showing that D ∪ Σ ⁄ body , i.e., to the evaluation of a BCQ.
+Equality-generating dependencies (EGDs) have a body of the same form as TGDs, but having in their head an equality between two variables appearing in the body. Unfortunately, as is well-known in database theory, query answering becomes undecidable even when putting together some extremely week forms of TGDs and EGDs such as inclusion dependencies and functional dependencies [ 14 ] . It is interesting for real-world scenarios to study the interaction of TGDs with a very simple, nevertheless very useful class of EGDs, namely key dependencies (or
+simply keys ). Semantic and syntactic conditions ensuring that keys are usable without destroying decidability and tractability have been recently studied in [ 4 , 6 , 9 ] .
+The Datalog ± family has several applications—we mention just a few of them, referring the reader, for instance, to [ 5 , 7 ] . LTGDs and keys (combined with negative constraints) have been used to model and query various extensions of Entity-Relationship schemas [ 8 , 10 ] . In spite of their restricted syntax, linear TGDs prove to be very useful for ontology modeling and querying: LTGDs with key dependencies and negative constraints are capable of properly capturing the whole DL-Lite family [ 13 , 16 ] . The F-Logic Lite ontology language, introduced and studied in [ 12 ] , can also be modeled in the Datalog ± framework [ 4 ] .
+References
+[1] Serge Abiteboul, Richard Hull, and Victor Vianu. Foundations of Databases . Addison-Wesley, 1995.
+[2] Hajnal Andréka, Johan van Benthem, and István Németi. Modal languages and bounded fragments of predicate logic. J. Philosophical Logic , 27:217–274, 1998.
+[3] Catriel Beeri and Moshe Y. Vardi. The implication problem for data dependencies. In Proc. of ICALP , pages 73–85, 1981.
+[4] Andrea Calì, Georg Gottlob, and Michael Kifer. Taming the infinite chase: Query answering under expressive relational constraints. In Proc. of KR , pages 70–80, 2008.
+[5] Andrea Calì, Georg Gottlob, Michael Kifer, Thomas Lukasiewicz, and Andreas Pieris. Ontological reasoning with F-Logic Lite and its extensions. In Proc. of AAAI , 2010.
+[6] Andrea Calì, Georg Gottlob, and Thomas Lukasiewicz. A general Datalog-based framework for tractable query answering over ontologies. In Proc. of PODS , pages 77–86, 2009.
+[7] Andrea Calì, Georg Gottlob, Thomas Lukasiewicz, Bruno Marnette, and Andreas Pieris. Datalog+/-: A family of logical knowledge representation and query languages for new applications. In Proc. of LICS ,
+pages 228–242, 2010.
+[8] Andrea Calì, Georg Gottlob, and Andreas Pieris. Tractable query answering over conceptual schemata. In Proc. of ER , pages 175–190, 2009.
+[9] Andrea Calì, Georg Gottlob, and Andreas Pieris. Advanced processing for ontological queries. Proc. of VLDB , 3(1):554–565, 2010.
+[10] Andrea Calì, Georg Gottlob, and Andreas Pieris. Query answering under expressive Entity-Relationship schemata. In Proc. of ER , pages 347–361, 2010.
+[11] Andrea Calì, Georg Gottlob, and Andreas Pieris. Query answering under non-guarded rules in Datalog+/-. In Proc. of RR , pages 1–17, 2010.
+[12] Andrea Calì and Michael Kifer. Containment of conjunctive object meta-queries. In Proc. of VLDB , pages 942–952, 2006.
+[13] Diego Calvanese, Giuseppe De Giacomo, Domenico Lembo, Maurizio Lenzerini, and Riccardo Rosati. Tractable reasoning and efficient query answering in description logics: The DL-Lite family. J. Autom. Reasoning ,
+39(3):385–429, 2007.
+[14] A. K. Chandra and M. Y. Vardi. The implication problem for functional and inclusion dependencies. SIAM J. Comput. , 14:671–677, 1985.
+[15] Peter F. Patel-Schneider and Ian Horrocks. A comparison of two modelling paradigms in the semantic web. J. Web Semantics , 5(4):240–250, 2007.
+[16] Antonella Poggi, Domenico Lembo, Diego Calvanese, Giuseppe De Giacomo, Maurizio Lenzerini, and Riccardo Rosati. Linking data to ontologies. J. Data Semantics , 10:133–173, 2008.
+Post navigation
+&larr; Repair of service-based processes – an application area for logic programming
+CFP: Functional and (Constraint) Logic Programming &rarr;
+Search in our archives
+Search for:
+Categories
+ALP ISSUE (278)
+Accepted Papers (15)
+Conference reports (44)
+Editorial (38)
+Feature Articles (82)
+In Memoriam (21)
+Left Field (3)
+LP Systems (14)
+Personal perspectives on LP (4)
+Positions in LP (8)
+Programming Contest (5)
+Regular columns (39)
+Book Announcement (11)
+Community news (13)
+Doctoral dissertations (6)
+Games and Puzzles (7)
+Research Groups (1)
+Asyncronous News (195)
+Call for papers (121)
+Call for Participation (14)
+Community News (20)
+Conferences News (2)
+PhD positions (10)
+Positions in LP (12)
+Schools (12)
+Uncategorized (5)
+Archives per month
+Archives per month
+Select Month
+November 2026 (1)
+October 2026 (1)
+September 2026 (2)
+June 2026 (1)
+May 2026 (2)
+March 2026 (2)
+January 2026 (1)
+November 2025 (1)
+September 2025 (1)
+July 2025 (1)
+March 2025 (1)
+September 2024 (1)
+August 2024 (1)
+March 2024 (1)
+January 2024 (2)
+October 2023 (1)
+September 2023 (3)
+June 2023 (3)
+May 2023 (1)
+April 2023 (1)
+February 2023 (2)
+January 2023 (2)
+November 2022 (1)
+August 2022 (5)
+May 2022 (1)
+March 2022 (2)
+February 2022 (1)
+January 2022 (1)
+October 2021 (1)
+September 2021 (2)
+August 2021 (3)
+May 2021 (1)
+April 2021 (1)
+February 2021 (1)
+January 2021 (1)
+December 2020 (5)
+October 2020 (1)
+September 2020 (3)
+August 2020 (1)
+July 2020 (1)
+June 2020 (1)
+April 2020 (2)
+February 2020 (1)
+November 2019 (1)
+October 2019 (2)
+September 2019 (2)
+August 2019 (1)
+July 2019 (2)
+June 2019 (3)
+May 2019 (1)
+April 2019 (5)
+March 2019 (1)
+February 2019 (3)
+December 2018 (2)
+October 2018 (1)
+August 2018 (6)
+July 2018 (5)
+May 2018 (2)
+April 2018 (5)
+March 2018 (2)
+February 2018 (1)
+January 2018 (1)
+December 2017 (1)
+November 2017 (4)
+October 2017 (3)
+September 2017 (1)
+August 2017 (3)
+July 2017 (6)
+June 2017 (1)
+May 2017 (3)
+April 2017 (4)
+February 2017 (2)
+January 2017 (2)
+December 2016 (4)
+November 2016 (1)
+October 2016 (2)
+September 2016 (4)
+August 2016 (3)
+July 2016 (3)
+June 2016 (4)
+May 2016 (1)
+April 2016 (1)
+March 2016 (3)
+February 2016 (2)
+January 2016 (3)
+December 2015 (7)
+October 2015 (1)
+September 2015 (6)
+August 2015 (3)
+July 2015 (3)
+June 2015 (2)
+April 2015 (4)
+March 2015 (3)
+February 2015 (2)
+January 2015 (1)
+December 2014 (6)
+November 2014 (1)
+October 2014 (2)
+September 2014 (6)
+July 2014 (3)
+June 2014 (3)
+May 2014 (1)
+April 2014 (1)
+March 2014 (5)
+February 2014 (4)
+January 2014 (2)
+December 2013 (5)
+November 2013 (1)
+October 2013 (8)
+September 2013 (3)
+July 2013 (3)
+June 2013 (6)
+May 2013 (2)
+April 2013 (3)
+March 2013 (7)
+January 2013 (2)
+December 2012 (10)
+November 2012 (2)
+September 2012 (11)
+August 2012 (1)
+July 2012 (1)
+June 2012 (9)
+May 2012 (1)
+April 2012 (3)
+March 2012 (6)
+February 2012 (4)
+January 2012 (3)
+December 2011 (5)
+November 2011 (7)
+October 2011 (3)
+September 2011 (9)
+August 2011 (2)
+July 2011 (6)
+June 2011 (10)
+May 2011 (1)
+April 2011 (4)
+March 2011 (7)
+February 2011 (4)
+January 2011 (3)
+December 2010 (7)
+November 2010 (3)
+October 2010 (4)
+September 2010 (10)
+August 2010 (4)
+July 2010 (5)
+June 2010 (12)
+May 2010 (1)
+April 2010 (1)
+March 2010 (22)
+December 2009 (1)
+The association for Logic Programming
+Diversity and Inclusion Policy
+ICLP 1993
+ICLP 1994
+ICLP 1995
+ICLP 2010
+ICLP 99 16th International Conference on Logic Programming
+ILPS 1993
+JICSLP 1996
+JICSLP’92
+Learning efficient constraints in answer set programming
+Learning efficient constraints in answer set programming
+The 2023 ALP Alain Colmerauer Prize
+The 2024 Alain Colmerauer Prize
+The 2025 Alain Colmerauer Prize
+The ALP Alain Colmerauer Prize
+The 2024 Alain Colmerauer Prize
+TPLP Volume 22
+TPLP Volume 23, 2023
+TPLP Volume 24, 2024
+TPLP Volume 26
+tplp-volume-25-2025
+The Association for Logic Programming
+ALP: Mission and Vision
+ALP History
+ALP Board
+ALP News
+ALP Awards
+ALP Policies
+ALP Sponsorship Guidelines
+ICLP Conferences
+ICLP 1997
+ICLP 2003
+ICLP 2005
+ICLP 2006
+ICLP 2008
+ICLP 2009
+ICLP 2010
+ICLP 2011
+ICLP 2012
+ICLP 2012
+ICLP 2013
+ICLP 2014
+ICLP 2015
+ICLP 2015
+ICLP 2016
+ICLP 2017
+ICLP 2018
+Theory and Practice of Logic Programming
+Scope and submission
+TPLP Volume 20, 2020
+TPLP Volume 21
+Content
+TPLP Volume 18, 2018
+Volume 19
+TPLP Volume 17, 2017
+2015-03
+2015-09
+2016-07
+2016-08
+2016-09
+2016-10
+2016-11
+2016-12
+2016-13
+2017-01
+2017-02
+2017-03
+2017-04
+2017-05
+2017-07
+2017-08
+2017-09
+2017-10
+TPLP Volume 16, 2016
+2014-08
+2014-10
+2015-01
+2015-02
+2015-04
+2015-05
+2015-06
+2015-07
+2015-08
+2016-01
+2016-02
+2016-03
+2016-04
+2016-05
+2016-06
+TPLP Volume 15, 2015
+15(1)1
+15(1)2
+15(1)3
+15(1)4
+15(1)5
+15(2)1
+15(2)2
+15(2)3
+15(2)4
+15(2)5
+15(3)1
+15(3)2
+15(3)3
+15(3)4
+2014-04
+2014-05
+2014-06
+2014-07
+TPLP Volume 14, 2014
+14(3)5
+14(6)1
+14(6)2
+14(6)3
+14(6)4
+TPLP Volume 13, 2013
+13 (01) 1
+13 (01) 2
+13 (01) 3
+13 (01) 4
+Accepted papers
+2017-06
+2017-11
+2017-12
+Book Reviews
+Book Review 2013-1
+Book Review 2014-1
+Book Review 2014-2
+Theses and Dissertations
+PhD Theses
+A Formal Framework for Modelling and Analysing Safety-Critical Human Multitasking
+A Portable Approach for Bidirectional Integration between a Logic and a Statically-Typed Object-Oriented Programming Language
+Abstraction for Reasoning about Agent Behavior with Answer Set Programming
+Algebraic Approach to Causal Logic Programs
+Automated Reasoning via a Multi-sorted Fragment of Computable Set Theory with Applications to Semantic Web
+Automatic Parallelisation for Mercury
+Bisimulation Techniques and Algorithms for Concurrent Constraint Programming
+Computable Set Theory and Logic Programming
+Computational tasks in answer set programming: algoritms and implementations
+Design and Implementation of a Modern ASP Grounder
+Dynamic Magic Sets
+Enhancing and Applying Answer Set Programming: Lazy Constraints, Partial Compilation and Question Answering
+Extending IDP with second order logic
+Extension and Efficient Evaluation of Disjunctive Logic Programs
+Extensions and Applications of Probabilistic Logic Programming
+Foundations of Communication-Centred Programming: Calculi, Logic & Types
+Freeness and related analyses of constraint logic programs using abstract interpretation
+From Logic Programming to Human Reasoning: How to be Artificially Human
+Inference and Learning Systems for Uncertain Relational Data
+Integrated HEX-Algorithms and Applications in Machine Learning
+Knowledge representation and reasoning in incomplete logic programming
+Logic Engineering. The Case of Description and Hybrid Logics
+Logic Programming in non-conventional environments
+Logic Programming with Preferences on Rules
+Logical Agents: Memory Management, Advanced Architectures and Applications
+Micro-Intelligence for the IoT: LP models and technologies
+Model Checking: the Interval Way
+Modeling and Verification of real-time and cyber-physical systems
+Ontology-driven Information Extraction
+Paracoherent Answer Set Programming
+Portfolio Approaches in Constraint Programming
+Probabilistic Reasoning and Learning for the Semantic Web
+Promoting Modular Nonmonotonic Logic Programs
+Proof Methods for Conditional and Preferential Logics
+Reasoning about coroutines
+Reasoning over Complex Temporal Specifications and Noisy Data Streams
+Sequent Calculi with Context Restrictions and Applications to Conditional Logic
+Specification and Verification of Declarative Open Interaction Models – A Logic-based framework
+Structured interactive scores: From a structural description of a multimedia scenario to a real-time capable implementation with formal semantics
+Timeline-based planning: Expressiveness and Complexity
+Towards Ethical Chatbots: Monitoring and Evaluation of the Ethical Behavior of Employees in Online Customer Service Chat
+Towards Ethical Chatbots: Monitoring and Evaluation of the Ethical Behavior of Employees in Online Customer Service Chat
+Translators for interoperating and porting object-relational knowledge
+Master’s theses
+Deduzione automatica per logiche condizionali: analisi e sviluppo di un theorem prover
+Processing Narratives by Means of Action Languages
+Diversity and Inclusion Policy
+ALP Newsletter
+ALP ISSUE
+Accepted Papers
+Conference reports
+Editorial
+Feature Articles
+In Memoriam
+Left Field
+LP Systems
+Personal perspectives on LP
+Positions in LP
+Programming Contest
+Regular columns
+Book Announcement
+Community news
+Doctoral dissertations
+Games and Puzzles
+Research Groups
+Asyncronous News
+Call for papers
+Call for Participation
+Community News
+Conferences News
+PhD positions
+Positions in LP
+Schools
+Uncategorized
+Copyright &copy; 2026 Association for Logic Programming . All Rights Reserved.
+The Magazine Basic Theme by bavotasan.com .

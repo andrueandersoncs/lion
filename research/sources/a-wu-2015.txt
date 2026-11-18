@@ -1,0 +1,847 @@
+Fusion for Free
+Eﬃcient Algebraic Eﬀect Handlers
+Nicolas Wu1 and Tom Schrijvers2
+1 Department of Computer Science, University of Bristol
+2 Department of Computer Science, KU Leuven
+Abstract. Algebraic eﬀect handlers are a recently popular approach for
+modelling side-eﬀects that separates the syntax and semantics of eﬀectful
+operations. The shape of syntax is captured by functors, and free monads
+over these functors denote syntax trees. The semantics is captured by
+algebras, and eﬀect handlers pass these over the syntax trees to interpret
+them into a semantic domain.
+This approach is inherently modular: diﬀerent functors can be composed
+to make trees with richer structure. Such trees are interpreted by applying
+several handlers in sequence, each removing the syntactic constructs it
+recognizes. Unfortunately, the construction and traversal of intermedi-
+ate trees is painfully ineﬃcient and has hindered the adoption of the
+handler approach.
+This paper explains how a sequence of handlers can be fused into one,
+so that multiple tree traversals can be reduced to a single one and no
+intermediate trees need to be allocated. At the heart of this optimization
+is keeping the notion of a free monad abstract, thus enabling a change
+of representation that opens up the possibility of fusion. We demon-
+strate how the ensuing code can be inlined at compile time to produce
+eﬃcient handlers.
+1 Introduction
+Free monads are currently receiving a lot of attention. They are at the heart of
+algebraic eﬀect handlers, a new purely functional approach for modelling side
+eﬀects introduced by Plotkin and Power [15]. Much of their appeal stems from
+the separation of the syntax and semantics of eﬀectful operations. This is both
+conceptually simple and flexible, as multiple diﬀerent semantics can be provided
+for the same syntax.
+The syntax of the primitive side-eﬀect operations is captured in a signature
+functor. The free monad over this functor assembles the syntax for the individual
+operations into an abstract syntax tree for an eﬀectful program. The semantics
+of the individual operations is captured in an algebra, and an eﬀect handler folds
+the algebra over the syntax tree of the program to interpret it into a semantic
+domain.
+A particular strength of the approach is its inherent modularity. Diﬀerent
+signature functors can be composed to make trees with richer structure. Such
+2
+trees are interpreted by applying several handlers in sequence, each removing the
+syntactic constructs it recognizes.
+Unfortunately, the construction and traversal of intermediate trees is rather
+costly. This ineﬃciency is perceived as a serious weakness of eﬀect handlers,
+especially when compared to the traditional approach of composing eﬀects with
+monad transformers. While several authors address the cost of constructing
+syntax trees with free monads, eﬃciently applying multiple handlers in sequence
+has received very little attention. As far as we know, only Kammar et al. [9]
+provide an eﬃcient implementation. Unfortunately, this implementation does not
+come with an explanation. Hence it is underappreciated and ill-understood.
+In this paper we close the gap and explain how a sequence of algebraic eﬀect
+handlers can be eﬀectively fused into a single handler. Central to the paper
+are the many interpretations of the word free. Interpreting free monads as the
+initial objects of the more general term algebras and, in particular, term monads
+provide an essential change of perspective where free theorems enable fusion. The
+codensity monad facilitates the way, turning any term algebra into a monadic
+one for free, and with an appropriate code setup in Haskell the GHC compiler
+takes care of fusion at virtually no cost3 to the programmer. The result is an
+eﬀective implementation that compares well to monad transformers.
+2 Algebraic Eﬀect Handlers
+The idea of the algebraic eﬀect handlers approach is to consider the free monad
+over a particular functor as an abstract syntax tree (AST) for an eﬀectful
+computation. The functor is used to generate the nodes of a free structure whose
+leaves correspond to variables. This can be defined as an inductive datatype
+Free f for a given functor f.
+data Free f a where
+Var :: a →Free f a
+Con :: f (Free f a) →Free f a
+The nodes are constructed by Con, and the variables are given by Var.
+Since a value of type Free f a is an inductive structure, we can define a fold
+for it by providing a function gen that deals with generation of values from Var x,
+and an algebra alg that is used to recursively collapse an operation Con op.
+fold :: Functor f ⇒(f b →b) →(a →b) →(Free f a →b)
+fold alg gen (Var x) = gen x
+fold alg gen (Con op) = alg (fmap (fold alg gen) op)
+Algebraic eﬀect handlers give a semantics to the syntax tree: one way of doing
+this is by using a fold.
+3 Yes, almost for free!
+3
+The behaviour of folds when composed with other functions is described by
+fusion laws. The first law describes how certain functions that are precomposed
+with a fold can be incorporated into a new fold:
+fold alg gen·fmap h= fold alg (gen·h) (1)
+The second law shows how certain functions that are postcomposed with a fold
+can be incorporated into a new fold:
+k·fold alg gen= fold alg′ (k·gen) (2)
+this is subject to the condition that k·alg= alg′
+·fmap k.
+The monadic instance of the free monad is witnessed by the following:
+instance Functor f ⇒Monad (Free f ) where
+return x= Var x
+m >>= f= fold Con f m
+Variables are the way of providing a return for the monad, and extending a
+syntax tree by means of a function f corresponds to applying that function to
+the variables found at the leaves of the tree.
+2.1 Nondeterminsm
+A functor supplies the abstract syntax for the primitive eﬀectful operations in
+the free monad. For instance, the Nondet functor provides the Or k k syntax for
+a binary nondeterministic choice primitive. The parameter to the constructor of
+type k marks the recursive site of syntax, which indicates where the continuation
+is after this syntactic fragment has been evaluated.
+data Nondet k where
+Or :: k →k →Nondet k
+instance Functor Nondet where
+fmap f (Or x y) = Or (f x) (f y)
+This allows us to express the syntax tree of a computation that nondeterministi-
+cally returns True or False.
+coin :: Free Nondet Bool
+coin= Con (Or (Var True) (Var False))
+The syntax is complemented by semantics in the form of eﬀect handlers—
+functions that replace the syntax by values from a semantic domain. Using a fold
+for the free monad is a natural way of expressing such functions. For instance,
+here is a handler that interprets Nondet in terms of lists of possible outcomes:
+handleNondet[] :: Free Nondet a →[a ]
+handleNondet[]
+= fold algNondet[] genNondet[]
+4
+where algNondet[] is the Nondet-algebra that interprets terms constructed by Or
+operations and genNondet[] interprets variables.
+algNondet[]
+:: Nondet [a ] →[a ]
+algNondet[] (Or l1 l2) = l1 ++ l2
+genNondet[]
+:: a →[a ]
+genNondet[] x = [x ]
+The variables of the syntax tree are turned into singleton lists by genNondet[] , and
+choices between alternatives are put together by algNondet[] , which appends lists.
+As an example, we can interpret the coin program:
+> handleNondet[] coin
+[True,False ]
+This particular interpretation gives us a list of the possible outcomes.
+Generalizing away from the details, handlers are usually presented in the form
+hdl :: ∀a.Free F a →H a
+where F and H are arbitrary functors determined by the handler.
+2.2 Handler Composition
+There are many useful scenarios that involve the (function) composition of eﬀect
+handlers. We now consider two classes of this kind of composition.
+Eﬀect Composition A first important class of scenarios is where multiple
+eﬀects are combined in the same program. To this end we compose signatures
+and handlers.
+The coproduct functor f + g makes it easy to compose functors:
+data (+) f g a where
+Inl :: f a →(f + g) a
+Inr :: g a →(f + g) a
+instance (Functor f,Functor g) ⇒Functor (f + g) where
+fmap f (Inl s) = Inl (fmap f s)
+fmap f (Inr s) = Inr (fmap f s)
+The free monad of a coproduct functor is a tree where each node can be built
+from syntax from either f or g.
+Composing handlers is easy too: if the handlers are written in a compositional
+style, then function composition does the trick. A compositional handler for the
+functor F has a signature of the form:
+hdl :: ∀g a.Free (F + g) a →H1 (Free g (G1 a))
+5
+This processes only the F -nodes in the AST and leaves the g-nodes as they
+are. Hence the result of the compositional handler is a new (typically smaller)
+AST with only g-nodes. The variables of type G1 a in the resulting AST are
+derived from the variables of type a in original AST as well as from the processed
+operations. Moreover, the new AST may be embedded in a context H1.
+For instance, the compositional nondeterminism handler is defined as follows,
+where F= Nondet, G1 = [ ] and implicitly H1 = Id.
+handleNondet :: Functor g ⇒Free (Nondet + g) a →Free g [a ]
+handleNondet = fold (algNondet ▽Con) genNondet
+Here the variables are handled with the monadified version of genNondet[] , given
+by genNondet.
+genNondet :: Functor g ⇒a →Free g [a ]
+genNondet x = Var [x ]
+The g nodes are handled by a Con algebra, which essentially leaves them un-
+touched. The Nondet nodes are handled by the algNondet algebra, which is a
+monadified version of algNondet[]
+.
+algNondet :: Functor g ⇒Nondet (Free g [a ]) →Free g [a ]
+algNondet (Or ml1 ml2) =
+do {l1 ←ml1 ; l2 ←ml2 ; Var (l1 ++ l2)}
+The junction combinator (▽) composes the algebras for the two kinds of nodes.
+(▽) :: (f b →b) →(g b →b) →((f + g) b →b)
+(▽) algf algg (Inl s) = algf s
+(▽) algf algg (Inr s) = algg s
+In the definition of handlerNondet, we use algNondet ▽Con. Since the functor
+in question is Nondet + g, the values constructed by Nondet are handled by
+algNondet , and values constructed by g are left untouched: the fold unwraps one
+level of Con, but then replaces it with a Con again.
+A second example of an eﬀect signature is that of state, whose primitive
+operations Get and Put respectively query and modify the implicit state.
+data State s k where
+Put :: s →k →State s k
+Get :: (s →k) →State s k
+instance Functor (State s) where
+fmap f (Put s k) = Put s (f k)
+fmap f (Get k) = Get (f·k)
+The compositional handler for state is as follows, where F= State s, H1 = s →−
+and implicitly G1 = Id.
+6
+handleState :: Functor g ⇒Free (State s + g) a →(s →Free g a)
+handleState = fold (algState ▽conState ) genState
+This time the variable and constructor cases are defined as:
+genState :: Functor g ⇒a →(s →Free g a)
+genState x s = Var x
+algState :: Functor g ⇒State s (s →Free g a) →(s →Free g a)
+algState (Put s′ k) s = k s′
+algState (Get k) s = k s s
+Using genState , a variable x is replaced by a version that ignores any incoming
+state parameter s. Any stateful constructs are handled by algState , where a
+continuation k proceeds by using the appropriate state: if the syntax is a Put s′ k,
+then the new state is s′, otherwise the syntax is Get k, in which case the state is
+left unchanged and passed as s.
+Finally, any syntax provided by g is adapted by conState to take the extra
+state parameter s into account:
+conState :: Functor g ⇒g (s →Free g a) →(s →Free g a)
+conState op s= Con (fmap (λm →m s) op)
+This feeds the state s to the continuations of the operation.
+To demonstrate eﬀect composition we can put Nondet and State together and
+handle them both. Before we do so, we also need a base case for the composition,
+which is the empty signature Void.
+data Void k
+instance Functor Void
+The Void handler only provides a variable case since the signature has no
+constructors. In fact, a Free Void term can only be a Var x, so x is immediately
+output using the identity function.
+handleVoid :: Free Void a →a
+handleVoid = fold ⊥id
+Finally, we can put together a composite handler for programs that feature both
+nondeterminism and state. The signature of such programs is the composition of
+the three basic signatures:
+type Σ= Nondet + (State Int + Void)
+The handler is the composition of the three handlers, working from the left-most
+functor in the signature:
+handleΣ :: Free Σ a →Int →[a ]
+handleΣ prog= handleVoid·(handleState·handleNondet ) prog
+7
+Eﬀect Delegation Another important class of applications are those where a
+handler expresses the complex semantics of particular operations in terms of
+more primitive eﬀects.
+For instance, the following logging handler for state records every update of
+the state by means of the Writer eﬀect.
+handleLogState :: Free (State s) a →s →Free (Writer String + Void) a
+handleLogState= fold algLogState genState
+algLogState :: State s (s →Free (Writer String + Void) a)
+→s →Free (Writer String + Void) a
+algLogState (Put s′ k) s = Con (Inl (Tell "put" (k s′)))
+algLogState (Get k) s = k s s
+The syntax of the Writer eﬀect is captured by the following functor, where w is
+a parameter that represents the type of values that are written to the log:
+data Writer w k where
+Tell :: w →k →Writer w k
+instance Functor (Writer w) where
+fmap f (Tell w k) = Tell w (f k)
+A semantics can be given by the following handler, where w is constrained to be
+a member of the Monoid typeclass.
+handleWriter :: (Functor g,Monoid w) ⇒Free (Writer w + g) a →Free g (w,a)
+handleWriter = fold (algWriter ▽Con) genWriter
+The variables are evaluated by pairing with the unit of the monoid given by
+mempty before being embedded into the monad m2.
+genWriter :: (Monad m2,Monoid w) ⇒a →m2 (w,a)
+genWriter x = return (mempty,x)
+When a Tell w1 k operation is encountered, the continuation k is followed by a
+state where w1 is appended using mappend to any generated logs.
+algWriter :: (Monad m2,Monoid w) ⇒Writer w (m2 (w,a)) →m2 (w,a)
+algWriter (Tell w1 k) = k >>= λ(w2,x) →return (w1
+‘mappend‘ w2,x)
+To see this machinery in action, consider the following program that makes use
+of state:
+program :: Int →Free (State Int) Int
+program n
+|n 0 = Con (Get var)
+|otherwise= Con (Get (λs →Con (Put (s + n) (program (n−1)))))
+This is then simply evaluated by running handlers in sequence.
+8
+example :: Int →(String,Int)
+example n = (handleVoid·handleWriter·handleLogState (program n)) 0
+To fully interpret a stateful program, we must first run handleLogState , which
+interprets the Tell operations by generating a tree with Writer String syntax.
+This generated syntax is then handled with the handleWriter handler.
+3 Fusion
+The previous composition examples lead us to the main challenge of this paper:
+The composition of two handlers produces an intermediate abstract syntax tree.
+How can we fuse the two handlers into a single one that does not involve an
+intermediate tree?
+More concretely, given two handlers of the form:
+handler1 :: Free F1 a →H1 (Free F2 (G1 a))
+handler1 = fold alg1 gen1
+handler2 :: Free F2 a →H2 a
+handler2 = fold alg2 gen2
+where F1 and F2 are signature functors and H1, G1 and H2 are arbitrary functors,
+our goal is to obtain a combined handler
+pipeline12 :: Free F1 a →H1 (H2 (G1 a))
+pipeline12 = fold alg12 gen12
+such that
+fmap handler2·handler1 = pipeline12 (3)
+3.1 Towards Proper Builders
+The fact that handler1 builds an AST over functor F2 and that handler2 folds
+over this AST suggests a particular kind of fusion known as shortcut fusion or
+fold/build fusion [4].
+One of the two key ingredients for this kind of fusion is already manifestly
+present: the fold in handler2. Yet, the structure and type of handler1 do not
+necessarily force it to be a proper builder: fold/build fusion requires that the
+builder creates the F2-AST from scratch by generating all the Var and Con
+constructors itself. Indeed, in theory, handler1 could produce the F2-AST out of
+ready-made components supplied by (fields of) a colluding F1 functor.
+In order to force handler1 to be a proper builder, we require it to be imple-
+mented against a builder interface rather than a concrete representation. This
+builder interface is captured in the typeclass TermMonad (explained below), and
+then, with the following constraint polymorphic signature, handler1 is guaranteed
+to build properly:
+handler1 :: (TermMonad m2 F2) ⇒Free F1 a →H1 (m2 (G1 a))
+9
+Term Algebras The concept of a term algebra provides an abstract interface
+for the primitive ways to build an AST: the two constructors Con and Var of
+the free monad. We borrow the nomenclature from the literature on universal
+algebras [2].
+A term algebra is an f -algebra con :: f (h a) →h a with a carrier h a. The
+values in h a are those generated by the set of variables a with a valuation
+function var :: a →h a, as well as those that arise out of repeated applications
+of the algebra. This is modelled by the typeclass TermAlgebra h f as follows:
+class Functor f ⇒TermAlgebra h f |h →f where
+var :: ∀a.a →h a
+con :: ∀a.f (h a) →h a
+The function var is used to embed a variable into the term, and the function
+con is used to construct a term from existing ones. This typeclass is well-defined
+only when h a is indeed generated by var and con.
+The most trivial instance of this typeclass is of course that of the free monad.
+instance Functor f ⇒TermAlgebra (Free f ) f where
+var = Var
+con = Con
+Term Monads There are two additional convenient ways to build an AST: the
+monadic primitives return and (>>=).
+A monad m is a term monad for a functor f , if it there is a term algebra for
+f whose carrier is m a. We can model this relationship as a typeclass with no
+members.
+class (Monad m,TermAlgebra m f ) ⇒TermMonad m f |m →f
+instance (Monad m,TermAlgebra m f ) ⇒TermMonad m f
+Again, the free monad is the obvious instance of this typeclass.
+instance Functor f ⇒TermMonad (Free f ) f
+Its monadic primitives are implemented in terms of fold, con and var. In the
+abstract builder interface TermMonad we only partially expose this fact, by
+means of the following two laws. Firstly, the var operation should coincide with
+the monad’s return.
+var = return (4)
+Secondly, the monad’s bind (>>=) should distribute through con.
+con op >>= k= con (fmap (>>=k) op) (5)
+This law states that a term constructed by an operation, where the term is
+followed by a continuation k, is equivalent to constructing a term from an
+operation where the operation is followed by k. In other words, the arguments of
+an operation correspond to its continuations.
+10
+Examples All the compositional handlers of Section 2.2 can be easily expressed
+in terms of the more abstract TermMonad interface. For example, the revised
+nondeterminism handler looks as follows.
+handle′
+Nondet :: TermMonad m g ⇒Free (Nondet + g) a →m [a ]
+handle′
+Nondet = fold (alg′
+Nondet ▽con) gen′
+Nondet
+gen′
+Nondet :: TermMonad m g ⇒a →m [a ]
+gen′
+Nondet x = var [x ]
+alg′
+Nondet :: TermMonad m g ⇒Nondet (m [a ]) →m [a ]
+alg′
+Nondet (Or ml1 ml2) =
+do {l1 ←ml1 ; l2 ←ml2 ; var (l1 ++ l2)}
+Notice that not much change has been necessary. We have generalized away from
+Free g into a type m that is constrained by TermMonad m g.
+3.2 Parametricity: Fold/Build Fusion for Free
+Hinze et al. [6] state that we get fold/build fusion for free from the free theo-
+rem [22,21] of the builder’s polymorphic type. Hence, let us consider what the
+new type of handler1 buys us.
+Theorem 1. Assume that F1, F2, H1, G1 and A are closed types, with F1,
+F2 and H1 functors. Given a function h of type ∀m. (TermMonad m F2) ⇒
+Free F1 A →H1 (m (G1 A)), two term monads M1 and M2 and a term monad
+morphism α:: ∀a.M1 a →M2 a, then:
+fmap α·hM1
+= hM2 (6)
+where the subscripts of h denote the instantiations of the polymorphic type
+variable m.
+If handler2 is a term monad morphism, then we can use the free theorem to
+determine pipeline12 in one step, starting from Equation (3).
+fmap handler2·handler1 = pipeline12
+≡ {Parametricity (6), assuming handler2 is a term monad morphism }
+handler1 = pipeline12
+Unfortunately, handler2 is not a term monad morphism for the simple reason
+that H2 is just an arbitrary functor that does not necessarily have a monad
+structure. Hence, in general H2 is only term algebra.
+instance TermAlgebra H2 F2 where
+var = gen2
+con = alg2
+Fortunately, we can turn any term algebra into a term monad, thanks to the
+codensity monad, which is what we explore in the next section.
+11
+3.3 Codensity: TermMonads from TermAlgebras
+The Codensity Monad It is well-known that the codensity monad Cod turns any
+(endo)functor h into a monad (in fact, h need not even be a functor at all). It
+simply instantiates the generalised monoid of endomorphisms (e.g., see [16]) in
+the category of endofunctors.
+newtype Cod h a= Cod {unCod :: ∀x.(a →h x) →h x }
+instance Monad (Cod h) where
+return x= Cod (λk →k x)
+Cod m >>= f= Cod (λk →m (λa →unCod (f a) k))
+TermMonad Construction Given any term algebra h for functor f , we have that
+Cod h is also a term algebra for f.
+instance TermAlgebra h f ⇒TermAlgebra (Cod h) f where
+var = return
+con = algCod con
+algCod :: Functor f ⇒(∀x.f (h x) →h x) →(f (Cod h a) →Cod h a)
+algCod alg op= Cod (λk →alg (fmap (λm →unCod m k) op))
+Moreover, Cod h is also a term monad for f , even if h is not.
+instance TermAlgebra h f ⇒TermMonad (Cod h) f
+The definition of var makes it easy to see that it satisfies the first term monad
+law in Equation (4). The proof for the second law, Equation (5) is less obvious:
+con op >>= f
+≡ {unfold (>>=) }
+Cod (λk →unCod (con op) (λa →unCod (f a) k))
+≡ {unfold con }
+Cod (λk →unCod (algCod con op) (λa →unCod (f a) k))
+≡ {unfold algCod }
+Cod (λk →unCod (Cod (λk →con (fmap (λm →unCod m k) op))) (λa →unCod (f a) k))
+≡ {apply unCod·Cod= id }
+Cod (λk →(λk →con (fmap (λm →unCod m k) op)) (λa →unCod (f a) k))
+≡ {apply β-reduction }
+Cod (λk →con (fmap (λm →unCod m (λa →unCod (f a) k)) op))
+≡ {apply β-expansion }
+Cod (λk →con (fmap (λm →(λk →unCod m (λa →unCod (f a) k)) k) op))
+≡ {apply unCod·Cod= id }
+Cod (λk →con (fmap (λm →unCod (Cod (λk →unCod m (λa →unCod (f a) k))) k) op))
+≡ {fold (>>=) }
+Cod (λk →con (fmap (λm →unCod (m >>= f ) k) op))
+≡ {apply β-expansion }
+12
+Cod (λk →con (fmap (λm →(λm →unCod m k) (m >>= k)) op))
+≡ {apply β-expansion }
+Cod (λk →con (fmap (λm →(λm →unCod m k) ((λm →m >>= k) m)) op))
+≡ {fold (·) }
+Cod (λk →con (fmap (λm →((λm →unCod m k)·(λm →m >>= k)) m) op))
+≡ {apply η-reduction }
+Cod (λk →con (fmap ((λm →unCod m k)·(λm →m >>= k)) op))
+≡ {apply fmap-fission and unfold (·) }
+Cod (λk →con (fmap (λm →unCod m k) (fmap (λm →m >>= k) op)))
+≡ {fold algCod }
+algCod con (fmap (λm →m >>= k) op)
+≡ {fold con and η-reduce }
+con (fmap (>>=f ) op)
+3.4 Shifting to Codensity
+Now we can write handler2 as the composition of a term monad morphism
+handler′
+2 with a post-processing function runCod gen2:
+handler2 :: Free F2 a →H2 a
+handler2 = runCod gen2·handler′
+2
+handler′
+2 :: Free F2 a →Cod H2 a
+handler′
+2 = fold (algCod alg2) var
+runCod :: (a →f x) →Cod f a →f x
+runCod g m= unCod m g
+This decomposition of handler2 hinges on the following property:
+fold alg2 gen2 = runCod gen2·fold (algCod alg2) var (7)
+This equation follows from the second fusion law for folds (2), provided that:
+gen2 = runCod gen2·var
+runCod gen2·algCod alg2 = alg2·fmap (runCod gen2)
+The former holds as follows:
+runCod gen2·var
+≡ {unfold ·}
+λx →runCod gen2 (var x)
+≡ {unfold runCod and var }
+λx →unCod (Cod (λk →k x)) gen2
+≡ {apply runCod·Cod= id }
+λx →(λk →k x) gen2
+≡ {β-reduction }
+λx →gen2 x
+13
+≡ {η-reduction }
+gen2
+and the latter:
+runCod gen2·algCod alg2
+≡ {unfold ·}
+λop →runCod gen2 (algCod alg2 op)
+≡ {unfold runCod and algCod }
+λop →unCod (Cod (λk →alg2 (fmap (λm →unCod m k) op))) gen2
+≡ {apply runCod·Cod= id }
+λop →(λk →alg2 (fmap (λm →unCod m k) op)) gen2
+≡ {β-reduction }
+λop →alg2 (fmap (λm →unCod m gen2) op)
+≡ {fold runCod }
+λop →alg2 (fmap (λm →runCod gen2 m) op)
+≡ {η-reduction }
+λop →alg2 (fmap (runCod gen2) op)
+≡ {fold ·}
+alg2·fmap (runCod gen2)
+3.5 Fusion at Last
+Finally, instead of fusing fmap handler2·handler1 we can fuse fmap handler′
+2·
+handler1 using the free theorem. This yields:
+pipeline′
+12 = fold alg1 gen1
+Now we can calculate the original fusion:
+fmap handler2·handler1
+≡ {decomposition of handler2 }
+fmap (runCod gen2·handler′
+2)·handler1
+≡ {fmap fission }
+fmap (runCod gen2)·fmap handler′
+2·handler1
+≡ {free theorem }
+fmap (runCod gen2)·handler1
+In other words, the fused version can be defined as:
+pipeline12 = fmap (runCod gen2)·fold alg1 gen1
+Observe that this version only performs a single fold and does not allocate any
+intermediate tree.
+14
+3.6 Repeated Fusion
+Often a sequence of handlers is not restricted to two. Fortunately, we can easily
+generalize the above to a pipeline of n handlers
+fmapn handlern·
+...
+·fmap handler1·handler0
+where handleri = fold algi geni (i ∈1..n). This pipeline fusion can start by
+arbitrarily fusing two consecutive handlers handlerj and handlerj+1 using the
+above approach, and then incrementally extending the fused kernel on the left and
+the right with additional handlers. These two kinds of extensions are explained
+below.
+Fusion on the Right Suppose that fmap handler2· handler1 is composed
+with another handler on the right:
+handler0 :: (TermMonad m1 F1) ⇒Free F0 a →H0 (m1 (G0 a))
+handler0 = fold alg0 gen0
+to form the pipeline:
+pipeline012 = fmap (fmap handler2·handler1)·handler0
+Can we perform the fusion twice to obtain a single fold and eliminate both
+intermediate trees? Yes! The first fusion, as before yields:
+pipeline012 = fmap (fmap (runCod gen2)·handler1)·handler0
+Applying fmap fission and regrouping, we obtain:
+pipeline012 = fmap (fmap (runCod gen2))·(fmap handler1·handler0)
+Now the right component is another instance of the binary fusion problem, which
+yields:
+pipeline012 = fmap (fmap (runCod gen2))·fmap (runCod gen1)·handler0
+Fusion on the Left Suppose that handler2 has the more specialised type:
+handler2 :: (TermMonad m3 F3) ⇒Free F2 a →H2 (m2 (G2 a))
+then we can compose fmap handler2·handler1 on the left with another handler:
+handler3 :: Free F3 a →H3 a
+handler3 = fold alg3 gen3
+This yields a slightly more complicated fusion scenario:
+15
+pipeline123 = fmap (fmap handler3·handler2)·handler1
+Of course, we can first fuse handler2 and handler3. That would yield an instance
+of fusion on the right. However, suppose we first fuse handler1 and handler2,
+after applying fmap fission.
+pipeline123 = fmap (fmap handler3)·fmap (runCod gen2)·handler1
+Now we can shift the carrier of handler3 to codensity and invoke the free theorem
+on fmap (runCod gen2)·handler1. This accomplishes the second fusion.
+pipeline123 = fmap (fmap (runCod gen3))·fmap (runCod gen2)·handler1
+Summary An arbitrary pipeline of the form:
+fmapn handlern·
+...
+where handleri = fold algi geni (i ∈1..n) fuses into
+fmapn (runCod gn)·
+...
+·fmap handler1·handler0
+·fmap (runCod gen1)·handler0
+3.7 Fusion all the Way
+We are not restricted to fusing handlers, but can fuse all the way, up to and
+including the expression that builds the initial AST and to which the handlers are
+applied. Consider for example the coin example of Section 2.1. The free theorem
+of coin’s type is a variant of Theorem 1:
+αcoin= coin
+where α:: ∀a. M1 a →M2 a is a term monad morphism between any two
+term monads M1 and M2. We can use this to fuse handleNondet coin into
+runCod genNondet coin. Of course this fusion interacts nicely with the fusion of
+a pipeline of handlers.
+4 Pragmatic Implementation and Evaluation
+This section turns the fusion approach into a practical Haskell implementation
+and evaluates the performance improvement.
+4.1 Pragmatic Implementation
+Before we can put the fusion approach into practice, we need to consider a few
+pragmatic implementation aspects.
+16
+Inlining with Typeclasses In a lazy language like Haskell, fusion only leads
+to a significant performance gain if it is performed statically by the compiler
+and combined with inlining. In the context of the GHC compiler, the inlining
+requirement leaves little implementation freedom: GHC is rather reluctant to
+inline in general recursive code. There is only one exception: GHC is keen to
+create type-specialised copies of (constraint) polymorphic recursive definitions
+and to inline the definitions of typeclass methods in the process.
+In short, if we wish to get good speed-ups from eﬀect handler fusion, we need
+to make sure that the eﬀectful programs are polymorphic in the term monad and
+that all the algebras are held in typeclass instances. For this reason, all handlers
+should be made instances of TermAlgebra.
+Explicit Carrier Functors The carrier functor of the compositional state handler
+is s →m2−. From the category theory point of view, this is clearly a functor.
+However, it is neither an instance of the Haskell Functor typeclass nor can it be
+made one in this syntactically invalid form. A new type needs to be created that
+instantiates the functor typeclass:
+newtype StateCarrier s m a= SC {unSC :: s →m a }
+instance Functor m ⇒Functor (StateCarrier s m) where
+fmap f x= SC (fmap (fmap f ) (unSC x))
+instance TermMonad m2 f
+⇒ TermAlgebra (StateCarrier s m2) (State s + f ) where
+con = SC·(alg′
+State ▽conState )·fmap unSC
+var = SC·gen′
+State
+gen′
+State :: TermMonad m f ⇒a →(s →m a)
+gen′
+State x = const (var x)
+alg′
+State :: TermMonad m f ⇒State s (s →m a) →(s →m a)
+alg′
+State (Put s′ k) s = k s′
+alg′
+State (Get k) s = k s s
+Now the following function is convenient to run a fused state handler.
+runStateC :: TermMonad m2 f ⇒Cod (StateCarrier s m2) a →(s →m2 a)
+runStateC= unSC·runCod var
+Unique Carrier Functors Even though the logging state handler has ostensibly4
+the same carrier s →m2−as the regular compositional state handler, we cannot
+reuse the same functor. The reason is that in the typeclass-based approach the
+carrier functor must uniquely determine the algebra; two diﬀerent typeclass
+instances for the same type are forbidden. Hence, we need to write a new set of
+definitions as follows:
+newtype LogStateCarrier s m a= LSC {unLSC :: s →m a }
+4 The typeclass constraints on m2 are diﬀerent.
+17
+instance Functor m ⇒Functor (LogStateCarrier s m) where
+fmap f x= LSC (fmap (fmap f ) (unLSC x))
+instance TermMonad m2 (Writer String + Void)
+⇒TermAlgebra (LogStateCarrier s m2) (State s) where
+var = LSC·gen′
+State
+con = LSC·algLogState·fmap unLSC
+runLogStateC :: TermMonad m2 (Writer String + Void)
+⇒Cod (LogStateCarrier s m2) a →(s →m2 a)
+runLogStateC= unLSC·runCod var
+4.2 Evaluation
+To evaluate the impact of fusion we consider several benchmarks implemented in
+diﬀerent ways: running handlers over the inductive definition of the free monad
+(Free) and to its Church encoding (Church), the fully fused definitions (Fused),
+and the conventional definitions of the state monad from MTL (MTL).
+The benchmarks are run in the Criterion benchmarking harness using GHC
+7.10.1 on a MacBook Pro with a 3 GHz Intel Core i7 processor, 16 GB RAM
+and Mac OS 10.10.3. All values are in milliseconds, and show the ordinary least-
+squares regression of the recorded samples; the R2 goodness of fit is above 0.99
+in all instances.
+Benchmark Free Church Fused MTL
+count1
+107 1,017 1,311 3 3
+108 10,250 13,220 29 29
+109 103,000 129,700 291 295
+count2
+106 684 746 167 213
+107 6,937 7,344 1,740 2,157
+108 102,700 98,010 17,220 20,300
+count3
+106 559 555 166 205
+107 5,759 5,561 1,618 2,132
+108 110,900 94,760 16,300 20,120
+grammar 794 763 6 77
+pipes 1,325 1,351 43 N/A
+The count1 benchmark consists of the simple count-down loop used by Kam-
+mar et al. [9].
+18
+count1 =
+do i ←get
+if i ≡0 then return i
+else put (i−1) ; count1
+We have evaluated this program with three diﬀerent initial states of 107, 108 and
+109. The results show that all representations scale linearly with the size of the
+benchmark. However, the fused representation is about 300 times faster than
+the free monad representations and matches the performance of the traditional
+monad transformers.
+The count2 benchmarks extends the count1 benchmark with a tell operation
+from the Writer eﬀect in every iteration of the loop. It is run by sequencing
+the state and writer handler. The improvement due to fusion is now much less
+extreme, but still quite significant.
+The count3 benchmark is the count1 program, but run with the logging state
+handler that delegates to the writer handler. The runtimes are slightly better
+than those of count2.
+The grammar benchmark implements a simpler parser by layering the state
+and non-determinism eﬀects. Again fusion has a tremendous impact, even con-
+siderably outperforming the MTL implementation.
+The pipes benchmark consists of the simple producer-consumer pipe used by
+Kammar et al. [9]. We can see that fusion provides a significant improvement
+over either free monad representation. There is no sensible MTL implementation
+to compare with for this benchmark.
+The results (in ms) show that the naive approaches based on intermediate
+trees, either defined inductively or by Church encoding, incur a considerable
+overhead compared to traditional monads and monad transformers. Yet, thanks
+to fusion they can easily compete or even slightly outperform the latter.
+5 Related Work
+5.1 Fusion
+Fusion has received much attention, and was first considered as the elimination
+of trees by Wadler [23] with his so-called deforestation algorithm, which was then
+later generalized by Chin [3].
+From the implementation perspective, Gill et al. first introduced the notion
+of shortcut fusion to Haskell [4], thus allowing programs written as folds over
+lists to be fused. Takano and Meijer showed how fusion could be generalized to
+arbitrary datastructures [19]. The technique of using free theorems to explain
+certain kinds of fusion was applied by Voigtl¨ander [20].
+Work by Hinze et al. [6] builds on recursive coalgebras to show the theory
+and practice of fusion, limited to the case of folds and unfolds. Later work by
+Harper [5] provides a pragmatic discussion, that bridges the gap between theory
+and practice further, by discussing the implementation of fusion in GHC with
+inline rules. Harper also considers the fusion of Church encodings.
+19
+More recently, recursive coalgebras appear in work by Hinze et al. [7] where
+conjugate hylomorphisms are introduced as a means of unifying all presently
+known structured recursion schemes. There, the theory behind fusion for general
+datatypes across all known schemes is described as arising from naturality laws
+of adjunctions. Special attention is drawn to fusion of the cofree comonad, which
+is the dual case of free monads we consider here.
+5.2 Eﬀect Handlers
+Plotkin and Power were the first to explore eﬀect operations [14], and gave an
+algebraic account of eﬀects [15] and their combination [8]. Subsequently, Plotkin
+and Pretnar [13] have added the concept of handlers to deal with exceptions.
+This has led to many implementation approaches.
+Lazy Languages Many implementations of eﬀect handlers focus on the lazy
+language Haskell.
+For the sake of simplicity and without regard for eﬃciency, Wu et al. [24]
+use the inductive datatype representation of the free monad for their exposition.
+They use the Data Types `a la Carte approach [18] to conveniently inject functors
+into a co-product; that approach is entirely compatible with this paper. Wu et
+al. also generalize the free monad to higher-order functors; we expect that our
+fusion approach generalizes to that setting.
+Kiselyov et al. [10] provide a Haskell implementation in terms of the free
+monad too. However, they combine this representation with two optimizations: 1)
+the codensity monad improves the performance of (>>=), and 2) their Dynamic-
+based open unions have a better time complexity than nested co-products. Due
+to the use of the codensity monad, this paper also benefits from the former
+improvement. Moreover, we believe that the latter improvement is unnecessary
+due to the specialisation and inlining opportunities that are exposed by fusion.
+Van der Ploeg and Kiselyov [12] present an implementation of the free monad
+with good asymptotic complexity for both pattern matching and binding; un-
+fortunately, the constant factors involved are rather high. This representation is
+mainly useful for eﬀect handlers that cannot be easily expressed as folds, and
+thus fall outside of the scope of the current paper.
+Behind a Template Haskell frontend Kammar et al. [9] consider a range of
+diﬀerent Haskell implementations and perform a performance comparison. Their
+basic representation is the inductive datatype definition, with a minor twist: the
+functor is split into syntax for the operation itself and a separate continuation.
+This representation is improved with the codensity monad. Finally, they provide—
+without explanation—a representation that is very close to the one presented
+here; their use of the continuation monad instead of the codensity monad is a
+minor diﬀerence.
+Both Atkey et al. [1] and Schrijvers et al. [17] study the interleaving of a free
+monad with an arbitrary monad, i.e., the combination of algebraic eﬀect handlers
+and conventional monadic eﬀects. We believe that our fusion technique can be
+adapted for optimizing the free monad aspect of their settings.
+20
+Strict Languages In the absence of lazy evaluation, the inductive datatype
+definition of the free monad is not practical.
+Kammar et al. [9] briefly sketch an implementation based on delimited contin-
+uations. Schrijvers et al. [17] show the equivalence between a delimited continua-
+tions approach and the inductive datatype; hence the fusion technique presented
+in this paper is in principle possible. However, in practice, the codensity monad
+used for fusion is likely not eﬃcient in strict languages. Hence, eﬀective fusion
+for strict languages remains to be investigated.
+5.3 Monad Transformers
+Monad transformers, as first introduced by Liang et al. [11], pre-date algebraic
+eﬀect handlers as a means for modelling compositional eﬀects. Yet, there exists a
+close connection between both approaches: monad transformers are fused forms
+of eﬀect handlers. What is particular about their underlying eﬀect handlers is
+that their carriers are term algebras with a monadic structure, i.e., term monads.
+This means that the Cod construction is not necessary for fusion.
+6 Conclusion
+We have explained how to fuse algebraic eﬀect handlers by shifting perspective
+from free monads to term monads. Our benchmarks show that, with a careful
+code setup in Haskell, this leads to good speed-ups compared to the free monad,
+and allows algebraic eﬀect handlers to compete with the traditional monad
+transformers.
+Acknowledgments
+The authors would like to thank Ralf Hinze for suggesting that they consider the
+specification that free monads satisfy in terms of adjunctions, and to James McK-
+inna who helped baptize con for constructing terms. We are also grateful for
+the feedback from the members of the IFIP Working Group 2.1 on an early
+iteration of this work. This work has been partially funded by the Flemish Fund
+for Scientific Research (FWO).
+References
+1. Atkey, R., Johann, P., Ghani, N., Jacobs, B.: Interleaving data and eﬀects (2012),
+submitted for publication
+2. Burris, S., Sankappanavar, H.P.: A Course in Universal Algebra. No. 78 in Graduate
+Texts in Mathematics, Springer-Verlag (1981)
+3. Chin, W.N.: Safe fusion of functional expressions ii: Further improvements. Journal
+of Functional Programming 4, 515–555 (Oct 1994)
+4. Gill, A., Launchbury, J., Peyton Jones, S.L.: A short cut to deforestation. In: Pro-
+ceedings of the Conference on Functional Programming Languages and Computer
+Architecture. pp. 223–232. FPCA ’93, ACM, New York, NY, USA (1993)
+21
+5. Harper, T.: A library writer’s guide to shortcut fusion. In: Proceedings of the 4th
+ACM Symposium on Haskell. pp. 47–58. Haskell ’11, ACM, New York, NY, USA
+(2011)
+6. Hinze, R., Harper, T., James, D.: Theory and practice of fusion. In: Hage, J.,
+Moraz´an, M. (eds.) Implementation and Application of Functional Languages,
+Lecture Notes in Computer Science, vol. 6647, pp. 19–37. Springer Berlin Heidelberg
+(2011)
+7. Hinze, R., Wu, N., Gibbons, J.: Conjugate hylomorphisms – the mother of all
+structured recursion schemes. In: Proceedings of the 42nd Annual ACM SIGPLAN-
+SIGACT Symposium on Principles of Programming Languages. pp. 527–538. POPL
+’15, ACM, New York, NY, USA (2015)
+8. Hyland, M., Plotkin, G.D., Power, J.: Combining eﬀects: Sum and tensor. Theoret-
+ical Computer Science 357(1-3), 70–99 (2006)
+9. Kammar, O., Lindley, S., Oury, N.: Handlers in action. In: Proceedings of the 18th
+ACM SIGPLAN International Conference on Functional programming. pp. 145–158.
+ICFP ’14, ACM (2013)
+10. Kiselyov, O., Sabry, A., Swords, C.: Extensible eﬀects: an alternative to monad
+transformers. In: Proceedings of the 2013 ACM SIGPLAN symposium on Haskell.
+pp. 59–70. Haskell ’13, ACM (2013)
+11. Liang, S., Hudak, P., Jones, M.: Monad transformers and modular interpreters.
+In: Proceedings of the 22Nd ACM SIGPLAN-SIGACT Symposium on Principles
+of Programming Languages. pp. 333–343. POPL ’95, ACM, New York, NY, USA
+(1995)
+12. Ploeg, A.v.d., Kiselyov, O.: Reflection without remorse: Revealing a hidden sequence
+to speed up monadic reflection. In: Proceedings of the 2014 ACM SIGPLAN
+Symposium on Haskell. pp. 133–144. Haskell ’14, ACM, New York, NY, USA (2014)
+13. Plotkin, G.D., Matija, P.: Handling algebraic eﬀects. Logical Methods in Computer
+Science 9(4) (2013)
+14. Plotkin, G.D., Power, J.: Notions of computation determine monads. In: Nielsen, M.,
+Engberg, U. (eds.) Foundations of Software Science and Computation Structures.
+Lecture Notes in Computer Science, vol. 2303, pp. 342–356. Springer (2002)
+15. Plotkin, G.D., Power, J.: Algebraic operations and generic eﬀects. Applied Categor-
+ical Structures 11(1), 69–94 (2003)
+16. Rivas, E., Jaskelioﬀ, M.: Notions of computation as monoids. CoRR abs/1406.4823
+(2014), http://arxiv.org/abs/1406.4823
+17. Schrijvers, T., Wu, N., Desouter, B., Demoen, B.: Heuristics entwined with handlers
+combined. In: Proceedings of the 16th International Symposium on Principles and
+Practice of Declarative Programming. pp. 259–270. PPDP ’14, ACM (Sep 2014)
+18. Swierstra, W.: Data types `a la carte. Journal of Functional Programming 18(4),
+423–436 (2008)
+19. Takano, A., Meijer, E.: Shortcut deforestation in calculational form. In: Proceedings
+of the Seventh International Conference on Functional Programming Languages
+and Computer Architecture. pp. 306–313. FPCA ’95, ACM, New York, NY, USA
+(1995)
+20. Voigtl¨ander, J.: Proving correctness via free theorems: The case of the destroy/build-
+rule. In: Proceedings of the 2008 ACM SIGPLAN Symposium on Partial Evaluation
+and Semantics-based Program Manipulation. pp. 13–20. PEPM ’08, ACM, New
+York, NY, USA (2008)
+21. Voigtl¨ander, J.: Free theorems involving type constructor classes: Functional pearl.
+In: Proceedings of the 14th ACM SIGPLAN International Conference on Functional
+Programming. pp. 173–184. ICFP ’09, ACM, New York, NY, USA (2009)
+22
+22. Wadler, P.: Theorems for free! In: Proceedings of the Fourth International Conference
+on Functional Programming Languages and Computer Architecture. pp. 347–359.
+FPCA ’89, ACM, New York, NY, USA (1989)
+23. Wadler, P.: Deforestation: Transforming programs to eliminate trees. Theoretical
+Computer Science 73(2), 231–248 (Jan 1990)
+24. Wu, N., Schrijvers, T., Hinze, R.: Eﬀect handlers in scope. In: Proceedings of the
+2014 ACM SIGPLAN Symposium on Haskell. pp. 1–12. Haskell ’14, ACM, New
+York, NY, USA (2014)

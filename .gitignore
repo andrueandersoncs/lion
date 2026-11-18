@@ -45,3 +45,5 @@ history/research/notes/20-runs.json
 research/model.json
 research/runs/*/explorer.html
 research/runs/*/page-check.json
+# Written by research/probes/chase-model/test.ts and test2.ts each time they run.
+research/probes/chase-model/*examples.json

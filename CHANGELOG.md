@@ -12,6 +12,7 @@
 - `schema/open` takes one or two arguments, and a list of schemas as well as a record. (`schema-open-rest` added)
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`relation-merge-option` added)
 - `["assuming", change, ..., expression]` gives what the expression gives in the database as it would be after the changes, each a `fact` or `retract` form made in order as that form makes it, with keys, merges, and invariants, and leaves the database as it is. (`assuming` added)
+- The run on what to improve in Lion next (2026-11-17) is the second run in the shared research model: its sources, its 275 quoted claims, its directions as candidates, and the two programs that model invented unknowns and annotations are in `research/` beside the separation-logic run, under the names that run already used, and its ranking comes out the same there. (`lion-improvements-research` added)
 
 ### Changed
 
@@ -40,6 +41,7 @@
 - A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
+- A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
 
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 

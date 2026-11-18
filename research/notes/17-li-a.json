@@ -1,0 +1,474 @@
+{
+  "sources": [
+    {
+      "id": "a-feeley-1987",
+      "url": "https://www.iro.umontreal.ca/~feeley/papers/FeeleyLapalmeCL87.pdf",
+      "title": "Using closures for code generation",
+      "publisher": "Feeley, Lapalme (Université de Montréal)",
+      "kind": "primary",
+      "published": 19870101
+    },
+    {
+      "id": "a-wurthinger-2017",
+      "url": "https://chrisseaton.com/truffleruby/pldi17-truffle/pldi17-truffle.pdf",
+      "title": "Practical Partial Evaluation for High-Performance Dynamic Language Runtimes",
+      "publisher": "Würthinger et al. (Oracle Labs)",
+      "kind": "primary",
+      "published": 20170601
+    },
+    {
+      "id": "a-marr-2015",
+      "url": "https://stefan-marr.de/papers/oopsla-marr-ducasse-meta-tracing-vs-partial-evaluation/",
+      "title": "Tracing vs. Partial Evaluation: Comparing Meta-Compilation Approaches for Self-Optimizing Interpreters",
+      "publisher": "Marr et al. (SOM interpreters; Kent, formerly INRIA Lille)",
+      "kind": "primary",
+      "published": 20151001
+    },
+    {
+      "id": "a-larose-2023",
+      "url": "https://stefan-marr.de/papers/oopsla-larose-et-al-ast-vs-bytecode-interpreters-in-the-age-of-meta-compilation/",
+      "title": "AST vs. Bytecode: Interpreters in the Age of Meta-Compilation",
+      "publisher": "Marr et al. (SOM interpreters; Kent, formerly INRIA Lille)",
+      "kind": "primary",
+      "published": 20231001
+    },
+    {
+      "id": "a-jordan-2016",
+      "url": "https://souffle-lang.github.io/pdf/cav16.pdf",
+      "title": "Soufflé: On Synthesis of Program Analyzers",
+      "publisher": "Scholz, Jordan et al. (Soufflé group, Sydney/Innsbruck)",
+      "kind": "primary",
+      "published": 20160701
+    },
+    {
+      "id": "a-hu-2021",
+      "url": "https://davidwzhao.github.io/pdf/PLDI2021.pdf",
+      "title": "An Efficient Interpreter for Datalog by De-specializing Relations",
+      "publisher": "Scholz, Jordan et al. (Soufflé group, Sydney/Innsbruck)",
+      "kind": "primary",
+      "published": 20210601
+    },
+    {
+      "id": "a-abeysinghe-2024",
+      "url": "https://www.cs.purdue.edu/homes/rompf/papers/abeysinghe-popl24.pdf",
+      "title": "Flan: An Expressive and Efficient Datalog Compiler for Program Analysis",
+      "publisher": "Abeysinghe, Xhebraj, Rompf (Purdue)",
+      "kind": "primary",
+      "published": 20240101
+    },
+    {
+      "id": "a-xie-2020",
+      "url": "https://www.microsoft.com/en-us/research/uploads/prod/2020/07/evidently.pdf",
+      "title": "Effect Handlers, Evidently",
+      "publisher": "Xie, Leijen et al. (Microsoft Research)",
+      "kind": "primary",
+      "published": 20200801
+    },
+    {
+      "id": "a-xie-2021",
+      "url": "https://www.microsoft.com/en-us/research/uploads/prod/2021/03/multip-tr-v2.pdf",
+      "title": "Generalized Evidence Passing for Effect Handlers (MSR-TR-2021-5, extended version of the ICFP 2021 paper)",
+      "publisher": "Xie, Leijen et al. (Microsoft Research)",
+      "kind": "primary",
+      "published": 20210401
+    },
+    {
+      "id": "a-wu-2015",
+      "url": "https://people.cs.kuleuven.be/~tom.schrijvers/Research/papers/mpc2015.pdf",
+      "title": "Fusion for Free: Efficient Algebraic Effect Handlers",
+      "publisher": "Wu, Schrijvers (Bristol, KU Leuven)",
+      "kind": "primary",
+      "published": 20150601
+    },
+    {
+      "id": "a-baxter-2018",
+      "url": "https://arxiv.org/pdf/1802.02974",
+      "title": "Putting in All the Stops: Execution Control for JavaScript",
+      "publisher": "Baxter, Nigam, Politz, Krishnamurthi, Guha (UMass Amherst)",
+      "kind": "primary",
+      "published": 20180601
+    },
+    {
+      "id": "a-flatt-2016",
+      "url": "https://www.cs.utah.edu/plt/scope-sets/",
+      "title": "Binding as Sets of Scopes",
+      "publisher": "Flatt (Utah, Racket)",
+      "kind": "primary",
+      "published": 20160101
+    },
+    {
+      "id": "a-flatt-2016-impl",
+      "url": "https://www.cs.utah.edu/plt/scope-sets/implementation.html",
+      "title": "Binding as Sets of Scopes, section 4: Implementation and Experience",
+      "publisher": "Flatt (Utah, Racket)",
+      "kind": "primary",
+      "published": 20160101
+    }
+  ],
+  "claims": [
+    {
+      "id": "li-a1",
+      "source": "a-feeley-1987",
+      "quote": "Programs compiled by the non-optimizing compiler execute 30% to 50% faster",
+      "says": {
+        "result": "closure compilation",
+        "measure": "faster than AST interpreter",
+        "bound": "up to",
+        "percent": 50
+      }
+    },
+    {
+      "id": "li-a2",
+      "source": "a-feeley-1987",
+      "quote": "When a fewsimple optimisations are added, execution times drop by 40% to 70%",
+      "says": {
+        "result": "optimizing closure compilation",
+        "measure": "run-time reduction over plain closure compilation",
+        "bound": "up to",
+        "percent": 70
+      }
+    },
+    {
+      "id": "li-a3",
+      "source": "a-feeley-1987",
+      "quote": "two versions of each closure are used for taking into account the tail-recursive nature of the Scheme programs",
+      "says": {
+        "covers": "proper tail calls",
+        "by": "closure compilation",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a4",
+      "source": "a-wurthinger-2017",
+      "quote": "Performing no PE at all leads to more than 100x slowdown for JavaScript and Ruby",
+      "says": {
+        "result": "truffle partial evaluation",
+        "measure": "speedup over the same AST interpreter without compilation",
+        "bound": "at least",
+        "times": 100
+      }
+    },
+    {
+      "id": "li-a6",
+      "source": "a-wurthinger-2017",
+      "quote": "relative to GNU R is 5x",
+      "says": {
+        "result": "truffle partial evaluation",
+        "measure": "speedup over GNU R bytecode interpreter",
+        "bound": "exact",
+        "times": 5
+      }
+    },
+    {
+      "id": "li-a7",
+      "source": "a-wurthinger-2017",
+      "quote": "Note that tail calls are also not provided by Java, but can be correctly implemented in our system",
+      "says": {
+        "covers": "proper tail calls",
+        "by": "truffle partial evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a8",
+      "source": "a-wurthinger-2017",
+      "quote": "the language-independent compiler (Graal), the Ruby implementation (TruffleRuby), and the R implementation (FastR) are available as open",
+      "says": {
+        "adopted": "truffle partial evaluation",
+        "in": "graalvm"
+      }
+    },
+    {
+      "id": "li-a9",
+      "source": "a-marr-2015",
+      "quote": "Lowering common operations gives an average speedup of 1.6 x and lowering control structures gives 2.1 x",
+      "says": {
+        "result": "lowering control structures to ast nodes",
+        "measure": "interpreter-only speedup of an AST interpreter",
+        "bound": "average",
+        "times": 2.1
+      }
+    },
+    {
+      "id": "li-a11",
+      "source": "a-marr-2015",
+      "quote": "The typed arguments optimization makes the interpreter on average 18.3% slower.",
+      "says": {
+        "result": "type-based node specialization",
+        "measure": "interpreter-only slowdown without a JIT",
+        "bound": "average",
+        "percent": 18.3
+      }
+    },
+    {
+      "id": "li-a12",
+      "source": "a-larose-2023",
+      "quote": "On TSOM AST , removing the inlining of control structures increases the median run time by 3.74",
+      "says": {
+        "result": "inlining control structures into ast nodes",
+        "measure": "interpreter-only speedup of an AST interpreter",
+        "bound": "median",
+        "times": 3.74
+      }
+    },
+    {
+      "id": "li-a13",
+      "source": "a-jordan-2016",
+      "quote": "outperforms bddbddb in terms of run-time by more than 50×",
+      "says": {
+        "result": "souffle",
+        "measure": "speedup over bddbddb",
+        "bound": "at least",
+        "times": 50
+      }
+    },
+    {
+      "id": "li-a14",
+      "source": "a-jordan-2016",
+      "quote": "At each stage, a specialization step, as characterized by Futamura projections [8], is applied.",
+      "says": {
+        "adopted": "first futamura projection",
+        "in": "souffle"
+      }
+    },
+    {
+      "id": "li-a15",
+      "source": "a-hu-2021",
+      "quote": "interpreter achieves a competitive performance slowdown between 1.32 and 5.67× when compared to synthesized code",
+      "says": {
+        "result": "souffle tree interpreter",
+        "measure": "slowdown vs compiled Soufflé code",
+        "bound": "up to",
+        "times": 5.67
+      }
+    },
+    {
+      "id": "li-a16",
+      "source": "a-hu-2021",
+      "quote": "the interpreter can be 6.46× faster on average for the first run",
+      "says": {
+        "result": "souffle tree interpreter",
+        "measure": "speedup over compiled Soufflé counting compile time",
+        "bound": "average",
+        "times": 6.46
+      }
+    },
+    {
+      "id": "li-a17",
+      "source": "a-hu-2021",
+      "quote": "the largest slowdown ratio we observed happened in gcc, which is 43× slower",
+      "says": {
+        "result": "legacy souffle interpreter",
+        "measure": "slowdown vs compiled Soufflé code",
+        "bound": "up to",
+        "times": 43
+      }
+    },
+    {
+      "id": "li-a19",
+      "source": "a-hu-2021",
+      "quote": "we introduce the Soufflé Tree Interpreter (STI), which is implemented in the style of an Abstract Syntax Tree (AST) interpreter",
+      "says": {
+        "adopted": "souffle tree interpreter",
+        "in": "souffle"
+      }
+    },
+    {
+      "id": "li-a20",
+      "source": "b-sahebolamri-2022",
+      "quote": "in our Ascent implementations, with the smallest speedup being 56×",
+      "says": {
+        "result": "ascent",
+        "measure": "speedup over Flix on lattice shortest paths",
+        "bound": "at least",
+        "times": 56
+      }
+    },
+    {
+      "id": "li-a21",
+      "source": "b-sahebolamri-2022",
+      "quote": "Ascent also allows Datalog rules to call into existing Rust code and vice-versa",
+      "says": {
+        "covers": "host functions",
+        "by": "ascent",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a23",
+      "source": "b-sahebolamri-2022",
+      "quote": "user-defined functions, what Soufflé calls functors, must be defined in C++ and compiled separately",
+      "says": {
+        "covers": "host functions",
+        "by": "souffle",
+        "is": false
+      }
+    },
+    {
+      "id": "li-a24",
+      "source": "a-abeysinghe-2024",
+      "quote": "speedups in the range of 1.4×to 12.5×compared to state-of-the-art systems",
+      "says": {
+        "result": "flan",
+        "measure": "speedup over state-of-the-art Datalog engines",
+        "bound": "up to",
+        "times": 12.5
+      }
+    },
+    {
+      "id": "li-a25",
+      "source": "a-abeysinghe-2024",
+      "quote": "including arbitrary aggregates, user-defined functions, and lattices",
+      "says": {
+        "covers": "host functions",
+        "by": "flan",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a26",
+      "source": "a-abeysinghe-2024",
+      "quote": "regular Scala functions to define operations like least-upper bound for lattices",
+      "says": {
+        "covers": "lattice aggregates",
+        "by": "flan",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a27",
+      "source": "a-abeysinghe-2024",
+      "quote": "We will employ the concept of partial evaluation and Futamura projections [Futamura 1971] to achieve this goal.",
+      "says": {
+        "adopted": "first futamura projection",
+        "in": "flan"
+      }
+    },
+    {
+      "id": "li-a28",
+      "source": "a-xie-2020",
+      "quote": "nqueens 1.00× 46.09× 76.20× The n-queens problem.",
+      "says": {
+        "result": "direct style without effect handlers",
+        "measure": "speedup over runtime effect handlers on n-queens (Koka JavaScript backend)",
+        "bound": "exact",
+        "times": 76.2
+      }
+    },
+    {
+      "id": "li-a29",
+      "source": "a-xie-2020",
+      "quote": "nqueens 1.00× 46.09× 76.20× The n-queens problem.",
+      "says": {
+        "result": "evidence passing",
+        "measure": "speedup over runtime effect handlers on n-queens (Koka JavaScript backend)",
+        "bound": "exact",
+        "times": 46.09
+      }
+    },
+    {
+      "id": "li-a30",
+      "source": "a-xie-2021",
+      "quote": "take the slow path through the monadic bindings making it 10×slower than the optimized version",
+      "says": {
+        "result": "tail-resumptive optimization",
+        "measure": "speedup over taking the monadic slow path for every operation",
+        "bound": "exact",
+        "times": 10
+      }
+    },
+    {
+      "id": "li-a31",
+      "source": "a-xie-2021",
+      "quote": "any direct tail-recursive calls are no longer directly tail-recursive as they occur under a lambda now",
+      "says": {
+        "covers": "proper tail calls",
+        "by": "naive monadic translation",
+        "is": false
+      }
+    },
+    {
+      "id": "li-a32",
+      "source": "a-xie-2021",
+      "quote": "if no operation performs a full yield, no allocation happens along this path and tail-recursive calls are preserved",
+      "says": {
+        "covers": "proper tail calls",
+        "by": "bind-inlining with join points",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a33",
+      "source": "a-wu-2015",
+      "quote": "the fused representation is about 300 times faster than the free monad representations",
+      "says": {
+        "result": "fused effect handlers",
+        "measure": "speedup over free monad interpretation on a count-down loop",
+        "bound": "about",
+        "times": 300
+      }
+    },
+    {
+      "id": "li-a34",
+      "source": "a-baxter-2018",
+      "quote": "we find that cps and generators are 3x and 2x slower than the approach we present below",
+      "says": {
+        "result": "stopify direct-style instrumentation",
+        "measure": "speedup over CPS in JavaScript",
+        "bound": "exact",
+        "times": 3
+      }
+    },
+    {
+      "id": "li-a35",
+      "source": "a-baxter-2018",
+      "quote": "we find that cps and generators are 3x and 2x slower than the approach we present below",
+      "says": {
+        "result": "stopify direct-style instrumentation",
+        "measure": "speedup over generators in JavaScript",
+        "bound": "exact",
+        "times": 2
+      }
+    },
+    {
+      "id": "li-a36",
+      "source": "a-baxter-2018",
+      "quote": "Stopify can simulate an arbitrary stack depth (up to heap size)",
+      "says": {
+        "covers": "deep recursion",
+        "by": "stopify direct-style instrumentation",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a37",
+      "source": "a-baxter-2018",
+      "quote": "Our approach preserves proper tail calls.",
+      "says": {
+        "covers": "proper tail calls",
+        "by": "stopify direct-style instrumentation",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a38",
+      "source": "a-flatt-2016",
+      "quote": "lexical scope is just a special case of macro scope when applied to a language without macros",
+      "says": {
+        "covers": "macros",
+        "by": "scope sets",
+        "is": true
+      }
+    },
+    {
+      "id": "li-a39",
+      "source": "a-flatt-2016-impl",
+      "quote": "We released the new macro expander as part of Racket version 6.3",
+      "says": {
+        "adopted": "scope sets",
+        "in": "racket"
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+$ lion order-e1-e2.json   (published CLI v0.12.0, core 0.13.0; the same program as order-e2-e1.json with its two equality rules in the other order)
+{ "mother": [ { "child": "b", "mother": [ "some", "?m", [ "mother", "c", "?m" ] ] }, { "child": "c", "mother": [ "some", "?m", [ "mother", "c", "?m" ] ] } ], "gran": [ { "parent": [ "some", "?m", [ "mother", "c", "?m" ] ], "gran": [ "some", "?m", [ "mother", "c", "?m" ] ] } ]}
+
+$ lion order-e2-e1.json
+{ "mother": [ { "child": "b", "mother": [ "some", "?m", [ "mother", "b", "?m" ] ] }, { "child": "c", "mother": [ "some", "?m", [ "mother", "b", "?m" ] ] } ], "gran": [ { "parent": [ "some", "?m", [ "mother", "b", "?m" ] ], "gran": [ "some", "?m", [ "mother", "b", "?m" ] ] } ]}
+
+With the rules in one order, every unknown becomes the unknown of mother c; in the other order, the unknown of mother b.
