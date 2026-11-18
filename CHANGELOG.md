@@ -2,6 +2,25 @@
 
 # Changelog
 
+## Unreleased
+
+### Breaking
+
+- When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first. (`equality-rule-two-invented-unknowns` is `fewest-nested-then-first-sorted`, was `first-sorted`)
+
+### Changed
+
+- When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first. It used to depend on the order the values were made one, so swapping two equality rules could change every unknown a program showed: with ben's and cy's invented mothers and cy's grandmother made one by two equality rules, one order kept cy's mother and the other ben's. Now both keep ben's mother, which nests no unknown and sorts before cy's. (`equality-rules-order` is `independent`, was `depends-on-order`)
+- the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first (`keyed-rows-two-invented-unknowns` is `fewest-nested-then-first-sorted`)
+
+### Decided
+
+- Each class of values a key or an equality rule makes one is written as its least member, by one order (`merge-survivor`: `least-member-fewest-nested-then-first-sorted` over `pairwise-describes-then-first-sorted`, `first-sorted-alone`)
+
+### Rules
+
+- a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first (rule `least-member-survives-a-merge`)
+
 ## 2026-11-17 — @lionlang/core 0.13.0, @lionlang/cli 0.12.0
 
 `why` explains a fact that does not hold as well as one that does: each rule that could have given it, the goals of its body that held, and what stopped it. It returned `null` before, so this is a breaking change. It marks with `"assumed": true` what could change once an unknown is known, and it shows the same derivation whatever order the facts arrived in. The lion-reasoning skill records what each experiment was expected to fix, and what is carried to a new score.
@@ -184,7 +203,7 @@ Rules that say something exists without saying what it is. A rule can give every
 - Provide the recording artifact with the final response. Do not claim completion without it. (`completion-without-recording` is `not-complete`)
 - `bun run history check` fails on a finding of the model that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history ask` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. (`decision-claims-checked-by-research-model` is `against-every-rule-and-behavior`; `history-check-in-ci` is `runs-in-record-tests`; `history-check-unlisted-finding` is `fails`)
 - A database keeps what it derived when facts change and follows the change through it, so a change costs what it reaches: a row that an answer using a changed row gave is taken out and derived again, through relation goals, goals under `not`, aggregates, and recursion. With one million facts, adding a fact and asking every group's total again takes 23 milliseconds, where it took 1.6 seconds, and a rule with `not` takes 8 milliseconds, where it took 1.1 seconds. Answers are the same as before; the order they are found in can differ with the changes a database has seen, so use `"order"` when it matters. (`derived-rows-after-fact-change` is `followed`, was `derived-again`)
-- an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that sorts first, unless it describes the other. (`equality-rule-invented-unknown-vs-given` is `given-value`)
+- an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that nests fewer unknowns, and of those the one that sorts first. (`equality-rule-invented-unknown-vs-given` is `given-value`)
 - So the result does not depend on the order rules or facts were added in. (`existential-result-rule-order` is `independent`)
 - Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). (`filter-variable-unbound` is `error`; `rule-head-variable-unbound` is `error`)
 - So does a program, or a `begin`, whose value is a goal: it gives the goal as written. (`goal-as-program-result` is `as-written`)

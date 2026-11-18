@@ -3185,10 +3185,6 @@
             "is": "given-value"
           },
           {
-            "behavior": "keyed-rows-two-invented-unknowns",
-            "is": "first-sorted"
-          },
-          {
             "behavior": "keyed-rows-two-given-values",
             "is": "error"
           },
@@ -3202,20 +3198,10 @@
     {
       "id": "doc-readme-283",
       "source": "doc-readme",
-      "quote": "the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first",
+      "quote": "the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first",
       "says": {
         "behavior": "keyed-rows-invented-unknown-vs-given",
         "is": "given-value",
-        "area": "logic"
-      }
-    },
-    {
-      "id": "doc-readme-284",
-      "source": "doc-readme",
-      "quote": "the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first",
-      "says": {
-        "behavior": "keyed-rows-two-invented-unknowns",
-        "is": "first-sorted",
         "area": "logic"
       }
     },
@@ -3320,7 +3306,7 @@
     {
       "id": "doc-readme-293",
       "source": "doc-readme",
-      "quote": "an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that sorts first, unless it describes the other.",
+      "quote": "an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that nests fewer unknowns, and of those the one that sorts first.",
       "says": {
         "behavior": "equality-rule-invented-unknown-vs-given",
         "is": "given-value",

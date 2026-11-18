@@ -10,6 +10,8 @@ import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
+/** The properties of the value a key or an equality rule keeps. */
+const MERGE_TESTS = [...EXISTENTIAL_TESTS, "src/logic/tests/merges.test.ts"];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
@@ -473,10 +475,10 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a key keeps the unknown that sorts last",
     file: core("logic/model.ts"),
-    find: "      (free(other) && !occurs(other, value) && compareValues(value, other) < 0);",
+    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
     replace:
-      "      (free(other) && !occurs(other, value) && compareValues(value, other) > 0);",
-    tests: EXISTENTIAL_TESTS,
+      "        (depthOf(value) - depthOf(other) || compareValues(other, value)) < 0);",
+    tests: MERGE_TESTS,
   },
   {
     name: "a string that starts with a control character reads as an unknown",
@@ -528,11 +530,19 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: EXISTENTIAL_TESTS,
   },
   {
-    name: "a key makes an unknown equal to a value that holds it",
+    name: "a key keeps the unknown that sorts first, though another nests fewer unknowns",
     file: core("logic/model.ts"),
-    find: "      !free(value) ||\n      occurs(value, other) ||",
-    replace: "      !free(value) ||",
-    tests: EXISTENTIAL_TESTS,
+    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
+    replace: "        compareValues(value, other) < 0);",
+    tests: MERGE_TESTS,
+  },
+  {
+    name: "a key keeps the unknown that nests the most unknowns",
+    file: core("logic/model.ts"),
+    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
+    replace:
+      "        (depthOf(other) - depthOf(value) || compareValues(value, other)) < 0);",
+    tests: MERGE_TESTS,
   },
   {
     name: "what some describes keeps the values the answer gives its variables out",

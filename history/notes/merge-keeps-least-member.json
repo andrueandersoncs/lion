@@ -1,0 +1,80 @@
+{
+  "claims": [
+    {
+      "quote": "When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first. It used to depend on the order the values were made one, so swapping two equality rules could change every unknown a program showed: with ben's and cy's invented mothers and cy's grandmother made one by two equality rules, one order kept cy's mother and the other ben's. Now both keep ben's mother, which nests no unknown and sorts before cy's.",
+      "says": {
+        "behavior": "equality-rules-order",
+        "is": "independent",
+        "area": "logic",
+        "was": "depends-on-order"
+      },
+      "decisions": ["least-member-survives-a-merge"]
+    },
+    {
+      "quote": "When a key or an equality rule makes values one, the value kept is their least: a given value, else the unknown that nests the fewest unknowns, else the one that sorts first.",
+      "says": {
+        "behavior": "equality-rule-two-invented-unknowns",
+        "is": "fewest-nested-then-first-sorted",
+        "area": "logic",
+        "breaking": true,
+        "was": "first-sorted"
+      },
+      "decisions": ["least-member-survives-a-merge"]
+    },
+    {
+      "source": "doc-readme",
+      "quote": "A key makes unknowns equal.",
+      "says": {
+        "rule": "keys-make-unknowns-equal",
+        "holds": true,
+        "statement": "A key makes an invented unknown equal to the other row's value: a given value, or of two invented unknowns the one that nests fewer unknowns, and of those the one that sorts first; two given values stay an error.",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "keyed-rows-invented-unknown-vs-given",
+            "is": "given-value"
+          },
+          {
+            "behavior": "keyed-rows-two-invented-unknowns",
+            "is": "fewest-nested-then-first-sorted"
+          },
+          {
+            "behavior": "keyed-rows-two-given-values",
+            "is": "error"
+          },
+          {
+            "behavior": "keyed-rows-unknown-held-by-fact",
+            "is": "unchanged"
+          }
+        ]
+      }
+    },
+    {
+      "source": "doc-readme",
+      "quote": "the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first",
+      "says": {
+        "behavior": "keyed-rows-two-invented-unknowns",
+        "is": "fewest-nested-then-first-sorted",
+        "area": "logic"
+      }
+    },
+    {
+      "source": "doc-readme",
+      "quote": "an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that nests fewer unknowns, and of those the one that sorts first.",
+      "says": {
+        "behavior": "equality-rule-two-invented-unknowns",
+        "is": "fewest-nested-then-first-sorted",
+        "area": "logic"
+      }
+    },
+    {
+      "source": "doc-readme",
+      "quote": "So which value is kept does not depend on the order the equality rules are written in.",
+      "says": {
+        "behavior": "equality-rules-order",
+        "is": "independent",
+        "area": "logic"
+      }
+    }
+  ]
+}

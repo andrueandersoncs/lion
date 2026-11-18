@@ -2643,7 +2643,7 @@ bun run lion repl --host 0.0.0.0 --port 8080</code></pre></div>
 </div>
 
 <h2 id="say-something-exists-make-unknowns-one-with-a-key">Make unknowns one with a key</h2>
-<p>A key says a relation has one row per key. When two rows have the same key and differ only where one holds an unknown that the relation's rules invented, the unknown takes the other row's value: a given value, or, when both are invented unknowns, the one that sorts first. Here every person has a mother and twins share one, so ben and cy get one unknown mother:</p>
+<p>A key says a relation has one row per key. When two rows have the same key and differ only where one holds an unknown that the relation's rules invented, the unknown takes the other row's value: a given value, or, when both are invented unknowns, the one that nests fewer unknowns, and of those the one that sorts first. Here every person has a mother and twins share one, so ben and cy get one unknown mother:</p>
 <div class="playground" data-playground="Twins share a mother">
   <div class="code-block playground-code">
     <pre><code data-highlight>["begin",
@@ -2824,6 +2824,28 @@ bun run lion repl --host 0.0.0.0 --port 8080</code></pre></div>
     {"child":"cy","mother":["some","?m",["mother","cy","?m"]]}
   ]
 }</code></pre>
+  </div>
+</div>
+<p>When unknowns nest, the one kept is the one that nests fewer unknowns, and of those the one that sorts first. Here every person has a mother, cy's mother has a mother of her own, and two equality rules make all three one. Cy's grandmother is written <code>["some", "?g", ...]</code>, so she sorts before both mothers, but she nests cy's mother, so a mother is kept: ben's, which sorts first of the two. Which equality rule comes first does not matter:</p>
+<div class="playground" data-playground="Unknowns that nest, made one">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "grandmother", ["parent", "grandmother"]],
+  ["fact", ["person", "ben"], ["person", "cy"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["grandmother", "?p", "?g"]], ["mother", "cy", "?p"]],
+  ["rule", ["=", "?a", "?b"], ["grandmother", "?_", "?a"], ["mother", "ben", "?b"]],
+  ["rule", ["=", "?a", "?b"], ["mother", "ben", "?a"], ["mother", "cy", "?b"], ["grandmother", "?_", "?_"]],
+  ["query", ["mother", "?child", "?mother"], {"order": "child"}]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>[
+  {"child":"ben","mother":["some","?m",["mother","ben","?m"]]},
+  {"child":"cy","mother":["some","?m",["mother","ben","?m"]]}
+]</code></pre>
   </div>
 </div>
 <p>A question about those relations, such as a goal under <code>not</code>, would then go through recursion, so Lion refuses it when the rule is added, whatever the facts. Here whether ben's unknown mother is fay would decide whether ben is private, and that decides whether anything says she is fay:</p>
@@ -5970,7 +5992,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>Rules that invent wait until every rule that invents nothing has finished. Then every rule that invents, and whose head does not hold, invents, all at once. The other rules then run on what was invented, and so on until nothing more is invented. The result does not depend on the order rules or facts were added in.</li>
   <li>Rules that invent may recurse only as long as what they invent never flows back into inventing more; see <a href="#guarantee-termination">Termination</a>. A relation that rules invent rows of is derived in full, as an aggregated relation is.</li>
   <li>In a <code>fact</code> or <code>retract</code>, it states the rows that the same head would invent, whether or not the head holds already. <code>why</code> takes one too.</li>
-  <li>A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that sorts first. Every row that holds it is then replaced. Two different values that are not such unknowns are still an error, and an unknown that a fact holds is given, so a key never changes it.</li>
+  <li>A key makes unknowns equal. When two rows of a keyed relation have the same key and differ only where one holds an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented, the unknown takes the other row's value: a given value, or, when both are such unknowns, the one that nests fewer unknowns, and of those the one that sorts first. Every row that holds it is then replaced, and the value kept never depends on the order rules or facts were added in. Two different values that are not such unknowns are still an error, and an unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 <div class="playground" data-playground="exists">
   <div class="code-block playground-code">
@@ -6992,7 +7014,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <ul>
   <li>A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.</li>
   <li>Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows.</li>
-  <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that sorts first, and every row that holds it is replaced. An unknown that a fact holds is given, so a key never changes it.</li>
+  <li>The exception is an <a href="#form-some">unknown</a> that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that nests fewer unknowns, and of those the one that sorts first, and every row that holds it is replaced. So the value kept never depends on the order rules or facts were added in. An unknown that a fact holds is given, so a key never changes it.</li>
 </ul>
 
 <h2 id="guarantee-changes">Changes are all or nothing</h2>

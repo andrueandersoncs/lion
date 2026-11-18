@@ -1,0 +1,70 @@
+{
+  "title": "Values a key or an equality rule makes one are written as their least member",
+  "context": "When a key or an equality rule made two values one, Lion kept one of them by a rule applied to each pair as the pair was found: a given value stayed, else the unknown the other describes, else the one that sorts first. That rule is not transitive. Of the mothers of ben and cy, and an unknown that describes cy's mother and sorts before both, cy's mother beats the unknown that describes her, the unknown beats ben's mother by sorting first, and ben's mother beats cy's by sorting first. So which value a class kept depended on the order its pairs were found, and one program with its two equality rules swapped gave different answers, although the documentation said the result does not depend on the order rules or facts were added in. Following changes to facts one row at a time, rather than deriving a group again, also needs which value is kept to depend only on the values made one.",
+  "decision": "Each class of values a key or an equality rule makes one is written as its least member, by one order: a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first. An unknown nests fewer unknowns than any unknown that describes it, so no unknown takes a value that describes it, without an exception to the order.",
+  "consequences": "Which value a class keeps depends only on the class, so it does not depend on the order rules or facts were added in, the order equality rules are written in, or the order pairs are found in. A program whose classes hold unknowns at different depths may keep another unknown than before, with the same rows and the same values shared: of 342 random programs that make unknowns one, 14 named a class with another unknown. Twins whose mothers are both invented still share the mother that sorts first.",
+  "alternatives": [
+    {
+      "option": "Keep the pairwise rule, and apply pairs in a fixed order",
+      "rejected": "The kept value would still depend on that order, which a database that follows its changes cannot keep, since changes come in any order."
+    },
+    {
+      "option": "Order unknowns by how they sort alone, with no exception for one that describes another",
+      "rejected": "An unknown could then take a value that describes it, which is a value that holds itself."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Each class of values a key or an equality rule makes one is written as its least member, by one order",
+      "says": {
+        "decision": "merge-survivor",
+        "chose": "least-member-fewest-nested-then-first-sorted",
+        "over": ["pairwise-describes-then-first-sorted", "first-sorted-alone"],
+        "because": "which value is kept then depends only on the values made one, so it does not depend on the order they were made one",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first",
+      "says": {
+        "rule": "least-member-survives-a-merge",
+        "holds": true,
+        "statement": "Values a key or an equality rule makes one are written as their least member: a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "keyed-rows-two-invented-unknowns",
+            "is": "fewest-nested-then-first-sorted"
+          },
+          {
+            "behavior": "equality-rule-two-invented-unknowns",
+            "is": "fewest-nested-then-first-sorted"
+          },
+          {
+            "behavior": "equality-rules-order",
+            "is": "independent"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first",
+      "says": {
+        "behavior": "equality-rule-two-invented-unknowns",
+        "is": "fewest-nested-then-first-sorted",
+        "area": "logic",
+        "breaking": true,
+        "was": "first-sorted"
+      }
+    },
+    {
+      "quote": "Which value a class keeps depends only on the class, so it does not depend on the order rules or facts were added in, the order equality rules are written in, or the order pairs are found in",
+      "says": {
+        "behavior": "equality-rules-order",
+        "is": "independent",
+        "area": "logic",
+        "was": "depends-on-order"
+      }
+    }
+  ]
+}

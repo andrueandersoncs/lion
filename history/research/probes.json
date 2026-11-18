@@ -20719,5 +20719,107 @@
       ],
       ["else", ["quote", "not-printed"]]
     ]
+  },
+  {
+    "case": "equality-rule-two-invented-unknowns",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["relation", "grandmother", ["parent", "grandmother"]],
+      ["fact", ["person", "ben"], ["person", "cy"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["exists", ["?g"], ["grandmother", "?x", "?g"]],
+        ["mother", "cy", "?x"]
+      ],
+      [
+        "rule",
+        ["=", "?a", "?b"],
+        ["grandmother", "?_", "?a"],
+        ["mother", "ben", "?b"]
+      ],
+      [
+        "cond",
+        [
+          ["grandmother", "?_", ["some", "?m", ["mother", "ben", "?m"]]],
+          ["quote", "fewest-nested-then-first-sorted"]
+        ],
+        ["else", ["quote", "first-sorted"]]
+      ]
+    ]
+  },
+  {
+    "case": "equality-rules-order",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["relation", "grandmother", ["parent", "grandmother"]],
+      ["fact", ["person", "ben"], ["person", "cy"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["exists", ["?g"], ["grandmother", "?x", "?g"]],
+        ["mother", "cy", "?x"]
+      ],
+      [
+        "rule",
+        ["=", "?a", "?b"],
+        ["grandmother", "?_", "?a"],
+        ["mother", "ben", "?b"]
+      ],
+      [
+        "rule",
+        ["=", "?a", "?b"],
+        ["mother", "ben", "?a"],
+        ["mother", "cy", "?b"],
+        ["grandmother", "?_", "?_"]
+      ],
+      ["relation", "person2", ["name"]],
+      ["relation", "mother2", ["child", "mother"]],
+      ["relation", "grandmother2", ["parent", "grandmother"]],
+      ["fact", ["person2", "ben"], ["person2", "cy"]],
+      ["rule", ["exists", ["?m"], ["mother2", "?c", "?m"]], ["person2", "?c"]],
+      [
+        "rule",
+        ["exists", ["?g"], ["grandmother2", "?x", "?g"]],
+        ["mother2", "cy", "?x"]
+      ],
+      [
+        "rule",
+        ["=", "?a", "?b"],
+        ["mother2", "ben", "?a"],
+        ["mother2", "cy", "?b"],
+        ["grandmother2", "?_", "?_"]
+      ],
+      [
+        "rule",
+        ["=", "?a", "?b"],
+        ["grandmother2", "?_", "?a"],
+        ["mother2", "ben", "?b"]
+      ],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "value/identity",
+              ["mother", "cy", ["some", "?m", ["mother", "ben", "?m"]]]
+            ],
+            [
+              "value/identity",
+              ["mother2", "cy", ["some", "?m", ["mother2", "ben", "?m"]]]
+            ]
+          ],
+          ["quote", "independent"]
+        ],
+        ["else", ["quote", "depends-on-order"]]
+      ]
+    ]
   }
 ]

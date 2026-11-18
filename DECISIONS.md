@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 157 questions have been decided, 59 records explain them, and of what the records assert, 509 hold when Lion is run, 4 are broken, 271 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 158 questions have been decided, 60 records explain them, and of what the records assert, 512 hold when Lion is run, 4 are broken, 272 are stated but not checked by running Lion, and 12 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -163,6 +163,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-17 | [`why-derivation-shown`](#why-derivation-shown) | `found-first-by-new-derivation` | [`why` tells the derivation a new database finds first](#why-tells-first-derivation) |
 | 2026-11-17 | [`reasoning-direction-record-across-scores`](#reasoning-direction-record-across-scores) | `carried-list` | [A direction's record says nothing about a score none of its experiments ran with an earlier version to beat](#direction-record-speaks-for-its-scores) |
 | 2026-11-17 | [`reasoning-experiment-expectation-judging`](#reasoning-experiment-expectation-judging) | `its-own-version` | [What an experiment was expected to do is a belief that tries its direction, judged in the version it was formed in and no other](#experiment-expectation-in-its-version) |
+| 2026-11-18 | [`merge-survivor`](#merge-survivor) | `least-member-fewest-nested-then-first-sorted` | [Values a key or an equality rule makes one are written as their least member](#least-member-survives-a-merge) |
 
 <a id="program-representation"></a>
 
@@ -3342,3 +3343,35 @@ Recorded 2026-11-17 in `history/notes/experiment-expectation-in-its-version.json
 - Stated, not checked by running Lion: `reasoning-belief-tries` exists. "A belief may say which direction it `tries`, as an observation does."
 - Stated, not checked by running Lion: `reasoning-direction-addresses` exists. "A direction `addresses` the problems its notes list and the problems its experiments target."
 - Stated, not checked by running Lion: `reasoning-targets` exists. "that experiment `targets` the problem"
+
+<a id="merge-survivor"></a>
+
+## merge-survivor
+
+Now: `least-member-fewest-nested-then-first-sorted`.
+
+- 2026-11-18 `merge-survivor`: `least-member-fewest-nested-then-first-sorted` over `pairwise-describes-then-first-sorted`, `first-sorted-alone`: "Each class of values a key or an equality rule makes one is written as its least member, by one order" (`least-member-survives-a-merge.json`)
+
+<a id="least-member-survives-a-merge"></a>
+
+### Values a key or an equality rule makes one are written as their least member
+
+Recorded 2026-11-18 in `history/notes/least-member-survives-a-merge.json`.
+
+**Context.** When a key or an equality rule made two values one, Lion kept one of them by a rule applied to each pair as the pair was found: a given value stayed, else the unknown the other describes, else the one that sorts first. That rule is not transitive. Of the mothers of ben and cy, and an unknown that describes cy's mother and sorts before both, cy's mother beats the unknown that describes her, the unknown beats ben's mother by sorting first, and ben's mother beats cy's by sorting first. So which value a class kept depended on the order its pairs were found, and one program with its two equality rules swapped gave different answers, although the documentation said the result does not depend on the order rules or facts were added in. Following changes to facts one row at a time, rather than deriving a group again, also needs which value is kept to depend only on the values made one.
+
+**Decision.** Each class of values a key or an equality rule makes one is written as its least member, by one order: a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first. An unknown nests fewer unknowns than any unknown that describes it, so no unknown takes a value that describes it, without an exception to the order.
+
+**Consequences.** Which value a class keeps depends only on the class, so it does not depend on the order rules or facts were added in, the order equality rules are written in, or the order pairs are found in. A program whose classes hold unknowns at different depths may keep another unknown than before, with the same rows and the same values shared: of 342 random programs that make unknowns one, 14 named a class with another unknown. Twins whose mothers are both invented still share the mother that sorts first.
+
+**Alternatives considered.**
+
+- Keep the pairwise rule, and apply pairs in a fixed order. The kept value would still depend on that order, which a database that follows its changes cannot keep, since changes come in any order.
+- Order unknowns by how they sort alone, with no exception for one that describes another. An unknown could then take a value that describes it, which is a value that holds itself.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `merge-survivor`: `least-member-fewest-nested-then-first-sorted`. "Each class of values a key or an equality rule makes one is written as its least member, by one order"
+- Holds when Lion is run: rule `least-member-survives-a-merge` holds. "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first"
+- Holds when Lion is run: `equality-rule-two-invented-unknowns` is `fewest-nested-then-first-sorted`. "a value the group did not invent, else the unknown that nests the fewest unknowns, else the one that sorts first"
+- Holds when Lion is run: `equality-rules-order` is `independent`. "Which value a class keeps depends only on the class, so it does not depend on the order rules or facts were added in, the order equality rules are written in, or the order pairs are found in"

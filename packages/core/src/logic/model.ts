@@ -1383,11 +1383,31 @@ const occurs = (unknown: Unknown, value: unknown): boolean => {
   return isPlainObject(value) && Object.values(value).some(inside);
 };
 
+/** How many unknowns deep a value goes: 0 for a value that holds none. */
+const depthOf = (value: unknown): number => {
+  if (value instanceof Unknown) {
+    return 1 + depthOf(value.goal);
+  }
+  let parts: readonly unknown[] = [];
+  if (value instanceof LogicValue) {
+    parts = value.parts;
+  } else if (Array.isArray(value)) {
+    parts = value;
+  } else if (isPlainObject(value)) {
+    parts = Object.values(value);
+  }
+  return parts.reduce(
+    (deepest: number, part) => Math.max(deepest, depthOf(part)),
+    0
+  );
+};
+
 /**
  * Makes two values one, as a key says two rows with the same key are: each
  * unknown the group invented takes the value at its place in the other, or
- * when both are such unknowns, the one that sorts first. False when they
- * differ anywhere else, and so cannot be one.
+ * when both are such unknowns, the one that nests fewer unknowns, and of
+ * those the one that sorts first. False when they differ anywhere else, and
+ * so cannot be one.
  */
 const unify = (
   model: Model,
@@ -1406,13 +1426,16 @@ const unify = (
     invented.has(value.key) &&
     !given.has(value.key);
   if (free(a) || free(b)) {
-    // An unknown takes a value that does not hold it, so no unknown ever
-    // describes itself: of two the group invented, the one that describes
-    // the other takes it, and otherwise the one that sorts after.
+    // Each class of values made one keeps its least member by one order, so
+    // which value it keeps does not depend on the order its members were
+    // made one: a value the group did not invent, else the unknown that nests
+    // the fewest unknowns, else the one that sorts first. An unknown nests
+    // fewer than any unknown that describes it, so none takes a value that
+    // describes it.
     const keeps = (value: unknown, other: unknown) =>
       !free(value) ||
-      occurs(value, other) ||
-      (free(other) && !occurs(other, value) && compareValues(value, other) < 0);
+      (free(other) &&
+        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);
     const [from, to] = keeps(b, a) ? [a, b] : [b, a];
     if (occurs(from as Unknown, to)) {
       return false;
