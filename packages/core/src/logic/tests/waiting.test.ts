@@ -242,7 +242,12 @@ describe("a rule that holds waiting forms", () => {
           yield* attempt([["query", ["total", "?sum"]]], database),
           expected,
           (results) => [
-            { sum: (results as number[]).reduce((sum, item) => sum + item, 0) },
+            {
+              // Matches have no order, so they are added up in sort order.
+              sum: [...(results as number[])]
+                .sort((a, b) => a - b)
+                .reduce((sum, item) => sum + item, 0),
+            },
           ]
         );
       }),

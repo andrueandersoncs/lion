@@ -2,6 +2,21 @@
 
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it. (`fact-holding-unknown-after-change` is `followed`, was `not-followed`)
+- Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. (`invention-joined-otherwise-after-fact-change` is `followed`, was `derived-again`)
+- Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate. (`merged-unknowns-after-retract` is `apart-again`)
+- A sum or a mean of numbers that are not all whole is added up in sort order. (`rule-head-sum-of-fractions` is `added-in-sort-order`, was `added-in-order-found`)
+
+### Decided
+
+- Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero. (`following-a-change-to-facts`: `candidates-by-level` over `take-out-and-derive-again`, `weights-alone`, `rounds-in-a-trace`)
+- A sum or a mean of numbers that are not all whole is added up in sort order. (`order-a-rule-head-sum-adds-in`: `sort-order` over `order-found`)
+- The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head. (`rule-that-invents-on-change`: `weighted-rows` over `follow-a-component-at-a-time`, `derive-again-every-case`, `skolem-for-keyed-relations`, was `follow-where-it-invents-alone`)
+
 ## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
 
 No invariant refuses a change that `assuming` only assumes: an invariant keeps the database, and an assumed change does not change it. In 0.14.0 an invariant whose filter asked with `assuming` could hold of different facts depending on whether it was declared before them or after, and one whose `assuming` added a new fact for each answer never finished. Now it holds of the same facts in any order and never asks itself again.
@@ -54,8 +69,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (`deep-call-not-in-tail-position` is `works`; `tail-call-loop-memory` is `constant`, was `grows-with-calls`)
 - A key the record names is never part of the rest, so `["schema/open", a, b]` of two records of schemas with no key in common is the one exact schema with the keys of both, and a variable as the rest binds the rest in a pattern. (`schema-open-composes-exact-schemas` is `fits`; `schema-open-rest-binds` is `the-other-keys`)
 - What it leaves over is the rest: the record of the other keys, or the list of the items after. (`schema-open-list-rest` is `the-other-items`)
-- A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time (`equality-rule-group-after-fact-change` is `followed`, was `derived-again`)
-- A change to facts is followed through a relation that rules invent rows of when it has a key or other rules beside them, and through one whose unknowns an equality rule makes one, a component of values at a time: the values the changed rows hold, and every value a row joins to them, are derived again on their own, and the rest keeps its rows. Where a key makes twins share an invented mother, adding twenty twins one at a time and asking each one's mother takes 17 milliseconds with 10,000 people, where it took 8.4 seconds, and 0.1 seconds with 100,000, where it did not finish in a minute. It applies when every relation goal of the rules holds only variables and values, the goals of each rule share variables, and nothing else in their bodies asks a question; such a group whose rules join rows some other way is still derived again and compared. (`keyed-invention-after-fact-change` is `followed`, was `derived-again`)
+- Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. (`equality-rule-group-after-fact-change` is `followed`; `keyed-invention-after-fact-change` is `followed`)
 - A fact of such a relation never replaces another, and `retract` takes it back. (`merge-fact-retract` is `candidate-removed`)
 - Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. (`merge-joins-facts-and-rules` is `join`)
 - It pays most where what you observed is expensive to observe again, such as an eval, a benchmark, or a slow run, and nothing else says which files changed since: uncommitted work in the files, a shared working tree, a stash, a folder outside git. (`reasoning-skill-when-it-pays` is `expensive-observations-undated-changes`)
@@ -83,7 +97,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs. (`evaluator-design`: `compile-to-direct-style` over `match-dispatch`, was `match-dispatch`)
 - A scope holds its bindings in a `Map` that compiled code reads and writes right away. (`scope-bindings-store`: `map` over `ref`)
 - On its own, a record or list of schemas leaves nothing; `["schema/open", record]` leaves anything; `["schema/open", record, rest]` leaves what fits `rest`. (`rest-of-a-record`: `schema-open-second-argument` over `reserved-key`, `open-by-default`, `allof-skips-keys`)
-- A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time (`rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`)
+- A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time (`rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`)
 - Each schema a library function checks its arguments with is compiled, once, into a guard: a plain JavaScript test that is true for exactly the values the schema's decoder accepts. (`library-argument-checks`: `guard-then-decoder` over `decoder-every-call`, `effect-jit-compiler`, `hand-written-checks`)
 - A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. (`merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`)
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (`skill-eval-agent-folder`: `outside-repository` over `inside-repository`)
@@ -194,7 +208,7 @@ The logic layer grows with its facts. What rules derive is kept and follows ever
 ### Rules
 
 - A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
-- A group whose rules join rows some other way is still derived again and compared. (rule `unfollowed-relations-derived-again`)
+- Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. (rule `unfollowed-relations-derived-again`)
 - `AGENTS.md` and `CLAUDE.md` stay under 200 lines each. (rule `agent-instructions-under-200-lines`)
 - `guidelines/documentation.md` and `CLAUDE.md` state the documentation procedure to run after every change, in order: run the docs' programs, search every place that describes Lion for sentences the change made untrue, give each new feature its example, rebuild the website's docs, record the change with the claims that quote reworded sentences, and say what the first two steps found. The package README, both skills' references, and the website's guarantees still described derived rows as recomputed or kept only until a change, and now say that they follow changes. (rule `documentation-procedure`)
 - The documentation procedure no longer asks for every edit to be made in both files. (rule `edit-both-readmes` withdrawn)

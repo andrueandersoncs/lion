@@ -1,0 +1,116 @@
+{
+  "sources": [
+    {
+      "id": "weights-model-tests",
+      "url": "research/probes/weights-model",
+      "title": "Property tests of rows with weights, held from a level: a database that followed changes against one that derived nothing, and against plain models",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118230000
+    },
+    {
+      "id": "lion-bench-weights",
+      "url": "bun run bench --against main; bun run scale --against main; bun run measure --against main",
+      "title": "Lion benchmarks run after every group of relations was derived and followed by candidates counted by level",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261118230000
+    }
+  ],
+  "claims": [
+    {
+      "id": "ua-w1",
+      "source": "weights-model-tests",
+      "quote": "W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one",
+      "says": {
+        "covers": "existential rules",
+        "by": "candidates counted by level",
+        "is": true
+      }
+    },
+    {
+      "id": "ua-w1e",
+      "source": "weights-model-tests",
+      "quote": "W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one",
+      "says": {
+        "covers": "equality rules",
+        "by": "candidates counted by level",
+        "is": true
+      }
+    },
+    {
+      "id": "ua-w2",
+      "source": "weights-model-tests",
+      "quote": "W2  the level and the candidates by level of every path equal a plain round-by-round model after every edge change in each of 5000 random graphs",
+      "says": {
+        "covers": "derived rows kept up to date as facts change",
+        "by": "candidates counted by level",
+        "is": true
+      }
+    },
+    {
+      "id": "ua-w3",
+      "source": "weights-model-tests",
+      "quote": "W3  each of 10 aggregates kept by counted candidates equals a plain model after every change in each of 5000 random runs",
+      "says": {
+        "covers": "aggregates",
+        "by": "candidates counted by level",
+        "is": true
+      }
+    },
+    {
+      "id": "ua-a1",
+      "source": "weights-model-tests",
+      "quote": "W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one",
+      "says": {
+        "adopted": "candidates counted by level",
+        "in": "lion"
+      }
+    },
+    {
+      "id": "ua-b1",
+      "source": "lion-bench-weights",
+      "quote": "change: add a twin, ask the mother a key gave them, 20 times                 9 ms",
+      "says": {
+        "lion measured": "add a twin, ask the mother a key gave them, 20 times, among 100,000 people",
+        "ms": 9
+      }
+    },
+    {
+      "id": "ua-b2",
+      "source": "lion-bench-weights",
+      "quote": "change: add a fact, ask one group's total, 20 times                          6 ms        5 ms         5 ms",
+      "says": {
+        "lion measured": "add a fact, ask one group's total, 20 times, among 100,000 facts",
+        "ms": 5
+      }
+    },
+    {
+      "id": "ua-b3",
+      "source": "lion-bench-weights",
+      "quote": "rules: every path on a 150 chain                                        11.6 ms   15.1 ms  0.77×",
+      "says": {
+        "lion measured": "every path on a 150 chain",
+        "ms": 15.1
+      }
+    },
+    {
+      "id": "ua-b4",
+      "source": "lion-bench-weights",
+      "quote": "aggregates: shortest distances by lattice recursion                     17.2 ms   30.0 ms  0.57×",
+      "says": {
+        "lion measured": "shortest distances by lattice recursion",
+        "ms": 30
+      }
+    },
+    {
+      "id": "ua-b5",
+      "source": "lion-bench-weights",
+      "quote": "inventing: 2,500 pairs of twins whose unknown mothers a key makes one  144.8 ms  200.8 ms  0.72×",
+      "says": {
+        "lion measured": "2,500 pairs of twins whose unknown mothers a key makes one",
+        "ms": 200.8
+      }
+    }
+  ]
+}

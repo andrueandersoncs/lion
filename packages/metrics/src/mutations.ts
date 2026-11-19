@@ -15,12 +15,6 @@ const LEAST_MEMBER_TESTS = [
   ...EXISTENTIAL_TESTS,
   "src/logic/tests/merges.test.ts",
 ];
-/** The properties of following a change a component of values at a time. */
-const COMPONENT_TESTS = [
-  "src/logic/tests/components.test.ts",
-  "src/logic/tests/maintained.test.ts",
-  ...EXISTENTIAL_TESTS,
-];
 const WHY_NOT_TESTS = ["src/logic/tests/why-not.test.ts"];
 /** The properties of asking what would hold after some changes. */
 const ASSUMING_TESTS = ["src/logic/tests/assuming.test.ts"];
@@ -179,26 +173,6 @@ const SCALING: readonly Mutation[] = [
     replace: "  rows[0];",
     tests: BATCH_TESTS,
   },
-  maintained(
-    "rows a change reached stay",
-    "      model.relations.get(name)?.delete(row);\n",
-    ""
-  ),
-  maintained(
-    "what a change reached is not derived again",
-    "        : deriveHeads(model, rule, (sink) => each(model, body, sink), added);",
-    "        : Effect.void;"
-  ),
-  maintained(
-    "lost rows are not put back for the search",
-    "        rowsOf(model, name).add(row, back);\n",
-    ""
-  ),
-  maintained(
-    "a change reaches a row that is a fact",
-    "    : rows.filter((row) => !facts?.has(row));",
-    "    : rows;"
-  ),
   {
     name: "why tells how a row came about before a change was followed through it",
     file: core("logic/maintain.ts"),
@@ -206,21 +180,6 @@ const SCALING: readonly Mutation[] = [
     replace: "",
     tests: TOLD_TESTS,
   },
-  maintained(
-    "a group whose rules invent is followed whatever its rules join through",
-    "          componentwise(stratum)) &&",
-    "          true) &&"
-  ),
-  maintained(
-    "a fact does not reach the row a rule invented in its place",
-    "    uses.push(use(goal, skeleton, true));\n  }\n",
-    "  }\n"
-  ),
-  maintained(
-    "nothing is invented again for what a change reached",
-    "        : inventFor(model, rule, (sink) => each(model, body, sink), added);",
-    "        : Effect.void;"
-  ),
   {
     name: "a refused change's message shows one of its new answers",
     file: core("logic/database.ts"),
@@ -250,21 +209,6 @@ const SCALING: readonly Mutation[] = [
     ""
   ),
   maintained(
-    "new rows do not go through the rules",
-    "    yield* rounds(model, rules, derive, start, (more) =>",
-    "    yield* rounds(model, rules, derive, new Map(), (more) =>"
-  ),
-  maintained(
-    "what a group gained is not passed on",
-    "minus.add(row);\n      }\n    }\n    gained.set(name, plus);",
-    "minus.add(row);\n      }\n    }\n    gained.set(name, new TupleSet());"
-  ),
-  maintained(
-    "what a group lost is not passed on",
-    "    lost.set(name, minus);\n  }\n};",
-    "    lost.set(name, new TupleSet());\n  }\n};"
-  ),
-  maintained(
     "a group derived again says nothing changed",
     "      gained.set(name, plus);\n      lost.set(name, minus);\n    }\n  });",
     "    }\n  });"
@@ -275,19 +219,9 @@ const SCALING: readonly Mutation[] = [
     ""
   ),
   maintained(
-    "a row a change reached does not reach the rows it gave",
-    "          rowsIn(next, relation).add(row);\n",
-    ""
-  ),
-  maintained(
     "a goal that stands in a question is not followed",
     "      uses.push(use(goal, skeleton, true));\n",
     ""
-  ),
-  maintained(
-    "a row the relation of a question gains reaches nothing",
-    "(use.asked || gains)",
-    "gains"
   ),
   maintained(
     "a variable an exists keeps to itself is the body's",
@@ -298,31 +232,6 @@ const SCALING: readonly Mutation[] = [
     "a relation read through a schema is taken for unread",
     "        ![...loose].some(moves) &&\n",
     ""
-  ),
-  maintained(
-    "a row another rule gave is not derived again",
-    "    names.add(positions.map((position) => row[position]));\n",
-    ""
-  ),
-  maintained(
-    "a head value a find gave names its row",
-    'rule.aggregates.includes(position) || asks(arg) || isForm(arg, "some")',
-    'rule.aggregates.includes(position) || isForm(arg, "some")'
-  ),
-  maintained(
-    "an aggregate that recurses starts every group over",
-    "      ...(recursive ? { start } : {}),\n",
-    ""
-  ),
-  maintained(
-    "what an aggregate that recurses gained does not join it",
-    "          ? changedEach(model, rule.body, news, sink)\n",
-    "          ? Effect.void\n"
-  ),
-  maintained(
-    "a group a change reached is not combined again",
-    "    addAll(added, yield* combined(model, rules, groups, first));",
-    "    yield* Effect.void;"
   ),
   maintained(
     "a group nobody has read is derived again",
@@ -398,7 +307,255 @@ const SCALING: readonly Mutation[] = [
   },
 ];
 
+const WEIGHT_TESTS = [
+  "src/logic/tests/weights.test.ts",
+  "src/logic/tests/maintained.test.ts",
+  "src/logic/tests/components.test.ts",
+  ...EXISTENTIAL_TESTS,
+];
+
+/** A break in the engine that keeps rows by weight and level. */
+const weighed = (
+  name: string,
+  find: string,
+  replace: string,
+  tests: readonly string[] = WEIGHT_TESTS
+): Mutation => ({ file: core("logic/weights.ts"), find, name, replace, tests });
+
+/** Breaks in rows with weights, held from a level, and what follows them. */
+const WEIGHTS: readonly Mutation[] = [
+  weighed(
+    "a row that lost its candidates stays",
+    "    homeOf(run, entry).delete(entry.tuple);\n",
+    ""
+  ),
+  weighed(
+    "a row that joins gives its answers no candidates",
+    "    yield* count(run, joining, 1);",
+    "    yield* count(run, [], 1);"
+  ),
+  weighed(
+    "a row that leaves keeps its answers' candidates",
+    "    yield* count(run, leaving, -1);",
+    "    yield* count(run, [], -1);"
+  ),
+  weighed(
+    "a relation as it was lacks the rows it lost",
+    "      yield* this.lost.lookup(positions, values);",
+    ""
+  ),
+  weighed(
+    "a relation as it was holds the rows it gained",
+    "      if (!this.gained.has(tuple)) {",
+    "      if (tuple) {"
+  ),
+  weighed(
+    "a fact a group gained or lost changes no weight",
+    "          weigh(run, name, tuple, 0, by);",
+    "          weigh(run, name, tuple, 0, 0);"
+  ),
+  weighed(
+    "what a group gained is not passed on",
+    "setOf(held ? gained : lost, entry.relation)",
+    "setOf(held ? new Map() : lost, entry.relation)"
+  ),
+  weighed(
+    "what a group lost is not passed on",
+    "setOf(held ? gained : lost, entry.relation)",
+    "setOf(held ? gained : new Map(), entry.relation)"
+  ),
+  weighed(
+    "a row the relation of a question gains reaches nothing",
+    "      for (const batch of [moved.lost, moved.gained]) {",
+    "      for (const batch of [moved.lost]) {"
+  ),
+  weighed(
+    "a question in a rule is asked as things are for the answers a change takes away",
+    "      model.view = by < 0 ? moved.was : undefined;",
+    "      model.view = undefined;"
+  ),
+  weighed(
+    "a candidate has the level of the rows it used, not one above",
+    "  return from === undefined ? 0 : from + 1;",
+    "  return from === undefined ? 0 : from;"
+  ),
+  weighed(
+    "a row whose lowest candidates are gone goes, though higher ones give it",
+    "    if (entry.n === 0) {\n      promote(entry);\n    }",
+    "    if (entry.n === 0) {\n      entry.more = undefined;\n    }"
+  ),
+  weighed(
+    "an answer that two goals find through one batch counts twice",
+    '      if (index < delta && batch?.ids.get(name ?? "")?.has(tuple)) {',
+    "      if (index < -1) {"
+  ),
+  weighed(
+    "a better value does not end the row before it",
+    "      ends.set(entry, until);",
+    "      ends.delete(entry);",
+    ["src/logic/tests/lattice.test.ts", "src/logic/tests/merging.test.ts"]
+  ),
+  weighed(
+    "what an aggregate that recurses gained does not join what it had",
+    "      : joined(rule, kind, running[at], kept);",
+    "      : combined(rule, kind, kept);"
+  ),
+  weighed(
+    "a group whose candidates changed is not combined again",
+    "  fold.since = Math.min(fold.since, level);\n  run.folding.add(fold);",
+    "  fold.since = Math.min(fold.since, level);"
+  ),
+  weighed(
+    "a sum of numbers that are not whole is added in the order they came",
+    "  const values = given(kind, kept).sort(compareValues);",
+    "  const values = given(kind, kept).reverse();"
+  ),
+  weighed(
+    "a running total is kept for numbers that are not whole",
+    "      Number.isSafeInteger(value) && Number.isSafeInteger(kept.total);",
+    "      true;"
+  ),
+  weighed(
+    "an answer several rules with one head find counts once for each",
+    "    if (!run.shared.has(rule.head)) {",
+    "    if (rule.head) {",
+    ["src/logic/tests/aggregates.test.ts"]
+  ),
+  weighed(
+    "an equality rule makes no unknowns one",
+    "          for (const [a, b] of pairsOf(left, right, pairs) ? pairs : []) {",
+    "          for (const [a, b] of pairs) {"
+  ),
+  weighed(
+    "a row that gives a head does not ask the answers that would invent it again",
+    "      if (asking.placed && stageOf(asking.from) >= stageOf(level)) {",
+    "      if (asking.placed && stageOf(asking.from) > stageOf(level)) {"
+  ),
+  weighed(
+    "a rule that invents does so even when its head holds already",
+    "      const holds = yield* givenBy(run, asking, endOf(stage));",
+    "      const holds = (yield* givenBy(run, asking, endOf(stage))) && false;"
+  ),
+  weighed(
+    "a rule that invents asks about rows held only after its stage",
+    "            (found.placed && found.from <= last && found.until > last)",
+    "            found.placed"
+  ),
+  weighed(
+    "a key does not make an invented unknown equal to another value",
+    "    for (const [a, b] of pairs) {\n      weigh(run, EDGE, pairRow(a, b), level, by);\n    }",
+    ""
+  ),
+  weighed(
+    "a key keeps the unknown that sorts last",
+    "  return ((free ? depthOf(a) - depthOf(b) : 0) || compareValues(a, b)) < 0;",
+    "  return ((free ? depthOf(a) - depthOf(b) : 0) || compareValues(b, a)) < 0;",
+    LEAST_MEMBER_TESTS
+  ),
+  weighed(
+    "a key keeps the unknown that sorts first, though another nests fewer unknowns",
+    "  return ((free ? depthOf(a) - depthOf(b) : 0) || compareValues(a, b)) < 0;",
+    "  return compareValues(a, b) < 0;",
+    LEAST_MEMBER_TESTS
+  ),
+  weighed(
+    "a key keeps the unknown that nests the most unknowns",
+    "  return ((free ? depthOf(a) - depthOf(b) : 0) || compareValues(a, b)) < 0;",
+    "  return ((free ? depthOf(b) - depthOf(a) : 0) || compareValues(a, b)) < 0;",
+    LEAST_MEMBER_TESTS
+  ),
+  weighed(
+    "a row that holds a value its class no longer writes does not end",
+    "    if (first !== undefined) {\n      until = Math.min(until, first[0]);\n    }",
+    ""
+  ),
+  weighed(
+    "a row that ended gives no row with the least member in its place",
+    "    const became = weigh(run, entry.relation, tuple, entry.until, 1);",
+    "    const became = weigh(run, entry.relation, tuple, entry.until, 0);"
+  ),
+  weighed(
+    "a row that ended is not written again when its class's least member changes",
+    "      image(run, holder);\n",
+    ""
+  ),
+  weighed(
+    "the rows that ended are not read when answers are counted",
+    "    : new Both(rowsOf(model, name), past);",
+    "    : undefined;"
+  ),
+  weighed(
+    "an answer counts though its rows never held at one level",
+    "  if (first >= last) {\n    return;\n  }",
+    ""
+  ),
+  weighed(
+    "an unknown a fact holds is written as another value",
+    "  !givenOf(run.model).has(value.key);",
+    "  true;"
+  ),
+  weighed(
+    "two rows a key gets that differ where nothing merges both hold",
+    "    if (other !== entry.tuple) {\n      const shown",
+    "    if (other !== other) {\n      const shown",
+    ["src/logic/tests/keys.test.ts", ...MERGE_TESTS]
+  ),
+  weighed(
+    "why keeps the explanations rows had before a key made unknowns one",
+    "  return equal.size === 0",
+    "  return equal.size >= 0",
+    EXISTENTIAL_TESTS
+  ),
+  weighed(
+    "why explains a row by the first answer found, not the least",
+    "    } else if (compareKept(rule, vars, best.kept) >= 0) {",
+    "    } else if (rule) {",
+    TOLD_TESTS
+  ),
+  weighed(
+    "why explains min, max, and shortest by the first match that gave the value",
+    "            .sort(order)[0]",
+    "            .reverse()[0]",
+    TOLD_TESTS
+  ),
+  weighed(
+    "why explains an invented row by the first answer that invented it",
+    "      if (by > 0 && compareAnswers(rule, vars, known.vars) < 0) {",
+    "      if (by > 0 && compareAnswers(rule, vars, known.vars) > 0) {",
+    EXISTENTIAL_TESTS
+  ),
+  {
+    name: "a fact that holds an unknown does not reach the groups that invent",
+    file: core("logic/maintain.ts"),
+    find: "  (pass.regiven &&",
+    replace: "  (false &&",
+    tests: WEIGHT_TESTS,
+  },
+  {
+    name: "an invariant is not asked after a change to what it asks about",
+    file: core("logic/database.ts"),
+    find: "    if (opaque || reaches(others) || regives(change)) {",
+    replace: "    if (opaque || regives(change)) {",
+    tests: ["src/logic/tests/invariants.test.ts"],
+  },
+  {
+    name: "an invariant that holds a function from the host is not asked in full",
+    file: core("logic/database.ts"),
+    find: "    if (opaque || reaches(others) || regives(change)) {",
+    replace: "    if (reaches(others) || regives(change)) {",
+    tests: ["src/logic/tests/invariants.test.ts"],
+  },
+  {
+    name: "an invariant is not asked when a fact that holds an unknown comes or goes",
+    file: core("logic/database.ts"),
+    find: "    if (opaque || reaches(others) || regives(change)) {",
+    replace: "    if (opaque || reaches(others)) {",
+    tests: WEIGHT_TESTS,
+  },
+];
+
 export const MUTATIONS: readonly Mutation[] = [
+  ...WEIGHTS,
   ...SCALING,
   research(
     "a lead covers only questions written exactly as it pursues them",
@@ -459,14 +616,6 @@ export const MUTATIONS: readonly Mutation[] = [
     "scripts/record.mjs"
   ),
   {
-    name: "an equality rule makes no unknowns one",
-    file: core("logic/model.ts"),
-    find: "    for (const vars of answers) {\n      const [left, right] = yield* tupleOf(model, rule.head.args, vars);\n      unify(model, left, right, inventions);\n    }",
-    replace:
-      "    for (const vars of answers.slice(0, 0)) {\n      const [left, right] = yield* tupleOf(model, rule.head.args, vars);\n      unify(model, left, right, inventions);\n    }",
-    tests: EXISTENTIAL_TESTS,
-  },
-  {
     name: "an equality rule is not kept as the invariant it stands for",
     file: core("evaluation/special-forms/logic.ts"),
     find: "    yield* addRules(yield* database, rules, invariants);",
@@ -494,50 +643,7 @@ export const MUTATIONS: readonly Mutation[] = [
     replace: "): string | undefined => undefined;",
     tests: EXISTENTIAL_TESTS,
   },
-  {
-    name: "a rule that invents does so even when its head holds already",
-    file: core("logic/model.ts"),
-    find: "      if ((yield* matches(model, check, vars)).length === 0) {",
-    replace: "      if (check.length >= 0) {",
-    tests: EXISTENTIAL_TESTS,
-  },
-  {
-    name: "a key does not make an invented unknown equal to another value",
-    file: core("logic/model.ts"),
-    find: "    if (inventions !== undefined && unify(model, other, tuple, inventions)) {",
-    replace: "    if (inventions !== undefined && false) {",
-    tests: EXISTENTIAL_TESTS,
-  },
-  {
-    name: "a change followed a component at a time seeds it only with the rows it gained",
-    file: core("logic/components.ts"),
-    find: "  ...(lost.get(name)?.values() ?? []),",
-    replace: "",
-    tests: COMPONENT_TESTS,
-  },
-  {
-    name: "a component keeps the rows it no longer derives",
-    file: core("logic/components.ts"),
-    find: "    if (!after.has(row) && rows.delete(row)) {",
-    replace: "    if (false) {",
-    tests: COMPONENT_TESTS,
-  },
-  {
-    name: "rules whose goals share no variable are followed a component at a time",
-    file: core("logic/components.ts"),
-    find: "    connected(goals)",
-    replace: "    true",
-    tests: COMPONENT_TESTS,
-  },
 
-  {
-    name: "a key keeps the unknown that sorts last",
-    file: core("logic/model.ts"),
-    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
-    replace:
-      "        (depthOf(value) - depthOf(other) || compareValues(other, value)) < 0);",
-    tests: LEAST_MEMBER_TESTS,
-  },
   {
     name: "a string that starts with a control character reads as an unknown",
     file: core("logic/terms.ts"),
@@ -570,37 +676,6 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "    const plain = rule.aggregates.length === 0 && rule.invents === undefined;",
     replace: "    const plain = rule.aggregates.length === 0;",
     tests: EXISTENTIAL_TESTS,
-  },
-  {
-    name: "rules that invent run before the others have finished",
-    file: core("logic/model.ts"),
-    find: "      yield* rounds(model, rules, run, delta, settle);",
-    replace:
-      "      yield* (triggers.length > 0 ? Effect.void : rounds(model, rules, run, delta, settle));",
-    tests: EXISTENTIAL_TESTS,
-  },
-  {
-    name: "why keeps the explanations rows had before a key made unknowns one",
-    file: core("logic/model.ts"),
-    find: "        if (inventions !== undefined && inventions.equal.size > 0) {",
-    replace:
-      "        if (inventions !== undefined && inventions.equal.size < 0) {",
-    tests: EXISTENTIAL_TESTS,
-  },
-  {
-    name: "a key keeps the unknown that sorts first, though another nests fewer unknowns",
-    file: core("logic/model.ts"),
-    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
-    replace: "        compareValues(value, other) < 0);",
-    tests: LEAST_MEMBER_TESTS,
-  },
-  {
-    name: "a key keeps the unknown that nests the most unknowns",
-    file: core("logic/model.ts"),
-    find: "        (depthOf(value) - depthOf(other) || compareValues(value, other)) < 0);",
-    replace:
-      "        (depthOf(other) - depthOf(value) || compareValues(value, other)) < 0);",
-    tests: LEAST_MEMBER_TESTS,
   },
   {
     name: "what some describes keeps the values the answer gives its variables out",
@@ -662,14 +737,6 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/model.ts"),
     find: '  if (state === "done" || (reading && state === "running")) {',
     replace: '  if (state === "done") {',
-  },
-  {
-    name: "a group derives every relation its rules read before it runs",
-    file: core("logic/model.ts"),
-    find: "    yield* evaluate(model, stratum);",
-    replace:
-      "    for (const relation of stratum.rules.flatMap((rule) => rule.body.flatMap(mentioned))) {\n      if (!members.has(relation.name)) {\n        yield* ensure(model, relation);\n      }\n    }\n    yield* evaluate(model, stratum);",
-    tests: ["src/logic/tests/goal-directed.test.ts"],
   },
   {
     name: "a copy's guard waits for the variables of a question it holds, which are the question's own",
@@ -882,14 +949,6 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/compile.ts"),
     find: "      return kind === undefined ||",
     replace: "      return true ||",
-    tests: MERGE_TESTS,
-  },
-  {
-    name: "two rows a key gets that differ where nothing merges both hold",
-    file: core("logic/model.ts"),
-    find: "  const { key, name } = rule.head.relation;\n  if (key === undefined) {",
-    replace:
-      "  const { key, name } = rule.head.relation;\n  if (key !== key) {",
     tests: MERGE_TESTS,
   },
   {
@@ -1224,16 +1283,6 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/logic/tests/schemas.test.ts"],
   },
   {
-    name: "an invariant is not asked after a change to what it asks about",
-    file: core("logic/database.ts"),
-    find: "    if (opaque || reaches(others)) {",
-    replace: "    if (opaque) {",
-    tests: [
-      "src/logic/tests/incremental.test.ts",
-      "src/logic/tests/invariants.test.ts",
-    ],
-  },
-  {
     name: "an invariant that expects no answers is not asked about new rows",
     file: core("logic/database.ts"),
     find: '    if (invariant.assert !== "none") {\n      return Effect.succeed(false);\n    }',
@@ -1479,16 +1528,6 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "    const group = schemaOf(schema)?.group ?? [];",
     replace: '    const group = [schemaOf(schema)?.name ?? ""];',
     tests: ["src/logic/tests/groups.test.ts"],
-  },
-  {
-    name: "an invariant that holds a function from the host is not asked in full",
-    file: core("logic/database.ts"),
-    find: "    if (opaque || reaches(others)) {",
-    replace: "    if (reaches(others)) {",
-    tests: [
-      "src/logic/tests/incremental.test.ts",
-      "src/logic/tests/invariants.test.ts",
-    ],
   },
   {
     name: "a function from the host inside a goal or a schema is not seen",
@@ -2843,24 +2882,10 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/logic/tests/keys.test.ts"],
   },
   {
-    name: "why explains a row by the first answer found, not the least",
-    file: core("logic/model.ts"),
-    find: "          if (other === undefined || compareAnswers(rule, vars, other) < 0) {",
-    replace: "          if (other === undefined) {",
-    tests: TOLD_TESTS,
-  },
-  {
     name: "why compares no values of the answers that give a row",
     file: core("logic/model.ts"),
     find: "    names = [...new Set(rule.body.flatMap(termVariables))];",
     replace: "    names = [];",
-    tests: TOLD_TESTS,
-  },
-  {
-    name: "why explains min, max, and shortest by the first match that gave the value",
-    file: core("logic/model.ts"),
-    find: "        group.matches = winners.sort(compareMatches(rules)).slice(0, 1);",
-    replace: "        group.matches = winners.slice(0, 1);",
     tests: TOLD_TESTS,
   },
   {
@@ -2869,13 +2894,6 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "        : [...derivation.matches].sort(compareMatches(telling.model.rules));",
     replace: "        : derivation.matches;",
     tests: TOLD_TESTS,
-  },
-  {
-    name: "why explains an invented row by the first answer that invented it",
-    file: core("logic/model.ts"),
-    find: "      triggers.sort(([a, x], [b, y]) =>",
-    replace: "      [].sort(([a, x], [b, y]) =>",
-    tests: [...TOLD_TESTS, ...EXISTENTIAL_TESTS],
   },
   {
     name: "why explains a row a key made again by the first answer found",

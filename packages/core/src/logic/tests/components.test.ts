@@ -1,7 +1,7 @@
 /**
  * A group whose rules invent, and whose keys or equality rules make the
- * invented values one, follows a change a component of values at a time:
- * after any change it answers as a database that derived nothing yet.
+ * invented values one, follows a change row by row, however its rules join
+ * rows: after any change it answers as a database that derived nothing yet.
  */
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
@@ -227,7 +227,7 @@ const changing = (
 
 describe("a group whose rules invent and make values one", () => {
   it.effect.prop(
-    "follows each change a component at a time, and answers as a database that derived nothing yet",
+    "follows each change, and answers as a database that derived nothing yet",
     program,
     ({ changes, start, ways }) =>
       Effect.gen(function* () {
@@ -247,7 +247,7 @@ describe("a group whose rules invent and make values one", () => {
   );
 
   it.effect.prop(
-    "is derived again where its rules join rows other than through shared variables, and answers as a database that derived nothing yet",
+    "follows each change where its rules join rows other than through shared variables too, and answers as a database that derived nothing yet",
     {
       ways: Arbitrary.map(
         Arbitrary.array(element(["key", "twins", "registered"] as Way[]), {
@@ -276,7 +276,8 @@ describe("a group whose rules invent and make values one", () => {
     ({ changes, start, ways }) =>
       Effect.map(changing(ways, start, changes), (met) => {
         for (const how of met) {
-          expect(how).not.toBe("followed");
+          expect(how).not.toBe("derived");
+          expect(how).not.toBe("forgotten");
         }
       }),
     { timeout: 300_000, arbitrary: { runs: 200 } }

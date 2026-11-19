@@ -79,6 +79,7 @@ import {
   termVariables,
   valueKey,
 } from "@/logic/terms";
+import { holdsUnknown } from "@/logic/weights";
 import { LionAskerService } from "@/services/asker";
 import type { LionEnvironmentService } from "@/services/evaluation";
 
@@ -631,6 +632,32 @@ const follow = (
   });
 
 /**
+ * Takes one relation's rows over to a model of new rules, when the old model
+ * held them, and with them the candidates that give them, when its rules
+ * are what they were.
+ */
+const keep = (
+  before: Model,
+  next: Model,
+  name: string,
+  held: boolean,
+  same: boolean
+) => {
+  const rows = before.relations.get(name) ?? before.facts.get(name);
+  if (held && rows !== undefined) {
+    next.state.set(name, "done");
+    next.relations.set(name, rows);
+  }
+  const support = before.support.get(name);
+  if (held && same && support !== undefined) {
+    next.support.set(name, support);
+  }
+  if (before.read.has(name)) {
+    next.read.add(name);
+  }
+};
+
+/**
  * Takes what a model derived over to a model of new rules, and returns the
  * relations whose rules are not what they were. A group of relations with
  * the rules it had keeps its rows, and `why` derives them again to tell how
@@ -656,14 +683,7 @@ const carry = (before: Model, next: Model) => {
       if (!same) {
         stale.add(name);
       }
-      const rows = before.relations.get(name) ?? before.facts.get(name);
-      if (held && rows !== undefined) {
-        next.state.set(name, "done");
-        next.relations.set(name, rows);
-      }
-      if (before.read.has(name)) {
-        next.read.add(name);
-      }
+      keep(before, next, name, held, same);
     }
   }
   for (const [name, inputs] of before.computed) {
@@ -1562,6 +1582,21 @@ const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
   return footprint;
 };
 
+const REGIVES = new WeakMap<FactChange, boolean>();
+
+/** True when a change adds or takes away a fact that holds an unknown. */
+const regives = (change: FactChange) => {
+  let found = REGIVES.get(change);
+  if (found === undefined) {
+    const { gained, lost } = change.net();
+    found = [...gained.values(), ...lost.values()].some((rows) =>
+      [...rows.values()].some(holdsUnknown)
+    );
+    REGIVES.set(change, found);
+  }
+  return found;
+};
+
 /**
  * True when a change to facts cannot have broken an invariant that held
  * before it, so the invariant need not be asked again.
@@ -1575,17 +1610,22 @@ const footprintOf = (database: LogicDatabase, invariant: Invariant) => {
  *   new. So it is enough to run the goal on the new rows. When they give
  *   answers, those are all the invariant has, and they are returned for
  *   its message instead of true or false.
+ * - A fact that holds an unknown says the unknown is given, which a key or
+ *   an equality rule then cannot write as another value. So a change that
+ *   adds or takes away such a fact can change rows of relations it does not
+ *   name, and every invariant is asked.
  */
 const unaffected = (
   database: LogicDatabase,
   invariant: Invariant,
-  { net, touched }: FactChange
+  change: FactChange
 ) =>
   Effect.suspend(() => {
+    const { net, touched } = change;
     const { direct, opaque, others } = footprintOf(database, invariant);
     const reaches = (names: ReadonlySet<string>) =>
       [...touched].some((name) => names.has(name));
-    if (opaque || reaches(others)) {
+    if (opaque || reaches(others) || regives(change)) {
       return Effect.succeed(false);
     }
     if (!reaches(direct)) {

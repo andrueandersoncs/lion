@@ -1,0 +1,3 @@
+W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one
+W2  the level and the candidates by level of every path equal a plain round-by-round model after every edge change in each of 5000 random graphs
+W3  each of 10 aggregates kept by counted candidates equals a plain model after every change in each of 5000 random runs

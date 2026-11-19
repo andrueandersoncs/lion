@@ -1,0 +1,159 @@
+{
+  "title": "Rows carry weights and the time they hold, and every change is a change to candidates",
+  "context": "A change to facts was followed by taking out every row that an answer using a changed row gave, and deriving those rows again. An aggregated row was combined again from all its matches, a rule that invents alone had a way of its own, and a group whose rules invent into a keyed relation or make values one was followed a component of values at a time, and only where its rules join rows through shared variables. Any other such group was derived again in full. Deriving from nothing was a procedure of its own, with one pass for rows, one for aggregates, and one for rules that invent. The research into what to improve next proposed one algebra instead: rows with integer weights, where a change adds and takes away candidates. It left one part open, since no source showed it for rules that invent. Two decisions had not taken it. derived-rows-follow-changes said counts cannot tell a row that recursion supports through itself from one that still holds. follow-a-component-at-a-time said weighted rows would replace the engine before they removed a special case.",
+  "decision": "Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero. Time is a column of the same rows: a candidate has a level, one above the highest level of the rows of its own group that its answer used, and a row is held from the least level one of its candidates has. A change to facts takes away the candidates that used a row a relation lost and adds the ones that use a row a relation gained, and the levels are settled lowest first. Deriving a group from nothing is the same work, for a change that adds every fact. The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head. Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate. An aggregate keeps the values of its candidates counted, and where it recurses a better value ends the row before it. A sum or a mean of numbers that are not all whole is added up in sort order. A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it.",
+  "consequences": "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. A group whose rules invent or make values one is no longer derived again, a component at a time or in full. With 100,000 people, giving one more pair of twins a mother a key makes one takes 9 milliseconds for 20 changes where it took 77, and no longer grows with the people. Adding a fact and asking one group's total takes 5 milliseconds for 20 changes where it took 17. Whether a row holds has many solutions when rows give each other, and the level it is held from has one, so a database that followed changes keeps for every row the very level and weights a database that derived nothing yet works out, which a property now checks. Deriving from nothing is slower: every path on a chain of 150 runs at 0.8 times the speed, shortest distances by an aggregate that recurses at 0.6, and 2,500 pairs of twins whose mothers a key makes one at 0.7. A rule that asks about a relation that changed is counted as things were and as they are, so asking a count that can be zero after a change runs at 0.7 times the speed. Building the model of this repository's history takes 31 seconds where it took 26. A database keeps more: for each derived row its candidates by level, and in a group that makes values one the rows that ended. After deriving every path among 100,000 nodes it holds 360 megabytes where it held 237, and after the twins 704 where it held 133. The engine is 832 lines larger, 6.3 percent: 14,083 lines of code where it had 13,251, with 47 more functions. The nine ways of deriving and following became one, and it is longer than the nine. A sum of numbers that are not whole can differ in its last digits from what it was, and no longer depends on the order facts were added in. A change that adds a fact which holds an unknown is refused where an equality rule would be broken, as a database that held the fact from the start refuses the rule.",
+  "alternatives": [
+    {
+      "option": "Keep taking out what a change reaches and deriving it again",
+      "rejected": "It takes out rows that still hold wherever rules recurse, needs a way of its own for each kind of rule, and could follow a group that invents only where its rules join rows through shared variables."
+    },
+    {
+      "option": "Weights alone, with no level",
+      "rejected": "Two rows that give each other keep each other's weight above zero when the fact under them goes."
+    },
+    {
+      "option": "Keep every round's changes in a trace beside the rows, as DBSP does",
+      "rejected": "The round is one number on a row and a count for each level, which is aggregate/min over a column, kept by counted candidates as every min is. A trace is a second store for what the rows can hold."
+    },
+    {
+      "option": "Derive the component a change touches again",
+      "rejected": "It is right only where an answer combines rows that share values, so a pattern, a computed value, a question, or goals that share no variable made the whole group derived again."
+    },
+    {
+      "option": "Invent for every answer, and let keys make the extra unknowns one",
+      "rejected": "It changes which unknown names a class of values in some programs, which a program can see."
+    },
+    {
+      "option": "Add up a sum in the order its matches are found",
+      "rejected": "The order depends on the order facts were added in and on the changes a database has seen, and counted candidates have no order."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero.",
+      "says": {
+        "decision": "following-a-change-to-facts",
+        "chose": "candidates-by-level",
+        "over": [
+          "take-out-and-derive-again",
+          "weights-alone",
+          "rounds-in-a-trace"
+        ],
+        "area": "logic",
+        "because": "the level a row is held from has one solution where whether it holds has many, so a change is repaired in order and nothing that still holds is taken out"
+      }
+    },
+    {
+      "quote": "The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head.",
+      "says": {
+        "decision": "rule-that-invents-on-change",
+        "chose": "weighted-rows",
+        "over": [
+          "follow-a-component-at-a-time",
+          "derive-again-every-case",
+          "skolem-for-keyed-relations"
+        ],
+        "area": "logic",
+        "because": "an answer that invents is asked only about rows of lower levels, and a merge ends a row's time instead of rewriting it, so every group is followed row by row however its rules join rows"
+      }
+    },
+    {
+      "quote": "A sum or a mean of numbers that are not all whole is added up in sort order.",
+      "says": {
+        "decision": "order-a-rule-head-sum-adds-in",
+        "chose": "sort-order",
+        "over": ["order-found"],
+        "area": "logic",
+        "because": "the order matches are found in depends on the order facts were added in, and counted candidates have no order"
+      }
+    },
+    {
+      "quote": "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema.",
+      "says": {
+        "behavior": "keyed-invention-after-fact-change",
+        "is": "followed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema.",
+      "says": {
+        "behavior": "equality-rule-group-after-fact-change",
+        "is": "followed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema.",
+      "says": {
+        "behavior": "invention-joined-otherwise-after-fact-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "derived-again"
+      }
+    },
+    {
+      "quote": "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema.",
+      "says": {
+        "rule": "unfollowed-relations-derived-again",
+        "holds": true,
+        "statement": "A relation that cannot be followed through a change, one whose rule holds a function from the host that does not say it reads only its arguments, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate.",
+      "says": {
+        "behavior": "merged-unknowns-after-retract",
+        "is": "apart-again",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A sum or a mean of numbers that are not all whole is added up in sort order.",
+      "says": {
+        "behavior": "rule-head-sum-of-fractions",
+        "is": "added-in-sort-order",
+        "area": "logic",
+        "was": "added-in-order-found"
+      }
+    },
+    {
+      "quote": "A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it.",
+      "says": {
+        "behavior": "fact-holding-unknown-after-change",
+        "is": "followed",
+        "area": "logic",
+        "was": "not-followed"
+      }
+    },
+    {
+      "quote": "With 100,000 people, giving one more pair of twins a mother a key makes one takes 9 milliseconds for 20 changes where it took 77",
+      "says": {
+        "measured": "hundred-thousand-people-twenty-twins-then-mother-ms",
+        "after": 9,
+        "before": 77,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Adding a fact and asking one group's total takes 5 milliseconds for 20 changes where it took 17",
+      "says": {
+        "measured": "hundred-thousand-facts-twenty-changes-then-one-total-ms",
+        "after": 5,
+        "before": 17,
+        "area": "metrics"
+      }
+    },
+    {
+      "quote": "Building the model of this repository's history takes 31 seconds where it took 26",
+      "says": {
+        "measured": "history-model-build-s",
+        "after": 31,
+        "before": 26,
+        "area": "metrics"
+      }
+    }
+  ]
+}

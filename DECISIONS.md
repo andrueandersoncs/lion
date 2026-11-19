@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 170 questions have been decided, 70 records explain them, and of what the records assert, 547 hold when Lion is run, 4 are broken, 297 are stated but not checked by running Lion, and 14 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 172 questions have been decided, 71 records explain them, and of what the records assert, 550 hold when Lion is run, 4 are broken, 306 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -153,7 +153,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-16 | [`undoing-a-change-to-facts`](#undoing-a-change-to-facts) | `take-back-each-row` | [What a database derived follows a change to its facts](#derived-rows-follow-changes) |
 | 2026-11-17 | [`derived-rows-on-refused-change`](#derived-rows-on-refused-change) | `follow-back` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`derived-rows-on-rule-change`](#derived-rows-on-rule-change) | `derive-again-what-changed` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
-| 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `follow-a-component-at-a-time` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed), [A group whose rules invent or make values one follows a change a component of values at a time](#follow-a-component-at-a-time) |
+| 2026-11-17 | [`rule-that-invents-on-change`](#rule-that-invents-on-change) | `weighted-rows` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed), [A group whose rules invent or make values one follows a change a component of values at a time](#follow-a-component-at-a-time), [Rows carry weights and the time they hold, and every change is a change to candidates](#rows-carry-weights) |
 | 2026-11-17 | [`unfollowable-relation-on-change`](#unfollowable-relation-on-change) | `derive-again-and-compare-once-read` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`where-mutations-run`](#where-mutations-run) | `copies-of-the-working-tree` | [Every change is followed, and a relation that cannot be followed is derived again on its own](#every-change-is-followed) |
 | 2026-11-17 | [`agent-instructions-layout`](#agent-instructions-layout) | `index-with-guidelines` | [AGENTS.md is a short index, and what each practice needs beyond its main rule is a guideline in `guidelines/`](#guidelines-folder) |
@@ -176,6 +176,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`schema-asks-about-another-value`](#schema-asks-about-another-value) | `only-smaller-values` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
 | 2026-11-18 | [`schema-asks-about-itself`](#schema-asks-about-itself) | `least-consistent-answer-else-no-answer` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
 | 2026-11-18 | [`assuming-and-invariants`](#assuming-and-invariants) | `invariants-keep-the-database` | [An invariant does not refuse a change that `assuming` only assumes](#assuming-and-invariants) |
+| 2026-11-19 | [`following-a-change-to-facts`](#following-a-change-to-facts) | `candidates-by-level` | [Rows carry weights and the time they hold, and every change is a change to candidates](#rows-carry-weights) |
+| 2026-11-19 | [`order-a-rule-head-sum-adds-in`](#order-a-rule-head-sum-adds-in) | `sort-order` | [Rows carry weights and the time they hold, and every change is a change to candidates](#rows-carry-weights) |
 
 <a id="program-representation"></a>
 
@@ -3133,10 +3135,11 @@ Now: `derive-again-what-changed`.
 
 ## rule-that-invents-on-change
 
-Now: `follow-a-component-at-a-time`.
+Now: `weighted-rows`.
 
 - 2026-11-17 `rule-that-invents-on-change`: `follow-where-it-invents-alone` over `follow-every-case`, `derive-again-every-case`: "A rule that invents is followed where it invents alone, into a relation with no key" (`every-change-is-followed.json`)
-- 2026-11-18 `rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`, was `follow-where-it-invents-alone`: "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time" (`follow-a-component-at-a-time.json`)
+- 2026-11-18 `rule-that-invents-on-change`: `follow-a-component-at-a-time` over `follow-where-it-invents-alone`, `derive-again-every-case`, `track-rounds-per-row`, `skolem-for-keyed-relations`, `weighted-rows`: "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time" (`follow-a-component-at-a-time.json`)
+- 2026-11-19 `rule-that-invents-on-change`: `weighted-rows` over `follow-a-component-at-a-time`, `derive-again-every-case`, `skolem-for-keyed-relations`, was `follow-where-it-invents-alone`: "The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head." (`rows-carry-weights.json`)
 
 <a id="follow-a-component-at-a-time"></a>
 
@@ -3159,10 +3162,47 @@ Recorded 2026-11-18 in `history/notes/follow-a-component-at-a-time.json`.
 
 **What it asserts, checked.**
 
-- Stated, not checked by running Lion: decided `rule-that-invents-on-change`: `follow-a-component-at-a-time`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
+- Replaced by a later word: decided `rule-that-invents-on-change`: `follow-a-component-at-a-time`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
 - Stated, not checked by running Lion: `keyed-invention-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
 - Stated, not checked by running Lion: `equality-rule-group-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
 - Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A group whose rules join rows some other way is still derived again and compared."
+
+<a id="rows-carry-weights"></a>
+
+### Rows carry weights and the time they hold, and every change is a change to candidates
+
+Recorded 2026-11-19 in `history/notes/rows-carry-weights.json`.
+
+**Context.** A change to facts was followed by taking out every row that an answer using a changed row gave, and deriving those rows again. An aggregated row was combined again from all its matches, a rule that invents alone had a way of its own, and a group whose rules invent into a keyed relation or make values one was followed a component of values at a time, and only where its rules join rows through shared variables. Any other such group was derived again in full. Deriving from nothing was a procedure of its own, with one pass for rows, one for aggregates, and one for rules that invent. The research into what to improve next proposed one algebra instead: rows with integer weights, where a change adds and takes away candidates. It left one part open, since no source showed it for rules that invent. Two decisions had not taken it. derived-rows-follow-changes said counts cannot tell a row that recursion supports through itself from one that still holds. follow-a-component-at-a-time said weighted rows would replace the engine before they removed a special case.
+
+**Decision.** Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero. Time is a column of the same rows: a candidate has a level, one above the highest level of the rows of its own group that its answer used, and a row is held from the least level one of its candidates has. A change to facts takes away the candidates that used a row a relation lost and adds the ones that use a row a relation gained, and the levels are settled lowest first. Deriving a group from nothing is the same work, for a change that adds every fact. The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head. Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate. An aggregate keeps the values of its candidates counted, and where it recurses a better value ends the row before it. A sum or a mean of numbers that are not all whole is added up in sort order. A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it.
+
+**Consequences.** Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. A group whose rules invent or make values one is no longer derived again, a component at a time or in full. With 100,000 people, giving one more pair of twins a mother a key makes one takes 9 milliseconds for 20 changes where it took 77, and no longer grows with the people. Adding a fact and asking one group's total takes 5 milliseconds for 20 changes where it took 17. Whether a row holds has many solutions when rows give each other, and the level it is held from has one, so a database that followed changes keeps for every row the very level and weights a database that derived nothing yet works out, which a property now checks. Deriving from nothing is slower: every path on a chain of 150 runs at 0.8 times the speed, shortest distances by an aggregate that recurses at 0.6, and 2,500 pairs of twins whose mothers a key makes one at 0.7. A rule that asks about a relation that changed is counted as things were and as they are, so asking a count that can be zero after a change runs at 0.7 times the speed. Building the model of this repository's history takes 31 seconds where it took 26. A database keeps more: for each derived row its candidates by level, and in a group that makes values one the rows that ended. After deriving every path among 100,000 nodes it holds 360 megabytes where it held 237, and after the twins 704 where it held 133. The engine is 832 lines larger, 6.3 percent: 14,083 lines of code where it had 13,251, with 47 more functions. The nine ways of deriving and following became one, and it is longer than the nine. A sum of numbers that are not whole can differ in its last digits from what it was, and no longer depends on the order facts were added in. A change that adds a fact which holds an unknown is refused where an equality rule would be broken, as a database that held the fact from the start refuses the rule.
+
+**Alternatives considered.**
+
+- Keep taking out what a change reaches and deriving it again. It takes out rows that still hold wherever rules recurse, needs a way of its own for each kind of rule, and could follow a group that invents only where its rules join rows through shared variables.
+- Weights alone, with no level. Two rows that give each other keep each other's weight above zero when the fact under them goes.
+- Keep every round's changes in a trace beside the rows, as DBSP does. The round is one number on a row and a count for each level, which is aggregate/min over a column, kept by counted candidates as every min is. A trace is a second store for what the rows can hold.
+- Derive the component a change touches again. It is right only where an answer combines rows that share values, so a pattern, a computed value, a question, or goals that share no variable made the whole group derived again.
+- Invent for every answer, and let keys make the extra unknowns one. It changes which unknown names a class of values in some programs, which a program can see.
+- Add up a sum in the order its matches are found. The order depends on the order facts were added in and on the changes a database has seen, and counted candidates have no order.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `following-a-change-to-facts`: `candidates-by-level`. "Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero."
+- Holds when Lion is run: `fact-holding-unknown-after-change` is `followed`. "A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it."
+- Stated, not checked by running Lion: `hundred-thousand-people-twenty-twins-then-mother-ms` is 9. "With 100,000 people, giving one more pair of twins a mother a key makes one takes 9 milliseconds for 20 changes where it took 77"
+- Stated, not checked by running Lion: `hundred-thousand-facts-twenty-changes-then-one-total-ms` is 5. "Adding a fact and asking one group's total takes 5 milliseconds for 20 changes where it took 17"
+- Stated, not checked by running Lion: `history-model-build-s` is 31. "Building the model of this repository's history takes 31 seconds where it took 26"
+- Stated, not checked by running Lion: decided `rule-that-invents-on-change`: `weighted-rows`. "The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head."
+- Stated, not checked by running Lion: decided `order-a-rule-head-sum-adds-in`: `sort-order`. "A sum or a mean of numbers that are not all whole is added up in sort order."
+- Stated, not checked by running Lion: `keyed-invention-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
+- Stated, not checked by running Lion: `equality-rule-group-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
+- Stated, not checked by running Lion: `invention-joined-otherwise-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
+- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
+- Holds when Lion is run: `merged-unknowns-after-retract` is `apart-again`. "Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate."
+- Holds when Lion is run: `rule-head-sum-of-fractions` is `added-in-sort-order`. "A sum or a mean of numbers that are not all whole is added up in sort order."
 
 <a id="unfollowable-relation-on-change"></a>
 
@@ -3761,3 +3801,19 @@ Recorded 2026-11-18 in `history/notes/assuming-and-invariants.json`.
 - Holds when Lion is run: `assuming-change-an-invariant-refuses` is `assumed`. "With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`."
 - Holds when Lion is run: `invariant-asking-assuming-order` is `independent`. "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again."
 - Holds when Lion is run: `invariant-assuming-a-new-fact-each-answer` is `ends`. "An invariant can ask with `assuming` what a change would do, holds of the same facts whatever order they and the invariant came in, and never asks itself again."
+
+<a id="following-a-change-to-facts"></a>
+
+## following-a-change-to-facts
+
+Now: `candidates-by-level`.
+
+- 2026-11-19 `following-a-change-to-facts`: `candidates-by-level` over `take-out-and-derive-again`, `weights-alone`, `rounds-in-a-trace`: "Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero." (`rows-carry-weights.json`)
+
+<a id="order-a-rule-head-sum-adds-in"></a>
+
+## order-a-rule-head-sum-adds-in
+
+Now: `sort-order`.
+
+- 2026-11-19 `order-a-rule-head-sum-adds-in`: `sort-order` over `order-found`: "A sum or a mean of numbers that are not all whole is added up in sort order." (`rows-carry-weights.json`)

@@ -21448,7 +21448,13 @@
     "program": [
       "begin",
       ["relation", "shift", ["person", "day"]],
-      ["invariant", ["shift", "?p", "sun"], { "assert": "none" }],
+      [
+        "invariant",
+        ["shift", "?p", "sun"],
+        {
+          "assert": "none"
+        }
+      ],
       [
         "cond",
         [
@@ -21516,7 +21522,9 @@
             ]
           ]
         ],
-        { "assert": "none" }
+        {
+          "assert": "none"
+        }
       ],
       ["fact", ["n", -4]],
       ["fact", ["n", -2]],
@@ -21543,7 +21551,9 @@
           ["n", "?x"],
           ["assuming", ["fact", ["n", ["number/add", "?x", 1]]], false]
         ],
-        { "assert": "none" }
+        {
+          "assert": "none"
+        }
       ],
       ["fact", ["n", 0]],
       [
@@ -21551,6 +21561,115 @@
         [["=", ["find", "?x", ["n", "?x"]], ["quote", [0]]], ["quote", "ends"]],
         ["else", ["quote", "other"]]
       ]
+    ]
+  },
+  {
+    "case": "rule-head-sum-of-fractions",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x"]],
+      ["relation", "ta", ["t"]],
+      ["relation", "tb", ["t"]],
+      ["fact", ["a", 0.1], ["a", 0.2], ["a", 0.3]],
+      ["fact", ["b", 0.3], ["b", 0.2], ["b", 0.1]],
+      ["rule", ["ta", ["aggregate/sum", "?x"]], ["a", "?x"]],
+      ["rule", ["tb", ["aggregate/sum", "?x"]], ["b", "?x"]],
+      [
+        "cond",
+        [
+          ["=", ["find", "?t", ["ta", "?t"]], ["find", "?t", ["tb", "?t"]]],
+          ["quote", "added-in-sort-order"]
+        ],
+        ["else", ["quote", "added-in-order-found"]]
+      ]
+    ]
+  },
+  {
+    "case": "fact-holding-unknown-after-change",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "twin", ["a", "b"]],
+      ["relation", "tall", ["who"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["fact", ["person", "a"], ["person", "b"], ["twin", "a", "b"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["=", "?m1", "?m2"],
+        ["twin", "?x", "?y"],
+        ["mother", "?x", "?m1"],
+        ["mother", "?y", "?m2"]
+      ],
+      ["find", "?m", ["mother", "a", "?m"]],
+      ["fact", ["tall", ["some", "?m", ["mother", "b", "?m"]]]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["find", "?m", ["mother", "a", "?m"]],
+            ["array/make", ["some", "?m", ["mother", "b", "?m"]]]
+          ],
+          ["quote", "followed"]
+        ],
+        ["else", ["quote", "not-followed"]]
+      ]
+    ]
+  },
+  {
+    "case": "merged-unknowns-after-retract",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "twin", ["a", "b"]],
+      ["relation", "tall", ["who"]],
+      ["relation", "mother", ["child", "mother"]],
+      ["fact", ["person", "a"], ["person", "b"], ["twin", "a", "b"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["=", "?m1", "?m2"],
+        ["twin", "?x", "?y"],
+        ["mother", "?x", "?m1"],
+        ["mother", "?y", "?m2"]
+      ],
+      ["find", "?m", ["mother", "b", "?m"]],
+      ["retract", ["twin", "a", "b"]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            ["find", "?m", ["mother", "b", "?m"]],
+            ["array/make", ["some", "?m", ["mother", "b", "?m"]]]
+          ],
+          ["quote", "apart-again"]
+        ],
+        ["else", ["quote", "still-one"]]
+      ]
+    ]
+  },
+  {
+    "feature": "logic/components.ts",
+    "kind": "file",
+    "program": [
+      "array/includes?",
+      ["repo/files", "packages/core/src/logic"],
+      "packages/core/src/logic/components.ts"
+    ]
+  },
+  {
+    "feature": "logic/weights.ts",
+    "kind": "file",
+    "program": [
+      "array/includes?",
+      ["repo/files", "packages/core/src/logic"],
+      "packages/core/src/logic/weights.ts"
     ]
   }
 ]
