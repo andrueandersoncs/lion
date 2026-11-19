@@ -1,0 +1,226 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-listing"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Lion programs run after schemas could list the values they allow (build step 1)"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119230000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "user-2026-11-19"
+   ],
+   [
+    "quote",
+    "the session that consolidated the research"
+   ],
+   [
+    "quote",
+    "The user's directions on the build order and the solver"
+   ],
+   [
+    "quote",
+    "The user"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119210000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-b1"
+   ],
+   [
+    "quote",
+    "lion-probes-listing"
+   ],
+   [
+    "quote",
+    "[ 1, 2, 3 ]"
+   ],
+   [
+    "quote",
+    {
+     "lion": "every value a schema allows, up to a size",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-b1"
+   ],
+   [
+    "quote",
+    "program fv-schema-values.json, which was refused before"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-b2"
+   ],
+   [
+    "quote",
+    "lion-probes-listing"
+   ],
+   [
+    "quote",
+    "\"runs of at most 3 commands\": 85,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "runs of at most 3 commands drawn from a schema a Lion program checked",
+     "n": 85
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-b2"
+   ],
+   [
+    "quote",
+    "program built-bounded-search.json: every run of at most three commands a schema allows"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-b3"
+   ],
+   [
+    "quote",
+    "lion-probes-listing"
+   ],
+   [
+    "quote",
+    "\"careful withdrawal, runs that overdraw\": [],"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of every sequence of changes up to a bound",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-b3"
+   ],
+   [
+    "quote",
+    "program built-bounded-search.json: the careful withdrawal"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-b4"
+   ],
+   [
+    "quote",
+    "lion-probes-listing"
+   ],
+   [
+    "quote",
+    "\"careless withdrawal, the shortest runs that overdraw\": ["
+   ],
+   [
+    "quote",
+    {
+     "lion": "the shortest sequence of changes that breaks a rule",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-b4"
+   ],
+   [
+    "quote",
+    "program built-bounded-search.json: the careless withdrawal"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-u1"
+   ],
+   [
+    "quote",
+    "user-2026-11-19"
+   ],
+   [
+    "quote",
+    "you have my permission to change the documented rule that the solver build needs"
+   ],
+   [
+    "quote",
+    {
+     "allowed": "solver",
+     "by": "the user"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-u1"
+   ],
+   [
+    "quote",
+    "On the solver"
+   ]
+  ]
+ ],
+ "recorded"
+]

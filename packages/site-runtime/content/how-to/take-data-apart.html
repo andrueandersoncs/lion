@@ -64,6 +64,23 @@
    "units": ["query", ["units", "?order", "?total"], {"order": "order"}]}]
 </lion-example>
 
+<h2>Try every value a schema allows</h2>
+<p>When nothing else binds the value <code>schema/fits?</code> checks, a schema that can list the values it allows binds the value to each one that fits. So a few lines check every case up to a bound: here every run of at most two moves, to find those that leave an account below zero. <code>["schema/arrayOf", "Move", 2]</code> allows lists of at most two moves:</p>
+<lion-example name="Every case up to a bound">
+["begin",
+  ["schema", "Move", ["schema/anyOf", 2, -1, -3]],
+  {"moves": ["find", "?m", ["schema/fits?", "?m", "Move"]],
+   "runs": ["aggregate/count", ["find", "?run", ["schema/fits?", "?run", ["schema/arrayOf", "Move", 2]]]],
+   "below zero": ["find", "?run",
+     ["and",
+       ["schema/fits?", "?run", ["schema/arrayOf", "Move", 2]],
+       ["number/lessThan", ["aggregate/sum", "?run"], 0]]]}]
+</lion-example>
+<p>Data, records and lists of such schemas, <code>schema/anyOf</code>, <code>value/boolean?</code>, and <code>schema/arrayOf</code> with a most length can list what they allow. A schema that allows infinitely many values, or a predicate that does not say which it accepts, cannot, so the goal needs another to bind the value first:</p>
+<lion-example name="A schema that cannot list its values" expect="error">
+["find", "?n", ["schema/fits?", "?n", "value/integer?"]]
+</lion-example>
+
 <h2>Take a list apart by position</h2>
 <p>A list of variables fits a list of the same length. <code>=</code> matches one side against the other, so it binds the variables on either side:</p>
 <lion-example name="A list pattern">

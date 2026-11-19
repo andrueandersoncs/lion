@@ -553,6 +553,25 @@ export const readsOnlyArguments = (
 export const isArgumentsOnly = (value: unknown): boolean =>
   typeof value === "function" && ARGUMENTS_ONLY.has(value);
 
+const ALLOWED = new WeakMap<object, readonly unknown[]>();
+
+/**
+ * Marks a predicate that accepts only some values, and says which, as
+ * `value/boolean?` accepts true and false. As a schema it then stands for
+ * each of them, as data does for itself.
+ */
+export const allowsOnly = <F extends LionFunction>(
+  fn: F,
+  values: readonly unknown[]
+): F => {
+  ALLOWED.set(fn, values);
+  return fn;
+};
+
+/** The values a predicate accepts, when it says which. */
+export const allowedBy = (value: unknown): readonly unknown[] | undefined =>
+  typeof value === "function" ? ALLOWED.get(value) : undefined;
+
 const FUNCTION_NAMES = new WeakMap<object, string>();
 
 /**

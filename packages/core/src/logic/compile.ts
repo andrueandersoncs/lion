@@ -6,6 +6,7 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { aggregateCall } from "@/logic/aggregates";
+import { unlisted } from "@/logic/listing";
 import {
   Atom,
   callsOf,
@@ -388,7 +389,8 @@ const binders = (goal: unknown): readonly string[] => {
     return [];
   }
   if (isForm(goal, "schema/fits?")) {
-    return holes(goal.parts[1], true);
+    // The value it checks, when its schema stands for each value it allows.
+    return [...holes(goal.parts[1], true), ...holes(goal.parts[0], false)];
   }
   // The arguments of a relation goal are schemas for its columns.
   return goal.parts.flatMap((part) => holes(part, goal instanceof Atom));
@@ -443,7 +445,16 @@ const isReady = (
     return (left || free(first)) && (right || free(second)) && (left || right);
   }
   if (isForm(literal, "schema/fits?")) {
-    return known(first) && (free(second, true) || known(second));
+    if (known(first)) {
+      return free(second, true) || known(second);
+    }
+    // A known schema that lists the values it allows binds the value to
+    // each in turn. One computed from variables lists them when it runs.
+    return (
+      free(first) &&
+      known(second) &&
+      (second instanceof LogicValue || unlisted(second) === undefined)
+    );
   }
   // Anything else is a test, which needs every variable it waits for.
   return known(literal);
@@ -482,6 +493,7 @@ export const bindVariables = (
     bind(first, known(second));
   } else if (isForm(literal, "schema/fits?")) {
     bind(second, known(first), true);
+    bind(first, known(second));
   }
 };
 
@@ -544,6 +556,7 @@ export const valueOrigins = (body: readonly Literal[]) => {
       take(first, items === undefined ? of(second) : joined(items.map(of)));
     } else if (isForm(literal, "schema/fits?")) {
       take(second, of(first), true);
+      take(first, of(second));
     }
   }
   return origins;
@@ -583,13 +596,40 @@ const boundArguments = (atom: Atom, bound: ReadonlySet<string>) =>
 
 const RENAMED = /#\d+$/;
 
+/**
+ * Why a schema check could not bind the value it checks, when its schema
+ * is known and cannot list the values it allows.
+ */
+const unlistedNote = (literal: Literal) => {
+  if (!isForm(literal, "schema/fits?")) {
+    return "";
+  }
+  const schema = literal.parts[1];
+  const why = schema instanceof LogicValue ? undefined : unlisted(schema);
+  return why === undefined ? "" : ` ${why}`;
+};
+
 /** Variables as the program wrote them, without what `exists` adds. */
 const variableNames = (names: readonly string[]) =>
   [...new Set(names.map((name) => `?${name.replace(RENAMED, "")}`))].join(", ");
 
 /**
+ * True for a schema check that would bind the value it checks to each value
+ * its schema allows, because nothing has bound the value yet.
+ */
+const lists = (
+  literal: Literal,
+  bound: ReadonlySet<string>,
+  scope: ReadonlySet<string>
+) =>
+  isForm(literal, "schema/fits?") &&
+  !isEvaluable(literal.parts[0], bound, scope);
+
+/**
  * The next literal that can run: the first filter that is ready, in the
- * order written, or else the relation goal with the most known arguments.
+ * order written, or else the relation goal with the most known arguments,
+ * or else a schema check that lists the values its schema allows, which
+ * binds a value only where nothing else can.
  */
 const nextReady = (
   remaining: readonly Literal[],
@@ -598,16 +638,21 @@ const nextReady = (
 ) => {
   const ready = remaining.filter((literal) => isReady(literal, bound, scope));
   return (
-    ready.find((literal) => !(literal instanceof Atom)) ??
-    ready.reduce<Literal | undefined>(
-      (best, atom) =>
-        best !== undefined &&
-        boundArguments(best as Atom, bound) >=
-          boundArguments(atom as Atom, bound)
-          ? best
-          : atom,
-      undefined
-    )
+    ready.find(
+      (literal) => !(literal instanceof Atom || lists(literal, bound, scope))
+    ) ??
+    ready
+      .filter((literal) => literal instanceof Atom)
+      .reduce<Literal | undefined>(
+        (best, atom) =>
+          best !== undefined &&
+          boundArguments(best as Atom, bound) >=
+            boundArguments(atom as Atom, bound)
+            ? best
+            : atom,
+        undefined
+      ) ??
+    ready.find((literal) => lists(literal, bound, scope))
   );
 };
 
@@ -642,7 +687,7 @@ export const planLiterals = (
         .flatMap((part) => wants(part, scope))
         .filter((name) => !(bound.has(name) || name.startsWith("_")));
       return problem(
-        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?".`
+        `Unsafe goal ${show(stuck)}: ${variableNames(unbound) || "its inputs"} must first be bound by a relation, "=", "in", or "schema/fits?".${unlistedNote(stuck)}`
       );
     }
     checkQuestions(next instanceof Atom ? next.args : [next], bound);

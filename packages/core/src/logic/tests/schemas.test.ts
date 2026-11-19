@@ -1097,8 +1097,17 @@ describe("a schema used or declared wrongly", () => {
       says: '["schema/arrayOf","value/number?"] takes 1 argument (the value to check)',
       takes: 1,
     },
+    "schema/arrayOf": {
+      // Its second argument is the most items, a number.
+      call: (args: readonly Form[]) => [
+        "schema/arrayOf",
+        ...args.map((arg, at) => (at === 1 ? 2 : arg)),
+      ],
+      says: '"schema/arrayOf" takes 1 to 2 arguments (the schema of each item, and the most items)',
+      takes: [1, 2],
+    },
     ...Object.fromEntries(
-      ["arrayOf", "recordOf", "optional"].map((name) => [
+      ["recordOf", "optional"].map((name) => [
         `schema/${name}`,
         {
           call: (args: readonly Form[]) => [`schema/${name}`, ...args],

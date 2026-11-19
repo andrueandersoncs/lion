@@ -260,6 +260,29 @@
     [
       "cond",
       [
+        ["and", ["waits", "?c", "?_"], ["to_build", "?c"]],
+        [
+          "string/concat",
+          ". ",
+          [
+            "words/listed",
+            [
+              "array/map",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?c",
+                  ["and", ["waits", "?c", "?_"], ["to_build", "?c"]]
+                ]
+              ],
+              "label"
+            ]
+          ],
+          " would change a rule Lion documents, so it waits for your decision"
+        ]
+      ],
+      [
         ["and", ["overturns", "?c", "?_"], ["to_build", "?c"]],
         [
           "string/concat",
@@ -279,7 +302,7 @@
               "label"
             ]
           ],
-          " would change a rule Lion documents, so it waits for your decision"
+          " would change a rule Lion documents, which you allowed"
         ]
       ],
       ["else", ""]
@@ -494,7 +517,7 @@
         },
         {
           "type": "answer",
-          "question": "Which ideas need my decision first?",
+          "question": "Which ideas change a rule Lion documents?",
           "answer": [
             "cond",
             [
@@ -519,8 +542,12 @@
                       [
                         "cond",
                         [
-                          ["to_build", "c"],
+                          ["and", ["to_build", "c"], ["waits", "c", "?_"]],
                           " It is left to build, so it waits for your word."
+                        ],
+                        [
+                          ["to_build", "c"],
+                          " You allowed the change, so it is left to build."
                         ],
                         ["else", " It is passed over anyway."]
                       ]
@@ -538,15 +565,30 @@
           "evidence": [
             "query",
             [
-              "and",
-              ["overturns", "?idea", "?rule"],
+              "or",
               [
-                "answer",
-                {
-                  "lion has": "?rule"
-                },
-                true,
-                "?statement"
+                "and",
+                ["overturns", "?idea", "?rule"],
+                [
+                  "answer",
+                  {
+                    "lion has": "?rule"
+                  },
+                  true,
+                  "?statement"
+                ]
+              ],
+              [
+                "and",
+                ["overturns", "?idea", "?rule"],
+                [
+                  "answer",
+                  {
+                    "allowed": "?idea"
+                  },
+                  "?_",
+                  "?statement"
+                ]
               ]
             ],
             {

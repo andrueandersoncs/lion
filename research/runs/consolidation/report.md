@@ -2,6 +2,10 @@
 
 Run `consolidation` (2026-11-19), steps `40-co-frame` and `40a-co-lion-now`, with changes to the shared frame. It gathers what three sessions found (formal verification, the TufaZip review, and a second look at the CIRT paper) into the one research model, runs every earlier program again on Lion as it is now, and has the model put every idea from every run in one order. The page plan is `page.json`. Every figure below is what the model gives; the checks named "Every run: …" in `research/checks.json` ask for them.
 
+## Update: what has been built since
+
+The user agreed a build order from this report on 2026-11-19; `build-plan.md` beside it keeps its status. Step 1, a schema that lists the values it allows, is built, and step `41a-co-built-listing` records it: bounded search with inputs drawn from schemas is now "Lion does this already", so the model lists ten ideas left to build. The figures below are as they were when the report was written.
+
 ## The answer
 
 Across 5 runs the model weighs 32 ideas. 11 are left to build. 7 can start now, 4 wait for one of those, 12 Lion does already, 7 were passed over, and 2 are judged only by their own run.

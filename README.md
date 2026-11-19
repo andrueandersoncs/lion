@@ -932,6 +932,7 @@ const program = Effect.gen(function* () {
 Rules are checked when they are added:
 
 - Every variable in a rule head or a filter must first be bound by a relation goal, `=`, `in`, or `schema/fits?`, unless the head lists it in [`exists`](#existential-rules). So must every input of an algorithm goal, and an input must be data.
+- `schema/fits?` binds the value it checks only where nothing else can, and only when its schema [lists the values it allows](#taking-data-apart), at most 100,000 of them. A schema that cannot, such as `value/integer?`, a lambda, or `schema/arrayOf` with no most length, leaves the value unbound, and the message says why.
 - A question, a goal under `not`, a goal used as a value, or a `find`, waits for the variables the rule binds. Any other variable in it is its own, and the question must bind it itself.
 - A rule cannot ask a question about a relation that depends on its own head, so every program has a single well-defined answer. Negation is one such question.
 - Aggregation goes through recursion only with the lattice aggregates `min`, `max`, `shortest`, and `union`, and only when every relation in the cycle aggregates. Any other aggregate runs once its inputs are complete.
@@ -992,6 +993,7 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 | `["schema/anyOf", schema, ...]` | A value that fits at least one of the schemas. Of plain values, it is a list of choices: `["schema/anyOf", "open", "shipped"]`. |
 | `["schema/allOf", schema, ...]` | A value that fits every one of the schemas. |
 | `["schema/arrayOf", schema]` | A list whose every item fits the schema. |
+| `["schema/arrayOf", schema, most]` | The same, with at most `most` items. |
 | `["schema/recordOf", schema]` | A record whose every value fits the schema. |
 | `["schema/optional", schema]` | As the schema of a record's key, lets the key be left out. A key that is there must fit. |
 | `["schema/open", record]` | A record that fits the record of schemas, whatever other keys it has. With a list of schemas, a list that starts with items that fit them, whatever comes after. |
@@ -1082,7 +1084,7 @@ Evaluates to `{ "stock": true, "allOf": false, "problems": [{ "path": ["rush"], 
 
 A logic variable in a schema stands for a value. Once it is bound it is that value, and until then any value fits it, and binds it. So in a rule or query a schema is also a pattern: it tests a value and takes it apart at once. These goals bind the variables in a pattern:
 
-- `["schema/fits?", value, schema]` binds the variables in the schema.
+- `["schema/fits?", value, schema]` binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them, as `in` binds its element to each item of a list. Data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, `schema/anyOf` what its schemas list, `schema/allOf` what its first schema that can list lists, `value/boolean?` false and true, `value/null?` null, and `["schema/arrayOf", schema, most]` every list of at most `most` items. Each is then checked, so the value takes exactly the values that fit: `["find", "?run", ["schema/fits?", "?run", ["schema/arrayOf", ["schema/anyOf", 2, -1], 2]]]` gives the seven runs of at most two moves.
 - A relation call binds the variables in its arguments. Each argument is a schema for its column, so `["inbox", {"type": "refund", "id": "?id"}]` asks for the rows that fit.
 - `["=", a, b]` and `["in", element, list]` bind the variables in a record or list, on either side of `=` or as the element. They compare values, so a function in the record is a value there, and not a predicate.
 

@@ -67,7 +67,12 @@ export type Shape =
       readonly rest?: Shape;
       readonly items: readonly Shape[];
     }
-  | { readonly kind: "arrayOf" | "recordOf"; readonly item: Shape }
+  | {
+      readonly kind: "arrayOf" | "recordOf";
+      readonly item: Shape;
+      /** For `arrayOf`, the most items a list may have, when it says. */
+      readonly most?: number;
+    }
   | { readonly kind: "allOf" | "anyOf"; readonly parts: readonly Shape[] };
 
 const isRecord = (value: unknown): value is { readonly [key: string]: Json } =>
@@ -154,7 +159,11 @@ export const lion = (shape: Shape): unknown => {
       return opened(shape, ["array/make", ...shape.items.map(lion)]);
     case "arrayOf":
     case "recordOf":
-      return [`schema/${shape.kind}`, lion(shape.item)];
+      return [
+        `schema/${shape.kind}`,
+        lion(shape.item),
+        ...(shape.most === undefined ? [] : [shape.most]),
+      ];
     default:
       return [`schema/${shape.kind}`, ...shape.parts.map(lion)];
   }
@@ -362,7 +371,8 @@ export const misfits = (
     case "tuple":
       return misfitsOfTuple(shape, value, path);
     case "arrayOf":
-      return Array.isArray(value)
+      return Array.isArray(value) &&
+        (shape.most === undefined || value.length <= shape.most)
         ? value.flatMap((item: Json, at) =>
             misfits(shape.item, item, [...path, at])
           )
@@ -483,7 +493,8 @@ export const bindings = (
     case "tuple":
       return bindingsOfTuple(shape, value, vars);
     case "arrayOf":
-      return Array.isArray(value)
+      return Array.isArray(value) &&
+        (shape.most === undefined || value.length <= shape.most)
         ? fold(value as Json[], vars, (part, answered) =>
             bindings(shape.item, part, answered)
           )
@@ -689,7 +700,14 @@ export const shape = (
         items,
       })
     ),
-    Arbitrary.map(inner, (item): Shape => ({ kind: "arrayOf", item })),
+    Arbitrary.map(
+      Arbitrary.all([inner, integer(-2, 2)]),
+      ([item, most]): Shape => ({
+        kind: "arrayOf",
+        item,
+        ...(most < 0 ? {} : { most }),
+      })
+    ),
     Arbitrary.map(inner, (item): Shape => ({ kind: "recordOf", item })),
     Arbitrary.map(several, (parts): Shape => ({ kind: "anyOf", parts })),
     Arbitrary.map(several, (parts): Shape => ({ kind: "allOf", parts }))
@@ -789,7 +807,9 @@ const fitting = (given: Shape): Arbitrary.Arbitrary<Json> => {
         ]
       );
     case "arrayOf":
-      return Arbitrary.array(fitting(given.item), { maxLength: 3 });
+      return Arbitrary.array(fitting(given.item), {
+        maxLength: Math.min(3, given.most ?? 3),
+      });
     case "recordOf":
       return recordFrom(fitting(given.item));
     default: {
@@ -928,3 +948,263 @@ export const checkedMany = (depth = 2): Arbitrary.Arbitrary<Cases> =>
       (values): Cases => ({ shape: given, values })
     )
   );
+
+/**
+ * The values a shape stands for, as the model sees it, before they are
+ * checked: undefined when the shape cannot say which values it allows,
+ * because they are infinitely many or a predicate keeps them to itself.
+ * Every value that fits is among them. Some may not fit, where `allOf` or a
+ * predicate narrows a choice, so `listed` keeps those that do.
+ */
+export const candidates = (shape: Shape): Json[] | undefined => {
+  switch (shape.kind) {
+    case "literal":
+      return [shape.value];
+    case "predicate":
+      if (shape.name === "value/boolean?") {
+        return [false, true];
+      }
+      return shape.name === "value/null?" ? [null] : undefined;
+    case "loop":
+      // `Loop` is itself or 1, and met again inside itself adds nothing.
+      return [1];
+    case "record":
+      return recordCandidates(shape);
+    case "tuple":
+      return tupleCandidates(shape);
+    case "arrayOf": {
+      const items = candidates(shape.item);
+      if (shape.most === undefined || items === undefined) {
+        return undefined;
+      }
+      const lists: Json[][] = [[]];
+      let longest: Json[][] = [[]];
+      for (let length = 1; length <= shape.most; length += 1) {
+        longest = longest.flatMap((list) =>
+          items.map((item) => [...list, item])
+        );
+        lists.push(...longest);
+      }
+      return lists;
+    }
+    case "anyOf": {
+      const parts = shape.parts.map(candidates);
+      return parts.every((part) => part !== undefined)
+        ? (parts as Json[][]).flat(1)
+        : undefined;
+    }
+    case "allOf":
+      return shape.parts.map(candidates).find((part) => part !== undefined);
+    default:
+      return undefined;
+  }
+};
+
+const recordCandidates = (
+  shape: Extract<Shape, { kind: "record" }>
+): Json[] | undefined => {
+  if (shape.open && shape.rest === undefined) {
+    return undefined;
+  }
+  let records: { readonly [key: string]: Json }[] = [{}];
+  for (const [key, field] of Object.entries(shape.fields)) {
+    const values = candidates(field.shape);
+    if (values === undefined) {
+      return undefined;
+    }
+    records = records.flatMap((record) => [
+      ...(field.optional ? [record] : []),
+      ...values.map((value) => ({ ...record, [key]: value })),
+    ]);
+  }
+  if (!shape.open || shape.rest === undefined) {
+    return records;
+  }
+  const rests = candidates(shape.rest);
+  if (rests === undefined) {
+    return undefined;
+  }
+  const others = rests.filter(
+    (rest): rest is { readonly [key: string]: Json } =>
+      isRecord(rest) &&
+      Object.keys(rest).every((key) => !Object.hasOwn(shape.fields, key))
+  );
+  return records.flatMap((record) =>
+    others.map((rest) => ({ ...record, ...rest }))
+  );
+};
+
+const tupleCandidates = (
+  shape: Extract<Shape, { kind: "tuple" }>
+): Json[] | undefined => {
+  if (shape.open && shape.rest === undefined) {
+    return undefined;
+  }
+  let lists: Json[][] = [[]];
+  for (const item of shape.items) {
+    const values = candidates(item);
+    if (values === undefined) {
+      return undefined;
+    }
+    lists = lists.flatMap((list) => values.map((value) => [...list, value]));
+  }
+  if (!shape.open || shape.rest === undefined) {
+    return lists;
+  }
+  const rests = candidates(shape.rest);
+  if (rests === undefined) {
+    return undefined;
+  }
+  const after = rests.filter((rest): rest is Json[] => Array.isArray(rest));
+  return lists.flatMap((list) => after.map((rest) => [...list, ...rest]));
+};
+
+/**
+ * The values a shape stands for, each once, as the model sees it: those of
+ * its candidates that fit. Undefined when it cannot say which they are.
+ */
+export const listed = (shape: Shape): Json[] | undefined => {
+  const found = candidates(shape);
+  return found === undefined
+    ? undefined
+    : [
+        ...new Map(
+          found
+            .filter((value) => fits(shape, value))
+            .map((value) => [keyOf(value), value])
+        ).values(),
+      ];
+};
+
+/** Leaves that mostly say which values they allow, and now and then not. */
+const choices = Arbitrary.map(
+  Arbitrary.array(primitive, { minLength: 2, maxLength: 3 }),
+  (values): Shape => ({
+    kind: "anyOf",
+    parts: values.map((value): Shape => ({ kind: "literal", value })),
+  })
+);
+
+const finiteLeaf: Arbitrary.Arbitrary<Shape> = oneOf<Shape>(
+  Arbitrary.map(primitive, (value): Shape => ({ kind: "literal", value })),
+  choices,
+  choices,
+  constant<Shape>({ kind: "predicate", name: "value/boolean?" }),
+  Arbitrary.map(json(1), (value): Shape => ({ kind: "literal", value })),
+  constant<Shape>({ kind: "predicate", name: "value/boolean?" }),
+  constant<Shape>({ kind: "predicate", name: "value/null?" }),
+  constant<Shape>({ kind: "loop" }),
+  Arbitrary.map(
+    element(["value/integer?", "value/string?", "value/any?"] as const),
+    (name): Shape => ({ kind: "predicate", name })
+  ),
+  Arbitrary.map(integer(-2, 3), (limit): Shape => ({ kind: "above", limit })),
+  constant<Shape>({ kind: "member" }),
+  constant<Shape>({ kind: "tree" })
+);
+
+/**
+ * A schema that mostly says which values it allows, nested at most `depth`
+ * deep: data, `value/boolean?`, and records, lists, and choices of them,
+ * with now and then a part that does not, a predicate that narrows a
+ * choice, or a list with no most length.
+ */
+export const finite = (depth: number): Arbitrary.Arbitrary<Shape> => {
+  if (depth === 0) {
+    return finiteLeaf;
+  }
+  const inner = finite(depth - 1);
+  const several = Arbitrary.array(inner, { maxLength: 3 });
+  const some = Arbitrary.array(inner, { minLength: 1, maxLength: 3 });
+  const field = Arbitrary.map(
+    Arbitrary.all([inner, integer(0, 2)]),
+    ([part, roll]): Field => ({ optional: roll === 0, shape: part })
+  );
+  return oneOf<Shape>(
+    finiteLeaf,
+    Arbitrary.map(
+      Arbitrary.all([recordFrom(field), integer(0, 4), inner]),
+      ([fields, roll, rest]): Shape => ({
+        kind: "record",
+        open: roll <= 1,
+        ...(roll === 1 ? { rest } : {}),
+        fields,
+      })
+    ),
+    Arbitrary.map(
+      Arbitrary.all([several, integer(0, 4), inner]),
+      ([items, roll, rest]): Shape => ({
+        kind: "tuple",
+        open: roll <= 1,
+        ...(roll === 1 ? { rest } : {}),
+        items,
+      })
+    ),
+    Arbitrary.map(
+      Arbitrary.all([inner, integer(-1, 2)]),
+      ([item, most]): Shape => ({
+        kind: "arrayOf",
+        item,
+        ...(most < 0 ? {} : { most }),
+      })
+    ),
+    Arbitrary.map(several, (parts): Shape => ({ kind: "anyOf", parts })),
+    Arbitrary.map(some, (parts): Shape => ({ kind: "anyOf", parts })),
+    Arbitrary.map(some, (parts): Shape => ({ kind: "anyOf", parts })),
+    Arbitrary.map(
+      Arbitrary.all([inner, finiteLeaf]),
+      ([part, narrow]): Shape => ({ kind: "allOf", parts: [part, narrow] })
+    ),
+    Arbitrary.map(
+      Arbitrary.all([inner, integer(-2, 3)]),
+      ([part, limit]): Shape => ({
+        kind: "allOf",
+        parts: [{ kind: "above", limit }, part],
+      })
+    )
+  );
+};
+
+/**
+ * A shape that is the value with a variable named `y` in place of the part
+ * at `path`: a pattern that fits the value and binds `y` to that part.
+ */
+export const holeAt = (
+  value: Json,
+  path: readonly (number | string)[]
+): Shape => {
+  const [step, ...rest] = path;
+  if (step === undefined) {
+    return { kind: "variable", name: "y" };
+  }
+  if (Array.isArray(value)) {
+    return {
+      kind: "tuple",
+      items: value.map((item: Json, at) =>
+        at === step ? holeAt(item, rest) : { kind: "literal", value: item }
+      ),
+    };
+  }
+  if (isRecord(value)) {
+    return {
+      kind: "record",
+      open: false,
+      fields: Object.fromEntries(
+        Object.entries(value).map(([key, item]): [string, Field] => [
+          key,
+          {
+            optional: false,
+            shape:
+              key === step
+                ? holeAt(item, rest)
+                : { kind: "literal", value: item },
+          },
+        ])
+      ),
+    };
+  }
+  return { kind: "literal", value };
+};
+
+/** Every path into a value, the value's own first. */
+export const pathsInto = pathsOf;

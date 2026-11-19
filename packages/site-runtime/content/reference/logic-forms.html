@@ -251,7 +251,7 @@
 <h2 id="logic-patterns">Patterns</h2>
 <p>A schema with a logic variable in it is a pattern. Once the variable is bound it is its value, and until then any value fits it, and binds it. A pattern tests a value and takes it apart at once. These goals bind the variables of a pattern:</p>
 <ul>
-  <li><a href="#module-schema"><code>["schema/fits?", value, schema]</code></a> binds the variables in the schema.</li>
+  <li><a href="#module-schema"><code>["schema/fits?", value, schema]</code></a> binds the variables in the schema. When nothing else binds the value, it binds the value too, to each value the schema allows, if the schema can list them: data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, <code>schema/anyOf</code> what its schemas list, <code>schema/allOf</code> what its first schema that can list lists, <code>value/boolean?</code> false and true, <code>value/null?</code> null, and <code>["schema/arrayOf", schema, most]</code> every list of at most <code>most</code> items. Each value is then checked, so the value takes exactly the values that fit.</li>
   <li>A relation call binds the variables in its arguments, each a schema for its column. An argument that is not data, such as a predicate or a variable that holds one, is a schema like any other.</li>
   <li><a href="#form-unify"><code>=</code></a> and <a href="#form-in"><code>in</code></a> bind the variables of a record or list, on either side of <code>=</code> or as the element of <code>in</code>. They compare values, so a function in the record is a value there, and not a predicate.</li>
 </ul>
@@ -261,7 +261,7 @@
   <li>Every <code>schema</code> function works in a pattern. <code>schema/anyOf</code> gives the answers of every schema that fits, each once; in plain code, where nothing is left to bind, the first that fits decides.</li>
   <li>A predicate made from a variable, as <code>["func/partial", "number/lessThan", "?max"]</code> is, is the predicate made from the variable's value.</li>
   <li><code>["schema/open", "?shape"]</code> does not bind <code>?shape</code>: it waits for another goal to bind it to a record of schemas.</li>
-  <li>A goal gives the same answers whether it binds a variable through a pattern or finds it bound by another goal, so the order of a body's goals does not matter.</li>
+  <li>A goal gives the same answers whether it binds a variable through a pattern or finds it bound by another goal, so the order of a body's goals does not matter. A schema lists its values only where no relation goal, <code>=</code>, or <code>in</code> can bind the value first.</li>
   <li>In plain code, a check with an unbound variable in it is a goal, like <code>=</code> with one. Give it to <code>query</code>.</li>
 </ul>
 <lion-example name="Patterns">

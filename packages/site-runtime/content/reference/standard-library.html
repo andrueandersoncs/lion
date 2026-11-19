@@ -160,8 +160,8 @@
     <tr data-entry="value/number?"><td><code>["value/number?", x]</code></td><td>Whether <code>x</code> is a number</td></tr>
     <tr data-entry="value/integer?"><td><code>["value/integer?", x]</code></td><td>Whether <code>x</code> is a whole number</td></tr>
     <tr data-entry="value/string?"><td><code>["value/string?", x]</code></td><td>Whether <code>x</code> is a string</td></tr>
-    <tr data-entry="value/boolean?"><td><code>["value/boolean?", x]</code></td><td>Whether <code>x</code> is a boolean</td></tr>
-    <tr data-entry="value/null?"><td><code>["value/null?", x]</code></td><td>Whether <code>x</code> is <code>null</code></td></tr>
+    <tr data-entry="value/boolean?"><td><code>["value/boolean?", x]</code></td><td>Whether <code>x</code> is a boolean. As a schema it lists false and true.</td></tr>
+    <tr data-entry="value/null?"><td><code>["value/null?", x]</code></td><td>Whether <code>x</code> is <code>null</code>. As a schema it lists <code>null</code>.</td></tr>
     <tr data-entry="value/array?"><td><code>["value/array?", x]</code></td><td>Whether <code>x</code> is a list</td></tr>
     <tr data-entry="value/object?"><td><code>["value/object?", x]</code></td><td>Whether <code>x</code> is a record, or another object that is not a list or an unknown, such as a host object</td></tr>
     <tr data-entry="value/unknown?"><td><code>["value/unknown?", x]</code></td><td>Whether <code>x</code> is an <a href="#form-some">unknown</a>, such as a value a rule whose head says <code>exists</code> invented</td></tr>
@@ -205,12 +205,12 @@
 <table>
   <thead><tr><th>Function</th><th>Returns</th></tr></thead>
   <tbody>
-    <tr data-entry="schema/fits?"><td><code>["schema/fits?", value, schema]</code></td><td>Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema; see <a href="#logic-patterns">Patterns</a>.</td></tr>
+    <tr data-entry="schema/fits?"><td><code>["schema/fits?", value, schema]</code></td><td>Whether the value fits the schema. With a logic variable in it, it is a goal that also binds the variables of the schema, and binds the value to each value the schema allows when the schema can list them; see <a href="#logic-patterns">Patterns</a>.</td></tr>
     <tr data-entry="schema/problems"><td><code>["schema/problems", value, schema]</code></td><td>Every place where the value does not fit, in the order of their paths; an empty list when it fits. A problem is a record with a <code>path</code>, the keys and positions that lead to the part. A part with the wrong value has what was <code>expected</code>, a schema written as the expression that makes it, and what was <code>found</code>. A part that is missing has only <code>expected</code>, and a key the schema does not name has only <code>found</code>.</td></tr>
     <tr data-entry="schema/assert"><td><code>["schema/assert", value, schema]</code></td><td>The value, when it fits. When it does not, fails with a message that says where. As a value in a rule or <code>find</code>, it fails the query that runs it.</td></tr>
     <tr data-entry="schema/anyOf"><td><code>["schema/anyOf", schema, ...]</code></td><td>A schema that fits a value which fits at least one of the schemas. Of plain values it is a list of choices. It reports one problem, at the value that fits none.</td></tr>
     <tr data-entry="schema/allOf"><td><code>["schema/allOf", schema, ...]</code></td><td>A schema that fits a value which fits every one of the schemas. It reports the problems of each schema the value does not fit.</td></tr>
-    <tr data-entry="schema/arrayOf"><td><code>["schema/arrayOf", schema]</code></td><td>A schema that fits a list whose every item fits the schema</td></tr>
+    <tr data-entry="schema/arrayOf"><td><code>["schema/arrayOf", schema]</code><br><code>["schema/arrayOf", schema, most]</code></td><td>A schema that fits a list whose every item fits the schema. With <code>most</code>, a whole number, the list has at most that many items, so a schema whose items can be listed lists every such list.</td></tr>
     <tr data-entry="schema/recordOf"><td><code>["schema/recordOf", schema]</code></td><td>A schema that fits a record whose every value fits the schema</td></tr>
     <tr data-entry="schema/optional"><td><code>["schema/optional", schema]</code></td><td>As the schema of a record's key, lets the key be left out; a key that is there must fit. Anywhere else it is the schema itself.</td></tr>
     <tr data-entry="schema/open"><td><code>["schema/open", record]</code><br><code>["schema/open", record, rest]</code></td><td>A schema that fits a record which fits the record of schemas, or the named schema of one, whatever other keys it has. With <code>rest</code>, the record of its other keys must fit <code>rest</code>. A list of schemas works the same way, with the items after the ones it names as the rest. A record or list of schemas on its own leaves nothing for its rest.</td></tr>
@@ -227,6 +227,8 @@
  "allOf": ["schema/fits?", 5,
    ["schema/allOf", "value/integer?", ["lambda", ["n"], ["number/lessThan", "n", 3]]]],
  "arrayOf": ["schema/fits?", ["array/make", 1, 2], ["schema/arrayOf", "value/number?"]],
+ "at most two": ["schema/fits?", ["array/make", 1, 2, 3], ["schema/arrayOf", "value/number?", 2]],
+ "every value": ["find", "?x", ["schema/fits?", "?x", {"on": "value/boolean?", "size": ["schema/anyOf", "s", "m"]}]],
  "recordOf": ["schema/fits?", {"a": 1, "b": "x"}, ["schema/recordOf", "value/number?"]],
  "optional": ["schema/fits?", {}, {"note": ["schema/optional", "value/string?"]}],
  "extra key": ["schema/problems", {"id": 1, "extra": true}, {"id": "value/integer?"}],

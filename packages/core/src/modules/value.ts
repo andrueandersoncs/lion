@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { takes } from "@/errors/evaluation";
-import { Unknown } from "@/logic/terms";
+import { allowsOnly, Unknown } from "@/logic/terms";
 
 /** A predicate on one value. */
 const is = (test: (a: unknown) => boolean) =>
@@ -18,7 +18,11 @@ export const module = {
 
   "string?": is((a) => typeof a === "string"),
 
-  "boolean?": is((a) => typeof a === "boolean"),
+  /** As a schema, it stands for each of false and true. */
+  "boolean?": allowsOnly(
+    is((a) => typeof a === "boolean"),
+    [false, true]
+  ),
 
   /** A record or other object, but not a list, as JSON tells them apart. */
   "object?": is(
@@ -37,7 +41,11 @@ export const module = {
 
   "array?": is(Array.isArray),
 
-  "null?": is((a) => a === null),
+  /** As a schema, it stands for null. */
+  "null?": allowsOnly(
+    is((a) => a === null),
+    [null]
+  ),
 
   "undefined?": is((a) => a === undefined),
 

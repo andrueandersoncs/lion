@@ -32,6 +32,8 @@ const REST_TESTS = [
   "src/logic/tests/schemas.test.ts",
   "src/logic/tests/patterns.test.ts",
 ];
+/** The properties of a schema that stands for each value it allows. */
+const LISTING_TESTS = ["src/logic/tests/listing.test.ts"];
 /** The properties of a schema that asks about itself. */
 const SELF_REFERENCE_TESTS = ["src/logic/tests/self-reference.test.ts"];
 /** The properties that compare `why` across histories and fact orders. */
@@ -1014,6 +1016,70 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "      return kind === undefined ||",
     replace: "      return true ||",
     tests: MERGE_TESTS,
+  },
+  // A schema that stands for each value it allows.
+  {
+    name: "a schema binds its value to a listed value without checking that it fits",
+    file: core("logic/model.ts"),
+    find: "      for (const fit of yield* match(model, schema, each, vars, false)) {",
+    replace: "        for (const fit of [vars]) {",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "a listed record always has a key whose schema is optional",
+    file: core("logic/listing.ts"),
+    find: '        builtAs(part, "schema/optional") !== undefined',
+    replace: "        false",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "schema/anyOf lists only what its first schema lists",
+    file: core("logic/listing.ts"),
+    find: "        : () => parts.flatMap((part) => part());",
+    replace: "        : () => parts.slice(0, 1).flatMap((part) => part());",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "the empty list is not among the lists of at most so many items",
+    file: core("logic/listing.ts"),
+    find: "        const lists: unknown[][] = [[]];",
+    replace: "        const lists: unknown[][] = [];",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "a named schema met again at the same value lists itself again",
+    file: core("logic/listing.ts"),
+    find: "      return () => [];",
+    replace: "      return listing(named.shape, inward(path));",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "a predicate that says which values it accepts lists none",
+    file: core("logic/listing.ts"),
+    find: "    return () => allowed;",
+    replace: "    return () => [];",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "a list may have more items than the most schema/arrayOf gives",
+    file: core("logic/fit.ts"),
+    find: "      (most === undefined || value.length <= (most as number))",
+    replace: "      true",
+    tests: [...LISTING_TESTS, "src/logic/tests/schemas.test.ts"],
+  },
+  {
+    name: "schema/fits? never binds the value it checks",
+    file: core("logic/compile.ts"),
+    find: "      (second instanceof LogicValue || unlisted(second) === undefined)",
+    replace: "      false",
+    tests: LISTING_TESTS,
+  },
+  {
+    name: "a schema lists its values even where a relation goal could bind the value",
+    file: core("logic/compile.ts"),
+    find: "      (literal) => !(literal instanceof Atom || lists(literal, bound, scope))",
+    replace: "      (literal) => !(literal instanceof Atom)",
+    tests: LISTING_TESTS,
   },
   // Schemas, and the invariants a change to facts can break.
   {

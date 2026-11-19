@@ -1,0 +1,72 @@
+{
+  "sources": [
+    {
+      "id": "lion-probes-listing",
+      "url": "research/probes/",
+      "title": "Lion programs run after schemas could list the values they allow (build step 1)",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261119230000
+    },
+    {
+      "id": "user-2026-11-19",
+      "url": "the session that consolidated the research",
+      "title": "The user's directions on the build order and the solver",
+      "publisher": "The user",
+      "kind": "primary",
+      "published": 20261119210000
+    }
+  ],
+  "claims": [
+    {
+      "id": "co-b1",
+      "source": "lion-probes-listing",
+      "where": "program fv-schema-values.json, which was refused before",
+      "quote": "[ 1, 2, 3 ]",
+      "says": {
+        "lion": "every value a schema allows, up to a size",
+        "has": true
+      }
+    },
+    {
+      "id": "co-b2",
+      "source": "lion-probes-listing",
+      "where": "program built-bounded-search.json: every run of at most three commands a schema allows",
+      "quote": "\"runs of at most 3 commands\": 85,",
+      "says": {
+        "counted": "runs of at most 3 commands drawn from a schema a Lion program checked",
+        "n": 85
+      }
+    },
+    {
+      "id": "co-b3",
+      "source": "lion-probes-listing",
+      "where": "program built-bounded-search.json: the careful withdrawal",
+      "quote": "\"careful withdrawal, runs that overdraw\": [],",
+      "says": {
+        "lion": "a check of every sequence of changes up to a bound",
+        "has": true
+      }
+    },
+    {
+      "id": "co-b4",
+      "source": "lion-probes-listing",
+      "where": "program built-bounded-search.json: the careless withdrawal",
+      "quote": "\"careless withdrawal, the shortest runs that overdraw\": [",
+      "says": {
+        "lion": "the shortest sequence of changes that breaks a rule",
+        "has": true
+      }
+    },
+    {
+      "id": "co-u1",
+      "source": "user-2026-11-19",
+      "where": "On the solver",
+      "quote": "you have my permission to change the documented rule that the solver build needs",
+      "says": {
+        "allowed": "solver",
+        "by": "the user"
+      }
+    }
+  ]
+}

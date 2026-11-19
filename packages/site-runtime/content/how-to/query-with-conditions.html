@@ -107,7 +107,7 @@
 <p>With an unbound first argument, <code>in</code> binds it to each item; with a bound one, it tests membership, as above.</p>
 
 <h2>Keep goals safe</h2>
-<p>Every variable in a filter, a computed value, or a <code>not</code> must be bound by a relation, <code>=</code>, or <code>in</code> somewhere in the same goal. Otherwise there would be infinitely many answers, so Lion refuses the goal and names the variable:</p>
+<p>Every variable in a filter, a computed value, or a <code>not</code> must be bound by a relation, <code>=</code>, <code>in</code>, or a <a href="#take-data-apart"><code>schema/fits?</code> whose schema lists the values it allows</a> somewhere in the same goal. Otherwise there would be infinitely many answers, so Lion refuses the goal and names the variable:</p>
 <lion-example name="Unsafe goal" expect="error">
 ["query", ["number/greaterThan", "?amount", 50]]
 </lion-example>

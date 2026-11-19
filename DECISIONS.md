@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 192 questions have been decided, 80 records explain them, and of what the records assert, 596 hold when Lion is run, 5 are broken, 334 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 193 questions have been decided, 81 records explain them, and of what the records assert, 600 hold when Lion is run, 5 are broken, 335 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -198,6 +198,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`form-name-definition-in-own-body`](#form-name-definition-in-own-body) | `error-that-says-why` | [A body cannot define the name of a form it uses](#form-name-definition) |
 | 2026-11-19 | [`logic-form-strings`](#logic-form-strings) | `written-scope` | [Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in](#logic-forms-read-by-scope) |
 | 2026-11-19 | [`sum-rounding`](#sum-rounding) | `nearest-exact-sum` | [A sum is rounded once, so the order of its values never changes it](#exact-sums) |
+| 2026-11-19 | [`schema-binds-its-value`](#schema-binds-its-value) | `list-finite-schemas` | [A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them](#schemas-list-their-values) |
 
 <a id="program-representation"></a>
 
@@ -4272,3 +4273,38 @@ Recorded 2026-11-19 in `history/notes/exact-sums.json`.
 
 - Stated, not checked by running Lion: decided `sum-rounding`: `nearest-exact-sum`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
 - Holds when Lion is run: `sum-exactly-rounded` is `nearest`. "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `["aggregate/sum", ["array/make", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308."
+
+<a id="schema-binds-its-value"></a>
+
+## schema-binds-its-value
+
+Now: `list-finite-schemas`.
+
+- 2026-11-19 `schema-binds-its-value`: `list-finite-schemas` over `schema-values-function`, `size-bounded-listing`, `written-order`: "When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list." (`schemas-list-their-values.json`)
+
+<a id="schemas-list-their-values"></a>
+
+### A schema stands for each value it allows: schema/fits? binds the value it checks when its schema can list them
+
+Recorded 2026-11-19 in `history/notes/schemas-list-their-values.json`.
+
+**Context.** A logic variable in a schema already stood for a value, so ['schema/fits?', value, schema] bound the variables in its schema. But the value it checks had to be bound by something else first: ['find', '?x', ['schema/fits?', '?x', ['schema/anyOf', 1, 2, 3]]] was refused with '?x must first be bound', though the schema allows exactly three values, and ['in', '?x', [1, 2, 3]] binds the same variable to the same values. The research run on formal verification found that this is what Lion lacks for bounded search: its programs could search every sequence of commands up to a bound in plain code, but no schema could give the inputs. The consolidation of every run put it first in the build order, as the half of a solver that lists finite domains, and as the oracle the solver will be checked against.
+
+**Decision.** When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list. Data lists itself, a record or list of schemas every way of choosing its parts, with and without a key whose schema is optional, schema/anyOf what its schemas list, schema/allOf what its first schema that can list lists, a predicate the values it says it accepts, as value/boolean? says false and true and value/null? says null, and a named schema what its shape lists. A named schema met again at the same value adds nothing, as it fits nothing more there when checked. schema/arrayOf takes the most items a list may have as a second argument, and then lists every such list. Every value listed is checked against the schema by the rule every check follows, so the value takes exactly the values that fit. A schema lists its values only where no relation goal, '=', or 'in' can bind the value first, and at most 100,000 of them.
+
+**Consequences.** Bounded search needs no program of its own: ['find', '?run', ['and', ['schema/fits?', '?run', ['schema/arrayOf', 'Move', 2]], test]] tries every run of at most two moves. A value in a rule head can come from a schema, and so can the rows of a rule, under not with exists, in a find, and after a snapshot, with the same answers. No program that worked changes: a body whose relation goals or tests bind a variable binds it the same way, since a schema lists only where nothing else can. A schema that cannot list its values, because it allows infinitely many, as value/integer? and schema/recordOf do, or is a predicate that does not say which it accepts, or names itself inside its values, still leaves the value unbound, and the message now says why. schema/arrayOf takes one or two arguments.
+
+**Alternatives considered.**
+
+- A function, schema/values, that gives the list of values a schema allows, to use with in. schema/fits? is already the goal that binds through a schema, and find already turns a goal's answers into a list, so a second way to say the same thing would add a function and a rule for when to use which.
+- List every schema up to a size, integers and strings included. value/integer? allows infinitely many values of every size, so a size does not make it finite, and a listing that silently stops would make not claim that no value exists when only the listed ones were tried. Numbers will be bound by the constraints a question puts on them, which is the solver's half.
+- Let a schema check bind its value where it is written, before the relation goals after it. A schema that allows many values would be listed where a relation could bind the value from a few rows, and could exceed the limit; goal order already never matters in Lion.
+- A general bound on the size of a value, for any schema. A list's length is what bounded search over commands needs, it is what JSON Schema calls maxItems, and readers do not think of values in counts of their parts.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `schema-binds-its-value`: `list-finite-schemas`. "When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list."
+- Holds when Lion is run: `schema-lists-its-values` is `lists`. "When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list."
+- Holds when Lion is run: rule `schema-binds-its-value` holds. "When nothing else binds the value schema/fits? checks, and its schema can list the values it allows, the goal binds the value to each of them that fits, as in binds its element to each item of a list."
+- Holds when Lion is run: `schema/arrayOf-most` exists. "schema/arrayOf takes the most items a list may have as a second argument, and then lists every such list."
+- Holds when Lion is run: `schemas-listing-their-values` exists. "A schema lists its values only where no relation goal, '=', or 'in' can bind the value first, and at most 100,000 of them."

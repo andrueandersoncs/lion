@@ -5,6 +5,7 @@
 <ul>
   <li>Every variable in a rule's head must be bound by a goal in its body, unless the head lists it in <a href="#form-exists"><code>exists</code></a>. A variable that <code>exists</code> lists cannot also be bound by the body.</li>
   <li>Every variable in a filter, in a computed value, or in an input of a graph algorithm must first be bound by a relation goal, <code>=</code>, <code>in</code>, or <code>schema/fits?</code>. An input of a graph algorithm must be data.</li>
+  <li><code>schema/fits?</code> binds the value it checks only when nothing else can and its schema <a href="#logic-patterns">lists the values it allows</a>, and it lists at most 100,000 of them. A schema that cannot, such as <code>value/integer?</code>, a lambda, or <code>schema/arrayOf</code> with no most length, leaves the value unbound, and the message says why.</li>
   <li>A <a href="#logic-asking">question</a>, a goal under <code>not</code>, a goal used as a value, or a <code>find</code>, waits for the variables that the rule or query around it binds. Every other variable in it is its own, and the question must bind it itself. A <code>find</code> must bind every variable of its template.</li>
   <li>The list in <code>in</code> must be bound before it runs.</li>
   <li>Lion orders the goals of a body so each runs once its inputs are bound. Filters that are ready together run in the order written, so a guard written first protects the filter after it. Otherwise the order you write goals in only matters for <a href="#goal-directed-evaluation">goal-directed queries</a>.</li>

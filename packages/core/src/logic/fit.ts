@@ -883,21 +883,29 @@ const builder = (
   name: string,
   count: Count,
   checkBuilt: CheckBuilt,
-  refuses?: (part: unknown) => string | undefined,
-  what = "a schema"
+  {
+    ofPattern = false,
+    refuses,
+    what = "a schema",
+  }: {
+    /** True when it looks at what its first schema is made of. */
+    readonly ofPattern?: boolean;
+    readonly refuses?: (parts: readonly unknown[]) => string | undefined;
+    readonly what?: string;
+  } = {}
 ) => {
   const build: LionFunction = schemaBuilder(
     takes(
       count,
       (...parts: unknown[]) => {
-        const wrong = refuses?.(parts[0]);
+        const wrong = refuses?.(parts);
         return wrong === undefined
           ? Effect.succeed(builtBy(checker(), build, parts))
           : logicError(`${name} ${wrong}.`);
       },
       what
     ),
-    refuses !== undefined
+    ofPattern
   );
   BUILT.set(build, checkBuilt);
   nameFunctions({ [name]: build });
@@ -950,13 +958,28 @@ export const builders = {
         : [...found.values()];
     })
   ),
-  /** Fits a list whose every item fits the schema. */
-  arrayOf: builder("schema/arrayOf", 1, ([item], value, at, schema, vars) =>
-    Array.isArray(value)
-      ? every(value.entries(), at, vars, ([index, part], answered) =>
-          check(item, part, inside(at, index), answered)
-        )
-      : Effect.succeed(fail(at, { schema, value }))
+  /**
+   * Fits a list whose every item fits the schema, and that has at most
+   * `most` items, when it is given.
+   */
+  arrayOf: builder(
+    "schema/arrayOf",
+    [1, 2],
+    ([item, most], value, at, schema, vars) =>
+      Array.isArray(value) &&
+      (most === undefined || value.length <= (most as number))
+        ? every(value.entries(), at, vars, ([index, part], answered) =>
+            check(item, part, inside(at, index), answered)
+          )
+        : Effect.succeed(fail(at, { schema, value })),
+    {
+      refuses: ([, most]) =>
+        most === undefined ||
+        (typeof most === "number" && Number.isInteger(most) && most >= 0)
+          ? undefined
+          : `takes as its second argument the most items a list may have, a whole number of at least 0, but found ${show(most)}`,
+      what: "the schema of each item, and the most items",
+    }
   ),
   /** Fits a record whose every value fits the schema. */
   recordOf: builder("schema/recordOf", 1, ([item], value, at, schema, vars) =>
@@ -991,15 +1014,18 @@ export const builders = {
         ? logicError(`schema/open ${notRecord(shape)}.`)
         : checkRecord(shape, value, at, vars, left, schema);
     },
-    (shape) => {
-      const named = schemaOf(shape);
-      return (named !== undefined && named.definition === undefined) ||
-        recordOf(shape) !== undefined ||
-        listOf(shape) !== undefined
-        ? undefined
-        : notRecord(shape);
-    },
-    "a record or list of schemas, and the schema of its rest"
+    {
+      ofPattern: true,
+      refuses: ([shape]) => {
+        const named = schemaOf(shape);
+        return (named !== undefined && named.definition === undefined) ||
+          recordOf(shape) !== undefined ||
+          listOf(shape) !== undefined
+          ? undefined
+          : notRecord(shape);
+      },
+      what: "a record or list of schemas, and the schema of its rest",
+    }
   ),
 };
 

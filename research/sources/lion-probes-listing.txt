@@ -1,0 +1,150 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit 54f7b11 (core 0.14.1), 2026-11-19.
+
+== program fv-schema-values.json
+["find", "?x", ["schema/fits?", "?x", ["schema/anyOf", 1, 2, 3]]]
+== gives
+[
+  1,
+  2,
+  3
+]
+
+== program built-bounded-search.json
+[
+  "begin",
+  [
+    "schema",
+    "Command",
+    [
+      "schema/anyOf",
+      { "deposit": ["schema/anyOf", 1, 2] },
+      { "withdraw": ["schema/anyOf", 1, 3] }
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["balance", "c"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          ["number/add", "balance", ["object/get", "c", "deposit"]]
+        ],
+        [
+          "else",
+          ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["balance", "c"],
+      [
+        "cond",
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          ["number/add", "balance", ["object/get", "c", "deposit"]]
+        ],
+        [
+          ["number/lessThan", "balance", ["object/get", "c", "withdraw"]],
+          "balance"
+        ],
+        [
+          "else",
+          ["number/subtract", "balance", ["object/get", "c", "withdraw"]]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "overdrawing",
+    [
+      "lambda",
+      ["step"],
+      [
+        "find",
+        "?run",
+        [
+          "and",
+          ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]],
+          ["number/lessThan", ["array/reduce", "?run", 0, "step"], 0]
+        ]
+      ]
+    ]
+  ],
+  ["define", "careless-breaks", ["overdrawing", "careless"]],
+  [
+    "define",
+    "fewest",
+    ["aggregate/min", ["array/map", "careless-breaks", "array/length"]]
+  ],
+  {
+    "commands a schema allows": [
+      "find",
+      "?c",
+      ["schema/fits?", "?c", "Command"]
+    ],
+    "runs of at most 3 commands": [
+      "aggregate/count",
+      [
+        "find",
+        "?run",
+        ["schema/fits?", "?run", ["schema/arrayOf", "Command", 3]]
+      ]
+    ],
+    "careful withdrawal, runs that overdraw": ["overdrawing", "careful"],
+    "careless withdrawal, runs that overdraw": [
+      "array/length",
+      "careless-breaks"
+    ],
+    "careless withdrawal, the shortest runs that overdraw": [
+      "find",
+      "?run",
+      [
+        "and",
+        ["in", "?run", "careless-breaks"],
+        ["number/equals?", ["array/length", "?run"], "fewest"]
+      ]
+    ]
+  }
+]
+== gives
+{
+  "commands a schema allows": [
+    {
+      "deposit": 1
+    },
+    {
+      "deposit": 2
+    },
+    {
+      "withdraw": 1
+    },
+    {
+      "withdraw": 3
+    }
+  ],
+  "runs of at most 3 commands": 85,
+  "careful withdrawal, runs that overdraw": [],
+  "careless withdrawal, runs that overdraw": 42,
+  "careless withdrawal, the shortest runs that overdraw": [
+    [
+      {
+        "withdraw": 1
+      }
+    ],
+    [
+      {
+        "withdraw": 3
+      }
+    ]
+  ]
+}

@@ -26,6 +26,7 @@ import {
   questionPlans,
 } from "@/logic/compile";
 import { matching } from "@/logic/fit";
+import { candidatesOf } from "@/logic/listing";
 import { factsOf, originalName } from "@/logic/magic";
 import { mentioned, type Stratum, strataOf } from "@/logic/strata";
 import {
@@ -1129,6 +1130,30 @@ export const holds = (
 };
 
 /**
+ * The answers of a schema check whose value nothing has bound: the schema
+ * stands for each value it allows, and each one that fits gives the
+ * variables of the value theirs.
+ */
+const listed = (model: Model, value: unknown, schema: unknown, vars: Vars) =>
+  Effect.gen(function* () {
+    const known = yield* term(model, schema, vars);
+    const values = yield* Effect.try({
+      try: () => candidatesOf(known),
+      catch: (error) =>
+        error instanceof LogicError
+          ? error
+          : new LogicError({ message: String(error) }),
+    });
+    const out: Vars[] = [];
+    for (const each of values) {
+      for (const fit of yield* match(model, schema, each, vars, false)) {
+        out.push(...(yield* match(model, value, each, fit, true)));
+      }
+    }
+    return out;
+  });
+
+/**
  * The answers a goal that can bind gives for an answer that leaves it a
  * variable to bind, each with what it bound; undefined when nothing is left
  * to bind, and the goal only tests. "=" matches one side against the value
@@ -1143,8 +1168,15 @@ const bound = (
   Effect.gen(function* () {
     const [first, second] = goal.parts;
     if (goal.form === "schema/fits?") {
-      const value = yield* term(model, first, vars);
-      return yield* match(model, second, value, vars, false);
+      return hasFree(first, vars)
+        ? yield* listed(model, first, second, vars)
+        : yield* match(
+            model,
+            second,
+            yield* term(model, first, vars),
+            vars,
+            false
+          );
     }
     if (goal.form === "=") {
       const [pattern, other] = hasFree(first, vars)

@@ -1,0 +1,5 @@
+The user's directions in the session that consolidated Lion's research, 2026-11-19.
+
+On the build order: "write this down so we don't lose track of it as context grows/compacts and then you can start on step 1. keep firmly grounded in these 4 steps and this build order and build it all."
+
+On the solver: "also, you have my permission to change the documented rule that the solver build needs"

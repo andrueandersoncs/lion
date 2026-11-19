@@ -3547,6 +3547,27 @@
     "program": ["value/function?", "object/new"]
   },
   {
+    "feature": "schema/arrayOf-most",
+    "kind": "option",
+    "program": [
+      "not",
+      [
+        "schema/fits?",
+        ["array/make", 1, 2, 3],
+        ["schema/arrayOf", "value/number?", 2]
+      ]
+    ]
+  },
+  {
+    "feature": "schemas-listing-their-values",
+    "kind": "capability",
+    "program": [
+      "schema/fits?",
+      ["find", "?b", ["schema/fits?", "?b", "value/boolean?"]],
+      ["quote", [false, true]]
+    ]
+  },
+  {
     "feature": "array/make",
     "kind": "function",
     "program": ["value/function?", "array/make"]
@@ -21388,6 +21409,64 @@
         "cond",
         [["ProbeLoop", 2], ["quote", "fits"]],
         ["else", ["quote", "no-fit"]]
+      ]
+    ]
+  },
+  {
+    "case": "schema-lists-its-values",
+    "area": "schemas",
+    "program": [
+      "cond",
+      [
+        [
+          "schema/fits?",
+          ["find", "?x", ["schema/fits?", "?x", ["schema/anyOf", 2, 1]]],
+          ["quote", [1, 2]]
+        ],
+        ["quote", "lists"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "schema-with-infinitely-many-values",
+    "area": "schemas",
+    "program": ["find", "?n", ["schema/fits?", "?n", "value/integer?"]]
+  },
+  {
+    "case": "schema-listing-after-relation",
+    "area": "schemas",
+    "program": [
+      "begin",
+      ["relation", "probe_held", ["x"]],
+      ["fact", ["probe_held", ["quote", [1, 2]]]],
+      [
+        "cond",
+        [
+          [
+            "schema/fits?",
+            [
+              "find",
+              "?x",
+              [
+                "and",
+                [
+                  "schema/fits?",
+                  "?x",
+                  [
+                    "schema/arrayOf",
+                    ["schema/anyOf", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    7
+                  ]
+                ],
+                ["probe_held", "?x"]
+              ]
+            ],
+            ["quote", [[1, 2]]]
+          ],
+          ["quote", "relation-binds-first"]
+        ],
+        ["else", ["quote", "other"]]
       ]
     ]
   },
