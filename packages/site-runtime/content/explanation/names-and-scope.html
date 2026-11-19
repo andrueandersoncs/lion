@@ -24,6 +24,7 @@
   ["greet"]]
 </lion-example>
 <p>Calling <code>greet</code> before <code>name</code> is defined fails with <code>UndefinedYetError</code>, rather than greeting the string <code>"name"</code>.</p>
+<p>Since the scopes settle it before anything runs, a tool can read it too. The graph editor shows under every string what it is there: a name, with what binds it (a parameter, a local or top-level <code>define</code>, a relation, a schema, or the environment), a logic variable, or data. Selecting a name marks its binding and every other string that means it, and a string that only a name could be, such as a misspelled <code>module/name</code>, is marked as an error before the program runs. <a href="#typescript-api"><code>analyze</code></a> gives hosts the same reading.</p>
 
 <h2>define binds in its body; set! changes a binding</h2>
 <p><a href="#form-define"><code>define</code></a> binds in the body it stands in: inside a lambda, the lambda's call, so a helper value inside a function stays inside it, as in Scheme. To change a name around a lambda, such as the state an app's callbacks update, use <a href="#form-set"><code>set!</code></a>:</p>

@@ -7688,8 +7688,34 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 
 <h2 id="api-analyze"><code>@lionlang/core/analysis/analyze</code></h2>
 <dl class="entries">
-  <dt data-entry="analyze" id="typescript-api-analyze"><code>analyze(expression)</code></dt>
-  <dd><p>Returns a tree describing each part of a program without evaluating it: its kind, its special form, the role of each child, and a diagnostic for a malformed form. The graph editor is built on it.</p></dd>
+  <dt data-entry="analyze" id="typescript-api-analyze"><code>analyze(expression, environment?)</code></dt>
+  <dd>
+    <p>Returns a tree describing each part of a program without evaluating it: its kind, its special form, the role of each child, and what each string means there, read by the <a href="#names-and-scope">scopes</a> a run with <code>environment</code> reads it by. A string's <code>meaning</code> is a <code>name</code> or a <code>binding</code>, each with the binding it means or makes (a <code>parameter</code>, a <code>define</code>, a <code>relation</code>, a <code>schema</code>, or the <code>environment</code>'s, with the pointers of the strings that bind it), a <code>logic-variable</code>, <code>data</code>, <code>unbound</code> where only a name can stand and nothing binds one, a <code>form</code>'s name, or the <code>keyword</code> <code>else</code>. A part that fails when it runs, a malformed form or an unbound name, has a <code>diagnostic</code>: the message of the error the run fails with. The graph editor is built on it.</p>
+    <div class="code-block"><pre><code data-highlight>const program = [
+  "begin",
+  ["define", "total", 0],
+  [["lambda", ["n"], ["array/make", "n", "total", "?x", "done"]], 1],
+];
+for (const { pointer, value, meaning } of flattenAnalysis(
+  analyze(program, stdlib)
+)) {
+  if (meaning?.kind === "name" || meaning?.kind === "binding") {
+    console.log(pointer, value, meaning.kind, meaning.binding.kind);
+  } else if (meaning) {
+    console.log(pointer, value, meaning.kind);
+  }
+}
+// /0 begin form
+// /1/0 define form
+// /1/1 total binding define
+// /2/0/0 lambda form
+// /2/0/1/0 n binding parameter
+// /2/0/2/0 array/make name environment
+// /2/0/2/1 n name parameter
+// /2/0/2/2 total name define
+// /2/0/2/3 ?x logic-variable
+// /2/0/2/4 done data</code></pre></div>
+  </dd>
   <dt data-entry="flattenAnalysis" id="typescript-api-flattenanalysis"><code>flattenAnalysis(node)</code></dt>
   <dd><p>The nodes of an analysis tree, in order.</p></dd>
   <dt data-entry="isSpecialFormName" id="typescript-api-isspecialformname"><code>isSpecialFormName(value)</code></dt>
@@ -7769,7 +7795,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 
 <h2 id="why-json-what-it-costs">What it costs</h2>
 <p>The string compromise is the main cost. A string in your data that happens to match a bound name, such as <code>"number/add"</code>, evaluates to that function, and a list in your data is a call. <code>quote</code> is the way out, and the reason snapshots quote such strings when they save a database. Namespacing every library name with a <code>/</code> makes accidental matches rare.</p>
-<p>JSON is also more verbose than a syntax designed for people, and it has no comments. Lion leans on tools for this: the graph editor shows the tree with each form labeled, and records can carry descriptions alongside code. For programs that machines write and people review, the trade is usually worth it.</p>
+<p>JSON is also more verbose than a syntax designed for people, and it has no comments. Lion leans on tools for this: the graph editor shows the tree with each form labeled and each string read as a name, a logic variable, or data, and records can carry descriptions alongside code. For programs that machines write and people review, the trade is usually worth it.</p>
 
 <h2 id="why-json-why-not-just-use-javascript">Why not just use JavaScript?</h2>
 <p>A host language like JavaScript can do everything Lion can, but its programs are text that must be parsed, and running untrusted JavaScript means trusting it with everything the host can reach. A Lion program can only call what its environment binds. The host decides exactly which functions a program may use, so a program from a database, a user, or a model is as safe as the environment it runs in.</p>
@@ -7841,6 +7867,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   </div>
 </div>
 <p>Calling <code>greet</code> before <code>name</code> is defined fails with <code>UndefinedYetError</code>, rather than greeting the string <code>"name"</code>.</p>
+<p>Since the scopes settle it before anything runs, a tool can read it too. The graph editor shows under every string what it is there: a name, with what binds it (a parameter, a local or top-level <code>define</code>, a relation, a schema, or the environment), a logic variable, or data. Selecting a name marks its binding and every other string that means it, and a string that only a name could be, such as a misspelled <code>module/name</code>, is marked as an error before the program runs. <a href="#typescript-api"><code>analyze</code></a> gives hosts the same reading.</p>
 
 <h2 id="names-and-scope-define-binds-in-its-body-set-changes-a-binding">define binds in its body; set! changes a binding</h2>
 <p><a href="#form-define"><code>define</code></a> binds in the body it stands in: inside a lambda, the lambda's call, so a helper value inside a function stays inside it, as in Scheme. To change a name around a lambda, such as the state an app's callbacks update, use <a href="#form-set"><code>set!</code></a>:</p>

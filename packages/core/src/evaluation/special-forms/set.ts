@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { UnboundNameError } from "@/errors/evaluation";
+import { unboundSet } from "@/errors/evaluation";
 import { andThen, type Compiled, Pending } from "@/evaluation/compiled";
 import { assign, declares, type Scope } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
@@ -15,11 +15,7 @@ export const compileSet = (
   scope: Scope | undefined
 ): Compiled => {
   if (!declares(scope, id)) {
-    const error = new UnboundNameError({
-      nearest: null,
-      unbound: id,
-      why: "set! changes a binding, and no scope around it binds the name. Bind it with define first.",
-    });
+    const error = unboundSet(id);
     return () => new Pending(Effect.fail(error));
   }
   const value = compile(expression, scope);

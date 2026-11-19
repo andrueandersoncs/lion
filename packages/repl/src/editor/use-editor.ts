@@ -1,6 +1,4 @@
 import { run } from "@lionlang/core/evaluation/evaluate";
-import { stdlib } from "@lionlang/core/modules";
-import { makeTypeSafeBindings } from "@lionlang/typesafe-ai";
 import { Effect } from "effect";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -9,6 +7,12 @@ import {
   StaleEditError,
   valueAtPath,
 } from "./document";
+import {
+  makeEvaluationEnvironment,
+  renderResult,
+  sourceUsesTypeSafeBindings,
+  usesTypeSafeBindings,
+} from "./environment";
 import { analyzeSource } from "./parse";
 import type {
   DocumentProjection,
@@ -75,27 +79,6 @@ export const JEV_STARTER_SOURCE = `[
 	}
 ]
 `;
-
-const usesTypeSafeBindings = (value: unknown): boolean => {
-  if (typeof value === "string") {
-    return value.startsWith("typesafe/");
-  }
-  if (Array.isArray(value)) {
-    return value.some(usesTypeSafeBindings);
-  }
-  if (value && typeof value === "object") {
-    return Object.values(value).some(usesTypeSafeBindings);
-  }
-  return false;
-};
-
-const sourceUsesTypeSafeBindings = (sourceText: string): boolean => {
-  try {
-    return usesTypeSafeBindings(JSON.parse(sourceText));
-  } catch {
-    return false;
-  }
-};
 
 export interface FileIdentity {
   readonly direct: boolean;
@@ -213,39 +196,6 @@ const INITIAL_EVALUATION: EvaluationState = {
   target: null,
 };
 
-const renderResult = (value: unknown): string => {
-  const seen = new WeakSet<object>();
-  let visited = 0;
-  try {
-    const result = JSON.stringify(
-      value,
-      (_key, item: unknown) => {
-        visited += 1;
-        if (visited > 2000) {
-          return "[truncated]";
-        }
-        if (typeof item === "bigint") {
-          return `${item}n`;
-        }
-        if (typeof item === "function") {
-          return `[function ${item.name || "anonymous"}]`;
-        }
-        if (item && typeof item === "object") {
-          if (seen.has(item)) {
-            return "[circular]";
-          }
-          seen.add(item);
-        }
-        return item;
-      },
-      2
-    );
-    return result ?? String(value);
-  } catch (error) {
-    return error instanceof Error ? error.message : String(value);
-  }
-};
-
 const assertRunnableProjection = (
   projection: DocumentProjection,
   revision: number
@@ -267,31 +217,6 @@ const shouldSkipEvaluation = (
   }
   return source === "live" && (usesJev || lastEvaluationRevision === revision);
 };
-
-const makeEvaluationEnvironment = (
-  usesJev: boolean,
-  apiKey: string | null,
-  transcript: string[]
-) => ({
-  ...stdlib,
-  ...(usesJev
-    ? makeTypeSafeBindings({
-        apiKey: apiKey ?? "",
-        baseURL: "/api/typesafe",
-        dangerouslyAllowBrowser: true,
-        logLevel: "off",
-      })
-    : {}),
-  "console/log": (message: string) => {
-    transcript.push(message);
-    return message;
-  },
-  "console/log-json": (message: unknown) => {
-    const rendered = renderResult(message);
-    transcript.push(rendered);
-    return rendered;
-  },
-});
 
 const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message || error.name : String(error);

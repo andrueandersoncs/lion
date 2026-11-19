@@ -48,6 +48,14 @@ export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
   }
 }
 
+/** The error of a `set!` whose name no scope around it declares. */
+export const unboundSet = (name: string) =>
+  new UnboundNameError({
+    nearest: null,
+    unbound: name,
+    why: "set! changes a binding, and no scope around it binds the name. Bind it with define first.",
+  });
+
 /**
  * Raised when a name is read before the `define` that binds it has run. The
  * scope declares the name from its start, so the string means the

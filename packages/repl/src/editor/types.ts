@@ -1,6 +1,6 @@
 import type {
   SemanticKind,
-  SemanticRelationship,
+  StringMeaning,
   StructuralPath,
 } from "@lionlang/core/analysis/analyze";
 import type { SpecialFormName } from "@lionlang/core/schemas/evaluation";
@@ -27,13 +27,14 @@ export interface IndexedSemanticNode {
   readonly id: string;
   readonly kind: SemanticKind;
   readonly label: string;
+  /** What a string means where it is written. */
+  readonly meaning?: StringMeaning;
   readonly order: number;
   readonly parentId: string | null;
   readonly path: StructuralPath;
   readonly pointer: string;
   readonly quoted: boolean;
   readonly range: SourceRange;
-  readonly relationships: readonly SemanticRelationship[];
   readonly role: string;
   readonly searchText: string;
   readonly specialForm?: SpecialFormName;

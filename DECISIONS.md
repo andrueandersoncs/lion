@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 186 questions have been decided, 76 records explain them, and of what the records assert, 584 hold when Lion is run, 5 are broken, 328 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 187 questions have been decided, 77 records explain them, and of what the records assert, 590 hold when Lion is run, 5 are broken, 329 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -192,6 +192,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`rule-retraction`](#rule-retraction) | `retract-the-form` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
 | 2026-11-19 | [`assuming-changes`](#assuming-changes) | `fact-retract-rule` | [`assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own](#assuming-rules) |
 | 2026-11-19 | [`held-rule-variables`](#held-rule-variables) | `question-scope` | [`assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own](#assuming-rules) |
+| 2026-11-19 | [`analysis-strings`](#analysis-strings) | `read-by-scope` | [The analysis reads every string by the scopes the evaluator reads it by, and the graph editor shows what each one means](#analysis-reads-by-scope) |
 
 <a id="program-representation"></a>
 
@@ -4117,3 +4118,39 @@ Recorded 2026-11-19 in `history/notes/assuming-rules.json`.
 Now: `question-scope`.
 
 - 2026-11-19 `held-rule-variables`: `question-scope` over `held-rule-own`: "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question." (`assuming-rules.json`)
+
+<a id="analysis-strings"></a>
+
+## analysis-strings
+
+Now: `read-by-scope`.
+
+- 2026-11-19 `analysis-strings`: `read-by-scope` over `reference-candidate`, `read-by-running`: "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name." (`analysis-reads-by-scope.json`)
+
+<a id="analysis-reads-by-scope"></a>
+
+### The analysis reads every string by the scopes the evaluator reads it by, and the graph editor shows what each one means
+
+Recorded 2026-11-19 in `history/notes/analysis-reads-by-scope.json`.
+
+**Context.** A string's meaning is settled by the scopes it is written in, before it runs (see the decision that a string means what the scopes it is written in declare). The analysis the graph editor is built on predated that rule: it marked every string a `reference-candidate`, a guess, and the editor showed each one as a "symbol reference" that could be "lookup or text". So the editor could not say which strings are names, it called a define's name a "global identifier" though a define binds in its body, and a misspelled `module/name`, or a `set!` of a name nothing binds, was found only by running.
+
+**Decision.** `analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name. Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`. A part that fails when it runs, a malformed form or an unbound name, has a `diagnostic`: the message of the error the run fails with. The parts a form reads as written, a relation's columns and the options of a relation, query, or invariant, are `quoted`, as what is inside `quote` is. The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone. The graph editor analyzes a program with the environment its runs bind and shows under each string what it means there; selecting a name or a binding outlines the binding and every string that means it.
+
+**Consequences.** Properties in `analysis/tests/analyze.test.ts` check the analysis against the evaluator, never against itself: a generated program gives the same after every binding the analysis finds is renamed at every string it says means that binding, and every string it says is data is quoted; a string in a lambda evaluates to the parameter, library value, logic variable, data, or error the analysis says; and every `MalformedFormError` or `UnboundNameError` a run fails with is one the analysis flags with the same message. Ten mutations of the analysis are each caught. The editor's own property checks its reading against runs in the editor's environment. Measured against the commit before it: 15,488 code lines where it has 15,093 (+2.6%), all of it the analysis's reading of scopes, and one message fewer, since `set!` and the model interpreter now build its error in one place; no special form, library function, kind of error, or grid exception changed, and no step of evaluation did either. Two places where the evaluator itself departs from reading by scope were found, and are left to a change of their own: a logic form compiles its parts when it runs, so a name `eval` binds later turns data into a name inside `find` or a rule where plain code keeps it data; and `retract` takes back a `rule` form of any shape, which the analysis flags as malformed.
+
+**Alternatives considered.**
+
+- Keep marking every string a reference candidate, and let the editor guess. A guess cannot say which strings are names, and it shows the same string the same way where the evaluator reads it two ways.
+- Learn what each string means by running the program. A run never reaches code that does not run, such as a lambda nobody calls, and a run has effects. The scopes are settled before anything runs, so reading them needs no run.
+- Write a scope analysis of the editor's own. Two readings drift apart. The analysis asks the evaluator's own functions what each scope declares, and properties check what it says against runs.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `analysis-strings`: `read-by-scope`. "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name."
+- Holds when Lion is run: rule `analysis-reads-as-evaluator` holds. "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name."
+- Holds when Lion is run: `analyze-environment` exists. "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name."
+- Holds when Lion is run: `analyze-string` is `read-by-scope`. "Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`."
+- Holds when Lion is run: `analysis-string-meaning` exists. "Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`."
+- Holds when Lion is run: `analysis-relationships` is removed. "The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone."
+- Holds when Lion is run: `editor-string-meanings` exists. "The graph editor analyzes a program with the environment its runs bind and shows under each string what it means there; selecting a name or a binding outlines the binding and every string that means it."

@@ -8,6 +8,7 @@
 
 - A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`cond-empty-string-condition` is `error`, was `false`; `cond-null-condition` is `error`, was `false`; `cond-string-condition` is `error`, was `true`; `cond-zero-condition` is `error`, was `false`)
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-inside-lambda` is `local`, was `global`; `host-callback-define` is `local`, was `global`)
+- Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`. (`analyze-string` is `read-by-scope`, was `reference-candidate`)
 
 ### Added
 
@@ -15,10 +16,14 @@
 - An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example. (`MalformedFormError` added)
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`UndefinedYetError` added; `setLocalBinding` added)
 - A new form, `set!`, changes the nearest binding of a name, as in Scheme. (`set!` added)
+- Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`. (`analysis-string-meaning` added)
+- `analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name. (`analyze-environment` added)
+- The graph editor analyzes a program with the environment its runs bind and shows under each string what it means there; selecting a name or a binding outlines the binding and every string that means it. (`editor-string-meanings` added)
 
 ### Removed
 
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`changelog-commit-count` removed)
+- The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone. (`analysis-relationships` removed)
 
 ### Changed
 
@@ -65,12 +70,14 @@
 - A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again. (`rule-retraction`: `retract-the-form` over `impossible`, `by-name`)
 - A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule. (`assuming-changes`: `fact-retract-rule` over `fact-retract-only`, `invariant-changes`)
 - In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. (`held-rule-variables`: `question-scope` over `held-rule-own`)
+- `analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name. (`analysis-strings`: `read-by-scope` over `reference-candidate`, `read-by-running`)
 
 ### Rules
 
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (rule `pages-from-the-record-alone`)
 - A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (rule `cond-truthiness` withdrawn)
 - A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (rule `strings-settled-by-scope`)
+- `analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name. (rule `analysis-reads-as-evaluator`)
 
 ## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
 

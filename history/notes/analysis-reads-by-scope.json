@@ -1,0 +1,85 @@
+{
+  "title": "The analysis reads every string by the scopes the evaluator reads it by, and the graph editor shows what each one means",
+  "context": "A string's meaning is settled by the scopes it is written in, before it runs (see the decision that a string means what the scopes it is written in declare). The analysis the graph editor is built on predated that rule: it marked every string a `reference-candidate`, a guess, and the editor showed each one as a \"symbol reference\" that could be \"lookup or text\". So the editor could not say which strings are names, it called a define's name a \"global identifier\" though a define binds in its body, and a misspelled `module/name`, or a `set!` of a name nothing binds, was found only by running.",
+  "decision": "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name. Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`. A part that fails when it runs, a malformed form or an unbound name, has a `diagnostic`: the message of the error the run fails with. The parts a form reads as written, a relation's columns and the options of a relation, query, or invariant, are `quoted`, as what is inside `quote` is. The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone. The graph editor analyzes a program with the environment its runs bind and shows under each string what it means there; selecting a name or a binding outlines the binding and every string that means it.",
+  "consequences": "Properties in `analysis/tests/analyze.test.ts` check the analysis against the evaluator, never against itself: a generated program gives the same after every binding the analysis finds is renamed at every string it says means that binding, and every string it says is data is quoted; a string in a lambda evaluates to the parameter, library value, logic variable, data, or error the analysis says; and every `MalformedFormError` or `UnboundNameError` a run fails with is one the analysis flags with the same message. Ten mutations of the analysis are each caught. The editor's own property checks its reading against runs in the editor's environment. Measured against the commit before it: 15,488 code lines where it has 15,093 (+2.6%), all of it the analysis's reading of scopes, and one message fewer, since `set!` and the model interpreter now build its error in one place; no special form, library function, kind of error, or grid exception changed, and no step of evaluation did either. Two places where the evaluator itself departs from reading by scope were found, and are left to a change of their own: a logic form compiles its parts when it runs, so a name `eval` binds later turns data into a name inside `find` or a rule where plain code keeps it data; and `retract` takes back a `rule` form of any shape, which the analysis flags as malformed.",
+  "alternatives": [
+    {
+      "option": "Keep marking every string a reference candidate, and let the editor guess",
+      "rejected": "A guess cannot say which strings are names, and it shows the same string the same way where the evaluator reads it two ways."
+    },
+    {
+      "option": "Learn what each string means by running the program",
+      "rejected": "A run never reaches code that does not run, such as a lambda nobody calls, and a run has effects. The scopes are settled before anything runs, so reading them needs no run."
+    },
+    {
+      "option": "Write a scope analysis of the editor's own",
+      "rejected": "Two readings drift apart. The analysis asks the evaluator's own functions what each scope declares, and properties check what it says against runs."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name.",
+      "says": {
+        "decision": "analysis-strings",
+        "chose": "read-by-scope",
+        "over": ["reference-candidate", "read-by-running"],
+        "area": "host",
+        "because": "what a string means is settled by its scopes before it runs, so the analysis can read it as the evaluator does"
+      }
+    },
+    {
+      "quote": "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name.",
+      "says": {
+        "rule": "analysis-reads-as-evaluator",
+        "holds": true,
+        "statement": "The analysis reads every string by the scopes the evaluator reads it by, and asks the evaluator's own functions what each scope declares.",
+        "area": "host",
+        "predicts": [{ "behavior": "analyze-string", "is": "read-by-scope" }]
+      }
+    },
+    {
+      "quote": "`analyze(expression, environment)` reads a program as a run with that environment reads it, by the same scopes, found by the functions the evaluator finds them by: `definedIn`, `declaredIn`, and `bodyNames`, with `nameOrString` for a misspelled name.",
+      "says": {
+        "feature": "analyze-environment",
+        "kind": "option",
+        "present": true
+      }
+    },
+    {
+      "quote": "Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`.",
+      "says": {
+        "behavior": "analyze-string",
+        "is": "read-by-scope",
+        "area": "host",
+        "was": "reference-candidate",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "Each string has a `meaning`: a `name` or a `binding`, with the binding it means or makes (a `parameter`, a `define` in a lambda's body or at the top, a `relation`, a `schema`, or the `environment`'s, with the pointers of the strings that bind it), a `logic-variable`, `data`, `unbound` where only a name can stand and nothing binds one, a `form`'s name, or the `keyword` `else`.",
+      "says": {
+        "feature": "analysis-string-meaning",
+        "kind": "capability",
+        "present": true
+      }
+    },
+    {
+      "quote": "The `relationships` field, with its `reference-candidate` and `definition` kinds, is gone.",
+      "says": {
+        "feature": "analysis-relationships",
+        "kind": "capability",
+        "present": false,
+        "replaced_by": "analysis-string-meaning"
+      }
+    },
+    {
+      "quote": "The graph editor analyzes a program with the environment its runs bind and shows under each string what it means there; selecting a name or a binding outlines the binding and every string that means it.",
+      "says": {
+        "feature": "editor-string-meanings",
+        "kind": "capability",
+        "present": true
+      }
+    }
+  ]
+}

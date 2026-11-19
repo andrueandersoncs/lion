@@ -26,7 +26,7 @@ bun run --filter=@lionlang/repl test:e2e
 ## Workflow
 
 1. Open a `.json` Lion program with **Open**. Browsers without the File System Access API use the file picker import path.
-2. Edit number, string, and boolean literals directly in their graph nodes. Use the direct actions on the selected node, or replace the selected expression with JSON (`Enter`), for structural changes. Every accepted edit is one undoable document transaction.
+2. Edit number, string, and boolean literals directly in their graph nodes. Under each string the graph says what it means where it is written, by the scopes a run reads it by: a name and what binds it, a logic variable, or data; selecting a name outlines its binding and every string that means it, and a string only a name could be that nothing binds is marked as an error. Use the direct actions on the selected node, or replace the selected expression with JSON (`Enter`), for structural changes. Every accepted edit is one undoable document transaction.
 3. Use **Run** to evaluate the current valid revision. Local standard-library programs can use **Live** after a short debounce.
 4. Use **Jev** to load a TypeSafe System One starter program. The first run requests a TypeSafe API key, keeps it only in tab memory, and renders model, usage, confidence, score, and probability details. Jev programs are always explicit-run to prevent accidental network requests.
 5. Save through the original file handle where supported. Otherwise **Save** downloads the exact JSON document.
@@ -49,6 +49,7 @@ Unsaved edits are guarded before New/Open and page exit. An externally changed f
 
 - `src/editor/document.ts`: canonical text revisions and shared undo/redo
 - `src/editor/parse.ts`: strict JSON parsing, source ranges, diagnostics, and searchable projections
+- `src/editor/environment.ts`: what a run binds, which the analysis reads the program's strings by
 - `src/editor/editor.worker.ts`: revisioned semantic analysis and ELK layout off the main thread
 - `src/editor/semantic-graph.tsx`: bounded React Flow rendering, exact-JSON unfolding, and semantic edges
 - `src/editor/use-editor.ts`: file, evaluation, selection, and worker orchestration

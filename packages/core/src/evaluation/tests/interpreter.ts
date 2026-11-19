@@ -15,8 +15,8 @@ import {
   InvalidFunctionCallError,
   logicError,
   MalformedFormError,
-  UnboundNameError,
   UndefinedYetError,
+  unboundSet,
 } from "@/errors/evaluation";
 import { answer, isWriting, known } from "@/evaluation/asking";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
@@ -101,9 +101,6 @@ import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult, EvaluationError } from "@/types/evaluation";
 
 type Form = readonly LionExpressionType[];
-
-const SET_UNBOUND =
-  "set! changes a binding, and no scope around it binds the name. Bind it with define first.";
 
 const scope = Effect.service(LionEnvironmentService);
 
@@ -383,11 +380,7 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
       Effect.gen(function* () {
         const environment = yield* LionEnvironmentService;
         if (!declares(environment, id as string)) {
-          return yield* new UnboundNameError({
-            nearest: null,
-            unbound: id as string,
-            why: SET_UNBOUND,
-          });
+          return yield* unboundSet(id as string);
         }
         const value = yield* evaluate(expression as LionExpressionType);
         assign(environment, id as string, value);

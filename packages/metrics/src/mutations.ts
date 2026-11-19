@@ -12,6 +12,8 @@ const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 /** The properties of what a string means, by the scopes it is written in. */
 const SCOPE_TESTS = "src/evaluation/tests/scopes.test.ts";
+/** The properties of the analysis, checked against the evaluator. */
+const ANALYSIS_TESTS = "src/analysis/tests/analyze.test.ts";
 /** The properties of a relation's candidates, and of taking rules back. */
 const CANDIDATE_TESTS = "src/logic/tests/candidates.test.ts";
 /** The properties of the value a key or an equality rule keeps. */
@@ -1906,11 +1908,75 @@ export const MUTATIONS: readonly Mutation[] = [
     tests: ["src/modules/tests/models.test.ts"],
   },
   {
-    name: "the editor takes only the first name of a schema form for a definition",
+    name: "the analysis reads a string a scope declares as data",
     file: core("analysis/analyze.ts"),
-    find: '    form === "schema" ? expression.filter((_, at) => at % 2) : [name];',
-    replace: "    [name];",
-    tests: ["src/analysis/analyze.test.ts"],
+    find: '  if (binding !== undefined) {\n    return [{ kind: "name", binding }];',
+    replace:
+      '  if (binding === null) {\n    return [{ kind: "name", binding }];',
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis leaves out what a lambda's body defines",
+    file: core("analysis/analyze.ts"),
+    find: "    bodyNames(names, body, context.scope),",
+    replace: "    names,",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis leaves out what the program defines at its top",
+    file: core("analysis/analyze.ts"),
+    find: "    new Set([...host.bindings.keys(), ...defined, ...declared]),",
+    replace: "    new Set([...host.bindings.keys(), ...declared]),",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis reads a lambda's body in the scope around the lambda",
+    file: core("analysis/analyze.ts"),
+    find: '    form === "lambda" ? lambdaContext(expression, path, context) : context;',
+    replace: "    context;",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis reads an array that starts with a bound form's name as the form",
+    file: core("analysis/analyze.ts"),
+    find: "  if (!isSpecialFormName(head) || declares(context.scope, head)) {",
+    replace: "  if (!isSpecialFormName(head)) {",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis reads else as always holding where a scope binds it",
+    file: core("analysis/analyze.ts"),
+    find: '      value === "else" &&\n      !declares(context.scope, "else");',
+    replace: '      value === "else";',
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis binds a define in the run's top scope",
+    file: core("analysis/analyze.ts"),
+    find: "    return site(name, path, context.body.bindings.get(name));",
+    replace: "    return site(name, path, context.top.bindings.get(name));",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis flags no malformed form",
+    file: core("analysis/analyze.ts"),
+    find: "  if (!fitsForm(head, expression)) {",
+    replace: "  if (fitsForm(head, expression) === null) {",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis takes no string for a misspelled name",
+    file: core("analysis/analyze.ts"),
+    find: "  const misspelled = isNamespacedName(name)",
+    replace: "  const misspelled = false",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
+    name: "the analysis reads the parts a form reads as written as expressions",
+    file: core("analysis/analyze.ts"),
+    find: "  if (WRITTEN.has(role)) {",
+    replace: '  if (WRITTEN.has(role) && role === "quoted-value") {',
+    tests: [ANALYSIS_TESTS],
   },
   {
     name: "a call drops the arguments a function does not take",

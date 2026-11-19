@@ -22213,5 +22213,85 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "analyze-string",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "and",
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/1/0 \"n\": binding parameter in a lambda\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/2/1 \"n\": name parameter in a lambda\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/2/2 \"total\": name define\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/2/3 \"?x\": logic-variable\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/2/4 \"done\": data\n"]
+          ],
+          [
+            "string/includes",
+            ["object/get", ["repo/run", "analysis-strings"], "output"],
+            ["quote", "/2/0/2/5 \"numbr/add\": unbound\n"]
+          ]
+        ],
+        ["quote", "read-by-scope"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "feature": "analysis-string-meaning",
+    "kind": "capability",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/analysis/analyze.ts"],
+      "export type StringMeaning"
+    ]
+  },
+  {
+    "feature": "analysis-relationships",
+    "kind": "capability",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/analysis/analyze.ts"],
+      "SemanticRelationship"
+    ]
+  },
+  {
+    "feature": "analyze-environment",
+    "kind": "option",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/analysis/analyze.ts"],
+      "environment: Readonly<Record<string, unknown>> = {}"
+    ]
+  },
+  {
+    "feature": "editor-string-meanings",
+    "kind": "capability",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/repl/src/editor/semantic-graph.tsx"],
+      "graph-literal-meaning"
+    ]
   }
 ]

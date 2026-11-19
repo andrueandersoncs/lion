@@ -95,8 +95,36 @@
 
 <h2 id="api-analyze"><code>@lionlang/core/analysis/analyze</code></h2>
 <dl class="entries">
-  <dt data-entry="analyze"><code>analyze(expression)</code></dt>
-  <dd><p>Returns a tree describing each part of a program without evaluating it: its kind, its special form, the role of each child, and a diagnostic for a malformed form. The graph editor is built on it.</p></dd>
+  <dt data-entry="analyze"><code>analyze(expression, environment?)</code></dt>
+  <dd>
+    <p>Returns a tree describing each part of a program without evaluating it: its kind, its special form, the role of each child, and what each string means there, read by the <a href="#names-and-scope">scopes</a> a run with <code>environment</code> reads it by. A string's <code>meaning</code> is a <code>name</code> or a <code>binding</code>, each with the binding it means or makes (a <code>parameter</code>, a <code>define</code>, a <code>relation</code>, a <code>schema</code>, or the <code>environment</code>'s, with the pointers of the strings that bind it), a <code>logic-variable</code>, <code>data</code>, <code>unbound</code> where only a name can stand and nothing binds one, a <code>form</code>'s name, or the <code>keyword</code> <code>else</code>. A part that fails when it runs, a malformed form or an unbound name, has a <code>diagnostic</code>: the message of the error the run fails with. The graph editor is built on it.</p>
+    <code-block lang="typescript">
+const program = [
+  "begin",
+  ["define", "total", 0],
+  [["lambda", ["n"], ["array/make", "n", "total", "?x", "done"]], 1],
+];
+for (const { pointer, value, meaning } of flattenAnalysis(
+  analyze(program, stdlib)
+)) {
+  if (meaning?.kind === "name" || meaning?.kind === "binding") {
+    console.log(pointer, value, meaning.kind, meaning.binding.kind);
+  } else if (meaning) {
+    console.log(pointer, value, meaning.kind);
+  }
+}
+// /0 begin form
+// /1/0 define form
+// /1/1 total binding define
+// /2/0/0 lambda form
+// /2/0/1/0 n binding parameter
+// /2/0/2/0 array/make name environment
+// /2/0/2/1 n name parameter
+// /2/0/2/2 total name define
+// /2/0/2/3 ?x logic-variable
+// /2/0/2/4 done data
+</code-block>
+  </dd>
   <dt data-entry="flattenAnalysis"><code>flattenAnalysis(node)</code></dt>
   <dd><p>The nodes of an analysis tree, in order.</p></dd>
   <dt data-entry="isSpecialFormName"><code>isSpecialFormName(value)</code></dt>

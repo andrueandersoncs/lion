@@ -1,3 +1,4 @@
+import type { SemanticBinding } from "@lionlang/core/analysis/analyze";
 import type { SpecialFormName } from "@lionlang/core/schemas/evaluation";
 import {
   Background,
@@ -57,6 +58,8 @@ interface GraphNodeData extends Record<string, unknown> {
   readonly onWrap: (id: string) => void;
   readonly outputPorts: readonly GraphPort[];
   readonly presentation?: GraphNodePresentation;
+  /** True when the selected node means, or binds, the same binding. */
+  readonly related: boolean;
   readonly semantic: IndexedSemanticNode;
   readonly siblingCount: number;
   readonly stale: boolean;
@@ -72,7 +75,8 @@ type GraphNodeMark =
   | "record"
   | "reference"
   | "string"
-  | "syntax";
+  | "syntax"
+  | "variable";
 
 interface GraphNodePresentation {
   readonly description: string;
@@ -100,6 +104,7 @@ const NODE_COLOR_BY_KEY = {
   reference: "var(--node-reference)",
   string: "var(--node-string)",
   syntax: "var(--node-syntax)",
+  variable: "var(--node-logic)",
   relation: "var(--node-logic)",
   schema: "var(--node-logic)",
   rule: "var(--node-logic)",
@@ -120,14 +125,29 @@ const NODE_COLOR_BY_KEY = {
   invariant: "var(--node-logic)",
 } satisfies Readonly<Record<GraphNodeColorKey, string>>;
 
+/** A malformed form, or a string only a name can be that nothing binds. */
+const isInvalid = (semantic: IndexedSemanticNode) =>
+  (semantic.kind === "invalid-call" && !semantic.quoted) ||
+  semantic.meaning?.kind === "unbound";
+
 const getGraphNodeColorKey = (
   semantic: IndexedSemanticNode,
   presentation: GraphNodePresentation | undefined
-): GraphNodeColorKey => {
-  if (semantic.kind === "invalid-call" && !semantic.quoted) {
-    return "invalid";
+): GraphNodeColorKey =>
+  isInvalid(semantic) ? "invalid" : (presentation?.mark ?? "call");
+
+/** The binding a string means or binds, if it is a name. */
+const bindingOf = (semantic: IndexedSemanticNode) =>
+  semantic.meaning?.kind === "name" || semantic.meaning?.kind === "binding"
+    ? semantic.meaning.binding
+    : undefined;
+
+/** What binds a name, as the graph says it. */
+const bindingLabel = ({ kind, top }: SemanticBinding) => {
+  if (kind === "define") {
+    return top ? "top-level define" : "local define";
   }
-  return presentation?.mark ?? "call";
+  return kind;
 };
 
 type SemanticGraphNodeType =
@@ -208,8 +228,10 @@ const ORDERED_CHILD_CONTAINER_KINDS: Readonly<
 
 const NON_EXPRESSION_ROLES: Readonly<Record<string, true>> = {
   branch: true,
+  change: true,
   parameters: true,
   pattern: true,
+  variables: true,
 };
 
 const RUNNABLE_NODE_KINDS: Readonly<
@@ -235,6 +257,12 @@ const INVARIANT_DETAILS = new Map<unknown, string>([
   ["none", "0 rows"],
   ["some", "≥ 1 row"],
 ]);
+
+/** The name the first binding part of a form binds or changes. */
+const bindingName = (children: readonly IndexedSemanticNode[]) => {
+  const binding = children.find(({ role }) => role === "binding")?.value;
+  return typeof binding === "string" ? binding : undefined;
+};
 
 const describeSpecialForm = (
   semantic: IndexedSemanticNode,
@@ -280,9 +308,7 @@ const describeSpecialForm = (
       };
     }
     case "define": {
-      const binding = semantic.relationships.find(
-        ({ kind }) => kind === "definition"
-      )?.name;
+      const binding = bindingName(children);
       return {
         mark: form,
         description: "binding in its body",
@@ -290,14 +316,11 @@ const describeSpecialForm = (
       };
     }
     case "set!": {
-      const binding = children.find(({ role }) => role === "binding")?.value;
+      const binding = bindingName(children);
       return {
         mark: form,
         description: "change a binding",
-        detail:
-          typeof binding === "string"
-            ? `${binding} ← value`
-            : "binding ← value",
+        detail: binding ? `${binding} ← value` : "binding ← value",
       };
     }
     case "eval":
@@ -330,9 +353,7 @@ const describeSpecialForm = (
         detail: "not evaluated",
       };
     case "relation": {
-      const binding = semantic.relationships.find(
-        ({ kind }) => kind === "definition"
-      )?.name;
+      const binding = bindingName(children);
       const columns = children.find(({ role }) => role === "columns");
       const columnCount = columns?.children.length ?? 0;
       // The options are a record: its children are named by their keys.
@@ -352,9 +373,7 @@ const describeSpecialForm = (
       return {
         mark: form,
         description: "schema",
-        detail:
-          semantic.relationships.find(({ kind }) => kind === "definition")
-            ?.name ?? "what a value must be",
+        detail: bindingName(children) ?? "what a value must be",
       };
     case "rule":
       return {
@@ -462,19 +481,33 @@ const describeSpecialForm = (
   }
 };
 
+/** The parts of a form that are lists the form reads, by their role. */
+const FORM_PARTS: Readonly<
+  Record<string, (count: number) => Omit<GraphNodePresentation, "mark">>
+> = {
+  parameters: (count) => ({
+    description: "parameter list",
+    detail: pluralize(count, "name"),
+  }),
+  variables: (count) => ({
+    description: "variable list",
+    detail: pluralize(count, "variable"),
+  }),
+  columns: (count) => ({
+    description: "column list",
+    detail: pluralize(count, "column"),
+  }),
+  branch: () => ({ description: "case", detail: "condition → result" }),
+  pattern: () => ({ description: "case", detail: "schema → function" }),
+};
+
 const describeStructuredNode = (
   semantic: IndexedSemanticNode
 ): GraphNodePresentation | undefined => {
   const itemCount = semantic.children.length;
-  if (
-    semantic.role === "parameters" &&
-    (semantic.kind === "call" || semantic.kind === "empty-array")
-  ) {
-    return {
-      mark: "syntax",
-      description: "parameter list",
-      detail: pluralize(itemCount, "name"),
-    };
+  const part = FORM_PARTS[semantic.role];
+  if (part && (semantic.kind === "array" || semantic.kind === "empty-array")) {
+    return { mark: "syntax", ...part(itemCount) };
   }
   if (semantic.kind === "record") {
     return {
@@ -493,9 +526,66 @@ const describeStructuredNode = (
   return undefined;
 };
 
+/**
+ * What a string means where it is written, as the analysis reads it with
+ * the scopes the evaluator uses; `uses` counts the strings that mean each
+ * binding.
+ */
+const describeString = (
+  semantic: IndexedSemanticNode,
+  value: string,
+  uses: ReadonlyMap<string, number>
+): GraphNodePresentation => {
+  const meaning = semantic.meaning;
+  switch (meaning?.kind) {
+    case "name":
+      return {
+        mark: "reference",
+        description: "name",
+        detail: `→ ${bindingLabel(meaning.binding)}`,
+      };
+    case "binding":
+      return {
+        mark: "syntax",
+        description: `binds ${bindingLabel(meaning.binding)}`,
+        detail: pluralize(uses.get(meaning.binding.id) ?? 0, "use"),
+      };
+    case "logic-variable":
+      return {
+        mark: "variable",
+        description: "logic variable",
+        detail: semantic.quoted ? "listed" : "bound by a goal",
+      };
+    case "form":
+      return {
+        mark: "syntax",
+        description: "form keyword",
+        detail: `${value} form`,
+      };
+    case "keyword":
+      return {
+        mark: "syntax",
+        description: "branch keyword",
+        detail: "always holds",
+      };
+    case "unbound":
+      return {
+        mark: "string",
+        description: "unbound name",
+        detail: "fails when it runs",
+      };
+    default:
+      return {
+        mark: "string",
+        description: "data",
+        detail: semantic.quoted ? "written as is" : "evaluates to itself",
+      };
+  }
+};
+
 const describePrimitiveNode = (
   semantic: IndexedSemanticNode,
-  byId: ReadonlyMap<string, IndexedSemanticNode>
+  uses: ReadonlyMap<string, number>
 ): GraphNodePresentation | undefined => {
   if (semantic.kind !== "primitive") {
     return undefined;
@@ -503,47 +593,7 @@ const describePrimitiveNode = (
 
   const { value } = semantic;
   if (typeof value === "string") {
-    if (semantic.quoted) {
-      return {
-        mark: "string",
-        description: "string literal",
-        detail: pluralize(value.length, "char"),
-      };
-    }
-    const parent = semantic.parentId ? byId.get(semantic.parentId) : undefined;
-    if (semantic.role === "operator") {
-      return {
-        mark: "syntax",
-        description: "form keyword",
-        detail: "syntax marker",
-      };
-    }
-    if (parent?.role === "parameters") {
-      return {
-        mark: "syntax",
-        description: "parameter name",
-        detail: "local identifier",
-      };
-    }
-    if (value === "else" && parent?.role === "branch") {
-      return {
-        mark: "syntax",
-        description: "branch keyword",
-        detail: "fallback marker",
-      };
-    }
-    if (semantic.role === "binding") {
-      return {
-        mark: "syntax",
-        description: "binding name",
-        detail: "global identifier",
-      };
-    }
-    return {
-      mark: "reference",
-      description: "symbol reference",
-      detail: "lookup or text",
-    };
+    return describeString(semantic, value, uses);
   }
   if (typeof value === "number") {
     return {
@@ -642,6 +692,12 @@ function SemanticNodeMark({ mark }: { readonly mark: GraphNodeMark }) {
             <path d="M5 7v10" />
           </>
         )}
+        {mark === "variable" && (
+          <>
+            <path d="M9 8.5a3 3 0 1 1 4.2 2.75c-.75.33-1.2 1.07-1.2 1.9V14" />
+            <path d="M12 18h.01" />
+          </>
+        )}
         {mark === "syntax" && (
           <>
             <path d="m9 6-5 6 5 6M15 6l5 6-5 6" />
@@ -661,7 +717,11 @@ const getEditableLiteralKind = (
   if (presentation?.mark === "boolean" || presentation?.mark === "number") {
     return presentation.mark;
   }
-  if (presentation?.mark === "string" || presentation?.mark === "reference") {
+  if (
+    presentation?.mark === "string" ||
+    presentation?.mark === "reference" ||
+    presentation?.mark === "variable"
+  ) {
     return "string";
   }
   return undefined;
@@ -838,15 +898,25 @@ function GraphNodeBody({
         aria-label={presentationLabel}
         className="graph-node-summary graph-literal-summary"
       >
-        <SemanticNodeMark mark={literalKind} />
-        <LiteralValueInput
-          kind={literalKind}
-          literalDraft={literalDraft}
-          onIntent={onIntent}
-          onLiteralDraftChange={onLiteralDraftChange}
-          semantic={semantic}
-          stale={stale}
-        />
+        <SemanticNodeMark mark={presentation?.mark ?? literalKind} />
+        <div className="min-w-0">
+          <LiteralValueInput
+            kind={literalKind}
+            literalDraft={literalDraft}
+            onIntent={onIntent}
+            onLiteralDraftChange={onLiteralDraftChange}
+            semantic={semantic}
+            stale={stale}
+          />
+          {semantic.meaning && presentation ? (
+            <p
+              className="graph-literal-meaning"
+              data-meaning={semantic.meaning.kind}
+            >
+              <span>{presentation.description}</span> {presentation.detail}
+            </p>
+          ) : null}
+        </div>
       </section>
     );
   }
@@ -1052,6 +1122,7 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
     onRun,
     outputPorts,
     presentation,
+    related,
     semantic,
     stale,
     unfolded,
@@ -1068,9 +1139,8 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
         "graph-node relative w-60 rounded-xl bg-card text-card-foreground",
         presentation && "graph-node-presented",
         selected && "graph-node-selected",
-        semantic.kind === "invalid-call" &&
-          !semantic.quoted &&
-          "graph-node-invalid",
+        related && !selected && "graph-node-related",
+        isInvalid(semantic) && "graph-node-invalid",
         stale && "graph-node-stale",
         unfolded && "graph-node-unfolded"
       )}
@@ -1087,7 +1157,12 @@ const SemanticGraphNode = memo(function SemanticGraphNode({
               ),
             }
       }
-      title={`${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`}
+      title={[
+        `${semantic.pointer || "/"} · ${semantic.range.from}–${semantic.range.to}`,
+        semantic.diagnostic,
+      ]
+        .filter(Boolean)
+        .join("\n")}
     >
       {outputPorts.map((port, index) => (
         <span
@@ -1345,6 +1420,22 @@ export function SemanticGraph({
     [projection.nodes]
   );
 
+  /** How many strings mean each binding. */
+  const uses = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const { meaning } of projection.nodes) {
+      if (meaning?.kind === "name") {
+        const { id } = meaning.binding;
+        counts.set(id, (counts.get(id) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [projection.nodes]);
+  const selectedBinding = useMemo(() => {
+    const selected = selectedId ? byId.get(selectedId) : undefined;
+    return selected ? bindingOf(selected)?.id : undefined;
+  }, [byId, selectedId]);
+
   const visibleSemanticNodes = useMemo(() => {
     const visible = projection.nodes.filter(
       (node) =>
@@ -1552,7 +1643,7 @@ export function SemanticGraph({
       visibleSemanticNodes.map((semantic, index) => {
         const presentation =
           describeStructuredNode(semantic) ??
-          describePrimitiveNode(semantic, byId) ??
+          describePrimitiveNode(semantic, uses) ??
           describeSpecialForm(semantic, byId);
         const literalKind = getEditableLiteralKind(presentation);
         const inputPorts = (visibleChildrenByParent.get(semantic.id) ?? []).map(
@@ -1574,6 +1665,9 @@ export function SemanticGraph({
             unfolded: unfolded.has(semantic.id),
             literalDraft: literalDrafts[semantic.id],
             presentation,
+            related:
+              selectedBinding !== undefined &&
+              bindingOf(semantic)?.id === selectedBinding,
             siblingCount: semantic.parentId
               ? (byId.get(semantic.parentId)?.children.length ?? 1)
               : 1,
@@ -1609,11 +1703,13 @@ export function SemanticGraph({
       onRun,
       onWrap,
       positions,
+      selectedBinding,
       selectedId,
       stale,
       toggleUnfolded,
       updateLiteralDraft,
       unfolded,
+      uses,
       visibleChildrenByParent,
       visibleIds,
       visibleSemanticNodes,

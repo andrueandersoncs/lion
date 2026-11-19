@@ -547,8 +547,11 @@ describe("analysis", () => {
       "relation"
     );
     expect(
-      analyze(["relation", "edge", ["a", "b"]]).relationships
-    ).toContainEqual({ kind: "definition", name: "edge" });
+      analyze(["relation", "edge", ["a", "b"]]).children[1]?.node.meaning
+    ).toMatchObject({
+      kind: "binding",
+      binding: { kind: "relation", name: "edge", top: true },
+    });
     expect(analyze(["rule", ["p", "?x"], ["q", "?x"]]).specialForm).toBe(
       "rule"
     );

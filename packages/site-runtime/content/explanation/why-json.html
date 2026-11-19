@@ -20,7 +20,7 @@
 
 <h2>What it costs</h2>
 <p>The string compromise is the main cost. A string in your data that happens to match a bound name, such as <code>"number/add"</code>, evaluates to that function, and a list in your data is a call. <code>quote</code> is the way out, and the reason snapshots quote such strings when they save a database. Namespacing every library name with a <code>/</code> makes accidental matches rare.</p>
-<p>JSON is also more verbose than a syntax designed for people, and it has no comments. Lion leans on tools for this: the graph editor shows the tree with each form labeled, and records can carry descriptions alongside code. For programs that machines write and people review, the trade is usually worth it.</p>
+<p>JSON is also more verbose than a syntax designed for people, and it has no comments. Lion leans on tools for this: the graph editor shows the tree with each form labeled and each string read as a name, a logic variable, or data, and records can carry descriptions alongside code. For programs that machines write and people review, the trade is usually worth it.</p>
 
 <h2>Why not just use JavaScript?</h2>
 <p>A host language like JavaScript can do everything Lion can, but its programs are text that must be parsed, and running untrusted JavaScript means trusting it with everything the host can reach. A Lion program can only call what its environment binds. The host decides exactly which functions a program may use, so a program from a database, a user, or a model is as safe as the environment it runs in.</p>

@@ -3,6 +3,7 @@ import {
   flattenAnalysis,
   pathToPointer,
   type SemanticNode,
+  type StringMeaning,
   type StructuralPath,
 } from "@lionlang/core/analysis/analyze";
 import {
@@ -18,6 +19,7 @@ import {
   parseTree,
   printParseErrorCode,
 } from "jsonc-parser";
+import { analysisEnvironment } from "./environment";
 import type {
   DocumentProjection,
   EditorDiagnostic,
@@ -35,6 +37,16 @@ export const rangeForPath = (
 ): SourceRange | null => {
   const node = findNodeAtLocation(tree, [...path]);
   return node ? { from: node.offset, to: node.offset + node.length } : null;
+};
+
+/** The words a search finds a string by: what it means, and what binds it. */
+const meaningText = (meaning: StringMeaning | undefined) => {
+  if (meaning === undefined) {
+    return "";
+  }
+  return "binding" in meaning
+    ? `${meaning.kind} ${meaning.binding.kind}`
+    : meaning.kind;
 };
 
 const flattenIndexed = (root: SemanticNode, tree: JsonNode) => {
@@ -63,13 +75,14 @@ const flattenIndexed = (root: SemanticNode, tree: JsonNode) => {
       children: node.children.map(({ node: childNode }) =>
         nodeId(childNode.path)
       ),
-      relationships: node.relationships,
+      ...(node.meaning ? { meaning: node.meaning } : {}),
       ...(node.diagnostic ? { diagnostic: node.diagnostic } : {}),
       searchText: [
         node.label,
         node.pointer || "/",
         child?.role ?? "root",
         typeof node.value === "string" ? node.value : "",
+        meaningText(node.meaning),
       ]
         .join(" ")
         .toLocaleLowerCase(),
@@ -143,7 +156,10 @@ export const analyzeSource = (
     };
   }
 
-  const semanticRoot = analyze(value as LionExpressionType);
+  const semanticRoot = analyze(
+    value as LionExpressionType,
+    analysisEnvironment(value)
+  );
   const nodes = flattenIndexed(semanticRoot, tree);
   const invalidNodes = nodes.filter(({ kind }) => kind === "invalid-call");
   if (invalidNodes.length > 0) {
