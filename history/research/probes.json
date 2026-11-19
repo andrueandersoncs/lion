@@ -20974,6 +20974,24 @@
     ]
   },
   {
+    "feature": "tufazip-research",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/runs/tufazip/report.md"]],
+      1
+    ]
+  },
+  {
+    "feature": "research-consolidation",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/runs/consolidation/report.md"]],
+      1
+    ]
+  },
+  {
     "feature": "formal-verification-research",
     "kind": "file",
     "program": [

@@ -1,0 +1,18 @@
+["begin",
+  ["fact",
+    ["candidate", "held-out-eval", ["quote", "Keep an eval case that the skills' improvement loop never tunes against, and count a direction as paying off only when that case does not get worse"]],
+    ["weighed_in", "held-out-eval", "tufazip"],
+    ["uses", "held-out-eval", ["quote", "held-out evaluation"]],
+    ["offers", "held-out-eval", ["quote", "a score the tuning never saw"]]],
+
+  ["fact",
+    ["assumption", "tz-decoder", ["quote", "Lion already makes a change pay for what it adds, as the benchmark counts the decompressor in the score"]],
+    ["assumption", "tz-held-out", ["quote", "The skills' improvement loop has no score it never tuned against"]],
+    ["assumption", "tz-figures", ["quote", "Every figure on the TufaZip page that can be worked out from its table holds"]]],
+  ["fact",
+    ["expects", "tz-decoder", ["quote", {"lion has": "a cost counted for every mechanism a change adds"}], true],
+    ["expects", "tz-held-out", ["quote", {"lion has": "a score the tuning never saw"}], false],
+    ["alike", "tz-figures",
+      ["quote", {"counted": "TufaZip page figures a Lion program recomputed"}],
+      ["quote", {"counted": "TufaZip page figures that hold at the precision written"}]]],
+  "tz framed"]

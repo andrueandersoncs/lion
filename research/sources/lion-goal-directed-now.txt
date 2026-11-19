@@ -1,0 +1,51 @@
+Bottom-up evaluation derives every fact a program implies. Usually a query needs far less: asking for the paths from one node does not need the paths from every other node. This page explains how Lion narrows the work, and what that means for how you write rules.
+Passing the question down
+When a query gives a rule-defined relation a known argument, as "a" in ["path", "a", "?to"] , Lion rewrites the rules before evaluating them, using a technique called magic sets. Each relation gets a copy specialized to which of its arguments are known, and extra rules pass those known values down through the rule bodies. Evaluation then only derives facts the query can reach. A query along a 3,000-node chain that would derive about 4.5 million paths in full returns its three answers in milliseconds.
+An argument is known when it is a value, a variable the query has already bound with a relation, = , or in , or a value computed from such variables, as in ["path", ["number/add", "?s", 1], "?to"] . Inside a rule, only values and variables bound from facts count, so the rewritten rules never ask about values without end.
+The rewrite changes how much is computed, never what the answers are. Lion still evaluates bottom-up; it just starts from the question's own values.
+Why the shape of a rule matters
+The rewrite passes known values from left to right through a rule's body. Compare two ways of writing paths from a known start:
+Recursion first : ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"] . The known start ?x passes straight into the recursive call, so every step asks about the same start.
+Edge first : ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"] . The recursive call asks about ?y , each node along the way, so the question spreads to every reachable node, which can cost as much as computing everything.
+Both give the same answers. With a known start, write the recursion first; with a known end, put it last. Follow relationships of any length shows both.
+Where a known value helps
+A rule uses a known argument best when it can look rows up by it: when the argument stands whole in one of the rule's relation goals, as ?x does in ["edge", "?x", "?y"] . Then the rewritten rule reads only the rows for the values asked about. When the rule can only test the argument, because it sits inside a record pattern or a schema such as ["schema/open", {"topic": "?t"}] , or in an in , the rule runs as written and keeps the rows asked about, so it never does more than the rule itself would.
+What is computed in full, and shared
+Some relations cannot be narrowed safely. A relation that is aggregated, computed by a graph algorithm, asked about , under not , in a find , or as a value, or that rules invent rows of, needs its complete contents to be right, so Lion derives it, and everything it depends on, in full. So does a goal that knows none of its arguments: a copy for it would hold every row anyway. Explanations from why also use full evaluation, so they describe the program as written.
+What Lion derives in full it derives once, in the database, and keeps. Every later query reads it there, and a query that knows an argument of a relation the database already holds in full looks the rows up instead of deriving a copy. So a page that asks many different questions of one model derives each relation about once, as full evaluation would, and each question pays only for what it alone asks.
+A relation is derived the first time a goal reads it, so a query never pays for relations it does not reach. Here the query asks only for listed teams, so the rule for big ones never gets past its first goal, big is never derived, and the amount that is not a number never matters, though ["big", "?u"] knows none of its arguments:
+["begin",
+["relation", "spend", ["team", "amount"]],
+["relation", "team", ["name"]],
+["relation", "big", ["team"]],
+["relation", "flag", ["kind", "team"]],
+["fact", ["spend", "web", 500], ["spend", "ops", "lots"]],
+["fact", ["team", "web"], ["team", "ops"]],
+["rule", ["big", "?t"], ["spend", "?t", "?a"], ["number/greaterThan", "?a", 100]],
+["rule", ["flag", "big", "?t"], ["big", "?u"], ["team", "?t"]],
+["rule", ["flag", "listed", "?t"], ["team", "?t"]],
+["query", ["flag", "listed", "?t"], {"order": "t"}]]
+Deriving flag in full, as ["flag", "?kind", "?t"] would, runs every rule and fails on "lots" . The same holds in full evaluation: with ["rule", ["report", "?t"], ["audit", "?t"], ["broken", "?t"]] and no audit rows, broken is never derived.
+When facts change
+What Lion has derived it keeps when facts change, and brings up to date with the change. Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero. A change takes away the candidates that used a row a relation lost and adds the ones that use a row a relation gained, so it costs what it reaches, not what the database holds. An answer uses a row that a relation goal matched, wherever the goal stands in the rule: in its body, under not , where the row is why the answer is not one, in a find , in a goal used as a value, or in its head. An aggregate keeps the values of its candidates counted: a count, and a sum or a mean of whole numbers, change by one candidate, and every other aggregate combines the values that are left.
+Rows that give each other cannot hold each other up. A candidate has a level, one above the highest level of the rows of its own group that its answer used, and a row is held from the least level of its candidates. Whether a row holds has many solutions when rows give each other, and the level it is held from has one, so a change is settled level by level, lowest first: a row whose first candidate is gone holds only where a candidate that rests on lower levels still gives it. Deriving from nothing is the same work, for a change that adds every fact.
+Here the first query derives every team's total and which teams have no spending. The new fact reaches one group of total and one row of idle , and the retract reaches one of each again:
+["begin",
+["relation", "team", ["name"]],
+["relation", "spend", ["team", "amount"]],
+["relation", "total", ["team", "amount"]],
+["relation", "idle", ["team"]],
+["fact", ["team", "web"], ["team", "ops"], ["team", "lab"]],
+["fact", ["spend", "web", 500], ["spend", "web", 20], ["spend", "ops", 70]],
+["rule", ["total", "?t", ["aggregate/sum", "?a"]], ["spend", "?t", "?a"]],
+["rule", ["idle", "?t"], ["team", "?t"], ["not", ["spend", "?t", "?_"]]],
+["define", "now", ["lambda", [],
+{"totals": ["query", ["total", "?team", "?amount"], {"order": "team"}],
+"idle": ["find", "?t", ["idle", "?t"]]}]],
+{"first": ["now"],
+"added": ["begin", ["fact", ["spend", "lab", 5]], ["now"]],
+"retracted": ["begin", ["retract", ["spend", "ops", 70]], ["now"]]}]
+The answers are what a database that had derived nothing would give; only the order answers are found in can differ, which is one more reason to sort with "order" when order matters. A rule that invents , a key, and an equality rule are followed the same way, whatever the rule's goals look like. The answers of a rule that invents are counted as rows are, and each is asked, at the end of the stage it is first held in, whether a row held by then gives its head. Two values that a key or an equality rule makes one are a pair with candidates of its own: a row that holds a value its class no longer writes ends at the level the pair is held from, and is kept beside the row it became, so taking away the fact that made two unknowns one gives back the rows that held them apart. A row that comes beside a row with its key is read from the level after, when the pair has made the two one, so no rule finds two rows with one key, not even a rule of the group that derives them. why finds the answer that gives a row when it is asked, from the level the row is held from, so a change keeps no explanations and works none out; where a key or an equality rule made values one, it derives the group's answers again once after a change. Two kinds of relation cannot be followed row by row: one whose rule holds a function from the host that does not say it reads only its arguments, and one whose rule reads a changed relation through a schema instead of a relation goal. Lion derives such a relation again and compares it with what it was, so the relations that read it are still followed. It does so when something has read the relation since the last change; otherwise nobody is waiting for it, and it is forgotten until something reads it.
+A new rule is followed the same way: the relations whose rules changed are derived again and compared, and the others keep their rows. A change an invariant refuses is followed back, so what was derived before it is still there. A query that knows an argument keeps what it derived and follows changes too.
+Turning it off
+A host can create a database with new LogicDatabase({ goalDirected: false }) to derive every row of the relations a query reads. This is useful for comparing results; Lion's own tests check that both ways agree.

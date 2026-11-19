@@ -1,0 +1,914 @@
+{
+  "title": "What to build in Lion next",
+  "names": {
+    "solver": "Solve for the values a question leaves open",
+    "formula-terms": "Formulas as values, with a solver function (Formulog's way)",
+    "command-proofs": "Prove that every command keeps the invariants",
+    "bounded-search": "Search every sequence of commands up to a bound",
+    "rule-model-checking": "Check a model with rules over every reachable state",
+    "transition-rules": "Rules comparing the database before and after a change",
+    "eventually-rules": "Rules about what must eventually happen",
+    "proof-certificates": "A certificate for every proof, rechecked by a small checker",
+    "invariant-inference": "Find the invariants a proof needs",
+    "hand-proofs": "Check proofs people write, as Lean does",
+    "schema-inclusion": "Decide when one schema includes another",
+    "stratified-rules": "Let rules recurse through not on a smaller argument",
+    "stratified-schemas": "Let a schema ask about itself only of a smaller part",
+    "polymorphic-schemas": "Check polymorphic schemas before a program runs",
+    "least-fixed-points": "Read a recursive schema as its least fixed point",
+    "annotation-independence": "Schemas that never change what a program computes",
+    "schema-blind-equality": "Equality blind to schemas",
+    "rest": "Split a record into the keys it names and the rest",
+    "algebra": "Combine the values a key gets, with validity",
+    "hypo": "Ask what would hold after some changes",
+    "abduce": "Say which facts are missing for a goal",
+    "locality": "Check only what a change can reach",
+    "linear": "Rules that use up the facts they read",
+    "sepand": "A conjunction whose goals match different facts",
+    "incremental": "One algebra of changes (DBSP)",
+    "annotate": "Annotated relations: top-k proofs and probabilities",
+    "merge": "Merge functions over a union-find (egglog)",
+    "joins": "Worst-case optimal joins",
+    "agents": "A schema of valid programs, for models that write Lion",
+    "compile": "Compile expressions to closures",
+    "testing": "Metamorphic tests of the engine",
+    "held-out-eval": "A held-out eval case for the skills' improvement loop",
+    "separation-logic": "separation logic (2026-11-18)",
+    "lion-improvements": "what to improve next (2026-11-17)",
+    "cirt-refinement-types": "CIRT refinement types (2026-11-18)",
+    "formal-verification": "formal verification (2026-11-19)",
+    "tufazip": "TufaZip (2026-11-19)"
+  },
+  "define": {
+    "label": [
+      "lambda",
+      ["c"],
+      [
+        "object/get",
+        [
+          "quote",
+          {
+            "solver": "Solve for the values a question leaves open",
+            "formula-terms": "Formulas as values, with a solver function (Formulog's way)",
+            "command-proofs": "Prove that every command keeps the invariants",
+            "bounded-search": "Search every sequence of commands up to a bound",
+            "rule-model-checking": "Check a model with rules over every reachable state",
+            "transition-rules": "Rules comparing the database before and after a change",
+            "eventually-rules": "Rules about what must eventually happen",
+            "proof-certificates": "A certificate for every proof, rechecked by a small checker",
+            "invariant-inference": "Find the invariants a proof needs",
+            "hand-proofs": "Check proofs people write, as Lean does",
+            "schema-inclusion": "Decide when one schema includes another",
+            "stratified-rules": "Let rules recurse through not on a smaller argument",
+            "stratified-schemas": "Let a schema ask about itself only of a smaller part",
+            "polymorphic-schemas": "Check polymorphic schemas before a program runs",
+            "least-fixed-points": "Read a recursive schema as its least fixed point",
+            "annotation-independence": "Schemas that never change what a program computes",
+            "schema-blind-equality": "Equality blind to schemas",
+            "rest": "Split a record into the keys it names and the rest",
+            "algebra": "Combine the values a key gets, with validity",
+            "hypo": "Ask what would hold after some changes",
+            "abduce": "Say which facts are missing for a goal",
+            "locality": "Check only what a change can reach",
+            "linear": "Rules that use up the facts they read",
+            "sepand": "A conjunction whose goals match different facts",
+            "incremental": "One algebra of changes (DBSP)",
+            "annotate": "Annotated relations: top-k proofs and probabilities",
+            "merge": "Merge functions over a union-find (egglog)",
+            "joins": "Worst-case optimal joins",
+            "agents": "A schema of valid programs, for models that write Lion",
+            "compile": "Compile expressions to closures",
+            "testing": "Metamorphic tests of the engine",
+            "held-out-eval": "A held-out eval case for the skills' improvement loop",
+            "separation-logic": "separation logic (2026-11-18)",
+            "lion-improvements": "what to improve next (2026-11-17)",
+            "cirt-refinement-types": "CIRT refinement types (2026-11-18)",
+            "formal-verification": "formal verification (2026-11-19)",
+            "tufazip": "TufaZip (2026-11-19)"
+          }
+        ],
+        "c"
+      ]
+    ],
+    "title": [
+      "lambda",
+      ["c"],
+      ["array/head", ["find", "?t", ["candidate", "c", "?t"]]]
+    ],
+    "runsOf": [
+      "lambda",
+      ["c"],
+      [
+        "words/listed",
+        [
+          "array/map",
+          ["aggregate/unique", ["find", "?r", ["weighed_in", "c", "?r"]]],
+          [
+            "lambda",
+            ["r"],
+            [
+              "object/get",
+              [
+                "quote",
+                {
+                  "solver": "Solve for the values a question leaves open",
+                  "formula-terms": "Formulas as values, with a solver function (Formulog's way)",
+                  "command-proofs": "Prove that every command keeps the invariants",
+                  "bounded-search": "Search every sequence of commands up to a bound",
+                  "rule-model-checking": "Check a model with rules over every reachable state",
+                  "transition-rules": "Rules comparing the database before and after a change",
+                  "eventually-rules": "Rules about what must eventually happen",
+                  "proof-certificates": "A certificate for every proof, rechecked by a small checker",
+                  "invariant-inference": "Find the invariants a proof needs",
+                  "hand-proofs": "Check proofs people write, as Lean does",
+                  "schema-inclusion": "Decide when one schema includes another",
+                  "stratified-rules": "Let rules recurse through not on a smaller argument",
+                  "stratified-schemas": "Let a schema ask about itself only of a smaller part",
+                  "polymorphic-schemas": "Check polymorphic schemas before a program runs",
+                  "least-fixed-points": "Read a recursive schema as its least fixed point",
+                  "annotation-independence": "Schemas that never change what a program computes",
+                  "schema-blind-equality": "Equality blind to schemas",
+                  "rest": "Split a record into the keys it names and the rest",
+                  "algebra": "Combine the values a key gets, with validity",
+                  "hypo": "Ask what would hold after some changes",
+                  "abduce": "Say which facts are missing for a goal",
+                  "locality": "Check only what a change can reach",
+                  "linear": "Rules that use up the facts they read",
+                  "sepand": "A conjunction whose goals match different facts",
+                  "incremental": "One algebra of changes (DBSP)",
+                  "annotate": "Annotated relations: top-k proofs and probabilities",
+                  "merge": "Merge functions over a union-find (egglog)",
+                  "joins": "Worst-case optimal joins",
+                  "agents": "A schema of valid programs, for models that write Lion",
+                  "compile": "Compile expressions to closures",
+                  "testing": "Metamorphic tests of the engine",
+                  "held-out-eval": "A held-out eval case for the skills' improvement loop",
+                  "separation-logic": "separation logic (2026-11-18)",
+                  "lion-improvements": "what to improve next (2026-11-17)",
+                  "cirt-refinement-types": "CIRT refinement types (2026-11-18)",
+                  "formal-verification": "formal verification (2026-11-19)",
+                  "tufazip": "TufaZip (2026-11-19)"
+                }
+              ],
+              "r"
+            ]
+          ]
+        ]
+      ]
+    ],
+    "gains": [
+      "lambda",
+      ["c"],
+      [
+        "words/listed",
+        ["aggregate/unique", ["find", "?f", ["gain", "c", "?f"]]]
+      ]
+    ],
+    "ruleChanged": [
+      "lambda",
+      ["c"],
+      [
+        "words/listed",
+        ["aggregate/unique", ["find", "?r", ["overturns", "c", "?r"]]]
+      ]
+    ],
+    "first": [
+      "query",
+      ["and", ["stage", "?c", 1], ["rank", "?c", "?n"]],
+      {
+        "order": ["n", "c"]
+      }
+    ],
+    "partly": [
+      "aggregate/unique",
+      ["find", "?c", ["and", ["stage", "?c", 1], ["not", ["rank", "?c", "?_"]]]]
+    ],
+    "later": [
+      "query",
+      ["and", ["stage", "?c", "?s"], ["number/greaterThan", "?s", 1]],
+      {
+        "order": ["s", "c"]
+      }
+    ],
+    "needsFirst": [
+      "lambda",
+      ["c"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?d",
+          ["and", ["builds_on", "c", "?d", "?_"], ["to_build", "?d"]]
+        ]
+      ]
+    ],
+    "givesWhat": [
+      "lambda",
+      ["c"],
+      [
+        "aggregate/unique",
+        [
+          "find",
+          "?cond",
+          ["and", ["builds_on", "c", "?d", "?cond"], ["to_build", "?d"]]
+        ]
+      ]
+    ]
+  },
+  "summary": [
+    "string/concat",
+    "Across ",
+    [
+      "words/number",
+      ["aggregate/countUnique", ["find", "?r", ["weighed_in", "?_", "?r"]]]
+    ],
+    " research runs, the model weighs ",
+    [
+      "words/number",
+      ["aggregate/countUnique", ["find", "?c", ["candidate", "?c", "?_"]]]
+    ],
+    " ideas for Lion. ",
+    [
+      "words/number",
+      ["aggregate/countUnique", ["find", "?c", ["to_build", "?c"]]]
+    ],
+    " are left to build: ",
+    [
+      "words/number",
+      ["aggregate/countUnique", ["find", "?c", ["stage", "?c", 1]]]
+    ],
+    " can start now, and ",
+    [
+      "words/number",
+      [
+        "aggregate/countUnique",
+        [
+          "find",
+          "?c",
+          ["and", ["stage", "?c", "?s"], ["number/greaterThan", "?s", 1]]
+        ]
+      ]
+    ],
+    " build on one of those. It ranks first ",
+    [
+      "label",
+      [
+        "array/head",
+        ["find", "?c", ["and", ["rank", "?c", 1], ["stage", "?c", 1]]]
+      ]
+    ],
+    [
+      "cond",
+      [
+        ["and", ["overturns", "?c", "?_"], ["to_build", "?c"]],
+        [
+          "string/concat",
+          ". ",
+          [
+            "words/listed",
+            [
+              "array/map",
+              [
+                "aggregate/unique",
+                [
+                  "find",
+                  "?c",
+                  ["and", ["overturns", "?c", "?_"], ["to_build", "?c"]]
+                ]
+              ],
+              "label"
+            ]
+          ],
+          " would change a rule Lion documents, so it waits for your decision"
+        ]
+      ],
+      ["else", ""]
+    ],
+    ". Lion does ",
+    [
+      "words/number",
+      [
+        "aggregate/countUnique",
+        ["find", "?c", ["verdict", "?c", "Lion does this already"]]
+      ]
+    ],
+    " already, and ",
+    [
+      "words/number",
+      [
+        "aggregate/countUnique",
+        ["find", "?c", ["passed_over", "?c", "?_", "?_"]]
+      ]
+    ],
+    " were passed over."
+  ],
+  "views": [
+    {
+      "name": "The plan",
+      "blocks": [
+        {
+          "type": "figures",
+          "items": [
+            {
+              "label": "Ideas weighed",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  ["find", "?c", ["candidate", "?c", "?_"]]
+                ]
+              ]
+            },
+            {
+              "label": "Left to build",
+              "value": [
+                "words/number",
+                ["aggregate/countUnique", ["find", "?c", ["to_build", "?c"]]]
+              ]
+            },
+            {
+              "label": "Can start now",
+              "value": [
+                "words/number",
+                ["aggregate/countUnique", ["find", "?c", ["stage", "?c", 1]]]
+              ]
+            },
+            {
+              "label": "Lion does already",
+              "value": [
+                "words/number",
+                [
+                  "aggregate/countUnique",
+                  ["find", "?c", ["verdict", "?c", "Lion does this already"]]
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What can be built now, and in what order?",
+          "answer": [
+            "string/concat",
+            [
+              "string/join",
+              [
+                "array/map",
+                "first",
+                [
+                  "lambda",
+                  ["row"],
+                  [
+                    "string/concat",
+                    ["number/toString", ["object/get", "row", "n"]],
+                    ". ",
+                    ["label", ["object/get", "row", "c"]],
+                    ", from the run on ",
+                    ["runsOf", ["object/get", "row", "c"]],
+                    ". It would give Lion ",
+                    ["gains", ["object/get", "row", "c"]],
+                    ".",
+                    [
+                      "cond",
+                      [
+                        ["overturns", ["object/get", "row", "c"], "?_"],
+                        [
+                          "string/concat",
+                          " It would change a rule Lion documents: ",
+                          ["ruleChanged", ["object/get", "row", "c"]],
+                          "."
+                        ]
+                      ],
+                      ["else", ""]
+                    ]
+                  ]
+                ]
+              ],
+              " "
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "partly"], 0],
+                [
+                  "string/concat",
+                  " In part, also: ",
+                  ["words/listed", ["array/map", "partly", "label"]],
+                  "."
+                ]
+              ],
+              ["else", ""]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["stage", "?idea", 1],
+              ["rank", "?idea", "?position"],
+              ["adds", "?idea", "?feature", "?technique"],
+              [
+                "answer",
+                {
+                  "covers": "?feature",
+                  "by": "?technique"
+                },
+                true,
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["position", "idea", "feature"]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "title": "How the order is worked out",
+          "text": "An idea is left to build when it would add something Lion lacks, or when all it needs is something another idea adds. It waits for that other idea when it needs what the other adds, and can start now otherwise. Ideas that can start now are ranked by how much they would give Lion, the features it lacks that they add and the mechanisms they would fold into one, then by how many independent publishers back their techniques. Each run named its features at its own grain, so treat ranks that differ by one as close. An idea passed over is one another idea covers, one that needs something no idea adds, or one that conflicts with what Lion guarantees."
+        },
+        {
+          "type": "answer",
+          "question": "What has to wait for another idea?",
+          "answer": [
+            "cond",
+            [
+              ["number/greaterThan", ["array/length", "later"], 0],
+              [
+                "string/join",
+                [
+                  "array/map",
+                  "later",
+                  [
+                    "lambda",
+                    ["row"],
+                    [
+                      "string/concat",
+                      ["label", ["object/get", "row", "c"]],
+                      ", from the run on ",
+                      ["runsOf", ["object/get", "row", "c"]],
+                      ", after ",
+                      [
+                        "words/listed",
+                        [
+                          "array/map",
+                          ["needsFirst", ["object/get", "row", "c"]],
+                          "label"
+                        ]
+                      ],
+                      ", which gives it ",
+                      [
+                        "words/listed",
+                        ["givesWhat", ["object/get", "row", "c"]]
+                      ],
+                      "."
+                    ]
+                  ]
+                ],
+                " "
+              ]
+            ],
+            ["else", "Nothing waits: every idea left to build can start now."]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["stage", "?idea", "?stage"],
+              ["number/greaterThan", "?stage", 1],
+              ["builds_on", "?idea", "?first", "?condition"],
+              ["to_build", "?first"],
+              [
+                "answer",
+                {
+                  "lion has": "?condition"
+                },
+                false,
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["stage", "idea"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Which ideas need my decision first?",
+          "answer": [
+            "cond",
+            [
+              ["overturns", "?_", "?_"],
+              [
+                "string/join",
+                [
+                  "array/map",
+                  [
+                    "aggregate/unique",
+                    ["find", "?c", ["overturns", "?c", "?_"]]
+                  ],
+                  [
+                    "lambda",
+                    ["c"],
+                    [
+                      "string/concat",
+                      ["label", "c"],
+                      " would change a rule Lion documents: ",
+                      ["ruleChanged", "c"],
+                      ".",
+                      [
+                        "cond",
+                        [
+                          ["to_build", "c"],
+                          " It is left to build, so it waits for your word."
+                        ],
+                        ["else", " It is passed over anyway."]
+                      ]
+                    ]
+                  ]
+                ],
+                " "
+              ]
+            ],
+            [
+              "else",
+              "None of the ideas left to build changes a rule Lion documents."
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["overturns", "?idea", "?rule"],
+              [
+                "answer",
+                {
+                  "lion has": "?rule"
+                },
+                true,
+                "?statement"
+              ]
+            ],
+            {
+              "order": ["idea", "statement"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "What was passed over, and why?",
+          "answer": [
+            "string/join",
+            [
+              "array/map",
+              [
+                "query",
+                ["passed_over", "?c", "?why", "?detail"],
+                {
+                  "order": ["why", "c"]
+                }
+              ],
+              [
+                "lambda",
+                ["row"],
+                [
+                  "string/concat",
+                  ["label", ["object/get", "row", "c"]],
+                  ": ",
+                  ["object/get", "row", "why"],
+                  " (",
+                  [
+                    "cond",
+                    [
+                      ["candidate", ["object/get", "row", "detail"], "?_"],
+                      ["label", ["object/get", "row", "detail"]]
+                    ],
+                    ["else", ["object/get", "row", "detail"]]
+                  ],
+                  ")."
+                ]
+              ]
+            ],
+            " "
+          ],
+          "evidence": [
+            "query",
+            ["passed_over", "?idea", "?reason", "?detail"],
+            {
+              "order": ["reason", "idea"]
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Every idea, the run that weighed it, and its verdict",
+          "note": "An idea the shared rule cannot judge offers nothing Lion lacks by name: its run weighed it by its own measure.",
+          "query": [
+            "query",
+            [
+              "and",
+              ["weighed_in", "?idea", "?run"],
+              [
+                "or",
+                ["verdict", "?idea", "?verdict"],
+                [
+                  "and",
+                  ["unjudged", "?idea"],
+                  ["=", "?verdict", "judged only by its own run"]
+                ]
+              ]
+            ],
+            {
+              "order": ["run", "verdict", "idea"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lion today",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "Does Lion still do what the runs found?",
+          "answer": [
+            "string/concat",
+            "Every program the earlier runs kept was run again on Lion as it is now. ",
+            [
+              "cond",
+              [
+                [
+                  "and",
+                  [
+                    "restated",
+                    {
+                      "lion has": "?f"
+                    },
+                    "?_",
+                    "?_",
+                    "?now"
+                  ],
+                  [
+                    "answer",
+                    {
+                      "lion has": "?f"
+                    },
+                    "?now",
+                    "?claim"
+                  ],
+                  ["string/startsWith", "?claim", "co-"]
+                ],
+                [
+                  "string/concat",
+                  "Lion now has what an earlier run found it lacked: ",
+                  [
+                    "words/listed",
+                    [
+                      "aggregate/unique",
+                      [
+                        "find",
+                        "?f",
+                        [
+                          "and",
+                          [
+                            "restated",
+                            {
+                              "lion has": "?f"
+                            },
+                            "?_",
+                            false,
+                            true
+                          ],
+                          [
+                            "answer",
+                            {
+                              "lion has": "?f"
+                            },
+                            true,
+                            "?claim"
+                          ],
+                          ["string/startsWith", "?claim", "co-"]
+                        ]
+                      ]
+                    ]
+                  ],
+                  ". The verdicts that rested on the earlier answer follow the new one."
+                ]
+              ],
+              ["else", "Each gives what its run recorded."]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "answer",
+                {
+                  "lion has": "?feature"
+                },
+                "?value",
+                "?statement"
+              ],
+              ["string/startsWith", "?statement", "co-"]
+            ],
+            {
+              "order": ["feature", "statement"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TufaZip",
+      "blocks": [
+        {
+          "type": "answer",
+          "question": "What can Lion learn from TufaZip?",
+          "answer": [
+            "string/concat",
+            [
+              "string/join",
+              [
+                "array/map",
+                [
+                  "aggregate/unique",
+                  [
+                    "find",
+                    "?a",
+                    [
+                      "and",
+                      ["confirmed", "?a"],
+                      ["string/startsWith", "?a", "tz-"]
+                    ]
+                  ]
+                ],
+                [
+                  "lambda",
+                  ["a"],
+                  [
+                    "string/concat",
+                    "Confirmed: ",
+                    ["array/head", ["find", "?s", ["assumption", "a", "?s"]]],
+                    "."
+                  ]
+                ]
+              ],
+              " "
+            ],
+            [
+              "string/concat",
+              " The one idea it adds: ",
+              ["label", "held-out-eval"],
+              ", which the model finds ",
+              [
+                "array/head",
+                ["find", "?v", ["verdict", "held-out-eval", "?v"]]
+              ],
+              "."
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              ["expects", "?belief", "?question", "?expected"],
+              ["string/startsWith", "?belief", "tz-"],
+              ["answer", "?question", "?value", "?statement"]
+            ],
+            {
+              "order": ["belief", "statement"]
+            }
+          ]
+        },
+        {
+          "type": "answer",
+          "question": "Do the figures on the TufaZip page hold?",
+          "answer": [
+            "cond",
+            [
+              ["violated", "tz-figures", "?_"],
+              [
+                "string/concat",
+                "Not all: ",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?n",
+                      [
+                        "stated",
+                        {
+                          "counted": "TufaZip page figures that hold at the precision written"
+                        },
+                        "?n"
+                      ]
+                    ]
+                  ]
+                ],
+                " of the ",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?n",
+                      [
+                        "stated",
+                        {
+                          "counted": "TufaZip page figures a Lion program recomputed"
+                        },
+                        "?n"
+                      ]
+                    ]
+                  ]
+                ],
+                " figures a Lion program worked out from the page's table hold."
+              ]
+            ],
+            [
+              "else",
+              [
+                "string/concat",
+                "Yes. A Lion program worked out ",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?n",
+                      [
+                        "stated",
+                        {
+                          "counted": "TufaZip page figures a Lion program recomputed"
+                        },
+                        "?n"
+                      ]
+                    ]
+                  ]
+                ],
+                " figures from the page's table, among them the ",
+                [
+                  "words/number",
+                  [
+                    "array/head",
+                    [
+                      "find",
+                      "?x",
+                      [
+                        "stated",
+                        {
+                          "result": "an offline prior stored with the decoder",
+                          "measure": "smaller total than learning online from random weights",
+                          "bound": "exact",
+                          "unit": "percent"
+                        },
+                        "?x"
+                      ]
+                    ]
+                  ]
+                ],
+                " percent the final model saves over learning from random weights, and each holds at the precision the page writes it."
+              ]
+            ]
+          ],
+          "evidence": [
+            "query",
+            [
+              "and",
+              [
+                "answer",
+                {
+                  "counted": "?what"
+                },
+                "?n",
+                "?statement"
+              ],
+              ["string/startsWith", "?statement", "tz-"]
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "How solid is it",
+      "blocks": [
+        {
+          "type": "trust"
+        }
+      ]
+    },
+    {
+      "name": "Sources",
+      "blocks": [
+        {
+          "type": "sources"
+        }
+      ]
+    }
+  ]
+}

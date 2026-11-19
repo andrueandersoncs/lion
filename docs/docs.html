@@ -7302,7 +7302,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <ul>
   <li>A rule cannot ask a <a href="#logic-asking">question</a> about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under <code>not</code>, a goal used as a value, a <code>find</code>, and a relation handed to a function. A question that a rule only builds when it runs, as with <code>eval</code>, fails then instead.</li>
   <li>An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates <code>aggregate/min</code>, <code>aggregate/max</code>, <code>aggregate/shortest</code>, and <code>aggregate/union</code>, and only when every relation in the recursive cycle aggregates.</li>
-  <li>Every rule for an aggregated relation must aggregate the same columns in the same way, and an aggregated relation cannot have facts, unless it merges what a key gets, which makes each fact a candidate.</li>
+  <li>Every rule for an aggregated relation must aggregate the same columns in the same way. Its facts, and the rows of its rules with plain heads, are candidates its aggregates combine, as a <a href="#form-relation">merge</a> combines them.</li>
   <li>A rule that <a href="#form-exists">invents</a> cannot aggregate. Rules that invent wait until every rule that invents nothing has finished, then every one whose head does not hold invents, all at once, and the other rules run on what was invented, until nothing more is.</li>
 </ul>
 <p>Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.</p>

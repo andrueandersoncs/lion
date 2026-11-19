@@ -1,0 +1,4 @@
+["begin",
+  ["fact",
+    ["rewrites", "solver", ["quote", "filters refused over a variable no goal binds"]]],
+  "co framed"]

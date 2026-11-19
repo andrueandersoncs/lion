@@ -1,0 +1,701 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "https://tufalabs.ai/research/tufazip/"
+   ],
+   [
+    "quote",
+    "tufazip: Learning to Compress a Billion Bytes of Wikipedia"
+   ],
+   [
+    "quote",
+    "Tufa Labs"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261014
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "ltcb-rules"
+   ],
+   [
+    "quote",
+    "https://www.mattmahoney.net/dc/textrules.html"
+   ],
+   [
+    "quote",
+    "Rules for the Large Text Compression Benchmark"
+   ],
+   [
+    "quote",
+    "Matt Mahoney"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20130116
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "wikipedia-test-sets"
+   ],
+   [
+    "quote",
+    "https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets"
+   ],
+   [
+    "quote",
+    "Training, validation, and test data sets"
+   ],
+   [
+    "quote",
+    "Wikipedia"
+   ],
+   [
+    "quote",
+    "secondary"
+   ],
+   [
+    "quote",
+    null
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-measuring-guideline"
+   ],
+   [
+    "quote",
+    "guidelines/measuring.md"
+   ],
+   [
+    "quote",
+    "Lion's developer guidelines: Measuring complexity, at commit f07d583"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-skills-held-out"
+   ],
+   [
+    "quote",
+    "grep -rniE 'held.out|holdout|tune[ds]? against' skills/"
+   ],
+   [
+    "quote",
+    "Lion's skills searched for a held-out eval, at commit f07d583"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-tz"
+   ],
+   [
+    "quote",
+    "research/probes/tz-figures.json"
+   ],
+   [
+    "quote",
+    "A Lion program that works out the figures of the TufaZip page from its table"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-p1"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "C2 saved 4.97 MB of payload while adding 4.38 MB of decoder cost, leaving a net improvement of 0.59 MB, or 0.56%"
+   ],
+   [
+    "quote",
+    {
+     "result": "an offline prior stored with the decoder",
+     "measure": "smaller total than learning online from random weights",
+     "bound": "exact",
+     "percent": 0.56
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-p1"
+   ],
+   [
+    "quote",
+    "Offline transfer, the enwik9 results"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-p2"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "That saved 1.30 MB, or 1.21%, for about 40% more estimated model FLOPs"
+   ],
+   [
+    "quote",
+    {
+     "result": "replay",
+     "measure": "smaller payload with a 35M-token replay window than a 15M one",
+     "bound": "exact",
+     "percent": 1.21
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-p2"
+   ],
+   [
+    "quote",
+    "Ablations, Replay"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-d1"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "The decoder repeats the same learning process, so the full model’s learned weights never need to be transferred."
+   ],
+   [
+    "quote",
+    {
+     "covers": "state rebuilt from the steps that made it",
+     "by": "learning in step in the encoder and decoder",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-d1"
+   ],
+   [
+    "quote",
+    "Summary"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-d2"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "the weight update from learning and next-token probabilities must be fully deterministic in order for the algorithm to be lossless"
+   ],
+   [
+    "quote",
+    {
+     "needs": "updates that repeat exactly",
+     "by": "learning in step in the encoder and decoder"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-d2"
+   ],
+   [
+    "quote",
+    "Method, online learning"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-c1"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "Including the decoder and offline trained weights makes that meaningful: moving information from the payload into the model still has a cost."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a cost counted for every mechanism a change adds",
+     "by": "counting the decompressor in the score",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-c1"
+   ],
+   [
+    "quote",
+    "Discussion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-r1"
+   ],
+   [
+    "quote",
+    "ltcb-rules"
+   ],
+   [
+    "quote",
+    "Compression programs will be ranked by the compressed size of enwik9 plus the size of a zip archive (readable by unzip) containing the decompressor and any other files needed by the decompressor at run time"
+   ],
+   [
+    "quote",
+    {
+     "covers": "a cost counted for every mechanism a change adds",
+     "by": "counting the decompressor in the score",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-r1"
+   ],
+   [
+    "quote",
+    "Rules for Benchmark Listing"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-r2"
+   ],
+   [
+    "quote",
+    "ltcb-rules"
+   ],
+   [
+    "quote",
+    "Compression programs will be ranked by the compressed size of enwik9 plus the size of a zip archive (readable by unzip) containing the decompressor"
+   ],
+   [
+    "quote",
+    {
+     "adopted": "counting the decompressor in the score",
+     "in": "Large Text Compression Benchmark"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-r2"
+   ],
+   [
+    "quote",
+    "Rules for Benchmark Listing"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-g1"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "Hill climbing a single objective through automated research loops can improve a score without explaining why a change worked or where it will work again."
+   ],
+   [
+    "quote",
+    {
+     "raises": "a score improved by tuning to one fixed test"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-g1"
+   ],
+   [
+    "quote",
+    "Discussion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-g2"
+   ],
+   [
+    "quote",
+    "tufazip-2026"
+   ],
+   [
+    "quote",
+    "The score alone, however, does not reveal how much was learned from the input, supplied by a human designer, or discovered by a research agent."
+   ],
+   [
+    "quote",
+    {
+     "raises": "where a score's gain came from"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-g2"
+   ],
+   [
+    "quote",
+    "Discussion"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-g3"
+   ],
+   [
+    "quote",
+    "wikipedia-test-sets"
+   ],
+   [
+    "quote",
+    "Most approaches that search through training data for empirical relationships tend to overfit the data, meaning that they can identify and exploit apparent relationships in the training data that do not hold in general."
+   ],
+   [
+    "quote",
+    {
+     "raises": "a score improved by tuning to one fixed test"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-g3"
+   ],
+   [
+    "quote",
+    "Training data set"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-h1"
+   ],
+   [
+    "quote",
+    "wikipedia-test-sets"
+   ],
+   [
+    "quote",
+    "the test data set is a data set used to provide an unbiased evaluation of a model fit on the training data set."
+   ],
+   [
+    "quote",
+    {
+     "covers": "a score the tuning never saw",
+     "by": "held-out evaluation",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-h1"
+   ],
+   [
+    "quote",
+    "lead section"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-h2"
+   ],
+   [
+    "quote",
+    "wikipedia-test-sets"
+   ],
+   [
+    "quote",
+    "the test data set is called a holdout data set"
+   ],
+   [
+    "quote",
+    {
+     "defines": "holdout data set"
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-h2"
+   ],
+   [
+    "quote",
+    "lead section"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-l1"
+   ],
+   [
+    "quote",
+    "lion-measuring-guideline"
+   ],
+   [
+    "quote",
+    "A feature usually adds code. Pay for it in the same change: find the rule that makes special cases redundant, and delete them."
+   ],
+   [
+    "quote",
+    {
+     "lion": "a cost counted for every mechanism a change adds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-l1"
+   ],
+   [
+    "quote",
+    "Pay for what you add"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-l2"
+   ],
+   [
+    "quote",
+    "lion-skills-held-out"
+   ],
+   [
+    "quote",
+    "held out: 0 lines"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a score the tuning never saw",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-l2"
+   ],
+   [
+    "quote",
+    "the search of every skill"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-f1"
+   ],
+   [
+    "quote",
+    "lion-probes-tz"
+   ],
+   [
+    "quote",
+    "\"figures recomputed\": 11,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "TufaZip page figures a Lion program recomputed",
+     "n": 11
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-f1"
+   ],
+   [
+    "quote",
+    "program tz-figures.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "tz-f2"
+   ],
+   [
+    "quote",
+    "lion-probes-tz"
+   ],
+   [
+    "quote",
+    "\"figures that hold at the precision written\": 11,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "TufaZip page figures that hold at the precision written",
+     "n": 11
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "tz-f2"
+   ],
+   [
+    "quote",
+    "program tz-figures.json"
+   ]
+  ]
+ ],
+ "recorded"
+]

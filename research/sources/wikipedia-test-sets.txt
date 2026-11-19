@@ -1,0 +1,653 @@
+Jump to content
+Main menu
+Main menu
+move to sidebar
+hide
+Navigation
+Main page
+Contents
+Current events
+Random article
+About Wikipedia
+Contact us
+Contribute
+Help
+Learn to edit
+Community portal
+Recent changes
+Upload file
+Special pages
+Search
+Search
+Appearance
+Donate
+Create account
+Log in
+Personal tools
+Donate
+Create account
+Log in
+Contents
+move to sidebar
+hide
+(Top)
+1
+Training data set
+2
+Validation data set
+3
+Test data set
+4
+Confusion in terminology
+5
+Causes of error
+6
+See also
+7
+References
+Toggle the table of contents
+Training, validation, and test data sets
+18 languages
+العربية
+Català
+Čeština
+Deutsch
+Español
+فارسی
+Français
+Italiano
+日本語
+한국어
+Polski
+Português
+Русский
+Shqip
+Српски / srpski
+ไทย
+Українська
+中文
+Edit links
+Article
+Talk
+English
+Read
+Edit
+View history
+Save
+Tools
+Tools
+move to sidebar
+hide
+Actions
+Read
+Edit
+View history
+Save
+General
+What links here
+Related changes
+Upload file
+Permanent link
+Page information
+Cite this page
+Get shortened URL
+Switch to legacy parser
+Print/export
+Download as PDF
+Printable version
+In other projects
+Wikimedia Commons
+Wikidata item
+Appearance
+move to sidebar
+hide
+From Wikipedia, the free encyclopedia
+Tasks in machine learning
+Part of a series on
+Machine learning and
+data mining
+Paradigms
+AutoML
+Association rules
+Supervised learning
+Unsupervised learning
+Semi-supervised learning
+Self-supervised learning
+Reinforcement learning
+Transfer learning
+Meta-learning
+Multimodal learning
+Feature learning
+Few-shot learning
+Zero-shot learning
+Online learning
+Batch learning
+Curriculum learning
+Rule-based learning
+Ontology learning
+Neuro-symbolic AI
+Neuromorphic engineering
+Quantum machine learning
+Problems
+Classification
+Generative modeling
+Regression
+Clustering
+Dimensionality reduction
+Density estimation
+Anomaly detection
+Data cleaning
+AutoML
+Association rules
+Semantic analysis
+Structured prediction
+Feature engineering
+Feature learning
+Learning to rank
+Grammar induction
+Ontology learning
+Multimodal learning
+Supervised learning
+( classification • regression )
+Apprenticeship learning
+Decision trees
+Ensembles
+Bagging
+Boosting
+Random forest
+k -NN
+Linear regression
+Naive Bayes
+Artificial neural networks
+Logistic regression
+Perceptron
+Relevance vector machine (RVM)
+Support vector machine (SVM)
+Clustering
+BIRCH
+CURE
+Hierarchical
+k -means
+Fuzzy
+Expectation–maximization (EM)
+DBSCAN
+OPTICS
+Mean shift
+Dimensionality reduction
+Factor analysis
+Confirmatory
+Exploratory
+CCA
+ICA
+LDA
+NMF
+PCA
+PGD
+t-SNE
+SDL
+Structured prediction
+Graphical models
+Bayes net
+Conditional random field
+Hidden Markov
+Anomaly detection
+RANSAC
+k -NN
+Local outlier factor
+Isolation forest
+Neural networks
+Autoencoder
+Deep learning
+Feedforward neural network
+Recurrent neural network
+LSTM
+GRU
+ESN
+reservoir computing
+Boltzmann machine
+Restricted
+GAN
+Diffusion model
+SOM
+Convolutional neural network
+U-Net
+LeNet
+AlexNet
+DeepDream
+Neural field
+Neural radiance field
+Physics-informed neural networks
+Transformer
+Vision
+Mamba
+Spiking neural network
+Memtransistor
+Electrochemical RAM (ECRAM)
+Reinforcement learning
+Q-learning
+Policy gradient
+SARSA
+Temporal difference (TD)
+Multi-agent
+Self-play
+Learning with humans
+Active learning
+Crowdsourcing
+Human-in-the-loop
+Mechanistic interpretability
+RLHF
+Model diagnostics
+Coefficient of determination
+Confusion matrix
+Learning curve
+ROC curve
+Mathematical foundations
+Kernel machines
+Bias–variance tradeoff
+Computational learning theory
+Empirical risk minimization
+Occam learning
+PAC learning
+Statistical learning
+VC theory
+Topological deep learning
+Journals and conferences
+AAAI
+CVPR
+ECCV
+ECML PKDD
+EMNLP
+ICCV
+NeurIPS
+ICML
+ICLR
+IJCAI
+ML
+JMLR
+Related articles
+Glossary of artificial intelligence
+List of datasets for machine-learning research
+List of datasets in computer vision and image processing
+Outline of machine learning
+v
+t
+e
+In machine learning , a common task is the study and construction of algorithms that can learn from and make predictions on data . [ 1 ] Such algorithms function by making data-driven predictions or decisions, [ 2 ] through building a mathematical model from input data. These input data used to build the model are usually divided into multiple data sets . In particular, three data sets are commonly used in different stages of the creation of the model: training, validation, and testing sets.
+The model is initially fit on a training data set , [ 3 ] which is a set of examples used to fit the parameters (e.g. weights of connections between neurons in artificial neural networks ) of the model. [ 4 ] The model (e.g. a naive Bayes classifier ) is trained on the training data set using a supervised learning method, for example using optimization methods such as gradient descent or stochastic gradient descent . In practice, the training data set often consists of pairs of an input vector (or scalar) and the corresponding output vector (or scalar), where the answer key is commonly denoted as the target (or label ). The current model is run with the training data set and produces a result, which is then compared with the target , for each input vector in the training data set. Based on the result of the comparison and the specific learning algorithm being used, the parameters of the model are adjusted. The model fitting can include both variable selection and parameter estimation .
+Successively, the fitted model is used to predict the responses for the observations in a second data set called the validation data set . [ 3 ] The validation data set provides an unbiased evaluation of a model fit on the training data set while tuning the model's hyperparameters [ 5 ] (e.g. the number of hidden units—layers and layer widths—in a neural network [ 4 ] ). Validation data sets can be used for regularization by early stopping (stopping training when the error on the validation data set increases, as this is a sign of over-fitting to the training data set). [ 6 ]
+This simple procedure is complicated in practice by the fact that the validation data set's error may fluctuate during training, producing multiple local minima. This complication has led to the creation of many ad-hoc rules for deciding when over-fitting has truly begun. [ 6 ]
+Finally, the test data set is a data set used to provide an unbiased evaluation of a model fit on the training data set. [ 5 ] When the data in the test data set has never been used (for example in cross-validation ), the test data set is called a holdout data set . The term "validation set" is sometimes used instead of "test set" in some literature (e.g., if the original data set was partitioned into only two subsets, the test set might be referred to as the validation set). [ 5 ]
+Deciding the sizes and strategies for data set division in training, test and validation sets is very dependent on the problem and data available. [ 7 ]
+Training data set
+[ edit ]
+A training data set is a data set of examples used during the learning process and is used to fit the parameters (e.g., weights) of, for example, a classifier . [ 8 ] [ 9 ]
+For classification tasks, a supervised learning algorithm looks at the training data set to determine, or learn, the optimal combinations of variables that will generate a good predictive model . [ 10 ] The goal is to produce a trained (fitted) model that generalizes well to new, unknown data. [ 11 ] The fitted model is evaluated using “new” examples from the held-out data sets (validation and test data sets) to estimate the model’s accuracy in classifying new data. [ 5 ] To reduce the risk of issues such as over-fitting, the examples in the validation and test data sets should not be used to train the model. [ 5 ]
+Most approaches that search through training data for empirical relationships tend to overfit the data, meaning that they can identify and exploit apparent relationships in the training data that do not hold in general.
+When a training set is continuously expanded with new data, then this is incremental learning .
+Simplified example of training a neural network in object detection : The network is trained by multiple images known to depict starfish and sea urchins , which are correlated with "nodes" representing visual features . Starfish match with a ringed texture and star outline, whereas most sea urchins match with a striped texture and oval shape.
+The resulting model contains weighted associations between visual features and output categories. Because one training image depicts a ring-textured sea urchin, the model also develops a weak association between ringed texture and sea urchin.
+Subsequent run of the model on an input image (left): [ 12 ] The network correctly detects the starfish. However, the weak association between ringed texture and sea urchin also gives a weak signal to the latter from one of two intermediate nodes. In addition, a shell not included in the training gives a weak signal for the oval shape, also resulting in a weak signal for the sea urchin output. These weak signals may result in a false positive result for sea urchin.
+In reality, such textures and outlines would not be represented by single nodes, but rather by associated weight patterns of multiple nodes.
+Validation data set
+[ edit ]
+A validation data set is a data set of examples used to tune the hyperparameters (i.e. the architecture) of a model. It is sometimes also called the development set or the "dev set". [ 13 ] An example of a hyperparameter for artificial neural networks includes the number of hidden units in each layer. [ 8 ] [ 9 ] It, as well as the testing set (as mentioned below), should follow the same probability distribution as the training data set.
+In order to avoid overfitting, when any classification parameter needs to be adjusted, it is necessary to have a validation data set in addition to the training and test data sets. For example, if the most suitable classifier for the problem is sought, the training data set is used to train the different candidate classifiers, the validation data set is used to compare their performances and decide which one to take and, finally, the test data set is used to obtain the performance characteristics such as accuracy , sensitivity , specificity , F-measure , and so on. The validation data set functions as a hybrid: it is training data used for testing, but neither as part of the low-level training nor as part of the final testing.
+The basic process of using a validation data set for model selection (as part of training data set, validation data set, and test data set) is: [ 9 ] [ 14 ]
+Since our goal is to find the network having the best performance on new data, the simplest approach to the comparison of different networks is to evaluate the error function using data which is independent of that used for training. Various networks are trained by minimization of an appropriate error function defined with respect to a training data set. The performance of the networks is then compared by evaluating the error function using an independent validation set, and the network having the smallest error with respect to the validation set is selected. This approach is called the hold out method. Since this procedure can itself lead to some overfitting to the validation set, the performance of the selected network should be confirmed by measuring its performance on a third independent set of data called a test set.
+An application of this process is in early stopping , where the candidate models are successive iterations of the same network, and training stops when the error on the validation set grows, choosing the previous model (the one with minimum error).
+Test data set
+[ edit ]
+A test data set is a data set that is independent of the training data set, but that follows the same probability distribution as the training data set. A test set is therefore a set of examples used only to assess the performance (i.e. generalization) of a specified classifier on unseen data. [ 8 ] [ 9 ] To do this, the model is used to predict classifications of examples in the test set. Those predictions are compared to the examples' true classifications to assess the model's accuracy. [ 10 ] If a model fit to the training and validation data set also fits the test data set well, minimal overfitting has taken place (see figure below). A better fitting of the training or validation data sets as opposed to the test data set usually points to overfitting.
+In the scenario where a data set has a low number of samples, it is usually partitioned into a training set and a validation data set, where the model is trained on the training set and refined using the validation set to improve accuracy, but this approach will lead to overfitting. The holdout method [ 15 ] can also be employed, where the test set is used at the end, after training on the training set. Other techniques, such as cross-validation and bootstrapping , are used on small data sets. The bootstrap method generates numerous simulated data sets of the same size by randomly sampling with replacement from the original data, allowing the random data points to serve as test sets for evaluating model performance. Cross-validation splits the data set into multiple folds, with a single sub-fold used as test data; the model is trained on the remaining folds, and all folds are cross-validated (with results averaged and models consolidated) to estimate final model performance. Note that some sources advise against using a single split, as it can lead to overfitting as well as biased model performance estimates. [ 11 ]
+For this reason, data sets are split into three partitions: training, validation and test data sets. The standard machine learning practice is to train on the training set and tune hyperparameters using the validation set, where the validation process selects the model with the lowest validation loss, which is then tested on the test data set (normally held out) to assess the final model. The holdout method for the test set reduces computation by avoiding using the test set after each epoch. The test data set should never be used for validating the training model or fine-tuning hyperparameters, as it provides an accurate and honest evaluation of the model's final performance on unseen data, but it can be used multiple times to determine the performance of an updated model and detect overfitting or the need for further training or early stopping. [ 16 ] Methods such as cross-validation are used, where the test set is separated and the training data set is further split into folds, with a sub-fold serving as the validation set to train the model; this is effective at reducing bias and variability in the model. [ 5 ] [ 11 ] There are many methods of cross-validation such as nested cross-validation .
+A training set (left) and a test set (right) from the same statistical population are shown as blue points. Two predictive models are fit to the training data. Both fitted models are plotted with both the training and test sets. In the training set, the MSE of the fit shown in orange is 4 whereas the MSE for the fit shown in green is 9. In the test set, the MSE for the fit shown in orange is 15 and the MSE for the fit shown in green is 13. The orange curve severely overfits the training data, since its MSE increases by almost a factor of four when comparing the test set to the training set. The green curve overfits the training data much less, as its MSE increases by less than a factor of 2.
+Confusion in terminology
+[ edit ]
+Testing is trying something to find out about it ("To put to the proof; to prove the truth, genuineness, or quality of by experiment" according to the Collaborative International Dictionary of English) and to validate is to prove that something is valid ("To confirm; to render valid" Collaborative International Dictionary of English). With this perspective, the most common use of the terms test set and validation set is the one here described. However, in both industry and academia, they are sometimes used interchanged, by considering that the internal process is testing different models to improve (test set as a development set) and the final model is the one that needs to be validated before real use with an unseen data (validation set). "The literature on machine learning often reverses the meaning of 'validation' and 'test' sets. This is the most blatant example of the terminological confusion that pervades artificial intelligence research." [ 17 ] Nevertheless, the important concept that must be kept is that the final set, whether called test or validation, should only be used in the final experiment.
+Causes of error
+[ edit ]
+Comic strip demonstrating a fictional erroneous computer output (making a coffee 5 million degrees , from a previous definition of "extra hot"). This can be classified as both a failure in logic and a failure to include various relevant environmental conditions. [ 18 ]
+Omissions in the training of algorithms are a major cause of erroneous outputs. [ 18 ] Types of such omissions include: [ 18 ]
+Particular circumstances or variations were not included.
+Obsolete data
+Ambiguous input information
+Inability to change to new environments
+Inability to request help from a human or another AI system when needed
+An example of an omission of particular circumstances is a case where a boy was able to unlock the phone because his mother registered her face under indoor, nighttime lighting, a condition which was not appropriately included in the training of the system. [ 18 ] [ 19 ]
+Usage of relatively irrelevant input can include situations where algorithms use the background rather than the object of interest for object detection , such as being trained by pictures of sheep on grasslands, leading to a risk that a different object will be interpreted as a sheep if located on a grassland. [ 18 ]
+See also
+[ edit ]
+Statistical classification
+List of datasets for machine learning research
+Hierarchical classification
+References
+[ edit ]
+↑ Kohavi, Ron; Provost, Foster (1998). "Glossary of terms" . Machine Learning . 30 ( 2– 3): 271– 274. doi : 10.1023/A:1017181826899 .
+↑ Bishop, Christopher M. (2006). Pattern Recognition and Machine Learning . New York: Springer. p. vii. ISBN 0-387-31073-8 . Pattern recognition has its origins in engineering, whereas machine learning grew out of computer science. However, these activities can be viewed as two facets of the same field, and together they have undergone substantial development over the past ten years.
+1 2 James, Gareth (2013). An Introduction to Statistical Learning: with Applications in R . Springer. p. 176. ISBN 978-1461471370 .
+1 2 Ripley, Brian (1996). Pattern Recognition and Neural Networks . Cambridge University Press. p. 354 . ISBN 978-0521717700 .
+1 2 3 4 5 6 Brownlee, Jason (2017-07-13). "What is the Difference Between Test and Validation Datasets?" . Retrieved 2017-10-12 .
+1 2 Prechelt, Lutz; Geneviève B. Orr (2012-01-01). "Early Stopping — But When?". In Grégoire Montavon; Klaus-Robert Müller (eds.). Neural Networks: Tricks of the Trade . Lecture Notes in Computer Science. Springer Berlin Heidelberg. pp. 53– 67. doi : 10.1007/978-3-642-35289-8_5 . ISBN 978-3-642-35289-8 .
+↑ "Machine learning - Is there a rule-of-thumb for how to divide a dataset into training and validation sets?" . Stack Overflow . Retrieved 2021-08-12 .
+1 2 3 Ripley, B.D. (1996) Pattern Recognition and Neural Networks , Cambridge: Cambridge University Press, p. 354
+1 2 3 4 " Subject: What are the population, sample, training set, design set, validation set, and test set? ", Neural Network FAQ, part 1 of 7: Introduction ( txt ), comp.ai.neural-nets, Sarle, W.S., ed. (1997, last modified 2002-05-17)
+1 2 Larose, D. T.; Larose, C. D. (2014). Discovering knowledge in data : an introduction to data mining . Hoboken: Wiley. doi : 10.1002/9781118874059 . ISBN 978-0-470-90874-7 . OCLC 869460667 .
+1 2 3 Xu, Yun; Goodacre, Royston (2018). "On Splitting Training and Validation Set: A Comparative Study of Cross-Validation, Bootstrap and Systematic Sampling for Estimating the Generalization Performance of Supervised Learning" . Journal of Analysis and Testing . 2 (3). Springer Science and Business Media LLC: 249– 262. doi : 10.1007/s41664-018-0068-2 . ISSN 2096-241X . PMC 6373628 . PMID 30842888 .
+↑ Image by Mikael Häggström, MD. Reference: Ferrie, C.; Kaiser, S. (2019). Neural Networks for Babies . Sourcebooks. ISBN 978-1492671206 .
+↑ "Deep Learning" . Coursera . Retrieved 2021-05-18 .
+↑ Bishop, C.M. (1995), Neural Networks for Pattern Recognition , Oxford: Oxford University Press, p. 372
+↑ Kohavi, Ron (2001-03-03). "A Study of Cross-Validation and Bootstrap for Accuracy Estimation and Model Selection" . International Joint Conference on Artificial Intelligence . Vol. 14.
+↑ Bergmann, Dave. "What Is Overfitting?" . ibm.com . Retrieved 2021-10-15 .
+↑ "},"publisher":{"wt":"Cambridge University Press"},"isbn":{"wt":"9780521717700"},"chapter":{"wt":"Glossary"},"oclc":{"wt":"601063414"}},"i":0}}]}'/> Ripley, Brian D. (2008-01-10). "Glossary". Pattern recognition and neural networks . Cambridge University Press. ISBN 9780521717700 . OCLC 601063414 .
+1 2 3 4 5 Chanda SS, Banerjee DN (2022). "Omission and commission errors underlying AI failures" . AI & Society . 39 (3): 1– 24. doi : 10.1007/s00146-022-01585-x . PMC 9669536 . PMID 36415822 .
+↑ Greenberg A (2017-11-14). "Watch a 10-Year-Old's Face Unlock His Mom's iPhone X" . Wired .
+v
+t
+e
+Artificial intelligence (AI)
+History
+timeline
+Glossary
+Lists
+Algorithms
+Companies
+Institutions
+Projects
+Software
+Open-source
+Proprietary
+Concepts
+Automated reasoning
+Automated planning
+Constraint satisfaction
+Knowledge representation
+Parameter
+Hyperparameter
+Loss functions
+Regression
+Bias–variance tradeoff
+Double descent
+Overfitting
+Clustering
+Gradient descent
+SGD
+Quasi-Newton method
+Conjugate gradient method
+Backpropagation
+Attention
+Convolution
+Normalization
+Batchnorm
+Activation
+Softmax
+Sigmoid
+Rectifier
+Gating
+Weight initialization
+Regularization
+Datasets
+Augmentation
+Prompt engineering
+Reinforcement learning
+Q-learning
+SARSA
+Imitation
+Policy gradient
+Diffusion
+Latent diffusion model
+Autoregression
+Adversary
+RAG
+Uncanny valley
+LLM post-training
+RLHF
+Self-supervised learning
+Reflection
+Recursive self-improvement
+Hallucination
+Word embedding
+Vibe coding
+Blended AI
+Open-source AI
+Sovereign AI
+Symbolic AI
+Neuro-symbolic AI
+Situated approach
+Actor-critic algorithm
+Applications
+Automated theorem proving
+General game playing
+Machine learning
+In-context learning
+Artificial neural network
+Deep learning
+Language model
+Large
+NMT
+Reasoning
+Model Context Protocol
+Intelligent agent
+AI agent
+Artificial human companion
+Humanity's Last Exam
+Lethal autonomous weapons (LAWs)
+Generative AI
+Weak AI
+Hypothetical
+Artificial general intelligence (AGI)
+Artificial superintelligence (ASI)
+Agent2Agent protocol
+Implementations
+Audio–visual
+AlexNet
+WaveNet
+Human image synthesis
+HWR
+OCR
+Computer vision
+R-CNN
+Speech synthesis
+15.ai
+ElevenLabs
+Speech recognition
+Whisper
+Facial recognition
+AlphaFold
+Text-to-image models
+Aurora
+DALL-E
+Firefly
+Flux
+GPT Image
+Ideogram
+Imagen
+Midjourney
+Recraft
+Stable Diffusion
+Text-to-video models
+Dream Machine
+Runway Gen
+Hailuo AI
+Kling
+Sora
+Seedance
+Veo
+Music generation
+Riffusion
+Suno
+Udio
+World models
+Genie
+Oasis
+Text
+List of large language models
+Project Debater
+IBM Watson
+IBM Watsonx
+Decisional
+AlphaGo
+AlphaZero
+OpenAI Five
+Self-driving car
+MuZero
+Action selection
+AutoGPT
+Robot control
+Reasoning systems
+Deductive classifiers
+Expert systems
+Inference engines
+Knowledge-based systems
+Logic programs
+Procedural reasoning systems
+Semantic reasoners
+Rule-based systems
+Cognitive architectures
+ACT-R
+Soar
+CLARION
+LIDA
+OpenCog
+Knowledge bases
+ConceptNet
+Wikidata
+DBpedia
+YAGO
+People
+Alan Turing
+Warren Sturgis McCulloch
+Walter Pitts
+John von Neumann
+Christopher D. Manning
+Claude Shannon
+Shun'ichi Amari
+Kunihiko Fukushima
+Takeo Kanade
+Marvin Minsky
+John McCarthy
+Nathaniel Rochester
+Allen Newell
+Cliff Shaw
+Herbert A. Simon
+Oliver Selfridge
+Frank Rosenblatt
+Bernard Widrow
+Joseph Weizenbaum
+Seymour Papert
+Seppo Linnainmaa
+Paul Werbos
+Geoffrey Hinton
+John Hopfield
+Jürgen Schmidhuber
+Yann LeCun
+Yoshua Bengio
+Lotfi A. Zadeh
+Stephen Grossberg
+Alex Graves
+James Goodnight
+Andrew Ng
+Fei-Fei Li
+Alex Krizhevsky
+Ilya Sutskever
+Oriol Vinyals
+Quoc V. Le
+Ian Goodfellow
+Demis Hassabis
+David Silver
+Andrej Karpathy
+Ashish Vaswani
+Noam Shazeer
+Aidan Gomez
+John Schulman
+Mustafa Suleyman
+Jan Leike
+Daniel Kokotajlo
+François Chollet
+Neural network
+architectures
+Neural Turing machine
+Differentiable neural computer
+Transformer
+Vision transformer (ViT)
+Recurrent neural network (RNN)
+Long short-term memory (LSTM)
+Gated recurrent unit (GRU)
+Echo state network
+Multilayer perceptron (MLP)
+Convolutional neural network (CNN)
+Residual neural network (RNN)
+Highway network
+Mamba
+Autoencoder
+Variational autoencoder (VAE)
+Generative adversarial network (GAN)
+Graph neural network (GNN)
+Political
+AI Cold War
+AI in government
+AI safety ( Alignment )
+AI takeover
+Elections
+Ethics of AI
+EU AI Act
+Nationalism
+Precautionary principle
+Regulation of AI
+US
+Virtual politician
+Propaganda
+Opposition to AI data centers
+Social
+and economic
+AI boom
+AI bubble
+AI data center
+AI effect
+AI infrastructure
+AI literacy
+AI slop
+AI winter
+Anthropomorphism
+Arms race
+Competition
+Environmental impact
+Explainable AI
+Generative engine optimization
+In architecture
+In education
+In fiction
+In healthcare
+psychosis
+In marketing
+In video games
+In visual art
+Military applications
+AI warfare
+Workplace impact
+Category
+Retrieved from " https://en.wikipedia.org/w/index.php?title=Training,_validation,_and_test_data_sets&oldid=1383340372 "
+Categories : Datasets in machine learning
+Validity (statistics)
+Hidden categories: Use dmy dates from June 2020
+Articles with short description
+Short description is different from Wikidata
+This page was last edited on 2 November 2026, at 05:20 (UTC) .
+Page was rendered with Parsoid .
+Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+Privacy policy
+About Wikipedia
+Disclaimers
+Contact Wikipedia
+Legal & safety contacts
+Code of Conduct
+Developers
+Statistics
+Cookie statement
+Mobile view
+Search
+Search
+Toggle the table of contents
+Training, validation, and test data sets
+18 languages
+Add topic

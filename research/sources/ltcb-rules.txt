@@ -1,0 +1,91 @@
+Rules for the Large Text Compression Benchmark
+
+
+Matt Mahoney
+
+
+Rules may change at any time to meet the goals of fairness, accuracy, maximizing public
+participation, and recognizing existing practice. Note that the rules for listing in
+the benchmark and for the Hutter Prize are different.
+
+Rules for Benchmark Listing
+
+Last update: Jan. 16, 2013.
+
+All results must be subject to public verification. Eligible compression programs must
+be available on the Internet for free download and testing. Commercial programs with
+a free trial period of 7 days or more are allowed. Programs that require personal
+information such as name or email address before they can be downloaded or used
+are not considered free. Extentions to existing programs such as GUI
+wrappers that do not change the compressed format are not eligible.
+Programs or versions withdrawn by the author are not eligible.
+Programs violating licenses of other programs are not eligible.
+Patented algorithms are allowed. At my discretion I may list ineligible
+results anyway with appropriate caveats.
+
+Compression programs will be ranked by the compressed size of enwik9 plus
+the size of a zip archive (readable by unzip) containing the decompressor 
+and any other files needed by the decompressor at run time (dictionaries, 
+configuration files, .dll files not normally part of Windows, etc). The
+archive may contain either an executable program or source code in any
+general purpose programming language, whichever is smaller.
+
+Only the version and combination of options achieving the best known compression
+for each program will appear in the ranked results. Other results may appear in the individual
+program descriptions. Two differently-named programs are considered different versions of the
+same program if they are by the same author and use the same underlying
+algorithm (LZ77, BWT, PPM, CM, etc).
+
+Each program is mentioned only once in the main table. This includes
+preprocessors that improve the compression of other programs. If a preprocessor
+is packaged with a compressor by the same author, then only that combination
+will be listed even if the preprocessor also improves compression of other programs.
+Such combinations may be listed in the detailed results for each
+compressor. (Rule added Sept. 17, 2009).
+
+The decompressor must be able to run without a network connection.
+The decompressor must run without selecting options that affect the contents
+of the uncompressed file, whether these options are passed on the command line,
+selected using a GUI, or from environment variables, configuration files,
+the Windows registry, or
+any other source that must be configured by the user or is set during compression.
+Changing the name or attributes of the compressed file (other than its contents)
+must not affect the contents after decompression.
+Most programs meet these requirements.
+If not, the length of a string containing any required settings
+will be added to the compressed size (e.g. epm).
+
+Compressors and decompressors do not have to be general purpose. They may be tuned specifically
+to this benchmark and are allowed to reject or fail on any input other than enwik9. 
+However, the test hardware, operating system, compiler, and
+programming language implementing the decompressor must be general purpose, available to 
+the public, and not specifically designed to improve the ranking on this benchmark.
+(A Win32 or Linux executable or C/C++ program meets this requirement).
+
+Anyone may submit results to this benchmark by emailing me at mattmahoneyfl(at)gmail.com
+or matmahoney(at)yahoo.com. I will acknowledge your contribution. If possible, please send me:
+
+Name of program and version.
+Compressed size of enwik8 and enwik9.
+Options you used to obtain best compression of enwik9.
+Size of the decompressor as a zip file (smaller of source or executable).
+Approximate compression and decompression time.
+Approximate memory used.
+Description of the test machine (processor, memory, operating system).
+
+I appreciate any information you send me, even if not complete. There is
+no restriction on compression/decompression time, memory, or disk space.
+However it will make the results comparable to mine if you select options limiting
+memory usage to 1800 MB.
+
+History
+
+
+May 10 2006 - Benchmark started.
+Aug 06 2006 - Added rules for Hutter Prize.
+Aug 20 2006 - Rules for Hutter prize moved to separate website .
+Jul 30 2007 - Memory limit upgraded from 800 MB to 1800 MB.
+Oct 28 2007 - Added rule that software must be published for at least 30 days.
+Jan 31 2008 - Repealed 30 day wait.
+Sep 17 2009 - Added rule that each program is listed only once.
+Jan 16 2013 - Updated my email address.

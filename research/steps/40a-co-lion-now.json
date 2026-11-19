@@ -1,0 +1,379 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "lion-probes-now"
+   ],
+   [
+    "quote",
+    "research/probes/"
+   ],
+   [
+    "quote",
+    "Every earlier run's Lion programs run again at commit f07d583, with co-aggregate-facts.json"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-readme-now"
+   ],
+   [
+    "quote",
+    "README.md"
+   ],
+   [
+    "quote",
+    "Lion README at commit f07d583"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-goal-directed-now"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/explanation/goal-directed-evaluation.html"
+   ],
+   [
+    "quote",
+    "Lion explanation: Goal-directed evaluation, at commit f07d583"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-guarantees-now"
+   ],
+   [
+    "quote",
+    "packages/site-runtime/content/reference/logic-guarantees.html"
+   ],
+   [
+    "quote",
+    "Lion reference: Logic database guarantees, at commit f07d583 with its sentence on aggregated relations corrected"
+   ],
+   [
+    "quote",
+    "Lion"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119170000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-n1"
+   ],
+   [
+    "quote",
+    "lion-probes-now"
+   ],
+   [
+    "quote",
+    "\"who\": \"ana\", \"usd\": 57"
+   ],
+   [
+    "quote",
+    {
+     "lion": "aggregated relations that accept facts",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-n1"
+   ],
+   [
+    "quote",
+    "program co-aggregate-facts.json: a relation whose rule sums, with facts of its own"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-n2"
+   ],
+   [
+    "quote",
+    "lion-probes-now"
+   ],
+   [
+    "quote",
+    "\"sequences checked\": 5460,"
+   ],
+   [
+    "quote",
+    {
+     "lion": "a check of every sequence of changes up to a bound",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-n2"
+   ],
+   [
+    "quote",
+    "program fv-explore-code.json, its conditions now true or false"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-n3"
+   ],
+   [
+    "quote",
+    "lion-probes-now"
+   ],
+   [
+    "quote",
+    "\"sequences checked\": 5460,"
+   ],
+   [
+    "quote",
+    {
+     "counted": "sequences of up to 6 commands a Lion program checked",
+     "n": 5460
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-n3"
+   ],
+   [
+    "quote",
+    "program fv-explore-code.json, its conditions now true or false"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-n4"
+   ],
+   [
+    "quote",
+    "lion-probes-now"
+   ],
+   [
+    "quote",
+    "Unsafe goal [\"number/lessThan\",\"?balance\",0]: ?balance must first be bound by a relation, \"=\", \"in\", or \"schema/fits?\"."
+   ],
+   [
+    "quote",
+    {
+     "lion": "filters refused over a variable no goal binds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-n4"
+   ],
+   [
+    "quote",
+    "program fv-unbound-filter.json"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-g1"
+   ],
+   [
+    "quote",
+    "lion-guarantees-now"
+   ],
+   [
+    "quote",
+    "Every variable in a filter, in a computed value, or in an input of a graph algorithm must first be bound by a relation goal"
+   ],
+   [
+    "quote",
+    {
+     "lion": "filters refused over a variable no goal binds",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-g1"
+   ],
+   [
+    "quote",
+    "Safety"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-g2"
+   ],
+   [
+    "quote",
+    "lion-guarantees-now"
+   ],
+   [
+    "quote",
+    "Its facts, and the rows of its rules with plain heads, are candidates its aggregates combine"
+   ],
+   [
+    "quote",
+    {
+     "lion": "aggregated relations that accept facts",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-g2"
+   ],
+   [
+    "quote",
+    "Recursion and aggregation"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-w1"
+   ],
+   [
+    "quote",
+    "lion-goal-directed-now"
+   ],
+   [
+    "quote",
+    "Every derived row has a weight: the number of its candidates"
+   ],
+   [
+    "quote",
+    {
+     "lion": "counting",
+     "has": true
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-w1"
+   ],
+   [
+    "quote",
+    "Keeping up with changes"
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "co-w2"
+   ],
+   [
+    "quote",
+    "lion-readme-now"
+   ],
+   [
+    "quote",
+    "Two kinds of relation are derived again and compared instead of followed row by row"
+   ],
+   [
+    "quote",
+    {
+     "lion": "incremental maintenance of every relation",
+     "has": false
+    }
+   ]
+  ],
+  [
+   "located",
+   [
+    "quote",
+    "co-w2"
+   ],
+   [
+    "quote",
+    "Logic guarantees, following changes"
+   ]
+  ]
+ ],
+ "recorded"
+]

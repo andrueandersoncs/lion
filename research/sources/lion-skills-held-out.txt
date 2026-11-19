@@ -1,0 +1,7 @@
+$ grep -rniE 'held.out|holdout|tune[ds]? against' skills/   (every skill's instructions, references, scripts, and evals, commit f07d583)
+held out: 0 lines
+
+$ ls skills/*/evals/
+skills/lion-reasoning/evals/rechecks-what-changed/
+skills/lion-research/evals/researches-recent-outage/
+skills/lion-research/evals/verifies-company-figures/

@@ -132,7 +132,7 @@
     [
       "cond",
       [
-        ["array/length", "third_tie"],
+        ["number/greaterThan", ["array/length", "third_tie"], 0],
         [
           "string/concat",
           "Third place is a tie on net reasons with ",

@@ -1,0 +1,56 @@
+The logic database checks rules, goals, and changes as they arrive, so that every program has one well-defined answer, evaluation always finishes, and the data never ends up half changed.
+Safety
+Every variable in a rule's head must be bound by a goal in its body, unless the head lists it in exists . A variable that exists lists cannot also be bound by the body.
+Every variable in a filter, in a computed value, or in an input of a graph algorithm must first be bound by a relation goal, = , in , or schema/fits? . An input of a graph algorithm must be data.
+A question , a goal under not , a goal used as a value, or a find , waits for the variables that the rule or query around it binds. Every other variable in it is its own, and the question must bind it itself. A find must bind every variable of its template.
+The list in in must be bound before it runs.
+Lion orders the goals of a body so each runs once its inputs are bound. Filters that are ready together run in the order written, so a guard written first protects the filter after it. Otherwise the order you write goals in only matters for goal-directed queries .
+A rule, query, or invariant that breaks a safety rule fails when it is added or run, with a message that names the unbound variable.
+Values
+A value computed from a logic variable is what the same expression gives with the variable's value in its place. This holds for every function, for cond , match , eval , and records, for lambdas, and for the questions an expression asks: a goal used as a value and a find give in a rule what they give in plain code.
+A filter must be true or false . The rows a rule derives and the answers a query gives must be data: JSON values and unknowns . Anything else fails with an error that shows the call or the value.
+A function that fails while a rule or query runs it fails the rule or query, with an error that names the call and the values it ran on.
+Whether a value fits a schema is the same wherever it is asked: in plain code, under the schema's name, in a rule or query, in match , as an argument of a relation call, and as the schema of a relation's rows.
+A goal that binds variables through a pattern gives what the same goal gives when another goal has bound those variables first, so the answers of a body do not depend on the order of its goals.
+Questions and aggregation
+A rule cannot ask a question about a relation that depends on the rule's own head, directly or through other rules. That covers a goal under not , a goal used as a value, a find , and a relation handed to a function. A question that a rule only builds when it runs, as with eval , fails then instead.
+An aggregate runs once its inputs are complete. Aggregation may go through recursion only with the lattice aggregates aggregate/min , aggregate/max , aggregate/shortest , and aggregate/union , and only when every relation in the recursive cycle aggregates.
+Every rule for an aggregated relation must aggregate the same columns in the same way. Its facts, and the rows of its rules with plain heads, are candidates its aggregates combine, as a merge combines them.
+A rule that invents cannot aggregate. Rules that invent wait until every rule that invents nothing has finished, then every one whose head does not hold invents, all at once, and the other rules run on what was invented, until nothing more is.
+Together these make every program stratified: it has a single answer, whatever order rules and facts were added in, unknowns included.
+Termination
+Values flow from the columns a rule's body reads to the columns of its head. A rule may make a new value for a column, by computing it, in the head itself or through = or in , or by inventing it, as long as that value never flows back, through the rules, into making another new value. Values that come from facts are not new. So every new value comes from a finite chain of others, and evaluation stops.
+A rule that breaks this fails when it is added. A computed value that flows back fails with ... computes a new value in its head while recursing, which may never finish. , which suggests computing it in a non-recursive rule or with a lattice aggregate, and an invented one with ... invents a value for "?m" in its head while recursing, which may never finish.
+Recursion through a lattice aggregate stops when no value improves. If values still improve after 10,000 rounds, as with a negative-weight cycle under aggregate/min , the query fails instead of running forever.
+A graph algorithm cannot be part of a recursive cycle.
+Here a recursive rule computes a label for each path. No rule reads the label to make another value, so the rule is accepted:
+["begin",
+["relation", "edge", ["from", "to"]],
+["relation", "path", ["from", "to", "label"]],
+["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+["rule", ["path", "?x", "?y", ["string/concat", "?x", "→", "?y"]], ["edge", "?x", "?y"]],
+["rule", ["path", "?x", "?z", ["string/concat", "?x", "→", "?z"]], ["path", "?x", "?y", "?_"], ["edge", "?y", "?z"]],
+["query", ["path", "?from", "?to", "?label"], {"order": ["from", "to"]}]]
+Every person has a mother, and every mother is a person. Each mother a rule invents would be a person who needs a mother of her own, so the second rule is refused, and the message names the rule that would invent:
+["begin",
+["relation", "person", ["name"]],
+["relation", "mother", ["child", "mother"]],
+["rule", ["exists", ["?m"], ["mother", "?p", "?m"]], ["person", "?p"]],
+["rule", ["person", "?m"], ["mother", "?p", "?m"]]]
+Keys
+A keyed relation holds at most one row per key. A fact with a key that is present replaces the old row.
+Rules can derive rows of a keyed relation, but two different derived rows with the same key make the query fail, naming both rows. A relation that merges joins its merged columns instead, and the rest must agree.
+The exception is an unknown that a rule of the keyed relation, or of a relation in a recursive cycle with it, invented. When two rows with the same key differ only where one holds such an unknown, the unknown takes the other row's value, or, when both hold one, the one that nests fewer unknowns, and of those the one that sorts first, and every row that holds it is replaced. So the value kept never depends on the order rules or facts were added in. An unknown that a fact holds is given, so a key never changes it.
+Changes are all or nothing
+A form that changes the database, fact , retract , or rule , either makes all of its changes or fails and makes none of them. Every fact is checked before any is added or removed, and every rule before it is added. When the database has invariants , the form is checked against them after making its changes, and undone if any breaks or cannot be checked, leaving the database exactly as it was, facts in the same order. Separate forms are separate changes.
+A change to facts is checked against the invariants that read what it changed, and an invariant that expects no answers is asked about the new rows alone when its goal matches the rows of the relation that changed. That is only a faster way to the same verdict: a change is kept exactly when every invariant still holds.
+Adding what is already held
+Adding something the database already holds changes nothing: a fact that is present, a relation or schema declared the same way, or a rule or invariant that a snapshot would write the same way. Rules and invariants hold values as they were evaluated, so a name and the value bound to it are the same, whether the value is data or a function, while a variable "?x" and the string ["quote", "?x"] differ. Running a program twice against one database therefore leaves it as running it once did.
+Equivalent ways to answer
+Goal-directed and full evaluation give the same answers, possibly in a different order. A goal-directed query derives only the rows it asks about, so it does not fail on a row it never derives. A relation that rules invent rows of is derived in full, since what such a rule adds depends on every row. Either way, a relation is derived only when a goal reads it with an answer to extend, so neither fails on a relation that no answer reaches.
+What the database has derived for earlier queries never changes an answer: a query gives what it would give on a database that has derived nothing yet.
+A snapshot, evaluated into an empty database, gives the same answers as the database it was taken from, and taking a snapshot of that gives the same program.
+The relation option "schema" and the invariant it stands for keep the same changes, with the same messages, and are saved as the same snapshot.
+What rules derive is kept, and brought up to date when facts or rules change; what is kept is what evaluation from nothing would give.
+Answer order
+Without the "order" option, a query's answers come in the order they are found. That order is deterministic for a given program and version of Lion, but it is not part of the language: it can differ with what the database had derived before, and with the changes it has seen. Sort with "order" when order matters. A find always returns its list sorted, so a value a rule derives from one never depends on how it was found.

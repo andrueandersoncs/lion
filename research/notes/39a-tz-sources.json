@@ -1,0 +1,218 @@
+{
+  "sources": [
+    {
+      "id": "tufazip-2026",
+      "url": "https://tufalabs.ai/research/tufazip/",
+      "title": "tufazip: Learning to Compress a Billion Bytes of Wikipedia",
+      "publisher": "Tufa Labs",
+      "kind": "primary",
+      "published": 20261014
+    },
+    {
+      "id": "ltcb-rules",
+      "url": "https://www.mattmahoney.net/dc/textrules.html",
+      "title": "Rules for the Large Text Compression Benchmark",
+      "publisher": "Matt Mahoney",
+      "kind": "primary",
+      "published": 20130116
+    },
+    {
+      "id": "wikipedia-test-sets",
+      "url": "https://en.wikipedia.org/wiki/Training,_validation,_and_test_data_sets",
+      "title": "Training, validation, and test data sets",
+      "publisher": "Wikipedia",
+      "kind": "secondary",
+      "published": null
+    },
+    {
+      "id": "lion-measuring-guideline",
+      "url": "guidelines/measuring.md",
+      "title": "Lion's developer guidelines: Measuring complexity, at commit f07d583",
+      "publisher": "Lion",
+      "kind": "primary",
+      "published": 20261119170000
+    },
+    {
+      "id": "lion-skills-held-out",
+      "url": "grep -rniE 'held.out|holdout|tune[ds]? against' skills/",
+      "title": "Lion's skills searched for a held-out eval, at commit f07d583",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261119170000
+    },
+    {
+      "id": "lion-probes-tz",
+      "url": "research/probes/tz-figures.json",
+      "title": "A Lion program that works out the figures of the TufaZip page from its table",
+      "publisher": "Lion probes",
+      "kind": "primary",
+      "published": 20261119170000
+    }
+  ],
+  "claims": [
+    {
+      "id": "tz-p1",
+      "source": "tufazip-2026",
+      "where": "Offline transfer, the enwik9 results",
+      "quote": "C2 saved 4.97 MB of payload while adding 4.38 MB of decoder cost, leaving a net improvement of 0.59 MB, or 0.56%",
+      "says": {
+        "result": "an offline prior stored with the decoder",
+        "measure": "smaller total than learning online from random weights",
+        "bound": "exact",
+        "percent": 0.56
+      }
+    },
+    {
+      "id": "tz-p2",
+      "source": "tufazip-2026",
+      "where": "Ablations, Replay",
+      "quote": "That saved 1.30 MB, or 1.21%, for about 40% more estimated model FLOPs",
+      "says": {
+        "result": "replay",
+        "measure": "smaller payload with a 35M-token replay window than a 15M one",
+        "bound": "exact",
+        "percent": 1.21
+      }
+    },
+    {
+      "id": "tz-d1",
+      "source": "tufazip-2026",
+      "where": "Summary",
+      "quote": "The decoder repeats the same learning process, so the full model’s learned weights never need to be transferred.",
+      "says": {
+        "covers": "state rebuilt from the steps that made it",
+        "by": "learning in step in the encoder and decoder",
+        "is": true
+      }
+    },
+    {
+      "id": "tz-d2",
+      "source": "tufazip-2026",
+      "where": "Method, online learning",
+      "quote": "the weight update from learning and next-token probabilities must be fully deterministic in order for the algorithm to be lossless",
+      "says": {
+        "needs": "updates that repeat exactly",
+        "by": "learning in step in the encoder and decoder"
+      }
+    },
+    {
+      "id": "tz-c1",
+      "source": "tufazip-2026",
+      "where": "Discussion",
+      "quote": "Including the decoder and offline trained weights makes that meaningful: moving information from the payload into the model still has a cost.",
+      "says": {
+        "covers": "a cost counted for every mechanism a change adds",
+        "by": "counting the decompressor in the score",
+        "is": true
+      }
+    },
+    {
+      "id": "tz-r1",
+      "source": "ltcb-rules",
+      "where": "Rules for Benchmark Listing",
+      "quote": "Compression programs will be ranked by the compressed size of enwik9 plus the size of a zip archive (readable by unzip) containing the decompressor and any other files needed by the decompressor at run time",
+      "says": {
+        "covers": "a cost counted for every mechanism a change adds",
+        "by": "counting the decompressor in the score",
+        "is": true
+      }
+    },
+    {
+      "id": "tz-r2",
+      "source": "ltcb-rules",
+      "where": "Rules for Benchmark Listing",
+      "quote": "Compression programs will be ranked by the compressed size of enwik9 plus the size of a zip archive (readable by unzip) containing the decompressor",
+      "says": {
+        "adopted": "counting the decompressor in the score",
+        "in": "Large Text Compression Benchmark"
+      }
+    },
+    {
+      "id": "tz-g1",
+      "source": "tufazip-2026",
+      "where": "Discussion",
+      "quote": "Hill climbing a single objective through automated research loops can improve a score without explaining why a change worked or where it will work again.",
+      "says": {
+        "raises": "a score improved by tuning to one fixed test"
+      }
+    },
+    {
+      "id": "tz-g2",
+      "source": "tufazip-2026",
+      "where": "Discussion",
+      "quote": "The score alone, however, does not reveal how much was learned from the input, supplied by a human designer, or discovered by a research agent.",
+      "says": {
+        "raises": "where a score's gain came from"
+      }
+    },
+    {
+      "id": "tz-g3",
+      "source": "wikipedia-test-sets",
+      "where": "Training data set",
+      "quote": "Most approaches that search through training data for empirical relationships tend to overfit the data, meaning that they can identify and exploit apparent relationships in the training data that do not hold in general.",
+      "says": {
+        "raises": "a score improved by tuning to one fixed test"
+      }
+    },
+    {
+      "id": "tz-h1",
+      "source": "wikipedia-test-sets",
+      "where": "lead section",
+      "quote": "the test data set is a data set used to provide an unbiased evaluation of a model fit on the training data set.",
+      "says": {
+        "covers": "a score the tuning never saw",
+        "by": "held-out evaluation",
+        "is": true
+      }
+    },
+    {
+      "id": "tz-h2",
+      "source": "wikipedia-test-sets",
+      "where": "lead section",
+      "quote": "the test data set is called a holdout data set",
+      "says": {
+        "defines": "holdout data set"
+      }
+    },
+    {
+      "id": "tz-l1",
+      "source": "lion-measuring-guideline",
+      "where": "Pay for what you add",
+      "quote": "A feature usually adds code. Pay for it in the same change: find the rule that makes special cases redundant, and delete them.",
+      "says": {
+        "lion": "a cost counted for every mechanism a change adds",
+        "has": true
+      }
+    },
+    {
+      "id": "tz-l2",
+      "source": "lion-skills-held-out",
+      "where": "the search of every skill",
+      "quote": "held out: 0 lines",
+      "says": {
+        "lion": "a score the tuning never saw",
+        "has": false
+      }
+    },
+    {
+      "id": "tz-f1",
+      "source": "lion-probes-tz",
+      "where": "program tz-figures.json",
+      "quote": "\"figures recomputed\": 11,",
+      "says": {
+        "counted": "TufaZip page figures a Lion program recomputed",
+        "n": 11
+      }
+    },
+    {
+      "id": "tz-f2",
+      "source": "lion-probes-tz",
+      "where": "program tz-figures.json",
+      "quote": "\"figures that hold at the precision written\": 11,",
+      "says": {
+        "counted": "TufaZip page figures that hold at the precision written",
+        "n": 11
+      }
+    }
+  ]
+}

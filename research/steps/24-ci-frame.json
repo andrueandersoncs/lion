@@ -1,9 +1,4 @@
 ["begin",
-  ["relation", "rewrites", ["candidate", "rule"]],
-  ["relation", "overturns", ["candidate", "rule"]],
-  ["rule", ["overturns", "?c", "?r"],
-    ["rewrites", "?c", "?r"], ["stated", {"lion has": "?r"}, true]],
-
   ["relation", "alike", ["assumption", "first", "second"]],
   ["rule", ["violated", "?a", "?c2"],
     ["alike", "?a", "?q1", "?q2"],

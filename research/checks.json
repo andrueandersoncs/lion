@@ -244,5 +244,62 @@
     {
       "order": ["level", "candidate"]
     }
+  ],
+  "Every run: what is left to build, by stage and rank": [
+    "query",
+    [
+      "and",
+      ["to_build", "?candidate"],
+      ["stage", "?candidate", "?stage"],
+      [
+        "or",
+        ["rank", "?candidate", "?rank"],
+        ["and", ["not", ["rank", "?candidate", "?_"]], ["=", "?rank", null]]
+      ]
+    ],
+    {
+      "order": ["stage", "rank", "candidate"]
+    }
+  ],
+  "Every run: what each idea left to build waits for": [
+    "query",
+    [
+      "and",
+      ["builds_on", "?candidate", "?first", "?condition"],
+      ["to_build", "?candidate"],
+      ["to_build", "?first"]
+    ]
+  ],
+  "Every run: ideas that would change a documented rule": [
+    "query",
+    ["overturns", "?candidate", "?rule"]
+  ],
+  "Every run: ideas passed over, and why": [
+    "query",
+    ["passed_over", "?candidate", "?reason", "?detail"],
+    {
+      "order": ["reason", "candidate"]
+    }
+  ],
+  "Every run: ideas the shared rule cannot judge": [
+    "query",
+    ["unjudged", "?candidate"]
+  ],
+  "TufaZip: verdicts": [
+    "query",
+    [
+      "and",
+      ["weighed_in", "?candidate", "tufazip"],
+      ["verdict", "?candidate", "?verdict"]
+    ]
+  ],
+  "TufaZip: beliefs and the evidence": [
+    "query",
+    [
+      "and",
+      ["expects", "?belief", "?question", "?expected"],
+      ["string/startsWith", "?belief", "tz-"],
+      ["answer", "?question", "?value", "?statement"]
+    ]
   ]
 }

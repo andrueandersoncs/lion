@@ -9,6 +9,7 @@ Research here means any run of the [lion-research skill](../skills/lion-research
 - **Start from the model.**
   - Before searching, rebuild it with the replay, and ask it what earlier runs found on the topic:
     - the candidates and their verdicts;
+    - what is left to build across every run, in what order, and what waits for what (`to_build`, `stage`, `builds_on`, `passed_over`; `research/runs/consolidation/page.json` asks them);
     - what Lion has and lacks;
     - which sources were read;
     - which assumptions failed.

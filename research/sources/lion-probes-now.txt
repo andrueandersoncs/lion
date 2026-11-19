@@ -1,0 +1,2160 @@
+Lion programs run for research with @lionlang/cli 0.13.1 built at commit f07d583 (core 0.14.1), 2026-11-19.
+
+== program records.json
+{
+  "two exact parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    ["schema/allOf", { "id": "value/integer?" }, { "tag": "value/string?" }]
+  ],
+  "two open parts, combined with allOf": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "two open parts let an extra key through": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new", "typo": true }],
+    [
+      "schema/allOf",
+      ["schema/open", { "id": "value/integer?" }],
+      ["schema/open", { "tag": "value/string?" }]
+    ]
+  ],
+  "an exact record pattern with one key too few": [
+    "schema/fits?",
+    ["quote", { "id": 1, "tag": "new" }],
+    { "id": "value/integer?" }
+  ],
+  "a list pattern shorter than the list": [
+    "schema/fits?",
+    ["quote", [1, 2, 3]],
+    ["array/make", "value/number?", "value/number?"]
+  ],
+  "the rest of a record, in plain code": [
+    "object/remove",
+    ["quote", { "id": 1, "tag": "new", "note": "x" }],
+    "id"
+  ],
+  "the rest of a record, as a pattern": [
+    "query",
+    [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/open", { "id": "?id" }]
+    ]
+  ]
+}
+== gives
+{
+  "two exact parts, combined with allOf": false,
+  "two open parts, combined with allOf": true,
+  "two open parts let an extra key through": true,
+  "an exact record pattern with one key too few": false,
+  "a list pattern shorter than the list": false,
+  "the rest of a record, in plain code": {
+    "tag": "new",
+    "note": "x"
+  },
+  "the rest of a record, as a pattern": [
+    {
+      "id": 1
+    }
+  ]
+}
+
+== program named-schemas.json
+[
+  "begin",
+  ["schema", "Id", { "id": "value/integer?" }],
+  ["schema", "Tagged", { "tag": "value/string?" }],
+  {
+    "a record with an id and a tag fits allOf of the two named exact schemas": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/allOf", "Id", "Tagged"]
+    ],
+    "two literal record schemas joined with object/set, in plain code": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["object/set", { "id": "value/integer?" }, "tag", "value/string?"]
+    ]
+  }
+]
+== gives
+{
+  "a record with an id and a tag fits allOf of the two named exact schemas": false,
+  "two literal record schemas joined with object/set, in plain code": true
+}
+
+== program lists.json
+{
+  "a list pattern takes the first item and the rest": [
+    "query",
+    ["schema/fits?", ["quote", [1, 2, 3]], ["array/make", "?first", "?rest"]]
+  ],
+  "a count of a find with no match": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a sum of a find with no match": [
+    "aggregate/sum",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "a union of a find with no match": [
+    "aggregate/union",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}
+== gives
+{
+  "a list pattern takes the first item and the rest": [],
+  "a count of a find with no match": 0,
+  "a sum of a find with no match": 0,
+  "a union of a find with no match": []
+}
+
+== program units.json
+{
+  "min of nothing": [
+    "aggregate/min",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "max of nothing": [
+    "aggregate/max",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "mean of nothing": [
+    "aggregate/mean",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "count of nothing": [
+    "aggregate/count",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ],
+  "collect of nothing": [
+    "aggregate/collect",
+    ["find", "?x", ["in", "?x", ["array/make"]]]
+  ]
+}
+== gives
+{
+  "min of nothing": null,
+  "max of nothing": null,
+  "mean of nothing": null,
+  "count of nothing": 0,
+  "collect of nothing": []
+}
+
+== program keys.json
+[
+  "begin",
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["price", "a1", 3], ["price", "a1", 4]],
+  {
+    "a fact with a key that is present replaces the row": [
+      "query",
+      ["price", "?sku", "?usd"]
+    ]
+  }
+]
+== gives
+{
+  "a fact with a key that is present replaces the row": [
+    {
+      "sku": "a1",
+      "usd": 4
+    }
+  ]
+}
+
+== program keys-rules.json
+[
+  "begin",
+  ["relation", "quote_", ["sku", "usd"]],
+  ["relation", "price", ["sku", "usd"], { "key": "sku" }],
+  ["fact", ["quote_", "a1", 3], ["quote_", "a1", 4]],
+  ["rule", ["price", "?s", "?u"], ["quote_", "?s", "?u"]],
+  ["query", ["price", "?sku", "?usd"]]
+]
+== gives
+
+ERROR
+  "price" is keyed by ["sku"], but ["rule",["price","?s","?u"],["quote_","?s","?u"]] derived ["price","a1",4] while ["price","a1",3] holds.
+
+== program sets.json
+[
+  "begin",
+  ["relation", "said", ["who", "what"]],
+  ["fact", ["said", "ana", "yes"]],
+  ["fact", ["said", "ana", "yes"]],
+  {
+    "rows": ["query", ["said", "?who", "?what"]],
+    "one row matched twice by and": [
+      "query",
+      ["and", ["said", "?a", "?w"], ["said", "?b", "?w"]]
+    ]
+  }
+]
+== gives
+{
+  "rows": [
+    {
+      "who": "ana",
+      "what": "yes"
+    }
+  ],
+  "one row matched twice by and": [
+    {
+      "a": "ana",
+      "w": "yes",
+      "b": "ana"
+    }
+  ]
+}
+
+== program aggregate-facts.json
+[
+  "begin",
+  ["relation", "spend", ["who", "usd"]],
+  ["relation", "total", ["who", "usd"]],
+  ["fact", ["spend", "ana", 30], ["spend", "ana", 20]],
+  ["rule", ["total", "?w", ["aggregate/sum", "?u"]], ["spend", "?w", "?u"]],
+  ["fact", ["total", "bo", 5]]
+]
+== gives
+[
+  [
+    "total",
+    "bo",
+    5
+  ]
+]
+
+== program why-missing.json
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  ["why", ["path", "a", "c"]]
+]
+== gives
+{
+  "absent": [
+    "path",
+    "a",
+    "c"
+  ],
+  "because": [
+    {
+      "rule": [
+        "rule",
+        [
+          "path",
+          "?x",
+          "?y"
+        ],
+        [
+          "edge",
+          "?x",
+          "?y"
+        ]
+      ],
+      "because": [],
+      "but": {
+        "absent": [
+          "edge",
+          "a",
+          "c"
+        ],
+        "because": []
+      }
+    },
+    {
+      "rule": [
+        "rule",
+        [
+          "path",
+          "?x",
+          "?z"
+        ],
+        [
+          "edge",
+          "?x",
+          "?y"
+        ],
+        [
+          "path",
+          "?y",
+          "?z"
+        ]
+      ],
+      "because": [
+        {
+          "fact": [
+            "edge",
+            "a",
+            "b"
+          ],
+          "given": true
+        }
+      ],
+      "but": {
+        "absent": [
+          "path",
+          "b",
+          "c"
+        ],
+        "because": [
+          {
+            "rule": [
+              "rule",
+              [
+                "path",
+                "?x",
+                "?y"
+              ],
+              [
+                "edge",
+                "?x",
+                "?y"
+              ]
+            ],
+            "because": [],
+            "but": {
+              "absent": [
+                "edge",
+                "b",
+                "c"
+              ],
+              "because": []
+            }
+          },
+          {
+            "rule": [
+              "rule",
+              [
+                "path",
+                "?x",
+                "?z"
+              ],
+              [
+                "edge",
+                "?x",
+                "?y"
+              ],
+              [
+                "path",
+                "?y",
+                "?z"
+              ]
+            ],
+            "because": [],
+            "but": {
+              "absent": [
+                "edge",
+                "b",
+                "?y"
+              ],
+              "because": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+== program split-model.json
+[
+  "begin",
+  ["define", "kinds", ["quote", ["absent", "num", "str", "optnum"]]],
+  ["define", "items", ["quote", ["absent", 1, "x"]]],
+  [
+    "define",
+    "build",
+    [
+      "lambda",
+      ["pairs"],
+      [
+        "array/reduce",
+        "pairs",
+        {},
+        [
+          "lambda",
+          ["acc", "pair"],
+          [
+            "cond",
+            [["=", ["array/head", ["array/tail", "pair"]], "absent"], "acc"],
+            [
+              "else",
+              [
+                "object/set",
+                "acc",
+                ["array/head", "pair"],
+                ["array/head", ["array/tail", "pair"]]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "specs",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?ka"],
+          ["array/make", "b", "?kb"],
+          ["array/make", "c", "?kc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?ka", "kinds"],
+        ["in", "?kb", "kinds"],
+        ["in", "?kc", "kinds"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "values",
+    [
+      "find",
+      [
+        "build",
+        [
+          "array/make",
+          ["array/make", "a", "?va"],
+          ["array/make", "b", "?vb"],
+          ["array/make", "c", "?vc"]
+        ]
+      ],
+      [
+        "and",
+        ["in", "?va", "items"],
+        ["in", "?vb", "items"],
+        ["in", "?vc", "items"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "base",
+    [
+      "lambda",
+      ["kind"],
+      [
+        "cond",
+        [["=", "kind", "str"], "value/string?"],
+        ["else", "value/number?"]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "schemaOf",
+    [
+      "lambda",
+      ["spec"],
+      [
+        "array/reduce",
+        ["object/keys", "spec"],
+        {},
+        [
+          "lambda",
+          ["acc", "k"],
+          [
+            "object/set",
+            "acc",
+            "k",
+            [
+              "cond",
+              [
+                ["=", ["object/get", "spec", "k"], "optnum"],
+                ["schema/optional", "value/number?"]
+              ],
+              ["else", ["base", ["object/get", "spec", "k"]]]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "split",
+    [
+      "lambda",
+      ["spec", "rest", "v"],
+      [
+        "boolean/and",
+        [
+          "array/reduce",
+          ["object/keys", "spec"],
+          true,
+          [
+            "lambda",
+            ["ok", "k"],
+            [
+              "boolean/and",
+              "ok",
+              [
+                "cond",
+                [
+                  ["array/includes?", ["object/keys", "v"], "k"],
+                  [
+                    "schema/fits?",
+                    ["object/get", "v", "k"],
+                    ["base", ["object/get", "spec", "k"]]
+                  ]
+                ],
+                ["else", ["=", ["object/get", "spec", "k"], "optnum"]]
+              ]
+            ]
+          ]
+        ],
+        [
+          "schema/fits?",
+          [
+            "array/reduce",
+            ["object/keys", "spec"],
+            "v",
+            ["lambda", ["r", "k"], ["object/remove", "r", "k"]]
+          ],
+          "rest"
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "disjoint",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "s"],
+        true,
+        [
+          "lambda",
+          ["ok", "k"],
+          [
+            "boolean/and",
+            "ok",
+            ["boolean/not", ["array/includes?", ["object/keys", "t"], "k"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "union",
+    [
+      "lambda",
+      ["s", "t"],
+      [
+        "array/reduce",
+        ["object/keys", "t"],
+        "s",
+        [
+          "lambda",
+          ["acc", "k"],
+          ["object/set", "acc", "k", ["object/get", "t", "k"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "record schemas tried": ["array/length", "specs"],
+    "records tried": ["array/length", "values"],
+    "pairs where an exact record differs from a split with an empty rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schemaOf", "?s"]],
+              ["split", "?s", {}, "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "pairs where schema/open differs from a split with any record as the rest": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["schema/fits?", "?v", ["schema/open", ["schemaOf", "?s"]]],
+              ["split", "?s", "value/object?", "?v"]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "disjoint pairs of exact schemas tried": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"]
+        ]
+      ]
+    ],
+    "triples where a split with an exact rest differs from the one exact schema of both parts": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "boolean/not",
+            [
+              "=",
+              ["split", "?s", ["schemaOf", "?t"], "?v"],
+              ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "triples where allOf of the two exact parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          [
+            "schema/fits?",
+            "?v",
+            ["schema/allOf", ["schemaOf", "?s"], ["schemaOf", "?t"]]
+          ]
+        ]
+      ]
+    ],
+    "triples where the one exact schema of both parts fits": [
+      "aggregate/count",
+      [
+        "find",
+        "?s",
+        [
+          "and",
+          ["in", "?s", "specs"],
+          ["in", "?t", "specs"],
+          ["disjoint", "?s", "?t"],
+          ["in", "?v", "values"],
+          ["schema/fits?", "?v", ["schemaOf", ["union", "?s", "?t"]]]
+        ]
+      ]
+    ]
+  }
+]
+== gives
+{
+  "record schemas tried": 64,
+  "records tried": 27,
+  "pairs where an exact record differs from a split with an empty rest": 0,
+  "pairs where schema/open differs from a split with any record as the rest": 0,
+  "disjoint pairs of exact schemas tried": 343,
+  "triples where a split with an exact rest differs from the one exact schema of both parts": 0,
+  "triples where allOf of the two exact parts fits": 27,
+  "triples where the one exact schema of both parts fits": 729
+}
+
+== program order-ab.json
+[
+  "begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "gran", ["parent", "gran"]],
+  ["fact", ["person", "b"], ["person", "c"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["gran", "?x", "?g"]], ["mother", "c", "?x"]],
+  ["rule", ["=", "?a", "?b"], ["gran", "?_", "?a"], ["mother", "b", "?b"]],
+  [
+    "rule",
+    ["=", "?a", "?b"],
+    ["mother", "b", "?a"],
+    ["mother", "c", "?b"],
+    ["gran", "?_", "?_"]
+  ],
+  {
+    "the unknowns the mothers and grans hold": [
+      "aggregate/unique",
+      ["find", "?m", ["or", ["mother", "?_", "?m"], ["gran", "?_", "?m"]]]
+    ]
+  }
+]
+== gives
+{
+  "the unknowns the mothers and grans hold": [
+    [
+      "some",
+      "?m",
+      [
+        "mother",
+        "b",
+        "?m"
+      ]
+    ]
+  ]
+}
+
+== program order-ba.json
+[
+  "begin",
+  ["relation", "person", ["name"]],
+  ["relation", "mother", ["child", "mother"]],
+  ["relation", "gran", ["parent", "gran"]],
+  ["fact", ["person", "b"], ["person", "c"]],
+  ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+  ["rule", ["exists", ["?g"], ["gran", "?x", "?g"]], ["mother", "c", "?x"]],
+  [
+    "rule",
+    ["=", "?a", "?b"],
+    ["mother", "b", "?a"],
+    ["mother", "c", "?b"],
+    ["gran", "?_", "?_"]
+  ],
+  ["rule", ["=", "?a", "?b"], ["gran", "?_", "?a"], ["mother", "b", "?b"]],
+  {
+    "the unknowns the mothers and grans hold": [
+      "aggregate/unique",
+      ["find", "?m", ["or", ["mother", "?_", "?m"], ["gran", "?_", "?m"]]]
+    ]
+  }
+]
+== gives
+{
+  "the unknowns the mothers and grans hold": [
+    [
+      "some",
+      "?m",
+      [
+        "mother",
+        "b",
+        "?m"
+      ]
+    ]
+  ]
+}
+
+== program built-rest.json
+[
+  "begin",
+  ["schema", "Id", { "id": "value/integer?" }],
+  ["schema", "Tagged", { "tag": "value/string?" }],
+  {
+    "a rest variable binds the other keys": [
+      "query",
+      [
+        "schema/fits?",
+        ["quote", { "id": 1, "tag": "new", "note": "x" }],
+        ["schema/open", { "id": "?id" }, "?rest"]
+      ]
+    ],
+    "two exact schemas composed": [
+      "schema/fits?",
+      ["quote", { "id": 1, "tag": "new" }],
+      ["schema/open", "Id", "Tagged"]
+    ],
+    "a list rest binds the other items": [
+      "query",
+      [
+        "schema/fits?",
+        ["quote", [1, 2, 3]],
+        ["schema/open", ["array/make", "?first"], "?rest"]
+      ]
+    ],
+    "the rest matched against a schema": [
+      "schema/fits?",
+      ["quote", { "id": 1, "a": "x", "b": "y" }],
+      ["schema/open", "Id", ["schema/recordOf", "value/string?"]]
+    ]
+  }
+]
+== gives
+{
+  "a rest variable binds the other keys": [
+    {
+      "id": 1,
+      "rest": {
+        "tag": "new",
+        "note": "x"
+      }
+    }
+  ],
+  "two exact schemas composed": true,
+  "a list rest binds the other items": [
+    {
+      "first": 1,
+      "rest": [
+        2,
+        3
+      ]
+    }
+  ],
+  "the rest matched against a schema": true
+}
+
+== program built-merge.json
+[
+  "begin",
+  ["relation", "offer", ["sku", "usd"]],
+  [
+    "relation",
+    "best",
+    ["sku", "usd"],
+    { "key": "sku", "merge": { "usd": "aggregate/min" } }
+  ],
+  ["fact", ["offer", "a1", 5], ["offer", "a1", 4]],
+  ["rule", ["best", "?s", "?u"], ["offer", "?s", "?u"]],
+  ["fact", ["best", "a1", 3], ["best", "b2", 7]],
+  {
+    "facts and a rule merge by the minimum": [
+      "query",
+      ["best", "?sku", "?usd"],
+      { "order": "sku" }
+    ]
+  }
+]
+== gives
+{
+  "facts and a rule merge by the minimum": [
+    {
+      "sku": "a1",
+      "usd": 3
+    },
+    {
+      "sku": "b2",
+      "usd": 7
+    }
+  ]
+}
+
+== program built-clash.json
+[
+  "begin",
+  [
+    "relation",
+    "tag",
+    ["id", "tags", "owner"],
+    { "key": "id", "merge": { "tags": "aggregate/union" } }
+  ],
+  [
+    "fact",
+    ["tag", 1, ["quote", ["a"]], "ana"],
+    ["tag", 1, ["quote", ["b"]], "bo"]
+  ],
+  ["query", ["tag", "?i", "?t", "?o"]]
+]
+== gives
+
+ERROR
+  "tag" is keyed by ["id"], but it would hold ["tag",1,["b"],"bo"] and ["tag",1,["a"],"ana"], which differ in a column that does not merge.
+
+== program built-assuming.json
+[
+  "begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["edge", "?x", "?y"], ["path", "?y", "?z"]],
+  {
+    "a reaches d after adding c to d": [
+      "assuming",
+      ["fact", ["edge", "c", "d"]],
+      ["path", "a", "d"]
+    ],
+    "a reaches d as it is": ["path", "a", "d"]
+  }
+]
+== gives
+{
+  "a reaches d after adding c to d": true,
+  "a reaches d as it is": false
+}
+
+== program ci-annotation-refused.json
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["checked", 2, "lost", "none"]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":2,"status":"lost","note":"none"}: ["and",["checked","?id","?status","?note"],["not",["Order",{"id":"?id","status":"?status","note":"?note"}]]]. {"id":2,"status":"lost","note":"none"} does not fit "Order": "status" must fit ["schema/anyOf","open","paid"] but is "lost".
+
+== program ci-annotation.json
+[
+  "begin",
+  [
+    "schema",
+    "Order",
+    [
+      "schema/open",
+      { "id": "value/integer?", "status": ["schema/anyOf", "open", "paid"] }
+    ]
+  ],
+  ["relation", "plain", ["id", "status", "note"]],
+  ["relation", "checked", ["id", "status", "note"], { "schema": "Order" }],
+  ["fact", ["plain", 1, "open", "gift"], ["plain", 2, "paid", "none"]],
+  ["fact", ["checked", 1, "open", "gift"], ["checked", 2, "paid", "none"]],
+  {
+    "rows of the relation without a schema": [
+      "query",
+      ["plain", "?id", "?status", "?note"],
+      { "order": "id" }
+    ],
+    "rows of the relation with a schema": [
+      "query",
+      ["checked", "?id", "?status", "?note"],
+      { "order": "id" }
+    ]
+  }
+]
+== gives
+{
+  "rows of the relation without a schema": [
+    {
+      "id": 1,
+      "status": "open",
+      "note": "gift"
+    },
+    {
+      "id": 2,
+      "status": "paid",
+      "note": "none"
+    }
+  ],
+  "rows of the relation with a schema": [
+    {
+      "id": 1,
+      "status": "open",
+      "note": "gift"
+    },
+    {
+      "id": 2,
+      "status": "paid",
+      "note": "none"
+    }
+  ]
+}
+
+== program ci-checked-when-run-called.json
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  ["addOne", 1]
+]
+== gives
+
+ERROR
+  Expected number
+  at [1]
+
+== program ci-checked-when-run.json
+[
+  "begin",
+  ["define", "addOne", ["lambda", ["x"], ["number/add", "x", "one"]]],
+  {
+    "a function that adds the string one to a number, defined and never called": "defined without complaint"
+  }
+]
+== gives
+{
+  "a function that adds the string one to a number, defined and never called": "defined without complaint"
+}
+
+== program ci-function-equality.json
+[
+  "begin",
+  ["define", "f", ["lambda", ["x"], "x"]],
+  {
+    "a function equals itself": ["=", "f", "f"],
+    "two lambdas with the same text are equal": [
+      "=",
+      ["lambda", ["x"], "x"],
+      ["lambda", ["x"], "x"]
+    ],
+    "a function fits itself as a schema, when the function is the value 1": [
+      "schema/fits?",
+      1,
+      "f"
+    ]
+  }
+]
+== gives
+{
+  "a function equals itself": true,
+  "two lambdas with the same text are equal": false,
+  "a function fits itself as a schema, when the function is the value 1": false
+}
+
+== program ci-larger-value.json
+[
+  "begin",
+  [
+    "schema",
+    "Grows",
+    ["lambda", ["v"], ["schema/fits?", ["array/make", "v"], "Grows"]]
+  ],
+  ["Grows", 1]
+]
+== gives
+
+ERROR
+  Schema "Grows" asks whether [1] fits it while checking 1. A schema may ask about itself again only about a smaller value, so that its check ends.
+
+== program ci-negative-recursion.json
+[
+  "begin",
+  ["schema", "Bad", ["lambda", ["v"], ["not", ["schema/fits?", "v", "Bad"]]]],
+  {
+    "1 fits a schema whose predicate says the value does not fit that same schema": [
+      "schema/fits?",
+      1,
+      "Bad"
+    ]
+  }
+]
+== gives
+
+ERROR
+  Whether 1 fits "Bad" has no answer: checking it asks the same question again, and the value would fit exactly when it does not.
+
+== program ci-positive-recursion.json
+[
+  "begin",
+  ["schema", "Loop", ["schema/anyOf", "Loop", "value/integer?"]],
+  [
+    "schema",
+    "Tree",
+    ["schema/anyOf", "value/integer?", ["schema/arrayOf", "Tree"]]
+  ],
+  {
+    "an integer fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      3,
+      "Loop"
+    ],
+    "a string fits a schema that names itself before value/integer?": [
+      "schema/fits?",
+      "x",
+      "Loop"
+    ],
+    "a nested list of integers fits a tree schema that recurses into the list": [
+      "schema/fits?",
+      ["quote", [1, [2, [3]]]],
+      "Tree"
+    ],
+    "a nested list with a string in it fits the tree schema": [
+      "schema/fits?",
+      ["quote", [1, ["two"]]],
+      "Tree"
+    ]
+  }
+]
+== gives
+{
+  "an integer fits a schema that names itself before value/integer?": true,
+  "a string fits a schema that names itself before value/integer?": false,
+  "a nested list of integers fits a tree schema that recurses into the list": true,
+  "a nested list with a string in it fits the tree schema": false
+}
+
+== program ci-positive-through-lambda.json
+[
+  "begin",
+  ["schema", "Self", ["lambda", ["v"], ["schema/fits?", "v", "Self"]]],
+  {
+    "1 fits a schema whose predicate asks whether the value fits that same schema": [
+      "schema/fits?",
+      1,
+      "Self"
+    ]
+  }
+]
+== gives
+{
+  "1 fits a schema whose predicate asks whether the value fits that same schema": false
+}
+
+== program ci-relation-loop-negative.json
+[
+  "begin",
+  ["relation", "item", ["v"]],
+  ["relation", "ok", ["v"]],
+  ["schema", "Okay", "ok"],
+  ["fact", ["item", 1]],
+  ["rule", ["ok", "?v"], ["item", "?v"], ["not", ["Okay", "?v"]]],
+  ["query", ["ok", "?v"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["ok","?v"],["item","?v"],["not",["Okay","?v"]]] asks about "ok", which depends on "ok". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-relation-loop-positive.json
+[
+  "begin",
+  ["relation", "item", ["v"]],
+  ["relation", "ok", ["v"]],
+  ["schema", "Okay", "ok"],
+  ["fact", ["item", 1]],
+  ["rule", ["ok", "?v"], ["item", "?v"], ["Okay", "?v"]],
+  ["query", ["ok", "?v"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["ok","?v"],["item","?v"],["Okay","?v"]] asks about "ok", which depends on "ok". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-rule-negation.json
+[
+  "begin",
+  ["relation", "move", ["from", "to"]],
+  ["relation", "win", ["position"]],
+  ["fact", ["move", "a", "b"], ["move", "b", "c"]],
+  ["rule", ["win", "?x"], ["move", "?x", "?y"], ["not", ["win", "?y"]]],
+  ["query", ["win", "?x"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["win","?x"],["move","?x","?y"],["not",["win","?y"]]] asks about "win", which depends on "win". A question, such as a goal under "not", cannot go through recursion.
+
+== program ci-rule-shrinking.json
+[
+  "begin",
+  ["relation", "word", ["letters"]],
+  ["relation", "suffix", ["letters"]],
+  ["fact", ["word", ["quote", ["a", "b", "c"]]]],
+  ["rule", ["suffix", "?xs"], ["word", "?xs"]],
+  [
+    "rule",
+    ["suffix", ["array/tail", "?xs"]],
+    ["suffix", "?xs"],
+    ["number/greaterThan", ["array/length", "?xs"], 0]
+  ],
+  ["query", ["suffix", "?xs"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["suffix",["array/tail","?xs"]],["suffix","?xs"],["number/greaterThan",["array/length","?xs"],0]] computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with aggregate/min, aggregate/max, aggregate/shortest, or aggregate/union.
+
+== program ci-schema-against-schema.json
+{
+  "every integer is a number, and value/integer? fits value/number?": [
+    "schema/fits?",
+    "value/integer?",
+    "value/number?"
+  ],
+  "every list of integers is a list of numbers, and the one schema fits the other": [
+    "schema/fits?",
+    ["schema/arrayOf", "value/integer?"],
+    ["schema/arrayOf", "value/number?"]
+  ]
+}
+== gives
+{
+  "every integer is a number, and value/integer? fits value/number?": false,
+  "every list of integers is a list of numbers, and the one schema fits the other": false
+}
+
+== program ci-stratified-recursion.json
+[
+  "begin",
+  [
+    "schema",
+    "EvenList",
+    [
+      "schema/anyOf",
+      ["quote", []],
+      [
+        "lambda",
+        ["v"],
+        [
+          "and",
+          ["value/array?", "v"],
+          ["not", ["schema/fits?", ["array/tail", "v"], "EvenList"]]
+        ]
+      ]
+    ]
+  ],
+  {
+    "the empty list fits EvenList": ["schema/fits?", ["quote", []], "EvenList"],
+    "a list of one fits EvenList": ["schema/fits?", ["quote", [1]], "EvenList"],
+    "a list of two fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2]],
+      "EvenList"
+    ],
+    "a list of three fits EvenList": [
+      "schema/fits?",
+      ["quote", [1, 2, 3]],
+      "EvenList"
+    ]
+  }
+]
+== gives
+{
+  "the empty list fits EvenList": true,
+  "a list of one fits EvenList": false,
+  "a list of two fits EvenList": true,
+  "a list of three fits EvenList": false
+}
+
+== program fv-invariant-runtime.json
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 10]],
+  [
+    "define",
+    "withdraw",
+    ["lambda", ["balance", "amount"], ["number/subtract", "balance", "amount"]]
+  ],
+  ["fact", ["account", "a", "open", ["withdraw", 10, 4]]],
+  ["query", ["account", "?id", "?status", "?balance"]],
+  ["fact", ["account", "a", "open", ["withdraw", 6, 9]]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"id":"a","balance":-3}: ["and",["account","?id","open","?balance"],["number/lessThan","?balance",0]].
+
+== program fv-assuming-step.json
+[
+  "begin",
+  ["relation", "account", ["id", "status", "balance"], { "key": "id" }],
+  [
+    "invariant",
+    [
+      "and",
+      ["account", "?id", "open", "?balance"],
+      ["number/lessThan", "?balance", 0]
+    ],
+    { "assert": "none" }
+  ],
+  ["fact", ["account", "a", "open", 2]],
+  {
+    "would withdrawing 3 overdraw a?": [
+      "assuming",
+      ["fact", ["account", "a", "open", -1]],
+      [
+        "find",
+        "?id",
+        [
+          "and",
+          ["account", "?id", "open", "?balance"],
+          ["number/lessThan", "?balance", 0]
+        ]
+      ]
+    ],
+    "is a still as it was?": [
+      "query",
+      ["account", "?id", "?status", "?balance"]
+    ]
+  }
+]
+== gives
+{
+  "would withdrawing 3 overdraw a?": [
+    "a"
+  ],
+  "is a still as it was?": [
+    {
+      "id": "a",
+      "status": "open",
+      "balance": 2
+    }
+  ]
+}
+
+== program fv-transition-log.json
+[
+  "begin",
+  ["relation", "event", ["account", "n", "kind"]],
+  [
+    "invariant",
+    [
+      "and",
+      ["event", "?a", "?n", "closed"],
+      ["event", "?a", "?m", "?kind"],
+      ["number/greaterThan", "?m", "?n"]
+    ],
+    { "assert": "none" }
+  ],
+  [
+    "fact",
+    ["event", "a", 1, "opened"],
+    ["event", "a", 2, "deposited"],
+    ["event", "a", 3, "closed"]
+  ],
+  ["fact", ["event", "a", 4, "deposited"]]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"a":"a","n":3,"m":4,"kind":"deposited"}: ["and",["event","?a","?n","closed"],["event","?a","?m","?kind"],["number/greaterThan","?m","?n"]].
+
+== program fv-counterexample-program.json
+[
+  "begin",
+  ["define", "found", ["quote", [{ "kind": "withdraw", "amount": 3 }]]],
+  [
+    "define",
+    "setup",
+    [
+      "quote",
+      [
+        ["relation", "event", ["account", "n", "kind", "amount"]],
+        ["relation", "delta", ["account", "n", "amount"]],
+        [
+          "rule",
+          ["delta", "?a", "?n", "?x"],
+          ["event", "?a", "?n", "deposit", "?x"]
+        ],
+        [
+          "rule",
+          ["delta", "?a", "?n", ["number/subtract", 0, "?x"]],
+          ["event", "?a", "?n", "withdraw", "?x"]
+        ],
+        ["relation", "balance", ["account", "amount"]],
+        [
+          "rule",
+          ["balance", "?a", ["aggregate/sum", "?d"]],
+          ["delta", "?a", "?_", "?d"]
+        ],
+        [
+          "invariant",
+          ["and", ["balance", "?a", "?b"], ["number/lessThan", "?b", 0]],
+          { "assert": "none" }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "test",
+    [
+      "array/concat",
+      ["array/make", "begin"],
+      "setup",
+      [
+        "array/map",
+        "found",
+        [
+          "lambda",
+          ["e"],
+          [
+            "array/make",
+            "fact",
+            [
+              "array/make",
+              "event",
+              "a",
+              1,
+              ["object/get", "e", "kind"],
+              ["object/get", "e", "amount"]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  ["eval", "test"]
+]
+== gives
+
+ERROR
+  Adding this fact breaks an invariant, so nothing changed. The invariant expected no answers but found 1, such as {"a":"a","b":-3}: ["and",["balance","?a","?b"],["number/lessThan","?b",0]].
+
+== program fv-unbound-filter.json
+["find", "?balance", ["number/lessThan", "?balance", 0]]
+== gives
+
+ERROR
+  Unsafe goal ["number/lessThan","?balance",0]: ?balance must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-solve-for.json
+["find", "?x", ["and", ["=", "?y", ["number/add", "?x", 1]], ["=", "?y", 3]]]
+== gives
+
+ERROR
+  Unsafe goal ["=","?y",["number/add","?x",1]]: ?x must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-unknown-arithmetic.json
+[
+  "begin",
+  ["relation", "account", ["id"]],
+  ["relation", "balance", ["account", "amount"], { "key": "account" }],
+  ["fact", ["account", "a"]],
+  ["rule", ["exists", ["?b"], ["balance", "?a", "?b"]], ["account", "?a"]],
+  ["define", "held", ["query", ["balance", "?account", "?amount"]]],
+  [
+    "define",
+    "overdrawn",
+    [
+      "query",
+      [
+        "and",
+        ["balance", "?account", "?amount"],
+        ["number/lessThan", "?amount", 0]
+      ]
+    ]
+  ],
+  { "held": "held", "overdrawn": "overdrawn" }
+]
+== gives
+
+ERROR
+  ["number/lessThan",["some","?b",["balance","a","?b"]],0] failed: Expected number at [0]
+
+== program fv-schema-values.json
+["find", "?x", ["schema/fits?", "?x", ["schema/anyOf", 1, 2, 3]]]
+== gives
+
+ERROR
+  Unsafe goal ["schema/fits?","?x",["schema/anyOf",1,2,3]]: ?x must first be bound by a relation, "=", "in", or "schema/fits?".
+
+== program fv-explore-refused.json
+[
+  "begin",
+  ["relation", "amounts", ["value"]],
+  ["relation", "reach", ["balance"]],
+  ["fact", ["amounts", 3], ["amounts", 5]],
+  ["fact", ["reach", 0]],
+  [
+    "rule",
+    ["reach", ["number/add", "?b", "?a"]],
+    ["reach", "?b"],
+    ["amounts", "?a"]
+  ],
+  ["query", ["reach", "?balance"]]
+]
+== gives
+
+ERROR
+  Rule ["rule",["reach",["number/add","?b","?a"]],["reach","?b"],["amounts","?a"]] computes a new value in its head while recursing, which may never finish. Compute the value in a non-recursive rule, or aggregate it with aggregate/min, aggregate/max, aggregate/shortest, or aggregate/union.
+
+== program fv-explore-rules.json
+[
+  "begin",
+  ["relation", "balances", ["value"]],
+  ["relation", "amounts", ["value"]],
+  [
+    "fact",
+    ["balances", 0],
+    ["balances", 1],
+    ["balances", 2],
+    ["balances", 3],
+    ["balances", 4],
+    ["balances", 5],
+    ["balances", 6]
+  ],
+  ["fact", ["amounts", 1], ["amounts", 2], ["amounts", 3]],
+  [
+    "define",
+    "deposit",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": ["number/add", ["object/get", "state", "balance"], "amount"]
+      }
+    ]
+  ],
+  [
+    "define",
+    "withdraw",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": [
+          "number/subtract",
+          ["object/get", "state", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  ["relation", "state", ["state"]],
+  [
+    "rule",
+    ["state", { "status": "open", "balance": "?b" }],
+    ["balances", "?b"]
+  ],
+  ["relation", "step", ["from", "command", "to"]],
+  [
+    "rule",
+    ["step", "?s", { "deposit": "?a" }, ["deposit", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  [
+    "rule",
+    ["step", "?s", { "withdraw": "?a" }, ["withdraw", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  ["relation", "reach", ["state"]],
+  ["fact", ["reach", { "status": "open", "balance": 0 }]],
+  ["rule", ["reach", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?s", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  [
+    "define",
+    "bad",
+    [
+      "find",
+      "?s",
+      [
+        "and",
+        ["reach", "?s"],
+        ["number/lessThan", ["object/get", "?s", "balance"], 0]
+      ]
+    ]
+  ],
+  {
+    "states reached": ["array/length", ["find", "?s", ["reach", "?s"]]],
+    "states that break the invariant": "bad",
+    "shortest way to the first": [
+      "query",
+      [
+        "graph/shortestPath",
+        "edge",
+        { "status": "open", "balance": 0 },
+        ["array/head", "bad"],
+        "?steps",
+        "?path"
+      ]
+    ],
+    "why it is reached": ["why", ["reach", ["array/head", "bad"]]]
+  }
+]
+== gives
+{
+  "states reached": 13,
+  "states that break the invariant": [
+    {
+      "status": "open",
+      "balance": -3
+    },
+    {
+      "status": "open",
+      "balance": -2
+    },
+    {
+      "status": "open",
+      "balance": -1
+    }
+  ],
+  "shortest way to the first": [
+    {
+      "steps": 1,
+      "path": [
+        {
+          "status": "open",
+          "balance": 0
+        },
+        {
+          "status": "open",
+          "balance": -3
+        }
+      ]
+    }
+  ],
+  "why it is reached": {
+    "fact": [
+      "reach",
+      {
+        "status": "open",
+        "balance": -3
+      }
+    ],
+    "rule": [
+      "rule",
+      [
+        "reach",
+        "?t"
+      ],
+      [
+        "reach",
+        "?s"
+      ],
+      [
+        "step",
+        "?s",
+        "?_",
+        "?t"
+      ]
+    ],
+    "because": [
+      {
+        "fact": [
+          "reach",
+          {
+            "status": "open",
+            "balance": 0
+          }
+        ],
+        "given": true
+      },
+      {
+        "fact": [
+          "step",
+          {
+            "status": "open",
+            "balance": 0
+          },
+          {
+            "withdraw": 3
+          },
+          {
+            "status": "open",
+            "balance": -3
+          }
+        ],
+        "rule": [
+          "rule",
+          [
+            "step",
+            "?s",
+            {
+              "withdraw": "?a"
+            },
+            {
+              "status": [
+                "object/get",
+                "?s",
+                "status"
+              ],
+              "balance": [
+                "number/subtract",
+                [
+                  "object/get",
+                  "?s",
+                  "balance"
+                ],
+                "?a"
+              ]
+            }
+          ],
+          [
+            "state",
+            "?s"
+          ],
+          [
+            "amounts",
+            "?a"
+          ]
+        ],
+        "because": [
+          {
+            "fact": [
+              "state",
+              {
+                "status": "open",
+                "balance": 0
+              }
+            ],
+            "rule": [
+              "rule",
+              [
+                "state",
+                {
+                  "status": "open",
+                  "balance": "?b"
+                }
+              ],
+              [
+                "balances",
+                "?b"
+              ]
+            ],
+            "because": [
+              {
+                "fact": [
+                  "balances",
+                  0
+                ],
+                "given": true
+              }
+            ]
+          },
+          {
+            "fact": [
+              "amounts",
+              3
+            ],
+            "given": true
+          }
+        ]
+      }
+    ]
+  }
+}
+
+== program fv-explore-careful.json
+[
+  "begin",
+  ["relation", "balances", ["value"]],
+  ["relation", "amounts", ["value"]],
+  [
+    "fact",
+    ["balances", 0],
+    ["balances", 1],
+    ["balances", 2],
+    ["balances", 3],
+    ["balances", 4],
+    ["balances", 5],
+    ["balances", 6]
+  ],
+  ["fact", ["amounts", 1], ["amounts", 2], ["amounts", 3]],
+  [
+    "define",
+    "deposit",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": ["number/add", ["object/get", "state", "balance"], "amount"]
+      }
+    ]
+  ],
+  [
+    "define",
+    "withdraw",
+    [
+      "lambda",
+      ["state", "amount"],
+      {
+        "status": ["object/get", "state", "status"],
+        "balance": [
+          "number/subtract",
+          ["object/get", "state", "balance"],
+          "amount"
+        ]
+      }
+    ]
+  ],
+  ["relation", "state", ["state"]],
+  [
+    "rule",
+    ["state", { "status": "open", "balance": "?b" }],
+    ["balances", "?b"]
+  ],
+  ["relation", "step", ["from", "command", "to"]],
+  [
+    "rule",
+    ["step", "?s", { "deposit": "?a" }, ["deposit", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"]
+  ],
+  [
+    "rule",
+    ["step", "?s", { "withdraw": "?a" }, ["withdraw", "?s", "?a"]],
+    ["state", "?s"],
+    ["amounts", "?a"],
+    ["number/greaterThanOrEqualTo", ["object/get", "?s", "balance"], "?a"]
+  ],
+  ["relation", "reach", ["state"]],
+  ["fact", ["reach", { "status": "open", "balance": 0 }]],
+  ["rule", ["reach", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  ["relation", "edge", ["from", "to"]],
+  ["rule", ["edge", "?s", "?t"], ["reach", "?s"], ["step", "?s", "?_", "?t"]],
+  [
+    "define",
+    "bad",
+    [
+      "find",
+      "?s",
+      [
+        "and",
+        ["reach", "?s"],
+        ["number/lessThan", ["object/get", "?s", "balance"], 0]
+      ]
+    ]
+  ],
+  {
+    "states reached": ["array/length", ["find", "?s", ["reach", "?s"]]],
+    "states that break the invariant": "bad",
+    "states reached outside the scope, not followed further": [
+      "find",
+      "?t",
+      ["and", ["reach", "?t"], ["not", ["state", "?t"]]]
+    ]
+  }
+]
+== gives
+{
+  "states reached": 10,
+  "states that break the invariant": [],
+  "states reached outside the scope, not followed further": [
+    {
+      "status": "open",
+      "balance": 7
+    },
+    {
+      "status": "open",
+      "balance": 8
+    },
+    {
+      "status": "open",
+      "balance": 9
+    }
+  ]
+}
+
+== program fv-explore-code.json
+[
+  "begin",
+  [
+    "define",
+    "commands",
+    [
+      "quote",
+      [
+        { "deposit": 2 },
+        { "withdraw": 1 },
+        { "withdraw": 3 },
+        { "close": true }
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careful",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["value/number?", ["object/get", "c", "withdraw"]],
+          [
+            "cond",
+            [
+              [
+                "number/lessThan",
+                ["object/get", "s", "balance"],
+                ["object/get", "c", "withdraw"]
+              ],
+              "s"
+            ],
+            [
+              "else",
+              {
+                "status": "open",
+                "balance": [
+                  "number/subtract",
+                  ["object/get", "s", "balance"],
+                  ["object/get", "c", "withdraw"]
+                ]
+              }
+            ]
+          ]
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "careless",
+    [
+      "lambda",
+      ["s", "c"],
+      [
+        "cond",
+        [["string/equals?", ["object/get", "s", "status"], "closed"], "s"],
+        [
+          ["value/number?", ["object/get", "c", "deposit"]],
+          {
+            "status": "open",
+            "balance": [
+              "number/add",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "deposit"]
+            ]
+          }
+        ],
+        [
+          ["value/number?", ["object/get", "c", "withdraw"]],
+          {
+            "status": "open",
+            "balance": [
+              "number/subtract",
+              ["object/get", "s", "balance"],
+              ["object/get", "c", "withdraw"]
+            ]
+          }
+        ],
+        [
+          "else",
+          { "status": "closed", "balance": ["object/get", "s", "balance"] }
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "neverOverdrawn",
+    [
+      "lambda",
+      ["s"],
+      [
+        "boolean/or",
+        ["string/equals?", ["object/get", "s", "status"], "closed"],
+        ["number/greaterThanOrEqualTo", ["object/get", "s", "balance"], 0]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "explore",
+    [
+      "lambda",
+      ["step", "ok", "level", "depth", "seen"],
+      [
+        "cond",
+        [
+          ["number/equals?", "depth", 0],
+          { "sequences checked": "seen", "breaks": null }
+        ],
+        [
+          "else",
+          [
+            "begin",
+            [
+              "define",
+              "next",
+              [
+                "array/flat-map",
+                "level",
+                [
+                  "lambda",
+                  ["p"],
+                  [
+                    "array/map",
+                    "commands",
+                    [
+                      "lambda",
+                      ["c"],
+                      {
+                        "state": ["step", ["object/get", "p", "state"], "c"],
+                        "trace": [
+                          "array/concat",
+                          ["object/get", "p", "trace"],
+                          ["array/make", "c"]
+                        ]
+                      }
+                    ]
+                  ]
+                ]
+              ]
+            ],
+            [
+              "define",
+              "broken",
+              [
+                "find",
+                "?p",
+                [
+                  "and",
+                  ["in", "?p", "next"],
+                  ["boolean/not", ["ok", ["object/get", "?p", "state"]]]
+                ]
+              ]
+            ],
+            [
+              "cond",
+              [
+                ["number/greaterThan", ["array/length", "broken"], 0],
+                {
+                  "sequences checked": [
+                    "number/add",
+                    "seen",
+                    ["array/length", "next"]
+                  ],
+                  "breaks": ["array/head", "broken"]
+                }
+              ],
+              [
+                "else",
+                [
+                  "explore",
+                  "step",
+                  "ok",
+                  "next",
+                  ["number/subtract", "depth", 1],
+                  ["number/add", "seen", ["array/length", "next"]]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "start",
+    ["array/make", { "state": { "status": "open", "balance": 0 }, "trace": [] }]
+  ],
+  {
+    "careful withdrawal, every sequence of up to 6 commands": [
+      "explore",
+      "careful",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ],
+    "careless withdrawal": [
+      "explore",
+      "careless",
+      "neverOverdrawn",
+      "start",
+      6,
+      0
+    ]
+  }
+]
+== gives
+{
+  "careful withdrawal, every sequence of up to 6 commands": {
+    "sequences checked": 5460,
+    "breaks": null
+  },
+  "careless withdrawal": {
+    "sequences checked": 4,
+    "breaks": {
+      "state": {
+        "status": "open",
+        "balance": -3
+      },
+      "trace": [
+        {
+          "withdraw": 3
+        }
+      ]
+    }
+  }
+}
+
+== program co-aggregate-facts.json
+[
+  "begin",
+  ["relation", "spend", ["who", "usd"]],
+  ["relation", "total", ["who", "usd"]],
+  ["fact", ["spend", "ana", 30], ["spend", "ana", 20]],
+  ["rule", ["total", "?w", ["aggregate/sum", "?u"]], ["spend", "?w", "?u"]],
+  ["fact", ["total", "bo", 5], ["total", "ana", 7]],
+  {
+    "totals, from the rule and from facts": [
+      "query",
+      ["total", "?who", "?usd"],
+      { "order": "who" }
+    ]
+  }
+]
+== gives
+{
+  "totals, from the rule and from facts": [
+    {
+      "who": "ana",
+      "usd": 57
+    },
+    {
+      "who": "bo",
+      "usd": 5
+    }
+  ]
+}

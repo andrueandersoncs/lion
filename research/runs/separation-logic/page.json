@@ -305,7 +305,7 @@
     [
       "cond",
       [
-        ["rank", "?_", "?_"],
+        ["and", ["rank", "?c", "?_"], ["weighed_in", "?c", "separation-logic"]],
         [
           "string/concat",
           ["words/number", ["array/length", ["withVerdict", "worth adopting"]]],
@@ -314,7 +314,15 @@
             "words/listed",
             [
               "array/map",
-              ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+              [
+                "find",
+                ["array/make", "?n", "?c"],
+                [
+                  "and",
+                  ["rank", "?c", "?n"],
+                  ["weighed_in", "?c", "separation-logic"]
+                ]
+              ],
               [
                 "lambda",
                 ["pair"],
@@ -427,12 +435,24 @@
           "answer": [
             "cond",
             [
-              ["rank", "?_", "?_"],
+              [
+                "and",
+                ["rank", "?c", "?_"],
+                ["weighed_in", "?c", "separation-logic"]
+              ],
               [
                 "string/join",
                 [
                   "array/map",
-                  ["find", ["array/make", "?n", "?c"], ["rank", "?c", "?n"]],
+                  [
+                    "find",
+                    ["array/make", "?n", "?c"],
+                    [
+                      "and",
+                      ["rank", "?c", "?n"],
+                      ["weighed_in", "?c", "separation-logic"]
+                    ]
+                  ],
                   [
                     "lambda",
                     ["pair"],
@@ -474,15 +494,19 @@
             "query",
             [
               "and",
-              ["adds", "?idea", "?feature", "?technique"],
+              ["weighed_in", "?idea", "separation-logic"],
               [
-                "answer",
-                {
-                  "covers": "?feature",
-                  "by": "?technique"
-                },
-                true,
-                "?statement"
+                "and",
+                ["adds", "?idea", "?feature", "?technique"],
+                [
+                  "answer",
+                  {
+                    "covers": "?feature",
+                    "by": "?technique"
+                  },
+                  true,
+                  "?statement"
+                ]
               ]
             ],
             {
@@ -510,14 +534,18 @@
             "query",
             [
               "and",
-              ["already", "?idea", "?feature"],
+              ["weighed_in", "?idea", "separation-logic"],
               [
-                "answer",
-                {
-                  "lion has": "?feature"
-                },
-                true,
-                "?statement"
+                "and",
+                ["already", "?idea", "?feature"],
+                [
+                  "answer",
+                  {
+                    "lion has": "?feature"
+                  },
+                  true,
+                  "?statement"
+                ]
               ]
             ],
             {
@@ -548,55 +576,59 @@
           "evidence": [
             "query",
             [
-              "or",
+              "and",
+              ["weighed_in", "?idea", "separation-logic"],
               [
-                "and",
-                ["moot", "?idea", "?feature"],
+                "or",
                 [
-                  "answer",
-                  {
-                    "lion has": "?feature"
-                  },
-                  false,
-                  "?statement"
-                ]
-              ],
-              [
-                "and",
-                ["moot", "?idea", "?_"],
+                  "and",
+                  ["moot", "?idea", "?feature"],
+                  [
+                    "answer",
+                    {
+                      "lion has": "?feature"
+                    },
+                    false,
+                    "?statement"
+                  ]
+                ],
                 [
-                  "answer",
-                  {
-                    "needs": "?feature",
-                    "by": "?technique"
-                  },
-                  true,
-                  "?statement"
-                ]
-              ],
-              [
-                "and",
-                ["blocks", "?idea", "?feature", "?technique"],
+                  "and",
+                  ["moot", "?idea", "?_"],
+                  [
+                    "answer",
+                    {
+                      "needs": "?feature",
+                      "by": "?technique"
+                    },
+                    true,
+                    "?statement"
+                  ]
+                ],
                 [
-                  "answer",
-                  {
-                    "covers": "?feature",
-                    "by": "?technique"
-                  },
-                  false,
-                  "?statement"
-                ]
-              ],
-              [
-                "and",
-                ["blocks", "?idea", "?feature", "?_"],
+                  "and",
+                  ["blocks", "?idea", "?feature", "?technique"],
+                  [
+                    "answer",
+                    {
+                      "covers": "?feature",
+                      "by": "?technique"
+                    },
+                    false,
+                    "?statement"
+                  ]
+                ],
                 [
-                  "answer",
-                  {
-                    "lion has": "?feature"
-                  },
-                  true,
-                  "?statement"
+                  "and",
+                  ["blocks", "?idea", "?feature", "?_"],
+                  [
+                    "answer",
+                    {
+                      "lion has": "?feature"
+                    },
+                    true,
+                    "?statement"
+                  ]
                 ]
               ]
             ]
@@ -781,7 +813,8 @@
             [
               "and",
               ["expects", "?belief", "?question", "?expected"],
-              ["answer", "?question", "?value", "?statement"]
+              ["answer", "?question", "?value", "?statement"],
+              ["string/startsWith", "?belief", "sl-"]
             ],
             {
               "order": "belief"
@@ -800,12 +833,16 @@
                   "find",
                   "?t",
                   [
-                    "answer",
-                    {
-                      "defines": "?t"
-                    },
-                    true,
-                    "?_"
+                    "and",
+                    [
+                      "answer",
+                      {
+                        "defines": "?t"
+                      },
+                      true,
+                      "?claim"
+                    ],
+                    ["string/startsWith", "?claim", "sl-"]
                   ]
                 ]
               ]
@@ -881,9 +918,13 @@
             "query",
             [
               "and",
-              ["candidate", "?idea", "?_"],
-              ["verdict", "?idea", "?verdict"],
-              ["from", "?idea", "?from_separation_logic"]
+              ["weighed_in", "?idea", "separation-logic"],
+              [
+                "and",
+                ["candidate", "?idea", "?_"],
+                ["verdict", "?idea", "?verdict"],
+                ["from", "?idea", "?from_separation_logic"]
+              ]
             ],
             {
               "order": "verdict"

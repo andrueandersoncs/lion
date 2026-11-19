@@ -116,4 +116,4 @@
     ["short_title","joins",["quote","Worst-case optimal joins"]],
     ["short_title","agents",["quote","Programs a model can't get wrong"]],
     ["short_title","testing",["quote","Metamorphic engine tests"]]],
-  "lion improvements candidates"]
+  ["fact", ["offers", "incremental", ["quote", "counting"]], ["offers", "annotate", ["quote", "top-k proofs"]], ["offers", "annotate", ["quote", "probabilities"]], ["offers", "joins", ["quote", "worst-case optimal joins"]], ["offers", "joins", ["quote", "skewed joins"]], ["offers", "agents", ["quote", "constrained generation"]]],"lion improvements candidates"]

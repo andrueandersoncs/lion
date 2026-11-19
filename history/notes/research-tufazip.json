@@ -1,0 +1,12 @@
+{
+  "claims": [
+    {
+      "quote": "The run on TufaZip (2026-11-19) asks what Lion can learn from a compressor whose decoder learns in step with its encoder and whose benchmark counts the decoder in the score. Lion already makes a change pay for what it adds, as `guidelines/measuring.md` asks, and rebuilds its state from steps in any order. It adds one idea, a held-out eval case for the skills' improvement loop, because a score tuned on one fixed case can improve without the skill improving. A Lion program, `research/probes/tz-figures.json`, works out eleven of the page's figures from its table, and all of them hold.",
+      "says": {
+        "feature": "tufazip-research",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}
