@@ -396,6 +396,32 @@ export const world = (options: Options = { clean: false }) =>
 
 const day = "2026-02-01";
 
+/**
+ * The world once its working tree is committed, on the day it was written:
+ * every file the working tree added is added by a new commit after the rest.
+ */
+export const committed = (w: World): World => {
+  const at = w.commits.length;
+  const last = w.commits.at(-1);
+  const commit: Commit = {
+    date: day,
+    hash: hashOf(at),
+    message: "feat: commit the working tree\n\nWhy: it is done",
+    parents: last === undefined ? [] : [last.hash],
+    time: 1000 + at * 10,
+  };
+  return {
+    ...w,
+    added: Object.fromEntries(
+      Object.entries(w.added).map(([path, index]) => [
+        path,
+        index < 0 ? at : index,
+      ])
+    ),
+    commits: [...w.commits, commit],
+  };
+};
+
 const refData = (r: Ref) =>
   r.quote === undefined ? r.commit : { commit: r.commit, quote: r.quote };
 

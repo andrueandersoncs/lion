@@ -116,6 +116,11 @@ export const checkModel = (
     const lines = [
       ...failed,
       ...section("•", checks.note),
+      ...(built.unsaid.length > 0
+        ? [
+            `• ${built.unsaid.length} claims quote words the docs no longer hold, so the model leaves them out until someone reads the new words: ${built.unsaid.slice(0, 8).join(", ")}${built.unsaid.length > 8 ? ", ..." : ""}`,
+          ]
+        : []),
       `• ${found.known.length} known findings wait for a decision, ${found.accepted.length} are accepted, ${found.unread.length} commits are not read yet`,
       ok
         ? `✓ The model holds: ${Object.entries(checks.holds)

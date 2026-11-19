@@ -15,6 +15,7 @@ import { Arbitrary, Effect, Schema } from "effect";
 import { parseChangelog } from "../changelog.ts";
 import {
   claimsOfWorld,
+  committed,
   graphOf,
   itemsOf,
   itemsUnder,
@@ -443,6 +444,20 @@ const ENTITY = /&(?!(?:amp|lt|gt|quot);)/;
 const HREF = /<a href="([^"]*)">/g;
 const CODE_OPENS = /<code>/g;
 const MARKUP = /[<>"]/;
+
+describe("the pages of a commit", () => {
+  it.effect.prop(
+    "are the pages its working tree gave before it was committed, so a commit holds its own pages",
+    { w: world({ clean: true }) },
+    ({ w }) =>
+      Effect.gen(function* () {
+        const before = yield* fromModel(w, OUTPUTS);
+        const after = yield* fromModel(committed(w), OUTPUTS);
+        expect(after).toEqual(before);
+      }),
+    PAGE_OPTIONS
+  );
+});
 
 describe("the timeline's inline Markdown", () => {
   it.effect.prop(

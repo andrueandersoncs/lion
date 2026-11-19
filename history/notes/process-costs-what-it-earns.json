@@ -1,0 +1,117 @@
+{
+  "title": "The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording",
+  "context": "Of the 81 commits from November 16 to 19, 37 were `docs: write the project record's pages for <hash>`. The timeline counted every commit and listed a source by its date, so a commit could not hold its own pages: after it, `bun run history check` failed until a second commit wrote them again and an amend settled that one. `history/notes/16-docs-head.json` pins 654 sentences of the docs, so rewording one failed the check until its claim quoted the new words. AGENTS.md asked for a screen recording after every change, also when the change was to the language and its proof was its properties and what `bun run compare` printed. And the README's guarantees described the engine's weights, levels, and stages, so every rewrite of the engine was a rewrite of the reader's reference too.",
+  "decision": "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements. How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`.",
+  "consequences": "A change is one commit again: `bun run history write` before it gives the pages it holds, and the property that the pages of a commit are the pages its working tree gave checks that on generated histories, and fails on the timeline as it was. A reworded sentence's claim waits, listed, until someone reads the new words, so the record checks fewer of the docs' sentences as they change; the docs' programs are still run by `bun run compare main --docs`. The README's guarantees now say what a program can observe.",
+  "alternatives": [
+    {
+      "option": "Build the pages in CI and stop committing them",
+      "rejected": "The website is served from `docs/` on `main`, and readers look for `CHANGELOG.md` and `DECISIONS.md` in the repository, so the pages are committed; once they no longer depend on their commit, committing them costs nothing."
+    },
+    {
+      "option": "Keep failing the check on a reworded sentence",
+      "rejected": "It made every improvement to the docs a change to the record as well, for sentences whose programs are already checked by running them."
+    },
+    {
+      "option": "Keep a recording for every change",
+      "rejected": "A recording of a terminal printing test results shows less than the results themselves."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds.",
+      "says": {
+        "decision": "record-pages-and-their-commit",
+        "chose": "pages-from-the-record-alone",
+        "over": ["second-pages-commit", "pages-built-in-ci"],
+        "area": "process",
+        "because": "pages that hold nothing of the commit they are in can be committed with the change they record"
+      }
+    },
+    {
+      "quote": "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds.",
+      "says": {
+        "feature": "changelog-commit-count",
+        "kind": "capability",
+        "present": false
+      }
+    },
+    {
+      "quote": "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds.",
+      "says": {
+        "rule": "pages-from-the-record-alone",
+        "holds": true,
+        "statement": "The record's pages are written from the record alone, never from the commit that will hold them, so the pages a working tree gives are the pages its commit holds.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "history-check-after-commit",
+            "is": "passes"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing.",
+      "says": {
+        "decision": "reworded-doc-sentence",
+        "chose": "claim-left-out",
+        "over": ["check-fails"],
+        "area": "process",
+        "because": "the docs' programs are checked by running them, and a sentence's wording is not worth a failed check"
+      }
+    },
+    {
+      "quote": "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing.",
+      "says": {
+        "behavior": "history-check-on-reworded-doc-sentence",
+        "is": "note",
+        "area": "process",
+        "was": "fails"
+      }
+    },
+    {
+      "quote": "A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements.",
+      "says": {
+        "decision": "completion-proof-scope",
+        "chose": "visible-changes",
+        "over": ["every-change"],
+        "area": "process",
+        "because": "a change to the language is proved better by what its properties and compare print than by a recording of them"
+      }
+    },
+    {
+      "quote": "A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements.",
+      "says": {
+        "rule": "completion-proof-recording",
+        "holds": true,
+        "statement": "After a change to something people see, capture a screen recording of it working end to end; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements.",
+        "area": "process",
+        "predicts": [
+          {
+            "behavior": "visible-change-completion-without-recording",
+            "is": "not-complete"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`.",
+      "says": {
+        "decision": "engine-mechanics-docs",
+        "chose": "engine-md",
+        "over": ["readme-guarantees"],
+        "area": "docs",
+        "because": "a reader of the reference needs what a program can observe, and a rewrite of the engine should not rewrite it"
+      }
+    },
+    {
+      "quote": "How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`.",
+      "says": {
+        "feature": "engine-md",
+        "kind": "file",
+        "present": true
+      }
+    }
+  ]
+}

@@ -117,12 +117,9 @@ turbo typecheck --filter=@lionlang/core
 
 ## Completion Proof
 
-- After completing any development task where any app behavior is changed, **you MUST capture a screen recording** that demonstrates the delivered behavior working as intended.
-- For UI work, record the actual application and exercise the changed interaction end to end.
-- For CLI, backend, configuration, or documentation work, record the relevant terminal command, runtime scenario, or rendered artifact and its successful result.
-- Screenshots, logs, and automated tests may supplement the recording but never replace it.
-- Provide the recording artifact with the final response. Do not claim completion without it.
-- Do not commit proof into git.
+- After a change to something people see, such as the graph editor, the website, or a rendered page, **capture a screen recording** of the changed interaction working end to end, and provide it with the final response. Screenshots and logs may supplement the recording but never replace it. Do not commit proof into git.
+- For a change to the language, the CLI, the tools, or the docs' text, the proof is what ran: the properties that fail without the change, the output of `bun run compare` for the programs the change affects, and the measurements. Report them as they are in the final response.
+- Do not claim completion without the proof the change calls for.
 
 ---
 

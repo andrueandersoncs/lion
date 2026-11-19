@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 175 questions have been decided, 72 records explain them, and of what the records assert, 552 hold when Lion is run, 4 are broken, 313 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 179 questions have been decided, 73 records explain them, and of what the records assert, 554 hold when Lion is run, 4 are broken, 320 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -181,6 +181,10 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`two-rows-with-one-key-inside-a-group`](#two-rows-with-one-key-inside-a-group) | `read-from-the-level-after` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
 | 2026-11-19 | [`what-a-group-keeps-of-its-rows`](#what-a-group-keeps-of-its-rows) | `what-its-rules-need` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
 | 2026-11-19 | [`where-why-finds-a-derivation`](#where-why-finds-a-derivation) | `found-when-asked` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
+| 2026-11-19 | [`completion-proof-scope`](#completion-proof-scope) | `visible-changes` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
+| 2026-11-19 | [`engine-mechanics-docs`](#engine-mechanics-docs) | `engine-md` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
+| 2026-11-19 | [`record-pages-and-their-commit`](#record-pages-and-their-commit) | `pages-from-the-record-alone` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
+| 2026-11-19 | [`reworded-doc-sentence`](#reworded-doc-sentence) | `claim-left-out` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 
 <a id="program-representation"></a>
 
@@ -3874,3 +3878,65 @@ Now: `what-its-rules-need`.
 Now: `found-when-asked`.
 
 - 2026-11-19 `where-why-finds-a-derivation`: `found-when-asked` over `kept-with-each-row`, `derived-again-after-a-change`: "`why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are." (`rows-read-when-held.json`)
+
+<a id="completion-proof-scope"></a>
+
+## completion-proof-scope
+
+Now: `visible-changes`.
+
+- 2026-11-19 `completion-proof-scope`: `visible-changes` over `every-change`: "A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements." (`process-costs-what-it-earns.json`)
+
+<a id="process-costs-what-it-earns"></a>
+
+### The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording
+
+Recorded 2026-11-19 in `history/notes/process-costs-what-it-earns.json`.
+
+**Context.** Of the 81 commits from November 16 to 19, 37 were `docs: write the project record's pages for <hash>`. The timeline counted every commit and listed a source by its date, so a commit could not hold its own pages: after it, `bun run history check` failed until a second commit wrote them again and an amend settled that one. `history/notes/16-docs-head.json` pins 654 sentences of the docs, so rewording one failed the check until its claim quoted the new words. AGENTS.md asked for a screen recording after every change, also when the change was to the language and its proof was its properties and what `bun run compare` printed. And the README's guarantees described the engine's weights, levels, and stages, so every rewrite of the engine was a rewrite of the reader's reference too.
+
+**Decision.** The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements. How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`.
+
+**Consequences.** A change is one commit again: `bun run history write` before it gives the pages it holds, and the property that the pages of a commit are the pages its working tree gave checks that on generated histories, and fails on the timeline as it was. A reworded sentence's claim waits, listed, until someone reads the new words, so the record checks fewer of the docs' sentences as they change; the docs' programs are still run by `bun run compare main --docs`. The README's guarantees now say what a program can observe.
+
+**Alternatives considered.**
+
+- Build the pages in CI and stop committing them. The website is served from `docs/` on `main`, and readers look for `CHANGELOG.md` and `DECISIONS.md` in the repository, so the pages are committed; once they no longer depend on their commit, committing them costs nothing.
+- Keep failing the check on a reworded sentence. It made every improvement to the docs a change to the record as well, for sentences whose programs are already checked by running them.
+- Keep a recording for every change. A recording of a terminal printing test results shows less than the results themselves.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `record-pages-and-their-commit`: `pages-from-the-record-alone`. "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds."
+- Holds when Lion is run: `changelog-commit-count` is removed. "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds."
+- Stated, not checked by running Lion: rule `pages-from-the-record-alone` holds. "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds."
+- Stated, not checked by running Lion: decided `reworded-doc-sentence`: `claim-left-out`. "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing."
+- Stated, not checked by running Lion: `history-check-on-reworded-doc-sentence` is `note`. "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing."
+- Stated, not checked by running Lion: decided `completion-proof-scope`: `visible-changes`. "A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements."
+- Stated, not checked by running Lion: rule `completion-proof-recording` holds. "A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements."
+- Stated, not checked by running Lion: decided `engine-mechanics-docs`: `engine-md`. "How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`."
+- Holds when Lion is run: `engine-md` exists. "How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`."
+
+<a id="engine-mechanics-docs"></a>
+
+## engine-mechanics-docs
+
+Now: `engine-md`.
+
+- 2026-11-19 `engine-mechanics-docs`: `engine-md` over `readme-guarantees`: "How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`." (`process-costs-what-it-earns.json`)
+
+<a id="record-pages-and-their-commit"></a>
+
+## record-pages-and-their-commit
+
+Now: `pages-from-the-record-alone`.
+
+- 2026-11-19 `record-pages-and-their-commit`: `pages-from-the-record-alone` over `second-pages-commit`, `pages-built-in-ci`: "The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds." (`process-costs-what-it-earns.json`)
+
+<a id="reworded-doc-sentence"></a>
+
+## reworded-doc-sentence
+
+Now: `claim-left-out`.
+
+- 2026-11-19 `reworded-doc-sentence`: `claim-left-out` over `check-fails`: "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing." (`process-costs-what-it-earns.json`)

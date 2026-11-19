@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+### Added
+
+- How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-md` added)
+
+### Removed
+
+- The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`changelog-commit-count` removed)
+
 ### Changed
 
 - A fact that holds an unknown is followed through every group that invents, and every invariant is asked after it. (`fact-holding-unknown-after-change` is `followed`, was `not-followed`)
@@ -12,6 +20,7 @@
 - A sum or a mean of numbers that are not all whole is added up in sort order. (`rule-head-sum-of-fractions` is `added-in-sort-order`, was `added-in-order-found`)
 - A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. (`rule-reading-two-rows-with-one-key-in-its-group` is `never-both`)
 - `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. (`why-of-a-row-several-answers-give` is `least-at-its-level`)
+- A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`history-check-on-reworded-doc-sentence` is `note`, was `fails`)
 
 ### Decided
 
@@ -21,6 +30,14 @@
 - A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. (`two-rows-with-one-key-inside-a-group`: `read-from-the-level-after` over `both-for-a-level`, `pair-from-the-same-level`)
 - A group whose rules read nothing of its own keeps a weight for each row in its table and nothing else, and any other group keeps a row's candidates and time on the row itself. (`what-a-group-keeps-of-its-rows`: `what-its-rules-need` over `an-entry-for-every-row`)
 - `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. (`where-why-finds-a-derivation`: `found-when-asked` over `kept-with-each-row`, `derived-again-after-a-change`)
+- A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements. (`completion-proof-scope`: `visible-changes` over `every-change`)
+- How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-mechanics-docs`: `engine-md` over `readme-guarantees`)
+- The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`record-pages-and-their-commit`: `pages-from-the-record-alone` over `second-pages-commit`, `pages-built-in-ci`)
+- A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`reworded-doc-sentence`: `claim-left-out` over `check-fails`)
+
+### Rules
+
+- The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (rule `pages-from-the-record-alone`)
 
 ## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
 
@@ -304,7 +321,6 @@ Rules that say something exists without saying what it is. A rule can give every
 - `CHANGELOG.md` and `DECISIONS.md` are computed by the Lion expressions in `history/outputs.json`, and the record's tests fail when either file is not what the record writes (`changelog-not-what-record-writes` is `tests-fail`)
 - A commit that adds a feature or a fix without an entry fails the check from the next commit on, and in CI, which now fetches the whole history (`ci-git-history-depth` is `full`; `feat-commit-without-entry` is `check-fails`)
 - The file is loaded before the program runs, so the program can use its relations without declaring them (`cli-database-relations-undeclared` is `usable`)
-- Provide the recording artifact with the final response. Do not claim completion without it. (`completion-without-recording` is `not-complete`)
 - `bun run history check` fails on a finding of the model that is not listed in `history/research/known.json` or accepted with a reason; the record's tests run it, so CI does. `bun run history ask` asks the model anything, such as `["query", ["reversed", "?topic", "?before", "?after"]]` for the decisions the project made one way and later another. A decision in `history/decisions/` can carry `"claims"` quoted from its own words, so the model checks what it settles against every rule and behavior. (`decision-claims-checked-by-research-model` is `against-every-rule-and-behavior`; `history-check-in-ci` is `runs-in-record-tests`; `history-check-unlisted-finding` is `fails`)
 - A database keeps what it derived when facts change and follows the change through it, so a change costs what it reaches: a row that an answer using a changed row gave is taken out and derived again, through relation goals, goals under `not`, aggregates, and recursion. With one million facts, adding a fact and asking every group's total again takes 23 milliseconds, where it took 1.6 seconds, and a rule with `not` takes 8 milliseconds, where it took 1.1 seconds. Answers are the same as before; the order they are found in can differ with the changes a database has seen, so use `"order"` when it matters. (`derived-rows-after-fact-change` is `followed`, was `derived-again`)
 - an unknown that the rules of the group it runs with invented takes the other value, a given one, or of two such unknowns the one that nests fewer unknowns, and of those the one that sorts first. (`equality-rule-invented-unknown-vs-given` is `given-value`)
@@ -1587,7 +1603,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - collapse graph and exact JSON into one representation; they remain synchronized, equally authoritative views. (rule `graph-and-json-equally-authoritative` withdrawn)
 - reintroduce a persistent text-editor pane; keep exact JSON edits focused on the selected expression. (rule `no-persistent-text-editor-pane`)
 - Every accepted edit is one undoable document transaction. (rule `every-edit-one-transaction`)
-- **you MUST capture a screen recording** that demonstrates the delivered behavior working as intended. (rule `completion-proof-recording`)
+- A screen recording is the proof of a change people see, such as the graph editor or the website; a change to the language, the CLI, the tools, or the docs' text is proved by its properties, `bun run compare`, and its measurements. (rule `completion-proof-recording`)
 - The system is crease-first and lightly lifted. Borders, tonal sheet changes, gutters, and folded corners establish most hierarchy. (rule `crease-first-lightly-lifted`)
 - **The One Sheet Rule.** Editing, inspection, navigation, and evaluation remain within the canvas; do not reintroduce detached workbench panes. (rule `one-sheet-rule`)
 - Primitive values, definitions, parameter lists, conditional branches, match patterns, quoted data, and invalid forms do not receive a play action. (rule `scoped-evaluation-expression-like-only`)

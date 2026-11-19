@@ -21751,5 +21751,23 @@
         ["else", ["quote", "first-rule-found"]]
       ]
     ]
+  },
+  {
+    "feature": "changelog-commit-count",
+    "kind": "capability",
+    "program": [
+      "string/includes",
+      ["repo/read", "docs/changelog.html"],
+      "<dt>Commits</dt>"
+    ]
+  },
+  {
+    "feature": "engine-md",
+    "kind": "file",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/core/src/logic/ENGINE.md"],
+      "settled level by level"
+    ]
   }
 ]

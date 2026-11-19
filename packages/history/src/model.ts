@@ -25,7 +25,14 @@ import { stdlib } from "@lionlang/core/modules";
 import { Effect } from "effect";
 import { publishedOf, readHistory } from "./git.ts";
 import { writeObservations } from "./probes.ts";
-import { claimsOf, type Notes, REPOSITORY, readEntries } from "./record.ts";
+import {
+  claimsOf,
+  DOCS,
+  type Entry,
+  type Notes,
+  REPOSITORY,
+  readEntries,
+} from "./record.ts";
 import {
   RESEARCH,
   SKILL,
@@ -68,12 +75,18 @@ export interface Built {
   /** Quotes the notes give that their sources do not hold. */
   readonly problems: readonly string[];
   readonly steps: readonly string[];
+  /**
+   * Claims that quote a document in words it no longer holds. The document
+   * changed after they were read, so the model leaves them out, and nothing
+   * fails: the documents are checked by running the programs they show.
+   */
+  readonly unsaid: readonly string[];
 }
 
 const messageOf = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
 
-type Scripts = Awaited<ReturnType<typeof skillScripts>>;
+export type Scripts = Awaited<ReturnType<typeof skillScripts>>;
 
 /** Removes every step the build writes, so a deleted notes file leaves none behind. */
 const clearSteps = (steps: string) => {
@@ -94,7 +107,8 @@ const writeNoteSteps = (
   repository: string,
   root: string,
   scripts: Scripts,
-  textOf: (source: string) => string | undefined
+  textOf: (source: string) => string | undefined,
+  unsaid: ReadonlySet<string>
 ) => {
   const problems: string[] = [];
   for (const name of readdirSync(join(root, "notes")).sort()) {
@@ -113,7 +127,9 @@ const writeNoteSteps = (
   }
   for (const entry of readEntries(repository, "history")) {
     if (entry.path.startsWith("history/notes/")) {
-      const claims = claimsOf(entry.path, entry.data as Notes);
+      const claims = claimsOf(entry.path, entry.data as Notes).filter(
+        (claim) => !unsaid.has(claim.id)
+      );
       problems.push(
         ...scripts
           .problemsOf({ claims }, textOf)
@@ -123,6 +139,41 @@ const writeNoteSteps = (
   }
   return problems;
 };
+
+/**
+ * The claims of the notes that quote a document, such as the README, in
+ * words the document no longer holds. `docs` gives each document's text as
+ * it is now, by its source id; a claim of any other source is never unsaid.
+ */
+export const unsaidClaims = (
+  entries: readonly Entry[],
+  docs: ReadonlyMap<string, string>,
+  problemsOf: Scripts["problemsOf"]
+) => {
+  const unsaid = new Set<string>();
+  for (const entry of entries) {
+    if (entry.path.startsWith("history/notes/")) {
+      for (const claim of claimsOf(entry.path, entry.data as Notes)) {
+        if (
+          docs.has(claim.source) &&
+          problemsOf({ claims: [claim] }, (id) => docs.get(id)).length > 0
+        ) {
+          unsaid.add(claim.id);
+        }
+      }
+    }
+  }
+  return unsaid;
+};
+
+/** Each document's text as it is now, by its source id. */
+const docTexts = (repository: string) =>
+  new Map(
+    DOCS.map((doc) => [
+      doc.id,
+      readFileSync(join(repository, doc.path), "utf8"),
+    ])
+  );
 
 /** The findings `accepted.json` and `known.json` list, as one step of facts. */
 const writeFindingsStep = (root: string) => {
@@ -204,7 +255,13 @@ export const buildModel = (
     const steps = join(root, "steps");
     mkdirSync(steps, { recursive: true });
     clearSteps(steps);
-    writeCommitSources(repository, folder);
+    const scripts = yield* Effect.promise(() => skillScripts(repository));
+    const unsaid = unsaidClaims(
+      readEntries(repository, "history"),
+      docTexts(repository),
+      scripts.problemsOf
+    );
+    writeCommitSources(repository, folder, (claim) => !unsaid.has(claim.id));
     const [head] = readHistory(repository, "history").commits;
     const observed = yield* writeObservations(
       repository,
@@ -215,14 +272,13 @@ export const buildModel = (
       join(repository, SKILL, "assets", "core.json"),
       join(steps, "00-core.json")
     );
-    const scripts = yield* Effect.promise(() => skillScripts(repository));
     const textOf = (source: string) => {
       const file = join(root, "sources", `${source}.txt`);
       return existsSync(file) ? readFileSync(file, "utf8") : undefined;
     };
     const problems = [
       ...observed.problems,
-      ...writeNoteSteps(repository, root, scripts, textOf),
+      ...writeNoteSteps(repository, root, scripts, textOf, unsaid),
     ];
     writeFindingsStep(root);
     expandSteps(repository, steps, scripts);
@@ -230,7 +286,12 @@ export const buildModel = (
     const ran = yield* runSteps(steps, database);
     const saved = yield* saveDatabase(database);
     writeFileSync(join(root, "model.json"), formatSnapshot(saved as unknown[]));
-    return { database, problems, steps: ran } satisfies Built;
+    return {
+      database,
+      problems,
+      steps: ran,
+      unsaid: [...unsaid].sort(),
+    } satisfies Built;
   });
 
 /**

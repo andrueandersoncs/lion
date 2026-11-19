@@ -866,18 +866,6 @@
   ],
   [
     "define",
-    "commitCount",
-    [
-      "array/length",
-      [
-        "find",
-        "?h",
-        ["and", ["subject", "?h", "?_"], ["not", ["=", "?h", "working tree"]]]
-      ]
-    ]
-  ],
-  [
-    "define",
     "NAV_LINKS",
     [
       "quote",
@@ -2299,24 +2287,78 @@
   ],
   [
     "define",
+    "sourceRank",
+    [
+      "lambda",
+      ["s"],
+      [
+        "cond",
+        [["string/startsWith", "s", ["quote", "doc-"]], 1],
+        [
+          [
+            "string/equals?",
+            ["at", ["object/get", "SOURCES", "s"], 2],
+            ["quote", "Lion at HEAD"]
+          ],
+          2
+        ],
+        ["else", 0]
+      ]
+    ]
+  ],
+  [
+    "define",
+    "ofRank",
+    [
+      "lambda",
+      ["ids", "n"],
+      [
+        "array/flat-map",
+        "ids",
+        [
+          "lambda",
+          ["s"],
+          [
+            "cond",
+            [["number/equals?", ["sourceRank", "s"], "n"], ["array/make", "s"]],
+            ["else", ["array/make"]]
+          ]
+        ]
+      ]
+    ]
+  ],
+  [
+    "define",
     "sourcesOf",
     [
       "lambda",
       ["rows"],
       [
-        "object/values",
         [
-          "keyed",
+          "lambda",
+          ["ids"],
           [
-            "array/map",
-            "rows",
+            "array/concat",
+            ["ofRank", "ids", 0],
+            ["ofRank", "ids", 1],
+            ["ofRank", "ids", 2]
+          ]
+        ],
+        [
+          "object/values",
+          [
+            "keyed",
             [
-              "lambda",
-              ["row"],
+              "array/map",
+              "rows",
               [
-                "array/make",
-                ["at", ["object/get", "SOURCES", ["at", "row", 5]], 0],
-                ["at", "row", 5]
+                "lambda",
+                ["row"],
+                [
+                  "array/make",
+                  ["at", ["object/get", "SOURCES", ["at", "row", 5]], 0],
+                  ["at", "row", 5]
+                ]
               ]
             ]
           ]
@@ -4180,7 +4222,6 @@
       ["stat", "CHANGE_COUNT", ["quote", "Changes"]],
       ["stat", ["array/length", "TOPICS"], ["quote", "Decisions"]],
       ["stat", "CLAIM_COUNT", ["quote", "Claims"]],
-      ["stat", "commitCount", ["quote", "Commits"]],
       "</dl></header>\n",
       "findingsPanel",
       "<div class=\"changelog-controls\">",

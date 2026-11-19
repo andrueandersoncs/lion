@@ -18,6 +18,7 @@ import {
   programOf,
   readEntries,
   readSources,
+  type Sources,
 } from "./record.ts";
 
 /** The research folder, relative to the repository. */
@@ -88,7 +89,8 @@ export const commitText = (repository: string, hash: string) => {
  */
 export const writeCommitSources = (
   repository: string,
-  folder: string = RESEARCH
+  folder: string = RESEARCH,
+  keep?: Sources["keep"]
 ) => {
   const history = readHistory(repository, "history");
   const commits = history.commits.filter(
@@ -128,7 +130,7 @@ export const writeCommitSources = (
   mkdirSync(join(repository, folder, "steps"), { recursive: true });
   writeFileSync(
     join(repository, folder, "steps", "03-record.json"),
-    `${JSON.stringify(programOf(readSources(repository), "record"))}\n`
+    `${JSON.stringify(programOf(readSources(repository, undefined, undefined, keep), "record"))}\n`
   );
   return commits.length;
 };

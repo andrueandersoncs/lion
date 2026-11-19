@@ -66,6 +66,17 @@ export interface Entry {
 export interface Sources {
   readonly entries: readonly Entry[];
   readonly history: History;
+  /**
+   * Which claims of the notes are said now. A claim that quotes a document
+   * in words the document no longer holds is not: the document changed, and
+   * the claim waits until someone reads the new words. Every claim is kept
+   * when this is left out.
+   */
+  readonly keep?: (claim: {
+    readonly id: string;
+    readonly quote: string;
+    readonly source: string;
+  }) => boolean;
   /** The rules: the forms of `core.json` after its `begin`. */
   readonly rules: readonly unknown[];
 }
@@ -136,10 +147,12 @@ export const formsOf = (program: unknown): unknown[] =>
 export const readSources = (
   repository: string = REPOSITORY,
   folder: string = FOLDER,
-  now: Date = new Date()
+  now: Date = new Date(),
+  keep?: Sources["keep"]
 ): Sources => ({
   entries: readEntries(repository, folder),
   history: readHistory(repository, folder, now),
+  ...(keep === undefined ? {} : { keep }),
   rules: formsOf(readJson(join(repository, folder, "core.json"))),
 });
 
@@ -209,7 +222,9 @@ export const programOf = (
   const files = (relation: string) =>
     sources.entries.filter((entry) => kindOf(entry.path, folder) === relation);
   const notes = files("notes").map((entry) => ({
-    claims: claimsOf(entry.path, entry.data as Notes),
+    claims: claimsOf(entry.path, entry.data as Notes).filter(
+      (claim) => sources.keep?.(claim) ?? true
+    ),
     data: entry.data as Notes,
     path: entry.path,
   }));
