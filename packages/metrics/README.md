@@ -129,7 +129,7 @@ bun run mutate --list
 
 A property test that passes on broken code proves nothing about that code. `mutate` breaks the code in one place and runs the property tests that should notice, for each mutation in [`src/mutations.ts`](src/mutations.ts). It works in copies of the working tree under `out/metrics/`, as the tree stood when the run began, with what is not committed yet, so you can go on editing while it runs; what you edit meanwhile is not checked. Four mutations run at once, each in a copy of its own, or as many as `--jobs` says.
 
-- `CAUGHT`: the tests failed, as they should.
+- `CAUGHT`: the tests failed, as they should. Tests still running after ten minutes are stopped and count as failed: a break can make evaluation loop where no test's own time limit gets a turn.
 - `MISSED`: the tests passed on broken code. Add a property that fails on it.
 - `STALE`: the text to replace is not in the file exactly once, because the code moved. Point the mutation at the code that now does that job.
 

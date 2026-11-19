@@ -468,7 +468,7 @@ const upkeep = (pass: Pass, stratum: Stratum) => {
     return Effect.tap(followed(pass, stratum), () =>
       Effect.sync(() => {
         for (const name of stratum.members) {
-          model.derivations.delete(name);
+          model.told.delete(name);
         }
       })
     );

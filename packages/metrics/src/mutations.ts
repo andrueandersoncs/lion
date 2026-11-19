@@ -30,6 +30,7 @@ const REST_TESTS = [
 const SELF_REFERENCE_TESTS = ["src/logic/tests/self-reference.test.ts"];
 /** The properties that compare `why` across histories and fact orders. */
 const TOLD_TESTS = [
+  "src/logic/tests/weights.test.ts",
   "src/logic/tests/aggregates.test.ts",
   "src/logic/tests/asking.test.ts",
   "src/logic/tests/maintained.test.ts",
@@ -176,7 +177,7 @@ const SCALING: readonly Mutation[] = [
   {
     name: "why tells how a row came about before a change was followed through it",
     file: core("logic/maintain.ts"),
-    find: "          model.derivations.delete(name);",
+    find: "          model.told.delete(name);",
     replace: "",
     tests: TOLD_TESTS,
   },
@@ -326,7 +327,7 @@ const weighed = (
 const WEIGHTS: readonly Mutation[] = [
   weighed(
     "a row that lost its candidates stays",
-    "    homeOf(run, entry).delete(entry.tuple);\n",
+    "    homeOf(run, entry).deleteKeyed(entry.key);\n",
     ""
   ),
   weighed(
@@ -351,18 +352,18 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "a fact a group gained or lost changes no weight",
-    "          weigh(run, name, tuple, 0, by);",
-    "          weigh(run, name, tuple, 0, 0);"
+    "          weigh(run, name, tuple, valueKey(tuple), 0, by, false);",
+    "          weigh(run, name, tuple, valueKey(tuple), 0, 0, false);"
   ),
   weighed(
     "what a group gained is not passed on",
-    "setOf(held ? gained : lost, entry.relation)",
-    "setOf(held ? new Map() : lost, entry.relation)"
+    "setOf(net > 0 ? gained : lost, relation)",
+    "setOf(net > 0 ? new Map() : lost, relation)"
   ),
   weighed(
     "what a group lost is not passed on",
-    "setOf(held ? gained : lost, entry.relation)",
-    "setOf(held ? gained : new Map(), entry.relation)"
+    "setOf(net > 0 ? gained : lost, relation)",
+    "setOf(net > 0 ? gained : new Map(), relation)"
   ),
   weighed(
     "a row the relation of a question gains reaches nothing",
@@ -423,18 +424,18 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "an equality rule makes no unknowns one",
-    "          for (const [a, b] of pairsOf(left, right, pairs) ? pairs : []) {",
-    "          for (const [a, b] of pairs) {"
+    "    for (const [a, b] of pairsOf(left, right, pairs) ? pairs : []) {",
+    "    for (const [a, b] of pairs) {"
   ),
   weighed(
     "a row that gives a head does not ask the answers that would invent it again",
-    "      if (asking.placed && stageOf(asking.from) >= stageOf(level)) {",
-    "      if (asking.placed && stageOf(asking.from) > stageOf(level)) {"
+    "      } else if (asking.placed && stageOf(asking.from) >= stageOf(level)) {",
+    "      } else if (asking.placed && stageOf(asking.from) > stageOf(level)) {"
   ),
   weighed(
     "a rule that invents does so even when its head holds already",
-    "      const holds = yield* givenBy(run, asking, endOf(stage));",
-    "      const holds = (yield* givenBy(run, asking, endOf(stage))) && false;"
+    "      const holds = due && (yield* givenBy(run, asking, endOf(stage)));",
+    "      const holds = due && (yield* givenBy(run, asking, endOf(stage))) && false;"
   ),
   weighed(
     "a rule that invents asks about rows held only after its stage",
@@ -443,7 +444,7 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "a key does not make an invented unknown equal to another value",
-    "    for (const [a, b] of pairs) {\n      weigh(run, EDGE, pairRow(a, b), level, by);\n    }",
+    "    for (const [a, b] of pairs) {\n      weighPair(run, a, b, level, by);\n    }",
     ""
   ),
   weighed(
@@ -466,13 +467,13 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "a row that holds a value its class no longer writes does not end",
-    "    if (first !== undefined) {\n      until = Math.min(until, first[0]);\n    }",
-    ""
+    "    : Math.min(until, endIn(chase, entry.tuple));",
+    "    : until;"
   ),
   weighed(
     "a row that ended gives no row with the least member in its place",
-    "    const became = weigh(run, entry.relation, tuple, entry.until, 1);",
-    "    const became = weigh(run, entry.relation, tuple, entry.until, 0);"
+    "    const became = weigh(run, relation, tuple, key, until, 1) as Entry;",
+    "    const became = weigh(run, relation, tuple, key, until, 0) as Entry;"
   ),
   weighed(
     "a row that ended is not written again when its class's least member changes",
@@ -483,6 +484,16 @@ const WEIGHTS: readonly Mutation[] = [
     "the rows that ended are not read when answers are counted",
     "    : new Both(rowsOf(model, name), past);",
     "    : undefined;"
+  ),
+  weighed(
+    "a row that comes beside a row with its key is read from the level it is held from",
+    "      return from + 1;",
+    "      return from;"
+  ),
+  weighed(
+    "a row that comes or goes leaves the rows with its key read as before",
+    "    if (other !== undefined && other !== entry) {\n      mark(run, other);",
+    "    if (other !== undefined && other === entry) {\n      mark(run, other);"
   ),
   weighed(
     "an answer counts though its rows never held at one level",
@@ -496,33 +507,45 @@ const WEIGHTS: readonly Mutation[] = [
   ),
   weighed(
     "two rows a key gets that differ where nothing merges both hold",
-    "    if (other !== entry.tuple) {\n      const shown",
-    "    if (other !== other) {\n      const shown",
+    "    if (other !== tuple) {\n      const rule",
+    "    if (other !== other) {\n      const rule",
     ["src/logic/tests/keys.test.ts", ...MERGE_TESTS]
   ),
   weighed(
-    "why keeps the explanations rows had before a key made unknowns one",
-    "  return equal.size === 0",
-    "  return equal.size >= 0",
-    EXISTENTIAL_TESTS
+    "why tells a row of a group that made values one as if none were",
+    "    if ((support.chase?.history.size ?? 0) > 0) {",
+    "    if (support.chase === null) {",
+    [...EXISTENTIAL_TESTS, ...TOLD_TESTS]
   ),
   weighed(
     "why explains a row by the first answer found, not the least",
-    "    } else if (compareKept(rule, vars, best.kept) >= 0) {",
-    "    } else if (rule) {",
+    "      const [vars] = first.sort((a, b) => compareAnswers(rule, a, b));",
+    "      const [vars] = first;",
     TOLD_TESTS
   ),
   weighed(
     "why explains min, max, and shortest by the first match that gave the value",
-    "            .sort(order)[0]",
-    "            .reverse()[0]",
+    "          .sort(compareMatches(model.rules))[0]",
+    "          .reverse()[0]",
     TOLD_TESTS
   ),
   weighed(
-    "why explains an invented row by the first answer that invented it",
-    "      if (by > 0 && compareAnswers(rule, vars, known.vars) < 0) {",
-    "      if (by > 0 && compareAnswers(rule, vars, known.vars) > 0) {",
-    EXISTENTIAL_TESTS
+    "a value a head computes names the row it gives",
+    "rule.aggregates.includes(position) || holdsSome(arg) || !isPattern(arg)",
+    "rule.aggregates.includes(position) || holdsSome(arg)",
+    TOLD_TESTS
+  ),
+  weighed(
+    "why explains a row by an answer above the level it is held from",
+    "(at === level ? [vars] : [])",
+    "(at >= level ? [vars] : [])",
+    TOLD_TESTS
+  ),
+  weighed(
+    "why explains an invented row as given in the stage of its answer",
+    "            ? afterStage(asking)\n",
+    "            ? asking.from\n",
+    [...EXISTENTIAL_TESTS, ...TOLD_TESTS]
   ),
   {
     name: "a fact that holds an unknown does not reach the groups that invent",

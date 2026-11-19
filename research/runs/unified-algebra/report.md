@@ -187,6 +187,48 @@ A row now has an entry with its candidates by level, and a group that invents ke
 
 Nine procedures became one: four that derived (rows, aggregates, rules that invent, and the pass that made unknowns one) and five that followed a change (rows, groups, rules that invent alone, a component at a time, and deriving again). The one is longer than the nine were. `maintain.ts` went from 969 lines to about 550, `components.ts` is gone, `model.ts` lost about 650 lines, and `weights.ts` is about 2,100 with its comments.
 
+## After the gaps were closed
+
+A second pass, on 2026-11-19, closed the gaps the first left open: what a database keeps, two rows with one key inside a group, `why`, and the breaks no property caught. The decision record is `history/notes/rows-read-when-held.json`; the properties and measures are saved as `research/sources/weights-model-gaps.txt` and `research/sources/lion-bench-gaps.txt`.
+
+**What a group keeps is what its rules need.** A group whose rules read nothing of its own, which is most groups, has one level: its rows keep a weight in their table and nothing else. In any other group a row's entry rides on the row itself instead of in two maps beside it. The answers of a rule that invents keep the unknowns they name and recompute the rows of their head when asked, and no group keeps how its rows came about.
+
+**A row beside one with its key is read a level later.** A row that comes while another row with its key is held can be read from the level after, when the pair that makes the two one holds and the row whose value its class no longer writes has ended. So no answer finds two rows with one key, not even an answer of the group's own rules. A row that is never held is read from the level it is held from. Holding the pair from the same level, tried in the first pass, is not needed.
+
+**`why` finds its answer when asked.** Of the answers that give a row at the level it is held from, it tells the least of the first rule that has one, worked out from the rows there are. A change keeps no explanations and works none out. Where a key or an equality rule made values one, the group's answers are worked out again once after a change, to tell its rows through the values made one: that remains.
+
+**What the checks found.** Five properties were added to `weights.test.ts`, and each was shown to fail on the break it is for:
+
+| Property | What it compares |
+|---|---|
+| Rows with one key | In programs where a twin passes a keyed mother on inside her own group, and a rule of that group asks for two mothers of one child, the rule finds none, and the followed and fresh databases keep the same rows. It fails when the row beside another is read at its own level, and when an answer counts though its rows were never held at one level, the break the first pass could not catch. |
+| `why` over paths | With the rule that recurses listed first, `why` tells each path by the least answer at the level a plain model gives it. It fails when `why` takes the first answer found, and when it ignores the level. |
+| `why` over invented rows | `why` tells an invented home by its mother's least child. It fails when `why` takes the first answer found. |
+| `why` in any order | After any changes, `why` tells every row as two databases that derived nothing tell it, with the facts given in either order, and asked once before the changes too. It fails when what was told is kept through a change. |
+| `why` over computed heads | For a rule whose head computes from what a claim says, a sum, a product, a string, a list, or a record, with or without a `not`, `why` tells every row by the claim it computed the row from, and the row holds what a plain model computes, after any changes. It fails when a value the head computes names the row. |
+
+The first of them found that a row that is never held could be read from one level in a followed database and another in a fresh one, by the order the rows were settled in; such a row is now read from the level it is held from. The research skill's frozen eval found that `why` failed on a row whose rule head computes, such as `["number/multiply", "?usd_bn", 1000]`: finding the row's answers put the computed value in a goal that ran before the body bound its variable. A row is now named only by head values that are variables, values, or records and lists of those; the last property pins it. The first property also showed that a change refused because it breaks a key forgets what was derived, since following it failed partway, so the change after it finds nothing to follow; that is as on `main`. Each property ran 5,000 random programs once. `bun run mutate --in logic/weights.ts,logic/maintain.ts` caught all 56 breaks; one of them never ends, and `mutate` now stops a mutation's tests after ten minutes and counts it caught.
+
+**What it costs now**, beside `main` and beside the first pass:
+
+| Memory a database keeps | main | first pass | now |
+|---|---|---|---|
+| every path, 100,000 nodes in chains of 10 | 233 MB | 360 MB | 238 MB |
+| add a fact, ask a rule that invents | 121 MB | 444 MB | 186 MB |
+| add a twin, ask the mother a key gave them | 133 MB | 704 MB | 400 MB |
+| add a road, ask every shortest distance | 32 MB | 153 MB | 143 MB |
+| add an edge, ask what one node reaches | 36 MB | 55 MB | 48 MB |
+| `why` of one derived row among 100,000 | 75 MB | 68 MB | 61 MB |
+
+| Deriving from nothing | first pass | now, three runs |
+|---|---|---|
+| every path on a 150 chain | 0.77× and 0.82× | 0.88×, 0.88×, and 0.78× |
+| shortest distances by lattice recursion | 0.57× and 0.61× | 0.67×, 0.56×, and 0.62× |
+| 2,500 pairs of twins whose unknown mothers a key makes one | 0.72× and 0.74× | 1.19×, 1.32×, and 1.25× |
+| a mother for each of 5,000 people, 1,000 given | 0.81× and 0.95× | 0.83×, 0.98×, and 1.00× |
+
+Following a change costs what it did: twenty twins in 10 milliseconds among 100,000 people, where `main` takes 75. The code grew again: 14,438 lines where `main` has 13,251 (+9.0%), 1,650 functions, 3,859 paths, 2,782 nesting-weighted decisions. A group with one level and a group with entries are two ways of keeping rows, and that is most of the growth. The messages, special forms, library functions, and grid exceptions are unchanged.
+
 ## What is new, and what is not
 
 **Not new.** Rows with integer weights are DBSP's Z-sets and Green, Ives and Tannen's z-relations (li-f5, li-f6). Counting the derivations of a row is the oldest way to maintain a view, and counting by round is how it is made right for recursion (li-d16 measures it). Nested time is DBSP's and differential dataflow's. Least members under a fixed order are standard (li-g28, li-g31, li-g12, li-g34).
@@ -207,9 +249,11 @@ No new search was run for this report. Those three are claims about the 81 sourc
 
 ## Open ends
 
-- **From nothing it is slower.** The row of numbers kept for each derived row costs time and memory when a large relation is first derived. A group that reads nothing of its own, which is most groups, could keep a weight alone.
-- **A rule that asks about a changed relation is counted twice**, as things were and as they are. Where a rule's rows have no other candidates, taking the rows out and counting once would do.
-- **`why` is still told by deriving a group again** after a change, since which answer tells a row is the least at its lowest level. The levels are now kept, so `why` could read them and tell one row without deriving the rest.
+These are what is left after the second pass.
+
+- **From nothing it is slower where rows give each other.** Paths run at 0.78 to 0.88 times the speed of `main`, and lattice recursion at about 0.6: a group that reads its own rows keeps an entry per row.
+- **A database keeps more than on `main`** where rules invent or recurse through an aggregate: 400 megabytes for the twins where `main` kept 133, and 143 for shortest distances where it kept 32. A group that makes values one keeps the rows that ended, and an aggregate that recurses keeps its candidates by level.
+- **`why` in a group that made values one** works the group's answers out again once after a change, to tell rows through the values made one.
+- **A rule that asks about a changed relation is counted twice**, as things were and as they are.
 - **One large class costs its size** when a pair is removed, as before.
-- **Inside one group, two rows with one key are held together for one level.** A row a rule derives beside a row with its key joins its relation at its level, and the pair that makes the two one holds from the next. Rules of other groups never see both, since they read the rows a group ends with. A rule of the same group that combined the two rows of one key would get an answer the engine before this work did not give it, since that engine kept the second row out. No program in the tests or the docs has such a rule. Making the pair hold from the same level was tried and taken back: a row and the row it became then held each other up.
-- **One break is not caught by a property that compares Lion with something else.** Taking out the rule that an answer's rows must all have been held at one level changes the database that followed changes and the one that derived nothing in the same way, so the property that compares them passes, and the plain models here have no rows that end. It needs a plain model of the chase with levels.
+- **A change refused for breaking a key forgets what was derived**, so the next change derives it again when something reads it, as on `main`.

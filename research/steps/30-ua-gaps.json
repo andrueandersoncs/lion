@@ -1,0 +1,378 @@
+[
+ "begin",
+ [
+  "fact",
+  [
+   "source",
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "research/probes/weights-model"
+   ],
+   [
+    "quote",
+    "Property tests of rows with weights after the gaps were closed: rows with one key inside a group, and the answer why tells, against plain models and a database that derived nothing"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119100000
+   ]
+  ],
+  [
+   "source",
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "bun run bench --against main; bun run scale --against main; bun run measure --against main"
+   ],
+   [
+    "quote",
+    "Lion benchmarks after rows of groups that read nothing of their own kept a weight alone, and a row's entry moved onto the row"
+   ],
+   [
+    "quote",
+    "Lion probes"
+   ],
+   [
+    "quote",
+    "primary"
+   ],
+   [
+    "quote",
+    20261119100000
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g1"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one"
+   ],
+   [
+    "quote",
+    {
+     "covers": "existential rules",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g1e"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W1  rows, levels, and weights kept through changes equal those derived from nothing in each of 5000 random programs that invent in two stages and make values one"
+   ],
+   [
+    "quote",
+    {
+     "covers": "equality rules",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g2"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W2  the level and the candidates by level of every path equal a plain round-by-round model after every edge change in each of 5000 random graphs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "derived rows kept up to date as facts change",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g3"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W3  each of 10 aggregates kept by counted candidates equals a plain model after every change in each of 5000 random runs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "aggregates",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g4"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W4  no rule of the group that derives a keyed relation found two rows with one key in each of 5000 random programs where a twin passes a mother on"
+   ],
+   [
+    "quote",
+    {
+     "covers": "keys",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g5"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W5  why told every path by the least answer at its level, of the first rule that has one, as a plain model says, after every edge change in each of 5000 random graphs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "why provenance",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g6"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W6  why told every invented home by the least answer that invented it after every change in each of 5000 random programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "why provenance",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g7"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W7  why told every row after changes as a database that derived nothing told it, with the facts in either order, in each of 5000 random programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "why provenance",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-g8"
+   ],
+   [
+    "quote",
+    "weights-model-gaps"
+   ],
+   [
+    "quote",
+    "W8  why told every row a rule whose head computes gave by the claim it computed the row from, after every change in each of 5000 random programs"
+   ],
+   [
+    "quote",
+    {
+     "covers": "why provenance",
+     "by": "candidates counted by level",
+     "is": true
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-h1"
+   ],
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "change: add a twin, ask the mother a key gave them, 20 times                10 ms       10 ms        10 ms           0 MB  400 MB  8.19×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "add a twin, ask the mother a key gave them, 20 times, among 100,000 people",
+     "ms": 10
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-h2"
+   ],
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "rules: every path on a 150 chain                                        12.8 ms   16.3 ms  0.78×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "every path on a 150 chain",
+     "ms": 16.3
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-h3"
+   ],
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "aggregates: shortest distances by lattice recursion                     16.0 ms   25.7 ms  0.62×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "shortest distances by lattice recursion",
+     "ms": 25.7
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-h4"
+   ],
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "inventing: 2,500 pairs of twins whose unknown mothers a key makes one  153.2 ms  123.0 ms  1.25×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "2,500 pairs of twins whose unknown mothers a key makes one",
+     "ms": 123
+    }
+   ]
+  ],
+  [
+   "claim",
+   [
+    "quote",
+    "ua-h5"
+   ],
+   [
+    "quote",
+    "lion-bench-gaps"
+   ],
+   [
+    "quote",
+    "recursion: every path, n nodes in chains of 10                              14 ms       78 ms       695 ms  n^0.9  550 MB  238 MB  0.98×"
+   ],
+   [
+    "quote",
+    {
+     "lion measured": "every path, 100,000 nodes in chains of 10",
+     "ms": 695
+    }
+   ]
+  ]
+ ],
+ "recorded"
+]

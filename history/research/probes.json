@@ -21671,5 +21671,85 @@
       ["repo/files", "packages/core/src/logic"],
       "packages/core/src/logic/weights.ts"
     ]
+  },
+  {
+    "case": "rule-reading-two-rows-with-one-key-in-its-group",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "person", ["name"]],
+      ["relation", "twin", ["a", "b"]],
+      ["relation", "registered", ["child", "mother"]],
+      ["relation", "mother", ["child", "mother"], { "key": "child" }],
+      ["relation", "torn", ["child"]],
+      ["fact", ["person", "a"], ["person", "b"], ["twin", "a", "b"]],
+      ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
+      [
+        "rule",
+        ["mother", "?b", "?m"],
+        ["twin", "?a", "?b"],
+        ["mother", "?a", "?m"]
+      ],
+      [
+        "rule",
+        ["mother", "?a", "?m"],
+        ["twin", "?a", "?b"],
+        ["mother", "?b", "?m"]
+      ],
+      [
+        "rule",
+        ["torn", "?c"],
+        ["mother", "?c", "?m1"],
+        ["mother", "?c", "?m2"],
+        ["not", ["=", "?m1", "?m2"]]
+      ],
+      [
+        "rule",
+        ["mother", "?c", "?m"],
+        ["torn", "?c"],
+        ["registered", "?c", "?m"]
+      ],
+      [
+        "cond",
+        [
+          ["=", ["find", "?c", ["torn", "?c"]], ["quote", []]],
+          ["quote", "never-both"]
+        ],
+        ["else", ["quote", "both-for-a-level"]]
+      ]
+    ]
+  },
+  {
+    "case": "why-of-a-row-several-answers-give",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "edge", ["from", "to"]],
+      ["relation", "path", ["from", "to"]],
+      [
+        "rule",
+        ["path", "?x", "?z"],
+        ["path", "?x", "?y"],
+        ["edge", "?y", "?z"]
+      ],
+      ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+      ["fact", ["edge", "a", "b"], ["edge", "b", "c"], ["edge", "a", "c"]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "object/get",
+              ["why", ["path", ["quote", "a"], ["quote", "c"]]],
+              ["quote", "rule"]
+            ],
+            ["quote", ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]]]
+          ],
+          ["quote", "least-at-its-level"]
+        ],
+        ["else", ["quote", "first-rule-found"]]
+      ]
+    ]
   }
 ]

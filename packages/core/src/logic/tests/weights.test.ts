@@ -22,6 +22,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { LogicDatabase } from "@/logic/database";
+import { keptBy } from "@/logic/weights";
 import { attempt, element, oneOf } from "./programs";
 
 type Form = readonly unknown[];
@@ -31,7 +32,9 @@ type Form = readonly unknown[];
  * `research/probes/weights-model` does to run several thousand.
  */
 const RUNS = Number(process.env.LION_RUNS ?? 1000);
-const OPTIONS = { timeout: 1000 * RUNS, arbitrary: { runs: RUNS } };
+// A tenth of a second a run: 100 seconds at the default, near the limit of
+// 120 seconds a test, so a break that never settles fails in time.
+const OPTIONS = { timeout: 100 * RUNS, arbitrary: { runs: RUNS } };
 
 const NAMES = ["a", "b", "c", "d"] as const;
 
@@ -97,6 +100,23 @@ const WAYS = {
       ["home", "?m1", "?h"],
     ],
   ],
+  // A rule of the mothers' own group that reads two rows with one key: a
+  // key makes them one before such a rule can see both, so it finds none.
+  torn: [
+    [
+      "rule",
+      ["torn", "?c"],
+      ["mother", "?c", "?m1"],
+      ["mother", "?c", "?m2"],
+      ["not", ["=", "?m1", "?m2"]],
+    ],
+    [
+      "rule",
+      ["mother", "?c", "?m"],
+      ["torn", "?c"],
+      ["registered", "?c", "?m"],
+    ],
+  ],
   // A rule that invents where a question about a relation it reads holds.
   guardians: [
     [
@@ -129,6 +149,7 @@ const rulesOf = (ways: readonly Way[], keyed: boolean): Form[] => [
   ["relation", "kin", ["a", "b"]],
   ["relation", "known", ["child"]],
   ["relation", "label", ["child", "tag"]],
+  ["relation", "torn", ["child"]],
   ["rule", ["exists", ["?m"], ["mother", "?c", "?m"]], ["person", "?c"]],
   ["rule", ["parent", "?c", "?m"], ["mother", "?c", "?m"]],
   // Two rows joined through a value that may be invented, and a test.
@@ -158,13 +179,14 @@ const RELATIONS = [
   "kin",
   "known",
   "label",
+  "torn",
 ] as const;
 
 const QUESTIONS = Object.fromEntries(
   RELATIONS.map((relation) => [
     relation,
-    relation === "known"
-      ? ["find", "?x", ["known", "?x"]]
+    relation === "known" || relation === "torn"
+      ? ["find", "?x", [relation, "?x"]]
       : ["find", ["array/make", "?x", "?y"], [relation, "?x", "?y"]],
   ])
 );
@@ -217,37 +239,24 @@ const answers = (database: LogicDatabase) =>
 
 /**
  * Every row a database keeps candidates of, with the level it is held from,
- * the level it is held until, and its candidates by level: also the rows of
- * the relations the engine keeps for itself.
+ * the level it is held until, the level it can be read from, and its
+ * candidates by level: also the rows of the relations the engine keeps for
+ * itself.
  */
-const weights = (database: LogicDatabase) => {
-  const out: string[] = [];
-  const seen = new Set<unknown>();
-  for (const [member, support] of database.model?.support ?? []) {
-    if (seen.has(support)) {
-      continue;
-    }
-    seen.add(support);
-    for (const [relation, entries] of support.entries) {
-      for (const entry of entries.values()) {
-        if (entry.n > 0) {
-          const more = [...(entry.more ?? [])].sort(([a], [b]) => a - b);
-          out.push(
-            JSON.stringify([
-              member,
-              relation,
-              entry.key,
-              entry.from,
-              String(entry.until),
-              [[entry.level, entry.n], ...more],
-            ])
-          );
-        }
-      }
-    }
-  }
-  return out.sort();
-};
+const weights = (database: LogicDatabase) =>
+  (database.model === undefined ? [] : keptBy(database.model))
+    .map(({ candidates, from, group, key, relation, seen, until }) =>
+      JSON.stringify([
+        group,
+        relation,
+        key,
+        from,
+        String(until),
+        seen,
+        candidates,
+      ])
+    )
+    .sort();
 
 /** A database that holds some facts and has derived nothing yet. */
 const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
@@ -267,9 +276,133 @@ const fromNothing = (rules: readonly Form[], facts: Iterable<Form>) =>
     return made.ok ? database : undefined;
   });
 
+interface Program {
+  readonly changes: readonly (readonly ["fact" | "retract", Form])[];
+  readonly keyed: boolean;
+  readonly start: readonly Form[];
+  readonly ways: readonly Way[];
+}
+
+/**
+ * Follows some changes to facts, and after each compares what the database
+ * keeps with what a database that derived nothing yet works out.
+ */
+const follows = ({ changes, keyed, start, ways }: Program) =>
+  Effect.gen(function* () {
+    const rules = rulesOf(ways, keyed);
+    const kept = new LogicDatabase();
+    const ready = yield* attempt(
+      ["begin", ...rules, ...start.map((it) => ["fact", it]), true],
+      kept
+    );
+    if (!ready.ok) {
+      return;
+    }
+    const held = new Map(start.map((it) => [JSON.stringify(it), it]));
+    let before = yield* answers(kept);
+    for (const [form, it] of changes) {
+      const next = new Map(held);
+      if (form === "fact") {
+        next.set(JSON.stringify(it), it);
+      } else {
+        next.delete(JSON.stringify(it));
+      }
+      const fresh = yield* fromNothing(rules, next.values());
+      kept.model?.last.clear();
+      const changed = yield* attempt([form, it], kept);
+      // A change is refused exactly when the facts break a rule.
+      expect(changed.ok).toBe(fresh !== undefined);
+      if (fresh === undefined) {
+        // Following a change that breaks a key fails partway, so what was
+        // derived is forgotten, and the next change has nothing to follow.
+        before = { message: "refused", ok: false };
+        continue;
+      }
+      const derived = !("ok" in before);
+      before = yield* answers(kept);
+      expect(before).toEqual(yield* answers(fresh));
+      expect(weights(kept)).toEqual(weights(fresh));
+      // A rule never finds two rows with one key, though one comes beside
+      // the other in the group that reads them.
+      if (keyed && !("ok" in before)) {
+        expect((before as Record<string, string[]>).torn).toEqual([]);
+      }
+      // An unknown a fact holds is given: no class writes it as another
+      // value, so the row a rule invented with it is there as it is.
+      for (const [, unknown] of "ok" in before ? [] : next.values()) {
+        const who = ((unknown as Form | undefined)?.[2] as Form)?.[1];
+        const invented = next.has(JSON.stringify(["person", who]));
+        if (Array.isArray(unknown) && invented) {
+          expect((before as Record<string, string[]>).mother).toContain(
+            JSON.stringify([who, unknown])
+          );
+        }
+      }
+      // Every group was followed: none derived again, none forgotten.
+      // A group whose rows could not be derived had none to follow.
+      for (const how of derived ? (kept.model?.last.values() ?? []) : []) {
+        expect(how).toBe("followed");
+      }
+      held.clear();
+      for (const [key, value] of next) {
+        held.set(key, value);
+      }
+    }
+  });
+
+/** Programs in which a twin passes a keyed mother on inside her own group. */
+const beside = {
+  ...program,
+  keyed: element([true]),
+  ways: Arbitrary.map(program.ways, (ways) =>
+    [...new Set<Way>([...ways, "pass", "torn"])].sort()
+  ),
+};
+
 describe("rows with weights, held from a level", () => {
   it.effect.prop(
     "keep after any changes the rows, levels, and weights that deriving from nothing gives",
+    program,
+    follows,
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "never give a rule two rows with one key, though one comes beside the other",
+    beside,
+    follows,
+    OPTIONS
+  );
+});
+
+/** A value written so that `why` reads it as itself. */
+const quoted = (value: unknown) =>
+  typeof value === "string" ? ["quote", value] : value;
+
+/** What `why` tells of every row a database's rules give, by row. */
+const told = (database: LogicDatabase) =>
+  Effect.gen(function* () {
+    const found = yield* answers(database);
+    if ("ok" in found) {
+      return found;
+    }
+    const out: Record<string, unknown> = {};
+    for (const [relation, rows] of Object.entries(found)) {
+      for (const row of rows) {
+        const parsed = JSON.parse(row) as unknown;
+        const values = Array.isArray(parsed) ? parsed : [parsed];
+        out[`${relation} ${row}`] = yield* attempt(
+          ["why", [relation, ...values.map(quoted)]],
+          database
+        );
+      }
+    }
+    return out;
+  });
+
+describe("why, told from the levels rows are held from", () => {
+  it.effect.prop(
+    "tells every row after any changes as deriving from nothing tells it, whatever order the facts came in",
     program,
     ({ changes, keyed, start, ways }) =>
       Effect.gen(function* () {
@@ -282,46 +415,158 @@ describe("rows with weights, held from a level", () => {
         if (!ready.ok) {
           return;
         }
+        // Told once before the changes, so a telling kept from then would
+        // show after them.
+        yield* told(kept);
         const held = new Map(start.map((it) => [JSON.stringify(it), it]));
-        let before = yield* answers(kept);
         for (const [form, it] of changes) {
-          const next = new Map(held);
-          if (form === "fact") {
-            next.set(JSON.stringify(it), it);
-          } else {
-            next.delete(JSON.stringify(it));
-          }
-          const fresh = yield* fromNothing(rules, next.values());
-          kept.model?.last.clear();
-          const changed = yield* attempt([form, it], kept);
-          // A change is refused exactly when the facts break a rule.
-          expect(changed.ok).toBe(fresh !== undefined);
-          if (fresh === undefined) {
-            continue;
-          }
-          const derived = !("ok" in before);
-          before = yield* answers(kept);
-          expect(before).toEqual(yield* answers(fresh));
-          expect(weights(kept)).toEqual(weights(fresh));
-          // An unknown a fact holds is given: no class writes it as another
-          // value, so the row a rule invented with it is there as it is.
-          for (const [, unknown] of "ok" in before ? [] : next.values()) {
-            const who = ((unknown as Form | undefined)?.[2] as Form)?.[1];
-            const invented = next.has(JSON.stringify(["person", who]));
-            if (Array.isArray(unknown) && invented) {
-              expect((before as Record<string, string[]>).mother).toContain(
-                JSON.stringify([who, unknown])
-              );
+          if ((yield* attempt([form, it], kept)).ok) {
+            if (form === "fact") {
+              held.set(JSON.stringify(it), it);
+            } else {
+              held.delete(JSON.stringify(it));
             }
           }
-          // Every group was followed: none derived again, none forgotten.
-          // A group whose rows could not be derived had none to follow.
-          for (const how of derived ? (kept.model?.last.values() ?? []) : []) {
-            expect(how).toBe("followed");
+        }
+        const facts = [...held.values()];
+        const fresh = yield* fromNothing(rules, facts);
+        const reversed = yield* fromNothing(rules, facts.reverse());
+        if (fresh === undefined || reversed === undefined) {
+          return;
+        }
+        const expected = yield* told(fresh);
+        expect(yield* told(reversed)).toEqual(expected);
+        expect(yield* told(kept)).toEqual(expected);
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "tells an invented row by the least answer that invented it",
+    { changes: program.changes, start: program.start },
+    ({ changes, start }) =>
+      Effect.gen(function* () {
+        // Twins pass mothers on, so a mother has several children, each an
+        // answer that invents her home at one level.
+        const kept = new LogicDatabase();
+        const ready = yield* attempt(
+          [
+            "begin",
+            ...rulesOf(["homes", "pass"], false),
+            ...start.map((it) => ["fact", it]),
+            true,
+          ],
+          kept
+        );
+        if (!ready.ok) {
+          return;
+        }
+        for (const change of changes) {
+          yield* attempt(change, kept);
+          const found = (yield* attempt(
+            {
+              home: QUESTIONS.home,
+              mother: QUESTIONS.mother,
+            },
+            kept
+          )) as { value: Record<string, [unknown, unknown][]> };
+          for (const [mother, home] of found.value.home ?? []) {
+            const [least] = (found.value.mother ?? [])
+              .flatMap(([child, of]) =>
+                JSON.stringify(of) === JSON.stringify(mother) ? [child] : []
+              )
+              .sort(ascending);
+            const told = yield* attempt(["why", ["home", mother, home]], kept);
+            expect(told).toMatchObject({
+              ok: true,
+              value: { because: [{ fact: ["mother", least, mother] }] },
+            });
           }
-          held.clear();
-          for (const [key, value] of next) {
-            held.set(key, value);
+        }
+      }),
+    OPTIONS
+  );
+});
+
+/**
+ * Heads that compute from what a claim says, each with what it computes,
+ * worked out plainly.
+ */
+const HEADS = {
+  add: [["number/add", "?x", 1], (x: number) => x + 1],
+  list: [["array/make", "?x", "?c"], (x: number, c: string) => [x, c]],
+  multiply: [["number/multiply", "?x", 1000], (x: number) => x * 1000],
+  record: [{ c: "?c", v: "?x" }, (x: number, c: string) => ({ c, v: x })],
+  text: [
+    ["string/concat", "?c", ["number/toString", "?x"]],
+    (x: number, c: string) => `${c}${x}`,
+  ],
+} as const;
+
+const CLAIMS = ["c1", "c2", "c3"] as const;
+
+const claimed = Arbitrary.all([element(CLAIMS), element([1, 2, 3])]);
+
+describe("why, whatever a rule's head computes", () => {
+  it.effect.prop(
+    "tells every row a rule gives by the claim it computed the row from, after any changes",
+    {
+      asks: Arbitrary.schema(Schema.Boolean),
+      changes: Arbitrary.array(
+        Arbitrary.all([
+          element(["fact", "retract"] as const),
+          oneOf(
+            Arbitrary.map(claimed, ([c, x]) => ["claim", c, x] as Form),
+            Arbitrary.map(element(CLAIMS), (c) => ["gone", c] as Form)
+          ),
+        ]),
+        { maxLength: 6 }
+      ),
+      head: element(Object.keys(HEADS) as (keyof typeof HEADS)[]),
+      start: Arbitrary.array(claimed, { maxLength: 5 }),
+    },
+    ({ asks, changes, head, start }) =>
+      Effect.gen(function* () {
+        const [computed, plainly] = HEADS[head];
+        const kept = new LogicDatabase();
+        yield* attempt(
+          [
+            "begin",
+            ["relation", "claim", ["id", "x"]],
+            ["relation", "gone", ["id"]],
+            ["relation", "answer", ["value", "id"]],
+            ...start.map(([c, x]) => ["fact", ["claim", c, x]]),
+            [
+              "rule",
+              ["answer", computed, "?c"],
+              ["claim", "?c", "?x"],
+              // A rule that asks a question is followed by what it names.
+              ...(asks ? [["not", ["gone", "?c"]]] : []),
+            ],
+            true,
+          ],
+          kept
+        );
+        for (const change of [["fact", ["claim", "c0", 0]], ...changes]) {
+          yield* attempt(change, kept);
+          const rows = yield* attempt(
+            ["find", ["array/make", "?v", "?c"], ["answer", "?v", "?c"]],
+            kept
+          );
+          for (const [value, c] of (rows as { value: [unknown, string][] })
+            .value) {
+            const told = yield* attempt(
+              ["why", ["answer", ["quote", value], ["quote", c]]],
+              kept
+            );
+            expect(told).toMatchObject({ ok: true });
+            const [first] = (told as { value: { because: { fact: Form }[] } })
+              .value.because;
+            const [, , x] = first?.fact as [string, string, number];
+            expect(first).toMatchObject({ fact: ["claim", c, x] });
+            expect(value).toEqual(
+              (plainly as (x: number, c: string) => unknown)(x, c)
+            );
           }
         }
       }),
@@ -339,7 +584,7 @@ const edge = Arbitrary.all([element(NODES), element(NODES)]);
  * path with an edge after it is a candidate one level above the path. The
  * levels are found round by round, as the least a candidate gives.
  */
-const levelsPlainly = (edges: readonly (readonly [string, string])[]) => {
+const heldPlainly = (edges: readonly (readonly [string, string])[]) => {
   const from = new Map<string, number>();
   for (const [x, y] of edges) {
     from.set(`${x} ${y}`, 0);
@@ -356,6 +601,11 @@ const levelsPlainly = (edges: readonly (readonly [string, string])[]) => {
       }
     }
   }
+  return from;
+};
+
+const levelsPlainly = (edges: readonly (readonly [string, string])[]) => {
+  const from = heldPlainly(edges);
   const out: string[] = [];
   for (const [path, level] of from) {
     const [x, z] = path.split(" ") as [string, string];
@@ -379,19 +629,9 @@ const levelsPlainly = (edges: readonly (readonly [string, string])[]) => {
 
 /** The level and the candidates a database keeps for each path. */
 const levelsKept = (database: LogicDatabase) =>
-  [...(database.model?.support.get("path")?.entries.get("path") ?? [])]
-    .flatMap(([, entry]) =>
-      entry.n > 0
-        ? [
-            JSON.stringify([
-              entry.tuple,
-              entry.from,
-              [[entry.level, entry.n] as const, ...(entry.more ?? [])].sort(
-                ([a], [b]) => a - b
-              ),
-            ]),
-          ]
-        : []
+  (database.model === undefined ? [] : keptBy(database.model))
+    .flatMap(({ candidates, from, relation, tuple }) =>
+      relation === "path" ? [JSON.stringify([tuple, from, candidates])] : []
     )
     .sort();
 
@@ -435,6 +675,81 @@ describe("the level a row is held from", () => {
           yield* attempt([form, ["edge", x, y]], kept);
           yield* attempt(["query", ["path", "?x", "?y"]], kept);
           expect(levelsKept(kept)).toEqual(levelsPlainly([...held.values()]));
+        }
+      }),
+    OPTIONS
+  );
+
+  it.effect.prop(
+    "tells why a path holds by the least answer at that level, of the first rule that has one",
+    {
+      changes: Arbitrary.array(
+        Arbitrary.all([element(["fact", "retract"] as const), edge]),
+        { minLength: 1, maxLength: 10 }
+      ),
+      start: Arbitrary.array(edge, { maxLength: 8 }),
+    },
+    ({ changes, start }) =>
+      Effect.gen(function* () {
+        const kept = new LogicDatabase();
+        // The rule that recurses comes first, so it is asked first.
+        const through = [
+          "rule",
+          ["path", "?x", "?z"],
+          ["path", "?x", "?y"],
+          ["edge", "?y", "?z"],
+        ];
+        const direct = ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]];
+        yield* attempt(
+          [
+            "begin",
+            ["relation", "edge", ["from", "to"]],
+            ["relation", "path", ["from", "to"]],
+            through,
+            direct,
+            true,
+          ],
+          kept
+        );
+        const held = new Map<string, readonly [string, string]>();
+        const all = [...start.map((it) => ["fact", it] as const), ...changes];
+        for (const [form, [x, y]] of all) {
+          if (form === "fact") {
+            held.set(`${x} ${y}`, [x, y]);
+          } else {
+            held.delete(`${x} ${y}`);
+          }
+          yield* attempt([form, ["edge", x, y]], kept);
+          const edges = [...held.values()];
+          const from = heldPlainly(edges);
+          for (const [path, level] of from) {
+            const [a, z] = path.split(" ") as [string, string];
+            // At level zero only an edge gives the path; above it, the least
+            // node a path one level lower reaches with an edge to the end.
+            const [via] = edges
+              .flatMap(([y, end]) =>
+                end === z && from.get(`${a} ${y}`) === level - 1 ? [y] : []
+              )
+              .sort();
+            const because =
+              via === undefined
+                ? [["edge", a, z]]
+                : [
+                    ["path", a, via],
+                    ["edge", via, z],
+                  ];
+            const told = yield* attempt(
+              ["why", ["path", ["quote", a], ["quote", z]]],
+              kept
+            );
+            expect(told).toMatchObject({
+              ok: true,
+              value: {
+                because: because.map((fact) => ({ fact })),
+                rule: via === undefined ? direct : through,
+              },
+            });
+          }
         }
       }),
     OPTIONS

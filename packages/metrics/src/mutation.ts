@@ -64,15 +64,40 @@ export type Passes = (
   where?: string
 ) => Promise<boolean>;
 
-/** Runs test files of a package, core by default, in the tree at `root`. */
+/**
+ * How long the tests of one mutation may run. A break can make evaluation
+ * loop without ever giving the test's own time limit a turn, and a test
+ * that never ends has not passed.
+ */
+const LIMIT_MS = 10 * 60 * 1000;
+
+/**
+ * Runs test files of a package, core by default, in the tree at `root`.
+ * Tests still running after `LIMIT_MS` are stopped, with every process
+ * they started, and do not pass.
+ */
 export const testsPass: Passes = (root, tests, where = "core") =>
   new Promise((resolve) => {
     const run = spawn("bunx", ["vitest", "run", ...tests], {
       cwd: join(root, "packages", where),
+      detached: true,
       stdio: "ignore",
     });
-    run.on("error", () => resolve(false));
-    run.on("exit", (status) => resolve(status === 0));
+    const limit = setTimeout(() => {
+      try {
+        process.kill(-(run.pid ?? 0), "SIGKILL");
+      } catch {
+        // The tests ended as the limit came.
+      }
+    }, LIMIT_MS);
+    run.on("error", () => {
+      clearTimeout(limit);
+      resolve(false);
+    });
+    run.on("exit", (status) => {
+      clearTimeout(limit);
+      resolve(status === 0);
+    });
   });
 
 /**

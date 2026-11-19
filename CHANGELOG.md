@@ -10,12 +10,17 @@
 - Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. (`invention-joined-otherwise-after-fact-change` is `followed`, was `derived-again`)
 - Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate. (`merged-unknowns-after-retract` is `apart-again`)
 - A sum or a mean of numbers that are not all whole is added up in sort order. (`rule-head-sum-of-fractions` is `added-in-sort-order`, was `added-in-order-found`)
+- A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. (`rule-reading-two-rows-with-one-key-in-its-group` is `never-both`)
+- `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. (`why-of-a-row-several-answers-give` is `least-at-its-level`)
 
 ### Decided
 
 - Every derived row has a weight: the number of its candidates, each a fact or an answer of a rule's body that gives the row, and the row holds while its weight is above zero. (`following-a-change-to-facts`: `candidates-by-level` over `take-out-and-derive-again`, `weights-alone`, `rounds-in-a-trace`)
 - A sum or a mean of numbers that are not all whole is added up in sort order. (`order-a-rule-head-sum-adds-in`: `sort-order` over `order-found`)
 - The answers of a rule that invents are rows of a relation of their own, and each is asked at the end of the stage it is first held in whether a row held by then gives its head. (`rule-that-invents-on-change`: `weighted-rows` over `follow-a-component-at-a-time`, `derive-again-every-case`, `skolem-for-keyed-relations`, was `follow-where-it-invents-alone`)
+- A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. (`two-rows-with-one-key-inside-a-group`: `read-from-the-level-after` over `both-for-a-level`, `pair-from-the-same-level`)
+- A group whose rules read nothing of its own keeps a weight for each row in its table and nothing else, and any other group keeps a row's candidates and time on the row itself. (`what-a-group-keeps-of-its-rows`: `what-its-rules-need` over `an-entry-for-every-row`)
+- `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. (`where-why-finds-a-derivation`: `found-when-asked` over `kept-with-each-row`, `derived-again-after-a-change`)
 
 ## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
 

@@ -39,7 +39,15 @@
  * and gives, at that level, the row with the least member in its place. A
  * row that ended is kept beside the rows that hold, so the answers that
  * used it are still there to be counted, and taken away when what gave it
- * goes: an answer is one whose rows were all held at one level.
+ * goes: an answer is one whose rows were all held at one level. A row that
+ * comes beside a row with its key is read from the level after, when the
+ * key has made the two one, so no answer finds two rows with one key.
+ *
+ * What a group keeps is as little as its rules need. A group whose rules
+ * read nothing of its own has one level, so its rows keep a weight in their
+ * table and nothing else. In any other group a row carries an entry: its
+ * candidates by level and its time. How a row came about is not kept: `why`
+ * finds the row's candidates when asked, and tells the least at its level.
  */
 import { Effect } from "effect";
 import { LogicError, logicError } from "@/errors/evaluation";
@@ -50,9 +58,11 @@ import { readingOf, type Use } from "@/logic/maintain";
 import {
   aggregateKind,
   aggregateProblem,
+  answerKey,
   compareAnswers,
-  compareKept,
   compareMatches,
+  complete,
+  type Derivation,
   deltaPlan,
   depthOf,
   derivedRow,
@@ -60,7 +70,6 @@ import {
   type Inventions,
   inventedBy,
   justify,
-  type Kept,
   keyColumns,
   type LogicEffect,
   MAX_LATTICE_ROUNDS,
@@ -69,7 +78,6 @@ import {
   matchValues,
   NO_VARS,
   occurs,
-  packed,
   plainRow,
   plainTuple,
   type Reader,
@@ -79,18 +87,22 @@ import {
   rowsOf,
   type Sink,
   selectsAlone,
+  startingFacts,
   type Tuple,
   TupleSet,
   tupleOf,
   type Vars,
 } from "@/logic/model";
-import { mentioned, type Stratum } from "@/logic/strata";
+import type { Stratum } from "@/logic/strata";
 import {
   Atom,
+  callsOf,
   compareValues,
   isForm,
+  isGroundValue,
   isPlainObject,
   LogicValue,
+  LogicVariable,
   patternParts,
   type RelationInfo,
   sameValue,
@@ -115,7 +127,7 @@ const endOf = (stage: number) => stage * STAGE + STAGE - 1;
 
 /**
  * The names an answer keeps two levels under: the highest level a row its
- * goals matched is held from, and the lowest level one of them is held
+ * goals matched can be read from, and the lowest level one of them is held
  * until. No variable has these names.
  */
 const FROM = "\u0000from";
@@ -133,22 +145,16 @@ const EDGE = "\u0000edge";
  */
 const MATCH = "\u0000match^";
 
+/** The name the rows a search found go by while their answers are counted. */
+const REACHED = "\u0000reached";
+
 const isHidden = (relation: string) =>
   relation === EDGE ||
   relation.startsWith(TRIGGER) ||
   relation.startsWith(MATCH);
 
-/** How a row was first given, while a group is derived from nothing. */
-interface Told {
-  readonly kept: Kept;
-  readonly level: number;
-  readonly order: number;
-}
-
-/** A row of a group, and the candidates that give it. */
+/** A row of a group whose rows have levels, and the candidates that give it. */
 export interface Entry {
-  /** True for a row that is a fact, which needs no rule to tell it. */
-  fact: boolean;
   /** The level the row is held from, or `NEVER`. */
   from: number;
   readonly key: string;
@@ -163,27 +169,50 @@ export interface Entry {
   /** The level the entry waits to be settled at, or `NEVER`. */
   queued: number;
   readonly relation: string;
-  /** A rule that gave the row, for a message about its key. */
-  rule: CompiledRule | undefined;
-  told: Told | undefined;
+  /**
+   * The level answers can use the row from: the level it is held from, or
+   * the one after when it came beside a row with its key.
+   */
+  seen: number;
   readonly tuple: Tuple;
   /** The level the row is held until, when a value in it stops being least. */
   until: number;
 }
 
-/** An answer of a rule that invents: what it would invent, and whether it did. */
-interface Trigger {
-  active: boolean;
-  /** The candidates it gave the rows it invented. */
-  gave: (readonly [Entry, number])[];
-  /** The rows its head says exist, with the unknowns it names. */
-  readonly heads: readonly (readonly [Atom, Tuple])[];
-  readonly rule: CompiledRule;
-  /** The least answer that names these unknowns. */
-  vars: Vars;
-  /** What it is asked again under, when a row could give its head. */
-  readonly watches: string[];
-}
+/** Where a row keeps its entry: on the row itself, so finding it costs nothing. */
+const ENTRY = Symbol("entry");
+
+const entryOn = (tuple: Tuple) =>
+  (tuple as { readonly [ENTRY]?: Entry })[ENTRY];
+
+/** One entry or several under a key: most keys have one. */
+type Some = Entry | Entry[];
+
+const NONE: readonly Entry[] = [];
+
+const allOf = (map: ReadonlyMap<string, Some>, key: string) => {
+  const had = map.get(key);
+  if (had === undefined) {
+    return NONE;
+  }
+  return Array.isArray(had) ? had : [had];
+};
+
+const addTo = (map: Map<string, Some>, key: string, entry: Entry) => {
+  const had = allOf(map, key);
+  if (!had.includes(entry)) {
+    map.set(key, had.length === 0 ? entry : [...had, entry]);
+  }
+};
+
+const takeFrom = (map: Map<string, Some>, key: string, entry: Entry) => {
+  const rest = allOf(map, key).filter((other) => other !== entry);
+  if (rest.length === 0) {
+    map.delete(key);
+  } else {
+    map.set(key, rest.length === 1 ? (rest[0] as Entry) : rest);
+  }
+};
 
 /** The values some candidates give one aggregate, each counted. */
 interface Tally {
@@ -204,13 +233,12 @@ interface Fold {
   readonly key: Tuple;
   /** For each level, the values its candidates give each aggregate. */
   readonly levels: Map<number, Tally[]>;
-  /** Every answer, with what it gives, while how rows came is kept. */
-  matches: (readonly [Match, readonly unknown[]])[];
   readonly relation: string;
   readonly rule: CompiledRule;
   /** The least level whose candidates changed since the rows were worked out. */
   since: number;
-  versions: (readonly [number, Entry])[];
+  /** Each row it gives: the level it is from, the row, and the row's key. */
+  versions: (readonly [number, Tuple, string])[];
 }
 
 /** What an answer that counts once gives the group it is a candidate of. */
@@ -224,39 +252,46 @@ type History = readonly (readonly [number, unknown])[];
 
 /** What a group whose rules invent or make values one keeps besides. */
 interface Chase {
-  /** The pairs that are held, by each value they join. */
-  readonly adjacent: Map<string, Set<Entry>>;
+  /** The pairs that are held, by the key of each value they join. */
+  readonly adjacent: Map<string, Some>;
+  /** How each unknown a class writes as another is written, by its own key. */
   readonly history: Map<string, History>;
-  /** The rows that hold each unknown, however deep. */
-  readonly holders: Map<string, Set<Entry>>;
-  /** The unknowns each row holds, however deep. */
-  readonly holds: Map<Entry, readonly string[]>;
+  /** The rows that hold each unknown, however deep, by its own key. */
+  readonly holders: Map<string, Some>;
   /** The candidate each row that ended gives the row it became. */
   readonly images: Map<Entry, readonly [Entry, number]>;
   /** The unknowns the group's rules invented, by their own keys. */
   readonly invented: Set<string>;
-  readonly triggers: Map<Entry, Trigger>;
+  /** The answers of rules that invent whose head no row gave, so they did. */
+  readonly inventing: Set<Entry>;
   /** Each value a pair joins, by key. */
   readonly values: Map<string, unknown>;
   /** The answers that invent, by what a row must hold to give their head. */
-  readonly watching: Map<string, Set<Entry>>;
+  readonly watching: Map<string, Some>;
 }
 
 /** What a group keeps of its rows between changes. */
 export interface Support {
   /** What each answer that counts once gives, by its row. */
   readonly answers: Map<Entry, Answer>;
-  /** The entry of each row, by the row itself. */
-  readonly byRow: Map<Tuple, Entry>;
   readonly chase: Chase | undefined;
   /** The level a row that combines is held until, when a better one comes. */
   readonly ends: Map<Entry, number>;
-  /** The entry of each row, by relation and the row's key. */
-  readonly entries: Map<string, Map<string, Entry>>;
+  /**
+   * True for a group whose rules read nothing of its own: every candidate
+   * has the lowest level, so a row keeps a weight and no entry.
+   */
+  readonly flat: boolean;
   /** The candidates of each row that combines, by relation and head values. */
   readonly folds: Map<string, Fold>;
   /** The rows that ended, by relation. */
   readonly past: Map<string, TupleSet>;
+  /**
+   * The entries that are in no table of rows, by relation and key: a row
+   * that waits for its level, and every row of the relations the group
+   * keeps for itself.
+   */
+  readonly waiting: Map<string, Map<string, Entry>>;
 }
 
 /** A head of a rule that invents: where it stands, and what a row must match. */
@@ -275,36 +310,56 @@ interface Run {
   readonly dirty: Map<number, Entry[]>;
   /** The groups of candidates whose rows are to be worked out again. */
   readonly folding: Set<Fold>;
+  /** True while a group is derived from nothing: nothing was held before. */
+  readonly fresh: boolean;
   /** The heads of rules that invent, by the relation they give rows of. */
   readonly inventors: Map<string, Inventor[]>;
   /** The values whose classes are to be worked out again. */
   readonly links: Set<string>;
   readonly model: Model;
+  /** How often each row joined the rows that hold, less how often it left. */
+  readonly net: Map<string, Map<string, [Tuple, number]>>;
   /** The order of each rule among the group's. */
   readonly order: Map<CompiledRule, number>;
+  /** Why the run cannot go on, once a row breaks a key. */
+  problem: string | undefined;
   /** The relations the group's rules give rows of, by name. */
   readonly relations: Map<string, RelationInfo>;
+  /** Answers that stopped inventing, with the level they invented at. */
+  readonly retracting: (readonly [Entry, number])[];
+  /** A rule that gave each row of a keyed relation, for a message. */
+  readonly rules: Map<string, CompiledRule>;
   /** The heads that several rules of the group share. */
   readonly shared: Set<Atom>;
   /** The answers that invent to ask again, by the stage they are held in. */
   readonly steps: Map<number, Set<Entry>>;
   readonly stratum: Stratum;
   readonly support: Support;
-  /** True while a group is derived from nothing: how rows came is kept. */
-  readonly telling: boolean;
-  /** Whether each row the run moved held before it. */
-  readonly was: Map<Entry, boolean>;
 }
 
 /** True for a place of a head that holds something the rule invents. */
 const holdsSome = (arg: unknown): boolean =>
   isForm(arg, "some") || (patternParts(arg, false)?.some(holdsSome) ?? false);
 
+/** True for a rule that invents values, or makes values one. */
+const makesValues = (rule: CompiledRule) =>
+  rule.invents !== undefined || rule.equates === true;
+
+/** The heads that several rules of a group share. */
+const sharedHeads = (rules: readonly CompiledRule[]) => {
+  const heads = new Set<Atom>();
+  const shared = new Set<Atom>();
+  for (const { head } of rules) {
+    (heads.has(head) ? shared : heads).add(head);
+  }
+  return shared;
+};
+
 const runOf = (
   model: Model,
   stratum: Stratum,
   support: Support,
-  telling: boolean
+  fresh = false
 ): Run => {
   const relations = new Map<string, RelationInfo>();
   const inventors = new Map<string, Inventor[]>();
@@ -326,26 +381,24 @@ const runOf = (
       }
     }
   }
-  const heads = new Set<Atom>();
-  const shared = new Set<Atom>();
-  for (const { head } of stratum.rules) {
-    (heads.has(head) ? shared : heads).add(head);
-  }
   return {
     clashes: [],
     dirty: new Map(),
     folding: new Set(),
-    shared,
+    fresh,
     inventors,
     links: new Set(),
     model,
+    net: new Map(),
     order: new Map(stratum.rules.map((rule, at) => [rule, at])),
+    problem: undefined,
     relations,
+    retracting: [],
+    rules: new Map(),
+    shared: sharedHeads(stratum.rules),
     steps: new Map(),
     stratum,
     support,
-    telling,
-    was: new Map(),
   };
 };
 
@@ -398,28 +451,144 @@ const promote = (entry: Entry) => {
 /** The level an entry's candidates say it is held from. */
 const wanted = (entry: Entry) => (entry.n > 0 ? entry.level : NEVER);
 
+/** The parts a value is made of, where a value in it can stand. */
+const partsOf = (value: unknown): readonly unknown[] => {
+  if (value instanceof Unknown) {
+    return [value.goal];
+  }
+  if (value instanceof LogicValue) {
+    return value.parts;
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  return isPlainObject(value) ? Object.values(value) : [];
+};
+
+/**
+ * The first level at which a value in a value stops being the least member
+ * of its class, however deep it stands, or `NEVER`.
+ */
+const endIn = (chase: Chase, value: unknown): number => {
+  let until =
+    value instanceof Unknown
+      ? (chase.history.get(value.key)?.[0]?.[0] ?? NEVER)
+      : NEVER;
+  for (const part of typeof value === "object" ? partsOf(value) : []) {
+    until = Math.min(until, endIn(chase, part));
+  }
+  return until;
+};
+
+/** The unknowns a value holds, however deep, by their own keys. */
+const unknownsIn = (value: unknown, into: Set<string>) => {
+  if (value instanceof Unknown) {
+    into.add(value.key);
+  }
+  for (const part of typeof value === "object" ? partsOf(value) : []) {
+    unknownsIn(part, into);
+  }
+  return into;
+};
+
 /**
  * The level a row is held until: the first at which a value it holds stops
  * being the least member of its class, or at which its group's combined
  * values change, or `NEVER`.
  */
 const ending = ({ support }: Run, entry: Entry) => {
-  const chase = support.chase;
-  let until = support.ends.get(entry) ?? NEVER;
-  for (const key of chase?.holds.get(entry) ?? []) {
-    const [first] = chase?.history.get(key) ?? [];
-    if (first !== undefined) {
-      until = Math.min(until, first[0]);
+  const { chase, ends } = support;
+  const until = ends.size === 0 ? NEVER : (ends.get(entry) ?? NEVER);
+  return chase === undefined ||
+    chase.history.size === 0 ||
+    isHidden(entry.relation)
+    ? until
+    : Math.min(until, endIn(chase, entry.tuple));
+};
+
+const setOf = (sets: Map<string, TupleSet>, relation: string) => {
+  let rows = sets.get(relation);
+  if (rows === undefined) {
+    rows = new TupleSet();
+    sets.set(relation, rows);
+  }
+  return rows;
+};
+
+/** The rows of a relation that hold, and the ones that ended. */
+class Both implements Rows {
+  private readonly held: Rows;
+  private readonly past: Rows;
+
+  constructor(held: Rows, past: Rows) {
+    this.held = held;
+    this.past = past;
+  }
+
+  *lookup(positions: readonly number[], values: readonly unknown[]) {
+    yield* this.held.lookup(positions, values);
+    yield* this.past.lookup(positions, values);
+  }
+}
+
+/** Every row of one of a group's relations, when some of them ended. */
+const everOf = ({ model, support }: Run, name: string): Rows | undefined => {
+  const past = support.past.get(name);
+  return past === undefined || past.size === 0
+    ? undefined
+    : new Both(rowsOf(model, name), past);
+};
+
+/** The rows of a keyed relation that have a row's key: it, and any other. */
+const withKeyOf = (run: Run, entry: Entry) => {
+  const key =
+    run.support.chase === undefined
+      ? undefined
+      : run.relations.get(entry.relation)?.key;
+  if (key === undefined) {
+    return [];
+  }
+  const rows = everOf(run, entry.relation) ?? rowsOf(run.model, entry.relation);
+  return rows.lookup(
+    key,
+    key.map((position) => entry.tuple[position])
+  );
+};
+
+/**
+ * The level answers can use a row from. A row that comes while another row
+ * has its key is read from the level after: by then the key has made the
+ * two one, so no answer finds both.
+ */
+const seenFrom = (run: Run, entry: Entry, from: number) => {
+  for (const tuple of from === NEVER ? [] : withKeyOf(run, entry)) {
+    const other = entryOn(tuple);
+    const beside = other !== undefined && other !== entry && other.placed;
+    if (beside && other.from <= from && other.until > from) {
+      return from + 1;
     }
   }
-  return until;
+  return from;
+};
+
+/** The time a row should have, by its candidates and what it holds. */
+const timeOf = (run: Run, entry: Entry) => {
+  const from = wanted(entry);
+  const until = ending(run, entry);
+  // A row that is never held is never read: nothing comes beside it.
+  const seen = from < until ? seenFrom(run, entry, from) : from;
+  return [from, until, seen] as const;
 };
 
 /** The first level at which a row's time is not what it should be. */
-const offAt = (entry: Entry, from: number, until: number) => {
+const offAt = (
+  entry: Entry,
+  [from, until, seen]: readonly [number, number, number]
+) => {
   const first = from === entry.from ? NEVER : Math.min(from, entry.from);
   const second = until === entry.until ? NEVER : Math.min(until, entry.until);
-  return Math.min(first, second);
+  const third = seen === entry.seen ? NEVER : Math.min(seen, entry.seen);
+  return Math.min(first, second, third);
 };
 
 /** Notes an entry whose time is not what its candidates and values say. */
@@ -429,11 +598,8 @@ const mark = (run: Run, entry: Entry) => {
   if (chase === undefined && ends.size === 0 && wanted(entry) === entry.from) {
     return;
   }
-  const level = offAt(entry, wanted(entry), ending(run, entry));
-  if (level === NEVER) {
-    return;
-  }
-  if (entry.queued === level) {
+  const level = offAt(entry, timeOf(run, entry));
+  if (level === NEVER || entry.queued === level) {
     return;
   }
   entry.queued = level;
@@ -445,75 +611,60 @@ const mark = (run: Run, entry: Entry) => {
   }
 };
 
-const entriesOf = ({ entries }: Support, relation: string) => {
-  let found = entries.get(relation);
+const waitingOf = ({ waiting }: Support, relation: string) => {
+  let found = waiting.get(relation);
   if (found === undefined) {
     found = new Map();
-    entries.set(relation, found);
+    waiting.set(relation, found);
   }
   return found;
 };
 
-/** The unknowns a value holds, however deep, also in what others describe. */
-const unknownsIn = (value: unknown, into: Set<string>) => {
-  if (value instanceof Unknown) {
-    into.add(valueKey(value));
-    unknownsIn(value.goal, into);
-  } else if (value instanceof LogicValue) {
-    for (const part of value.parts) {
-      unknownsIn(part, into);
-    }
-  } else if (Array.isArray(value)) {
-    for (const item of value) {
-      unknownsIn(item, into);
-    }
-  } else if (isPlainObject(value)) {
-    for (const item of Object.values(value)) {
-      unknownsIn(item, into);
-    }
-  }
-  return into;
+/** The entry a group has for a row, wherever the row is. */
+const entryAt = ({ model, support }: Run, relation: string, key: string) => {
+  const held = isHidden(relation)
+    ? undefined
+    : (model.relations.get(relation)?.get(key) ??
+      support.past.get(relation)?.get(key));
+  return held === undefined
+    ? support.waiting.get(relation)?.get(key)
+    : entryOn(held);
 };
 
-/** The entry of a row, made when the row has none. */
+/**
+ * The entry of a row, made when the row has none. A row that is not the
+ * group's own, as a fact's is not, is copied, since the entry is kept on it.
+ */
 const entryOf = (
-  { support }: Run,
+  run: Run,
   relation: string,
   tuple: Tuple,
-  key: string
+  key: string,
+  own: boolean
 ) => {
-  const entries = entriesOf(support, relation);
-  let entry = entries.get(key);
-  if (entry === undefined) {
-    entry = {
-      fact: false,
-      from: NEVER,
-      key,
-      level: 0,
-      more: undefined,
-      n: 0,
-      placed: false,
-      queued: NEVER,
-      relation,
-      rule: undefined,
-      told: undefined,
-      tuple,
-      until: NEVER,
-    };
-    entries.set(key, entry);
-    support.byRow.set(tuple, entry);
-    const chase = support.chase;
-    const held =
-      chase === undefined || isHidden(relation)
-        ? []
-        : [...unknownsIn(tuple, new Set())];
-    if (chase !== undefined && held.length > 0) {
-      chase.holds.set(entry, held);
-      for (const unknown of held) {
-        const holders = chase.holders.get(unknown) ?? new Set<Entry>();
-        chase.holders.set(unknown, holders);
-        holders.add(entry);
-      }
+  const found = entryAt(run, relation, key);
+  if (found !== undefined) {
+    return found;
+  }
+  const entry: Entry = {
+    from: NEVER,
+    key,
+    level: 0,
+    more: undefined,
+    n: 0,
+    placed: false,
+    queued: NEVER,
+    relation,
+    seen: NEVER,
+    tuple: own ? tuple : [...tuple],
+    until: NEVER,
+  };
+  Object.defineProperty(entry.tuple, ENTRY, { value: entry, writable: true });
+  waitingOf(run.support, relation).set(key, entry);
+  const { chase } = run.support;
+  if (chase !== undefined && !isHidden(relation)) {
+    for (const unknown of unknownsIn(tuple, new Set())) {
+      addTo(chase.holders, unknown, entry);
     }
   }
   return entry;
@@ -521,36 +672,34 @@ const entryOf = (
 
 /** Forgets an entry that nothing gives any more. */
 const drop = ({ support }: Run, entry: Entry) => {
-  const entries = support.entries.get(entry.relation);
-  if (entries?.get(entry.key) === entry) {
-    entries.delete(entry.key);
-    support.byRow.delete(entry.tuple);
+  const waiting = support.waiting.get(entry.relation);
+  if (waiting?.get(entry.key) === entry) {
+    waiting.delete(entry.key);
   }
-  const chase = support.chase;
-  for (const unknown of chase?.holds.get(entry) ?? []) {
-    chase?.holders.get(unknown)?.delete(entry);
+  const { chase } = support;
+  if (chase !== undefined && !isHidden(entry.relation)) {
+    for (const unknown of unknownsIn(entry.tuple, new Set())) {
+      takeFrom(chase.holders, unknown, entry);
+    }
   }
-  chase?.holds.delete(entry);
-  for (const key of chase?.triggers.get(entry)?.watches ?? []) {
-    chase?.watching.get(key)?.delete(entry);
-  }
-  chase?.triggers.delete(entry);
+  chase?.inventing.delete(entry);
+  chase?.images.delete(entry);
   support.answers.delete(entry);
   support.ends.delete(entry);
 };
 
 /**
  * The answer with the time of a row one of its goals matched: undefined
- * when the rows it matched were never all held at one level.
+ * when the rows it matched could never all be read at one level.
  */
 const during = (
   vars: Vars,
-  { from, until }: Entry,
+  { seen, until }: Entry,
   fresh: boolean
 ): Vars | undefined => {
   const since = (vars.get(FROM) as number | undefined) ?? -1;
   const before = (vars.get(UNTIL) as number | undefined) ?? NEVER;
-  const first = Math.max(since, from);
+  const first = Math.max(since, seen);
   const last = Math.min(before, until);
   if (first >= last) {
     return;
@@ -576,44 +725,106 @@ const bare = (vars: Vars): Vars =>
     ? new Map([...vars].filter(([name]) => name !== FROM && name !== UNTIL))
     : vars;
 
-/** Keeps the candidate that tells a row first: by level, rule, and answer. */
-const tell = (
+/** Notes that a row joined the rows that hold, or left them. */
+const moved = (
   run: Run,
-  entry: Entry,
-  level: number,
-  rule: CompiledRule,
-  vars: Vars
+  relation: string,
+  key: string,
+  tuple: Tuple,
+  by: number
 ) => {
-  const order = run.order.get(rule) ?? 0;
-  const best = entry.told;
-  if (best !== undefined) {
-    if (level !== best.level) {
-      if (level > best.level) {
-        return;
-      }
-    } else if (order !== best.order) {
-      if (order > best.order) {
-        return;
-      }
-    } else if (compareKept(rule, vars, best.kept) >= 0) {
-      return;
-    }
+  if (run.fresh || isHidden(relation)) {
+    return;
   }
-  entry.told = { kept: packed({ rule, vars }), level, order };
+  let rows = run.net.get(relation);
+  if (rows === undefined) {
+    rows = new Map();
+    run.net.set(relation, rows);
+  }
+  const [, had] = rows.get(key) ?? [tuple, 0];
+  rows.set(key, [tuple, had + by]);
 };
 
-/** Gives a row a candidate at a level, or takes one away. */
+const keyMessage = (
+  relation: RelationInfo,
+  rule: CompiledRule | undefined,
+  tuple: Tuple,
+  other: Tuple
+) => {
+  const shown = originalName(relation.name);
+  return (rule?.aggregates.length ?? 0) > 0
+    ? `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but it would hold ${show([shown, ...tuple])} and ${show([shown, ...other])}, which differ in a column that does not merge.`
+    : `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but ${show(rule?.source)} derived ${show([shown, ...tuple])} while ${show([shown, ...other])} holds.`;
+};
+
+const ruleName = (relation: string, key: string) => `${relation}\u0000${key}`;
+
+/**
+ * Says why a row that joined a keyed relation cannot stay: another row has
+ * its key. Where rules invent, rows with one key are made one instead.
+ */
+const keyProblem = (run: Run, relation: string, key: string) => {
+  const info = run.relations.get(relation);
+  const rows = run.model.relations.get(relation);
+  const tuple = rows?.get(key);
+  if (
+    info?.key === undefined ||
+    rows === undefined ||
+    tuple === undefined ||
+    run.support.chase !== undefined
+  ) {
+    return;
+  }
+  const values = info.key.map((position) => tuple[position]);
+  for (const other of rows.lookup(info.key, values)) {
+    if (other !== tuple) {
+      const rule = run.rules.get(ruleName(relation, key));
+      return keyMessage(info, rule, tuple, other);
+    }
+  }
+  return;
+};
+
+/**
+ * Gives a row a candidate at a level, or takes one away. In a group with
+ * one level the row's table counts it, and the row joins or leaves at once.
+ * Anywhere else the row's entry counts it, and its level is settled later.
+ */
 const weigh = (
   run: Run,
   relation: string,
   tuple: Tuple,
+  key: string,
   level: number,
-  by: number
+  by: number,
+  own = true
 ) => {
-  const entry = entryOf(run, relation, tuple, valueKey(tuple));
-  bump(entry, level, by);
-  mark(run, entry);
-  return entry;
+  if (!run.support.flat) {
+    const entry = entryOf(run, relation, tuple, key, own);
+    bump(entry, level, by);
+    mark(run, entry);
+    return entry;
+  }
+  const went = setOf(run.model.relations, relation).weigh(key, tuple, by);
+  if (went !== 0) {
+    moved(run, relation, key, tuple, went);
+  }
+  if (went > 0 && run.fresh) {
+    run.problem ??= keyProblem(run, relation, key);
+  }
+  return;
+};
+
+/** Remembers a rule that gave a row of a keyed relation. */
+const ruleFor = (
+  run: Run,
+  relation: string,
+  key: string,
+  rule: CompiledRule | undefined
+) => {
+  if (rule !== undefined && run.relations.get(relation)?.key !== undefined) {
+    run.rules.set(ruleName(relation, key), rule);
+  }
 };
 
 /**
@@ -720,59 +931,17 @@ const before = (run: Run, a: unknown, b: unknown) => {
   return ((free ? depthOf(a) - depthOf(b) : 0) || compareValues(a, b)) < 0;
 };
 
-/** The pair of two values, as a row: the same row whichever comes first. */
-const pairRow = (a: unknown, b: unknown): Tuple =>
-  valueKey(a) < valueKey(b) ? [a, b] : [b, a];
-
-/**
- * A sink that counts each answer of a rule as a candidate: of the row its
- * head gives, of what it would invent, or of the pairs its head makes one.
- */
-const give = (run: Run, rule: CompiledRule, by: number): Sink => {
-  const { model } = run;
-  if (rule.equates) {
-    return (answers) =>
-      Effect.gen(function* () {
-        for (const vars of answers) {
-          const [left, right] = yield* tupleOf(model, rule.head.args, vars);
-          const pairs: (readonly [unknown, unknown])[] = [];
-          for (const [a, b] of pairsOf(left, right, pairs) ? pairs : []) {
-            weigh(run, EDGE, pairRow(a, b), levelOf(vars), by);
-          }
-        }
-      });
-  }
-  if (rule.invents !== undefined) {
-    return (answers) =>
-      Effect.forEach(answers, (vars) => trigger(run, rule, vars, by), {
-        discard: true,
-      });
-  }
-  if (rule.aggregates.length > 0) {
-    return (answers) =>
-      Effect.forEach(answers, (vars) => combine(run, rule, vars, by), {
-        discard: true,
-      });
-  }
-  const relation = rule.head.relation.name;
-  return (answers) =>
-    Effect.gen(function* () {
-      for (const vars of answers) {
-        const tuple =
-          plainRow(rule, vars) ??
-          (yield* Effect.flatMap(tupleOf(model, rule.head.args, vars), (made) =>
-            derivedRow(rule, made)
-          ));
-        const level = levelOf(vars);
-        const entry = weigh(run, relation, tuple, level, by);
-        if (by > 0) {
-          entry.rule = rule;
-          if (run.telling) {
-            tell(run, entry, level, rule, vars);
-          }
-        }
-      }
-    });
+/** Gives the pair of two values a candidate at a level, or takes one away. */
+const weighPair = (
+  run: Run,
+  a: unknown,
+  b: unknown,
+  level: number,
+  by: number
+) => {
+  // The same row whichever value comes first.
+  const pair = valueKey(a) < valueKey(b) ? [a, b] : [b, a];
+  weigh(run, EDGE, pair, valueKey(pair), level, by);
 };
 
 const tallyOf = (): Tally => ({
@@ -819,6 +988,9 @@ const tally = (
 const answerRow = (vars: Vars): Tuple =>
   [...bare(vars)].sort(([a], [b]) => (a < b ? -1 : 1)).flat();
 
+const foldName = (relation: string, key: Tuple) =>
+  `${relation}\u0000${valueKey(key)}`;
+
 /**
  * Counts an answer of a rule that combines as a candidate of its group: the
  * answers that share the head values the rule does not combine. An answer
@@ -830,13 +1002,12 @@ const combine = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
     const { support } = run;
     const relation = rule.head.relation.name;
     const { key, values } = yield* matchValues(run.model, rule, vars);
-    const name = `${relation}\u0000${valueKey(key)}`;
+    const name = foldName(relation, key);
     let fold = support.folds.get(name);
     if (fold === undefined) {
       fold = {
         key,
         levels: new Map(),
-        matches: [],
         relation,
         rule,
         since: NEVER,
@@ -846,9 +1017,6 @@ const combine = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
     }
     const answer = { fold, values };
     const level = levelOf(vars);
-    if (run.telling) {
-      fold.matches.push([{ rule, vars: bare(vars) }, values]);
-    }
     if (!run.shared.has(rule.head)) {
       tally(run, answer, level, by);
       return;
@@ -856,7 +1024,15 @@ const combine = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
     const order = run.stratum.rules.findIndex(
       (other) => other.head === rule.head
     );
-    const row = weigh(run, `${MATCH}${order}`, answerRow(vars), level, by);
+    const tuple = answerRow(vars);
+    const row = weigh(
+      run,
+      `${MATCH}${order}`,
+      tuple,
+      valueKey(tuple),
+      level,
+      by
+    ) as Entry;
     const had = support.answers.get(row);
     if (by > 0) {
       // What the answer gives may be other than it gave before a change.
@@ -960,9 +1136,10 @@ const rowAt = (
  */
 const endVersions = (run: Run, fold: Fold, from: number) => {
   const { ends } = run.support;
-  for (const [at, [, entry]] of fold.versions.entries()) {
+  for (const [at, [, , key]] of fold.versions.entries()) {
+    const entry = at < from ? undefined : entryAt(run, fold.relation, key);
     const until = fold.versions[at + 1]?.[0];
-    if (at < from) {
+    if (entry === undefined) {
       continue;
     }
     if (until === undefined) {
@@ -989,10 +1166,10 @@ const refold = (run: Run, fold: Fold) => {
   const before = new Map(
     fold.versions
       .slice(versions.length)
-      .map(([level, entry]) => [`${level} ${entry.key}`, entry])
+      .map((version) => [`${version[0]} ${version[2]}`, version])
   );
   const from = Math.max(0, versions.length - 1);
-  let last = versions.at(-1)?.[1].tuple;
+  let last = versions.at(-1)?.[1];
   const running = rule.aggregates.map((position) => last?.[position]);
   const levels = [...fold.levels.keys()].filter((level) => level >= since);
   for (const level of levels.sort((a, b) => a - b)) {
@@ -1001,21 +1178,29 @@ const refold = (run: Run, fold: Fold) => {
       continue;
     }
     last = row;
-    const name = `${level} ${valueKey(row)}`;
-    const entry = before.get(name) ?? weigh(run, relation, row, level, 1);
+    const rowKey = valueKey(row);
+    const name = `${level} ${rowKey}`;
+    const had = before.get(name);
     before.delete(name);
-    entry.rule = rule;
-    versions.push([level, entry]);
+    if (had === undefined) {
+      ruleFor(run, relation, rowKey, rule);
+      weigh(run, relation, row, rowKey, level, 1);
+    }
+    versions.push(had ?? [level, row, rowKey]);
   }
-  for (const [name, entry] of before) {
-    support.ends.delete(entry);
-    bump(entry, Number(name.slice(0, name.indexOf(" "))), -1);
-    mark(run, entry);
+  for (const [level, tuple, rowKey] of before.values()) {
+    const entry = entryAt(run, relation, rowKey);
+    if (entry !== undefined) {
+      support.ends.delete(entry);
+    }
+    weigh(run, relation, tuple, rowKey, level, -1);
   }
   fold.versions = versions;
-  endVersions(run, fold, from);
+  if (!support.flat) {
+    endVersions(run, fold, from);
+  }
   if (versions.length === 0) {
-    support.folds.delete(`${relation}\u0000${valueKey(key)}`);
+    support.folds.delete(foldName(relation, key));
   }
 };
 
@@ -1023,53 +1208,119 @@ const refold = (run: Run, fold: Fold) => {
 const watchKey = ({ call, order, positions }: Inventor, tuple: Tuple) =>
   `${order}\u0000${call}\u0000${valueKey(positions.map((at) => tuple[at]))}`;
 
+/** The rule whose answers a row of a relation the group keeps for itself is. */
+const ruleOf = ({ stratum }: Run, { relation }: Entry) =>
+  stratum.rules[Number(relation.slice(TRIGGER.length))] as CompiledRule;
+
+/** What an unknown says exists, as relation goals its own variables are free in. */
+const saidBy = (unknown: unknown) => callsOf((unknown as Unknown).goal) ?? [];
+
+/**
+ * The rows the head of a rule that invents says exist for an answer, with
+ * the unknowns the answer names in them: what its first unknown describes,
+ * with each unknown in place of its variable.
+ */
+const headRows = (run: Run, asking: Entry) =>
+  Effect.gen(function* () {
+    const rule = ruleOf(run, asking);
+    const own = new Map(
+      (rule.invents?.names ?? []).map((name, at) => [name, asking.tuple[at]])
+    );
+    const rows: (readonly [string, Tuple])[] = [];
+    for (const call of saidBy(asking.tuple[0])) {
+      const tuple = yield* tupleOf(run.model, call.args, own);
+      rows.push([call.relation.name, yield* derivedRow(rule, tuple)]);
+    }
+    return rows;
+  });
+
 /**
  * Counts an answer of a rule that invents as a candidate of the row that
  * names what it would invent: answers that name the same unknowns are one
- * row, and invent them once.
+ * row, and invent them once. The row is asked again whenever a row comes or
+ * goes that could give its head.
  */
 const trigger = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
   Effect.gen(function* () {
-    const { model, support } = run;
-    const chase = support.chase as Chase;
+    const chase = run.support.chase as Chase;
     const order = run.order.get(rule) ?? 0;
-    const named = yield* inventedBy(model, rule, vars);
-    const entry = weigh(run, `${TRIGGER}${order}`, named, levelOf(vars), by);
-    const known = chase.triggers.get(entry);
-    if (known !== undefined) {
-      if (by > 0 && compareAnswers(rule, vars, known.vars) < 0) {
-        known.vars = bare(vars);
-      }
+    const named = yield* inventedBy(run.model, rule, vars);
+    const key = named.map((unknown) => unknown.key).join("\u0000");
+    const relation = `${TRIGGER}${order}`;
+    const known = entryAt(run, relation, key) !== undefined;
+    const entry = weigh(run, relation, named, key, levelOf(vars), by) as Entry;
+    if (known) {
       return;
     }
-    const heads: (readonly [Atom, Tuple])[] = [];
-    const watches: string[] = [];
-    for (const [call, head] of headsOf(rule).entries()) {
-      const tuple = yield* derivedRow(
-        rule,
-        yield* tupleOf(model, head.args, vars)
-      );
-      heads.push([head, tuple]);
+    for (const [call, [name, tuple]] of (yield* headRows(
+      run,
+      entry
+    )).entries()) {
       const inventor = run.inventors
-        .get(head.relation.name)
+        .get(name)
         ?.find((one) => one.order === order && one.call === call);
       if (inventor !== undefined) {
-        const key = watchKey(inventor, tuple);
-        watches.push(key);
-        const watching = chase.watching.get(key) ?? new Set<Entry>();
-        chase.watching.set(key, watching);
-        watching.add(entry);
+        addTo(chase.watching, watchKey(inventor, tuple), entry);
       }
     }
-    chase.triggers.set(entry, {
-      active: false,
-      gave: [],
-      heads,
-      rule,
-      vars: bare(vars),
-      watches,
-    });
   });
+
+/** Counts the pairs an equality rule's answer makes one. */
+const equate = (run: Run, rule: CompiledRule, vars: Vars, by: number) =>
+  Effect.map(tupleOf(run.model, rule.head.args, vars), ([left, right]) => {
+    const pairs: (readonly [unknown, unknown])[] = [];
+    for (const [a, b] of pairsOf(left, right, pairs) ? pairs : []) {
+      weighPair(run, a, b, levelOf(vars), by);
+    }
+  });
+
+/**
+ * A sink that counts each answer of a rule as a candidate: of the row its
+ * head gives, of what it would invent, or of the pairs its head makes one.
+ * Fails once a row breaks a key.
+ */
+const give = (run: Run, rule: CompiledRule, by: number): Sink => {
+  const { model } = run;
+  const relation = rule.head.relation.name;
+  /** Counts a row the head gives, and notes the rule that gave it. */
+  const row = (tuple: Tuple, vars: Vars) => {
+    const key = valueKey(tuple);
+    if (by > 0) {
+      ruleFor(run, relation, key, rule);
+    }
+    weigh(run, relation, tuple, key, levelOf(vars), by);
+  };
+  const one = (vars: Vars) =>
+    Effect.gen(function* () {
+      if (rule.equates) {
+        return yield* equate(run, rule, vars, by);
+      }
+      if (rule.invents !== undefined) {
+        return yield* trigger(run, rule, vars, by);
+      }
+      if (rule.aggregates.length > 0) {
+        return yield* combine(run, rule, vars, by);
+      }
+      const made = yield* tupleOf(model, rule.head.args, vars);
+      row(yield* derivedRow(rule, made), vars);
+    });
+  const plain = rule.aggregates.length === 0 && !makesValues(rule);
+  return (answers) =>
+    Effect.gen(function* () {
+      for (const vars of answers) {
+        // Most answers give a row with nothing to work out.
+        const tuple = plain ? plainRow(rule, vars) : undefined;
+        if (tuple === undefined) {
+          yield* one(vars);
+        } else {
+          row(tuple, vars);
+        }
+      }
+      if (run.problem !== undefined) {
+        return yield* logicError(run.problem);
+      }
+    });
+};
 
 /** Where each goal of a planned body stood in the rule, and what it reads. */
 interface Place {
@@ -1125,30 +1376,6 @@ const batchOf = (
   return batch;
 };
 
-/** The rows of a relation that hold, and the ones that ended. */
-class Both implements Rows {
-  private readonly held: Rows;
-  private readonly past: Rows;
-
-  constructor(held: Rows, past: Rows) {
-    this.held = held;
-    this.past = past;
-  }
-
-  *lookup(positions: readonly number[], values: readonly unknown[]) {
-    yield* this.held.lookup(positions, values);
-    yield* this.past.lookup(positions, values);
-  }
-}
-
-/** Every row of one of a group's relations, when some of them ended. */
-const everOf = ({ model, support }: Run, name: string): Rows | undefined => {
-  const past = support.past.get(name);
-  return past === undefined || past.size === 0
-    ? undefined
-    : new Both(rowsOf(model, name), past);
-};
-
 /**
  * What the goals of a body read while its answers are counted: a goal of
  * the group being followed gives the answer the time of the row it
@@ -1164,18 +1391,16 @@ const readerOf = (
   batch?: Batch,
   delta = -1
 ): Reader => {
-  const { stratum, support } = run;
   const places = placesOf(body, planned);
   const changedAt = delta < 0 ? -1 : planned.indexOf(body[delta] as Literal);
   const owns = places.map(({ name }) =>
-    name !== undefined && stratum.members.has(name) ? name : undefined
+    name !== undefined && run.stratum.members.has(name) ? name : undefined
   );
-  const own = (at: number) => owns[at];
   const rows: Reader["rows"] = (at) => {
     if (at === changedAt) {
       return batch?.rows.get((places[at] as Place).name ?? "");
     }
-    const name = own(at);
+    const name = owns[at];
     return name === undefined ? undefined : everOf(run, name);
   };
   // A body that reads nothing of the group, and the batch through one goal
@@ -1191,8 +1416,7 @@ const readerOf = (
       if (index < delta && batch?.ids.get(name ?? "")?.has(tuple)) {
         return;
       }
-      const entry =
-        own(at) === undefined ? undefined : support.byRow.get(tuple);
+      const entry = owns[at] === undefined ? undefined : entryOn(tuple);
       return entry === undefined ? vars : during(vars, entry, fresh);
     },
     rows,
@@ -1239,24 +1463,6 @@ const count = (run: Run, entries: readonly Entry[], by: number) =>
         );
   });
 
-/** True for a row that questions about the database can see. */
-const shows = (entry: Entry) => entry.placed && entry.until === NEVER;
-
-const note = (run: Run, entry: Entry) => {
-  if (!(run.telling || isHidden(entry.relation) || run.was.has(entry))) {
-    run.was.set(entry, shows(entry));
-  }
-};
-
-const setOf = (sets: Map<string, TupleSet>, relation: string) => {
-  let rows = sets.get(relation);
-  if (rows === undefined) {
-    rows = new TupleSet();
-    sets.set(relation, rows);
-  }
-  return rows;
-};
-
 /** The rows of a relation a row is among: the ones that hold, or that ended. */
 const homeOf = ({ model, support }: Run, entry: Entry) =>
   setOf(entry.until === NEVER ? model.relations : support.past, entry.relation);
@@ -1271,15 +1477,8 @@ const together = (a: Entry, b: Entry) =>
  * one are noted, and fail the run when both still hold at its end.
  */
 const pairUp = (run: Run, entry: Entry, by: number) => {
-  const relation = run.relations.get(entry.relation);
-  const key = relation?.key;
-  if (key === undefined || run.support.chase === undefined) {
-    return;
-  }
-  const values = key.map((position) => entry.tuple[position]);
-  const rows = everOf(run, entry.relation) ?? rowsOf(run.model, entry.relation);
-  for (const tuple of rows.lookup(key, values)) {
-    const other = run.support.byRow.get(tuple);
+  for (const tuple of withKeyOf(run, entry)) {
+    const other = entryOn(tuple);
     if (
       other === undefined ||
       other === entry ||
@@ -1303,7 +1502,17 @@ const pairUp = (run: Run, entry: Entry, by: number) => {
     }
     const level = Math.max(entry.from, other.from) + 1;
     for (const [a, b] of pairs) {
-      weigh(run, EDGE, pairRow(a, b), level, by);
+      weighPair(run, a, b, level, by);
+    }
+  }
+};
+
+/** Notes the rows with a row's key: when they can be read depends on it. */
+const beside = (run: Run, entry: Entry) => {
+  for (const tuple of withKeyOf(run, entry)) {
+    const other = entryOn(tuple);
+    if (other !== undefined && other !== entry) {
+      mark(run, other);
     }
   }
 };
@@ -1312,9 +1521,14 @@ const pairUp = (run: Run, entry: Entry, by: number) => {
 const watched = (run: Run, entry: Entry, level: number) => {
   const chase = run.support.chase;
   for (const inventor of run.inventors.get(entry.relation) ?? []) {
-    for (const asking of chase?.watching.get(watchKey(inventor, entry.tuple)) ??
-      []) {
-      if (asking.placed && stageOf(asking.from) >= stageOf(level)) {
+    const key = watchKey(inventor, entry.tuple);
+    for (const asking of chase === undefined
+      ? []
+      : allOf(chase.watching, key)) {
+      if (asking.n === 0 && !asking.placed) {
+        // An answer nothing gives any more watches no longer.
+        takeFrom(chase?.watching as Map<string, Some>, key, asking);
+      } else if (asking.placed && stageOf(asking.from) >= stageOf(level)) {
         const stage = stageOf(asking.from);
         run.steps.set(stage, (run.steps.get(stage) ?? new Set()).add(asking));
       }
@@ -1326,25 +1540,15 @@ const watched = (run: Run, entry: Entry, level: number) => {
 const endsOf = (entry: Entry) =>
   entry.tuple.map((value) => [valueKey(value), value] as const);
 
-/**
- * Takes back what an answer of a rule that invents invented, and notes
- * whether it invents now.
- */
-const invent = (run: Run, asking: Trigger, active: boolean) => {
-  for (const [entry, level] of asking.gave) {
-    bump(entry, level, -1);
-    mark(run, entry);
-  }
-  asking.gave = [];
-  asking.active = active;
-};
+/** The first level of the stage after the one an answer is held in. */
+const afterStage = (asking: Entry) => (stageOf(asking.from) + 1) * STAGE;
 
 /** Takes a row from the rows goals read. */
 const unplace = (run: Run, entry: Entry, level: number) => {
-  const chase = run.support.chase;
+  const { chase } = run.support;
   if (entry.relation === EDGE) {
     for (const [key] of endsOf(entry)) {
-      chase?.adjacent.get(key)?.delete(entry);
+      takeFrom(chase?.adjacent as Map<string, Some>, key, entry);
       run.links.add(key);
     }
   } else if (entry.relation.startsWith(MATCH)) {
@@ -1353,26 +1557,30 @@ const unplace = (run: Run, entry: Entry, level: number) => {
       tally(run, answer, entry.from, -1);
     }
   } else if (isHidden(entry.relation)) {
-    const asking = chase?.triggers.get(entry);
-    if (asking?.active) {
-      invent(run, asking, false);
+    if (chase?.inventing.delete(entry)) {
+      run.retracting.push([entry, afterStage(entry)]);
     }
   } else {
     pairUp(run, entry, -1);
-    homeOf(run, entry).delete(entry.tuple);
+    homeOf(run, entry).deleteKeyed(entry.key);
+    waitingOf(run.support, entry.relation).set(entry.key, entry);
+    if (entry.until === NEVER) {
+      moved(run, entry.relation, entry.key, entry.tuple, -1);
+    }
     watched(run, entry, level);
   }
   entry.placed = false;
+  if (!isHidden(entry.relation)) {
+    beside(run, entry);
+  }
 };
 
 /** Puts a row among the rows goals read. */
 const place = (run: Run, entry: Entry, level: number) => {
-  const chase = run.support.chase;
+  const { chase } = run.support;
   if (entry.relation === EDGE) {
     for (const [key, value] of endsOf(entry)) {
-      const edges = chase?.adjacent.get(key) ?? new Set<Entry>();
-      chase?.adjacent.set(key, edges);
-      edges.add(entry);
+      addTo(chase?.adjacent as Map<string, Some>, key, entry);
       chase?.values.set(key, value);
       run.links.add(key);
     }
@@ -1386,16 +1594,23 @@ const place = (run: Run, entry: Entry, level: number) => {
     run.steps.set(stage, (run.steps.get(stage) ?? new Set()).add(entry));
   } else {
     pairUp(run, entry, 1);
+    run.support.waiting.get(entry.relation)?.delete(entry.key);
     homeOf(run, entry).addKeyed(entry.key, entry.tuple);
+    if (entry.until === NEVER) {
+      moved(run, entry.relation, entry.key, entry.tuple, 1);
+    }
     watched(run, entry, level);
   }
   entry.placed = true;
+  if (!isHidden(entry.relation)) {
+    beside(run, entry);
+  }
 };
 
-/** The value a value is written as at a level, when it is another. */
-const leastAt = (chase: Chase, key: string, level: number) => {
+/** The value an unknown is written as at a level, when it is another. */
+const leastAt = (chase: Chase, unknown: Unknown, level: number) => {
   let found: unknown;
-  for (const [at, least] of chase.history.get(key) ?? []) {
+  for (const [at, least] of chase.history.get(unknown.key) ?? []) {
     if (at > level) {
       break;
     }
@@ -1411,7 +1626,7 @@ const leastAt = (chase: Chase, key: string, level: number) => {
 const written = (chase: Chase, value: unknown, level: number): unknown => {
   const inner = (part: unknown) => written(chase, part, level);
   if (value instanceof Unknown) {
-    const least = leastAt(chase, valueKey(value), level);
+    const least = leastAt(chase, value, level);
     if (least !== undefined) {
       return inner(least);
     }
@@ -1457,10 +1672,11 @@ const image = (run: Run, entry: Entry) => {
     bump(had[0], had[1], -1);
     mark(run, had[0]);
   }
-  if (tuple !== undefined) {
-    const became = weigh(run, entry.relation, tuple, entry.until, 1);
-    became.rule ??= entry.rule;
-    chase.images.set(entry, [became, entry.until]);
+  if (tuple !== undefined && key !== undefined) {
+    const { relation, until } = entry;
+    ruleFor(run, relation, key, run.rules.get(ruleName(relation, entry.key)));
+    const became = weigh(run, relation, tuple, key, until, 1) as Entry;
+    chase.images.set(entry, [became, until]);
   }
 };
 
@@ -1474,7 +1690,7 @@ const joinedTo = (chase: Chase, keys: Iterable<string>) => {
       continue;
     }
     members.set(key, chase.values.get(key));
-    for (const edge of chase.adjacent.get(key) ?? []) {
+    for (const edge of allOf(chase.adjacent, key)) {
       edges.add(edge);
       pending.push(...endsOf(edge).map(([end]) => end));
     }
@@ -1483,10 +1699,11 @@ const joinedTo = (chase: Chase, keys: Iterable<string>) => {
 };
 
 /**
- * How each of some values is written over time: the pairs that hold are
- * taken in the order of their levels, each makes two classes one from its
- * level on, and a class is written as its least member. A pair of two
- * values no class can write another way makes nothing one.
+ * How each of some values is written over time, by the unknown's own key:
+ * the pairs that hold are taken in the order of their levels, each makes
+ * two classes one from its level on, and a class is written as its least
+ * member. A pair of two values no class can write another way makes
+ * nothing one.
  */
 const historiesOf = (
   run: Run,
@@ -1516,10 +1733,10 @@ const historiesOf = (
       winner.keys.push(key);
       const value = members.get(key);
       if (isFree(run, value) && !occurs(value, winner.least)) {
-        const history = (next.get(key) ?? []).filter(
+        const history = (next.get(value.key) ?? []).filter(
           ([level]) => level !== edge.from
         );
-        next.set(key, [...history, [edge.from, winner.least]]);
+        next.set(value.key, [...history, [edge.from, winner.least]]);
       }
     }
   }
@@ -1547,8 +1764,11 @@ const relink = (run: Run) => {
   const { edges, members } = joinedTo(chase, run.links);
   run.links.clear();
   const next = historiesOf(run, members, edges);
-  const changed = [...members.keys()].filter(
-    (key) => !sameHistory(chase.history.get(key), next.get(key))
+  const changed = [...members.values()].flatMap((value) =>
+    value instanceof Unknown &&
+    !sameHistory(chase.history.get(value.key), next.get(value.key))
+      ? [value.key]
+      : []
   );
   for (const key of changed) {
     const now = next.get(key);
@@ -1559,49 +1779,12 @@ const relink = (run: Run) => {
     }
   }
   for (const key of changed) {
-    for (const holder of chase.holders.get(key) ?? []) {
+    for (const holder of allOf(chase.holders, key)) {
       // A row that ended is written with the value's new least member.
       image(run, holder);
       mark(run, holder);
     }
   }
-};
-
-const keyMessage = (
-  relation: RelationInfo,
-  rule: CompiledRule | undefined,
-  tuple: Tuple,
-  other: Tuple
-) => {
-  const shown = originalName(relation.name);
-  return `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but ${show(rule?.source)} derived ${show([shown, ...tuple])} while ${show([shown, ...other])} holds.`;
-};
-
-/**
- * Says why a row that joined a keyed relation cannot stay: another row has
- * its key. Where rules invent, rows with one key are made one instead.
- */
-const keyProblem = (run: Run, entry: Entry) => {
-  const relation = run.relations.get(entry.relation);
-  const key = relation?.key;
-  if (
-    relation === undefined ||
-    key === undefined ||
-    run.support.chase !== undefined ||
-    !shows(entry)
-  ) {
-    return;
-  }
-  const values = key.map((position) => entry.tuple[position]);
-  for (const other of rowsOf(run.model, entry.relation).lookup(key, values)) {
-    if (other !== entry.tuple) {
-      const shown = originalName(relation.name);
-      return (entry.rule?.aggregates.length ?? 0) > 0
-        ? `"${shown}" is keyed by ${JSON.stringify(keyColumns(relation))}, but it would hold ${show([shown, ...entry.tuple])} and ${show([shown, ...other])}, which differ in a column that does not merge.`
-        : keyMessage(relation, entry.rule, entry.tuple, other);
-    }
-  }
-  return;
 };
 
 /**
@@ -1610,7 +1793,7 @@ const keyProblem = (run: Run, entry: Entry) => {
  * that is off only higher up waits for that level.
  */
 const movingAt = (run: Run, level: number, entries: readonly Entry[]) => {
-  const moving: (readonly [Entry, number, number])[] = [];
+  const moving: (readonly [Entry, number, number, number])[] = [];
   for (const entry of entries) {
     entry.queued = TAKEN;
   }
@@ -1620,12 +1803,13 @@ const movingAt = (run: Run, level: number, entries: readonly Entry[]) => {
       continue;
     }
     entry.queued = NEVER;
-    const [from, until] = [wanted(entry), ending(run, entry)];
-    if (offAt(entry, from, until) > level) {
+    const time = timeOf(run, entry);
+    if (offAt(entry, time) > level) {
       mark(run, entry);
     } else {
-      note(run, entry);
-      moving.push([entry, from <= level ? from : NEVER, until]);
+      const [from, until, seen] = time;
+      const held = from <= level;
+      moving.push([entry, held ? from : NEVER, until, held ? seen : NEVER]);
     }
   }
   return moving;
@@ -1633,29 +1817,42 @@ const movingAt = (run: Run, level: number, entries: readonly Entry[]) => {
 
 /**
  * Gives each moving row the time it should have, and puts it among the rows
- * goals read when that time is not empty. While a group is derived from
- * nothing, a row that joins a keyed relation beside another with its key is
- * the problem returned.
+ * goals read when that time is not empty.
  */
 const join = (
   run: Run,
   level: number,
-  moving: readonly (readonly [Entry, number, number])[]
+  moving: readonly (readonly [Entry, number, number, number])[]
 ) => {
   const joining: Entry[] = [];
-  let problem: string | undefined;
-  for (const [entry, from, until] of moving) {
+  for (const [entry, from, until, seen] of moving) {
     entry.from = from;
     entry.until = until;
+    entry.seen = seen;
     image(run, entry);
     if (from < until) {
       place(run, entry, level);
       joining.push(entry);
-      problem ??= run.telling ? keyProblem(run, entry) : undefined;
+      // While a group is derived from nothing, a row that joins a keyed
+      // relation beside another with its key ends the run.
+      run.problem ??=
+        run.fresh && until === NEVER
+          ? keyProblem(run, entry.relation, entry.key)
+          : undefined;
     }
   }
-  return { joining, problem };
+  return joining;
 };
+
+/** Takes back what answers that stopped inventing invented. */
+const retract = (run: Run) =>
+  Effect.gen(function* () {
+    for (const [asking, level] of run.retracting.splice(0)) {
+      for (const [relation, tuple] of yield* headRows(run, asking)) {
+        weigh(run, relation, tuple, valueKey(tuple), level, -1);
+      }
+    }
+  });
 
 /**
  * Settles one level. A row whose time is not what its candidates and
@@ -1671,89 +1868,77 @@ const settleLevel = (run: Run, level: number, entries: readonly Entry[]) =>
     for (const entry of leaving) {
       unplace(run, entry, level);
     }
-    const { joining, problem } = join(run, level, moving);
-    if (problem !== undefined) {
-      return yield* logicError(problem);
+    yield* retract(run);
+    const joining = join(run, level, moving);
+    if (run.problem !== undefined) {
+      return yield* logicError(run.problem);
     }
     yield* count(run, joining, 1);
     relink(run);
     for (const [entry] of moving) {
       // A row that left and has candidates higher up joins there.
       mark(run, entry);
-      if (entry.from === NEVER && entry.n === 0 && !run.was.has(entry)) {
+      if (entry.from === NEVER && entry.n === 0) {
         drop(run, entry);
       }
     }
   });
 
 /** True when a row held at the end of a stage gives the head of an answer. */
-const givenBy = (run: Run, asking: Trigger, last: number) =>
+const givenBy = (run: Run, asking: Entry, last: number) =>
   Effect.gen(function* () {
-    const { model, support } = run;
-    const check = asking.rule.invents?.check ?? [];
-    const places = placesOf(check, check);
+    const check = saidBy(asking.tuple[0]);
     let holds = false;
     yield* each(
-      model,
+      run.model,
       check,
       () =>
         Effect.sync(() => {
           holds = true;
         }),
-      asking.vars,
+      NO_VARS,
       {
         meet: (_, tuple, vars) => {
-          const found = support.byRow.get(tuple);
+          const found = entryOn(tuple);
           return found === undefined ||
             (found.placed && found.from <= last && found.until > last)
             ? vars
             : undefined;
         },
-        rows: (at) => everOf(run, (places[at] as Place).name ?? ""),
+        rows: (at) => everOf(run, (check[at] as Atom).relation.name),
       }
     );
     return holds;
   });
 
 /**
- * Invents what an answer says exists: each row of its head gets a candidate
- * at a level, and the unknowns it names are the group's own from then on.
- */
-const inventAt = (run: Run, entry: Entry, asking: Trigger, level: number) => {
-  for (const [head, tuple] of asking.heads) {
-    const made = weigh(run, head.relation.name, tuple, level, 1);
-    made.rule = asking.rule;
-    asking.gave.push([made, level]);
-    if (run.telling) {
-      tell(run, made, level, asking.rule, asking.vars);
-    }
-  }
-  for (const unknown of entry.tuple) {
-    run.support.chase?.invented.add((unknown as Unknown).key);
-  }
-};
-
-/**
  * Asks the answers of rules that invent that are first held in a stage, at
  * its end: one invents when no row held by then gives its head, and each
  * row of its head is then a candidate at the first level of the next stage.
+ * The unknowns it names are the group's own from then on.
  */
 const step = (run: Run, stage: number, asked: ReadonlySet<Entry>) =>
   Effect.gen(function* () {
     const chase = run.support.chase as Chase;
-    for (const entry of asked) {
-      const asking = chase.triggers.get(entry);
-      const due = entry.placed && stageOf(entry.from) === stage;
-      if (asking === undefined || !due) {
+    for (const asking of asked) {
+      const due = asking.placed && stageOf(asking.from) === stage;
+      const holds = due && (yield* givenBy(run, asking, endOf(stage)));
+      if (!due || holds !== chase.inventing.has(asking)) {
         continue;
       }
-      const holds = yield* givenBy(run, asking, endOf(stage));
-      if (holds !== asking.active) {
+      const by = holds ? -1 : 1;
+      for (const [relation, tuple] of yield* headRows(run, asking)) {
+        const key = valueKey(tuple);
+        ruleFor(run, relation, key, ruleOf(run, asking));
+        weigh(run, relation, tuple, key, afterStage(asking), by);
+      }
+      if (holds) {
+        chase.inventing.delete(asking);
         continue;
       }
-      invent(run, asking, !holds);
-      if (!holds) {
-        inventAt(run, entry, asking, (stage + 1) * STAGE);
+      chase.inventing.add(asking);
+      for (const unknown of asking.tuple) {
+        chase.invented.add((unknown as Unknown).key);
       }
     }
   });
@@ -1799,15 +1984,15 @@ const settle = (run: Run) =>
       });
       const level = least(dirty.keys());
       const stage = least(steps.keys());
+      const problem = run.problem ?? improving(run, level);
+      if (problem !== undefined) {
+        return yield* logicError(problem);
+      }
       if (stage !== NEVER && endOf(stage) < level) {
         const asked = steps.get(stage) ?? new Set<Entry>();
         steps.delete(stage);
         yield* step(run, stage, asked);
         continue;
-      }
-      const problem = improving(run, level);
-      if (problem !== undefined) {
-        return yield* logicError(problem);
       }
       const entries = dirty.get(level) ?? [];
       dirty.delete(level);
@@ -1815,15 +2000,20 @@ const settle = (run: Run) =>
     }
   });
 
+/** True for a row that questions about the database can see. */
+const shows = (entry: Entry) => entry.placed && entry.until === NEVER;
+
 /** Why two rows with one key that could not be made one cannot both hold. */
 const clash = (run: Run) => {
   for (const [entry, other] of run.clashes) {
     if (shows(entry) && shows(other)) {
+      const rule = (one: Entry) =>
+        run.rules.get(ruleName(one.relation, one.key));
       const [derived, held] =
-        entry.rule === undefined ? [other, entry] : [entry, other];
+        rule(entry) === undefined ? [other, entry] : [entry, other];
       return keyMessage(
         run.relations.get(entry.relation) as RelationInfo,
-        derived.rule,
+        rule(derived),
         derived.tuple,
         held.tuple
       );
@@ -1833,25 +2023,20 @@ const clash = (run: Run) => {
 };
 
 /**
- * Ends a run: fails when rows that hold break a key, forgets the entries
- * with no candidate left, and returns what each relation gained and lost.
+ * Ends a run: fails when rows that hold break a key, and returns what each
+ * relation gained and lost.
  */
 const finish = (run: Run) =>
   Effect.gen(function* () {
     const gained = new Map<string, TupleSet>();
     const lost = new Map<string, TupleSet>();
     let problem = clash(run);
-    for (const [entry, was] of run.was) {
-      const held = shows(entry);
-      problem ??= held && !was ? keyProblem(run, entry) : undefined;
-      if (held !== was) {
-        setOf(held ? gained : lost, entry.relation).addKeyed(
-          entry.key,
-          entry.tuple
-        );
-      }
-      if (entry.from === NEVER && entry.n === 0) {
-        drop(run, entry);
+    for (const [relation, rows] of run.net) {
+      for (const [key, [tuple, net]] of rows) {
+        problem ??= net > 0 ? keyProblem(run, relation, key) : undefined;
+        if (net !== 0) {
+          setOf(net > 0 ? gained : lost, relation).addKeyed(key, tuple);
+        }
       }
     }
     return problem === undefined
@@ -1859,123 +2044,80 @@ const finish = (run: Run) =>
       : yield* logicError(problem);
   });
 
-/** The entries of a group's facts, each held from the lowest level. */
+/**
+ * Gives each fact of a group whose rows have levels an entry, held from the
+ * lowest level. The rows are the group's own copies, since an entry is kept
+ * on its row and a fact's row is the database's.
+ */
 const startFrom = (run: Run) => {
   for (const name of run.stratum.members) {
-    for (const tuple of rowsOf(run.model, name).values()) {
-      const entry = entryOf(run, name, tuple, valueKey(tuple));
-      entry.fact = true;
+    const rows = new TupleSet();
+    for (const [key, tuple] of rowsOf(run.model, name).keyed()) {
+      const entry = entryOf(run, name, tuple, key, false);
       entry.from = 0;
+      entry.seen = 0;
       entry.n = 1;
       entry.placed = true;
+      run.support.waiting.get(name)?.delete(key);
+      rows.addKeyed(key, entry.tuple);
     }
+    run.model.relations.set(name, rows);
   }
-};
-
-/** True for a rule that invents values, or makes values one. */
-const makesValues = (rule: CompiledRule) =>
-  rule.invents !== undefined || rule.equates === true;
-
-/**
- * Says how the rows of a group that made values one came about, as the
- * rules give them from the rows there are.
- */
-const retell = (run: Run) => {
-  const chase = run.support.chase as Chase;
-  const equal = new Map<string, unknown>();
-  for (const [key, history] of chase.history) {
-    const value = chase.values.get(key);
-    const least = history.at(-1)?.[1];
-    if (value instanceof Unknown && least !== undefined) {
-      equal.set(value.key, least);
-    }
-  }
-  const inventions: Inventions = {
-    equal,
-    invented: new Set(chase.invented),
-  };
-  return equal.size === 0
-    ? Effect.void
-    : justify(run.model, run.stratum.rules, run.relations, inventions);
 };
 
 const chaseOf = (): Chase => ({
   adjacent: new Map(),
   history: new Map(),
   holders: new Map(),
-  holds: new Map(),
   images: new Map(),
   invented: new Set(),
-  triggers: new Map(),
+  inventing: new Set(),
   values: new Map(),
   watching: new Map(),
 });
 
-/** Keeps how each row of a group was first given, for `why`. */
-const keepTold = ({ model, support }: Run) => {
-  for (const [name, entries] of support.entries) {
-    const derivations = new Map<string, Kept>();
-    for (const entry of entries.values()) {
-      const { told } = entry;
-      const first = told !== undefined && told.level === entry.from;
-      if (told !== undefined && first && shows(entry) && !entry.fact) {
-        derivations.set(entry.key, told.kept);
-      }
-      entry.told = undefined;
-    }
-    if (!isHidden(name)) {
-      model.derivations.set(name, derivations);
-    }
-  }
-};
-
 /**
- * Keeps how each row that combines came about: every answer of its group,
- * or for a row one answer picked, the least answer that gave it.
+ * True for a group whose rules read nothing of its own, invent nothing,
+ * make no values one, and share no head that combines: every candidate has
+ * the lowest level, and counts as it comes.
  */
-const keepCombined = ({ model, support }: Run) => {
-  const order = compareMatches(model.rules);
-  for (const fold of support.folds.values()) {
-    const derivations = model.derivations.get(fold.relation);
-    const position = fold.rule.aggregates[0] ?? 0;
-    const all = {
-      matches: fold.matches.map(([match]) => packed(match)),
-      rule: fold.rule,
-    };
-    for (const [, entry] of fold.versions) {
-      const picked = selectsAlone(fold.rule)
-        ? fold.matches
-            .filter(([, [value]]) => sameValue(value, entry.tuple[position]))
-            .map(([match]) => match)
-            .sort(order)[0]
-        : undefined;
-      derivations?.set(entry.key, picked === undefined ? all : packed(picked));
-    }
-    fold.matches = [];
-  }
+const isFlat = ({ members, rules }: Stratum) => {
+  const shared = sharedHeads(rules);
+  return rules.every(
+    (rule) =>
+      !(
+        makesValues(rule) ||
+        (shared.has(rule.head) && rule.aggregates.length > 0) ||
+        rule.body.some(
+          (literal) =>
+            literal instanceof Atom && members.has(literal.relation.name)
+        )
+      )
+  );
 };
 
 /**
  * Derives a group from nothing, on top of its facts: every answer of every
- * rule is a candidate, and the levels are settled lowest first. Keeps how
- * each row was first given, for `why`.
+ * rule is a candidate, and the levels are settled lowest first.
  */
 export const deriveRows = (model: Model, stratum: Stratum) =>
   Effect.gen(function* () {
     const support: Support = {
       answers: new Map(),
-      byRow: new Map(),
       chase: stratum.rules.some(makesValues) ? chaseOf() : undefined,
       ends: new Map(),
-      entries: new Map(),
+      flat: isFlat(stratum),
       folds: new Map(),
       past: new Map(),
+      waiting: new Map(),
     };
     for (const name of stratum.members) {
       model.support.set(name, support);
     }
     const run = runOf(model, stratum, support, true);
-    startFrom(run);
+    if (!support.flat) {
+      startFrom(run);
+    }
     for (const rule of stratum.rules) {
       yield* each(
         model,
@@ -1987,11 +2129,6 @@ export const deriveRows = (model: Model, stratum: Stratum) =>
     }
     yield* settle(run);
     yield* finish(run);
-    keepTold(run);
-    keepCombined(run);
-    if (support.chase !== undefined) {
-      yield* retell(run);
-    }
   });
 
 /** The rows a relation gained or lost, when it did. */
@@ -2099,22 +2236,69 @@ const movedOf = (
   };
 };
 
-/** The name the rows a change reached go by while their answers are counted. */
-const REACHED = "\u0000reached";
-
 /**
- * The head places of a rule that name its row: the ones that neither
- * combine, nor ask, nor invent, so their values do not change with what is
- * asked.
+ * The places of a head that name its row: the ones that neither combine,
+ * nor compute, nor ask, nor invent, so their values are known before the
+ * body runs and do not change with what is asked.
  */
-const namedBy = (rule: CompiledRule) =>
-  rule.head.args.flatMap((arg, position) =>
-    rule.aggregates.includes(position) ||
-    mentioned(arg).length > 0 ||
-    isForm(arg, "some")
+const namedBy = (rule: CompiledRule, head: Atom = rule.head) =>
+  head.args.flatMap((arg, position) =>
+    rule.aggregates.includes(position) || holdsSome(arg) || !isPattern(arg)
       ? []
       : [position]
   );
+
+/**
+ * True for a head value that names a row: a variable, a value, or a record
+ * or list made of those. A value the head computes, or asks a question for,
+ * is worked out once the body has run, so it cannot stand in a goal before.
+ */
+const isPattern = (arg: unknown): boolean =>
+  arg instanceof LogicVariable ||
+  (patternParts(arg, false)?.every(isPattern) ?? isGroundValue(arg));
+
+/**
+ * Gives a sink the answers of a rule that give one of its heads some named
+ * rows: the rule's body behind a goal that holds the names, read as `view`
+ * says the relations around the group are.
+ */
+const naming = (
+  run: Run,
+  rule: CompiledRule,
+  head: Atom,
+  names: TupleSet,
+  sinks: readonly (readonly [Model["view"], Sink])[]
+) =>
+  Effect.suspend(() => {
+    const { model } = run;
+    const positions = namedBy(rule, head);
+    const { columns } = head.relation;
+    const goal = new Atom(
+      {
+        columns: positions.map((position) => columns[position] as string),
+        name: REACHED,
+      },
+      positions.map((position) => head.args[position])
+    );
+    const body = guarded(rule.body, goal);
+    const reader = readerOf(run, rule.body, body);
+    model.relations.set(REACHED, names);
+    return Effect.forEach(
+      sinks,
+      ([view, sink]) => {
+        model.view = view;
+        return each(model, body, sink, NO_VARS, reader);
+      },
+      { discard: true }
+    ).pipe(
+      Effect.ensuring(
+        Effect.sync(() => {
+          model.relations.delete(REACHED);
+          model.view = undefined;
+        })
+      )
+    );
+  });
 
 /**
  * What names the rows a change to what a rule asks about reaches: each use
@@ -2168,35 +2352,17 @@ const asked = (
   moved: Moved
 ) =>
   Effect.gen(function* () {
-    const { model } = run;
-    const positions = namedBy(rule);
-    const args = positions.map((position) => rule.head.args[position]);
+    const args = namedBy(rule).map((position) => rule.head.args[position]);
     const names = yield* reached(run, uses, moved, args);
-    if (names.size === 0) {
-      return;
-    }
-    const { columns } = rule.head.relation;
-    const goal = new Atom(
-      {
-        columns: positions.map((position) => columns[position] as string),
-        name: REACHED,
-      },
-      args
-    );
-    const body = guarded(rule.body, goal);
-    model.relations.set(REACHED, names);
-    const reader = readerOf(run, rule.body, body);
-    for (const [view, by] of [
-      [moved.was, -1],
-      [undefined, 1],
-    ] as const) {
-      model.view = view;
-      yield* each(model, body, give(run, rule, by), NO_VARS, reader);
+    if (names.size > 0) {
+      yield* naming(run, rule, rule.head, names, [
+        [moved.was, give(run, rule, -1)],
+        [undefined, give(run, rule, 1)],
+      ]);
     }
   }).pipe(
     Effect.ensuring(
       Effect.sync(() => {
-        run.model.relations.delete(REACHED);
         run.model.view = undefined;
       })
     )
@@ -2257,7 +2423,7 @@ export const followRows = (
   Effect.gen(function* () {
     const [first] = stratum.members;
     const support = model.support.get(first ?? "") as Support;
-    const run = runOf(model, stratum, support, false);
+    const run = runOf(model, stratum, support);
     for (const key of regiven ? (support.chase?.values.keys() ?? []) : []) {
       run.links.add(key);
     }
@@ -2268,7 +2434,7 @@ export const followRows = (
         [rowsIn(gained, name), 1],
       ] as const) {
         for (const tuple of rows?.values() ?? []) {
-          weigh(run, name, tuple, 0, by);
+          weigh(run, name, tuple, valueKey(tuple), 0, by, false);
         }
       }
     }
@@ -2276,3 +2442,272 @@ export const followRows = (
     yield* settle(run);
     return yield* finish(run);
   });
+
+/**
+ * Says how the rows of a group that made values one came about, as the
+ * rules give them from the rows there are, and keeps it until the group
+ * changes.
+ */
+const retold = (run: Run, name: string) =>
+  Effect.gen(function* () {
+    const { model, stratum, support } = run;
+    const chase = support.chase as Chase;
+    if (!model.told.has(name)) {
+      const equal = new Map<string, unknown>();
+      for (const [key, history] of chase.history) {
+        equal.set(key, history.at(-1)?.[1]);
+      }
+      const inventions: Inventions = {
+        equal,
+        invented: new Set(chase.invented),
+      };
+      yield* justify(model, stratum.rules, run.relations, inventions);
+    }
+    return model.told.get(name);
+  });
+
+/** The answers of a rule that give one of its heads a row, each with the row's level. */
+const givers = (run: Run, rule: CompiledRule, head: Atom, tuple: Tuple) =>
+  Effect.gen(function* () {
+    const { model } = run;
+    const found: Vars[] = [];
+    const names = new TupleSet();
+    names.add(namedBy(rule, head).map((position) => tuple[position]));
+    yield* naming(run, rule, head, names, [
+      [
+        undefined,
+        (answers) =>
+          Effect.sync(() => {
+            found.push(...answers);
+          }),
+      ],
+    ]);
+    const key = valueKey(tuple);
+    const giving: (readonly [Vars, number])[] = [];
+    for (const vars of found) {
+      const row = yield* tupleOf(model, head.args, vars);
+      if (valueKey(row) !== key) {
+        continue;
+      }
+      let level = levelOf(vars);
+      if (rule.invents !== undefined) {
+        // What an answer invents comes a stage after the answer, if it did.
+        const named = yield* inventedBy(model, rule, vars);
+        const asking = entryAt(
+          run,
+          `${TRIGGER}${run.order.get(rule) ?? 0}`,
+          named.map((unknown) => unknown.key).join("\u0000")
+        );
+        level =
+          asking !== undefined && run.support.chase?.inventing.has(asking)
+            ? afterStage(asking)
+            : NEVER;
+      }
+      giving.push([bare(vars), level]);
+    }
+    return giving;
+  });
+
+/**
+ * How a row a rule gave came about: of its candidates at the level it is
+ * held from, the least answer of the first rule that has one.
+ */
+const givenFrom = (
+  run: Run,
+  rules: readonly CompiledRule[],
+  name: string,
+  tuple: Tuple
+) =>
+  Effect.gen(function* () {
+    const level = run.support.flat
+      ? 0
+      : (entryAt(run, name, valueKey(tuple))?.from ?? NEVER);
+    for (const rule of rules) {
+      const first: Vars[] = [];
+      for (const head of headsOf(rule)) {
+        const giving =
+          head.relation.name === name
+            ? yield* givers(run, rule, head, tuple)
+            : [];
+        first.push(
+          ...giving.flatMap(([vars, at]) => (at === level ? [vars] : []))
+        );
+      }
+      const [vars] = first.sort((a, b) => compareAnswers(rule, a, b));
+      if (vars !== undefined) {
+        return { rule, vars };
+      }
+    }
+    return;
+  });
+
+/**
+ * How a row that combines came about: every answer of its group, or for a
+ * row one answer picked, the least answer that gave its value.
+ */
+const combinedFrom = (run: Run, rules: readonly CompiledRule[], tuple: Tuple) =>
+  Effect.gen(function* () {
+    const { model } = run;
+    const [pattern] = rules;
+    const group = valueKey(
+      tuple.map((value, at) =>
+        pattern?.aggregates.includes(at) ? null : value
+      )
+    );
+    const matches: (readonly [Match, readonly unknown[]])[] = [];
+    const seen = new Map<Atom, Set<string>>();
+    for (const rule of rules) {
+      const found: Vars[] = [];
+      const names = new TupleSet();
+      names.add(namedBy(rule).map((position) => tuple[position]));
+      yield* naming(run, rule, rule.head, names, [
+        [
+          undefined,
+          (answers) =>
+            Effect.sync(() => {
+              found.push(...answers);
+            }),
+        ],
+      ]);
+      const once = seen.get(rule.head) ?? new Set<string>();
+      seen.set(rule.head, once);
+      for (const answer of found) {
+        const vars = bare(answer);
+        const id = answerKey(vars);
+        const { key, values } = yield* matchValues(model, rule, vars);
+        if (valueKey(key) === group && !once.has(id)) {
+          once.add(id);
+          matches.push([{ rule, vars }, values]);
+        }
+      }
+    }
+    const [first] = matches;
+    if (first === undefined) {
+      return;
+    }
+    const { rule } = first[0];
+    const position = rule.aggregates[0] ?? 0;
+    const picked = selectsAlone(rule)
+      ? matches
+          .filter(([, [value]]) => sameValue(value, tuple[position]))
+          .map(([match]) => match)
+          .sort(compareMatches(model.rules))[0]
+      : undefined;
+    return picked ?? { matches: matches.map(([match]) => match), rule };
+  });
+
+/**
+ * How a row came about, for `why`: the answer that gave it, or for a row
+ * that combines, the answers it combines. Nothing for a fact, and for a row
+ * no rule gives. It is found when asked, from the candidates the row has:
+ * of the ones at the level the row is held from, the least answer of the
+ * first rule tells it, which is the one deriving from nothing finds first.
+ */
+export const derivationOf = (
+  model: Model,
+  name: string,
+  tuple: Tuple
+): LogicEffect<Derivation | undefined> =>
+  Effect.gen(function* () {
+    yield* complete(model, name);
+    const stratum = model.strata.get(name);
+    const support = model.support.get(name);
+    if (
+      stratum === undefined ||
+      support === undefined ||
+      startingFacts(model, name)?.has(tuple)
+    ) {
+      return;
+    }
+    const run = runOf(model, stratum, support);
+    if ((support.chase?.history.size ?? 0) > 0) {
+      // Where values were made one, a row is told as the rules give it
+      // from the rows there are.
+      const told = (yield* retold(run, name))?.get(valueKey(tuple));
+      if (told !== undefined) {
+        return told;
+      }
+    }
+    const rules = stratum.rules.filter(
+      (rule) =>
+        !rule.equates &&
+        headsOf(rule).some((head) => head.relation.name === name)
+    );
+    return rules.some((rule) => rule.aggregates.length > 0)
+      ? yield* combinedFrom(run, rules, tuple)
+      : yield* givenFrom(run, rules, name, tuple);
+  });
+
+/** What a model keeps of one row its rules gave. */
+export interface Kept {
+  /** The row's candidates by level, lowest first. */
+  readonly candidates: readonly (readonly [number, number])[];
+  readonly from: number;
+  /** The first, in sort order, of the relations of the row's group. */
+  readonly group: string;
+  readonly key: string;
+  readonly relation: string;
+  readonly seen: number;
+  readonly tuple: Tuple;
+  readonly until: number;
+}
+
+/**
+ * What a model keeps of each row its rules gave, for tests and tools: the
+ * level the row is held from, the level it is held until, the level it can
+ * be read from, and its candidates by level. A row of a group with one
+ * level has the lowest. The rows of the relations a group keeps for itself
+ * are told too.
+ */
+export const keptBy = (model: Model) => {
+  const out: Kept[] = [];
+  const seen = new Set<Support>();
+  const say = (group: string, entry: Entry) => {
+    if (entry.n > 0) {
+      const more = [...(entry.more ?? [])].sort(([a], [b]) => a - b);
+      const { from, key, relation, tuple, until } = entry;
+      const candidates = [[entry.level, entry.n] as const, ...more];
+      out.push({
+        candidates,
+        from,
+        group,
+        key,
+        relation,
+        seen: entry.seen,
+        tuple,
+        until,
+      });
+    }
+  };
+  for (const [member, support] of model.support) {
+    const stratum = model.strata.get(member);
+    if (seen.has(support) || stratum === undefined) {
+      continue;
+    }
+    seen.add(support);
+    const [group = member] = [...stratum.members].sort();
+    for (const relation of stratum.members) {
+      const rows = model.relations.get(relation);
+      const past = support.past.get(relation);
+      for (const [key, tuple] of [
+        ...(rows?.keyed() ?? []),
+        ...(past?.keyed() ?? []),
+      ]) {
+        const entry = entryOn(tuple);
+        if (entry === undefined) {
+          const candidates = [[0, rows?.weightOf(key) ?? 0] as const];
+          const flat = { from: 0, seen: 0, until: NEVER };
+          out.push({ ...flat, candidates, group, key, relation, tuple });
+        } else {
+          say(group, entry);
+        }
+      }
+    }
+    for (const entries of support.waiting.values()) {
+      for (const entry of entries.values()) {
+        say(group, entry);
+      }
+    }
+  }
+  return out;
+};

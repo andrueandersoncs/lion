@@ -143,6 +143,11 @@ export class TupleSet {
   private keys: string[] = [];
   /** The place of each tuple, by its key. */
   private readonly slots = new Map<string, number>();
+  /**
+   * How many candidates give the tuple at each place, for a set that counts
+   * them. Left out while every tuple has one.
+   */
+  private weights: number[] | undefined;
   private readonly indexes = new Map<string, Index>();
   /**
    * Set for a computed relation: adds the rows for some input values the
@@ -189,6 +194,60 @@ export class TupleSet {
     return this.slots.has(key);
   }
 
+  /** The tuple the set holds under a key. */
+  get(key: string): Tuple | undefined {
+    const slot = this.slots.get(key);
+    return slot === undefined ? undefined : this.rows[slot];
+  }
+
+  /** How many candidates give the tuple under a key: none when it is not held. */
+  weightOf(key: string): number {
+    const slot = this.slots.get(key);
+    return slot === undefined ? 0 : (this.weights?.[slot] ?? 1);
+  }
+
+  /**
+   * Gives a tuple candidates, or takes some away, in a set that counts
+   * them: a tuple is held while it has one. Returns 1 when the tuple joined
+   * the set, -1 when it left, and 0 when it stayed as it was.
+   */
+  weigh(key: string, tuple: Tuple, by: number): number {
+    const slot = this.slots.get(key);
+    if (slot === undefined) {
+      if (by <= 0) {
+        return 0;
+      }
+      this.addKeyed(key, tuple);
+      if (by !== 1) {
+        this.counted()[this.rows.length - 1] = by;
+      }
+      return 1;
+    }
+    const weights = this.counted();
+    const next = (weights[slot] ?? 1) + by;
+    if (next > 0) {
+      weights[slot] = next;
+      return 0;
+    }
+    this.deleteKeyed(key);
+    return -1;
+  }
+
+  /** The weights, one for each place, made when first needed. */
+  private counted() {
+    this.weights ??= this.rows.map(() => 1);
+    return this.weights;
+  }
+
+  /** Each tuple with its key, in the order they were added. */
+  *keyed(): IterableIterator<readonly [string, Tuple]> {
+    for (const [slot, tuple] of this.rows.entries()) {
+      if (tuple !== undefined) {
+        yield [this.keys[slot] as string, tuple];
+      }
+    }
+  }
+
   /** The tuple the set holds that equals a tuple, which may be another object. */
   stored(tuple: Tuple): Tuple | undefined {
     const slot = this.slots.get(valueKey(tuple));
@@ -210,6 +269,7 @@ export class TupleSet {
     this.slots.set(key, slot);
     this.rows.push(tuple);
     this.keys.push(key);
+    this.weights?.push(1);
     for (const { buckets, positions } of this.indexes.values()) {
       getOrCreate(buckets, bucketKey(positions, tuple), () => []).push(tuple);
     }
@@ -219,7 +279,12 @@ export class TupleSet {
 
   /** Removes a tuple the set has. `log` gets what `undo` needs. */
   delete(tuple: Tuple, log?: Change[]): boolean {
-    const slot = this.slots.get(valueKey(tuple));
+    return this.deleteKeyed(valueKey(tuple), log);
+  }
+
+  /** Removes the tuple under a key. */
+  deleteKeyed(key: string, log?: Change[]): boolean {
+    const slot = this.slots.get(key);
     const stored = slot === undefined ? undefined : this.rows[slot];
     if (slot === undefined || stored === undefined) {
       return false;
@@ -297,14 +362,16 @@ export class TupleSet {
     if (gaps < MOST_GAPS || gaps < this.slots.size) {
       return;
     }
-    const { keys, rows } = this;
+    const { keys, rows, weights } = this;
     this.rows = [];
     this.keys = [];
+    this.weights = weights === undefined ? undefined : [];
     for (const [slot, tuple] of rows.entries()) {
       if (tuple !== undefined) {
         this.slots.set(keys[slot] as string, this.rows.length);
         this.rows.push(tuple);
         this.keys.push(keys[slot] as string);
+        this.weights?.push(weights?.[slot] ?? 1);
       }
     }
   }
@@ -358,22 +425,9 @@ const NO_VARS: Vars = new Map();
  * How a rule derived a row, for `why`: the answer of its body that gave the
  * row, or for an aggregated row, the answers it combines.
  */
-type Derivation =
+export type Derivation =
   | Match
   | { readonly rule: CompiledRule; readonly matches: readonly Match[] };
-
-/**
- * A derivation as a model keeps it. An answer is kept as a list of its rule
- * and the values of the rule's variables, which is a fraction of the size
- * of the answer, and a model keeps one for every row it derives.
- */
-export type Kept =
-  | Match
-  | readonly unknown[]
-  | {
-      readonly rule: CompiledRule;
-      readonly matches: readonly (Match | readonly unknown[])[];
-    };
 
 /** An answer of a rule's body. */
 export interface Match {
@@ -394,8 +448,11 @@ export interface Match {
 export class Model {
   /** The rows of each relation derived so far, by relation name. */
   readonly relations = new Map<string, TupleSet>();
-  /** How each derived row came about, by relation name and row. */
-  readonly derivations = new Map<string, Map<string, Kept>>();
+  /**
+   * How the rows of a group that made values one came about, by relation
+   * name and row, once `why` asked, until the group changes.
+   */
+  readonly told = new Map<string, Map<string, Match>>();
   /**
    * The candidates that give each row of a group, by the name of each of
    * the group's relations, for the groups that keep them.
@@ -451,67 +508,6 @@ export class Model {
   }
 }
 
-/** True for a variable of a rule: not a note the engine keeps on an answer. */
-const isOwn = (name: string) => !name.startsWith("\u0000");
-
-/** The variables each rule's answers bind, in the order they are kept. */
-const KEPT_NAMES = new WeakMap<CompiledRule, readonly string[]>();
-
-/**
- * An answer as a model keeps it: its rule, then the value of each variable.
- * An answer that binds other variables than the rule's first answer did, or
- * that says what a key made equal, is kept as it is.
- */
-export const packed = (match: Match): Match | readonly unknown[] => {
-  const { rule, same, vars } = match;
-  let names = KEPT_NAMES.get(rule);
-  if (names === undefined) {
-    names = [...vars.keys()].filter(isOwn);
-    KEPT_NAMES.set(rule, names);
-  }
-  if (same !== undefined) {
-    return match;
-  }
-  const kept: unknown[] = [rule];
-  let own = 0;
-  for (const name of vars.keys()) {
-    own += isOwn(name) ? 1 : 0;
-  }
-  for (const name of names) {
-    if (own !== names.length || !vars.has(name)) {
-      return {
-        rule,
-        vars: new Map([...vars].filter(([key]) => isOwn(key))),
-      };
-    }
-    kept.push(vars.get(name));
-  }
-  return kept;
-};
-
-export const unpacked = (kept: Match | readonly unknown[]): Match => {
-  if (!Array.isArray(kept)) {
-    return kept as Match;
-  }
-  const [rule, ...values] = kept as [CompiledRule, ...unknown[]];
-  const names = KEPT_NAMES.get(rule) ?? [];
-  return { rule, vars: new Map(names.map((name, at) => [name, values[at]])) };
-};
-
-/** The derivation a model keeps for a row, by the row's key. */
-export const derivationOf = (
-  kept: ReadonlyMap<string, Kept> | undefined,
-  key: string
-): Derivation | undefined => {
-  const found = kept?.get(key);
-  if (found === undefined) {
-    return;
-  }
-  return "matches" in found
-    ? { rule: found.rule, matches: found.matches.map(unpacked) }
-    : unpacked(found);
-};
-
 /** The variables a rule's body binds, in the order it binds them. */
 const BOUND = new WeakMap<CompiledRule, readonly string[]>();
 
@@ -533,26 +529,6 @@ const boundBy = (rule: CompiledRule) => {
 export const compareAnswers = (rule: CompiledRule, a: Vars, b: Vars) => {
   for (const name of boundBy(rule)) {
     const order = compareValues(a.get(name), b.get(name));
-    if (order !== 0) {
-      return order;
-    }
-  }
-  return 0;
-};
-
-/**
- * The order of an answer and one a model keeps, as `compareAnswers` gives
- * it, read from the kept answer as it is kept.
- */
-export const compareKept = (rule: CompiledRule, vars: Vars, kept: Kept) => {
-  const names = KEPT_NAMES.get(rule);
-  if (!Array.isArray(kept) || names === undefined) {
-    return "matches" in kept
-      ? 0
-      : compareAnswers(rule, vars, unpacked(kept).vars);
-  }
-  for (const name of boundBy(rule)) {
-    const order = compareValues(vars.get(name), kept[1 + names.indexOf(name)]);
     if (order !== 0) {
       return order;
     }
@@ -586,7 +562,10 @@ const seen = (model: Model, name: string): Rows =>
  * The facts a relation starts from when its rules derive it: none for a
  * relation that merges, whose facts are candidates its rule reads.
  */
-const startingFacts = (model: Model, relation: RelationInfo | string) => {
+export const startingFacts = (
+  model: Model,
+  relation: RelationInfo | string
+) => {
   const name = typeof relation === "string" ? relation : relation.name;
   const merges = model.rules.some(
     (rule) => rule.given && rule.head.relation.name === name
@@ -1543,25 +1522,32 @@ export const justify = (
   relations: ReadonlyMap<string, RelationInfo>,
   inventions: Inventions
 ) =>
-  Effect.gen(function* () {
+  Effect.suspend(() => {
     const final = new Map<string, TupleSet>();
-    const fresh = new Map<string, Map<string, Kept>>();
+    const fresh = new Map<string, Map<string, Match>>();
     let delta = givenRows(model, relations, final, fresh);
-    // Answers that give a row as it is come first. Only a row they leave
-    // unexplained is explained through what a key made equal.
-    for (const throughKeys of [false, true]) {
-      const step = explaining(model, inventions, final, fresh, throughKeys);
-      yield* firstRound(model, rules, step, delta);
-      yield* rounds(model, rules, step, delta);
-      delta = new Map();
-    }
-    for (const [name, rows] of final) {
-      model.relations.set(name, rows);
-      model.derivations.set(
-        name,
-        keptFor(rows, fresh.get(name), model.derivations.get(name))
-      );
-    }
+    return Effect.gen(function* () {
+      // Answers that give a row as it is come first. Only a row they leave
+      // unexplained is explained through what a key made equal.
+      for (const throughKeys of [false, true]) {
+        const step = explaining(model, inventions, final, fresh, throughKeys);
+        yield* firstRound(model, rules, step, delta);
+        yield* rounds(model, rules, step, delta);
+        delta = new Map();
+      }
+      for (const name of final.keys()) {
+        model.told.set(name, fresh.get(name) ?? new Map());
+      }
+    }).pipe(
+      // The group's rows are put back whatever became of the telling.
+      Effect.ensuring(
+        Effect.sync(() => {
+          for (const [name, rows] of final) {
+            model.relations.set(name, rows);
+          }
+        })
+      )
+    );
   });
 
 /**
@@ -1572,7 +1558,7 @@ const givenRows = (
   model: Model,
   relations: ReadonlyMap<string, RelationInfo>,
   final: Map<string, TupleSet>,
-  fresh: Map<string, Map<string, Kept>>
+  fresh: Map<string, Map<string, Match>>
 ) => {
   const delta = new Map<string, TupleSet>();
   for (const name of relations.keys()) {
@@ -1590,21 +1576,6 @@ const givenRows = (
     delta.set(name, given);
   }
   return delta;
-};
-
-/** New explanations, and an old one for a row no answer gives. */
-const keptFor = (
-  rows: TupleSet,
-  fresh: Map<string, Kept> = new Map(),
-  old: ReadonlyMap<string, Kept> | undefined = undefined
-) => {
-  for (const tuple of rows.values()) {
-    const kept = old?.get(valueKey(tuple));
-    if (!fresh.has(valueKey(tuple)) && kept !== undefined) {
-      fresh.set(valueKey(tuple), kept);
-    }
-  }
-  return fresh;
 };
 
 /** The answers of a rule's body in a round, given to a sink. */
@@ -1633,7 +1604,7 @@ const explaining =
     model: Model,
     inventions: Inventions,
     final: ReadonlyMap<string, TupleSet>,
-    fresh: Map<string, Map<string, Kept>>,
+    fresh: Map<string, Map<string, Match>>,
     throughKeys: boolean
   ): Step =>
   (rule, feed, into) =>
@@ -1672,7 +1643,7 @@ const explaining =
 const explainRow = (
   model: Model,
   into: Map<string, TupleSet>,
-  fresh: Map<string, Map<string, Kept>>,
+  fresh: Map<string, Map<string, Match>>,
   final: TupleSet | undefined,
   relation: string,
   tuple: Tuple,
@@ -1684,7 +1655,7 @@ const explainRow = (
     model.relations.get(relation)?.addKeyed(key, tuple)
   ) {
     getOrCreate(into, relation, () => new TupleSet()).addKeyed(key, tuple);
-    fresh.get(relation)?.set(key, packed(derivation));
+    fresh.get(relation)?.set(key, derivation);
   }
 };
 
@@ -1931,7 +1902,7 @@ export const forget = (model: Model, members: ReadonlySet<string>) => {
   for (const name of members) {
     model.state.delete(name);
     model.relations.delete(name);
-    model.derivations.delete(name);
+    model.told.delete(name);
     model.support.delete(name);
   }
 };
@@ -1948,7 +1919,6 @@ export const derive = (model: Model, stratum: Stratum) =>
       model.state.set(name, "running");
       const facts = startingFacts(model, name);
       model.relations.set(name, facts?.clone() ?? new TupleSet());
-      model.derivations.set(name, new Map());
     }
     yield* deriveRows(model, stratum);
     for (const name of members) {
@@ -2002,37 +1972,6 @@ export const ensure = (
   relation: RelationInfo
 ): LogicEffect<void> =>
   Effect.suspend(() => toRead(model, relation) ?? Effect.void);
-
-/**
- * How each row of a relation came about, by row, as deriving it from the
- * facts as they now are finds it. A group of relations that a change to
- * facts was followed through has forgotten it, since what it found first
- * then is not what a new derivation finds first: the group is derived
- * again beside the model, on the rows the model holds, to tell.
- */
-export const explanations = (model: Model, name: string) =>
-  Effect.gen(function* () {
-    yield* complete(model, name);
-    const stratum = model.strata.get(name);
-    if (stratum === undefined || model.derivations.has(name)) {
-      return model.derivations.get(name);
-    }
-    const again = new Model(model.facts, model.rules, model.base);
-    if (model.assume !== undefined) {
-      again.assume = model.assume;
-    }
-    for (const [other, rows] of model.relations) {
-      if (!stratum.members.has(other)) {
-        again.relations.set(other, rows);
-        again.state.set(other, "done");
-      }
-    }
-    yield* derive(again, stratum);
-    for (const member of stratum.members) {
-      model.derivations.set(member, again.derivations.get(member) ?? new Map());
-    }
-    return model.derivations.get(name);
-  });
 
 /**
  * Answers a question that comes up while the model is read, such as one a

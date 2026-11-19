@@ -16,6 +16,7 @@
  * unknown mother is not known to be eve, and may be. A goal whose answer
  * could change once an unknown is known says so, with `assumed`.
  */
+
 import { Effect } from "effect";
 import {
   type CompiledRule,
@@ -30,9 +31,7 @@ import {
   answerKey,
   compareMatches,
   complete,
-  derivationOf,
   ensure,
-  explanations,
   hasFree,
   holds,
   type LogicEffect,
@@ -69,6 +68,7 @@ import {
   termVariables,
   valueKey,
 } from "@/logic/terms";
+import { derivationOf } from "@/logic/weights";
 
 /** What one `why` has worked out so far. */
 interface Telling {
@@ -568,10 +568,7 @@ const explain = (
       return { fact: computed.form(tuple), computed: true };
     }
     const fact = [name, ...tuple];
-    const derivation = derivationOf(
-      yield* explanations(telling.model, name),
-      valueKey(tuple)
-    );
+    const derivation = yield* derivationOf(telling.model, name, tuple);
     if (derivation === undefined) {
       return { fact, given: true };
     }

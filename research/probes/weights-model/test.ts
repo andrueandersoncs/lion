@@ -12,6 +12,19 @@
 //       any edge changes.
 //   W3  Ten aggregates kept by counted candidates give, after any changes, what
 //       a plain model computes from the facts there are.
+//   W4  In programs where a twin passes on a keyed mother inside the group
+//       that derives mothers, a rule of that group never finds two rows with
+//       one key: the row that comes beside another is read from the level
+//       after, when the key has made the two one.
+//   W5  `why` tells a path by the least answer at the level it is held from,
+//       of the first rule that has one, as a plain model of the levels says,
+//       with the rule that recurses listed first.
+//   W6  `why` tells an invented home by the least child of its mother, the
+//       least answer that invented it.
+//   W7  `why` tells every row after any changes as a database that derived
+//       nothing tells it, with the facts given in either order.
+//   W8  `why` tells every row a rule whose head computes gives by the claim
+//       it computed the row from, after any changes.
 //
 //   bun run test.ts [runs]
 //
@@ -60,6 +73,31 @@ const LINES: readonly (readonly [string, string, string])[] = [
     "give after any changes what a plain model computes from the facts there are",
     "W3",
     `each of 10 aggregates kept by counted candidates equals a plain model after every change in each of ${runs} random runs`,
+  ],
+  [
+    "never give a rule two rows with one key, though one comes beside the other",
+    "W4",
+    `no rule of the group that derives a keyed relation found two rows with one key in each of ${runs} random programs where a twin passes a mother on`,
+  ],
+  [
+    "tells why a path holds by the least answer at that level, of the first rule that has one",
+    "W5",
+    `why told every path by the least answer at its level, of the first rule that has one, as a plain model says, after every edge change in each of ${runs} random graphs`,
+  ],
+  [
+    "tells an invented row by the least answer that invented it",
+    "W6",
+    `why told every invented home by the least answer that invented it after every change in each of ${runs} random programs`,
+  ],
+  [
+    "tells every row after any changes as deriving from nothing tells it, whatever order the facts came in",
+    "W7",
+    `why told every row after changes as a database that derived nothing told it, with the facts in either order, in each of ${runs} random programs`,
+  ],
+  [
+    "tells every row a rule gives by the claim it computed the row from, after any changes",
+    "W8",
+    `why told every row a rule whose head computes gave by the claim it computed the row from, after every change in each of ${runs} random programs`,
   ],
 ];
 for (const [title, id, text] of LINES) {

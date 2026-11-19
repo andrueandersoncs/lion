@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 172 questions have been decided, 71 records explain them, and of what the records assert, 550 hold when Lion is run, 4 are broken, 306 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 175 questions have been decided, 72 records explain them, and of what the records assert, 552 hold when Lion is run, 4 are broken, 313 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -178,6 +178,9 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`assuming-and-invariants`](#assuming-and-invariants) | `invariants-keep-the-database` | [An invariant does not refuse a change that `assuming` only assumes](#assuming-and-invariants) |
 | 2026-11-19 | [`following-a-change-to-facts`](#following-a-change-to-facts) | `candidates-by-level` | [Rows carry weights and the time they hold, and every change is a change to candidates](#rows-carry-weights) |
 | 2026-11-19 | [`order-a-rule-head-sum-adds-in`](#order-a-rule-head-sum-adds-in) | `sort-order` | [Rows carry weights and the time they hold, and every change is a change to candidates](#rows-carry-weights) |
+| 2026-11-19 | [`two-rows-with-one-key-inside-a-group`](#two-rows-with-one-key-inside-a-group) | `read-from-the-level-after` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
+| 2026-11-19 | [`what-a-group-keeps-of-its-rows`](#what-a-group-keeps-of-its-rows) | `what-its-rules-need` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
+| 2026-11-19 | [`where-why-finds-a-derivation`](#where-why-finds-a-derivation) | `found-when-asked` | [A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need](#rows-read-when-held) |
 
 <a id="program-representation"></a>
 
@@ -3817,3 +3820,57 @@ Now: `candidates-by-level`.
 Now: `sort-order`.
 
 - 2026-11-19 `order-a-rule-head-sum-adds-in`: `sort-order` over `order-found`: "A sum or a mean of numbers that are not all whole is added up in sort order." (`rows-carry-weights.json`)
+
+<a id="two-rows-with-one-key-inside-a-group"></a>
+
+## two-rows-with-one-key-inside-a-group
+
+Now: `read-from-the-level-after`.
+
+- 2026-11-19 `two-rows-with-one-key-inside-a-group`: `read-from-the-level-after` over `both-for-a-level`, `pair-from-the-same-level`: "A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key." (`rows-read-when-held.json`)
+
+<a id="rows-read-when-held"></a>
+
+### A row beside one with its key is read a level later, `why` finds its answer when asked, and a group keeps only what its rules need
+
+Recorded 2026-11-19 in `history/notes/rows-read-when-held.json`.
+
+**Context.** rows-carry-weights left four gaps. Inside the group that derives a keyed relation, a row a rule derived beside a row with its key joined at its level, and the pair that made the two one held from the next, so for one level a rule of that group could find both rows: an answer the engine before it did not give. `why` after a change derived the group again, though each row's level was kept. One break, taking out the rule that an answer's rows must all have been held at one level, changed a followed database and a fresh one the same way, so no property caught it, and neither did one that made `why` tell an invented row by the first answer found. And a database kept much more: after the twins workload 704 megabytes where main kept 133, and after every path among 100,000 nodes 360 where it kept 233.
+
+**Decision.** A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. A row that is never held is read from the level it is held from. `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. Where a key or an equality rule made values one, the group's answers are worked out again once after a change, to tell its rows through the values made one. A group whose rules read nothing of its own keeps a weight for each row in its table and nothing else, and any other group keeps a row's candidates and time on the row itself.
+
+**Consequences.** No rule finds two rows with one key, not even a rule of the group that derives them, and a change keeps no explanations and works none out. After the twins workload a database keeps 400 megabytes where it kept 704 and main keeps 133; after every path among 100,000 nodes it keeps 238 where it kept 360 and main keeps 233; after asking a rule that invents it keeps 186 where it kept 444 and main keeps 121. Shortest distances by an aggregate that recurses still keep 143 megabytes where main keeps 32. Deriving 2,500 pairs of twins whose mothers a key makes one runs at 1.25 times the speed of main where it ran at 0.72, every path on a chain of 150 at 0.78 to 0.88 where it ran at 0.8, and lattice recursion still at about 0.6. The engine is 355 lines larger than after rows-carry-weights: 14,438 lines of code where main has 13,251, with 1,650 functions. Five properties now check what no comparison of two databases could, each shown to fail on the break it is for, and `bun run mutate` stops a mutation's tests after ten minutes and counts the break caught.
+
+**Alternatives considered.**
+
+- Hold the pair that makes two rows one from the level the second row comes in. A row and the row it became then held each other up, so taking away the fact behind the merge left it in place.
+- Let a rule of the group see both rows for one level. It gives an answer that a database deriving the rows from nothing in the engine before rows-carry-weights never gave, to any rule that combines two rows of one key.
+- Keep each row's derivation as the row is derived. It costs memory for every row and work for every change, for an answer the levels the rows keep already give.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `two-rows-with-one-key-inside-a-group`: `read-from-the-level-after`. "A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key."
+- Holds when Lion is run: `rule-reading-two-rows-with-one-key-in-its-group` is `never-both`. "A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key."
+- Stated, not checked by running Lion: decided `where-why-finds-a-derivation`: `found-when-asked`. "`why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are."
+- Holds when Lion is run: `why-of-a-row-several-answers-give` is `least-at-its-level`. "`why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are."
+- Stated, not checked by running Lion: decided `what-a-group-keeps-of-its-rows`: `what-its-rules-need`. "A group whose rules read nothing of its own keeps a weight for each row in its table and nothing else, and any other group keeps a row's candidates and time on the row itself."
+- Stated, not checked by running Lion: `twins-kept-mb` is 400. "After the twins workload a database keeps 400 megabytes where it kept 704 and main keeps 133"
+- Stated, not checked by running Lion: `hundred-thousand-paths-kept-mb` is 238. "after every path among 100,000 nodes it keeps 238 where it kept 360 and main keeps 233"
+- Stated, not checked by running Lion: `rule-that-invents-kept-mb` is 186. "after asking a rule that invents it keeps 186 where it kept 444 and main keeps 121"
+- Stated, not checked by running Lion: `twins-from-nothing-speed-vs-main` is 1.25. "Deriving 2,500 pairs of twins whose mothers a key makes one runs at 1.25 times the speed of main where it ran at 0.72"
+
+<a id="what-a-group-keeps-of-its-rows"></a>
+
+## what-a-group-keeps-of-its-rows
+
+Now: `what-its-rules-need`.
+
+- 2026-11-19 `what-a-group-keeps-of-its-rows`: `what-its-rules-need` over `an-entry-for-every-row`: "A group whose rules read nothing of its own keeps a weight for each row in its table and nothing else, and any other group keeps a row's candidates and time on the row itself." (`rows-read-when-held.json`)
+
+<a id="where-why-finds-a-derivation"></a>
+
+## where-why-finds-a-derivation
+
+Now: `found-when-asked`.
+
+- 2026-11-19 `where-why-finds-a-derivation`: `found-when-asked` over `kept-with-each-row`, `derived-again-after-a-change`: "`why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are." (`rows-read-when-held.json`)

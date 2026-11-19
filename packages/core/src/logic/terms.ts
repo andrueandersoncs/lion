@@ -288,14 +288,21 @@ export class Unknown {
   readonly goal: unknown;
   /** Equal for unknowns written the same way. */
   readonly key: string;
-  /** How the unknown reads, which is also how it sorts. */
-  readonly form: unknown;
+  private written: unknown;
 
   constructor(variable: string, goal: unknown) {
     this.variable = variable;
     this.goal = goal;
-    this.form = write(this, DISPLAY);
     this.key = logicKey(this) ?? JSON.stringify(this.form);
+  }
+
+  /**
+   * How the unknown reads, which is also how it sorts. Worked out when
+   * first read: most unknowns are never shown or sorted.
+   */
+  get form(): unknown {
+    this.written ??= write(this, DISPLAY);
+    return this.written;
   }
 
   toJSON(): unknown {

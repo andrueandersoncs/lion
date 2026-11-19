@@ -1,0 +1,121 @@
+benchmark                                                                  main       now  speed
+plain: fib(17) through a recursive lambda                                2.1 ms    1.7 ms  1.21×
+plain: array/map and array/reduce over 20,000 items                     13.3 ms   13.8 ms  0.96×
+rules: goal-directed path on a 3,000 chain                               2.3 ms    2.7 ms  0.83×
+rules: 30 questions asked in turn of one model of 600 claims            12.7 ms   10.5 ms  1.21×
+rules: every path on a 150 chain                                        12.8 ms   16.3 ms  0.78×
+aggregates: sum and count 20,000 facts into 500 groups                  54.1 ms   60.5 ms  0.90×
+waiting: filter and compute over 20,000 facts                           56.8 ms   58.2 ms  0.98×
+aggregates: shortest distances by lattice recursion                     16.0 ms   25.7 ms  0.62×
+graph: shortest paths over 3,000 roads                                   6.1 ms    5.9 ms  1.04×
+graph: components of 3,000 roads                                         6.4 ms    7.2 ms  0.90×
+negation: over 20,000 facts                                             39.4 ms   39.0 ms  1.01×
+explaining: why 200 rows hold or do not, over 20,000 facts              53.6 ms   51.5 ms  1.04×
+asking: one find over 20,000 facts                                      32.8 ms   29.8 ms  1.10×
+asking: a find in a rule head for each of 600 customers                 35.2 ms   33.5 ms  1.05×
+asking: a goal as a value for each of 20,000 rows                       48.8 ms   47.1 ms  1.04×
+asking: cond on a goal for each of 20,000 rows                          79.7 ms   79.3 ms  1.00×
+asking: not over a join for each of 600 customers                       43.9 ms   42.5 ms  1.03×
+asking: a relation as a predicate over 20,000 items                    115.0 ms  123.0 ms  0.93×
+rules: 300 rules added one form at a time, then a query                 67.2 ms   67.4 ms  1.00×
+inventing: a mother for each of 5,000 people, 1,000 given               52.5 ms   52.5 ms  1.00×
+inventing: 2,500 pairs of twins whose unknown mothers a key makes one  153.2 ms  123.0 ms  1.25×
+
+speed: how many times as fast the working tree is.
+
+workload                                                                n = 1,000  n = 10,000  n = 100,000  grows    peak    kept  speed
+load: n facts in one form                                                    7 ms       28 ms       151 ms  n^0.7  161 MB   18 MB  1.03×
+  at main                                                                    7 ms       29 ms       155 ms  n^0.7  159 MB   32 MB
+load: n facts, one per form                                                 14 ms       64 ms       452 ms  n^0.9  174 MB   12 MB  1.03×
+  at main                                                                   15 ms       68 ms       467 ms  n^0.8  169 MB   12 MB
+load: n facts, one per form, rows fit a schema                              33 ms      189 ms        1.4 s  n^0.9  214 MB   13 MB  0.94×
+  at main                                                                   31 ms      172 ms        1.3 s  n^0.9  215 MB   13 MB
+load: n facts, 100 per form, an invariant on other facts                     8 ms       32 ms       202 ms  n^0.8  108 MB   19 MB  0.93×
+  at main                                                                    7 ms       30 ms       188 ms  n^0.8  110 MB   18 MB
+load: n facts, 100 per form, an invariant on them                           10 ms       44 ms       264 ms  n^0.8  101 MB   19 MB  1.03×
+  at main                                                                   10 ms       46 ms       273 ms  n^0.8  102 MB   19 MB
+load: n facts, 100 per form, an invariant over a rule                       12 ms       56 ms       374 ms  n^0.8  105 MB   31 MB  0.91×
+  at main                                                                   12 ms       65 ms       339 ms  n^0.7  109 MB   24 MB
+load: n facts, 100 per form, keyed                                           8 ms       33 ms       205 ms  n^0.8  117 MB   34 MB  1.06×
+  at main                                                                    8 ms       33 ms       216 ms  n^0.8  119 MB   34 MB
+query: every row of n                                                        3 ms        8 ms        54 ms  n^0.8    0 MB   29 MB  0.93×
+  at main                                                                    3 ms        9 ms        50 ms  n^0.7    0 MB   29 MB
+query: 1,000 lookups by id in n                                             20 ms       21 ms        30 ms  n^0.1    0 MB   27 MB  1.09×
+  at main                                                                   20 ms       21 ms        33 ms  n^0.2    0 MB   27 MB
+rule: filter n orders and join them to n/40 customers                        6 ms       20 ms       116 ms  n^0.8    0 MB   29 MB  1.07×
+  at main                                                                    6 ms       21 ms       124 ms  n^0.8    0 MB   36 MB
+rule: sum n facts into n/40 groups                                           6 ms       20 ms       117 ms  n^0.8    0 MB   15 MB  1.05×
+  at main                                                                    5 ms       19 ms       122 ms  n^0.8    0 MB   22 MB
+rule: negation over n facts                                                  4 ms       11 ms        46 ms  n^0.6    0 MB   11 MB  0.97×
+  at main                                                                    4 ms       11 ms        45 ms  n^0.6    0 MB   11 MB
+recursion: reach from one node, n edges over n/2 nodes                       6 ms       18 ms       122 ms  n^0.8    4 MB   47 MB  0.88×
+  at main                                                                    5 ms       15 ms       107 ms  n^0.9    0 MB   42 MB
+recursion: every path, n nodes in chains of 10                              14 ms       78 ms       695 ms  n^0.9  550 MB  238 MB  0.98×
+  at main                                                                   12 ms       67 ms       684 ms  n^1.0  562 MB  233 MB
+join: triangles among n edges over n/4 nodes                                 5 ms       23 ms       224 ms  n^1.0    0 MB   34 MB  0.90×
+  at main                                                                    5 ms       22 ms       201 ms  n^1.0    0 MB   34 MB
+change: add a fact, ask a rule about it, 20 times                            5 ms        6 ms        10 ms           0 MB   29 MB  0.94×
+  at main                                                                    5 ms        6 ms         9 ms           0 MB   29 MB
+change: add a fact, ask every row of a rule, 20 times                       11 ms       41 ms       314 ms  n^0.9   55 MB   29 MB  0.95×
+  at main                                                                   10 ms       41 ms       299 ms  n^0.9   39 MB   30 MB
+change: add a fact, ask one group's total, 20 times                          5 ms        5 ms         7 ms           0 MB   16 MB  2.37×
+  at main                                                                    7 ms        8 ms        17 ms           0 MB   14 MB
+change: add a fact, ask every group's total, 20 times                        5 ms        7 ms        25 ms  n^0.5    0 MB   15 MB  1.54×
+  at main                                                                    8 ms       11 ms        38 ms  n^0.6    0 MB   14 MB
+change: add a fact, ask a rule with not, 20 times                            8 ms        9 ms        23 ms  n^0.4    0 MB   15 MB  0.93×
+  at main                                                                    7 ms        8 ms        22 ms  n^0.4    0 MB   16 MB
+change: retract a fact, ask every row of a rule, 20 times                   10 ms       41 ms       315 ms  n^0.9   62 MB   21 MB  0.91×
+  at main                                                                   11 ms       42 ms       287 ms  n^0.8   18 MB   21 MB
+change: retract n facts, 100 per form                                        3 ms       19 ms       135 ms  n^0.8    0 MB    0 MB  0.99×
+  at main                                                                    3 ms       20 ms       134 ms  n^0.8    0 MB    0 MB
+change: retract n facts, 100 per form, rows fit a schema                     4 ms       25 ms       178 ms  n^0.9    0 MB    0 MB  0.96×
+  at main                                                                    4 ms       24 ms       171 ms  n^0.9    0 MB    0 MB
+change: replace n rows of a keyed relation, 100 per form                     4 ms       29 ms       251 ms  n^0.9    3 MB   41 MB  1.00×
+  at main                                                                    4 ms       30 ms       252 ms  n^0.9   33 MB   48 MB
+change: add a fact, ask a count that can be zero, 20 times                   7 ms        9 ms        26 ms  n^0.5    0 MB   16 MB  0.95×
+  at main                                                                    6 ms        8 ms        25 ms  n^0.5    0 MB   17 MB
+change: add a road, ask every shortest distance, 20 times                   10 ms       35 ms       255 ms  n^0.9    4 MB  143 MB  1.08×
+  at main                                                                    8 ms       31 ms       276 ms  n^1.0    0 MB   32 MB
+change: add a fact, ask a rule that invents, 20 times                       15 ms       95 ms       936 ms  n^1.0  225 MB  186 MB  1.34×
+  at main                                                                   15 ms      108 ms        1.3 s  n^1.1    0 MB  121 MB
+change: add a twin, ask the mother a key gave them, 20 times                10 ms       10 ms        10 ms           0 MB  400 MB  8.19×
+  at main                                                                   10 ms       15 ms        80 ms  n^0.7    0 MB  133 MB
+change: add a rule elsewhere, ask every row of a rule, 20 times             10 ms       41 ms       309 ms  n^0.9   69 MB   21 MB  0.99×
+  at main                                                                   10 ms       41 ms       305 ms  n^0.9   37 MB   21 MB
+change: a fact an invariant refuses, ask every row of a rule, 20 times      14 ms       44 ms       319 ms  n^0.9   64 MB   22 MB  0.95×
+  at main                                                                   13 ms       46 ms       304 ms  n^0.8   31 MB   22 MB
+change: add an edge, ask what one node reaches, 20 times                     8 ms       32 ms       217 ms  n^0.8   32 MB   48 MB  0.96×
+  at main                                                                    8 ms       32 ms       208 ms  n^0.8   22 MB   36 MB
+why: one derived row among n                                                 7 ms       22 ms       123 ms  n^0.8    0 MB   61 MB  0.96×
+  at main                                                                    7 ms       21 ms       119 ms  n^0.7    7 MB   75 MB
+snapshot: write n facts                                                      1 ms        2 ms        12 ms           0 MB   10 MB  0.97×
+  at main                                                                    1 ms        2 ms        12 ms           0 MB   10 MB
+
+grows: the power of n the time follows between the two largest sizes
+that ran. n^1.0 grows as the facts do, and n^2.0 as their square.
+peak: the most memory the timed programs added, at the largest size.
+kept: the memory the database holds afterwards, at the largest size.
+speed: how many times as fast the working tree is.
+
+Code: packages/core/src, without tests
+                                main     now          change
+  code lines                  13,251  14,438  +1,187 (+9.0%)
+  functions                    1,552   1,650     +98 (+6.3%)
+  paths through functions      3,508   3,859   +351 (+10.0%)
+  nesting-weighted decisions   2,458   2,782   +324 (+13.2%)
+  tests of a value's kind        168     174      +6 (+3.6%)
+  hardest functions: analyzeNode (18) in analysis/analyze.ts, declareRelation (16) in logic/database.ts, isReady (15) in logic/compile.ts
+
+Semantics
+                               main  now  change
+  special forms                  25   25       0
+  library functions             105  105       0
+  kinds of error                  7    7       0
+  messages                      151  151       0
+  grid: cells like plain code   902  902       0
+  grid: exceptions                3    3       0
+
+Exceptions: 3
+  recursive function × snapshot: refused, as documented: A lambda that calls itself has no written form, so a snapshot cannot save a rule that holds one.
+  aggregate of a list × rule head: refused, as documented: As a whole argument of a rule head, an aggregate combines one value from each of the rule's matches, not a list.
+  aggregate of a list × rule that invents: refused, as documented: As a whole argument of a rule head, an aggregate combines one value from each of the rule's matches, not a list, and a rule that invents values cannot aggregate.
