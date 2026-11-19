@@ -20992,6 +20992,15 @@
     ]
   },
   {
+    "feature": "join-gap-research",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      ["array/length", ["repo/files", "research/runs/join-gap/report.md"]],
+      1
+    ]
+  },
+  {
     "feature": "formal-verification-research",
     "kind": "file",
     "program": [
