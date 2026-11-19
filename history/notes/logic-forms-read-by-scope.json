@@ -103,15 +103,6 @@
         "area": "logic",
         "was": "error"
       }
-    },
-    {
-      "quote": "The analysis that the graph editor shows reads the head of a call as the evaluator does: a string there that no scope declares is `unbound`, a name nothing binds where it is written, and not data.",
-      "says": {
-        "behavior": "analysis-call-head",
-        "is": "unbound",
-        "area": "host",
-        "was": "data"
-      }
     }
   ]
 }
