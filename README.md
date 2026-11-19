@@ -75,6 +75,25 @@ to change the bind address. The published CLI includes the production editor,
 so an end-user project does not need the Lion monorepo or a separate REPL
 installation.
 
+Print the command's own Lion as a Web Worker script, for a page that runs Lion in a browser:
+
+```bash
+bun run lion worker > lion-worker.js
+```
+
+The worker holds one logic database. Each message it is posted has an `id`, and each answer it posts back has the same `id`, `ok`, and the value as JSON text in `json`, or the reason in `error`. `{"type": "load", "snapshot": saved}` loads a database the way `--database` loads its file, and `{"type": "run", "program": program}` runs a program against it:
+
+```text
+{"id":1,"type":"load","snapshot":["begin",["relation","edge",["from","to"]], ...]}
+  answers {"id":1,"ok":true,"json":"null"}
+{"id":2,"type":"run","program":["find","?to",["path","a","?to"]]}
+  answers {"id":2,"ok":true,"json":"[\"b\",\"c\"]"}
+{"id":3,"type":"run","program":["path","a"]}
+  answers {"id":3,"ok":false,"error":"\"path\" takes 2 arguments (from, to) but got 1."}
+```
+
+The snapshot there is the database of [Logic](#logic)'s first example, and each answer also has `ms`, how long it took. A page that carries this script runs the Lion of the command that printed it, so running the page's programs with that command checks the page: the [research skill](#research-skill)'s page is built this way.
+
 The `lion` command validates files as Lion expressions, evaluates them with the
 standard library, and writes results as formatted JSON. The graph editor keeps
 opened programs local to the browser and saves through the browser's file APIs.
@@ -1514,13 +1533,9 @@ ln -s "$(pwd)/skills/lion-research" ~/.claude/skills/lion-research
 
 Its scripts do the mechanical parts: `record.mjs` turns notes on what sources said into a step and refuses a quote that is not in the saved text of its source, `replay.mjs` rebuilds the model from its steps, `check-quotes.mjs` checks every quote in a finished model, and `build-explorer.mjs` builds the page.
 
-The explorer page runs a bundle of `@lionlang/core`. After changing the core evaluator, rebuild it:
+The explorer page runs the Lion of the `lion` command that checks it: `build-explorer.mjs` asks that command, the one the replay runs, for [`lion worker`](#command-line) and puts what it prints in the page. So the page and `page-check.json` give the same answers, and a page built in this repository runs the Lion in it once the CLI is built with `bunx turbo build --filter=@lionlang/cli`.
 
-```bash
-bun build skills/lion-research/scripts/engine.ts --target browser --format iife --minify --outfile skills/lion-research/assets/lion-engine.js
-```
-
-The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance and restatement, its figure check against the numbers written into a quote, its readings against a plain model of senses and choices, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model, plan, and saved texts it was given, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, where a quote stands against the text it was found in, the page check against every text and query of a plan, and each script started through a link, as an installed skill starts it.
+The properties in `packages/metrics/src/tests/research-skill.test.ts` check the core program against a plain model of provenance and restatement, its figure check against the numbers written into a quote, its readings against a plain model of senses and choices, its two time functions against JavaScript's clock, and its scripts: the explorer page against the model, plan, saved texts, and engine it was given, the engine against what the `lion` command that checks the page gives for `lion worker`, a reader's choice in a lookup against the data it stands for, the wording functions against plain ones, the recorder against the notes it was given, the page reader against what a reader sees, the quote check against quotes that are and are not in a source's text, where a quote stands against the text it was found in, the page check against every text and query of a plan, and each script started through a link, as an installed skill starts it. The properties in `packages/cli/src/tests/worker.test.ts` check that `lion worker` answers every program as the `lion` command does, against the same saved database.
 
 The skill has two evals. `researches-recent-outage` researches a live event on the web. `verifies-company-figures` works from a frozen corpus of seven made-up sources about one company, written with the traps a financial analyst meets: a figure restated in a later filing, revenue in two senses and two periods, a figure in billions, a misquote, a chain of relays, a disputed count, and a margin to work out. Its known answers, in `answers.json`, are checks on a finished run, each for one stage: reading the sources, framing the model, its conclusions, the page, and the report. `grade.mjs` grades a run by stage, so a failure says which stage went wrong, and a property replays the case's reference run and checks that leaving out any one source fails exactly the checks that rest on it.
 

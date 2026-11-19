@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { run } from "@lionlang/core/evaluation/evaluate";
 import { LogicDatabase } from "@lionlang/core/logic/database";
 import { loadDatabase, saveDatabase } from "@lionlang/core/logic/snapshot";
@@ -113,9 +114,36 @@ const replCommand = Command.make(
   })
 ).pipe(Command.withDescription("Serve the Lion graph editor"));
 
+// The build writes the worker beside the command, as dist/worker.js. From
+// src/ and from dist/ alike, this names that file.
+const workerScript = new URL("../dist/worker.js", import.meta.url);
+
+const workerCommand = Command.make(
+  "worker",
+  {},
+  Effect.fn(function* () {
+    const script = yield* Effect.tryPromise({
+      try: () => readFile(fileURLToPath(workerScript), "utf8"),
+      catch: () =>
+        new CliError.UserError({
+          cause: new Error(
+            `This lion command has no worker at ${fileURLToPath(workerScript)}: build it with \`bun run --cwd packages/cli build\`.`
+          ),
+        }),
+    });
+    yield* Console.log(script);
+  })
+).pipe(
+  Command.withDescription(
+    "Print the Lion evaluator as a Web Worker script, for a page that runs Lion in a browser. It loads a saved database and runs programs against it, as --database does."
+  )
+);
+
 export const command = evaluateCommand.pipe(
-  Command.withSubcommands([replCommand]),
-  Command.withDescription("Evaluate Lion programs and serve the graph editor")
+  Command.withSubcommands([replCommand, workerCommand]),
+  Command.withDescription(
+    "Evaluate Lion programs, serve the graph editor, and print Lion for a browser"
+  )
 );
 
 export const program = Command.run(command, { version: VERSION });

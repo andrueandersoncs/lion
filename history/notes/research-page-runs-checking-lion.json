@@ -1,0 +1,88 @@
+{
+  "title": "A research page runs the Lion of the lion command that checks it",
+  "context": "The research skill's page ran `assets/lion-engine.js`, a bundle of `@lionlang/core` that was rebuilt by hand at a release, while `page-check.json`, the model, and every check ran on the lion command. On 2026-11-19 the two disagreed: a page whose plan defined a name `rule` passed its check and failed in the browser, since the bundle still read `rule` as a form, and the bundle took `cond` conditions that are not true or false, which core now refuses. Outside this repository the published CLI that checks a page and the bundle the skill ships could differ the same way.",
+  "decision": "The lion command gives its own Lion for a browser: `lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it. `build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion. The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core.",
+  "consequences": "Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1; until a release has it, a page built outside this repository needs `LION_CLI` to name a built CLI. A property in `packages/cli/src/tests/worker.test.ts` checks that the worker answers every program as the lion command does, against the same saved database, among them a definition named as a form and a condition that is not true or false; run on the old bundle, it fails at once on `[\"begin\", [\"define\", \"rule\", 0], \"rule\"]`. A property of the skill checks that the page carries exactly what its lion command gives for `lion worker`, and that no page is built when the command gives nothing. Run on the lion command's worker, the summary of `research/runs/lion-improvements/page.json` failed, as its check did, since it asked `cond` whether a count was true; the bundle had shown it, so the plan now asks whether the count is greater than 0.",
+  "alternatives": [
+    {
+      "option": "Keep the bundle, and fail a test when it is not built from the core in the tree",
+      "rejected": "Two engines would stay, every change to core would carry a new bundle, and outside this repository the published CLI that checks a page would still differ from the bundle the skill ships."
+    },
+    {
+      "option": "Run the page check through the bundle instead of the lion command",
+      "rejected": "The page and its check would agree, but the model would be built and checked by another Lion than the one the page shows, and the bundle would still be rebuilt by hand."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion.",
+      "says": {
+        "decision": "research-page-engine",
+        "chose": "lion-command-worker",
+        "over": ["bundled-engine", "page-check-through-bundle"],
+        "because": "a page checked by one Lion and shown by another can pass its check and fail for its reader, as a plan that defined `rule` did",
+        "area": "skills"
+      }
+    },
+    {
+      "quote": "A research page runs the Lion of the lion command that checks it",
+      "says": {
+        "rule": "research-page-runs-checking-lion",
+        "holds": true,
+        "statement": "A research page runs the Lion of the lion command that checks it",
+        "area": "skills",
+        "predicts": [
+          {
+            "behavior": "research-page-engine",
+            "is": "lion-worker"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone, and nothing needs rebuilding after a change to core.",
+      "says": {
+        "rule": "rebuild-research-engine-after-core-change",
+        "holds": false,
+        "statement": "After changing the core evaluator, rebuild the research skill's engine bundle.",
+        "area": "skills",
+        "replaced_by": "research-page-runs-checking-lion"
+      }
+    },
+    {
+      "quote": "`build-explorer.mjs` asks the lion command the replay runs for it and puts it in the page, so the page, the model, and `page-check.json` run one Lion.",
+      "says": {
+        "behavior": "research-page-engine",
+        "is": "lion-worker",
+        "area": "skills",
+        "was": "bundled",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "Building a page needs a lion command that has `lion worker`, which the CLI has after 0.13.1",
+      "says": {
+        "behavior": "research-engine-core-version",
+        "is": "lion-command",
+        "area": "skills",
+        "was": "core-0-8-0"
+      }
+    },
+    {
+      "quote": "`lion worker` prints a Web Worker script, built with the command from the same core, that loads a saved database as `--database` does and runs programs against it.",
+      "says": {
+        "feature": "lion-worker",
+        "kind": "command",
+        "present": true
+      }
+    },
+    {
+      "quote": "The skill carries no engine of its own: `assets/lion-engine.js` and `scripts/engine.ts` are gone",
+      "says": {
+        "feature": "research-engine-bundle",
+        "kind": "file",
+        "present": false
+      }
+    }
+  ]
+}

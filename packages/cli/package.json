@@ -25,13 +25,16 @@
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsdown"
+    "build": "tsdown && bun build src/worker.ts --target browser --format iife --minify --outfile dist/worker.js",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "@effect/vitest": "4.1.2",
     "@types/node": "latest",
     "@lionlang/repl": "workspace:*",
     "@lionlang/core": "workspace:*",
-    "tsdown": "^0.21.10"
+    "tsdown": "^0.21.10",
+    "vitest": "^5.0.1"
   },
   "dependencies": {
     "@effect/platform-node": "4.1.2",

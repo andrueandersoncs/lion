@@ -60,6 +60,9 @@ const REASONING_TESTS = {
   tests: ["src/tests/reasoning-skill.test.ts"],
 };
 
+/** The properties of `lion worker`, checked against the lion command. */
+const WORKER_TESTS = "src/tests/worker.test.ts";
+
 /** A break in the research skill's core program, caught by the skill's properties. */
 const research = (
   name: string,
@@ -2964,6 +2967,41 @@ export const MUTATIONS: readonly Mutation[] = [
     "        isRecord(block.example) && block.answer !== undefined",
     "        false"
   ),
+  researchScript(
+    "the page runs an engine other than its lion command's worker",
+    "build-explorer.mjs",
+    'lion(["worker"], "buffer")',
+    'lion(["--version"], "buffer")'
+  ),
+  researchScript(
+    "the page is built though its lion command gave no engine",
+    "build-explorer.mjs",
+    "  if (made.status !== 0) {",
+    "  if (made.status === null) {"
+  ),
+  researchScript(
+    "the scripts run the published lion command though LION_CLI names another",
+    "lion.mjs",
+    '  return words.length > 0 && words[0] !== "" ? words : undefined;',
+    "  return undefined;"
+  ),
+  {
+    name: "a page's worker runs programs on a new database, not the one it loaded",
+    file: "packages/cli/src/worker.ts",
+    find: "run(request.program as never, stdlib, { database })",
+    replace:
+      "run(request.program as never, stdlib, { database: new LogicDatabase() })",
+    package: "cli",
+    tests: [WORKER_TESTS],
+  },
+  {
+    name: "a page's worker answers a program that failed as if it gave null",
+    file: "packages/cli/src/worker.ts",
+    find: "  return Exit.isSuccess(exit)",
+    replace: "  return true",
+    package: "cli",
+    tests: [WORKER_TESTS],
+  },
   {
     name: "a probe reads a file outside the repository",
     file: "packages/history/src/repo.ts",

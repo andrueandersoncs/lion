@@ -49,8 +49,6 @@
       "!docs/changelog.html",
       // Docs sources: example code inside them must keep its exact whitespace.
       "!packages/site-runtime/content",
-      // Generated from @lionlang/core by skills/lion-research/scripts/engine.ts.
-      "!skills/lion-research/assets/lion-engine.js",
       "!!.agents",
       "!!.claude",
       "!!.pi"

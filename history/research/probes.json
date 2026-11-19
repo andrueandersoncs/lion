@@ -3971,7 +3971,7 @@
       "boolean/and",
       [
         "string/includes",
-        ["repo/read", "skills/lion-research/scripts/replay.mjs"],
+        ["repo/read", "skills/lion-research/scripts/lion.mjs"],
         "process.env.LION_CLI"
       ],
       [
@@ -3979,6 +3979,51 @@
         ["repo/read", "skills/lion-reasoning/scripts/lib.mjs"],
         "process.env.LION_CLI"
       ]
+    ]
+  },
+  {
+    "feature": "lion-worker",
+    "kind": "command",
+    "program": [
+      "string/includes",
+      ["repo/read", "packages/cli/src/index.ts"],
+      "\"worker\""
+    ]
+  },
+  {
+    "feature": "research-engine-bundle",
+    "kind": "file",
+    "program": [
+      "number/equals?",
+      [
+        "array/length",
+        ["repo/files", "skills/lion-research/assets/lion-engine.js"]
+      ],
+      1
+    ]
+  },
+  {
+    "case": "research-page-engine",
+    "area": "skills",
+    "program": [
+      "cond",
+      [
+        [
+          "boolean/and",
+          [
+            "string/includes",
+            ["repo/read", "skills/lion-research/scripts/build-explorer.mjs"],
+            "lion([\"worker\"], \"buffer\")"
+          ],
+          [
+            "string/includes",
+            ["repo/read", "packages/cli/package.json"],
+            "--outfile dist/worker.js"
+          ]
+        ],
+        ["quote", "lion-worker"]
+      ],
+      ["else", ["quote", "bundled"]]
     ]
   },
   {
@@ -4328,18 +4373,18 @@
               "boolean/and",
               [
                 "string/includes",
-                ["repo/read", "skills/lion-research/scripts/replay.mjs"],
+                ["repo/read", "skills/lion-research/scripts/lion.mjs"],
                 "\"@lionlang/cli"
               ],
               [
                 "string/includes",
-                ["repo/read", "skills/lion-research/scripts/replay.mjs"],
+                ["repo/read", "skills/lion-research/scripts/lion.mjs"],
                 "\"bunx\""
               ]
             ],
             [
               "string/includes",
-              ["repo/read", "skills/lion-research/scripts/replay.mjs"],
+              ["repo/read", "skills/lion-research/scripts/lion.mjs"],
               "\"npx\""
             ]
           ],
@@ -4377,9 +4422,17 @@
       "cond",
       [
         [
-          "string/includes",
-          ["repo/read", "skills/lion-research/scripts/replay.mjs"],
-          "process.env.LION_CLI"
+          "boolean/and",
+          [
+            "string/includes",
+            ["repo/read", "skills/lion-research/scripts/replay.mjs"],
+            "import { lion } from \"./lion.mjs\";"
+          ],
+          [
+            "string/includes",
+            ["repo/read", "skills/lion-research/scripts/lion.mjs"],
+            "process.env.LION_CLI"
+          ]
         ],
         ["quote", "lion-cli-env"]
       ],

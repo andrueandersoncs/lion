@@ -88,8 +88,11 @@ const run = async () => {
     1,
     Math.min(Number(args.option("jobs") ?? "4"), chosen.length)
   );
-  // The record's tests read the built language, so their copy builds it.
-  const build = chosen.some((mutation) => mutation.package === "history")
+  // The record's tests and the lion command's read the built language, so
+  // their copy builds it.
+  const build = chosen.some(
+    (mutation) => mutation.package === "history" || mutation.package === "cli"
+  )
     ? ["@lionlang/core"]
     : [];
   const copies: string[] = [];

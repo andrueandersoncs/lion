@@ -8,6 +8,8 @@
  */
 import { spawnSync } from "node:child_process";
 import {
+  existsSync,
+  mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
@@ -998,6 +1000,7 @@ interface Passages {
 }
 type Build = (page: {
   readonly database: unknown;
+  readonly engine: string;
   readonly generated: string;
   readonly page: unknown;
   readonly passages?: Passages;
@@ -1032,24 +1035,31 @@ const awkward = oneOf(
 
 const DATA =
   /<script type="application\/json" id="lion-data">([\s\S]*?)<\/script/;
+const ENGINE =
+  /<script type="text\/plain" id="lion-engine">([\s\S]*?)<\/script/;
 const TITLE = /<title>([\s\S]*?)<\/title/;
+
+/** The bytes of the engine a page runs, as its worker is made from them. */
+const engineIn = (html: string) =>
+  Buffer.from(ENGINE.exec(html)?.[1]?.trim() ?? "", "base64");
 
 const unescaped = (html: string) =>
   html.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&amp;", "&");
 
 describe("the research skill's explorer page", () => {
   it.effect.prop(
-    "carries the model, questions, and title it was given, whatever text they hold",
+    "carries the model, questions, title, and engine it was given, whatever text they hold",
     {
       facts: Arbitrary.array(Arbitrary.all({ quote: awkward, says: awkward }), {
         maxLength: 4,
       }),
       answer: awkward,
+      engine: awkward,
       question: awkward,
       summary: awkward,
       title: awkward,
     },
-    ({ answer, facts, question, summary, title }) =>
+    ({ answer, engine, facts, question, summary, title }) =>
       Effect.gen(function* () {
         const { buildExplorer } = yield* Effect.promise(() => builder);
         const page = {
@@ -1082,7 +1092,7 @@ describe("the research skill's explorer page", () => {
           marks: { [answer]: [0, summary.length] as const },
           texts: { [question]: summary },
         };
-        const html = buildExplorer({ ...page, passages });
+        const html = buildExplorer({ ...page, engine, passages });
         // A browser ends each element at its first closing tag, as these do.
         // The page also carries the wording helpers, the same for every plan.
         expect(JSON.parse(DATA.exec(html)?.[1] ?? "null")).toEqual({
@@ -1091,6 +1101,7 @@ describe("the research skill's explorer page", () => {
           words: asset("words.json"),
         });
         expect(unescaped(TITLE.exec(html)?.[1] ?? "")).toBe(title);
+        expect(engineIn(html).toString("utf8")).toBe(engine);
       }),
     OPTIONS
   );
@@ -1337,6 +1348,89 @@ describe("the research skill's scripts", () => {
         said: true,
         status: 1,
       });
+    },
+    { arbitrary: { runs: 30 } }
+  );
+});
+
+/**
+ * A lion command for the page build to run, in a folder of its own: it
+ * prints the bytes of `engine.js` for `lion worker` and notes each call, or,
+ * when the folder holds `broken`, fails as an older command without
+ * `worker` does.
+ */
+const FAKE_LION = `import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+const here = import.meta.dirname;
+const args = process.argv.slice(2);
+appendFileSync(join(here, "calls.txt"), \`\${JSON.stringify(args)}\\n\`);
+if (existsSync(join(here, "broken"))) {
+  process.stderr.write("no such file: worker");
+  process.exit(1);
+}
+process.stdout.write(readFileSync(join(here, "engine.js")));
+`;
+
+/** Any text, as a script's bytes, including what UTF-8 cannot hold as is. */
+const engineText = oneOf(awkward, Arbitrary.schema(Schema.String));
+
+describe("the research skill's explorer page and its check", () => {
+  it.prop(
+    "run the Lion of one lion command: the page carries what it gives for lion worker",
+    { broken: Arbitrary.schema(Schema.Boolean), engine: engineText, started },
+    ({ broken, engine, started: path }) => {
+      const folder = mkdtempSync(join(tmpdir(), "lion-page-"));
+      const fake = join(folder, "lion");
+      mkdirSync(fake);
+      writeFileSync(join(fake, "lion.mjs"), FAKE_LION);
+      writeFileSync(join(fake, "engine.js"), engine);
+      if (broken) {
+        writeFileSync(join(fake, "broken"), "");
+      }
+      writeFileSync(join(folder, "model.json"), JSON.stringify(["begin"]));
+      writeFileSync(
+        join(folder, "page.json"),
+        JSON.stringify({
+          summary: "A summary.",
+          title: "A page",
+          views: [{ blocks: [], name: "The answer" }],
+        })
+      );
+      const run = spawnSync(
+        process.execPath,
+        [path("build-explorer.mjs"), "model.json", "--page", "page.json"],
+        {
+          cwd: folder,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            LION_CLI: `${process.execPath} ${join(fake, "lion.mjs")}`,
+          },
+        }
+      );
+      const page = join(folder, "explorer.html");
+      expect({
+        calls: readFileSync(join(fake, "calls.txt"), "utf8"),
+        built: existsSync(page),
+        status: run.status,
+      }).toEqual({
+        calls: `${JSON.stringify(["worker"])}\n`,
+        built: !broken,
+        status: broken ? 1 : 0,
+      });
+      if (broken) {
+        expect(run.stderr).toContain("no such file: worker");
+      } else {
+        expect(
+          engineIn(readFileSync(page, "utf8")).equals(
+            readFileSync(join(fake, "engine.js"))
+          )
+        ).toBe(true);
+        // What to check the page with is the same command.
+        expect(run.stdout).toContain(
+          `check it with the same: ${process.execPath} ${join(fake, "lion.mjs")} `
+        );
+      }
     },
     { arbitrary: { runs: 30 } }
   );

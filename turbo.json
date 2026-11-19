@@ -18,6 +18,9 @@
     "@lionlang/history#test": {
       "dependsOn": ["^build"],
       "cache": false
+    },
+    "@lionlang/cli#test": {
+      "dependsOn": ["@lionlang/core#build"]
     }
   }
 }
