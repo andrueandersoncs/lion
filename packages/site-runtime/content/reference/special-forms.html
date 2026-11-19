@@ -14,9 +14,16 @@
 <code-block lang="json">
 ["eval", expression]
 </code-block>
-<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result is compiled when it runs, so its strings mean what the scope declares then. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
+<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result is compiled when it runs, as a program is: its strings mean what the scope declares then, together with the names the code defines, which it binds in the body <code>eval</code> stands in, and the relations and schemas it declares. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
 <lion-example name="eval">
 ["eval", ["quote", ["number/add", 1, 2]]]
+</lion-example>
+<lion-example name="Code that defines its own names">
+["eval", ["quote",
+  ["begin",
+    ["define", "twice", ["lambda", ["n"], ["double", ["double", "n"]]]],
+    ["define", "double", ["lambda", ["n"], ["number/multiply", "n", 2]]],
+    ["twice", 5]]]]
 </lion-example>
 
 <h2 id="form-begin"><code>begin</code></h2>

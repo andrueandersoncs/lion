@@ -95,6 +95,30 @@ export const compileReference = (
   return () => name;
 };
 
+/**
+ * The string at the head of a call. The first element of an array names
+ * what the array does, so a string there is a name, never data: a name a
+ * scope declares is read as any name is, and any other is looked up where
+ * the call runs, among the bindings the run has by then, such as the
+ * relations that code `eval` ran declared. A string elsewhere means what
+ * its scopes declare.
+ */
+export const compileHead = (
+  name: string,
+  scope: Scope | undefined
+): Compiled => {
+  const reference = compileReference(name, scope);
+  if (isLogicVariableName(name) || declares(scope, name)) {
+    return reference;
+  }
+  return (environment, depth) => {
+    const value = lookup(environment, name);
+    return value === UNBOUND
+      ? reference(environment, depth)
+      : read(name, value);
+  };
+};
+
 /** The value of a name, or the error of reading one before it is defined. */
 const read = (name: string, value: unknown) =>
   value === UNASSIGNED

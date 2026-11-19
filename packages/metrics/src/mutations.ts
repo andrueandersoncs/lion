@@ -282,7 +282,7 @@ const SCALING: readonly Mutation[] = [
     file: core("logic/database.ts"),
     find: "    gained.set(factsName(name), net.gained.get(name) ?? new TupleSet());\n",
     replace: "",
-    tests: MAINTAINED_TESTS,
+    tests: [...MAINTAINED_TESTS, CANDIDATE_TESTS],
   },
   {
     name: "a relation's first facts reach a query whose rules do not read them",
@@ -839,7 +839,7 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "the compiled evaluator gives assuming no answers",
     file: core("evaluation/base-forms/array.ts"),
-    find: "  assuming: (form) => inEffect(evaluateAssuming)(form),",
+    find: "  assuming: (form, scope) => inEffect(evaluateAssuming)(form, scope),",
     replace: "  assuming: () => () => [],",
     tests: ["src/evaluation/tests/compiled.test.ts"],
   },
@@ -1006,7 +1006,7 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/database.ts"),
     find: "          candidates.has(name) ? factsName(name) : name,",
     replace: "          name,",
-    tests: MERGE_TESTS,
+    tests: [...MERGE_TESTS, CANDIDATE_TESTS],
   },
   {
     name: "a plain head of a relation that merges does not merge",
@@ -3326,5 +3326,74 @@ export const MUTATIONS: readonly Mutation[] = [
     find: "ok: right.length === 0 && unnamed.length === 0,",
     replace: "ok: right.length === 0,",
     ...RECHECKS_TESTS,
+  },
+  // A scope as it was written, the head of a call, code that eval runs, and
+  // the forms that hold rule forms.
+  {
+    name: "a scope declares the names eval binds after code was compiled in it",
+    file: core("evaluation/environment.ts"),
+    find: "    has: (name) => bindings.has(name) && !isLater(name),",
+    replace: "    has: (name) => bindings.has(name),",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a logic form's parts are compiled in the scope it runs in",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "        code = compile(expression, scope);",
+    replace: "        code = compile(expression, environment);",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a form that waits keeps every name its environment binds",
+    file: core("evaluation/special-forms/lambda.ts"),
+    find: "  scope === undefined || declares(scope, name)",
+    replace: "  true",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "code that eval runs does not declare what it defines",
+    file: core("evaluation/special-forms/eval.ts"),
+    find: "    predeclare(bodyOf(environment).bindings, definedIn(program, scope));\n",
+    replace: "",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a call's head that no scope declares is data",
+    file: core("evaluation/base-forms/primitive.ts"),
+    find: "    return value === UNBOUND\n      ? reference(environment, depth)\n      : read(name, value);",
+    replace: "    return reference(environment, depth);",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a fact form evaluates a rule form among its facts",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "    if (held !== undefined) {",
+    replace: "    if (false) {",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "a sum rounds at every value",
+    file: core("logic/aggregates.ts"),
+    find: "    const low = small - (high - big);",
+    replace: "    const low = 0;",
+    tests: ["src/logic/tests/aggregates.test.ts"],
+  },
+  {
+    name: "a sum whose partial sums overflow adds its values in order",
+    file: core("logic/aggregates.ts"),
+    find: "  return Number.isFinite(high) ? high : exactSum(values as readonly number[]);",
+    replace:
+      "  return Number.isFinite(high)\n    ? high\n    : (values as readonly number[]).reduce((a, b) => a + b, 0);",
+    tests: [
+      "src/modules/tests/finite-numbers.test.ts",
+      "src/logic/tests/aggregates.test.ts",
+    ],
+  },
+  {
+    name: "a change of assuming cannot state rows with exists",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "            ? Effect.succeed(heldRows(value as LogicForm, goal))",
+    replace: "            ? notACall(value)",
+    tests: ASSUMING_TESTS,
   },
 ];

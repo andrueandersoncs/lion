@@ -5,6 +5,7 @@ import {
   WaitingError,
 } from "@/errors/evaluation";
 import { answer, isWriting } from "@/evaluation/asking";
+import { compileHead } from "@/evaluation/base-forms/primitive";
 import {
   andThen,
   type Compiled,
@@ -14,7 +15,7 @@ import {
   toEffect,
 } from "@/evaluation/compiled";
 import type { Environment, Scope } from "@/evaluation/environment";
-import { compileAll } from "@/evaluation/evaluate.ts";
+import { compile, compileAll } from "@/evaluation/evaluate.ts";
 import {
   enter,
   lambdaOf,
@@ -216,11 +217,12 @@ export const compileFunctionCall = (
   expression: typeof FunctionCallFormSchema.Type,
   scope: Scope | undefined
 ): Compiled => {
-  const [head, ...rest] = compileAll(expression, scope) as [
-    Compiled,
-    ...Compiled[],
-  ];
   const callee = expression[0];
+  const head =
+    typeof callee === "string"
+      ? compileHead(callee, scope)
+      : compile(callee, scope);
+  const rest = compileAll(expression.slice(1), scope);
   const callWith = (
     fn: unknown,
     args: unknown,

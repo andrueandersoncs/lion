@@ -1,8 +1,11 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Arbitrary, Effect } from "effect";
+import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
 import { stdlib } from "@/modules";
-import { element } from "./programs";
+import { element, nearestSum } from "./programs";
+
+const int = (minimum: number, maximum: number) =>
+  Arbitrary.schema(Schema.Int.check(Schema.isBetween({ minimum, maximum })));
 
 const orders = [
   ["relation", "order", ["id", "customer", "amount"]],
@@ -455,5 +458,100 @@ describe("aggregate functions on lists", () => {
       ]);
       expect(message).toContain("expects all numbers or all strings");
     })
+  );
+});
+
+/** Numbers whose sums round, cancel, and carry: fractions and big steps. */
+const number = Arbitrary.map(
+  Arbitrary.all([
+    int(-50, 50),
+    int(1, 9),
+    Arbitrary.schema(Schema.Literals([1, 1e-8, 1e8, 1e16])),
+  ]),
+  ([top, bottom, scale]) => (top / bottom) * scale
+);
+
+describe("aggregate/sum", () => {
+  it.effect.prop(
+    "is the number nearest the exact sum of its values, so the order they come in never changes it, in a list, a rule, or a merge",
+    { values: Arbitrary.array(number, { maxLength: 8 }), turn: int(0, 7) },
+    ({ turn, values }) =>
+      Effect.gen(function* () {
+        const total = (yield* run(
+          ["aggregate/sum", ["quote", values]],
+          stdlib
+        )) as number;
+        expect(total).toBe(nearestSum(values));
+        // Facts come in another order, as candidates of a merge or as the
+        // matches of a rule: the total is the same.
+        const at = values.length === 0 ? 0 : turn % values.length;
+        const turned = [...values.slice(at), ...values.slice(0, at)];
+        const facts = turned.map((value, id) => ["amount", id, value]);
+        const rows = yield* run(
+          [
+            "begin",
+            ["relation", "amount", ["id", "value"]],
+            ["relation", "total", ["all", "sum"]],
+            [
+              "relation",
+              "merged",
+              ["all", "sum"],
+              { key: "all", merge: { sum: "aggregate/sum" } },
+            ],
+            ...(facts.length === 0 ? [] : [["fact", ...facts]]),
+            [
+              "rule",
+              ["total", "all", ["aggregate/sum", "?v"]],
+              ["amount", "?id", "?v"],
+            ],
+            ["rule", ["merged", "all", "?v"], ["amount", "?id", "?v"]],
+            [
+              "array/make",
+              ["find", "?s", ["total", "all", "?s"]],
+              ["find", "?s", ["merged", "all", "?s"]],
+            ],
+          ],
+          stdlib
+        );
+        expect(rows).toEqual(
+          values.length === 0 ? [[], []] : [[total], [total]]
+        );
+      })
+  );
+});
+
+describe("aggregate/sum near the largest number", () => {
+  it.effect.prop(
+    "is the exact sum where adding in order would pass the largest number, and fails only where the exact sum does",
+    {
+      big: Arbitrary.array(element([1e308, 1.5e308, 1.7e308]), {
+        minLength: 2,
+        maxLength: 3,
+      }),
+      kept: Arbitrary.array(Arbitrary.schema(Schema.Boolean), {
+        minLength: 3,
+        maxLength: 3,
+      }),
+      rest: int(-1000, 1000),
+    },
+    ({ big, kept, rest }) =>
+      Effect.gen(function* () {
+        // The large numbers first, so their running sum passes the largest
+        // number, then the negations of all but those kept.
+        const values = [
+          ...big,
+          ...big.filter((_, at) => !kept[at]).map((value) => -value),
+          rest,
+        ];
+        const exact = nearestSum(values);
+        const outcome = yield* Effect.result(
+          run(["aggregate/sum", ["quote", values]], stdlib)
+        );
+        if (Number.isFinite(exact)) {
+          expect(outcome).toMatchObject({ success: exact });
+        } else {
+          expect(outcome._tag).toBe("Failure");
+        }
+      })
   );
 });

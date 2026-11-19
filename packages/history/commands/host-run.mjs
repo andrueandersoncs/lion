@@ -126,3 +126,34 @@ say(
   "an array that names a form but has another shape fails with",
   await outcome(["define", "x"])
 );
+
+const message = async (program) => {
+  const exit = await Effect.runPromiseExit(run(program, stdlib));
+  return Exit.isSuccess(exit) ? "succeeded" : Cause.squash(exit.cause).message;
+};
+say(
+  "a body that defines define fails with",
+  await message(["begin", ["define", "define", 1]])
+);
+const holding = new LogicDatabase();
+await outcome(
+  ["begin", ["relation", "n", ["x"]], ["relation", "m", ["x"]]],
+  stdlib,
+  { database: holding }
+);
+say(
+  "a fact form that holds a rule form",
+  await outcome(
+    ["fact", ["n", 1], ["rule", ["m", "?x"], ["n", "?x"]]],
+    stdlib,
+    {
+      database: holding,
+    }
+  )
+);
+say(
+  "after it, the database holds a rule",
+  JSON.stringify(
+    await outcome(["snapshot"], stdlib, { database: holding })
+  ).includes('"rule"')
+);

@@ -134,12 +134,12 @@ export const QueryFormSchema = Schema.Union([
 // ["find", <template>, <goal>]
 export const FindFormSchema = form("find", Expression, Expression);
 // ["assuming", ["fact", <goal>, ...], ["retract", <goal>, ...], or
-// ["rule", <head>, <goal>, ...], ..., <expression>]
-const Change = Schema.Union([
-  FactFormSchema,
-  RetractFormSchema,
-  RuleFormSchema,
-]);
+// ["rule", <head>, <goal>, ...], ..., <expression>]. Each change has the
+// shape of its own form, which is checked as that form checks it.
+const Change = Schema.TupleWithRest(
+  Schema.Tuple([Schema.Literals(["fact", "retract", "rule"])]),
+  [Expression]
+);
 export const AssumingFormSchema = Schema.TupleWithRest(
   Schema.Tuple([Schema.Literal("assuming"), Change]),
   [Expression]

@@ -69,8 +69,97 @@ const onlyArrays = (values: readonly unknown[]) => {
     : `expects lists, but found ${show(bad)}`;
 };
 
-const sum = (values: readonly unknown[]) =>
-  (values as readonly number[]).reduce((total, value) => total + value, 0);
+/**
+ * The partials of a sum: numbers that do not overlap, whose exact sum is the
+ * exact sum of the values added so far (Shewchuk's algorithm).
+ */
+const addExactly = (partials: number[], value: number) => {
+  let x = value;
+  let kept = 0;
+  for (const partial of partials) {
+    const [big, small] =
+      Math.abs(x) < Math.abs(partial) ? [partial, x] : [x, partial];
+    const high = big + small;
+    const low = small - (high - big);
+    if (low !== 0) {
+      partials[kept] = low;
+      kept += 1;
+    }
+    x = high;
+  }
+  partials.length = kept;
+  partials.push(x);
+};
+
+const UNIT = 2n ** 52n;
+
+/** A finite number as a whole count of the smallest step, 2^-1074. */
+const steps = (value: number) => {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, value);
+  const bits = view.getBigUint64(0);
+  const exponent = Number((bits / UNIT) % 2048n);
+  const fraction = bits % UNIT;
+  const magnitude =
+    exponent === 0 ? fraction : (fraction + UNIT) * 2n ** BigInt(exponent - 1);
+  return bits >= 2n ** 63n ? -magnitude : magnitude;
+};
+
+/**
+ * The exact sum of numbers whose partial sums overflow, rounded once, a tie
+ * going to the even number: an infinity when it is beyond every number.
+ */
+const exactSum = (values: readonly number[]) => {
+  const total = values.reduce((sum, value) => sum + steps(value), 0n);
+  const size = total < 0n ? -total : total;
+  const dropped = Math.max(0, size.toString(2).length - 53);
+  const step = 2n ** BigInt(dropped);
+  let kept = size / step;
+  const rest = size % step;
+  if (
+    dropped > 0 &&
+    (rest * 2n > step || (rest * 2n === step && kept % 2n === 1n))
+  ) {
+    kept += 1n;
+  }
+  const value = Number(kept) * 2 ** (dropped - 1074);
+  return total < 0n ? -value : value;
+};
+
+/**
+ * The sum of numbers rounded once, to the number nearest their exact sum, as
+ * Python's math.fsum gives it, so it is the same in whatever order the values
+ * come: a rule's matches, or the candidates of a key.
+ */
+const sum = (values: readonly unknown[]) => {
+  const partials: number[] = [];
+  for (const value of values as readonly number[]) {
+    addExactly(partials, value);
+  }
+  let at = partials.length - 1;
+  let high = partials[at] ?? 0;
+  let low = 0;
+  while (at > 0) {
+    at -= 1;
+    const x = high;
+    const y = partials[at] as number;
+    high = x + y;
+    low = y - (high - x);
+    if (low !== 0) {
+      break;
+    }
+  }
+  // Round half to even when the rest of the partials lean the same way.
+  const rest = partials[at - 1] ?? 0;
+  if (at > 0 && ((low < 0 && rest < 0) || (low > 0 && rest > 0))) {
+    const doubled = low * 2;
+    const rounded = high + doubled;
+    if (doubled === rounded - high) {
+      high = rounded;
+    }
+  }
+  return Number.isFinite(high) ? high : exactSum(values as readonly number[]);
+};
 
 const distinct = (values: readonly unknown[]) => {
   const unique = new Map<string, unknown>();

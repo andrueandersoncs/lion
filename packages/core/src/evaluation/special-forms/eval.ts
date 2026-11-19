@@ -7,8 +7,16 @@ import {
   returned,
   toEffect,
 } from "@/evaluation/compiled";
-import type { Environment, Scope } from "@/evaluation/environment";
+import {
+  asWritten,
+  bodyOf,
+  type Environment,
+  predeclare,
+  type Scope,
+  topOf,
+} from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate.ts";
+import { declaredIn, definedIn } from "@/evaluation/hoisting";
 import {
   DeferredCall,
   isWaiting,
@@ -16,23 +24,32 @@ import {
   nameFunctions,
 } from "@/logic/terms";
 import type { EvalFormSchema } from "@/schemas/evaluation";
-import { LionExpressionSchema } from "@/schemas/lion-expression";
+import {
+  LionExpressionSchema,
+  type LionExpressionType,
+} from "@/schemas/lion-expression";
 
 const decode = Schema.decodeUnknownEffect(LionExpressionSchema);
 
 /**
  * Checks code, then compiles and runs it in a scope. The code is written as
- * it runs, so it is compiled in the scope it runs in: a string means what
- * the scope declares at that moment.
+ * it runs, so it is compiled in the scope it runs in, as a program is: a
+ * string means what the scope declares at that moment, together with the
+ * names the code defines, which bind in the body the scope is in, and the
+ * relations and schemas it declares.
  */
 const runCode = (
   code: unknown,
   environment: Environment,
   depth: number
 ): unknown =>
-  andThen(returned(decode(code), undefined), depth, (checked, now) =>
-    compile(checked as never, environment)(environment, now)
-  );
+  andThen(returned(decode(code), undefined), depth, (checked, now) => {
+    const program = checked as LionExpressionType;
+    const scope = asWritten(environment);
+    predeclare(bodyOf(environment).bindings, definedIn(program, scope));
+    predeclare(topOf(environment).bindings, declaredIn(program, scope));
+    return compile(program, asWritten(environment))(environment, now);
+  });
 
 /**
  * Evaluates its argument, then evaluates the result as code, in the scope

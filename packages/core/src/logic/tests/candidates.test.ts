@@ -65,7 +65,7 @@ const query = ["query", ["total", "?who", "?total"], { order: "who" }];
 
 describe("a relation whose rules aggregate", () => {
   it.effect.prop(
-    "combines every candidate for a key, from facts, from rules that aggregate, and from rules with plain heads, in any order",
+    "combines every candidate for a key, from facts, from rules that aggregate, and from rules with plain heads, in any order, and follows each change to them as a database that is given them at once",
     {
       kind: Arbitrary.schema(Schema.Literals(KINDS)),
       sales: candidates,
@@ -73,8 +73,21 @@ describe("a relation whose rules aggregate", () => {
       direct: candidates,
       declared: Arbitrary.schema(Schema.Literals(["merge", "key", "nothing"])),
       order: int(0, 4),
+      goalDirected: Arbitrary.schema(Schema.Boolean),
+      dropped: Arbitrary.array(Arbitrary.schema(Schema.Boolean), {
+        maxLength: 6,
+      }),
     },
-    ({ declared, direct, kind, order, refunds, sales }) =>
+    ({
+      declared,
+      direct,
+      dropped,
+      goalDirected,
+      kind,
+      order,
+      refunds,
+      sales,
+    }) =>
       Effect.gen(function* () {
         const numbered = (rows: readonly (readonly [string, number])[]) =>
           rows.map(([who, amount], id) => [id, who, amount]);
@@ -107,15 +120,36 @@ describe("a relation whose rules aggregate", () => {
           key: [{ key: "who" }],
           nothing: [],
         }[declared];
-        const database = new LogicDatabase();
-        const program = [
-          "begin",
-          ["relation", "sale", ["id", "who", "amount"]],
-          ["relation", "refund", ["id", "who", "amount"]],
-          ["relation", "total", ["who", "total"], ...options],
-          ...rotate(forms, order),
+        const database = new LogicDatabase({ goalDirected });
+        // Asked after every form, so each later change is followed through
+        // what was derived, also by the queries that ask about one key.
+        const ask = [
+          "array/make",
           query,
+          ...WHO.map((who) => ["find", "?t", ["total", who, "?t"]]),
         ];
+        const answers = (rows: ReturnType<typeof expected>) => [
+          rows,
+          ...WHO.map((who) =>
+            rows.filter((row) => row.who === who).map((row) => row.total)
+          ),
+        ];
+        yield* run(
+          [
+            "begin",
+            ["relation", "sale", ["id", "who", "amount"]],
+            ["relation", "refund", ["id", "who", "amount"]],
+            ["relation", "total", ["who", "total"], ...options],
+          ],
+          stdlib,
+          { database }
+        );
+        // Until the rule that aggregates is added, a key alone keeps one
+        // row a key, so asking may fail on two: the forms still stand.
+        for (const form of rotate(forms, order)) {
+          yield* run(form, stdlib, { database });
+          yield* Effect.ignore(run(ask, stdlib, { database }));
+        }
         // A fact repeated is one fact, so it is one candidate. Under a key
         // the relation declares without a merge, a fact replaces the fact
         // its key has, so a form keeps its last fact for each key.
@@ -128,13 +162,29 @@ describe("a relation whose rules aggregate", () => {
           ).values(),
         ];
         const want = expected(kind, [...sales, ...refunds, ...distinct]);
-        expect(yield* run(program, stdlib, { database })).toEqual(want);
+        expect(yield* run(ask, stdlib, { database })).toEqual(answers(want));
         // A snapshot keeps every candidate, and loads into the same answers.
         const loaded = yield* loadDatabase(
           yield* saveDatabase(database),
           stdlib
         );
         expect(yield* run(query, stdlib, { database: loaded })).toEqual(want);
+        // Facts taken back are candidates no more.
+        const gone = distinct.filter((_, at) => dropped[at] === true);
+        if (gone.length > 0) {
+          const kept = distinct.filter((_, at) => dropped[at] !== true);
+          expect(
+            yield* run(
+              [
+                "begin",
+                ["retract", ...gone.map((row) => ["total", ...row])],
+                ask,
+              ],
+              stdlib,
+              { database }
+            )
+          ).toEqual(answers(expected(kind, [...sales, ...refunds, ...kept])));
+        }
       }),
     OPTIONS
   );
@@ -234,6 +284,52 @@ describe("retract", () => {
             stdlib
           )
         ).toEqual([...new Set([...kept, refused])].sort((a, b) => a - b));
+      }),
+    OPTIONS
+  );
+});
+
+describe("a fact or why form", () => {
+  it.effect.prop(
+    "that holds a rule or invariant form among its relation calls fails before it changes anything",
+    {
+      form: Arbitrary.schema(Schema.Literals(["fact", "why"])),
+      held: Arbitrary.schema(Schema.Literals(["rule", "invariant"])),
+      at: int(0, 2),
+      value: int(0, 9),
+    },
+    ({ at, form, held, value }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        yield* run(
+          [
+            "begin",
+            ["relation", "n", ["x"]],
+            ["relation", "m", ["x"]],
+            ["fact", ["n", value]],
+          ],
+          stdlib,
+          { database }
+        );
+        const before = yield* saveDatabase(database);
+        const item =
+          held === "rule"
+            ? ["rule", ["m", "?x"], ["n", "?x"]]
+            : ["invariant", ["n", value], { assert: "none" }];
+        const calls = [
+          ["n", value + 1],
+          ["n", value + 2],
+        ];
+        // why asks about one fact; fact takes any number of them.
+        const written =
+          form === "why"
+            ? [form, item]
+            : [form, ...calls.slice(0, at), item, ...calls.slice(at)];
+        const failed = yield* Effect.flip(run(written, stdlib, { database }));
+        expect(String(failed.message)).toContain(
+          `${form} expects relation calls, but found ${JSON.stringify(item)}`
+        );
+        expect(yield* saveDatabase(database)).toEqual(before);
       }),
     OPTIONS
   );

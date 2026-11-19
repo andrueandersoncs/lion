@@ -27,6 +27,8 @@ import {
   evaluateSnapshot,
   evaluateSome,
   evaluateWhy,
+  type Part,
+  partIn,
 } from "@/evaluation/special-forms/logic";
 import { compileMatch } from "@/evaluation/special-forms/match";
 import { compileQuote } from "@/evaluation/special-forms/quote.ts";
@@ -43,23 +45,30 @@ import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult } from "@/types/evaluation";
 
 /**
- * A form that reads or changes the logic database runs as an Effect, in the
- * scope it was written in. It evaluates its parts as it runs: they are
- * mostly data, such as the facts of a `fact` form, that run once. They are
- * compiled in the scope the form runs in, which declares what the scope
- * the form was written in declares.
+ * A form that reads or changes the logic database runs as an Effect. It
+ * evaluates its parts as it runs, compiled in the scope it is written in,
+ * so a string means in them what it means in plain code there, whatever
+ * code `eval` ran has bound since.
  */
 const inEffect =
-  <F>(evaluateForm: (form: F) => EvaluateResult) =>
-  (form: F): Compiled =>
-  (environment) =>
-    new Pending(
-      Effect.provideService(
-        evaluateForm(form),
-        LionEnvironmentService,
-        environment
-      )
-    );
+  <F>(
+    evaluateForm: (
+      form: F,
+      part: Part,
+      scope: Scope | undefined
+    ) => EvaluateResult
+  ) =>
+  (form: F, scope: Scope | undefined): Compiled => {
+    const part = partIn(scope);
+    return (environment) =>
+      new Pending(
+        Effect.provideService(
+          evaluateForm(form, part, scope),
+          LionEnvironmentService,
+          environment
+        )
+      );
+  };
 
 /**
  * How each special form is compiled, in the scope it is written in. Each
@@ -80,24 +89,24 @@ const SPECIAL_FORMS: Record<
   lambda: (form, scope) => compileLambda(form, scope),
   cond: (form, scope) => compileCond(form, scope),
   match: (form, scope) => compileMatch(form, scope),
-  relation: (form) => inEffect(evaluateRelation)(form),
-  schema: (form) => inEffect(evaluateSchema)(form),
-  rule: (form) => inEffect(evaluateRule)(form),
-  fact: (form) => inEffect(evaluateFact)(form),
-  retract: (form) => inEffect(evaluateRetract)(form),
-  query: (form) => inEffect(evaluateQuery)(form),
-  find: (form) => inEffect(evaluateFind)(form),
-  assuming: (form) => inEffect(evaluateAssuming)(form),
-  exists: (form) => inEffect(evaluateExists)(form),
-  some: (form) => inEffect(evaluateSome)(form),
-  why: (form) => inEffect(evaluateWhy)(form),
+  relation: (form, scope) => inEffect(evaluateRelation)(form, scope),
+  schema: (form, scope) => inEffect(evaluateSchema)(form, scope),
+  rule: (form, scope) => inEffect(evaluateRule)(form, scope),
+  fact: (form, scope) => inEffect(evaluateFact)(form, scope),
+  retract: (form, scope) => inEffect(evaluateRetract)(form, scope),
+  query: (form, scope) => inEffect(evaluateQuery)(form, scope),
+  find: (form, scope) => inEffect(evaluateFind)(form, scope),
+  assuming: (form, scope) => inEffect(evaluateAssuming)(form, scope),
+  exists: (form, scope) => inEffect(evaluateExists)(form, scope),
+  some: (form, scope) => inEffect(evaluateSome)(form, scope),
+  why: (form, scope) => inEffect(evaluateWhy)(form, scope),
   not: (form, scope) => compileNot(form, scope),
   and: (form, scope) => compileAnd(form, scope),
   or: (form, scope) => compileOr(form, scope),
   "=": (form, scope) => compileUnify(form, scope),
   in: (form, scope) => compileIn(form, scope),
-  snapshot: () => inEffect(evaluateSnapshot)(undefined),
-  invariant: (form) => inEffect(evaluateInvariant)(form),
+  snapshot: (_, scope) => inEffect(evaluateSnapshot)(undefined, scope),
+  invariant: (form, scope) => inEffect(evaluateInvariant)(form, scope),
 };
 
 /**

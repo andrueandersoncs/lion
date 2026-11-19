@@ -105,6 +105,24 @@ export const predeclare = (
   }
 };
 
+/** The scope `define` binds in: the nearest call's scope, or the run's. */
+export const bodyOf = (environment: Environment): Environment => {
+  let scope = environment;
+  while (scope.body !== true && scope.parent !== undefined) {
+    scope = scope.parent;
+  }
+  return scope;
+};
+
+/** The outermost scope, where a relation or schema is bound. */
+export const topOf = (environment: Environment): Environment => {
+  let scope = environment;
+  while (scope.parent !== undefined) {
+    scope = scope.parent;
+  }
+  return scope;
+};
+
 /**
  * Binds a name in the scope `define` binds in: the nearest call's scope, or
  * the top scope of the run.
@@ -114,11 +132,7 @@ export const setLocalBinding = (
   name: string,
   value: unknown
 ): void => {
-  let scope = environment;
-  while (scope.body !== true && scope.parent !== undefined) {
-    scope = scope.parent;
-  }
-  scope.bindings.set(name, value);
+  bodyOf(environment).bindings.set(name, value);
 };
 
 /** Binds a name in the outermost scope, where a relation or schema is bound. */
@@ -127,12 +141,55 @@ export const setGlobalBinding = (
   name: string,
   value: unknown
 ): void => {
-  let scope = environment;
-  while (scope.parent !== undefined) {
-    scope = scope.parent;
-  }
-  scope.bindings.set(name, value);
+  topOf(environment).bindings.set(name, value);
 };
+
+/**
+ * The names a scope binds now, which bindings that are added later, by code
+ * `eval` runs, are not among. Bindings are never taken away, so those are
+ * the ones past the number the scope had.
+ */
+const bindingsNow = (bindings: Map<string, unknown>): Scope["bindings"] => {
+  const size = bindings.size;
+  let later = new Set<string>();
+  let seen = size;
+  const isLater = (name: string) => {
+    if (bindings.size === size) {
+      return false;
+    }
+    if (seen !== bindings.size) {
+      later = new Set([...bindings.keys()].slice(size));
+      seen = bindings.size;
+    }
+    return later.has(name);
+  };
+  return {
+    has: (name) => bindings.has(name) && !isLater(name),
+    *keys() {
+      let at = 0;
+      for (const name of bindings.keys()) {
+        if (at === size) {
+          return;
+        }
+        at += 1;
+        yield name;
+      }
+    },
+  };
+};
+
+/**
+ * The scope an environment declares now, to compile code in: a string the
+ * code reads means what it means now, also when the compiled code asks what
+ * its scope declares while it runs, after code `eval` ran has bound more.
+ */
+export const asWritten = (environment: Environment): Scope => ({
+  bindings: bindingsNow(environment.bindings),
+  parent:
+    environment.parent === undefined
+      ? undefined
+      : asWritten(environment.parent),
+});
 
 /**
  * Changes the value of the nearest binding of a name, and says whether there

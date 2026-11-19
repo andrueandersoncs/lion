@@ -15,7 +15,7 @@ import {
   values,
   WORLD_RULES,
 } from "./expressions";
-import { element, type Outcome } from "./programs";
+import { element, nearestSum, type Outcome } from "./programs";
 
 const ANY = { saveable: false };
 const SAVEABLE = { saveable: true };
@@ -173,7 +173,7 @@ describe("an expression that mentions a logic variable", () => {
           const numbers = results as number[];
           return [
             {
-              total: numbers.reduce((sum, item) => sum + item, 0),
+              total: nearestSum(numbers),
               largest: Math.max(...numbers),
               all: [...numbers].sort((a, b) => a - b),
             },

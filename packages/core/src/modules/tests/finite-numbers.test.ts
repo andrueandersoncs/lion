@@ -5,6 +5,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { run } from "@/evaluation/evaluate";
+import { nearestSum } from "@/logic/tests/programs";
 import { stdlib } from "@/modules";
 
 /** Ordinary numbers, plus zeros and numbers near the largest double. */
@@ -102,7 +103,9 @@ describe("arithmetic", () => {
     { values: Arbitrary.array(number, { minLength: 1, maxLength: 5 }) },
     ({ values }) =>
       Effect.gen(function* () {
-        const sum = values.reduce((total, value) => total + value, 0);
+        // A sum is the number nearest the exact sum, so it fails only
+        // when that is beyond every number.
+        const sum = nearestSum(values);
         for (const [name, expected] of [
           ["aggregate/sum", sum],
           ["aggregate/mean", sum / values.length],

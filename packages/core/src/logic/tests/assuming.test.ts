@@ -50,11 +50,21 @@ const setup = ({
   ...rules,
 ];
 
-/** A `fact` or `retract` form of a few facts. */
+/** Rows stated with values nobody has given, as `exists` states them. */
+const unknownRow = element<Form>([
+  ["exists", ["?m"], ["edge", "a", "?m"]],
+  ["exists", ["?m"], ["and", ["edge", "?m", "b"], ["node", "?m"]]],
+  ["exists", ["?m", "?k"], ["edge", "?m", "?k"]],
+]);
+
+/** A `fact` or `retract` form of a few facts, some of them unknown. */
 const factChange = Arbitrary.map(
   Arbitrary.all([
     element(["fact", "fact", "retract"] as const),
-    Arbitrary.array(fact, { minLength: 1, maxLength: 3 }),
+    Arbitrary.array(oneOf<Form>(fact, fact, unknownRow), {
+      minLength: 1,
+      maxLength: 3,
+    }),
   ]),
   ([form, items]): Form => [form, ...items]
 );
@@ -155,9 +165,19 @@ describe("assuming", () => {
       given: start,
       asked: Arbitrary.array(pair, { minLength: 1, maxLength: 4 }),
       goalDirected: element(MODES),
+      through: element([false, true]),
     },
-    ({ given, asked, goalDirected }) =>
+    ({ given, asked, goalDirected, through }) =>
       Effect.gen(function* () {
+        // The assumed edge, or a way through a node nobody has named.
+        const assumedEdge = (from: string, to: string): Form =>
+          through
+            ? [
+                "exists",
+                ["?m"],
+                ["and", ["edge", from, "?m"], ["edge", "?m", to]],
+              ]
+            : ["edge", from, to];
         const database = new LogicDatabase({ goalDirected });
         const ready = yield* attempt(
           [
@@ -170,7 +190,11 @@ describe("assuming", () => {
               "rule",
               ["bridges", "?x", "?y"],
               ["pair", "?x", "?y"],
-              ["assuming", ["fact", ["edge", "?x", "?y"]], ["path", "a", "?y"]],
+              [
+                "assuming",
+                ["fact", assumedEdge("?x", "?y")],
+                ["path", "a", "?y"],
+              ],
             ],
             true,
           ],
@@ -187,7 +211,7 @@ describe("assuming", () => {
         const plain: [string, string][] = [];
         for (const [from, to] of asked) {
           const outcome = yield* attempt(
-            ["assuming", ["fact", ["edge", from, to]], ["path", "a", to]],
+            ["assuming", ["fact", assumedEdge(from, to)], ["path", "a", to]],
             database
           );
           if (!outcome.ok) {

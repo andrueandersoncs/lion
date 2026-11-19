@@ -15,7 +15,16 @@
 <p>The global <code>start</code> is 1000, but the inner lambda sees the <code>start</code> it was created with, 10.</p>
 
 <h2>A string is a name where a scope declares it</h2>
-<p>JSON has one kind of string, so Lion decides which strings are names by where they are written, before the program runs. A string that a scope around it declares is a name; any other is data. A scope declares its bindings from its start: the names the host gave the run and the database's relations, the names the program defines anywhere at its top level and the relations and schemas it declares, and, for a lambda, its parameters and the names its body defines. What a string means therefore never depends on the order things run in: a binding made later, by <code>eval</code> for instance, never turns data that code already holds into a name.</p>
+<p>JSON has one kind of string, so Lion decides which strings are names by where they are written, before the program runs. A string that a scope around it declares is a name; any other is data. A scope declares its bindings from its start: the names the host gave the run and the database's relations, the names the program defines anywhere at its top level and the relations and schemas it declares, and, for a lambda, its parameters and the names its body defines. What a string means therefore never depends on the order things run in: a binding made later, by <code>eval</code> for instance, never turns data that code already holds into a name. That holds in the parts of a <code>find</code>, a <code>rule</code>, or any other logic form as in plain code: they are read by the scopes they are written in, whenever the form runs. The first element of an array is the one place a string is always a name, since it names what the array does: one no scope declares is looked up where the call runs, so a relation that <code>eval</code> declared can be asked about after it.</p>
+<lion-example name="A binding made later">
+["begin",
+  ["relation", "seen", ["x"]],
+  ["fact", ["seen", 1]],
+  ["eval", ["quote", ["define", "later", 5]]],
+  {"plain": "later",
+   "find": ["find", "?v", ["=", "?v", "later"]],
+   "in eval": ["eval", ["quote", "later"]]}]
+</lion-example>
 <p>Because a body declares what it defines from its start, functions can name each other in any order, which mutual recursion needs:</p>
 <lion-example name="Definitions in any order">
 ["begin",

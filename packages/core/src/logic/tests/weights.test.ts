@@ -23,7 +23,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { LogicDatabase } from "@/logic/database";
 import { keptBy } from "@/logic/weights";
-import { attempt, element, oneOf } from "./programs";
+import { attempt, element, nearestSum, oneOf } from "./programs";
 
 type Form = readonly unknown[];
 
@@ -834,7 +834,7 @@ const distinct = <A>(values: readonly A[]) => [
 const combinedPlainly = (items: readonly Form[]) => {
   const values = items.map((it) => it[3] as number).sort(ascending);
   const words = items.map((it) => it[4] as string);
-  const sum = values.reduce((total, value) => total + value, 0);
+  const sum = nearestSum(values);
   return {
     collect: values,
     count: values.length,

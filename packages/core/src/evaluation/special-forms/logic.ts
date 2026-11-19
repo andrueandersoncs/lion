@@ -20,6 +20,7 @@ import {
   type Environment,
   makeEnvironment,
   type Scope,
+  scopeWith,
   setGlobalBinding,
 } from "@/evaluation/environment";
 import { compile, compileAll, evaluate } from "@/evaluation/evaluate";
@@ -103,6 +104,19 @@ import type { EvaluateResult } from "@/types/evaluation";
  */
 export type Part = (expression: LionExpressionType) => EvaluateResult;
 
+/**
+ * Evaluates the parts of a logic form compiled in `scope`, the scope the
+ * form is written in, so a string means in them what it means in plain
+ * code there. A part is compiled each time the form runs, as most run once,
+ * such as the facts of a `fact` form.
+ */
+export const partIn =
+  (scope: Scope | undefined): Part =>
+  (expression) =>
+    Effect.flatMap(Effect.service(LionEnvironmentService), (environment) =>
+      toEffect(compile(expression, scope ?? environment)(environment, 0))
+    );
+
 const evaluateAll = (
   expressions: readonly LionExpressionType[],
   part: Part = evaluate
@@ -136,38 +150,69 @@ const described = (form: string, goal: unknown) =>
   });
 
 /**
- * The rows that `exists` says hold, in plain code: each relation call of
- * its goal, with the unknown that `some` names in place of each variable
- * it lists.
+ * The rows that `exists` says hold: each relation call of what it
+ * describes, with a `some` term in place of each variable it lists, which
+ * stands for the unknown value the variable has.
+ */
+const heldRows = (exists: LogicForm, description: unknown) => {
+  const [names] = exists.parts as [readonly string[], unknown];
+  const unknown = (variable: LogicVariable) =>
+    names.includes(variable.name)
+      ? new LogicForm("some", [variable, description])
+      : undefined;
+  return (callsOf(description) ?? []).map(
+    (call) =>
+      new Atom(
+        call.relation,
+        call.args.map((arg) => replaceVariables(arg, unknown))
+      )
+  );
+};
+
+/**
+ * The rows that `exists` says hold, in plain code: each with the unknown
+ * that `some` names in place of each variable it lists.
  */
 const rowsOf = (exists: LogicForm) =>
   Effect.gen(function* () {
-    const [names, goal] = exists.parts as [readonly string[], unknown];
-    const description = yield* described("exists", goal);
-    const unknown = (variable: LogicVariable) =>
-      names.includes(variable.name)
-        ? new LogicForm("some", [variable, description])
-        : undefined;
-    return yield* Effect.forEach(callsOf(description) ?? [], (call) =>
+    const description = yield* described("exists", exists.parts[1]);
+    return yield* Effect.forEach(heldRows(exists, description), (row) =>
       Effect.map(
-        Effect.forEach(call.args, (arg) =>
-          plainValue(replaceVariables(arg, unknown))
-        ),
-        (args) => new Atom(call.relation, args)
+        Effect.forEach(row.args, plainValue),
+        (args) => new Atom(row.relation, args)
       )
     );
   });
 
 /**
+ * True for a `rule` or `invariant` form, where `retract` and `assuming`
+ * hold one rather than make it: one that no scope around it declares.
+ */
+const isHeld = (scope: Scope) => (item: unknown) =>
+  Array.isArray(item) &&
+  (item[0] === "rule" || item[0] === "invariant") &&
+  !declares(scope, item[0]);
+
+/**
  * The facts a form names. A fact holds values, so a question among its
- * arguments is asked, and `exists` names the rows it says hold.
+ * arguments is asked, and `exists` names the rows it says hold. A rule or
+ * invariant form among them is refused before any is evaluated, since
+ * evaluating it would add it.
  */
 const atoms = (
   form: string,
   facts: readonly LionExpressionType[],
-  part: Part = evaluate
+  part: Part = evaluate,
+  scope?: Scope
 ) =>
   Effect.gen(function* () {
+    const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
+    const held = facts.find(isTaken);
+    if (held !== undefined) {
+      return yield* logicError(
+        `${form} expects relation calls, but found ${show(held)}.`
+      );
+    }
     const result: Atom[] = [];
     for (const value of yield* evaluateAll(facts, part)) {
       if (isForm(value, "exists")) {
@@ -337,7 +382,11 @@ const isIdentifier = Schema.is(ValidIdentifierSchema);
  * names and shapes in the same form declare schemas that can name each
  * other: ["schema", "Order", shape, "Line", shape].
  */
-export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
+export const evaluateSchema = (
+  [_, ...parts]: typeof SchemaFormSchema.Type,
+  _part?: Part,
+  written?: Scope
+) =>
   Effect.gen(function* () {
     const store = yield* database;
     const environment = yield* LionEnvironmentService;
@@ -355,16 +404,18 @@ export const evaluateSchema = ([_, ...parts]: typeof SchemaFormSchema.Type) =>
     const schemas = (names as string[]).map(
       (name) => store.schemas.get(name) ?? makeSchema(name)
     );
-    const scope = makeEnvironment(
+    const inner = makeEnvironment(
       Object.fromEntries(schemas.map((schema, at) => [names[at], schema])),
       environment
     );
+    // A shape reads the names the form's scope declares, and the schemas.
+    const scope = scopeWith(names as string[], written ?? environment);
     const declarations: SchemaDeclaration[] = [];
     for (const [at, schema] of schemas.entries()) {
       const name = names[at] as string;
       const form = shapes[at] as LionExpressionType;
-      const definition = yield* suspend(form, scope);
-      const strings = dataStrings(form, scope);
+      const definition = yield* suspend(form, inner, undefined, scope);
+      const strings = dataStrings(form, inner, scope);
       const shape = yield* resolve(definition).pipe(declaring(name));
       if (shape instanceof LogicValue) {
         return yield* logicError(
@@ -394,21 +445,13 @@ export const evaluateRule = (
 
 export const evaluateFact = (
   [_, ...facts]: typeof FactFormSchema.Type,
-  part: Part = evaluate
+  part: Part = evaluate,
+  scope?: Scope
 ) =>
   Effect.gen(function* () {
-    const values = yield* atoms("fact", facts, part);
+    const values = yield* atoms("fact", facts, part, scope);
     return yield* assertFacts(yield* database, values);
   });
-
-/**
- * True for a `rule` or `invariant` form, where `retract` and `assuming`
- * hold one rather than make it: one that no scope around it declares.
- */
-const isHeld = (environment: Environment) => (item: unknown) =>
-  Array.isArray(item) &&
-  (item[0] === "rule" || item[0] === "invariant") &&
-  !declares(environment, item[0]);
 
 /**
  * A `rule` or `invariant` form that `retract` takes back or `assuming`
@@ -427,8 +470,11 @@ const heldForm = (form: readonly LionExpressionType[], part: Part) =>
     }
     if (name === "invariant") {
       const [__, goal, options] = form;
-      const goalValue = yield* writing(part(goal as LionExpressionType));
-      const assert = yield* parseInvariantOptions(options);
+      const { assert, goalValue } = yield* invariantOf(
+        goal as LionExpressionType,
+        options,
+        part
+      );
       return new LogicForm("invariant", [goalValue, assert]);
     }
     const parts = yield* writing(
@@ -443,10 +489,11 @@ const heldForm = (form: readonly LionExpressionType[], part: Part) =>
  */
 export const evaluateRetract = (
   [_, ...parts]: typeof RetractFormSchema.Type,
-  part: Part = evaluate
+  part: Part = evaluate,
+  scope?: Scope
 ) =>
   Effect.gen(function* () {
-    const isTaken = isHeld(yield* LionEnvironmentService);
+    const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
     const values = yield* atoms(
       "retract",
       parts.filter((item) => !isTaken(item)),
@@ -498,7 +545,7 @@ export const evaluateFind = (
  * `rule` and `invariant` forms it takes back, or a `rule` form's head and
  * body. Nothing is changed yet.
  */
-const changeOf = (change: unknown, part: Part) =>
+const changeOf = (change: unknown, part: Part, scope: Scope | undefined) =>
   Effect.gen(function* () {
     const [form, ...items] = Array.isArray(change) ? change : [];
     const notACall = (value: unknown) =>
@@ -513,8 +560,16 @@ const changeOf = (change: unknown, part: Part) =>
         `assuming takes fact, retract, and rule forms before its expression, but found ${show(change)}.`
       );
     }
+    const kind: "fact" | "retract" = form;
+    if (!fitsForm(kind, change)) {
+      return yield* new MalformedFormError({
+        expression: change as LionExpressionType,
+        form: kind,
+        usage: USAGE[kind],
+      });
+    }
     // A rule or invariant form is held, never made: a `fact` cannot hold one.
-    const isTaken = isHeld(yield* LionEnvironmentService);
+    const isTaken = isHeld(scope ?? (yield* LionEnvironmentService));
     const values = yield* Effect.forEach(
       items as LionExpressionType[],
       (item): EvaluateResult => {
@@ -523,12 +578,20 @@ const changeOf = (change: unknown, part: Part) =>
             ? heldForm(item as LionExpressionType[], part)
             : notACall(item);
         }
-        return Effect.flatMap(writing(part(item)), (value) =>
-          value instanceof Atom ? Effect.succeed(value) : notACall(value)
-        );
+        return Effect.flatMap(writing(part(item)), (value) => {
+          if (value instanceof Atom) {
+            return Effect.succeed([value]);
+          }
+          // Rows with unknowns are made for each answer, as the fact form
+          // would make them with the answer's values.
+          const goal = isForm(value, "exists") ? value.parts[1] : undefined;
+          return goal !== undefined && callsOf(goal) !== undefined
+            ? Effect.succeed(heldRows(value as LogicForm, goal))
+            : notACall(value);
+        });
       }
     );
-    return new LogicForm(form, values);
+    return new LogicForm(form, values.flat());
   });
 
 /**
@@ -544,7 +607,8 @@ const changeOf = (change: unknown, part: Part) =>
  */
 export const evaluateAssuming = (
   [_, ...parts]: typeof AssumingFormSchema.Type,
-  part: Part = evaluate
+  part: Part = evaluate,
+  scope?: Scope
 ) =>
   Effect.gen(function* () {
     const expression = parts.at(-1);
@@ -555,7 +619,7 @@ export const evaluateAssuming = (
       );
     }
     const made = yield* Effect.forEach(changes, (change) =>
-      changeOf(change, part)
+      changeOf(change, part, scope)
     );
     const value = yield* writing(part(expression as LionExpressionType));
     const question = new LogicForm("assuming", [...made, value]);
@@ -639,24 +703,39 @@ export const evaluateSome = (
  * database: the goal must have no answers ("none"), or at least one ("some"),
  * now and after every later change. Options are read as written.
  */
+/**
+ * The parts of an invariant form, checked as the form checks them: its goal,
+ * then its options.
+ */
+const invariantOf = (goal: LionExpressionType, options: unknown, part: Part) =>
+  Effect.gen(function* () {
+    const goalValue = yield* writing(part(goal));
+    const query = yield* compileQuery(goalValue);
+    const assert = yield* parseInvariantOptions(options);
+    return { assert, goalValue, query };
+  });
+
 export const evaluateInvariant = (
   [_, goal, options]: typeof InvariantFormSchema.Type,
   part: Part = evaluate
 ) =>
   Effect.gen(function* () {
-    const goalValue = yield* writing(part(goal));
-    const query = yield* compileQuery(goalValue);
-    const assert = yield* parseInvariantOptions(options);
+    const { assert, goalValue, query } = yield* invariantOf(
+      goal,
+      options,
+      part
+    );
     yield* addInvariant(yield* database, { assert, goal: goalValue, query });
     return ["invariant", render(goalValue), { assert }];
   });
 
 export const evaluateWhy = (
   [_, fact]: typeof WhyFormSchema.Type,
-  part: Part = evaluate
+  part: Part = evaluate,
+  scope?: Scope
 ) =>
   Effect.gen(function* () {
-    const [atom] = yield* atoms("why", [fact], part);
+    const [atom] = yield* atoms("why", [fact], part, scope);
     return yield* explainFact(yield* database, atom as Atom);
   });
 

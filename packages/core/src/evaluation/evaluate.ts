@@ -4,6 +4,7 @@ import { compilePrimitive } from "@/evaluation/base-forms/primitive";
 import { compileRecord } from "@/evaluation/base-forms/record";
 import { type Compiled, toEffect } from "@/evaluation/compiled";
 import {
+  asWritten,
   makeEnvironment,
   predeclare,
   type Scope,
@@ -54,7 +55,7 @@ export const compileAll = (
 /** Evaluates an expression in the scope of the evaluation. */
 export const evaluate = (expression: LionExpressionType): EvaluateResult =>
   Effect.flatMap(Effect.service(LionEnvironmentService), (environment) =>
-    toEffect(compile(expression, environment)(environment, 0))
+    toEffect(compile(expression, asWritten(environment))(environment, 0))
   );
 
 /**

@@ -309,7 +309,7 @@
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
   <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.</li>
   <li>A relation that a graph algorithm computes cannot have facts.</li>
-  <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
+  <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing. A <code>rule</code> or <code>invariant</code> form among its facts fails before any part is evaluated, so it adds no rule.</li>
 </ul>
 
 <h2 id="form-retract"><code>retract</code></h2>
@@ -403,7 +403,7 @@
 ["assuming", change, ..., expression]
 </code-block>
 <ul>
-  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a>, <a href="#form-retract"><code>retract</code></a>, or <a href="#form-rule"><code>rule</code></a> form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a <code>rule</code> form adds its rule, and a <code>retract</code> takes back the rules and invariants it names as well as facts. No <a href="#form-invariant">invariant</a> refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
+  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a>, <a href="#form-retract"><code>retract</code></a>, or <a href="#form-rule"><code>rule</code></a> form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a <code>rule</code> form adds its rule, a <code>fact</code> or <code>retract</code> states rows with <a href="#form-exists"><code>exists</code></a> as it does on its own, and a <code>retract</code> takes back the rules and invariants it names as well as facts. Each change has its own form's shape, checked as that form checks it. No <a href="#form-invariant">invariant</a> refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
   <li>The expression is asked there: a goal is <code>true</code> or <code>false</code>, a <code>find</code> is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.</li>
   <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. The facts a change states must be known then; every other variable of the expression is its own. A rule a change adds or takes back has variables of its own too: those the answer bound take their values, and the rest are the held rule's.</li>
   <li>An inner <code>assuming</code> starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.</li>
@@ -426,6 +426,9 @@
      ["retract", ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]]],
      ["find", "?t", ["reaches", "a", "?t"]]],
    "with c to a, which the invariant keeps out": ["assuming", ["fact", ["road", "c", "a"]], ["reaches", "c", "b"]],
+   "through a town nobody has named": ["assuming",
+     ["fact", ["exists", ["?m"], ["and", ["road", "c", "?m"], ["road", "?m", "e"]]]],
+     ["reaches", "a", "e"]],
    "as it is": ["find", "?t", ["reaches", "a", "?t"]]}]
 </lion-example>
 

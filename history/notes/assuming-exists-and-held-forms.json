@@ -1,0 +1,24 @@
+{
+  "claims": [
+    {
+      "quote": "A `fact` or `retract` change of `assuming` states rows with `exists` as the form does on its own: `[\"assuming\", [\"fact\", [\"exists\", [\"?m\"], [\"and\", [\"road\", \"c\", \"?m\"], [\"road\", \"?m\", \"e\"]]]], [\"reaches\", \"a\", \"e\"]]` asks what would hold with a road through a town nobody has named. Each change has its own form's shape, checked as that form checks it, wherever it stands among the changes.",
+      "says": {
+        "behavior": "assuming-exists-change",
+        "is": "possible",
+        "area": "logic",
+        "was": "error"
+      },
+      "decisions": ["assuming-rules"]
+    },
+    {
+      "quote": "A `fact` or `why` form that holds a `rule` or `invariant` form among its relation calls fails before it evaluates any of them, so it adds no rule: `[\"fact\", [\"n\", 1], [\"rule\", [\"m\", \"?x\"], [\"n\", \"?x\"]]]` fails and the database holds no new rule or fact. `retract` and `assuming` check a rule or invariant form they hold as the form checks itself, in the same order and words.",
+      "says": {
+        "behavior": "fact-holding-rule-form",
+        "is": "changes-nothing",
+        "area": "logic",
+        "was": "adds-the-rule",
+        "fixes": true
+      }
+    }
+  ]
+}

@@ -86,12 +86,12 @@ export const compileCond = (
         : from(at + 1, environment, depth);
     }
     if (isWaiting(holds)) {
-      return new Pending(suspend(expression, environment, self));
+      return new Pending(suspend(expression, environment, self, scope));
     }
     return new Pending(
       Effect.flatMap(isWriting, (writing) =>
         writing
-          ? suspend(expression, environment, self)
+          ? suspend(expression, environment, self, scope)
           : Effect.flatMap(answer(holds), (answered) =>
               toEffect(decide(Boolean(answered), at, environment, 0))
             )

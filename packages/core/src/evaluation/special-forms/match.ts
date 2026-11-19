@@ -73,12 +73,12 @@ export const compileMatch = (
       return new Pending(against(made, environment));
     }
     if (isWaiting(made)) {
-      return new Pending(suspend(expression, environment, self));
+      return new Pending(suspend(expression, environment, self, scope));
     }
     return new Pending(
       Effect.flatMap(isWriting, (writing) =>
         writing
-          ? suspend(expression, environment, self)
+          ? suspend(expression, environment, self, scope)
           : Effect.flatMap(answer(made), (answered) =>
               against(answered, environment)
             )
@@ -92,7 +92,7 @@ export const compileMatch = (
     return result instanceof Pending
       ? new Pending(
           Effect.catchTag(result.effect, "WaitingError", () =>
-            suspend(expression, environment, self)
+            suspend(expression, environment, self, scope)
           )
         )
       : result;

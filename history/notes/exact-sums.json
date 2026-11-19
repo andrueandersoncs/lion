@@ -1,0 +1,37 @@
+{
+  "title": "A sum is rounded once, so the order of its values never changes it",
+  "context": "A rule's matches and a key's candidates come in no order the program can see, but `aggregate/sum` added them one at a time, so a sum of numbers that are not whole depended on the order: a rule added its matches sorted, and a merge and a call on a list in the order they came, so the same values could sum to 0.3333333333333333 or 0.33333333333333326. A property that compared a rule's sum with a model that added the facts in order failed now and then for that reason.",
+  "decision": "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `[\"aggregate/sum\", [\"array/make\", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308.",
+  "consequences": "`logic/aggregates.ts` sums with Shewchuk's exact partials and rounds once, half to even; where a partial sum passes the largest number, it adds the values exactly as whole numbers instead. A property in `logic/tests/aggregates.test.ts` checks the sum against a model that adds the values exactly as whole numbers and rounds once, for a list, a rule, and a merge, with the facts in another order; the models of the other properties that sum use it too. Another property puts large numbers first, so adding in order would overflow, and checks the sum against the same model.",
+  "alternatives": [
+    {
+      "option": "Add the values in sorted order",
+      "rejected": "The sum would no longer depend on the order, but would still round at every step, so it would be another number than the exact sum rounded, and only as stable as the sort."
+    },
+    {
+      "option": "Leave the sum as the matches come and compare sums with a tolerance in the tests",
+      "rejected": "The tests would pass while Lion's answers still depended on an order the program cannot see."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `[\"aggregate/sum\", [\"array/make\", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308.",
+      "says": {
+        "decision": "sum-rounding",
+        "chose": "nearest-exact-sum",
+        "over": ["added-as-values-come", "added-in-sorted-order"],
+        "area": "logic",
+        "because": "an aggregate combines matches that come in no order, so its result should not depend on one, as shortest breaks ties for the same reason"
+      }
+    },
+    {
+      "quote": "`aggregate/sum` gives the number nearest the exact sum of its values, rounded once, as Python's `math.fsum` does, so the order the values come in never changes it: `[\"aggregate/sum\", [\"array/make\", 1e16, 1, -1e16]]` is 1 in any order. `aggregate/mean` divides that sum. A rule that aggregates, a merge of the candidates of a key, and a call on a list give the same sum for the same values. It fails with `ArithmeticError` only when the exact sum is beyond every number, also where adding in order would pass the largest number on the way: `[1e308, 1e308, -1e308]` sums to 1e308.",
+      "says": {
+        "behavior": "sum-exactly-rounded",
+        "is": "nearest",
+        "area": "logic",
+        "was": "accumulated"
+      }
+    }
+  ]
+}

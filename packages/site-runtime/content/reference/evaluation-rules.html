@@ -21,6 +21,7 @@
   <li>If the name has the form <code>module/name</code> and reads as a misspelled name, it is an <a href="#errors"><code>UnboundNameError</code></a> that suggests the name: other names of its module are bound, as for <code>"number/ad"</code>, or a bound name is a letter or two away, as for <code>"numbr/add"</code>.</li>
   <li>Otherwise the string evaluates to itself, as <code>"n/a"</code> and <code>"text/plain"</code> do.</li>
 </ol>
+<p>The first element of an array is the one place a string is never data, since it names what the array does: one that no scope declares is looked up where the call runs. See <a href="#rule-arrays">Arrays</a>.</p>
 <lion-example name="Strings">
 ["begin",
   ["define", "name", "lion"],
@@ -39,7 +40,17 @@
   <li>An array whose first element is the name of a <a href="#special-forms">special form</a> or <a href="#logic-forms">logic form</a>, which no scope around it declares, is evaluated by the form's own rules.</li>
   <li>An array that starts with such a name but does not fit the form's shape, such as <code>["define", "x"]</code>, fails with <code>MalformedFormError</code>, which says what the form takes.</li>
   <li>Any other array is a function call. Every element is evaluated, from left to right. The first must evaluate to a function, which is called with the rest as arguments. If it does not, evaluation fails with <code>InvalidFunctionCallError</code>.</li>
+  <li>The first element names what the array does, so a string there is a name and never data. A name no scope declares is looked up where the call runs: a relation or function that code <a href="#form-eval"><code>eval</code></a> ran has bound by then is called, in plain code and in a rule, query, or <code>find</code> alike. Anywhere else, the same string is data.</li>
 </ul>
+<lion-example name="A relation that eval declared">
+["begin",
+  ["eval", ["quote", ["begin",
+    ["relation", "visited", ["city"]],
+    ["fact", ["visited", "Lima"], ["visited", "Oslo"]]]]],
+  {"found": ["find", "?c", ["visited", "?c"]],
+   "asked": ["visited", "Oslo"],
+   "the string": "visited"}]
+</lion-example>
 <lion-example name="A form's name bound by a parameter">
 [["lambda", ["fact"], ["fact", 3]], "value/identity"]
 </lion-example>
@@ -80,7 +91,7 @@
 </lion-example>
 
 <h2 id="rule-reserved">Names of forms</h2>
-<p>A <code>define</code>, a <code>set!</code>, or a <code>lambda</code> parameter can bind any name but the empty string and <code>__proto__</code>. A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A relation or schema is bound for every run of its database, so its name cannot be a form's: <code>begin</code>, <code>cond</code>, <code>define</code>, <code>set!</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>schema</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>assuming</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, or <code>invariant</code>.</p>
+<p>A <code>define</code>, a <code>set!</code>, or a <code>lambda</code> parameter can bind any name but the empty string and <code>__proto__</code>. A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A body declares what it defines from its start, so a body that defines a form's name cannot also use the form: <code>["define", "define", 1]</code> calls the name it defines, which has no value yet, and fails with <code>UndefinedYetError</code>, as R7RS Scheme makes such a definition an error. A relation or schema is bound for every run of its database, so its name cannot be a form's: <code>begin</code>, <code>cond</code>, <code>define</code>, <code>set!</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>schema</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>assuming</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, or <code>invariant</code>.</p>
 
 <h2 id="rule-runs">Each run</h2>
 <p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>

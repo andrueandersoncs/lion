@@ -22293,5 +22293,157 @@
       ["repo/read", "packages/repl/src/editor/semantic-graph.tsx"],
       "graph-literal-meaning"
     ]
+  },
+  {
+    "case": "string-in-find-bound-after-compile",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "zr", ["x"]],
+      ["fact", ["zr", 1]],
+      ["eval", ["quote", ["define", "zq", 1]]],
+      [
+        "cond",
+        [
+          ["=", ["find", "?v", ["=", "?v", "zq"]], ["quote", ["zq"]]],
+          ["quote", "data"]
+        ],
+        [
+          ["=", ["find", "?v", ["=", "?v", "zq"]], ["quote", [1]]],
+          ["quote", "name"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "eval-code-own-definitions",
+    "area": "evaluation",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "eval",
+            [
+              "quote",
+              [
+                "begin",
+                ["define", "zh", ["lambda", [], ["zk"]]],
+                ["define", "zk", ["lambda", [], 1]],
+                ["zh"]
+              ]
+            ]
+          ],
+          1
+        ],
+        ["quote", "declared"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "body-defines-define",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          ["quote", "instead of being the define form"]
+        ],
+        ["quote", "says-why"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          ["quote", "a body that defines define fails with"]
+        ],
+        ["quote", "read-before-defined"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "sum-exactly-rounded",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        ["=", ["aggregate/sum", ["array/make", 1e16, 1, -1e16]], 1],
+        ["quote", "nearest"]
+      ],
+      ["else", ["quote", "accumulated"]]
+    ]
+  },
+  {
+    "case": "assuming-exists-change",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "zp", ["x", "y"]],
+      [
+        "cond",
+        [
+          [
+            "assuming",
+            ["fact", ["exists", ["?m"], ["zp", 1, "?m"]]],
+            ["zp", 1, "?_"]
+          ],
+          ["quote", "possible"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "fact-holding-rule-form",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          ["quote", "after it, the database holds a rule: false"]
+        ],
+        ["quote", "changes-nothing"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          ["quote", "after it, the database holds a rule: true"]
+        ],
+        ["quote", "adds-the-rule"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "eval-declared-relation-asked-later",
+    "area": "logic",
+    "program": [
+      "begin",
+      [
+        "eval",
+        ["quote", ["begin", ["relation", "zv", ["x"]], ["fact", ["zv", 1]]]]
+      ],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["zv", 1],
+            ["=", ["find", "?x", ["zv", "?x"]], ["quote", [1]]]
+          ],
+          ["quote", "asked"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

@@ -11,6 +11,8 @@ import {
   toEffect,
 } from "@/evaluation/compiled";
 import {
+  asWritten,
+  declares,
   type Environment,
   lookup,
   predeclare,
@@ -90,6 +92,8 @@ interface Lambda {
   readonly defined: readonly string[];
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
+  /** The scope its form is written in, which settles what its strings mean. */
+  readonly scope: Scope | undefined;
 }
 
 const LAMBDAS = new WeakMap<object, Lambda>();
@@ -126,25 +130,35 @@ export const enter = (
     body: true,
     parent: lambda.environment,
   };
-  lambda.compiled ??= compile(lambda.body, scope);
+  lambda.compiled ??= compile(lambda.body, asWritten(scope));
   return lambda.compiled(scope, depth + 1);
 };
 
 /**
  * A Lion function over `body`. Without an environment it closes over nothing:
  * its body sees only its parameters. Host code that calls it gets an Effect,
- * which runs the body when it runs.
+ * which runs the body when it runs. `scope` is the scope the lambda form is
+ * written in, which the environment declares unless code `eval` ran has
+ * bound more since.
  */
 export const makeLambda = (
   parameters: readonly string[],
   body: LionExpressionType,
   environment?: Environment,
-  compiled?: Compiled
+  compiled?: Compiled,
+  scope: Scope | undefined = environment
 ) => {
-  const defined = bodyNames(parameters, body, environment).filter(
+  const defined = bodyNames(parameters, body, scope).filter(
     (name) => !parameters.includes(name)
   );
-  const lambda: Lambda = { body, compiled, defined, environment, parameters };
+  const lambda: Lambda = {
+    body,
+    compiled,
+    defined,
+    environment,
+    parameters,
+    scope,
+  };
   const fn = registerLambda(
     (...args: unknown[]) =>
       Effect.suspend(() => toEffect(enter(lambda, args, 0))),
@@ -167,7 +181,8 @@ export const compileLambda = (
     body,
     scopeWith(bodyNames(parameters, body, scope), scope)
   );
-  return (environment) => makeLambda(parameters, body, environment, compiled);
+  return (environment) =>
+    makeLambda(parameters, body, environment, compiled, scope);
 };
 
 /** Makes a list of its arguments, as `array/make` does. */
@@ -235,7 +250,7 @@ const close = (
     return Effect.succeed(value);
   }
   closed.set(value, value);
-  const body = lambdaOf(value)?.compiled;
+  const lambda = lambdaOf(value);
   return suspendIn(
     ["lambda", info.parameters, info.body] as LionExpressionType,
     info.environment,
@@ -245,22 +260,37 @@ const close = (
         info.parameters,
         info.body as LionExpressionType,
         environment,
-        body
-      )
+        lambda?.compiled
+      ),
+    lambda?.scope
   ).pipe(Effect.tap((copy) => Effect.sync(() => closed.set(value, copy))));
 };
+
+/**
+ * The value of a name a form reads where it is written: the name's value
+ * when the scope the form is written in declares it.
+ */
+const valueIn = (
+  environment: Environment,
+  scope: Scope | undefined,
+  name: string
+) =>
+  scope === undefined || declares(scope, name)
+    ? lookup(environment, name)
+    : UNBOUND;
 
 const suspendIn = (
   form: LionExpressionType,
   environment: Environment,
   closed: Map<unknown, unknown>,
-  compiled?: Compiled
+  compiled?: Compiled,
+  scope: Scope | undefined = environment
 ) =>
   Effect.gen(function* () {
     const names: string[] = [];
     const values: unknown[] = [];
     for (const [name, quoted] of references(form)) {
-      const binding = lookup(environment, name);
+      const binding = valueIn(environment, scope, name);
       if (binding !== UNBOUND) {
         names.push(name);
         values.push(yield* close(binding, closed));
@@ -287,13 +317,14 @@ const suspendIn = (
  */
 export const dataStrings = (
   form: LionExpressionType,
-  environment: Environment
+  environment: Environment,
+  scope: Scope | undefined = environment
 ) => {
   const strings: string[] = [];
   for (const [name, quoted] of references(form)) {
     const isName =
       quoted || isLogicVariableName(name) || isSpecialFormName(name);
-    if (!isName && lookup(environment, name) === UNBOUND) {
+    if (!isName && valueIn(environment, scope, name) === UNBOUND) {
       strings.push(name);
     }
   }
@@ -303,15 +334,16 @@ export const dataStrings = (
 /**
  * Makes a form wait for the logic variables it mentions. The result is a
  * call to a lambda that holds the form and takes the value of every name the
- * form mentions in `environment`, so the form runs later as it would run
- * now, once the engine has bound those variables. `compiled` is the form
- * compiled, when the caller has it.
+ * form mentions that `scope`, the scope it is written in, declares, so the
+ * form runs later as it would run now, once the engine has bound those
+ * variables. `compiled` is the form compiled, when the caller has it.
  */
 export const suspend = (
   form: LionExpressionType,
   environment: Environment,
-  compiled?: Compiled
-) => suspendIn(form, environment, new Map(), compiled);
+  compiled?: Compiled,
+  scope: Scope | undefined = environment
+) => suspendIn(form, environment, new Map(), compiled, scope);
 
 /** The arguments of a call that waits: lambdas among them become copies. */
 export const suspendArguments = (args: readonly unknown[]) => {

@@ -1,0 +1,108 @@
+{
+  "title": "Logic forms, forms that wait, and code that `eval` runs read strings by the scopes they are written in",
+  "context": "Once a string meant what the scopes it is written in declare, plain code kept data as data, but a logic form did not. After `[\"eval\", [\"quote\", [\"define\", \"later\", 5]]]`, the string `\"later\"` was `\"later\"` in plain code and 5 in `[\"find\", \"?v\", [\"=\", \"?v\", \"later\"]]`, because a logic form compiled its parts when it ran, and a run's scope was the environment itself, which `eval` had bound the name in by then. A cond or match that waits kept every name the environment bound, so a rule saved in a snapshot loaded with another meaning. And code that `eval` runs declared nothing it defined: `[\"eval\", [\"quote\", [\"begin\", [\"define\", \"g\", [\"lambda\", [], 1]], [\"g\"]]]]` failed, since `[\"g\"]` was compiled while `g` was data. The graph editor's session found the first while it checked its reading of strings against runs. Reading logic forms by their scopes then broke a pattern the record's own probes use: code that `eval` runs declares relations, such as a snapshot loaded under new names, and the program asks them by name after it. Those calls had worked only because logic forms read the environment as it was when they ran.",
+  "decision": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+  "consequences": "`partIn` in `special-forms/logic.ts` compiles a form's parts in its scope, once each; `asWritten` in `environment.ts` is a scope as it was when code was compiled, which counts the bindings each frame had, since bindings are never taken away; `run`, `evaluate`, `eval`, and a lambda compiled when it is first called compile in it; a lambda keeps the scope it is written in, so a waiting form and a lambda a rule holds keep only the names that scope declares. Properties in `evaluation/tests/scopes.test.ts` check that a string gives in a `find`, a rule, a waiting rule after a snapshot, a `fact`, an `assuming`, a lambda, and a `query` what it gives in plain code, with the name bound by `eval` after compiling and with it declared, and that code run by `eval` gives what the same code run as a program gives.",
+  "alternatives": [
+    {
+      "option": "Compile every part of a logic form when the form is compiled",
+      "rejected": "Which parts a form evaluates, and how, is the form's to say as it runs: a `retract` holds a rule form and evaluates its parts, and an `assuming` holds its changes. A scope that shows the names as they were written gives every part the same reading whenever it is compiled."
+    },
+    {
+      "option": "Copy the names a scope declares each time code is compiled",
+      "rejected": "A run's scope holds every library name, so each `eval` would copy hundreds of names; counting the bindings a frame had reads the same at no cost until something binds more."
+    },
+    {
+      "option": "Leave code that `eval` runs without declarations of its own",
+      "rejected": "A program run by `eval` would mean something else than the same program run on its own: its functions could not call each other."
+    },
+    {
+      "option": "Let a relation or schema be a name, wherever no scope declares it, from when the database declares it",
+      "rejected": "It would be a second rule for strings, by the kind of value bound, and a relation bound later would turn data into a name. The head of a call is never data, so looking its name up where the call runs changes no program that ran, and needs no rule of its own."
+    },
+    {
+      "option": "Keep every string settled by scope, the head of a call too, and have such programs ask in a later run",
+      "rejected": "Code that loads relations with `eval` and asks them would stop working, and a goal over a relation name that became data would wait instead of failing, so some programs would give other answers without an error."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "decision": "logic-form-strings",
+        "chose": "written-scope",
+        "over": ["running-scope"],
+        "area": "evaluation",
+        "because": "an expression gives in a logic form what it gives in plain code"
+      }
+    },
+    {
+      "quote": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "rule": "strings-settled-by-scope",
+        "holds": true,
+        "statement": "A string is a name when a scope it is written in declares it, and data otherwise; a binding made later never turns data into a name.",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "string-bound-after-code-compiled",
+            "is": "data"
+          },
+          {
+            "behavior": "string-in-find-bound-after-compile",
+            "is": "data"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "behavior": "string-in-find-bound-after-compile",
+        "is": "data",
+        "area": "logic",
+        "was": "name",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "decision": "eval-code-declarations",
+        "chose": "declares-its-definitions",
+        "over": ["compiled-as-is"],
+        "area": "evaluation",
+        "because": "code that eval runs is a program, and a program declares what it defines from its start"
+      }
+    },
+    {
+      "quote": "The parts of a logic form are read by the scope the form is written in, as plain code is: a `find`, a `rule`, a `fact`, a `query`, an `assuming`, and every other form that reads or changes the database compiles its parts there, so a string means in them what it means in plain code beside them. A scope keeps the names it declared when code was compiled in it: a name that code `eval` runs binds later is not among them, also when compiled code asks its scope while it runs, as a form that waits does when it keeps the values of the names it reads. Code that `eval` runs is a program: it declares the names it defines, in the body `eval` stands in, and the relations and schemas it declares, from its start. The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "behavior": "eval-code-own-definitions",
+        "is": "declared",
+        "area": "evaluation",
+        "was": "error",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "decision": "call-head-name",
+        "chose": "name-looked-up-where-the-call-runs",
+        "over": ["settled-by-scope-as-data", "database-names-anywhere"],
+        "area": "evaluation",
+        "because": "the first element of an array names what the array does and is never data, so looking it up where the call runs changes no program that ran"
+      }
+    },
+    {
+      "quote": "The first element of an array names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, among the bindings the run has by then. A relation or function that code `eval` ran has bound is called, in plain code and in a rule, query, or `find` alike: after `[\"eval\", [\"quote\", [\"relation\", \"visited\", [\"city\"]]]]`, `[\"find\", \"?c\", [\"visited\", \"?c\"]]` asks the relation, while the string `\"visited\"` anywhere else is data.",
+      "says": {
+        "behavior": "eval-declared-relation-asked-later",
+        "is": "asked",
+        "area": "logic",
+        "was": "error"
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "title": "A body cannot define the name of a form it uses",
+  "context": "A body declares what it defines from its start, and a binding of a form's name makes an array that starts with it a call where the binding is in scope. So `[\"define\", \"define\", 1]` is a call of the name it defines, read before it has a value, and failed with the message for any name read early, which told the reader to define it first or quote it, neither of which helps.",
+  "decision": "A body that defines the name of a form it uses fails, as R7RS Scheme makes such a definition an error: `[\"define\", \"define\", 1]` calls the name it defines, which the body declares from its start and which has no value yet. It fails with `UndefinedYetError`, whose message says that the body defines the form's name, so an array that starts with it calls that definition instead of being the form, and that the definition needs another name.",
+  "consequences": "Only the message changed: `UndefinedYetError` says why when the name is a form's. A property in `evaluation/tests/scopes.test.ts` checks, for every form's name, at the top and in a lambda, that a body that uses the form and then defines its name fails with that message.",
+  "alternatives": [
+    {
+      "option": "Let a definition of a form's name stay that form, as Racket's internal definitions do",
+      "rejected": "The body's other definitions would still turn into calls, so which forms of a body define would depend on their order, which a body that declares its definitions from its start does not."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A body that defines the name of a form it uses fails, as R7RS Scheme makes such a definition an error: `[\"define\", \"define\", 1]` calls the name it defines, which the body declares from its start and which has no value yet. It fails with `UndefinedYetError`, whose message says that the body defines the form's name, so an array that starts with it calls that definition instead of being the form, and that the definition needs another name.",
+      "says": {
+        "decision": "form-name-definition-in-own-body",
+        "chose": "error-that-says-why",
+        "over": ["definition-stays-the-form"],
+        "area": "forms",
+        "because": "a body declares what it defines from its start, and R7RS Scheme makes a definition that changes its own meaning an error"
+      }
+    },
+    {
+      "quote": "A body that defines the name of a form it uses fails, as R7RS Scheme makes such a definition an error: `[\"define\", \"define\", 1]` calls the name it defines, which the body declares from its start and which has no value yet. It fails with `UndefinedYetError`, whose message says that the body defines the form's name, so an array that starts with it calls that definition instead of being the form, and that the definition needs another name.",
+      "says": {
+        "behavior": "body-defines-define",
+        "is": "says-why",
+        "area": "forms",
+        "was": "read-before-defined",
+        "fixes": true
+      }
+    }
+  ]
+}

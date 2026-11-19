@@ -213,7 +213,7 @@ Fails with `Nothing is bound to "number/ad". Did you mean "number/add"? To mean 
 The empty array `[]` evaluates to itself. Every other array is treated as an executable expression:
 
 1. special forms such as `["define", "x", 1]`, when no scope around the array declares the form's name
-2. function calls when the first element evaluates to a function
+2. function calls when the first element evaluates to a function. The first element names what the array does, so a string there is a name and never data: one that no scope declares is looked up where the call runs, so a relation or function that code `eval` ran has bound by then is called
 
 ```json
 ["number/add", 1, 2]
@@ -250,7 +250,7 @@ Returns its argument without evaluating it.
 
 ### `eval`
 
-Evaluates its argument, then evaluates the result.
+Evaluates its argument, then evaluates the result as a program: the code is compiled as it runs, so it can define and use names of its own, and a string in it means what the scope declares then.
 
 ```json
 ["eval", ["quote", ["number/add", 1, 2]]]
@@ -521,7 +521,7 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 
 #### Asking what would hold
 
-`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact`, `retract`, or `rule` form, made in order as that form would make it, with keys and merges: a `rule` form adds its rule, and a `retract` takes back the rules and invariants it names as well as facts, as it does on its own. No invariant refuses a change, not even the one an assumed rule that says two values are the same holds as, since an invariant keeps the database and the change is only assumed. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
+`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact`, `retract`, or `rule` form, made in order as that form would make it, with keys and merges: a `rule` form adds its rule, a `fact` states rows with `exists` as it does on its own, and a `retract` takes back the rules and invariants it names as well as facts, as it does on its own. No invariant refuses a change, not even the one an assumed rule that says two values are the same holds as, since an invariant keeps the database and the change is only assumed. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
 
 ```json
 ["begin",
@@ -704,7 +704,7 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 |---|---|
 | `aggregate/count` | Number of matches |
 | `aggregate/countUnique` | Number of distinct values |
-| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers (`mean` of nothing is `null`) |
+| `aggregate/sum`, `aggregate/mean` | Sum and mean of numbers, the sum rounded once so the order of the values never changes it (`mean` of nothing is `null`) |
 | `aggregate/min`, `aggregate/max` | Smallest and largest value; all numbers or all strings |
 | `aggregate/shortest` | Shortest list or string; ties go to the smaller value |
 | `aggregate/union` | Every element of every list, distinct and sorted |

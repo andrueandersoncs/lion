@@ -5127,6 +5127,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>If the name has the form <code>module/name</code> and reads as a misspelled name, it is an <a href="#errors"><code>UnboundNameError</code></a> that suggests the name: other names of its module are bound, as for <code>"number/ad"</code>, or a bound name is a letter or two away, as for <code>"numbr/add"</code>.</li>
   <li>Otherwise the string evaluates to itself, as <code>"n/a"</code> and <code>"text/plain"</code> do.</li>
 </ol>
+<p>The first element of an array is the one place a string is never data, since it names what the array does: one that no scope declares is looked up where the call runs. See <a href="#rule-arrays">Arrays</a>.</p>
 <div class="playground" data-playground="Strings">
   <div class="code-block playground-code">
     <pre><code data-highlight>["begin",
@@ -5162,7 +5163,23 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>An array whose first element is the name of a <a href="#special-forms">special form</a> or <a href="#logic-forms">logic form</a>, which no scope around it declares, is evaluated by the form's own rules.</li>
   <li>An array that starts with such a name but does not fit the form's shape, such as <code>["define", "x"]</code>, fails with <code>MalformedFormError</code>, which says what the form takes.</li>
   <li>Any other array is a function call. Every element is evaluated, from left to right. The first must evaluate to a function, which is called with the rest as arguments. If it does not, evaluation fails with <code>InvalidFunctionCallError</code>.</li>
+  <li>The first element names what the array does, so a string there is a name and never data. A name no scope declares is looked up where the call runs: a relation or function that code <a href="#form-eval"><code>eval</code></a> ran has bound by then is called, in plain code and in a rule, query, or <code>find</code> alike. Anywhere else, the same string is data.</li>
 </ul>
+<div class="playground" data-playground="A relation that eval declared">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["eval", ["quote", ["begin",
+    ["relation", "visited", ["city"]],
+    ["fact", ["visited", "Lima"], ["visited", "Oslo"]]]]],
+  {"found": ["find", "?c", ["visited", "?c"]],
+   "asked": ["visited", "Oslo"],
+   "the string": "visited"}]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>{"found":["Lima","Oslo"],"asked":true,"the string":"visited"}</code></pre>
+  </div>
+</div>
 <div class="playground" data-playground="A form's name bound by a parameter">
   <div class="code-block playground-code">
     <pre><code data-highlight>[["lambda", ["fact"], ["fact", 3]], "value/identity"]</code></pre>
@@ -5239,7 +5256,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 </div>
 
 <h2 id="rule-reserved">Names of forms</h2>
-<p>A <code>define</code>, a <code>set!</code>, or a <code>lambda</code> parameter can bind any name but the empty string and <code>__proto__</code>. A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A relation or schema is bound for every run of its database, so its name cannot be a form's: <code>begin</code>, <code>cond</code>, <code>define</code>, <code>set!</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>schema</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>assuming</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, or <code>invariant</code>.</p>
+<p>A <code>define</code>, a <code>set!</code>, or a <code>lambda</code> parameter can bind any name but the empty string and <code>__proto__</code>. A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A body declares what it defines from its start, so a body that defines a form's name cannot also use the form: <code>["define", "define", 1]</code> calls the name it defines, which has no value yet, and fails with <code>UndefinedYetError</code>, as R7RS Scheme makes such a definition an error. A relation or schema is bound for every run of its database, so its name cannot be a form's: <code>begin</code>, <code>cond</code>, <code>define</code>, <code>set!</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>schema</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>assuming</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, or <code>invariant</code>.</p>
 
 <h2 id="rule-runs">Each run</h2>
 <p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>
@@ -5293,7 +5310,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 
 <h2 id="form-eval"><code>eval</code></h2>
 <div class="code-block"><pre><code data-highlight>["eval", expression]</code></pre></div>
-<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result is compiled when it runs, so its strings mean what the scope declares then. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
+<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result is compiled when it runs, as a program is: its strings mean what the scope declares then, together with the names the code defines, which it binds in the body <code>eval</code> stands in, and the relations and schemas it declares. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
 <div class="playground" data-playground="eval">
   <div class="code-block playground-code">
     <pre><code data-highlight>["eval", ["quote", ["number/add", 1, 2]]]</code></pre>
@@ -5301,6 +5318,19 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <div class="playground-output">
     <span class="playground-status is-ok">result</span>
     <pre class="playground-result"><code>3</code></pre>
+  </div>
+</div>
+<div class="playground" data-playground="Code that defines its own names">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["eval", ["quote",
+  ["begin",
+    ["define", "twice", ["lambda", ["n"], ["double", ["double", "n"]]]],
+    ["define", "double", ["lambda", ["n"], ["number/multiply", "n", 2]]],
+    ["twice", 5]]]]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>20</code></pre>
   </div>
 </div>
 
@@ -5955,7 +5985,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <li>A relation's facts are a set; adding a fact that is present changes nothing.</li>
   <li>For a keyed relation, a fact replaces the row with the same key; within one form, the last fact for a key wins, and the form writes no other fact for that key, so a form whose last facts hold already changes nothing. A relation that merges what a key gets keeps every fact as a candidate instead.</li>
   <li>A relation that a graph algorithm computes cannot have facts.</li>
-  <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing.</li>
+  <li>The form is one change: it is checked in full, made in full, and checked against every <a href="#form-invariant">invariant</a>, or it fails and changes nothing. A <code>rule</code> or <code>invariant</code> form among its facts fails before any part is evaluated, so it adds no rule.</li>
 </ul>
 
 <h2 id="form-retract"><code>retract</code></h2>
@@ -6070,7 +6100,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
 <h2 id="form-assuming"><code>assuming</code></h2>
 <div class="code-block"><pre><code data-highlight>["assuming", change, ..., expression]</code></pre></div>
 <ul>
-  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a>, <a href="#form-retract"><code>retract</code></a>, or <a href="#form-rule"><code>rule</code></a> form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a <code>rule</code> form adds its rule, and a <code>retract</code> takes back the rules and invariants it names as well as facts. No <a href="#form-invariant">invariant</a> refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
+  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a>, <a href="#form-retract"><code>retract</code></a>, or <a href="#form-rule"><code>rule</code></a> form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a <code>rule</code> form adds its rule, a <code>fact</code> or <code>retract</code> states rows with <a href="#form-exists"><code>exists</code></a> as it does on its own, and a <code>retract</code> takes back the rules and invariants it names as well as facts. Each change has its own form's shape, checked as that form checks it. No <a href="#form-invariant">invariant</a> refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
   <li>The expression is asked there: a goal is <code>true</code> or <code>false</code>, a <code>find</code> is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.</li>
   <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. The facts a change states must be known then; every other variable of the expression is its own. A rule a change adds or takes back has variables of its own too: those the answer bound take their values, and the rest are the held rule's.</li>
   <li>An inner <code>assuming</code> starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.</li>
@@ -6094,6 +6124,9 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
      ["retract", ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]]],
      ["find", "?t", ["reaches", "a", "?t"]]],
    "with c to a, which the invariant keeps out": ["assuming", ["fact", ["road", "c", "a"]], ["reaches", "c", "b"]],
+   "through a town nobody has named": ["assuming",
+     ["fact", ["exists", ["?m"], ["and", ["road", "c", "?m"], ["road", "?m", "e"]]]],
+     ["reaches", "a", "e"]],
    "as it is": ["find", "?t", ["reaches", "a", "?t"]]}]</code></pre>
   </div>
   <div class="playground-output">
@@ -6104,6 +6137,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   "if reaching went both ways": ["a","b"],
   "without the rule that goes on": ["b"],
   "with c to a, which the invariant keeps out": true,
+  "through a town nobody has named": true,
   "as it is": ["b","c"]
 }</code></pre>
   </div>
@@ -7109,8 +7143,8 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   <tbody>
     <tr data-entry="aggregate/count" id="standard-library-aggregate-count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/countUnique" id="standard-library-aggregate-countunique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/sum" id="standard-library-aggregate-sum"><td><code>["aggregate/sum", values]</code></td><td>The sum; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/mean" id="standard-library-aggregate-mean"><td><code>["aggregate/mean", values]</code></td><td>The mean; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/sum" id="standard-library-aggregate-sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/mean" id="standard-library-aggregate-mean"><td><code>["aggregate/mean", values]</code></td><td>The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min" id="standard-library-aggregate-min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max" id="standard-library-aggregate-max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/shortest" id="standard-library-aggregate-shortest"><td><code>["aggregate/shortest", values]</code></td><td>The shortest list or string; ties go to the smaller value. Lattice.</td><td><code>null</code></td></tr>
@@ -7119,6 +7153,17 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
     <tr data-entry="aggregate/unique" id="standard-library-aggregate-unique"><td><code>["aggregate/unique", values]</code></td><td>The distinct values, sorted</td><td><code>[]</code></td></tr>
   </tbody>
 </table></div>
+<p>A sum is rounded once, so adding the same numbers in another order, as the matches of a rule or the candidates of a key may come, gives the same number:</p>
+<div class="playground" data-playground="A sum in any order">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>{"forward": ["aggregate/sum", ["array/make", 1e16, 1, -1e16]],
+ "backward": ["aggregate/sum", ["array/make", -1e16, 1, 1e16]]}</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>{"forward":1,"backward":1}</code></pre>
+  </div>
+</div>
 <p>Lattice aggregates only move one way as values arrive, so they may aggregate through recursion. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 <div class="playground" data-playground="aggregate">
   <div class="code-block playground-code">
@@ -7373,7 +7418,7 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
     <tr data-entry="UnboundNameError" id="errors-unboundnameerror"><td><code>UnboundNameError</code></td><td>A string of the form <code>module/name</code> is evaluated, nothing is bound to it, and it reads as a misspelled name: other names of its module are bound, or a bound name is a letter or two away, which the message suggests. The error holds the string as <code>unbound</code> and the suggestion, or <code>null</code>, as <code>nearest</code>. Inside <code>quote</code> the string is data.</td></tr>
     <tr data-entry="InvalidFunctionCallError" id="errors-invalidfunctioncallerror"><td><code>InvalidFunctionCallError</code></td><td>An array's first element does not evaluate to a function, including a string no scope declares. A misspelled <code>module/name</code> is an <code>UnboundNameError</code> instead.</td></tr>
     <tr data-entry="MalformedFormError" id="errors-malformedformerror"><td><code>MalformedFormError</code></td><td>An array starts with a special form's name that no scope declares, but does not have the form's shape, such as <code>["define", "x"]</code>. The message says what the form takes, with an example. The error holds the array as <code>expression</code>, the form's name as <code>form</code>, and what it takes as <code>usage</code>.</td></tr>
-    <tr data-entry="UndefinedYetError" id="errors-undefinedyeterror"><td><code>UndefinedYetError</code></td><td>A name is read before the <code>define</code>, <code>relation</code>, or <code>schema</code> form that binds it has run. A body declares the names it defines from its start, so the string means that definition, which has no value yet. The error holds the name as <code>unassigned</code>.</td></tr>
+    <tr data-entry="UndefinedYetError" id="errors-undefinedyeterror"><td><code>UndefinedYetError</code></td><td>A name is read before the <code>define</code>, <code>relation</code>, or <code>schema</code> form that binds it has run. A body declares the names it defines from its start, so the string means that definition, which has no value yet. A body that defines the name of a form it uses, as <code>["define", "define", 1]</code> does, fails with it too, and the message says so. The error holds the name as <code>unassigned</code>.</td></tr>
     <tr data-entry="ArgumentMismatchError" id="errors-argumentmismatcherror"><td><code>ArgumentMismatchError</code></td><td>A lambda is called with fewer arguments than it has parameters.</td></tr>
     <tr data-entry="ArithmeticError" id="errors-arithmeticerror"><td><code>ArithmeticError</code></td><td>Arithmetic has no finite result, such as division by zero or an overflow. JSON cannot hold Infinity or NaN.</td></tr>
     <tr data-entry="LogicError" id="errors-logicerror"><td><code>LogicError</code></td><td>A logic form fails: an unsafe goal or rule, a recursion or question that breaks the rules, a broken invariant or query assertion, a key conflict, a bad option, and more. The message says what and where.</td></tr>
@@ -7852,7 +7897,22 @@ for (const { pointer, value, meaning } of flattenAnalysis(
 <p>The global <code>start</code> is 1000, but the inner lambda sees the <code>start</code> it was created with, 10.</p>
 
 <h2 id="names-and-scope-a-string-is-a-name-where-a-scope-declares-it">A string is a name where a scope declares it</h2>
-<p>JSON has one kind of string, so Lion decides which strings are names by where they are written, before the program runs. A string that a scope around it declares is a name; any other is data. A scope declares its bindings from its start: the names the host gave the run and the database's relations, the names the program defines anywhere at its top level and the relations and schemas it declares, and, for a lambda, its parameters and the names its body defines. What a string means therefore never depends on the order things run in: a binding made later, by <code>eval</code> for instance, never turns data that code already holds into a name.</p>
+<p>JSON has one kind of string, so Lion decides which strings are names by where they are written, before the program runs. A string that a scope around it declares is a name; any other is data. A scope declares its bindings from its start: the names the host gave the run and the database's relations, the names the program defines anywhere at its top level and the relations and schemas it declares, and, for a lambda, its parameters and the names its body defines. What a string means therefore never depends on the order things run in: a binding made later, by <code>eval</code> for instance, never turns data that code already holds into a name. That holds in the parts of a <code>find</code>, a <code>rule</code>, or any other logic form as in plain code: they are read by the scopes they are written in, whenever the form runs. The first element of an array is the one place a string is always a name, since it names what the array does: one no scope declares is looked up where the call runs, so a relation that <code>eval</code> declared can be asked about after it.</p>
+<div class="playground" data-playground="A binding made later">
+  <div class="code-block playground-code">
+    <pre><code data-highlight>["begin",
+  ["relation", "seen", ["x"]],
+  ["fact", ["seen", 1]],
+  ["eval", ["quote", ["define", "later", 5]]],
+  {"plain": "later",
+   "find": ["find", "?v", ["=", "?v", "later"]],
+   "in eval": ["eval", ["quote", "later"]]}]</code></pre>
+  </div>
+  <div class="playground-output">
+    <span class="playground-status is-ok">result</span>
+    <pre class="playground-result"><code>{"plain":"later","find":["later"],"in eval":5}</code></pre>
+  </div>
+</div>
 <p>Because a body declares what it defines from its start, functions can name each other in any order, which mutual recursion needs:</p>
 <div class="playground" data-playground="Definitions in any order">
   <div class="code-block playground-code">

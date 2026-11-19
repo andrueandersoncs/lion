@@ -11,6 +11,40 @@ import { stdlib } from "@/modules";
 
 type Form = readonly unknown[];
 
+/** A finite number as an exact count of 2^-1074, the smallest step. */
+const exactly = (value: number) => {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, value);
+  const bits = view.getBigUint64(0);
+  const unit = 2n ** 52n;
+  const exponent = Number((bits / unit) % 2048n);
+  const fraction = bits % unit;
+  const magnitude =
+    exponent === 0 ? fraction : (fraction + unit) * 2n ** BigInt(exponent - 1);
+  return bits >= 2n ** 63n ? -magnitude : magnitude;
+};
+
+/**
+ * A plain model of a sum: the number nearest the exact sum of the values,
+ * a tie going to the even one, computed with whole numbers.
+ */
+export const nearestSum = (values: readonly number[]) => {
+  const total = values.reduce((sum, value) => sum + exactly(value), 0n);
+  const size = total < 0n ? -total : total;
+  const digits = size.toString(2).length;
+  // Keep 53 significant bits; the rest round the last one.
+  const dropped = Math.max(0, digits - 53);
+  const step = 2n ** BigInt(dropped);
+  let kept = size / step;
+  const rest = size % step;
+  const half = step / 2n;
+  if (dropped > 0 && (rest > half || (rest === half && kept % 2n === 1n))) {
+    kept += 1n;
+  }
+  const value = Number(kept) * 2 ** (dropped - 1074);
+  return total < 0n ? -value : value;
+};
+
 const index = (count: number) =>
   Arbitrary.schema(
     Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: count - 1 }))

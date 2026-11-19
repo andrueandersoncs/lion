@@ -323,8 +323,8 @@
   <tbody>
     <tr data-entry="aggregate/count"><td><code>["aggregate/count", values]</code></td><td>How many values</td><td><code>0</code></td></tr>
     <tr data-entry="aggregate/countUnique"><td><code>["aggregate/countUnique", values]</code></td><td>How many distinct values</td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
-    <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The mean; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
+    <tr data-entry="aggregate/sum"><td><code>["aggregate/sum", values]</code></td><td>The sum, rounded once to the number nearest the exact sum, so the order of the values never changes it; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>0</code></td></tr>
+    <tr data-entry="aggregate/mean"><td><code>["aggregate/mean", values]</code></td><td>The mean: the sum, rounded once, divided by how many values there are; values must be numbers, and an overflow fails with <code>ArithmeticError</code></td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/min"><td><code>["aggregate/min", values]</code></td><td>The smallest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/max"><td><code>["aggregate/max", values]</code></td><td>The largest; all numbers or all strings. Lattice.</td><td><code>null</code></td></tr>
     <tr data-entry="aggregate/shortest"><td><code>["aggregate/shortest", values]</code></td><td>The shortest list or string; ties go to the smaller value. Lattice.</td><td><code>null</code></td></tr>
@@ -333,6 +333,11 @@
     <tr data-entry="aggregate/unique"><td><code>["aggregate/unique", values]</code></td><td>The distinct values, sorted</td><td><code>[]</code></td></tr>
   </tbody>
 </table>
+<p>A sum is rounded once, so adding the same numbers in another order, as the matches of a rule or the candidates of a key may come, gives the same number:</p>
+<lion-example name="A sum in any order">
+{"forward": ["aggregate/sum", ["array/make", 1e16, 1, -1e16]],
+ "backward": ["aggregate/sum", ["array/make", -1e16, 1, 1e16]]}
+</lion-example>
 <p>Lattice aggregates only move one way as values arrive, so they may aggregate through recursion. See <a href="#logic-guarantees">Logic database guarantees</a>.</p>
 <lion-example name="aggregate">
 ["begin",

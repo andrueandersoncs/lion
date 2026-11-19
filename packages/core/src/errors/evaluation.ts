@@ -1,5 +1,6 @@
 import { Effect, Schema } from "effect";
 import { show } from "@/logic/terms";
+import { isSpecialFormName } from "@/schemas/evaluation";
 import { LionExpressionSchema } from "@/schemas/lion-expression";
 
 export class ArgumentMismatchError extends Schema.TaggedError<ArgumentMismatchError>()(
@@ -66,7 +67,11 @@ export class UndefinedYetError extends Schema.TaggedError<UndefinedYetError>()(
   { unassigned: Schema.String }
 ) {
   override get message() {
-    return `"${this.unassigned}" is read before it is defined. A define binds its name from the start of the body it is in, and a relation or schema form from the start of the program, so the string means that definition, which has no value yet. Define it first, or write ["quote", "${this.unassigned}"] to mean the string.`;
+    const name = this.unassigned;
+    if (isSpecialFormName(name)) {
+      return `"${name}" is read before it is defined. The body it is in defines "${name}", which binds it from the start of the body, so there an array that starts with "${name}" calls that definition, which has no value yet, instead of being the ${name} form. As in R7RS Scheme, a body cannot define the name of a form and use the form: give the definition another name.`;
+    }
+    return `"${name}" is read before it is defined. A define binds its name from the start of the body it is in, and a relation or schema form from the start of the program, so the string means that definition, which has no value yet. Define it first, or write ["quote", "${name}"] to mean the string.`;
   }
 }
 

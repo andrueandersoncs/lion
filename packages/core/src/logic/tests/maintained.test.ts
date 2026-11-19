@@ -712,3 +712,121 @@ describe("a rule that holds a function from the host", () => {
     { timeout: 120_000, arbitrary: { runs: 300 } }
   );
 });
+
+/**
+ * Where paths lead from a node, in a plain model: a path is a fact of its
+ * own, or an edge, or an edge followed by a path.
+ */
+const reachable = (
+  edges: readonly (readonly string[])[],
+  paths: readonly (readonly string[])[],
+  from: string
+) => {
+  const all = new Set([...paths, ...edges].map((row) => row.join(" ")));
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const [x, y] of edges) {
+      for (const pair of [...all]) {
+        const [start, end] = pair.split(" ");
+        const joined = `${x} ${end}`;
+        if (start === y && !all.has(joined)) {
+          all.add(joined);
+          grew = true;
+        }
+      }
+    }
+  }
+  return [...all]
+    .map((pair) => pair.split(" "))
+    .filter(([start]) => start === from)
+    .map(([, end]) => end as string)
+    .sort();
+};
+
+describe("a goal-directed question", () => {
+  const pair = Arbitrary.all([element(NODES), element(NODES)]);
+  const rows = Arbitrary.array(pair, { maxLength: 4 });
+  const mask = Arbitrary.array(element([true, false]), { maxLength: 4 });
+
+  it.effect.prop(
+    "asked before the facts it reads change, answers after the change as the facts now give, also the facts of a relation its rules derive",
+    {
+      edges: rows,
+      paths: rows,
+      addedEdges: rows,
+      addedPaths: rows,
+      from: element(NODES),
+      takenEdges: mask,
+      takenPaths: mask,
+    },
+    ({ addedEdges, addedPaths, edges, from, paths, takenEdges, takenPaths }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase({ goalDirected: true });
+        const ask = () =>
+          run(["find", "?y", ["path", from, "?y"]], stdlib, { database });
+        const facts = (
+          form: string,
+          edgeRows: readonly (readonly string[])[],
+          pathRows: readonly (readonly string[])[]
+        ) => {
+          const items = [
+            ...edgeRows.map((row) => ["edge", ...row]),
+            ...pathRows.map((row) => ["path", ...row]),
+          ];
+          return items.length > 0 ? [[form, ...items]] : [];
+        };
+        yield* run(
+          [
+            "begin",
+            ["relation", "edge", ["from", "to"]],
+            ["relation", "path", ["from", "to"]],
+            ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+            [
+              "rule",
+              ["path", "?x", "?z"],
+              ["edge", "?x", "?y"],
+              ["path", "?y", "?z"],
+            ],
+            ...facts("fact", edges, paths),
+            true,
+          ],
+          stdlib,
+          { database }
+        );
+        expect(yield* ask()).toEqual(reachable(edges, paths, from));
+        // A path to a node no fact named before, so the answer changes.
+        const morePaths = [...addedPaths, [from, "new"]];
+        yield* run(
+          ["begin", ...facts("fact", addedEdges, morePaths), true],
+          stdlib,
+          { database }
+        );
+        const nowEdges = [...edges, ...addedEdges];
+        const nowPaths = [...paths, ...morePaths];
+        expect(yield* ask()).toEqual(reachable(nowEdges, nowPaths, from));
+        const goneEdges = edges.filter((_, at) => takenEdges[at] === true);
+        const gonePaths = paths.filter((_, at) => takenPaths[at] === true);
+        const removed = facts("retract", goneEdges, gonePaths);
+        if (removed.length > 0) {
+          yield* run(["begin", ...removed, true], stdlib, { database });
+          const without = (
+            rows: readonly (readonly string[])[],
+            gone: readonly (readonly string[])[]
+          ) =>
+            rows.filter(
+              (row) =>
+                !gone.some((each) => each[0] === row[0] && each[1] === row[1])
+            );
+          expect(yield* ask()).toEqual(
+            reachable(
+              without(nowEdges, goneEdges),
+              without(nowPaths, gonePaths),
+              from
+            )
+          );
+        }
+      }),
+    { timeout: 120_000, arbitrary: { runs: 200 } }
+  );
+});
