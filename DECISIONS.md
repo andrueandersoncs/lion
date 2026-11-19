@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 179 questions have been decided, 73 records explain them, and of what the records assert, 554 hold when Lion is run, 4 are broken, 320 are stated but not checked by running Lion, and 15 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 182 questions have been decided, 74 records explain them, and of what the records assert, 564 hold when Lion is run, 5 are broken, 326 are stated but not checked by running Lion, and 21 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -53,7 +53,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-04-19 | [`ui-stream-documents`](#ui-stream-documents) | `single-source` |  |
 | 2026-04-19 | [`ui-stream-transport`](#ui-stream-transport) | `json-patch` |  |
 | 2026-04-19 | [`ui-streaming-architecture`](#ui-streaming-architecture) | `source-as-state` |  |
-| 2026-04-19 | [`unbound-string-semantics`](#unbound-string-semantics) | `keep-string-fallback` |  |
+| 2026-04-19 | [`unbound-string-semantics`](#unbound-string-semantics) | `settled-by-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-09-17 | [`bun-install-linker`](#bun-install-linker) | `hoisted` |  |
 | 2026-09-17 | [`editor-source-pane`](#editor-source-pane) | `no-persistent-text-pane` | [The REPL is a semantic graph editor over the program's JSON, and the source view and the `/stream` prototype are gone](#graph-editor-is-the-repl) |
 | 2026-09-17 | [`lint-generated-files`](#lint-generated-files) | `excluded` |  |
@@ -185,6 +185,9 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`engine-mechanics-docs`](#engine-mechanics-docs) | `engine-md` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`record-pages-and-their-commit`](#record-pages-and-their-commit) | `pages-from-the-record-alone` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
 | 2026-11-19 | [`reworded-doc-sentence`](#reworded-doc-sentence) | `claim-left-out` | [The record's pages hold no trace of the commit they are in, a reworded sentence of the docs leaves the record instead of failing it, and only a change people see is proved by a recording](#process-costs-what-it-earns) |
+| 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
+| 2026-11-19 | [`define-scope`](#define-scope) | `body` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
+| 2026-11-19 | [`form-name-bindings`](#form-name-bindings) | `shadow-in-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 
 <a id="program-representation"></a>
 
@@ -298,7 +301,7 @@ Recorded 2026-11-18 in `history/notes/compiled-evaluation.json`.
 
 - Stated, not checked by running Lion: decided `evaluator-design`: `compile-to-direct-style`. "An expression is compiled to a JavaScript function of the scope it runs in, and a special form is told apart when its expression is compiled, not each time it runs."
 - Holds when Lion is run: `getBinding` is removed. "`getBinding` and `setLocalBinding` are gone"
-- Holds when Lion is run: `setLocalBinding` is removed. "`getBinding` and `setLocalBinding` are gone"
+- Replaced by a later word: `setLocalBinding` is removed. "`getBinding` and `setLocalBinding` are gone"
 - Holds when Lion is run: `compile` exists. "An expression is compiled to a JavaScript function of the scope it runs in"
 - Stated, not checked by running Lion: `fib-17-lambda-ms` is 3.8. "fib(17) takes 3.8 ms instead of 50 ms"
 - Stated, not checked by running Lion: `map-reduce-20000-ms` is 19. "`array/map` and `array/reduce` over 20,000 items about 19 ms instead of 135 ms"
@@ -811,8 +814,8 @@ Recorded 2026-03-31 in `history/notes/special-forms-plain-names.json`.
 - Stated, not checked by running Lion: rule `special-forms-slash-prefix` is withdrawn. "Special forms went back to plain names"
 - Holds when Lion is run: `special-form-without-slash` is `special-form`. "Special forms went back to plain names: `quote`, `eval`, `begin`, `define`, and `lambda`, and every form added since, such as `cond` and `match`, has a plain name too."
 - Holds when Lion is run: `special-form-without-slash` is `special-form`. "The forms read as their counterparts in Scheme and Racket do"
-- Holds when Lion is run: `define-special-form-name` is `rejected`. "`define` and `lambda` refuse a form's name as a name to bind"
-- Holds when Lion is run: `lambda-special-form-name-parameter` is `rejected`. "`define` and `lambda` refuse a form's name as a name to bind"
+- Replaced by a later word: `define-special-form-name` is `rejected`. "`define` and `lambda` refuse a form's name as a name to bind"
+- Replaced by a later word: `lambda-special-form-name-parameter` is `rejected`. "`define` and `lambda` refuse a form's name as a name to bind"
 - Stated, not checked by running Lion: rule `library-names-module-slash-name` holds. "a slash is left to library names such as `number/add`"
 
 <a id="special-forms-slash-prefix"></a>
@@ -832,7 +835,7 @@ Recorded 2026-03-30 in `history/notes/special-forms-slash-prefix.json`.
 - Replaced by a later word: decided `special-form-prefix`: `slash`. "Every special form took a leading slash"
 - Stated, not checked by running Lion: rule `special-forms-slash-prefix` is withdrawn. "The prefix lasted one day, and no release used it."
 - Holds when Lion is run: `lambda` exists. "and the new `"/lambda"`"
-- Holds when Lion is run: `define-special-form-name` is `rejected`. "`define` refused to bind the names `begin`, `define`, `eval`, and `quote`"
+- Replaced by a later word: `define-special-form-name` is `rejected`. "`define` refused to bind the names `begin`, `define`, `eval`, and `quote`"
 - Stated, not checked by running Lion: rule `library-names-module-slash-name` holds. "Library functions already had names of the form `module/name`"
 
 <a id="property-access-function"></a>
@@ -1035,12 +1038,12 @@ Recorded 2026-04-04 in `history/notes/lexical-closures.json`.
 
 - Stated, not checked by running Lion: decided `lambda-closure-environment`: `enclosing-environment`. "Environments form a chain from local to global, and a lambda closes over the environment it is made in"
 - Holds when Lion is run: `lambda-recursion-by-defined-name` is `allowed`. "so it can call itself by the name it is defined under"
-- Holds when Lion is run: `host-callback-define` is `global`. "a callback that host code runs later can still set a global name"
+- Replaced by a later word: `host-callback-define` is `global`. "a callback that host code runs later can still set a global name"
 - Stated, not checked by running Lion: decided `closure-environment-implementation`: `shared-mutable-frames`. "the same morning, each environment's bindings moved into a `Ref` that every closure over it shares"
 - Holds when Lion is run: rule `lexical-closures` holds. "Calling a lambda makes a new environment of its parameters whose parent is the environment the lambda was made in, not a copy of it"
 - Holds when Lion is run: `name-lookup-local-miss` is `parent-environment`. "A name is looked up from the innermost environment outward"
 - Holds when Lion is run: `lambda-body-global-environment` is `accessible`. "Each environment holds its own bindings and points to the environment around it, and the outermost is the global environment"
-- Holds when Lion is run: `define-inside-lambda` is `global`. "`define` binds in the global environment, also inside a lambda"
+- Replaced by a later word: `define-inside-lambda` is `global`. "`define` binds in the global environment, also inside a lambda"
 - Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A `define` inside a lambda's body does not make a local name, as it would in Scheme"
 - Holds when Lion is run: `lambda-free-variable` is `enclosing-scope`. "the innermost body sees all three parameters"
 - Holds when Lion is run: `lambda-global-defined-after-creation` is `visible`. "A lambda sees a global defined after it was made"
@@ -1146,9 +1149,56 @@ Now: `source-as-state`.
 
 ## unbound-string-semantics
 
-Now: `keep-string-fallback`.
+Now: `settled-by-scope`.
 
 - 2026-04-19 `unbound-string-semantics`: `keep-string-fallback` over `ref-form`, `call-form`: "No language-level changes to Lion (no `ref`, no `call`, no change to string-lookup semantics)." (`e16eb12`)
+- 2026-11-19 `unbound-string-semantics`: `settled-by-scope` over `keep-string-fallback`, `ref-form`, `call-form`, was `keep-string-fallback`: "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name." (`names-by-scope.json`)
+
+<a id="names-by-scope"></a>
+
+### A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false
+
+Recorded 2026-11-19 in `history/notes/names-by-scope.json`.
+
+**Context.** Lion decided at run time whether a string was a name: in `["define", "f", ["lambda", [], "status"]]` the call gave `"status"` until something defined `status`, and the value after, so the same code gave different values over time, and a binding made anywhere quietly turned data into a name. A `define` inside a lambda wrote a global, so a helper value inside a function leaked out of it; the coding agent's tool did so, overwriting a global of the same name. Twenty-five special forms, `fact`, `in`, `find`, `not`, and `some` among them, could not be parameters or definitions, and every array that named a form but had another shape failed with `["define","x"] is not a call: its first element must be a special form or evaluate to a function.`, for a form that was one. And `cond` used JavaScript truthiness, where `0` and `""` were false and `[]` was true, while a filter and the arguments of `and`, `or`, and `not` took only `true` and `false`.
+
+**Decision.** A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. A scope declares its bindings from its start: a run's top scope declares the names the environment and the database bind, every name the program's top level defines, and every relation and schema the program declares; a lambda's scope declares its parameters and the names its body defines. A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. A new form, `set!`, changes the nearest binding of a name, as in Scheme. A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example. A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.
+
+**Consequences.** The coding agent changes its message list with `set!`, and its file tool's helper values stay in the tool. Every program the docs show gives what it gave before, and the record's own programs run unchanged. Properties in `evaluation/tests/scopes.test.ts` and `special-forms/define.test.ts` check each rule, and the model interpreter the compiled evaluator is checked against reads strings the same way. Measured against main: 14,843 code lines where main has 14,438 (+2.8%), one more special form, two more kinds of error, and 32 more messages, 26 of them the forms' usage texts; the interop grid has three more rows, whose 30 cells all give what plain code gives, and no new exception.
+
+**Alternatives considered.**
+
+- Keep resolving strings when they run. The same code gave different values as names were bound, which no reader of the program could see from its text.
+- Write every string that is data inside quote, or mark names with a sigil. Every program and fact would change, for the cases a scope already settles.
+- Keep define global and add a local form. Scheme and Racket bind a define in its body; a second form would make Lion's define the one that astonishes.
+- Keep refusing a form's name as a binding, with a better message. Words like fact, in, find, and some are common names in the programs agents write, and Scheme lets a binding shadow a keyword.
+- Use Scheme's truth, where only false is false. null, which object/get gives for a missing key, would then hold, quietly; a condition that must be true or false fails loudly, as a filter already does.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `unbound-string-semantics`: `settled-by-scope`. "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name."
+- Holds when Lion is run: rule `special-forms-plain-names` holds. "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database."
+- Holds when Lion is run: `MalformedFormError` exists. "An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example."
+- Holds when Lion is run: `malformed-special-form` is `says-what-the-form-takes`. "An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example."
+- Stated, not checked by running Lion: decided `condition-truth`: `true-or-false`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: `cond-zero-condition` is `error`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: `cond-empty-string-condition` is `error`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: `cond-null-condition` is `error`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: `cond-string-condition` is `error`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Stated, not checked by running Lion: `cond-else` is `holds-unless-declared`. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Holds when Lion is run: `define-inside-lambda` is `local`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Holds when Lion is run: rule `strings-settled-by-scope` holds. "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name."
+- Holds when Lion is run: `setLocalBinding` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Holds when Lion is run: rule `lexical-closures` holds. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Stated, not checked by running Lion: rule `cond-truthiness` is withdrawn. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Broken: Lion does otherwise: rule `scheme-racket-semantics` holds. "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it."
+- Stated, not checked by running Lion: decided `define-scope`: `body`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Holds when Lion is run: `host-callback-define` is `local`. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Holds when Lion is run: `UndefinedYetError` exists. "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`."
+- Holds when Lion is run: `set!` exists. "A new form, `set!`, changes the nearest binding of a name, as in Scheme."
+- Stated, not checked by running Lion: decided `form-name-bindings`: `shadow-in-scope`. "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database."
+- Holds when Lion is run: `define-special-form-name` is `accepted`. "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database."
+- Holds when Lion is run: `lambda-special-form-name-parameter` is `accepted`. "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database."
 
 <a id="bun-install-linker"></a>
 
@@ -3940,3 +3990,27 @@ Now: `pages-from-the-record-alone`.
 Now: `claim-left-out`.
 
 - 2026-11-19 `reworded-doc-sentence`: `claim-left-out` over `check-fails`: "A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing." (`process-costs-what-it-earns.json`)
+
+<a id="condition-truth"></a>
+
+## condition-truth
+
+Now: `true-or-false`.
+
+- 2026-11-19 `condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`: "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it." (`names-by-scope.json`)
+
+<a id="define-scope"></a>
+
+## define-scope
+
+Now: `body`.
+
+- 2026-11-19 `define-scope`: `body` over `global`: "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`." (`names-by-scope.json`)
+
+<a id="form-name-bindings"></a>
+
+## form-name-bindings
+
+Now: `shadow-in-scope`.
+
+- 2026-11-19 `form-name-bindings`: `shadow-in-scope` over `refused`: "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database." (`names-by-scope.json`)

@@ -122,3 +122,7 @@ say(
     ])
   )
 );
+say(
+  "an array that names a form but has another shape fails with",
+  await outcome(["define", "x"])
+);

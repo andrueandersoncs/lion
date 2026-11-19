@@ -56,11 +56,25 @@ export const SPECIAL_FORM_NAMES = [
   "in",
   "snapshot",
   "invariant",
+  "set!",
 ] as const;
 
 export type SpecialFormName = (typeof SPECIAL_FORM_NAMES)[number];
 
-// A special form's name cannot be defined or used as a parameter.
+/**
+ * A name a `define`, a `set!`, or a lambda's parameter binds: any string but
+ * the empty one and `__proto__`. A name that is a special form's shadows
+ * the form where the binding is in scope.
+ */
+export const NameSchema = Schema.String.pipe(
+  Schema.check(
+    Schema.makeFilter((name) => name !== "__proto__"),
+    Schema.isMinLength(1)
+  )
+);
+
+// A relation's or schema's name is bound for every run of its database, so
+// it cannot be a special form's name, which it would hide everywhere.
 const DISALLOWED_IDENTIFIERS: readonly string[] = [
   ...SPECIAL_FORM_NAMES,
   "__proto__",
@@ -75,21 +89,18 @@ export const ValidIdentifierSchema = Schema.String.pipe(
   )
 );
 
-// ["cond", [<predicate>, <result>], ..., ["else", <result>]]. "else" is a
-// string like any other: it holds unless the environment binds it.
+// ["cond", [<condition>, <result>], ..., ["else", <result>]]. A condition is
+// true or false; "else", unless a scope declares it, always holds.
 const Pair = Schema.Tuple([Expression, Expression]);
 
 export const EvalFormSchema = form("eval", Expression);
 export const QuoteFormSchema = form("quote", Expression);
 export const BeginFormSchema = formWithMore("begin");
-export const DefineFormSchema = form(
-  "define",
-  ValidIdentifierSchema,
-  Expression
-);
+export const DefineFormSchema = form("define", NameSchema, Expression);
+export const SetFormSchema = form("set!", NameSchema, Expression);
 export const LambdaFormSchema = form(
   "lambda",
-  Schema.Array(ValidIdentifierSchema),
+  Schema.Array(NameSchema),
   Expression
 );
 export const CondFormSchema = Schema.TupleWithRest(form("cond", Pair), [Pair]);
@@ -176,7 +187,54 @@ const SHAPES: Record<SpecialFormName, (value: unknown) => boolean> = {
   in: Schema.is(InFormSchema),
   snapshot: Schema.is(form("snapshot")),
   invariant: Schema.is(InvariantFormSchema),
+  "set!": Schema.is(SetFormSchema),
 };
+
+/** What each special form takes, said when an array names it but has another shape. */
+export const USAGE: Record<SpecialFormName, string> = {
+  begin:
+    'begin takes any number of expressions, as in ["begin", ["define", "x", 1], "x"].',
+  define:
+    'define takes a name and an expression, as in ["define", "answer", 42].',
+  eval: 'eval takes one expression, whose value it evaluates, as in ["eval", ["quote", ["number/add", 1, 2]]].',
+  quote: 'quote takes one value, as in ["quote", ["a", "b"]].',
+  lambda:
+    'lambda takes a list of parameter names and a body, as in ["lambda", ["x"], ["number/add", "x", 1]].',
+  cond: 'cond takes one or more cases, each a condition and a result, as in ["cond", [["number/greaterThan", "x", 0], "positive"], ["else", "other"]].',
+  match:
+    'match takes a value, one or more cases of a schema and a function, and a fallback function, as in ["match", "x", ["value/number?", "value/identity"], ["lambda", ["v"], null]].',
+  relation:
+    'relation takes a name, a list of columns, and maybe options, as in ["relation", "edge", ["from", "to"]].',
+  schema:
+    'schema takes a name and a shape for each schema it declares, as in ["schema", "Order", {"id": "value/integer?"}].',
+  rule: 'rule takes a head and one or more goals, as in ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]].',
+  fact: 'fact takes one or more goals, as in ["fact", ["edge", "a", "b"]].',
+  retract:
+    'retract takes one or more goals, as in ["retract", ["edge", "a", "b"]].',
+  query:
+    'query takes a goal and maybe options, as in ["query", ["edge", "a", "?to"]].',
+  find: 'find takes a template and a goal, as in ["find", "?to", ["edge", "a", "?to"]].',
+  assuming:
+    'assuming takes one or more fact and retract forms, then an expression, as in ["assuming", ["fact", ["edge", "c", "d"]], ["find", "?t", ["edge", "c", "?t"]]].',
+  exists:
+    'exists takes a list of variables and a goal, as in ["exists", ["?m"], ["mother", "ben", "?m"]].',
+  some: 'some takes a variable and a goal, as in ["some", "?m", ["mother", "ben", "?m"]].',
+  why: 'why takes one goal, as in ["why", ["path", "a", "c"]].',
+  not: 'not takes one goal, as in ["not", ["edge", "a", "b"]].',
+  and: 'and takes goals or booleans, as in ["and", ["edge", "?x", "?y"], ["edge", "?y", "?z"]].',
+  or: 'or takes goals or booleans, as in ["or", ["edge", "?x", "b"], ["edge", "b", "?x"]].',
+  "=": '= takes two terms, as in ["=", "?x", 1].',
+  in: 'in takes an element and a list, as in ["in", "?tag", ["array/make", "a", "b"]].',
+  snapshot: 'snapshot takes nothing, as in ["snapshot"].',
+  invariant:
+    'invariant takes a goal and its options, as in ["invariant", ["broken", "?x"], {"assert": "none"}].',
+  "set!":
+    'set! takes a name a scope binds and an expression, as in ["set!", "count", ["number/add", "count", 1]].',
+};
+
+/** True when an array has the shape of the special form it names. */
+export const fitsForm = (name: SpecialFormName, expression: unknown) =>
+  SHAPES[name](expression);
 
 export const isSpecialFormName = (value: unknown): value is SpecialFormName =>
   typeof value === "string" && Object.hasOwn(SHAPES, value);

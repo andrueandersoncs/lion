@@ -486,7 +486,7 @@
       "measure_at",
       "?m",
       "?p",
-      ["object/get", "?says", "before"],
+      ["object/get", "?says", ["quote", "before"]],
       ["object/get", "?says", "after"],
       "?s"
     ],

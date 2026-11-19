@@ -7,16 +7,16 @@
     <tr><td>number</td><td>Itself.</td></tr>
     <tr><td>boolean</td><td>Itself.</td></tr>
     <tr><td>null</td><td>Itself.</td></tr>
-    <tr><td>string</td><td>The value bound to that name; otherwise a logic variable, for a name like <code>"?x"</code>; otherwise itself. See <a href="#rule-strings">Strings</a>.</td></tr>
+    <tr><td>string</td><td>The value of the name, when a scope it is written in declares it; otherwise a logic variable, for a name like <code>"?x"</code>; otherwise itself. See <a href="#rule-strings">Strings</a>.</td></tr>
     <tr><td>array</td><td><code>[]</code> for an empty array; otherwise a special form or a function call. See <a href="#rule-arrays">Arrays</a>.</td></tr>
     <tr><td>object (record)</td><td>A record with the same keys, each value evaluated. See <a href="#rule-records">Records</a>.</td></tr>
   </tbody>
 </table>
 
 <h2 id="rule-strings">Strings</h2>
-<p>A string is looked up in this order:</p>
+<p>What a string means is settled by the scopes it is written in, before it runs, so a binding made later never turns data into a name. A scope declares its bindings from its start: a run's top scope declares what the environment and the database bind, every name the program's top level defines, and every relation and schema it declares; a lambda's scope declares its parameters and the names its body defines. A string is read in this order:</p>
 <ol>
-  <li>If the environment binds the name, the string evaluates to the bound value.</li>
+  <li>If a scope declares the name, the string evaluates to the name's value. Read before its <code>define</code> has run, it fails with <a href="#errors"><code>UndefinedYetError</code></a>.</li>
   <li>If the name has the form <code>?name</code>, where <code>name</code> starts with a letter or <code>_</code> and continues with letters, digits, <code>_</code>, or <code>-</code>, it evaluates to a logic variable. <code>"?_"</code> and names starting with <code>?_</code> are anonymous variables.</li>
   <li>If the name has the form <code>module/name</code> and reads as a misspelled name, it is an <a href="#errors"><code>UnboundNameError</code></a> that suggests the name: other names of its module are bound, as for <code>"number/ad"</code>, or a bound name is a letter or two away, as for <code>"numbr/add"</code>.</li>
   <li>Otherwise the string evaluates to itself, as <code>"n/a"</code> and <code>"text/plain"</code> do.</li>
@@ -36,10 +36,13 @@
 <h2 id="rule-arrays">Arrays</h2>
 <ul>
   <li>An empty array evaluates to <code>[]</code>.</li>
-  <li>An array whose first element is the name of a <a href="#special-forms">special form</a> or <a href="#logic-forms">logic form</a>, and whose shape fits that form, is evaluated by the form's own rules.</li>
+  <li>An array whose first element is the name of a <a href="#special-forms">special form</a> or <a href="#logic-forms">logic form</a>, which no scope around it declares, is evaluated by the form's own rules.</li>
+  <li>An array that starts with such a name but does not fit the form's shape, such as <code>["define", "x"]</code>, fails with <code>MalformedFormError</code>, which says what the form takes.</li>
   <li>Any other array is a function call. Every element is evaluated, from left to right. The first must evaluate to a function, which is called with the rest as arguments. If it does not, evaluation fails with <code>InvalidFunctionCallError</code>.</li>
-  <li>An array that starts with a form's name but does not fit the form's shape, such as <code>["define", "x"]</code>, is treated as a call, and so fails with <code>InvalidFunctionCallError</code>.</li>
 </ul>
+<lion-example name="A form's name bound by a parameter">
+[["lambda", ["fact"], ["fact", 3]], "value/identity"]
+</lion-example>
 <lion-example name="A non-function call" expect="error">
 [1, 2, 3]
 </lion-example>
@@ -70,12 +73,14 @@
   ["count", 100000, 0]]
 </lion-example>
 
-<h2 id="rule-truthiness">Truthiness</h2>
-<p>Where Lion tests a condition, as in <a href="#form-cond"><code>cond</code></a>, it uses JavaScript truthiness: <code>false</code>, <code>null</code>, <code>0</code>, <code>""</code>, and <code>NaN</code> are false, and everything else, including <code>[]</code> and <code>{}</code>, is true. A condition that is a goal with a relation in it is <a href="#logic-asking">asked</a> first. <code>match</code> predicates are stricter: they must return the boolean <code>true</code>. So are <code>and</code>, <code>or</code>, <code>not</code>, and the filters of a rule or query, which take only <code>true</code> and <code>false</code>.</p>
+<h2 id="rule-truthiness">Conditions</h2>
+<p>A condition is <code>true</code> or <code>false</code>, wherever Lion tests one: a <a href="#form-cond"><code>cond</code></a> case, an argument of <code>and</code>, <code>or</code>, and <code>not</code>, and a filter of a rule or query. Any other value fails, with a message that shows it. A condition that is a goal with a relation in it is <a href="#logic-asking">asked</a> first, and gives <code>true</code> or <code>false</code>. <code>match</code> predicates fit a value when they return <code>true</code>.</p>
+<lion-example name="A condition that is not true or false" expect="error">
+["cond", [["array/length", ["array/make"]], "empty"], ["else", "some"]]
+</lion-example>
 
-<h2 id="rule-reserved">Reserved names</h2>
-<p>These names belong to forms and cannot be bound with <code>define</code>, used as <code>lambda</code> parameters, or declared as relations:</p>
-<p><code>begin</code>, <code>cond</code>, <code>define</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, <code>invariant</code>, and <code>__proto__</code>.</p>
+<h2 id="rule-reserved">Names of forms</h2>
+<p>A <code>define</code>, a <code>set!</code>, or a <code>lambda</code> parameter can bind any name but the empty string and <code>__proto__</code>. A form's name a binding takes is a call where the binding is in scope, as a binding shadows a keyword in Scheme, and the form everywhere else. A relation or schema is bound for every run of its database, so its name cannot be a form's: <code>begin</code>, <code>cond</code>, <code>define</code>, <code>set!</code>, <code>eval</code>, <code>lambda</code>, <code>match</code>, <code>quote</code>, <code>relation</code>, <code>schema</code>, <code>rule</code>, <code>fact</code>, <code>retract</code>, <code>query</code>, <code>find</code>, <code>assuming</code>, <code>exists</code>, <code>some</code>, <code>why</code>, <code>not</code>, <code>and</code>, <code>or</code>, <code>=</code>, <code>in</code>, <code>snapshot</code>, or <code>invariant</code>.</p>
 
 <h2 id="rule-runs">Each run</h2>
 <p>Each evaluation (<code>run</code> in TypeScript, one file on the command line, one live example on this page) starts with a fresh environment holding the bindings it was given, and an empty logic database unless one is passed in. Names defined in one run are gone in the next; a shared database keeps its relations, facts, rules, and invariants. See <a href="#names-and-scope">Names, scope, and environments</a>.</p>

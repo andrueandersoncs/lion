@@ -1,6 +1,7 @@
 import { Effect, Record } from "effect";
 import { answer, isWriting } from "@/evaluation/asking";
 import { andThen, type Compiled, Pending, runAll } from "@/evaluation/compiled";
+import type { Scope } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate.ts";
 import { suspendArguments } from "@/evaluation/special-forms/lambda";
 import {
@@ -48,10 +49,11 @@ const holding = (
 
 /** Evaluates every value of a record, in the order of its keys. */
 export const compileRecord = (
-  expression: LionRecordExpressionType
+  expression: LionRecordExpressionType,
+  scope: Scope | undefined
 ): Compiled => {
   const keys = Object.keys(expression);
-  const values = keys.map((key) => compile(expression[key] as never));
+  const values = keys.map((key) => compile(expression[key] as never, scope));
   const hold = (made: unknown) => holding(keys, made as readonly unknown[]);
   return (environment, depth) =>
     andThen(runAll(values, environment, depth), depth, hold);

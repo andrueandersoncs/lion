@@ -7,7 +7,7 @@ import {
   returned,
   toEffect,
 } from "@/evaluation/compiled";
-import type { Environment } from "@/evaluation/environment";
+import type { Environment, Scope } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate.ts";
 import {
   DeferredCall,
@@ -20,25 +20,29 @@ import { LionExpressionSchema } from "@/schemas/lion-expression";
 
 const decode = Schema.decodeUnknownEffect(LionExpressionSchema);
 
-/** Checks code, then compiles and runs it in a scope. */
+/**
+ * Checks code, then compiles and runs it in a scope. The code is written as
+ * it runs, so it is compiled in the scope it runs in: a string means what
+ * the scope declares at that moment.
+ */
 const runCode = (
   code: unknown,
   environment: Environment,
   depth: number
 ): unknown =>
   andThen(returned(decode(code), undefined), depth, (checked, now) =>
-    compile(checked as never)(environment, now)
+    compile(checked as never, environment)(environment, now)
   );
 
 /**
  * Evaluates its argument, then evaluates the result as code, in the scope
  * the form was written in. Code that is not known yet waits.
  */
-export const compileEval = ([
-  _,
-  expression,
-]: typeof EvalFormSchema.Type): Compiled => {
-  const code = compile(expression);
+export const compileEval = (
+  [_, expression]: typeof EvalFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const code = compile(expression, scope);
   return (environment, depth) =>
     andThen(code(environment, depth), depth, (made, now) => {
       if (!(made instanceof LogicValue)) {

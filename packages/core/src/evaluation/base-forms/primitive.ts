@@ -1,10 +1,12 @@
-import { Exit } from "effect";
-import { UnboundNameError } from "@/errors/evaluation";
+import { Effect, Exit } from "effect";
+import { UnboundNameError, UndefinedYetError } from "@/errors/evaluation";
 import { type Compiled, Pending } from "@/evaluation/compiled";
 import {
   boundNames,
-  type Environment,
+  declares,
   lookup,
+  type Scope,
+  UNASSIGNED,
   UNBOUND,
 } from "@/evaluation/environment";
 import {
@@ -40,10 +42,10 @@ const MAX_EDITS = 2;
  * which the error suggests. Any other such string is data, like "n/a".
  */
 export const nameOrString = (
-  environment: Environment,
+  scope: Scope,
   name: string
 ): Exit.Exit<string, UnboundNameError> => {
-  const names = boundNames(environment);
+  const names = boundNames(scope);
   const module = name.slice(0, name.indexOf("/") + 1);
   let inModule = false;
   let nearest: string | null = null;
@@ -63,31 +65,47 @@ export const nameOrString = (
 };
 
 /**
- * Bound names evaluate to their value. An unbound `?name` evaluates to a
- * logic variable, and an unbound `module/name` that reads as a misspelled
- * name is an error. Any other unbound string evaluates to itself.
+ * What a string means, by the scopes it is written in. A string a scope
+ * declares is a name, and evaluates to its value; reading it before its
+ * `define` has run is an error. A `?name` evaluates to the value bound to
+ * it, or to a logic variable. Any other string is data and evaluates to
+ * itself, except a `module/name` that reads as a misspelled name, which is
+ * an error. A later binding never changes what a string means.
  */
-export const compileReference = (name: string): Compiled => {
-  const variable = isLogicVariableName(name) ? name.slice(1) : undefined;
-  const namespaced = isNamespacedName(name);
-  return (environment) => {
-    const value = lookup(environment, name);
-    if (value !== UNBOUND) {
-      return value;
+export const compileReference = (
+  name: string,
+  scope: Scope | undefined
+): Compiled => {
+  if (isLogicVariableName(name)) {
+    const variable = new LogicVariable(name.slice(1));
+    return (environment) => {
+      const value = lookup(environment, name);
+      return value === UNBOUND ? variable : read(name, value);
+    };
+  }
+  if (declares(scope, name)) {
+    return (environment) => read(name, lookup(environment, name));
+  }
+  if (isNamespacedName(name) && scope !== undefined) {
+    const meant = nameOrString(scope, name);
+    if (Exit.isFailure(meant)) {
+      return () => new Pending(meant);
     }
-    if (variable !== undefined) {
-      return new LogicVariable(variable);
-    }
-    if (!namespaced) {
-      return name;
-    }
-    const meant = nameOrString(environment, name);
-    return Exit.isSuccess(meant) ? name : new Pending(meant);
-  };
+  }
+  return () => name;
 };
 
-/** A string is a name; any other primitive is itself. */
-export const compilePrimitive = (expression: JsonPrimitiveType): Compiled =>
+/** The value of a name, or the error of reading one before it is defined. */
+const read = (name: string, value: unknown) =>
+  value === UNASSIGNED
+    ? new Pending(Effect.fail(new UndefinedYetError({ unassigned: name })))
+    : value;
+
+/** A string is a name or data, by its scope; any other primitive is itself. */
+export const compilePrimitive = (
+  expression: JsonPrimitiveType,
+  scope: Scope | undefined
+): Compiled =>
   typeof expression === "string"
-    ? compileReference(expression)
+    ? compileReference(expression, scope)
     : () => expression;

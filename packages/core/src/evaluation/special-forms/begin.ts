@@ -1,5 +1,6 @@
 import { andThen, type Compiled, runAll } from "@/evaluation/compiled";
-import { compile } from "@/evaluation/evaluate";
+import type { Scope } from "@/evaluation/environment";
+import { compileAll } from "@/evaluation/evaluate";
 import type { BeginFormSchema } from "@/schemas/evaluation";
 
 /**
@@ -7,11 +8,11 @@ import type { BeginFormSchema } from "@/schemas/evaluation";
  * empty list when it has none. The last runs in the place of the form, so
  * a call there is in tail position.
  */
-export const compileBegin = ([
-  _,
-  ...args
-]: typeof BeginFormSchema.Type): Compiled => {
-  const body = args.map(compile);
+export const compileBegin = (
+  [_, ...args]: typeof BeginFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const body = compileAll(args, scope);
   const last = body.pop();
   if (last === undefined) {
     return () => [];

@@ -60,7 +60,7 @@ await Effect.runPromise(run(["clamp", 0, 100, 150], env));
 
 ### Primitives
 
-Numbers, booleans, and `null` evaluate to themselves. Strings are treated as references first; if no binding exists, the original string is returned, except for the two kinds of string below.
+Numbers, booleans, and `null` evaluate to themselves. A string is a name when a scope it is written in declares it, and data otherwise, except for the two kinds of string below. What a string means is settled by where it is written, so a binding made later never turns data into a name.
 
 ```json
 42
@@ -71,9 +71,20 @@ null
 
 With `{ "x": 10 }` in the environment, `"x"` evaluates to `10`. Otherwise it evaluates to `"x"`.
 
-An unbound string of the form `"?name"` evaluates to a logic variable instead. See [Logic](#logic).
+A scope declares its bindings from its start, also the names its body defines before the `define` has run: the top scope of a run declares the names the environment and the database bind, every name the program's top level defines, and every relation and schema the program declares; a lambda's scope declares its parameters and the names its body defines. So the same string means the same thing every time its code runs:
 
-An unbound string of the form `"module/name"` that reads as a misspelled name is an error, and not a string: one whose module has other names, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`.
+```json
+["begin",
+  ["define", "greet", ["lambda", [], ["string/concat", "hello, ", "who"]]],
+  ["define", "who", "world"],
+  {"greeting": ["greet"], "note": ["eval", ["quote", "status"]]}]
+```
+
+Evaluates to `{ "greeting": "hello, world", "note": "status" }`: `"who"` is a name everywhere in the program, since the program defines it, while `"status"` names nothing. A name read before its `define` has run fails with `"who" is read before it is defined.`, and code that `eval` compiles later is written in the scope as it is then.
+
+An undeclared string of the form `"?name"` evaluates to a logic variable instead. See [Logic](#logic).
+
+An undeclared string of the form `"module/name"` that reads as a misspelled name is an error, and not a string: one whose module has other names, such as `"number/ad"`, or one a letter or two away from a bound name, such as `"numbr/add"`.
 
 ```json
 ["number/ad", 1, 2]
@@ -85,7 +96,7 @@ Fails with `Nothing is bound to "number/ad". Did you mean "number/add"? To mean 
 
 The empty array `[]` evaluates to itself. Every other array is treated as an executable expression:
 
-1. special forms such as `["define", "x", 1]`
+1. special forms such as `["define", "x", 1]`, when no scope around the array declares the form's name
 2. function calls when the first element evaluates to a function
 
 ```json
@@ -93,6 +104,8 @@ The empty array `[]` evaluates to itself. Every other array is treated as an exe
 ```
 
 Evaluates to `3`.
+
+An array that names a form but does not have the form's shape fails and says what the form takes: `["define", "x"]` fails with `["define","x"] is not a well-formed define form: define takes a name and an expression, as in ["define", "answer", 42].` A parameter or a `define` may take a form's name, as Scheme lets a binding shadow a keyword: where the binding is in scope, the array is a call. `[["lambda", ["fact"], ["fact", 3]], "value/identity"]` is `3`.
 
 ### Objects
 
@@ -137,11 +150,25 @@ Evaluates expressions in order and returns the last result.
 
 ### `define`
 
-Evaluates a value, stores it in the global environment, and returns the stored value.
+Evaluates a value, binds the name to it in the body the form stands in, a lambda's or the program's, and returns the value. The body declares the name from its start, so it means this definition everywhere in the body, and a define inside a lambda never changes a name outside it.
 
 ```json
 ["define", "answer", 42]
 ```
+
+### `set!`
+
+Changes the value of the nearest binding of a name and returns the value, as in Scheme. It is how a lambda changes a name around it:
+
+```json
+["begin",
+  ["define", "count", 0],
+  ["define", "tick", ["lambda", [], ["set!", "count", ["number/add", "count", 1]]]],
+  ["tick"], ["tick"],
+  "count"]
+```
+
+Evaluates to `2`. A name no scope declares has no binding to change, so `["set!", "nope", 1]` fails.
 
 ### `lambda`
 
@@ -151,7 +178,7 @@ Creates a Lion function with lexical scope.
 ["lambda", ["x"], ["number/add", "x", 1]]
 ```
 
-Lambdas close over surrounding scope, and they observe updated global bindings when invoked later.
+Lambdas close over surrounding scope, and see the value a name has when they run, so a `set!` or a later `define` of a name the program declares is seen.
 
 Calls nest as deep as memory allows. A call in tail position keeps nothing of the call it is in, as in Scheme. A lambda's body is in tail position, and so are the result of a `cond` case and the last expression of a `begin` that are. A lambda that calls itself there is a loop, and runs in constant memory, so this counts to 100,000 in a fraction of a second:
 
@@ -176,7 +203,7 @@ Evaluates condition/result pairs in order and returns the first matching result.
   ["else", "retry"]]
 ```
 
-If no branch matches and no `else` is provided, `cond` returns `null`. A condition counts as false when it is `false`, `null`, `0`, or the empty string `""`, and as true when it is anything else, so `else`, an ordinary string, counts as true. A filter in a rule or query is stricter: it must be `true` or `false`. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
+If no branch matches and no `else` is provided, `cond` returns `null`. A condition must be `true` or `false`, as a filter in a rule or query and an argument of `and`, `or`, and `not` must: `["cond", [0, "yes"], ["else", "no"]]` fails with `A condition must be true or false, but found 0.` `else`, unless a scope declares it, always holds. A condition can be a goal, such as `["member", "name", "?_"]`: it holds when the goal has a match. See [Asking](#asking).
 
 ### `match`
 
@@ -829,7 +856,7 @@ With the same schemas, `["schema/assert", ["quote", {"id": "7", "status": "open"
 
 - What these functions build is a function like any other, so it can be called, as in `[["schema/arrayOf", "value/number?"], "items"]`, and given to `array/map` or `match`.
 - A predicate that fails, or returns anything but `true`, does not fit. So `["lambda", ["n"], ["number/greaterThan", "n", 0]]` needs no check that `n` is a number first: a string does not fit it.
-- A string is a name before it is a string, as everywhere in Lion. `"open"` is the string unless something is bound to `open`, and `["quote", "open"]` is always the string.
+- A string is a name where a scope declares it, as everywhere in Lion. `"open"` is the string unless a scope it is written in declares `open`, and `["quote", "open"]` is always the string.
 - A misspelled name is an error, and not a schema that nothing fits: `"value/intger?"` as a schema fails with `Nothing is bound to "value/intger?". Did you mean "value/integer?"?`, and so does a misspelled name inside a predicate, where any other failure means the value does not fit. See [Primitives](#primitives).
 - Data is a schema for itself: `["schema/fits?", "x", ["quote", {"a": [1, 2]}]]` holds when `x` is the record `{"a": [1, 2]}`.
 - A relation is a schema when it has one column: a value fits `person` when `["person", value]` has a match. A relation with more columns is not the schema of one value, and using it as one is an error.

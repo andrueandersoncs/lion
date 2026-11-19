@@ -10,6 +10,8 @@ import type { Mutation } from "./mutation.ts";
 
 const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
+/** The properties of what a string means, by the scopes it is written in. */
+const SCOPE_TESTS = "src/evaluation/tests/scopes.test.ts";
 /** The properties of the value a key or an equality rule keeps. */
 const LEAST_MEMBER_TESTS = [
   ...EXISTENTIAL_TESTS,
@@ -1492,9 +1494,61 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a string that reads as a misspelled name is a string",
     file: core("evaluation/base-forms/primitive.ts"),
-    find: "    if (!namespaced) {",
-    replace: "    if (true) {",
+    find: "  if (isNamespacedName(name) && scope !== undefined) {",
+    replace: "  if (false) {",
     tests: ["src/evaluation/tests/names.test.ts"],
+  },
+  {
+    name: "a string is a name once something binds it, wherever it was written",
+    file: core("evaluation/base-forms/primitive.ts"),
+    find: "  return () => name;\n};",
+    replace:
+      "  return (environment) => {\n    const value = lookup(environment, name);\n    return value === UNBOUND ? name : value;\n  };\n};",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a define inside a lambda binds a global",
+    file: core("evaluation/special-forms/define.ts"),
+    find: "      setLocalBinding(environment, id, made);",
+    replace:
+      "      let top = environment;\n      while (top.parent !== undefined) top = top.parent;\n      top.bindings.set(id, made);",
+    tests: ["src/evaluation/tests/special-forms/define.test.ts"],
+  },
+  {
+    name: "a body does not declare the names it defines",
+    file: core("evaluation/hoisting.ts"),
+    find: "  walk(body);\n  return [...new Set(names)];",
+    replace: "  return [];",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a binding of a form's name leaves the form a form",
+    file: core("evaluation/base-forms/array.ts"),
+    find: "  if (!isSpecialFormName(head) || declares(scope, head)) {",
+    replace: "  if (!isSpecialFormName(head)) {",
+    tests: [SCOPE_TESTS, "src/evaluation/tests/special-forms/define.test.ts"],
+  },
+  {
+    name: "an array that names a form but has another shape is a call",
+    file: core("evaluation/base-forms/array.ts"),
+    find: "  if (!fitsForm(head, expression)) {",
+    replace:
+      "  if (!fitsForm(head, expression)) {\n    return compileFunctionCall(expression as never, scope);\n  }\n  if (false) {",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "a condition may be any value, true when JavaScript says so",
+    file: core("evaluation/special-forms/cond.ts"),
+    find: '    typeof holds === "boolean"\n      ? holds',
+    replace: "    true\n      ? Boolean(holds)",
+    tests: [SCOPE_TESTS],
+  },
+  {
+    name: "set! binds a name no scope declares",
+    file: core("evaluation/special-forms/set.ts"),
+    find: "  if (!declares(scope, id)) {",
+    replace: "  if (false) {",
+    tests: [SCOPE_TESTS],
   },
   {
     name: "a misspelled name suggests no other",

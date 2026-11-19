@@ -488,12 +488,15 @@ const RESEARCH_RULES = {
 };
 
 /**
- * The model of a world's development, as `bun run history write` builds it
- * from the steps in order: the research's core and frame, every commit as a
- * source, the record with every claim, the links and findings, and then
- * `expression`.
+ * The model of a world's development, as `bun run history write` builds it:
+ * the steps in order, each a program of its own run on one database: the
+ * research's core and frame, every commit as a source, the record with
+ * every claim, the links and findings, and then `expression`.
  */
-export const modelProgramOf = (w: World, expression: unknown): unknown => {
+export const modelStepsOf = (
+  w: World,
+  expression: unknown
+): readonly unknown[] => {
   const record = (programOf(sourcesOf(w), null) as unknown[]).slice(1, -1);
   const quoted = (value: unknown) => ["quote", value];
   const sources = w.commits.map((c) => [
@@ -508,13 +511,12 @@ export const modelProgramOf = (w: World, expression: unknown): unknown => {
     ].map(quoted),
   ]);
   return [
-    "begin",
-    ...RESEARCH_RULES.core,
-    ...RESEARCH_RULES.frame,
+    ["begin", ...RESEARCH_RULES.core],
+    ["begin", ...RESEARCH_RULES.frame],
     ...(sources.length === 0 ? [] : [["fact", ...sources]]),
-    ...record,
-    ...RESEARCH_RULES.links,
-    ...RESEARCH_RULES.findings,
+    ["begin", ...record],
+    ["begin", ...RESEARCH_RULES.links],
+    ["begin", ...RESEARCH_RULES.findings],
     expression,
   ];
 };

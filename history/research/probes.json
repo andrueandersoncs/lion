@@ -17132,7 +17132,7 @@
             ["repo/read", "packages/core/src/evaluation/evaluate.ts"],
             [
               "quote",
-              "Schema.decodeUnknownEffect(LionExpressionSchema)(expression),\n      Effect.flatMap(evaluate),"
+              "Schema.decodeUnknownEffect(LionExpressionSchema)(expression),\n      Effect.flatMap((program) => {"
             ]
           ]
         ],
@@ -21768,6 +21768,94 @@
       "string/includes",
       ["repo/read", "packages/core/src/logic/ENGINE.md"],
       "settled level by level"
+    ]
+  },
+  {
+    "feature": "set!",
+    "kind": "special-form",
+    "program": ["lion/special-form?", "set!"]
+  },
+  {
+    "feature": "MalformedFormError",
+    "kind": "error",
+    "program": [
+      "array/includes?",
+      [
+        "array/map",
+        ["repo/files", "packages/core/src"],
+        [
+          "lambda",
+          ["file"],
+          [
+            "string/includes",
+            ["repo/read", "file"],
+            "class MalformedFormError "
+          ]
+        ]
+      ],
+      true
+    ]
+  },
+  {
+    "feature": "UndefinedYetError",
+    "kind": "error",
+    "program": [
+      "array/includes?",
+      [
+        "array/map",
+        ["repo/files", "packages/core/src"],
+        [
+          "lambda",
+          ["file"],
+          ["string/includes", ["repo/read", "file"], "class UndefinedYetError "]
+        ]
+      ],
+      true
+    ]
+  },
+  {
+    "case": "string-bound-after-code-compiled",
+    "area": "evaluation",
+    "program": [
+      "begin",
+      ["define", "f", ["lambda", [], "zq"]],
+      ["eval", ["quote", ["define", "zq", 1]]],
+      [
+        "cond",
+        [["=", ["f"], ["quote", "zq"]], ["quote", "data"]],
+        [["=", ["f"], 1], ["quote", "name"]],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "malformed-special-form",
+    "area": "forms",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          [
+            "quote",
+            "an array that names a form but has another shape fails with: \"failed with MalformedFormError\"\n"
+          ]
+        ],
+        ["quote", "says-what-the-form-takes"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "host-run"], "output"],
+          [
+            "quote",
+            "an array that names a form but has another shape fails with: \"failed with InvalidFunctionCallError\"\n"
+          ]
+        ],
+        ["quote", "not-a-call"]
+      ],
+      ["else", ["quote", "other"]]
     ]
   }
 ]

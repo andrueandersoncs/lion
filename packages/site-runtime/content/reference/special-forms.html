@@ -1,5 +1,5 @@
-<article id="special-forms" data-title="Special forms" data-summary="The forms that control evaluation: quote, eval, begin, define, lambda, cond, and match.">
-<p>A special form is an array whose first element is the form's name. Unlike a function call, a special form decides which of its parts to evaluate, and when. The logic layer's forms are in <a href="#logic-forms">Logic forms</a>.</p>
+<article id="special-forms" data-title="Special forms" data-summary="The forms that control evaluation: quote, eval, begin, define, set!, lambda, cond, and match.">
+<p>A special form is an array whose first element is the form's name, where no scope declares that name. Unlike a function call, a special form decides which of its parts to evaluate, and when. The logic layer's forms are in <a href="#logic-forms">Logic forms</a>.</p>
 
 <h2 id="form-quote"><code>quote</code></h2>
 <code-block lang="json">
@@ -14,7 +14,7 @@
 <code-block lang="json">
 ["eval", expression]
 </code-block>
-<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
+<p>Evaluates <code>expression</code>, then evaluates the result as a program in the current environment. The result is compiled when it runs, so its strings mean what the scope declares then. The result must be JSON data; a function or other host value fails with <code>SchemaError</code>.</p>
 <lion-example name="eval">
 ["eval", ["quote", ["number/add", 1, 2]]]
 </lion-example>
@@ -33,10 +33,11 @@
 ["define", name, expression]
 </code-block>
 <ul>
-  <li>Evaluates <code>expression</code>, binds <code>name</code> to the result in the global environment, and returns the result.</li>
-  <li>Always binds globally, even inside a lambda.</li>
+  <li>Evaluates <code>expression</code>, binds <code>name</code> to the result in the body the form stands in, a lambda's or the program's, and returns the result.</li>
+  <li>The body declares the name from its start, so the name means this definition everywhere in the body, and functions can name each other in any order. Read before the <code>define</code> has run, it fails with <code>UndefinedYetError</code>.</li>
+  <li>A <code>define</code> inside a lambda binds in the lambda's call, and never changes a name outside it. To change one, use <a href="#form-set"><code>set!</code></a>.</li>
   <li>Binding a name again replaces its value. Functions that use the name see the new value when they next run.</li>
-  <li><code>name</code> must be a non-empty string that is not a <a href="#rule-reserved">reserved name</a>.</li>
+  <li><code>name</code> can be any non-empty string but <code>__proto__</code>, a form's name among them: see <a href="#rule-reserved">Names of forms</a>.</li>
 </ul>
 <lion-example name="define">
 ["begin",
@@ -45,15 +46,32 @@
   ["greet"]]
 </lion-example>
 
+<h2 id="form-set"><code>set!</code></h2>
+<code-block lang="json">
+["set!", name, expression]
+</code-block>
+<ul>
+  <li>Evaluates <code>expression</code>, changes the value of the nearest binding of <code>name</code> to it, and returns it, as <code>set!</code> does in Scheme.</li>
+  <li>It is how a lambda changes a name around it, such as a counter or the state of an app that its callbacks update.</li>
+  <li>A name no scope around the form declares has no binding to change, so the form fails with <code>UnboundNameError</code>.</li>
+</ul>
+<lion-example name="set!">
+["begin",
+  ["define", "count", 0],
+  ["define", "tick", ["lambda", [], ["set!", "count", ["number/add", "count", 1]]]],
+  ["tick"], ["tick"],
+  "count"]
+</lion-example>
+
 <h2 id="form-lambda"><code>lambda</code></h2>
 <code-block lang="json">
 ["lambda", [parameter, ...], body]
 </code-block>
 <ul>
-  <li>Returns a function. Calling it binds each parameter to the matching argument, in a new environment whose parent is the one where the lambda was created, then evaluates <code>body</code>.</li>
+  <li>Returns a function. Calling it binds each parameter to the matching argument, and declares the names its body defines, in a new environment whose parent is the one where the lambda was created, then evaluates <code>body</code>.</li>
   <li>Called with fewer arguments than parameters, it fails with <code>ArgumentMismatchError</code>. Extra arguments are ignored.</li>
   <li>The body is one expression; use <code>begin</code> for several. It is in <a href="#rule-calls">tail position</a>, so a lambda that calls itself last loops in constant memory.</li>
-  <li>Parameters must be non-empty strings that are not <a href="#rule-reserved">reserved names</a>.</li>
+  <li>Parameters can be any non-empty strings but <code>__proto__</code>; one that takes a form's name makes the form a call in the body: see <a href="#rule-reserved">Names of forms</a>.</li>
 </ul>
 <lion-example name="lambda">
 ["begin",
@@ -67,9 +85,9 @@
 ["cond", [condition, result], ..., ["else", result]]
 </code-block>
 <ul>
-  <li>Evaluates each <code>condition</code> in order and returns the evaluated <code>result</code> of the first one that is <a href="#rule-truthiness">truthy</a>. Later conditions are not evaluated.</li>
+  <li>Evaluates each <code>condition</code> in order and returns the evaluated <code>result</code> of the first one that is <code>true</code>. Later conditions are not evaluated. A condition must be <code>true</code> or <code>false</code>; any other value fails: see <a href="#rule-truthiness">Conditions</a>.</li>
   <li>A condition that is a goal with a relation in it, such as a relation call, is <a href="#logic-asking">asked</a>: it holds when the goal has a match.</li>
-  <li>An <code>else</code> branch, allowed only last, always matches.</li>
+  <li>An <code>else</code> branch always matches, unless a scope declares <code>else</code>.</li>
   <li>With no match and no <code>else</code>, returns <code>null</code>.</li>
 </ul>
 <lion-example name="cond">

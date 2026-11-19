@@ -13,8 +13,8 @@ import {
   runAll,
   toEffect,
 } from "@/evaluation/compiled";
-import type { Environment } from "@/evaluation/environment";
-import { compile } from "@/evaluation/evaluate.ts";
+import type { Environment, Scope } from "@/evaluation/environment";
+import { compileAll } from "@/evaluation/evaluate.ts";
 import {
   enter,
   lambdaOf,
@@ -213,9 +213,13 @@ export const call = (fn: unknown, ...args: readonly unknown[]) =>
 
 /** Evaluates the function and its arguments, then calls it. */
 export const compileFunctionCall = (
-  expression: typeof FunctionCallFormSchema.Type
+  expression: typeof FunctionCallFormSchema.Type,
+  scope: Scope | undefined
 ): Compiled => {
-  const [head, ...rest] = expression.map(compile) as [Compiled, ...Compiled[]];
+  const [head, ...rest] = compileAll(expression, scope) as [
+    Compiled,
+    ...Compiled[],
+  ];
   const callee = expression[0];
   const callWith = (
     fn: unknown,

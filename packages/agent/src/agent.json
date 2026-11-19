@@ -282,7 +282,7 @@
       [
         "begin",
         [
-          "define",
+          "set!",
           "messages",
           [
             "array/concat",
@@ -317,7 +317,7 @@
               [
                 "begin",
                 [
-                  "define",
+                  "set!",
                   "messages",
                   [
                     "array/concat",

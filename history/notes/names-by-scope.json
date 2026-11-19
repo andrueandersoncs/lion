@@ -1,0 +1,270 @@
+{
+  "title": "A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false",
+  "context": "Lion decided at run time whether a string was a name: in `[\"define\", \"f\", [\"lambda\", [], \"status\"]]` the call gave `\"status\"` until something defined `status`, and the value after, so the same code gave different values over time, and a binding made anywhere quietly turned data into a name. A `define` inside a lambda wrote a global, so a helper value inside a function leaked out of it; the coding agent's tool did so, overwriting a global of the same name. Twenty-five special forms, `fact`, `in`, `find`, `not`, and `some` among them, could not be parameters or definitions, and every array that named a form but had another shape failed with `[\"define\",\"x\"] is not a call: its first element must be a special form or evaluate to a function.`, for a form that was one. And `cond` used JavaScript truthiness, where `0` and `\"\"` were false and `[]` was true, while a filter and the arguments of `and`, `or`, and `not` took only `true` and `false`.",
+  "decision": "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. A scope declares its bindings from its start: a run's top scope declares the names the environment and the database bind, every name the program's top level defines, and every relation and schema the program declares; a lambda's scope declares its parameters and the names its body defines. A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. A new form, `set!`, changes the nearest binding of a name, as in Scheme. A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example. A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+  "consequences": "The coding agent changes its message list with `set!`, and its file tool's helper values stay in the tool. Every program the docs show gives what it gave before, and the record's own programs run unchanged. Properties in `evaluation/tests/scopes.test.ts` and `special-forms/define.test.ts` check each rule, and the model interpreter the compiled evaluator is checked against reads strings the same way. Measured against main: 14,843 code lines where main has 14,438 (+2.8%), one more special form, two more kinds of error, and 32 more messages, 26 of them the forms' usage texts; the interop grid has three more rows, whose 30 cells all give what plain code gives, and no new exception.",
+  "alternatives": [
+    {
+      "option": "Keep resolving strings when they run",
+      "rejected": "The same code gave different values as names were bound, which no reader of the program could see from its text."
+    },
+    {
+      "option": "Write every string that is data inside quote, or mark names with a sigil",
+      "rejected": "Every program and fact would change, for the cases a scope already settles."
+    },
+    {
+      "option": "Keep define global and add a local form",
+      "rejected": "Scheme and Racket bind a define in its body; a second form would make Lion's define the one that astonishes."
+    },
+    {
+      "option": "Keep refusing a form's name as a binding, with a better message",
+      "rejected": "Words like fact, in, find, and some are common names in the programs agents write, and Scheme lets a binding shadow a keyword."
+    },
+    {
+      "option": "Use Scheme's truth, where only false is false",
+      "rejected": "null, which object/get gives for a missing key, would then hold, quietly; a condition that must be true or false fails loudly, as a filter already does."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name.",
+      "says": {
+        "decision": "unbound-string-semantics",
+        "chose": "settled-by-scope",
+        "over": ["keep-string-fallback", "ref-form", "call-form"],
+        "area": "evaluation",
+        "because": "what a string means should follow from the program's text, not from the order names are bound in"
+      }
+    },
+    {
+      "quote": "A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name.",
+      "says": {
+        "rule": "strings-settled-by-scope",
+        "holds": true,
+        "statement": "A string is a name when a scope it is written in declares it, and data otherwise; a binding made later never turns data into a name.",
+        "area": "evaluation",
+        "predicts": [
+          {
+            "behavior": "string-bound-after-code-compiled",
+            "is": "data"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "decision": "define-scope",
+        "chose": "body",
+        "over": ["global"],
+        "area": "evaluation",
+        "because": "Scheme and Racket bind a define in its body"
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "behavior": "host-callback-define",
+        "is": "local",
+        "area": "host",
+        "was": "global",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "feature": "UndefinedYetError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "quote": "A new form, `set!`, changes the nearest binding of a name, as in Scheme.",
+      "says": {
+        "feature": "set!",
+        "kind": "special-form",
+        "present": true
+      }
+    },
+    {
+      "quote": "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database.",
+      "says": {
+        "decision": "form-name-bindings",
+        "chose": "shadow-in-scope",
+        "over": ["refused"],
+        "area": "forms",
+        "because": "common words name forms, and Scheme lets a binding shadow a keyword"
+      }
+    },
+    {
+      "quote": "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database.",
+      "says": {
+        "behavior": "define-special-form-name",
+        "is": "accepted",
+        "area": "forms",
+        "was": "rejected"
+      }
+    },
+    {
+      "quote": "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database.",
+      "says": {
+        "behavior": "lambda-special-form-name-parameter",
+        "is": "accepted",
+        "area": "forms",
+        "was": "rejected"
+      }
+    },
+    {
+      "quote": "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database.",
+      "says": {
+        "rule": "special-forms-plain-names",
+        "holds": true,
+        "statement": "Special forms keep plain names, such as \"define\", with no prefix; a parameter or a define can take one, and a relation or schema cannot.",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example.",
+      "says": {
+        "feature": "MalformedFormError",
+        "kind": "error",
+        "present": true
+      }
+    },
+    {
+      "quote": "An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example.",
+      "says": {
+        "behavior": "malformed-special-form",
+        "is": "says-what-the-form-takes",
+        "area": "forms",
+        "was": "not-a-call",
+        "fixes": true
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "decision": "condition-truth",
+        "chose": "true-or-false",
+        "over": ["javascript-truthiness", "scheme-truth"],
+        "area": "evaluation",
+        "because": "a filter, and, or, and not already take only true and false, and a value that is neither fails loudly"
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "behavior": "cond-zero-condition",
+        "is": "error",
+        "area": "evaluation",
+        "was": "false",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "behavior": "cond-empty-string-condition",
+        "is": "error",
+        "area": "evaluation",
+        "was": "false",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "behavior": "cond-null-condition",
+        "is": "error",
+        "area": "evaluation",
+        "was": "false",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "behavior": "cond-string-condition",
+        "is": "error",
+        "area": "evaluation",
+        "was": "true",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "behavior": "cond-else",
+        "is": "holds-unless-declared",
+        "area": "evaluation",
+        "was": "ordinary-string"
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "behavior": "define-inside-lambda",
+        "is": "local",
+        "area": "names",
+        "was": "global",
+        "breaking": true
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "feature": "setLocalBinding",
+        "kind": "function",
+        "present": true
+      }
+    },
+    {
+      "quote": "A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`.",
+      "says": {
+        "rule": "lexical-closures",
+        "holds": true,
+        "statement": "A lambda closes over the scope it is made in and sees the value a name has when it runs; a define inside it binds in its call.",
+        "area": "names",
+        "predicts": [
+          {
+            "behavior": "lambda-free-variable",
+            "is": "enclosing-scope"
+          },
+          {
+            "behavior": "lambda-global-defined-after-creation",
+            "is": "visible"
+          },
+          {
+            "behavior": "define-inside-lambda",
+            "is": "local"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "rule": "cond-truthiness",
+        "holds": false,
+        "statement": "A cond condition counts as false when it is false, null, 0, or the empty string",
+        "area": "forms"
+      }
+    },
+    {
+      "quote": "A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it.",
+      "says": {
+        "rule": "scheme-racket-semantics",
+        "holds": true,
+        "statement": "Where a base form's behavior is unclear, Lion does what Scheme and Racket do, except that a condition must be true or false, as a filter must",
+        "area": "evaluation",
+        "except": [
+          "cond-zero-condition",
+          "cond-empty-string-condition",
+          "cond-null-condition",
+          "cond-string-condition"
+        ]
+      }
+    }
+  ]
+}

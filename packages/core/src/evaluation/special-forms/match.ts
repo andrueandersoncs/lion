@@ -6,7 +6,7 @@ import {
   Pending,
   toEffect,
 } from "@/evaluation/compiled";
-import type { Environment } from "@/evaluation/environment";
+import type { Environment, Scope } from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
 import { applyIn } from "@/evaluation/special-forms/function";
 import { suspend } from "@/evaluation/special-forms/lambda";
@@ -34,14 +34,17 @@ const functionOf = Schema.decodeUnknownEffect(LionFunctionValueSchema);
  * form waits.
  */
 export const compileMatch = (
-  expression: typeof MatchFormSchema.Type
+  expression: typeof MatchFormSchema.Type,
+  scope: Scope | undefined
 ): Compiled => {
   const [_, subject, ...rest] = expression;
-  const value = compile(subject);
+  const value = compile(subject, scope);
   const patterns = (
     rest.slice(0, -1) as (readonly [LionExpressionType, LionExpressionType])[]
-  ).map(([schema, fn]) => [compile(schema), compile(fn)] as const);
-  const fallback = compile(rest.at(-1) as LionExpressionType);
+  ).map(
+    ([schema, fn]) => [compile(schema, scope), compile(fn, scope)] as const
+  );
+  const fallback = compile(rest.at(-1) as LionExpressionType, scope);
   const applied = (fn: Compiled, made: unknown, environment: Environment) =>
     Effect.gen(function* () {
       const decoded = yield* functionOf(yield* toEffect(fn(environment, 0)));

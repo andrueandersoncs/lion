@@ -9,6 +9,8 @@ import { LionEnvironmentService } from "@/services/evaluation";
 
 const TestSchema = DefineFormSchema;
 
+const WORD = /^[a-z]{1,6}$/;
+
 describe("define special form", () => {
   it.effect.prop(
     "should define a variable in the environment",
@@ -44,48 +46,47 @@ describe("define special form", () => {
         );
       })
   );
-  it.effect(
-    "should overwrite a global binding when called from within a lambda",
-    () =>
+  it.effect.prop(
+    "binds in the body it stands in, so a define in a lambda never changes the name around it, and set! does",
+    {
+      name: Arbitrary.schema(Schema.String.check(Schema.isPattern(WORD))),
+      outer: Arbitrary.schema(Schema.Int),
+      inner: Arbitrary.schema(Schema.Int),
+      how: Arbitrary.schema(
+        Schema.Literals(["define", "set!", "callback define", "callback set!"])
+      ),
+    },
+    ({ name, outer, inner, how }) =>
       Effect.gen(function* () {
-        const program = [
-          "begin",
-          ["define", "x", 1],
-          [["lambda", [], ["define", "x", 2]]],
-          "x",
-        ];
-        const result = yield* run(program, stdlib);
-        expect(result).toBe(2);
-      })
-  );
-  it.effect(
-    "should overwrite a global binding when called from within a callback",
-    () =>
-      Effect.gen(function* () {
-        const program = [
-          "begin",
-          ["define", "x", 1],
-          [["func/callback", ["lambda", [], ["define", "x", 2]]]],
-          "x",
-        ];
-        const result = yield* run(program, stdlib);
-        expect(result).toBe(2);
+        const form = how.endsWith("set!") ? "set!" : "define";
+        const lambda = ["lambda", [], [form, name, inner]];
+        const called = how.startsWith("callback")
+          ? [["func/callback", lambda]]
+          : [lambda];
+        const program = ["begin", ["define", name, outer], called, name];
+        expect(yield* run(program, stdlib)).toBe(
+          form === "set!" ? inner : outer
+        );
       })
   );
 
   it.effect.prop(
-    "should say what is wrong when the name belongs to a special form",
+    "binds any name, a special form's among them, which then means the binding in its scope",
     {
-      name: Arbitrary.schema(Schema.Literals(SPECIAL_FORM_NAMES)),
+      name: Arbitrary.schema(
+        Schema.Literals(SPECIAL_FORM_NAMES.filter((name) => name !== "define"))
+      ),
       value: Arbitrary.schema(Schema.Int),
     },
     ({ name, value }) =>
       Effect.gen(function* () {
-        const expression = ["define", name, value];
-        const error = yield* run(expression, stdlib).pipe(Effect.flip);
-        expect(error).toBeInstanceOf(InvalidFunctionCallError);
-        expect((error as InvalidFunctionCallError).message).toBe(
-          `${JSON.stringify(expression)} is not a call: its first element must be a special form or evaluate to a function.`
+        const body = ["array/make", ["define", name, value], name];
+        expect(yield* run([["lambda", [], body]], stdlib)).toEqual([
+          value,
+          value,
+        ]);
+        expect(yield* run([["lambda", [name], name], value], stdlib)).toBe(
+          value
         );
       })
   );

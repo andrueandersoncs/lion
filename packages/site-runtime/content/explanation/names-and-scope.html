@@ -1,5 +1,5 @@
-<article id="names-and-scope" data-title="Names, scope, and environments" data-summary="How Lion looks up names, why define is global while lambdas are lexical, and what lasts from one run to the next.">
-<p>Every string in a Lion program might be a name. This page explains where names come from, how a lookup finds them, and how long they last.</p>
+<article id="names-and-scope" data-title="Names, scope, and environments" data-summary="How Lion decides which strings are names, why a body declares what it defines from its start, and what lasts from one run to the next.">
+<p>Every string in a Lion program might be a name. This page explains which strings are names, where they come from, how a lookup finds them, and how long they last.</p>
 
 <h2>Environments are chains</h2>
 <p>An environment is a record of bindings with an optional parent. Looking up a name checks the current environment, then its parent, and so on to the top. A run starts with one top-level environment holding whatever the host gave it, usually the standard library.</p>
@@ -14,22 +14,36 @@
 </lion-example>
 <p>The global <code>start</code> is 1000, but the inner lambda sees the <code>start</code> it was created with, 10.</p>
 
-<h2>Why define is global</h2>
-<p><a href="#form-define"><code>define</code></a> always writes to the top-level environment, even inside a lambda. Lion has no local variables beyond parameters; to name an intermediate value inside a function, pass it to another lambda, or compute it in a <code>begin</code> at the top level.</p>
-<p>This keeps the model small: there is exactly one place where definitions go, and a program reads top to bottom like a script. It also means lambdas see later definitions, because they look names up when they run:</p>
-<lion-example name="Late binding">
+<h2>A string is a name where a scope declares it</h2>
+<p>JSON has one kind of string, so Lion decides which strings are names by where they are written, before the program runs. A string that a scope around it declares is a name; any other is data. A scope declares its bindings from its start: the names the host gave the run and the database's relations, the names the program defines anywhere at its top level and the relations and schemas it declares, and, for a lambda, its parameters and the names its body defines. What a string means therefore never depends on the order things run in: a binding made later, by <code>eval</code> for instance, never turns data that code already holds into a name.</p>
+<p>Because a body declares what it defines from its start, functions can name each other in any order, which mutual recursion needs:</p>
+<lion-example name="Definitions in any order">
 ["begin",
   ["define", "greet", ["lambda", [], ["string/concat", "hello, ", "name"]]],
   ["define", "name", "Ada"],
   ["greet"]]
 </lion-example>
-<p>So top-level functions can refer to each other in any order, which mutual recursion needs.</p>
+<p>Calling <code>greet</code> before <code>name</code> is defined fails with <code>UndefinedYetError</code>, rather than greeting the string <code>"name"</code>.</p>
 
-<h2>Parameters shadow globals</h2>
-<p>A parameter with the same name as a global hides the global inside the lambda's body. Because standard library names contain a <code>/</code>, choosing parameter names without one keeps them from shadowing a library function by accident.</p>
+<h2>define binds in its body; set! changes a binding</h2>
+<p><a href="#form-define"><code>define</code></a> binds in the body it stands in: inside a lambda, the lambda's call, so a helper value inside a function stays inside it, as in Scheme. To change a name around a lambda, such as the state an app's callbacks update, use <a href="#form-set"><code>set!</code></a>:</p>
+<lion-example name="Local and outer names">
+["begin",
+  ["define", "total", 0],
+  ["define", "add", ["lambda", ["n"],
+    ["begin",
+      ["define", "doubled", ["number/multiply", "n", 2]],
+      ["set!", "total", ["number/add", "total", "doubled"]]]]],
+  ["add", 1], ["add", 2],
+  {"total": "total", "doubled": "doubled"}]
+</lion-example>
+<p><code>doubled</code> is the string outside <code>add</code>, since nothing outside declares it.</p>
+
+<h2>Parameters shadow globals, and forms</h2>
+<p>A parameter with the same name as a global hides the global inside the lambda's body. Because standard library names contain a <code>/</code>, choosing parameter names without one keeps them from shadowing a library function by accident. A parameter or a <code>define</code> may also take a special form's name, such as <code>fact</code> or <code>in</code>: where it is in scope, an array that starts with it is a call, and everywhere else the form.</p>
 
 <h2>Strings that name nothing</h2>
-<p>A string that nothing is bound to is itself, which is what lets a program write <code>"open"</code> for a status without any quoting. The cost is that a misspelled name would quietly become a string: <code>["number/ad", 1, 2]</code> would be a call to a string, and <code>"value/intger?"</code> as a schema would be a string that only the same string fits.</p>
+<p>A string that no scope declares is itself, which is what lets a program write <code>"open"</code> for a status without any quoting. The cost is that a misspelled name would quietly become a string: <code>["number/ad", 1, 2]</code> would be a call to a string, and <code>"value/intger?"</code> as a schema would be a string that only the same string fits.</p>
 <p>So Lion looks at one more thing. A string of the form <code>module/name</code> that reads as a misspelled name is an error. It reads that way when other names of its module are bound, or when a bound name is a letter or two away, which the error then suggests. Any other string with a slash in it, such as <code>"n/a"</code> or <code>"text/plain"</code>, is data as before.</p>
 <lion-example name="A misspelled function" expect="error">
 ["array/map", ["array/make", 1, "two"], "value/numbr?"]

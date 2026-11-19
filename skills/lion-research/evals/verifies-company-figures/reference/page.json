@@ -263,7 +263,7 @@
             [
               "cond",
               [
-                ["array/length", "unchosen"],
+                ["number/greaterThan", ["array/length", "unchosen"], 0],
                 [
                   "string/concat",
                   "Sources use revenue in more than one sense (",

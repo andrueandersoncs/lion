@@ -178,6 +178,41 @@ export const EXPRESSIONS: readonly Expression[] = [
     ],
   },
   {
+    name: "local definition",
+    form: [
+      [
+        "lambda",
+        ["v"],
+        [
+          "begin",
+          ["define", "w", ["number/add", "v", 1]],
+          ["number/multiply", "w", 2],
+        ],
+      ],
+      X,
+    ],
+  },
+  {
+    name: "set!",
+    form: [
+      [
+        "lambda",
+        ["v"],
+        [
+          "begin",
+          ["define", "w", 0],
+          ["set!", "w", ["number/add", "v", 1]],
+          "w",
+        ],
+      ],
+      X,
+    ],
+  },
+  {
+    name: "form's name as a parameter",
+    form: [["lambda", ["in"], ["number/add", "in", 1]], X],
+  },
+  {
     name: "partial application",
     form: [["func/partial", "number/add", 10], X],
   },

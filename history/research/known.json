@@ -106,16 +106,6 @@
     "note": "4c8df1b's message says a belief is judged from the version it was formed in, but the plain model in reasoning-skill.test.ts says other beliefs are judged in the present; the mutation list treats judging only in the present as a break, so the test comment looks stale."
   },
   {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "cond-zero-condition",
-      "predicted": "true",
-      "found": "false"
-    },
-    "note": "cond counts a condition as JavaScript does: false, null, 0, and \"\" are false (README, probes), where Scheme counts only #f as false. Filters, by contrast, require true or false (filter-truthiness). No decision covers cond's truthiness."
-  },
-  {
     "assumption": "scheme-precedent",
     "witness": "356e74a-12",
     "note": "Lambdas ignore extra arguments 'as in JavaScript' (356e74a): a base form following JavaScript, not Scheme. See lambda-extra-arguments."
@@ -261,32 +251,6 @@
       "started": 1695
     },
     "note": "1d5800a measures 'against the previous commit', but its starting core-nesting-decisions (1695) is not where b030d8a ended (1692); one of the two was measured on a working tree that differed from its commit."
-  },
-  {
-    "assumption": "rules-hold",
-    "witness": {
-      "rule": "scheme-racket-semantics",
-      "case": "cond-empty-string-condition",
-      "predicted": "true",
-      "found": "false"
-    },
-    "note": "An empty string counts as false in a cond (README, probe), where Scheme counts every string as true. Part of cond's JavaScript truthiness: see cond-zero-condition."
-  },
-  {
-    "assumption": "consistent-rules",
-    "witness": {
-      "rules": ["cond-truthiness", "scheme-racket-semantics"],
-      "case": "cond-zero-condition"
-    },
-    "note": "The changelog entry that corrected the README states cond's JavaScript truthiness as a rule, cond-truthiness: a condition of false, null, 0, or \"\" counts as false. scheme-racket-semantics predicts Scheme's, where only #f is false. Same question as the cond findings under rules-hold: no decision covers cond's truthiness yet."
-  },
-  {
-    "assumption": "consistent-rules",
-    "witness": {
-      "rules": ["cond-truthiness", "scheme-racket-semantics"],
-      "case": "cond-empty-string-condition"
-    },
-    "note": "The changelog entry that corrected the README states cond's JavaScript truthiness as a rule, cond-truthiness: a condition of false, null, 0, or \"\" counts as false. scheme-racket-semantics predicts Scheme's, where only #f is false. Same question as the cond findings under rules-hold: no decision covers cond's truthiness yet."
   },
   {
     "assumption": "scheme-precedent",

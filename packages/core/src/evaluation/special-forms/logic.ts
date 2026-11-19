@@ -18,9 +18,10 @@ import {
   boundNames,
   type Environment,
   makeEnvironment,
+  type Scope,
   setGlobalBinding,
 } from "@/evaluation/environment";
-import { compile, evaluate } from "@/evaluation/evaluate";
+import { compile, compileAll, evaluate } from "@/evaluation/evaluate";
 import { dataStrings, suspend } from "@/evaluation/special-forms/lambda";
 import { compileQuery, compileRule, equalityGoals } from "@/logic/compile";
 import {
@@ -613,8 +614,11 @@ const goalOrBoolean = (
   );
 
 /** Negates a goal, or a boolean outside of logic. */
-export const compileNot = ([_, goal]: typeof NotFormSchema.Type): Compiled => {
-  const value = compile(goal);
+export const compileNot = (
+  [_, goal]: typeof NotFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const value = compile(goal, scope);
   const negate = (made: unknown) => {
     if (!isGoal(made)) {
       return notGoal("not", made);
@@ -632,11 +636,12 @@ export const compileNot = ([_, goal]: typeof NotFormSchema.Type): Compiled => {
  */
 const connective =
   (form: "and" | "or") =>
-  ([_, ...items]:
-    | typeof AndFormSchema.Type
-    | typeof OrFormSchema.Type): Compiled => {
+  (
+    [_, ...items]: typeof AndFormSchema.Type | typeof OrFormSchema.Type,
+    scope: Scope | undefined
+  ): Compiled => {
     const decides = form === "or";
-    const nodes = items.map(compile);
+    const nodes = compileAll(items, scope);
     const from = (
       at: number,
       goals: readonly Goal[],
@@ -690,12 +695,11 @@ const binding = (
 };
 
 /** Unifies two terms; without logic variables it is plain equality. */
-export const compileUnify = ([
-  _,
-  left,
-  right,
-]: typeof UnifyFormSchema.Type): Compiled => {
-  const operands = [compile(left), compile(right)];
+export const compileUnify = (
+  [_, left, right]: typeof UnifyFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const operands = compileAll([left, right], scope);
   const same = (values: readonly unknown[]) => sameValue(values[0], values[1]);
   return (environment, depth) =>
     andThen(runAll(operands, environment, depth), depth, (made) =>
@@ -707,12 +711,11 @@ export const compileUnify = ([
  * ["in", element, list] binds the element to each item of the list, or tests
  * that it is one. Without logic variables it is plain membership.
  */
-export const compileIn = ([
-  _,
-  element,
-  list,
-]: typeof InFormSchema.Type): Compiled => {
-  const operands = [compile(element), compile(list)];
+export const compileIn = (
+  [_, element, list]: typeof InFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const operands = compileAll([element, list], scope);
   const member = ([elementValue, listValue]: readonly unknown[]) =>
     Array.isArray(listValue)
       ? listValue.some((item) => sameValue(item, elementValue))

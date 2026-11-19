@@ -53,6 +53,7 @@ const ROLES: Record<SpecialFormName, Role> = {
   quote: roleByIndex(["operator", "quoted-value"], "quoted-value"),
   begin: roleByIndex(["operator"], "sequence-item"),
   define: roleByIndex(["operator", "binding", "value"], "value"),
+  "set!": roleByIndex(["operator", "binding", "value"], "value"),
   lambda: roleByIndex(["operator", "parameters", "body"], "body"),
   cond: roleByIndex(["operator"], "branch"),
   match: (index, length) => {

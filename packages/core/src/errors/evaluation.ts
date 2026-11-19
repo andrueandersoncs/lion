@@ -28,15 +28,54 @@ export class InvalidFunctionCallError extends Schema.TaggedError<InvalidFunction
  */
 export class UnboundNameError extends Schema.TaggedError<UnboundNameError>()(
   "UnboundNameError",
-  { nearest: Schema.NullOr(Schema.String), unbound: Schema.String }
+  {
+    nearest: Schema.NullOr(Schema.String),
+    unbound: Schema.String,
+    /** Why a name was needed, when it is not that it reads as misspelled. */
+    why: Schema.optional(Schema.String),
+  }
 ) {
   override get message() {
+    if (this.why !== undefined) {
+      return `Nothing is bound to "${this.unbound}". ${this.why}`;
+    }
     const module = this.unbound.slice(0, this.unbound.indexOf("/") + 1);
     const why =
       this.nearest === null
         ? `Other names begin with "${module}", so it reads as a misspelled name.`
         : `Did you mean "${this.nearest}"?`;
     return `Nothing is bound to "${this.unbound}". ${why} ${asString(this.unbound)}`;
+  }
+}
+
+/**
+ * Raised when a name is read before the `define` that binds it has run. The
+ * scope declares the name from its start, so the string means the
+ * definition, which has no value yet.
+ */
+export class UndefinedYetError extends Schema.TaggedError<UndefinedYetError>()(
+  "UndefinedYetError",
+  { unassigned: Schema.String }
+) {
+  override get message() {
+    return `"${this.unassigned}" is read before it is defined. A define binds its name from the start of the body it is in, and a relation or schema form from the start of the program, so the string means that definition, which has no value yet. Define it first, or write ["quote", "${this.unassigned}"] to mean the string.`;
+  }
+}
+
+/**
+ * Raised when an array starts with a special form's name but does not have
+ * the form's shape.
+ */
+export class MalformedFormError extends Schema.TaggedError<MalformedFormError>()(
+  "MalformedFormError",
+  {
+    expression: LionExpressionSchema,
+    form: Schema.String,
+    usage: Schema.String,
+  }
+) {
+  override get message() {
+    return `${JSON.stringify(this.expression)} is not a well-formed ${this.form} form: ${this.usage}`;
   }
 }
 

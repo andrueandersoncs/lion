@@ -4,9 +4,17 @@
 
 ## Unreleased
 
+### Breaking
+
+- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`cond-empty-string-condition` is `error`, was `false`; `cond-null-condition` is `error`, was `false`; `cond-string-condition` is `error`, was `true`; `cond-zero-condition` is `error`, was `false`)
+- A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-inside-lambda` is `local`, was `global`; `host-callback-define` is `local`, was `global`)
+
 ### Added
 
 - How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-md` added)
+- An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example. (`MalformedFormError` added)
+- A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`UndefinedYetError` added; `setLocalBinding` added)
+- A new form, `set!`, changes the nearest binding of a name, as in Scheme. (`set!` added)
 
 ### Removed
 
@@ -21,6 +29,12 @@
 - A row that comes while another row with its key is held is read from the level after: by then the pair that makes the two one holds, and the row that holds the value its class no longer writes has ended, so no answer finds two rows with one key. (`rule-reading-two-rows-with-one-key-in-its-group` is `never-both`)
 - `why` finds how a row came about when it is asked: of the answers that give the row at the level it is held from, the least of the first rule that has one, worked out from the rows there are. (`why-of-a-row-several-answers-give` is `least-at-its-level`)
 - A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`history-check-on-reworded-doc-sentence` is `note`, was `fails`)
+- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`cond-else` is `holds-unless-declared`, was `ordinary-string`)
+- A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`define-special-form-name` is `accepted`, was `rejected`; `lambda-special-form-name-parameter` is `accepted`, was `rejected`)
+
+### Fixed
+
+- An array that names a form but does not have the form's shape fails with `MalformedFormError`, which says what the form takes, with an example. (`malformed-special-form` is `says-what-the-form-takes`, was `not-a-call`)
 
 ### Decided
 
@@ -34,10 +48,16 @@
 - How the engine follows a change moved from the README to `packages/core/src/logic/ENGINE.md`. (`engine-mechanics-docs`: `engine-md` over `readme-guarantees`)
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (`record-pages-and-their-commit`: `pages-from-the-record-alone` over `second-pages-commit`, `pages-built-in-ci`)
 - A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`reworded-doc-sentence`: `claim-left-out` over `check-fails`)
+- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`condition-truth`: `true-or-false` over `javascript-truthiness`, `scheme-truth`)
+- A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-scope`: `body` over `global`)
+- A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`form-name-bindings`: `shadow-in-scope` over `refused`)
+- A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (`unbound-string-semantics`: `settled-by-scope` over `keep-string-fallback`, `ref-form`, `call-form`, was `keep-string-fallback`)
 
 ### Rules
 
 - The timeline no longer counts commits, and lists the sources of an item in the order its commits and notes were made, then the documents, then what Lion does today, so the pages a working tree gives are the pages its commit holds. (rule `pages-from-the-record-alone`)
+- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (rule `cond-truthiness` withdrawn)
+- A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (rule `strings-settled-by-scope`)
 
 ## 2026-11-18 — @lionlang/core 0.14.1, @lionlang/cli 0.13.1
 
@@ -1002,8 +1022,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Aggregates outside rule heads. As a whole argument of a rule head an aggregate still combines one value from each match. Anywhere else it combines a list once the list is known, so `["=", "?total", ["aggregate/sum", "?items"]]` works in a rule body. An aggregate of a `find` combines what the find found, so `["aggregate/count", ["find", "?c", ["parent", "?p", "?c"]]]` can be 0. An aggregate's argument can also be a constant, as in `["aggregate/sum", 1]`. (`aggregate-call-elsewhere` is `combines-list`; `aggregate-call-whole-head-argument` is `combines-matches`; `aggregate-constant-argument` is `allowed`; `aggregate-of-find` is `combines-find-list`)
 - an aggregate of a `find` can count 0 (`aggregate-count-of-empty-find` is `zero`)
 - an algorithm's input can be a variable that another goal binds (`algorithm-input-variable` is `runs-per-binding`)
-- so `else`, an ordinary string, counts as true (`cond-else` is `ordinary-string`)
-- A condition counts as false when it is `false`, `null`, `0`, or the empty string `""`, and as true when it is anything else (`cond-string-condition` is `true`)
+- `else` is an ordinary string, and a string counts as true. (`cond-else` is `ordinary-string`; `cond-string-condition` is `true`)
 - gives for each answer what plain code gives with the value in the variable's place (`expression-over-variable-vs-value` is `same`)
 - a call that fails in a rule or query names itself and its values (`failed-call-in-rule-message` is `names-call-and-values`)
 - A filter must be `true` or `false`. A goal such as `["number/add", "?x", 1]` used to pass as true; now the rule or query fails and shows the value. (`filter-non-boolean-message` is `shows-value`)
@@ -2093,13 +2112,13 @@ The first release of `@lionlang/core` on npm. There was no changelog yet: this s
 - NEVER use `npx` or `npm` commands. Use `bun` or `turbo` instead. (rule `use-bun-not-npm`)
 - Use `bun test` instead of `jest` or `vitest` (rule `use-bun-test-runner`)
 - The coding agent in `packages/agent` is a Lion program, `agent.json`, run by a small host file (rule `agent-as-lion-program`)
-- Calling a lambda makes a new environment of its parameters whose parent is the environment the lambda was made in, not a copy of it (rule `lexical-closures`)
+- A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (rule `lexical-closures`)
 - Special forms went back to plain names (rule `special-forms-slash-prefix` withdrawn)
 - adds slash-prefix to special forms (rule `special-forms-slash-prefix`)
 - All commands should be run from the root directory using Turbo: (rule `commands-from-root-with-turbo`)
 - 1. **Before coding**: Run `bun install` and `bun run prepare` (rule `dev-commands-npm` withdrawn)
 - The auto-quoting of lists was removed. (rule `non-call-arrays-are-lists` withdrawn)
-- Special forms keep plain names, such as `"define"`, with no prefix (rule `special-forms-plain-names`)
+- A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (rule `special-forms-plain-names`)
 - A record pattern in `match` fits any record that has the pattern's keys with values that fit (rule `record-patterns-by-keys`)
-- Where a base form's behavior is unclear, Lion follows Scheme and Racket (rule `scheme-racket-semantics`)
+- A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (rule `scheme-racket-semantics`)
 - All code is valid JSON. All JSON is valid code. (rule `all-json-is-code` withdrawn)

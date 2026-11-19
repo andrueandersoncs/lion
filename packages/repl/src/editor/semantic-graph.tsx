@@ -88,6 +88,7 @@ const NODE_COLOR_BY_KEY = {
   call: "var(--node-call)",
   cond: "var(--node-cond)",
   define: "var(--node-define)",
+  "set!": "var(--node-define)",
   eval: "var(--node-eval)",
   invalid: "var(--destructive)",
   lambda: "var(--node-lambda)",
@@ -274,7 +275,7 @@ const describeSpecialForm = (
       const branchCount = roleCount("branch");
       return {
         mark: form,
-        description: "first truthy wins",
+        description: "first true wins",
         detail: pluralize(branchCount, "branch", "branches"),
       };
     }
@@ -284,8 +285,19 @@ const describeSpecialForm = (
       )?.name;
       return {
         mark: form,
-        description: "global binding",
+        description: "binding in its body",
         detail: binding ? `${binding} ← value` : "binding ← value",
+      };
+    }
+    case "set!": {
+      const binding = children.find(({ role }) => role === "binding")?.value;
+      return {
+        mark: form,
+        description: "change a binding",
+        detail:
+          typeof binding === "string"
+            ? `${binding} ← value`
+            : "binding ← value",
       };
     }
     case "eval":

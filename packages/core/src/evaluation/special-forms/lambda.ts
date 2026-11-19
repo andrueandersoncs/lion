@@ -10,8 +10,16 @@ import {
   Pending,
   toEffect,
 } from "@/evaluation/compiled";
-import { type Environment, lookup, UNBOUND } from "@/evaluation/environment";
+import {
+  type Environment,
+  lookup,
+  predeclare,
+  type Scope,
+  scopeWith,
+  UNBOUND,
+} from "@/evaluation/environment";
 import { compile } from "@/evaluation/evaluate";
+import { bodyNames } from "@/evaluation/hoisting";
 import {
   buildOf,
   DeferredCall,
@@ -78,6 +86,8 @@ const references = (form: unknown): References => {
 interface Lambda {
   readonly body: LionExpressionType;
   compiled: Compiled | undefined;
+  /** The names its body defines, which a call declares from its start. */
+  readonly defined: readonly string[];
   readonly environment: Environment | undefined;
   readonly parameters: readonly string[];
 }
@@ -110,8 +120,14 @@ export const enter = (
   for (const [at, parameter] of parameters.entries()) {
     bindings.set(parameter, args[at]);
   }
-  lambda.compiled ??= compile(lambda.body);
-  return lambda.compiled({ bindings, parent: lambda.environment }, depth + 1);
+  predeclare(bindings, lambda.defined);
+  const scope: Environment = {
+    bindings,
+    body: true,
+    parent: lambda.environment,
+  };
+  lambda.compiled ??= compile(lambda.body, scope);
+  return lambda.compiled(scope, depth + 1);
 };
 
 /**
@@ -125,7 +141,10 @@ export const makeLambda = (
   environment?: Environment,
   compiled?: Compiled
 ) => {
-  const lambda: Lambda = { body, compiled, environment, parameters };
+  const defined = bodyNames(parameters, body, environment).filter(
+    (name) => !parameters.includes(name)
+  );
+  const lambda: Lambda = { body, compiled, defined, environment, parameters };
   const fn = registerLambda(
     (...args: unknown[]) =>
       Effect.suspend(() => toEffect(enter(lambda, args, 0))),
@@ -135,13 +154,19 @@ export const makeLambda = (
   return fn;
 };
 
-/** Makes a lambda that closes over the scope it is made in. */
-export const compileLambda = ([
-  _,
-  parameters,
-  body,
-]: typeof LambdaFormSchema.Type): Compiled => {
-  const compiled = compile(body);
+/**
+ * Makes a lambda that closes over the scope it is made in. Its body is
+ * compiled in a scope of its own, which declares its parameters and the
+ * names its body defines, inside the scope the form is written in.
+ */
+export const compileLambda = (
+  [_, parameters, body]: typeof LambdaFormSchema.Type,
+  scope: Scope | undefined
+): Compiled => {
+  const compiled = compile(
+    body,
+    scopeWith(bodyNames(parameters, body, scope), scope)
+  );
   return (environment) => makeLambda(parameters, body, environment, compiled);
 };
 

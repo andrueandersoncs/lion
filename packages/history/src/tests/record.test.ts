@@ -20,7 +20,7 @@ import {
   itemsOf,
   itemsUnder,
   model,
-  modelProgramOf,
+  modelStepsOf,
   OUTPUTS,
   QUESTIONS,
   type ReleaseFile,
@@ -41,8 +41,13 @@ const TIMELINE_OPTIONS = { arbitrary: { runs: 100 } };
 
 /** Evaluates `expression` against the model of the world's development. */
 const fromModel = (w: World, expression: unknown) =>
-  run(modelProgramOf(w, expression) as never, stdlib, {
-    database: new LogicDatabase(),
+  Effect.gen(function* () {
+    const database = new LogicDatabase();
+    let value: unknown;
+    for (const step of modelStepsOf(w, expression)) {
+      value = yield* run(step as never, stdlib, { database });
+    }
+    return value;
   }) as Effect.Effect<unknown, unknown>;
 
 const setOf = (rows: unknown) => [...new Set(rows as string[])].sort();

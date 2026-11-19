@@ -2,7 +2,9 @@
  * The model the compiled evaluator is checked against: Lion's interpreter
  * as it was before expressions were compiled. It walks an expression again
  * each time it runs, and every node is an Effect bound to the next. Only
- * how it reads scopes changed, since scopes are now read right away.
+ * how it reads scopes changed, since scopes are now read right away, and
+ * what a string means: each scope declares, from its start, the names its
+ * body defines, so a string is a name exactly when a scope declares it.
  *
  * The forms that read or change the logic database are the evaluator's
  * own, given the model to evaluate their parts with.
@@ -12,16 +14,25 @@ import {
   ArgumentMismatchError,
   InvalidFunctionCallError,
   logicError,
+  MalformedFormError,
+  UnboundNameError,
+  UndefinedYetError,
 } from "@/errors/evaluation";
 import { answer, isWriting, known } from "@/evaluation/asking";
 import { nameOrString } from "@/evaluation/base-forms/primitive";
 import {
+  assign,
+  declares,
   type Environment,
   lookup,
   makeEnvironment,
-  setGlobalBinding,
+  predeclare,
+  setLocalBinding,
+  UNASSIGNED,
   UNBOUND,
 } from "@/evaluation/environment";
+import { declaredIn, definedIn } from "@/evaluation/hoisting";
+import { notTruth } from "@/evaluation/special-forms/cond";
 import {
   suspendArguments,
   suspend as suspendIn,
@@ -75,9 +86,11 @@ import {
   termVariables,
 } from "@/logic/terms";
 import {
+  fitsForm,
+  isSpecialFormName,
   LionFunctionValueSchema,
   type SpecialFormName,
-  specialFormOf,
+  USAGE,
 } from "@/schemas/evaluation";
 import {
   LionExpressionSchema,
@@ -88,6 +101,9 @@ import { LionEnvironmentService } from "@/services/evaluation";
 import type { EvaluateResult, EvaluationError } from "@/types/evaluation";
 
 type Form = readonly LionExpressionType[];
+
+const SET_UNBOUND =
+  "set! changes a binding, and no scope around it binds the name. Bind it with define first.";
 
 const scope = Effect.service(LionEnvironmentService);
 
@@ -100,6 +116,9 @@ const evaluateAll = (expressions: readonly LionExpressionType[]) =>
 const evaluateReference = (name: string) =>
   Effect.flatMap(scope, (environment): EvaluateResult => {
     const binding = lookup(environment, name);
+    if (binding === UNASSIGNED) {
+      return Effect.fail(new UndefinedYetError({ unassigned: name }));
+    }
     if (binding !== UNBOUND) {
       return Effect.succeed(binding);
     }
@@ -149,12 +168,14 @@ const makeLambda = (
       if (args.length < parameters.length) {
         return yield* new ArgumentMismatchError();
       }
-      const frame = Record.fromEntries(Arr.zip(parameters, args));
+      const frame = makeEnvironment(
+        Record.fromEntries(Arr.zip(parameters, args)),
+        environment,
+        true
+      );
+      predeclare(frame.bindings, definedIn(body, frame));
       return yield* evaluate(body).pipe(
-        Effect.provideService(
-          LionEnvironmentService,
-          makeEnvironment(frame, environment)
-        )
+        Effect.provideService(LionEnvironmentService, frame)
       );
     }),
     { parameters, body, environment }
@@ -234,13 +255,20 @@ const evaluateCond = (expression: Form) =>
       unknown,
       ...(readonly [LionExpressionType, LionExpressionType])[],
     ];
+    const environment = yield* LionEnvironmentService;
     for (const [condition, result] of cases) {
+      if (condition === "else" && !declares(environment, "else")) {
+        return yield* evaluate(result);
+      }
       let holds = yield* evaluate(condition);
       if (holds instanceof LogicValue) {
         if (isWaiting(holds) || (yield* isWriting)) {
           return yield* suspend(expression);
         }
-        holds = yield* answer(holds);
+        holds = Boolean(yield* answer(holds));
+      }
+      if (typeof holds !== "boolean") {
+        return yield* logicError(notTruth(condition, holds));
       }
       if (holds) {
         return yield* evaluate(result);
@@ -348,7 +376,21 @@ const SPECIAL_FORMS: Record<SpecialFormName, (form: never) => EvaluateResult> =
       Effect.gen(function* () {
         const environment = yield* LionEnvironmentService;
         const value = yield* evaluate(expression as LionExpressionType);
-        setGlobalBinding(environment, id as string, value);
+        setLocalBinding(environment, id as string, value);
+        return value;
+      }),
+    "set!": ([_, id, expression]: Form) =>
+      Effect.gen(function* () {
+        const environment = yield* LionEnvironmentService;
+        if (!declares(environment, id as string)) {
+          return yield* new UnboundNameError({
+            nearest: null,
+            unbound: id as string,
+            why: SET_UNBOUND,
+          });
+        }
+        const value = yield* evaluate(expression as LionExpressionType);
+        assign(environment, id as string, value);
         return value;
       }),
     eval: (form: Form) => evaluateEval(form),
@@ -400,10 +442,24 @@ export const evaluate = (expression: LionExpressionType): EvaluateResult => {
     if (expression.length === 0) {
       return Effect.succeed(expression);
     }
-    const form = specialFormOf(expression);
-    return form === undefined
-      ? evaluateFunctionCall(expression)
-      : SPECIAL_FORMS[form](expression as never);
+    const [head] = expression;
+    if (!isSpecialFormName(head)) {
+      return evaluateFunctionCall(expression);
+    }
+    return Effect.flatMap(scope, (environment): EvaluateResult => {
+      if (declares(environment, head)) {
+        return evaluateFunctionCall(expression);
+      }
+      return fitsForm(head, expression)
+        ? SPECIAL_FORMS[head](expression as never)
+        : Effect.fail(
+            new MalformedFormError({
+              expression,
+              form: head,
+              usage: USAGE[head],
+            })
+          );
+    });
   }
   if (typeof expression === "object" && expression !== null) {
     return evaluateRecord(expression as Record<string, LionExpressionType>);
@@ -423,15 +479,24 @@ export const run = (
     nameFunctions(environment);
     return pipe(
       Schema.decodeUnknownEffect(LionExpressionSchema)(expression),
-      Effect.flatMap(evaluate),
-      Effect.provideService(
-        LionEnvironmentService,
-        makeEnvironment({
-          ...relationBindings(database),
-          ...schemaBindings(database),
-          ...environment,
-        })
-      ),
+      Effect.flatMap((program) => {
+        const top = makeEnvironment(
+          {
+            ...relationBindings(database),
+            ...schemaBindings(database),
+            ...environment,
+          },
+          undefined,
+          true
+        );
+        predeclare(top.bindings, [
+          ...definedIn(program, top),
+          ...declaredIn(program, top),
+        ]);
+        return evaluate(program).pipe(
+          Effect.provideService(LionEnvironmentService, top)
+        );
+      }),
       Effect.provideService(LionDatabaseService, database)
     );
   });
