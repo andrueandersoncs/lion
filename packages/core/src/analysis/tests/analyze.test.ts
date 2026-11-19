@@ -341,3 +341,49 @@ describe("analyze: a schema form", () => {
     }
   );
 });
+
+const SHORT_WORD = /^[a-z]{2,6}$/;
+
+describe("analyze: the head of a call", () => {
+  const word = Arbitrary.filter(
+    Arbitrary.schema(Schema.String.check(Schema.isPattern(SHORT_WORD))),
+    (name) => !Object.hasOwn(stdlib, name)
+  );
+
+  it.effect.prop(
+    "is a name, never data: one no scope declares is unbound where it is written, and the call fails unless the run binds it before it runs",
+    {
+      name: word,
+      value: Arbitrary.schema(Schema.Int),
+      early: element([true, false]),
+    },
+    ({ early, name, value }) =>
+      Effect.gen(function* () {
+        const call = [name, value];
+        const bind = [
+          "eval",
+          ["quote", ["define", name, ["lambda", ["v"], "v"]]],
+        ];
+        const expression = [
+          "begin",
+          ...(early ? [bind] : []),
+          ["array/make", call, name],
+        ];
+        const nodes = nodesOf(expression as Expression);
+        const meaningAt = (pointer: string) =>
+          nodes.find((node) => node.pointer === pointer)?.meaning?.kind;
+        const head = `/${early ? 2 : 1}/1/0`;
+        const elsewhere = `/${early ? 2 : 1}/2`;
+        expect(meaningAt(head)).toBe("unbound");
+        // The same string where it is not the head is data.
+        expect(meaningAt(elsewhere)).toBe("data");
+        const ran = yield* outcome(expression as Expression);
+        expect(ran).toEqual(
+          early
+            ? { value: [value, name] }
+            : expect.objectContaining({ error: "InvalidFunctionCallError" })
+        );
+      }),
+    OPTIONS
+  );
+});

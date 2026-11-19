@@ -64,8 +64,10 @@ export interface SemanticBinding {
  * - `logic-variable`: a `?name` no scope declares;
  * - `data`: it evaluates to itself, or the form reads it as written;
  * - `unbound`: only a name can stand there, and no scope declares it, so
- *   evaluating it fails: a `module/name` that reads as a misspelled name, or
- *   the name a `set!` changes;
+ *   evaluating it fails: a `module/name` that reads as a misspelled name,
+ *   the name a `set!` changes, or the head of a call, which is looked up
+ *   where the call runs and fails unless the run has bound it by then, as
+ *   code `eval` ran can;
  * - `form`: the name of the special form an array is;
  * - `keyword`: `else` as a condition of `cond`, which always holds.
  */
@@ -318,6 +320,18 @@ const site = (
   return stringNode(name, path, false, [{ kind: "binding", binding: bound }]);
 };
 
+/**
+ * What the string at the head of a call is, as `compileHead` reads it: a
+ * name, never data, so one no scope declares is unbound where it is written.
+ */
+const headMeaning = (
+  name: string,
+  context: Context
+): readonly [StringMeaning, string?] => {
+  const meaning = evaluated(name, context.scope);
+  return meaning[0].kind === "data" ? [{ kind: "unbound" }] : meaning;
+};
+
 /** Reads an expression, written in `context`. */
 const analyzeNode = (
   expression: LionExpressionType,
@@ -373,7 +387,15 @@ const analyzeNode = (
       children: expression.map((value, order) => ({
         role: CALL_ROLE(order, expression.length),
         order,
-        node: analyzeNode(value, [...path, order], context),
+        node:
+          order === 0 && typeof value === "string"
+            ? stringNode(
+                value,
+                [...path, 0],
+                false,
+                headMeaning(value, context)
+              )
+            : analyzeNode(value, [...path, order], context),
       })),
     };
   }

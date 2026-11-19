@@ -22445,5 +22445,29 @@
         ["else", ["quote", "other"]]
       ]
     ]
+  },
+  {
+    "case": "analysis-call-head",
+    "area": "host",
+    "program": [
+      "cond",
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "analysis-strings"], "output"],
+          ["quote", "called /1/0 \"zcall\": unbound"]
+        ],
+        ["quote", "unbound"]
+      ],
+      [
+        [
+          "string/includes",
+          ["object/get", ["repo/run", "analysis-strings"], "output"],
+          ["quote", "called /1/0 \"zcall\": data"]
+        ],
+        ["quote", "data"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
   }
 ]

@@ -3390,6 +3390,13 @@ export const MUTATIONS: readonly Mutation[] = [
     ],
   },
   {
+    name: "the analysis reads the head of a call as data",
+    file: core("analysis/analyze.ts"),
+    find: '  return meaning[0].kind === "data" ? [{ kind: "unbound" }] : meaning;',
+    replace: "  return meaning;",
+    tests: [ANALYSIS_TESTS],
+  },
+  {
     name: "a change of assuming cannot state rows with exists",
     file: core("evaluation/special-forms/logic.ts"),
     find: "            ? Effect.succeed(heldRows(value as LogicForm, goal))",

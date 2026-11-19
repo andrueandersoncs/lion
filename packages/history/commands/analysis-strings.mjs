@@ -26,3 +26,15 @@ for (const node of flattenAnalysis(analyze(program, stdlib))) {
       : "";
   console.log(`${pointer} ${JSON.stringify(value)}: ${meaning.kind}${binding}`);
 }
+
+// The head of a call is a name: one nothing declares is unbound there, and
+// the same string elsewhere is data.
+const called = ["begin", ["zcall", 1], "zcall"];
+console.log(`called program: ${JSON.stringify(called)}`);
+for (const { meaning, pointer, value } of flattenAnalysis(
+  analyze(called, stdlib)
+)) {
+  if (meaning !== undefined) {
+    console.log(`called ${pointer} ${JSON.stringify(value)}: ${meaning.kind}`);
+  }
+}
