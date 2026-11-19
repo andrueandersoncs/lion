@@ -293,6 +293,15 @@ export const EXPRESSIONS: readonly Expression[] = [
     name: "aggregate of a find",
     form: ["aggregate/count", ["find", "?y", ["link", X, "?y"]]],
   },
+  // The template asks about `?x` too, so it waits while the find is written.
+  {
+    name: "find whose template asks",
+    form: [
+      "find",
+      ["number/add", "?y", ["cond", [["small", X], X], ["else", 0]]],
+      ["link", X, "?y"],
+    ],
+  },
   {
     name: "cond on a goal",
     form: ["cond", [["small", X], "little"], ["else", "big"]],
