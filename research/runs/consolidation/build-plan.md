@@ -49,7 +49,7 @@ Every step follows `AGENTS.md` and `CLAUDE.md`, and is committed on its own:
 
 | Step | Status | Commit | What it settled |
 |---|---|---|---|
-| 1. Schemas stand for their values | built, being committed | | `schema/fits?` binds its value when the schema lists finitely many (`logic/listing.ts`); `["schema/arrayOf", item, most]`; `value/boolean?`/`value/null?` list their values; a listing only where nothing else binds, at most 100,000; decision `history/notes/schemas-list-their-values.json`; properties `logic/tests/listing.test.ts` |
-| 2. The solver | not started | | |
+| 1. Schemas stand for their values | done | d1f4b7a | `schema/fits?` binds its value when the schema lists finitely many (`logic/listing.ts`); `["schema/arrayOf", item, most]`; `value/boolean?`/`value/null?` list their values; a listing only where nothing else binds, at most 100,000; decision `history/notes/schemas-list-their-values.json`; properties `logic/tests/listing.test.ts` |
+| 2. The solver | in progress | | |
 | 3. Eventually rules | not started | | |
 | 4. Proofs, inclusion, inference, certificates | not started | | |
