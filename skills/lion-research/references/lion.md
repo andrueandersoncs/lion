@@ -253,11 +253,11 @@ A failed program changes nothing in the model file, so fix the step and run it a
 - **Numbers are read from text with the library too.** `["string/numbers", "$1,250.5M, down -3%", ","]` is `[1250.5, -3]`, every number written in the text, and `["number/fromString", "1,234", ","]` is `1234`, or `null` for text that is not one number. Words for amounts are not read: `"$1.2 billion"` holds `1.2`.
 - **Records are changed by making new ones.** `["object/set", record, key, value]` and `["object/remove", record, key]` give a new record, and leave the one they were given as it was.
 - **Functions run forward.** `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
-- **Rules, schemas, and invariants cannot be removed or redefined.** Edit the step that wrote them and replay the steps.
+- **Change rules, schemas, and invariants in the step that wrote them.** Edit it and replay the steps. A schema cannot be removed or redefined, and a rule or invariant that `retract` takes back would come back with the next replay.
 - **A recursive rule cannot compute new values** for its head, so recursion always ends. Follow edges with recursion, and compute in a rule that is not recursive. `aggregate/min`, `max`, `shortest`, and `union` are the exception: a recursive rule can aggregate with them.
 - **Each run starts with a fresh environment.** The model keeps relations, schemas, facts, rules, and invariants. A `define` lasts for one program, though a rule keeps the value a defined name had when the rule was written. So a helper you define in the frame works inside the frame's rules and nowhere else: a query in `checks.json` or `answers.json` cannot call it. Whatever a query should show, such as a time as text, has to be a column that a rule computes.
 
-These also work, and need no experiment: a relation with both facts and rules, as long as no rule aggregates; several `attributed` rows for one claim; `in` as a test inside `not`; one defined function calling another; a record with variables in it as an argument of a query; and `["query", ["and", …]]` to join relations in a saved question.
+These also work, and need no experiment: a relation with both facts and rules, also one whose rules aggregate, where each fact is one more candidate the aggregate combines; several `attributed` rows for one claim; `in` as a test inside `not`; one defined function calling another; a record with variables in it as an argument of a query; and `["query", ["and", …]]` to join relations in a saved question.
 
 ## Functions
 

@@ -265,7 +265,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | Form | Meaning |
 |---|---|
 | `["fact", goal, ...]` | Adds ground facts. Returns the facts added. |
-| `["retract", goal, ...]` | Removes facts. What rules derived from them changes with them. |
+| `["retract", goal, ...]` | Removes facts. What rules derived from them changes with them. A `rule` or `invariant` form among them, written as it was added, takes that rule or invariant back. See [Taking rules back](#taking-rules-back). |
 | `["rule", head, goal, ...]` | Adds a rule: `head` holds whenever every goal holds. A head is a relation call, `=` between two values, an `and` of those, or `exists` over relation calls. See [Existential rules](#existential-rules). |
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
@@ -457,7 +457,7 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 
 #### Merging what a key gets
 
-`"merge"` says how the rows a key gets combine instead: for a column outside the key, a lattice aggregate, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row, whose merged columns join the candidates' values. A column the merge does not name must agree, as it must for any key.
+A relation is a key and how the candidates for a key combine. Without a key, a row is its own key and every candidate is a row. With a key, the candidates of a key must agree. `"merge"` says how they combine instead: for a column outside the key, an aggregate, such as `aggregate/min`, `aggregate/sum`, or `aggregate/count`. Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row, whose merged columns combine the candidates' values. A column the merge does not name must agree, as it must for any key.
 
 ```json
 ["begin",
@@ -473,9 +473,31 @@ Evaluates to `[{ "id": 1, "status": "shipped" }, { "id": 2, "status": "open" }]`
 Evaluates to `{ "best": [{ "sku": "a1", "usd": 4 }, { "sku": "b2", "usd": 7 }, { "sku": "c3", "usd": 2 }], "why b2": { "fact": ["best", "b2", 7], "rule": ["relation", "best", ["sku", "usd"], { "key": ["sku"], "merge": { "usd": "aggregate/min" } }], "because": [{ "fact": ["best", "b2", 7], "given": true }] } }`.
 
 - A fact of a relation that merges never replaces another: it is one more candidate, and `retract` takes it back. The fact `["best", "b2", 7]` beats the rule's 9 above, and `c3` has only its fact.
-- A rule's head gives a merged column plainly, as above, and the relation joins it: it is the rule `["rule", ["best", "?sku", ["aggregate/min", "?usd"]], ...]`, which may also be written. So a relation that merges is an aggregated relation whose facts are candidates too, and like one it is derived in full, before the rules that read it, and can go through recursion: a merge with `aggregate/min` over a rule that adds a road's length to a distance gives the shortest distances.
-- Only a lattice aggregate merges, since its join does not depend on the order the candidates come in. `aggregate/sum` and `aggregate/count` add up a rule's matches, which a fact is not, so they stay in rule heads.
+- A rule's head gives a merged column plainly, as above, and the relation combines it: it is the rule `["rule", ["best", "?sku", ["aggregate/min", "?usd"]], ...]`, which may also be written. A rule whose head aggregates says the same of its relation as a merge does: its other columns are the key, and every fact and every rule with a plain head for the relation gives a candidate too, whatever order they come in. See [Aggregates](#aggregates).
+- A relation that merges is derived in full, before the rules that read it. With a lattice aggregate, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`, it can go through recursion: a merge with `aggregate/min` over a rule that adds a road's length to a distance gives the shortest distances. Any other aggregate combines the candidates once they are all there.
+- Every aggregate combines a key's candidates counted, each fact and each rule's match once, so what it gives does not depend on the order they come in.
 - `why` tells the candidate that gave the row: a fact, with the relation's declaration as its rule, or a rule's match.
+
+### Taking rules back
+
+A `rule` form inside `retract`, written as it was added, takes the rule back, and an `invariant` form takes the invariant back. The relations whose rules changed are derived again, as when a rule is added, and the change is checked against the invariants that stay, so it is all or nothing like any other change.
+
+```json
+["begin",
+  ["relation", "edge", ["from", "to"]],
+  ["relation", "path", ["from", "to"]],
+  ["fact", ["edge", "a", "b"], ["edge", "b", "c"]],
+  ["rule", ["path", "?x", "?y"], ["edge", "?x", "?y"]],
+  ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]],
+  {"taken": ["retract", ["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]]],
+   "paths": ["find", "?to", ["path", "a", "?to"]]}]
+```
+
+Evaluates to `{ "taken": [["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], ["edge", "?y", "?z"]]], "paths": ["b"] }`.
+
+- A form takes back the rule a snapshot would write the same way, so a rule written with a name bound to a value is the same as one written with the value. A form that names no rule the database holds takes nothing back.
+- Taking back a rule that says two values are the same takes back the invariant it holds as too.
+- `retract` gives what it took back: each fact, and each rule or invariant form.
 
 ### Query options
 
@@ -517,7 +539,7 @@ Fails with `Adding this fact breaks an invariant, so nothing changed. The invari
 - The goal can be anything a query can ask, including relations that rules derive, `not`, aggregates, and graph algorithms. It is answered the same way a query is, goal-directed when it has known arguments.
 - A form is checked once it has made all of its changes, so one `fact` form can add several facts that only keep an invariant together. Separate forms in a `begin` are separate changes, each checked on its own.
 - If checking an invariant fails, for example because `graph/topologicalOrder` finds a cycle, the change is undone too.
-- Invariants take only the `"assert"` option, read as written. Like rules, they cannot be removed.
+- Invariants take only the `"assert"` option, read as written. `["retract", ["invariant", goal, options]]` takes one back. See [Taking rules back](#taking-rules-back).
 - A change to facts is checked against the invariants that read what it changed. An invariant that expects no answers, and whose goal matches the rows of the relation that changed, is asked about the new rows alone, so checking a write does not cost more as the relation grows. Which invariants are asked never changes whether a change is kept. An invariant that calls a function the host added is asked in full after every change, since Lion cannot see what such a function reads; see [Host functions in rules](#host-functions-in-rules).
 - When an invariant's goal says an answer fails a [schema](#schemas), the message ends with where the answer does not fit.
 - Snapshots write invariants after the rules, so loading one checks them against the whole database.
@@ -570,11 +592,11 @@ Evaluates to `[{ "customer": "ana", "total": 50, "orders": 2 }, { "customer": "b
 
 - A sum or a mean of numbers that are not all whole is added up in sort order, so it does not depend on the order the facts were added in.
 - Each match of a rule body counts once. A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. Adding a rule the database already holds changes nothing, so its matches never count twice.
-- A group exists only when something matches, so a count is never `0`. To count what may be nothing, aggregate a `find`: `["rule", ["activity", "?c", ["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]]], ["customer", "?c"]]` gives every customer a count, `0` included.
+- A group exists only when a candidate gives it, a match or a fact, so a count is never `0`. To count what may be nothing, aggregate a `find`: `["rule", ["activity", "?c", ["aggregate/count", ["find", "?id", ["order", "?id", "?c", "?_"]]]], ["customer", "?c"]]` gives every customer a count, `0` included.
 - An aggregate can combine computed values, such as `["aggregate/sum", ["number/multiply", "?price", "?quantity"]]`, or a constant: `["aggregate/count", 1]` counts the matches.
 - An aggregate call combines a rule's matches only as a whole argument of the head, and only when its argument is not a `find`. Anywhere else, in a body or inside another call, it combines the list it is given: `["=", "?n", ["aggregate/count", "?tags"]]` counts the items of `?tags` for each match.
 - An aggregate of a `find` combines what the `find` found, wherever it is written: in a rule, in a query, or in plain code, as in `["aggregate/sum", ["find", "?amount", ["order", "?_", "?_", "?amount"]]]`.
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate.
+- A rule that aggregates says how the candidates of each key of its relation combine, as a [merge](#merging-what-a-key-gets) does: the head's other columns are the key. A fact of the relation, and a rule with a plain head for it, give a candidate too, combined with the rest as a match is: under `aggregate/sum` a fact adds its value, and under `aggregate/count` it counts once. So a fact can give a key a group no match gives, and a rule that gives refunds plainly adds them to the sum. Whether a fact replaces the fact its key has is the relation's declaration's to say, as for any relation: under a key it declares without a merge, it does, and the fact it keeps is a candidate. Every rule that aggregates into a relation must aggregate the same columns in the same way.
 - `why` on an aggregated fact lists every match it combines under `matches`, in the order of their answers. For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did.
 - Called on a plain list instead of a logic variable, the same functions combine the list right away: `["aggregate/sum", ["array/make", 1, 2, 3]]` is `6`.
 

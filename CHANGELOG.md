@@ -31,6 +31,9 @@
 - A claim that quotes a document in words the document no longer holds is left out of the model, and `bun run history check` lists it as a note instead of failing. (`history-check-on-reworded-doc-sentence` is `note`, was `fails`)
 - A condition of `cond` must be `true` or `false`, as a filter must, and `else` always holds unless a scope declares it. (`cond-else` is `holds-unless-declared`, was `ordinary-string`)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`define-special-form-name` is `accepted`, was `rejected`; `lambda-special-form-name-parameter` is `accepted`, was `rejected`)
+- A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (`aggregated-relation-facts` is `candidate`, was `error`; `aggregated-relation-plain-rule` is `candidate`, was `error`)
+- A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again. (`invariant-removal` is `possible`, was `impossible`; `rule-removal` is `possible`, was `impossible`)
+- A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. (`merge-with-sum` is `sum`, was `error`)
 
 ### Fixed
 
@@ -52,6 +55,9 @@
 - A `define` binds in the body it stands in, a lambda's or the program's, and a name read before its `define` has run fails with `UndefinedYetError`. (`define-scope`: `body` over `global`)
 - A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database. (`form-name-bindings`: `shadow-in-scope` over `refused`)
 - A string is a name when a scope it is written in declares it, and data otherwise, settled before it runs, so a binding made later never turns data into a name. (`unbound-string-semantics`: `settled-by-scope` over `keep-string-fallback`, `ref-form`, `call-form`, was `keep-string-fallback`)
+- A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (`aggregated-relation-candidates`: `merge-from-rules` over `facts-refused`)
+- A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. (`merging-what-a-key-gets`: `any-aggregate-merge` over `lattice-merge-option`, `written-merge-function`, `merge-on-write`, was `lattice-merge-option`)
+- A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again. (`rule-retraction`: `retract-the-form` over `impossible`, `by-name`)
 
 ### Rules
 
@@ -154,7 +160,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - A call in tail position keeps nothing of the call it is in, so a loop of 1,000,000 tail calls takes 0.5 s and 9 MB, and a call that is not in tail position can still nest as deep as memory allows. (rule `tail-calls-keep-nothing`)
 - A record of schemas names some keys of a value, and a list of schemas its first items. What it leaves over is the rest: the record of the other keys, or the list of the items after. (rule `rest-of-a-record-or-list`)
 - Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. (rule `library-argument-errors-are-the-decoders`)
-- Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key. (rule `a-key-holds-the-join-of-its-candidates`)
+- A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (rule `a-key-holds-the-join-of-its-candidates`)
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
 - It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
@@ -1234,7 +1240,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - A match that several alternatives of one `or` find counts once, and separate rules for the same relation add up. (`aggregate-match-found-by-several-or-alternatives` is `counts-once`; `aggregate-separate-rules-same-relation` is `add-up`)
 - Sum and mean of numbers (`mean` of nothing is `null`) (`aggregate-mean-empty` is `null`)
 - expects all numbers or all strings, but found (`aggregate-min-mixed-types` is `error`)
-- Every rule for an aggregated relation must aggregate the same columns in the same way, and the relation cannot also have facts, unless it [merges what a key gets](#merging-what-a-key-gets): then a fact is one more candidate. (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
+- aggregation is stratified like negation: it cannot go through recursion, every rule for an aggregated relation must aggregate the same way, and aggregated relations cannot also have facts (`aggregated-relation-facts` is `error`; `aggregated-relation-rules-aggregate-differently` is `error`)
 - Logic variables must be direct arguments, not nested inside arrays or records (`logic-variable-nested-in-array` is `error`; `logic-variable-nested-in-record` is `error`)
 - For `min`, `max`, and `shortest`, it explains the one match that produced the value, the least where several did. (`why-aggregate-min-max-fact` is `producing-match`)
 - `aggregate/shortest` breaks ties by the smaller value, so results never depend on match order (`aggregate-shortest-tie` is `smaller-value`)

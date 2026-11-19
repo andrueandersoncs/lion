@@ -16,6 +16,7 @@ import {
 } from "@/evaluation/compiled";
 import {
   boundNames,
+  declares,
   type Environment,
   makeEnvironment,
   type Scope,
@@ -35,6 +36,7 @@ import {
   queryDatabase,
   relationValue,
   retractFacts,
+  retractRules,
   type SchemaDeclaration,
 } from "@/logic/database";
 import { makeSchema } from "@/logic/fit";
@@ -61,6 +63,7 @@ import {
   LogicForm,
   LogicValue,
   LogicVariable,
+  logicKey,
   type RelationInfo,
   render,
   replaceVariables,
@@ -409,13 +412,75 @@ export const evaluateFact = (
     return yield* assertFacts(yield* database, values);
   });
 
+/**
+ * The key of what a `rule` or `invariant` form written inside `retract`
+ * would add: the rule a snapshot writes the same way, with the invariant a
+ * rule that says two values are the same holds as, or the invariant. Its
+ * parts are evaluated as the form would evaluate them, and nothing is
+ * added.
+ */
+const keysOf = (form: readonly LionExpressionType[], part: Part) =>
+  Effect.gen(function* () {
+    if (form[0] === "invariant") {
+      const [__, goal, options] = form;
+      const goalValue = yield* writing(part(goal as LionExpressionType));
+      const assert = yield* parseInvariantOptions(options);
+      return { invariants: [logicKey([assert, goalValue])], rules: [] };
+    }
+    const [__, head, ...body] = form;
+    const [headValue, ...bodyValues] = yield* writing(
+      evaluateAll([head, ...body] as LionExpressionType[], part)
+    );
+    const [rule] = yield* compileRule(headValue, bodyValues);
+    return {
+      invariants: equalityGoals(headValue, bodyValues).map((goal) =>
+        logicKey(["none", goal])
+      ),
+      rules: [rule?.key],
+    };
+  });
+
+/**
+ * ["retract", goal, ...] takes facts back. A `rule` or `invariant` form
+ * among them, written as it was added, takes that rule or invariant back.
+ */
 export const evaluateRetract = (
-  [_, ...facts]: typeof RetractFormSchema.Type,
+  [_, ...parts]: typeof RetractFormSchema.Type,
   part: Part = evaluate
 ) =>
   Effect.gen(function* () {
-    const values = yield* atoms("retract", facts, part);
-    return yield* retractFacts(yield* database, values);
+    const environment = yield* LionEnvironmentService;
+    const isTaken = (item: LionExpressionType) =>
+      Array.isArray(item) &&
+      (item[0] === "rule" || item[0] === "invariant") &&
+      !declares(environment, item[0]);
+    const taken = parts.filter(isTaken) as LionExpressionType[][];
+    const values = yield* atoms(
+      "retract",
+      parts.filter((item) => !isTaken(item)),
+      part
+    );
+    const store = yield* database;
+    const rules = new Set<string>();
+    const invariants = new Set<string>();
+    for (const form of taken) {
+      const keys = yield* keysOf(form, part);
+      for (const key of keys.rules) {
+        if (key !== undefined) {
+          rules.add(key);
+        }
+      }
+      for (const key of keys.invariants) {
+        if (key !== undefined) {
+          invariants.add(key);
+        }
+      }
+    }
+    const removed =
+      values.length === 0 ? [] : yield* retractFacts(store, values);
+    const withdrawn =
+      taken.length === 0 ? [] : yield* retractRules(store, rules, invariants);
+    return [...removed, ...withdrawn];
   });
 
 /** ["query", goal, options?]; options are read as written, not evaluated. */

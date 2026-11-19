@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, writtenRules } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import {
   attempt,
@@ -101,7 +101,7 @@ describe("an expression that mentions a logic variable", () => {
             database
           );
           expectRows(all, expected, paired(inputs));
-          if (database.rules.length === WORLD_RULES) {
+          if (writtenRules(database.rules).length === WORLD_RULES) {
             // The rule was turned down when it was written: its expression
             // cannot run for any value, so the model fails for every one.
             expect(first.ok).toBe(false);
@@ -237,7 +237,7 @@ describe("a rule that holds waiting forms", () => {
         for (let run = 0; run < times; run += 1) {
           yield* attempt(program, database);
         }
-        expect(database.rules).toHaveLength(WORLD_RULES + 1);
+        expect(writtenRules(database.rules)).toHaveLength(WORLD_RULES + 1);
         expectRows(
           yield* attempt([["query", ["total", "?sum"]]], database),
           expected,
@@ -277,7 +277,7 @@ describe("a rule that holds waiting forms", () => {
           ],
           database
         );
-        expect(database.rules).toHaveLength(WORLD_RULES + 1);
+        expect(writtenRules(database.rules)).toHaveLength(WORLD_RULES + 1);
         expect(rows).toEqual({
           ok: true,
           value: [{ sum: inputs.reduce((sum, x) => sum + x + by, 0) }],

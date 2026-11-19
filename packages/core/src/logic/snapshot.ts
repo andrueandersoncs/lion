@@ -9,7 +9,7 @@
 import { Effect } from "effect";
 import { LogicError } from "@/errors/evaluation";
 import { run } from "@/evaluation/evaluate";
-import { LogicDatabase, mergeOption } from "@/logic/database";
+import { LogicDatabase, mergeOption, writtenRules } from "@/logic/database";
 import { keyColumns } from "@/logic/model";
 import {
   quoted,
@@ -119,7 +119,7 @@ export const saveDatabase = (
       // Alternatives of one `or` share their source, so each rule form is
       // written once.
       const seen = new Set<unknown>();
-      for (const rule of database.rules) {
+      for (const rule of writtenRules(database.rules)) {
         // A relation's declaration makes the rule that merges its facts.
         if (!(seen.has(rule.source) || rule.given)) {
           seen.add(rule.source);

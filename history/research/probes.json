@@ -21857,5 +21857,135 @@
       ],
       ["else", ["quote", "other"]]
     ]
+  },
+  {
+    "case": "aggregated-relation-facts",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "begin",
+            ["relation", "sale", ["who", "usd"]],
+            ["relation", "total", ["who", "usd"]],
+            ["fact", ["sale", "a", 5]],
+            [
+              "rule",
+              ["total", "?w", ["aggregate/sum", "?u"]],
+              ["sale", "?w", "?u"]
+            ],
+            ["fact", ["total", "a", 1]],
+            ["query", ["total", "?w", "?u"]]
+          ],
+          ["quote", [{ "w": "a", "u": 6 }]]
+        ],
+        ["quote", "candidate"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "aggregated-relation-plain-rule",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "begin",
+            ["relation", "sale", ["who", "usd"]],
+            ["relation", "refund", ["who", "usd"]],
+            ["relation", "total", ["who", "usd"]],
+            ["fact", ["sale", "a", 5], ["refund", "a", -2]],
+            ["rule", ["total", "?w", "?u"], ["refund", "?w", "?u"]],
+            [
+              "rule",
+              ["total", "?w", ["aggregate/sum", "?u"]],
+              ["sale", "?w", "?u"]
+            ],
+            ["query", ["total", "?w", "?u"]]
+          ],
+          ["quote", [{ "w": "a", "u": 3 }]]
+        ],
+        ["quote", "candidate"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "merge-with-sum",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "begin",
+            [
+              "relation",
+              "total",
+              ["who", "usd"],
+              { "key": "who", "merge": { "usd": "aggregate/sum" } }
+            ],
+            ["fact", ["total", "a", 1], ["total", "a", 2]],
+            ["query", ["total", "?w", "?u"]]
+          ],
+          ["quote", [{ "w": "a", "u": 3 }]]
+        ],
+        ["quote", "sum"]
+      ],
+      ["else", ["quote", "other"]]
+    ]
+  },
+  {
+    "case": "rule-removal",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "begin",
+            ["relation", "a", ["x"]],
+            ["relation", "b", ["x"]],
+            ["fact", ["a", 1]],
+            ["rule", ["b", "?x"], ["a", "?x"]],
+            ["retract", ["rule", ["b", "?x"], ["a", "?x"]]],
+            ["query", ["b", "?x"]]
+          ],
+          ["quote", []]
+        ],
+        ["quote", "possible"]
+      ],
+      ["else", ["quote", "impossible"]]
+    ]
+  },
+  {
+    "case": "invariant-removal",
+    "area": "logic",
+    "program": [
+      "cond",
+      [
+        [
+          "=",
+          [
+            "begin",
+            ["relation", "p", ["x"]],
+            ["invariant", ["p", 3], { "assert": "none" }],
+            ["retract", ["invariant", ["p", 3], { "assert": "none" }]],
+            ["fact", ["p", 3]],
+            ["query", ["p", "?x"]]
+          ],
+          ["quote", [{ "x": 3 }]]
+        ],
+        ["quote", "possible"]
+      ],
+      ["else", ["quote", "impossible"]]
+    ]
   }
 ]

@@ -384,7 +384,7 @@ describe("aggregate checks", () => {
     })
   );
 
-  it.effect("require every rule for a relation to aggregate the same way", () =>
+  it.effect("require the rules that aggregate into a relation to agree", () =>
     Effect.gen(function* () {
       const message = yield* logicError(
         program(
@@ -394,39 +394,14 @@ describe("aggregate checks", () => {
             ["spend", "?c", ["aggregate/sum", "?a"]],
             ["order", "?_", "?c", "?a"],
           ],
-          ["rule", ["spend", "?c", "?a"], ["order", "?_", "?c", "?a"]]
-        )
-      );
-      expect(message).toContain("must aggregate the same columns");
-    })
-  );
-
-  it.effect("keep facts and aggregate rules apart", () =>
-    Effect.gen(function* () {
-      const factsFirst = yield* logicError(
-        program(
-          ["relation", "spend", ["customer", "total"]],
-          ["fact", ["spend", "dee", 1]],
           [
             "rule",
-            ["spend", "?c", ["aggregate/sum", "?a"]],
+            ["spend", "?c", ["aggregate/max", "?a"]],
             ["order", "?_", "?c", "?a"],
           ]
         )
       );
-      expect(factsFirst).toContain("cannot aggregate into it");
-      const rulesFirst = yield* logicError(
-        program(
-          ["relation", "spend", ["customer", "total"]],
-          [
-            "rule",
-            ["spend", "?c", ["aggregate/sum", "?a"]],
-            ["order", "?_", "?c", "?a"],
-          ],
-          ["fact", ["spend", "dee", 1]]
-        )
-      );
-      expect(rulesFirst).toContain("cannot have facts");
+      expect(message).toContain("must aggregate the same columns");
     })
   );
 

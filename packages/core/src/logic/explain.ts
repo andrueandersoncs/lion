@@ -300,7 +300,11 @@ const routes = (model: Model, goal: Atom | LogicForm, vars: Vars) =>
       return plans.map(({ body }): Route => ({ body, start: vars }));
     }
     const out: Route[] = [];
-    for (const rule of model.rules.filter(({ equates }) => !equates)) {
+    // A relation's facts are not a way a row can be derived, also where a
+    // merge reads them as candidates.
+    for (const rule of model.rules.filter(
+      ({ equates, given }) => !(equates || given)
+    )) {
       for (const head of headsOf(rule)) {
         const start =
           head.relation.name === goal.relation.name

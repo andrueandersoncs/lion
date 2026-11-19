@@ -6,17 +6,20 @@ import {
   takes,
 } from "@/errors/evaluation";
 import {
+  AGGREGATORS,
   aggregateCall,
   aggregator,
   LATTICE_AGGREGATES,
 } from "@/logic/aggregates";
 import {
+  aggregatesOf,
   type CompiledQuery,
   type CompiledRule,
   compiling,
   headsOf,
   type Literal,
   questionPlans,
+  withMerge,
 } from "@/logic/compile";
 import { why } from "@/logic/explain";
 import { checkOf, misfit } from "@/logic/fit";
@@ -187,12 +190,13 @@ const describeRelation = (relation: RelationInfo) => {
   return `${columns}${key}${merge}`;
 };
 
-const MERGES = LATTICE_AGGREGATES.map((kind) => `"aggregate/${kind}"`);
+const MERGES = Object.keys(AGGREGATORS).map((kind) => `"aggregate/${kind}"`);
 
 /**
  * What is wrong with a relation's merge: it needs a key, and names columns
- * outside the key, each with a lattice aggregate, whose values only move
- * one way, so the join of a key's candidates does not depend on their order.
+ * outside the key, each with an aggregate. Every aggregate combines a key's
+ * candidates counted, so what it gives does not depend on their order; only
+ * a lattice aggregate can also go through recursion.
  */
 const mergeProblem = (
   name: string,
@@ -211,7 +215,7 @@ const mergeProblem = (
       return `Relation "${name}" cannot merge "${column}": it is part of the key, and the key says which rows merge.`;
     }
     if (!MERGES.includes(JSON.stringify(kind))) {
-      return `Relation "${name}" merges "${column}" with ${JSON.stringify(kind)}, but a merge joins values with ${latticeNames("or")}, whose result does not depend on the order the values come in.`;
+      return `Relation "${name}" merges "${column}" with ${JSON.stringify(kind)}, but a merge combines values with an aggregate, such as "aggregate/sum" or "aggregate/min".`;
     }
   }
   return;
@@ -488,6 +492,127 @@ const isAggregated = (rules: readonly CompiledRule[], relation: string) =>
     (rule) => rule.head.relation.name === relation && rule.aggregates.length > 0
   );
 
+const CANDIDATES = new WeakMap<readonly CompiledRule[], ReadonlySet<string>>();
+
+/**
+ * The relations whose facts are candidates of a merge, not rows: those the
+ * rules give a rule that reads their facts, by a relation's declaration or
+ * by the rules that aggregate into it.
+ */
+export const candidateRelations = (
+  rules: readonly CompiledRule[]
+): ReadonlySet<string> => {
+  let names = CANDIDATES.get(rules);
+  if (names === undefined) {
+    names = new Set(
+      rules.flatMap((rule) => (rule.given ? [rule.head.relation.name] : []))
+    );
+    CANDIDATES.set(rules, names);
+  }
+  return names;
+};
+
+/** The rules as written: without what a merge made of them. */
+export const writtenRules = (rules: readonly CompiledRule[]) =>
+  rules.flatMap((rule) => (rule.implied ? [] : [rule.written ?? rule]));
+
+/**
+ * The rules the database runs, from the rules as written. A relation whose
+ * rules aggregate merges what each key gets with those aggregates, as a
+ * relation that declares a merge does: every rule that gives it a row
+ * gives a candidate, and so does every fact, which a rule of its own reads.
+ * So the rules a relation has, and the order they came in, never decide
+ * whether it can have facts or plain rules.
+ */
+const effectiveRules = (
+  database: LogicDatabase,
+  written: readonly CompiledRule[]
+): CompiledRule[] | string => {
+  const merges = new Map<string, Merge>();
+  for (const rule of written) {
+    const { name } = rule.head.relation;
+    const declared = database.relations.get(name);
+    if (
+      rule.aggregates.length > 0 &&
+      declared?.merge === undefined &&
+      !merges.has(name)
+    ) {
+      merges.set(
+        name,
+        rule.aggregates.map(
+          (position) => [position, aggregateKind(rule, position)] as const
+        )
+      );
+    }
+  }
+  if (merges.size === 0) {
+    return [...written];
+  }
+  const rules: CompiledRule[] = [];
+  for (const rule of written) {
+    const merge = merges.get(rule.head.relation.name);
+    if (merge === undefined || rule.aggregates.length > 0 || rule.equates) {
+      rules.push(rule);
+    } else if (rule.invents === undefined) {
+      rules.push(
+        made(MERGED, rule, merge, () => {
+          const head = withMerge(rule.head, merge);
+          return {
+            ...rule,
+            aggregates: aggregatesOf(head),
+            head,
+            written: rule,
+          };
+        })
+      );
+    } else {
+      return `Rule ${show(rule.source)} invents a value for "${rule.head.relation.name}", whose rules aggregate. A rule that invents values cannot give a row of a relation that aggregates.`;
+    }
+  }
+  for (const [name, merge] of merges) {
+    const relation = database.relations.get(name);
+    if (relation !== undefined) {
+      rules.push(
+        made(IMPLIED, relation, merge, () => ({
+          ...factsRule({ ...relation, merge }),
+          implied: true,
+        }))
+      );
+    }
+  }
+  return rules;
+};
+
+type Merge = readonly (readonly [number, string])[];
+
+/**
+ * The rules a merge makes, kept for what they are made from, so a change to
+ * other rules leaves them the same rules, and a group of relations whose
+ * rules are the same keeps what it derived.
+ */
+const MERGED = new WeakMap<object, Map<string, CompiledRule>>();
+const IMPLIED = new WeakMap<object, Map<string, CompiledRule>>();
+
+const made = (
+  kept: WeakMap<object, Map<string, CompiledRule>>,
+  from: object,
+  merge: Merge,
+  make: () => CompiledRule
+) => {
+  const key = JSON.stringify(merge);
+  let byMerge = kept.get(from);
+  if (byMerge === undefined) {
+    byMerge = new Map();
+    kept.set(from, byMerge);
+  }
+  let rule = byMerge.get(key);
+  if (rule === undefined) {
+    rule = make();
+    byMerge.set(key, rule);
+  }
+  return rule;
+};
+
 /**
  * Undoes a change to the database, or is undefined when the change left the
  * database as it was.
@@ -612,12 +737,11 @@ const follow = (
     }
     // The facts of a relation that merges are the candidates its rule
     // reads, under their own name, and not its rows.
+    const candidates = candidateRelations(database.rules);
     const given = (rows: ReadonlyMap<string, TupleSet>) =>
       new Map(
         [...rows].map(([name, set]) => [
-          database.relations.get(name)?.merge === undefined
-            ? name
-            : factsName(name),
+          candidates.has(name) ? factsName(name) : name,
           set,
         ])
       );
@@ -813,8 +937,9 @@ const these = (atoms: readonly Atom[]) =>
 
 /**
  * Adds a fact. One whose key is already present replaces the old row,
- * unless the relation merges what a key gets: then every fact is a
- * candidate, and the key holds their join.
+ * unless the relation declares a merge: then every fact is a candidate, and
+ * the key holds their join. Only the declaration decides, so what a fact
+ * form keeps never depends on the rules there are when it comes.
  */
 const addFact = (
   facts: TupleSet,
@@ -874,15 +999,6 @@ export const assertFacts = (database: LogicDatabase, atoms: readonly Atom[]) =>
   Effect.gen(function* () {
     const tuples: (readonly [Atom, Tuple])[] = [];
     for (const atom of atoms) {
-      const declared = database.relations.get(atom.relation.name);
-      if (
-        declared?.merge === undefined &&
-        isAggregated(database.rules, atom.relation.name)
-      ) {
-        return yield* logicError(
-          `"${atom.relation.name}" is computed by aggregate rules, so it cannot have facts.`
-        );
-      }
       tuples.push([atom, yield* groundTuple(database, atom)] as const);
     }
     const write = (
@@ -943,7 +1059,7 @@ const checkAggregateShapes = (rules: readonly CompiledRule[]) => {
       if (earlier !== undefined && earlier !== shape) {
         const merge = mergeOption(relation);
         return merge === undefined
-          ? `Every rule for "${relation.name}" must aggregate the same columns in the same way, but ${show(rule.source)} differs from an earlier rule.`
+          ? `Every rule that aggregates into "${relation.name}" must aggregate the same columns in the same way, since they say how the candidates of each key combine, but ${show(rule.source)} differs from an earlier rule.`
           : `"${relation.name}" merges ${show(merge)}, so a rule for it gives each of those columns plainly or with that aggregate, and aggregates nothing else, but ${show(rule.source)} differs.`;
       }
       shapes.set(relation.name, shape);
@@ -1170,20 +1286,11 @@ export const addRules = (
       return logicError(`Relation "${name}" is not declared here.`);
     }
   }
-  for (const rule of rules) {
-    const relation = rule.head.relation.name;
-    if (
-      rule.aggregates.length > 0 &&
-      database.relations.get(relation)?.merge === undefined &&
-      (database.facts.get(relation)?.size ?? 0) > 0
-    ) {
-      return logicError(
-        `"${relation}" has facts, so rules cannot aggregate into it. Aggregate into a relation of its own.`
-      );
-    }
-  }
   const previous = database.rules;
-  const next = [...previous, ...rules];
+  const next = effectiveRules(database, [...writtenRules(previous), ...rules]);
+  if (typeof next === "string") {
+    return logicError(next);
+  }
   const problem = checkProgram(next);
   if (problem !== undefined) {
     return logicError(problem);
@@ -1212,6 +1319,71 @@ export const addRules = (
   };
   return commit(database, "Adding this rule", change, upkeep);
 };
+
+/**
+ * Takes rules and invariants back, by the keys of the forms that would add
+ * them: a rule a snapshot writes the same way, and an invariant asserting
+ * the same of the same goal. A rule that says two values are the same takes
+ * the invariant it holds as back with it. The relations whose rules changed
+ * are derived again, as when rules are added, and the change is checked
+ * against the invariants that stay. Gives the forms it took back.
+ */
+export const retractRules = (
+  database: LogicDatabase,
+  ruleKeys: ReadonlySet<string>,
+  invariantKeys: ReadonlySet<string>
+): LogicEffect<readonly unknown[]> =>
+  Effect.gen(function* () {
+    const previous = database.rules;
+    const written = writtenRules(previous);
+    const gone = (key: string | undefined, keys: ReadonlySet<string>) =>
+      key !== undefined && keys.has(key);
+    const kept = written.filter((rule) => !gone(rule.key, ruleKeys));
+    const invariants = database.invariants;
+    const stays = invariants.filter(
+      (invariant) => !gone(invariant.key, invariantKeys)
+    );
+    const taken = [
+      ...new Set(
+        written.flatMap((rule) =>
+          gone(rule.key, ruleKeys) ? [rule.source] : []
+        )
+      ),
+      ...invariants.flatMap((invariant) =>
+        gone(invariant.key, invariantKeys)
+          ? [
+              [
+                "invariant",
+                render(invariant.goal),
+                { assert: invariant.assert },
+              ],
+            ]
+          : []
+      ),
+    ];
+    if (taken.length === 0) {
+      return taken;
+    }
+    const next = effectiveRules(database, kept);
+    if (typeof next === "string") {
+      return yield* logicError(next);
+    }
+    const before = database.model;
+    const upkeep = {
+      after: Effect.suspend(() => renew(database, before)),
+      undone: Effect.sync(() => touch(database)),
+    };
+    const change = () => {
+      database.rules = next;
+      database.invariants = stays;
+      return () => {
+        database.rules = previous;
+        database.invariants = invariants;
+      };
+    };
+    yield* commit(database, "Retracting this rule", change, upkeep);
+    return taken;
+  });
 
 /**
  * A database that starts as this one is and goes its own way: it shares

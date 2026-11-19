@@ -12,6 +12,8 @@ const core = (file: string) => `packages/core/src/${file}`;
 const EXISTENTIAL_TESTS = ["src/logic/tests/existentials.test.ts"];
 /** The properties of what a string means, by the scopes it is written in. */
 const SCOPE_TESTS = "src/evaluation/tests/scopes.test.ts";
+/** The properties of a relation's candidates, and of taking rules back. */
+const CANDIDATE_TESTS = "src/logic/tests/candidates.test.ts";
 /** The properties of the value a key or an equality rule keeps. */
 const LEAST_MEMBER_TESTS = [
   ...EXISTENTIAL_TESTS,
@@ -965,8 +967,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "a change to the facts of a relation that merges is followed as a change to its rows",
     file: core("logic/database.ts"),
-    find: "          database.relations.get(name)?.merge === undefined",
-    replace: "          true",
+    find: "          candidates.has(name) ? factsName(name) : name,",
+    replace: "          name,",
     tests: MERGE_TESTS,
   },
   {
@@ -974,13 +976,6 @@ export const MUTATIONS: readonly Mutation[] = [
     file: core("logic/compile.ts"),
     find: "      return kind === undefined ||",
     replace: "      return true ||",
-    tests: MERGE_TESTS,
-  },
-  {
-    name: "a relation that merges cannot have facts",
-    file: core("logic/database.ts"),
-    find: "        declared?.merge === undefined &&",
-    replace: "        true &&",
     tests: MERGE_TESTS,
   },
   // Schemas, and the invariants a change to facts can break.
@@ -1490,6 +1485,48 @@ export const MUTATIONS: readonly Mutation[] = [
     replace:
       "    for (const [position, pattern] of [] as typeof found.patterns) {",
     tests: ["src/logic/tests/patterns.test.ts"],
+  },
+  {
+    name: "the facts of a relation whose rules aggregate are rows, not candidates",
+    file: core("logic/database.ts"),
+    find: "    if (relation !== undefined) {\n      rules.push(\n        made(IMPLIED,",
+    replace: "    if (false) {\n      rules.push(\n        made(IMPLIED,",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "a plain rule beside rules that aggregate gives rows, not candidates",
+    file: core("logic/database.ts"),
+    find: "        made(MERGED, rule, merge, () => {",
+    replace: "        rule ?? made(MERGED, rule, merge, () => {",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "retract leaves a rule in place",
+    file: core("logic/database.ts"),
+    find: "    const kept = written.filter((rule) => !gone(rule.key, ruleKeys));",
+    replace: "    const kept = written;",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "retract leaves an invariant in place",
+    file: core("logic/database.ts"),
+    find: "      (invariant) => !gone(invariant.key, invariantKeys)",
+    replace: "      () => true",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "a merge takes only lattice aggregates",
+    file: core("logic/database.ts"),
+    find: "const MERGES = Object.keys(AGGREGATORS).map(",
+    replace: "const MERGES = LATTICE_AGGREGATES.map(",
+    tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "why tells a relation's facts as a way a row could be derived",
+    file: core("logic/explain.ts"),
+    find: "      ({ equates, given }) => !(equates || given)",
+    replace: "      ({ equates }) => !equates",
+    tests: ["src/logic/tests/why-not.test.ts"],
   },
   {
     name: "a string that reads as a misspelled name is a string",

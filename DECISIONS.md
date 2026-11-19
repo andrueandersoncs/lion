@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 182 questions have been decided, 74 records explain them, and of what the records assert, 564 hold when Lion is run, 5 are broken, 326 are stated but not checked by running Lion, and 21 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 184 questions have been decided, 75 records explain them, and of what the records assert, 570 hold when Lion is run, 5 are broken, 328 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -170,7 +170,7 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-18 | [`scope-bindings-store`](#scope-bindings-store) | `map` | [Lion compiles an expression to a function that runs in direct style, and enters Effect only where a node needs it](#compiled-evaluation) |
 | 2026-11-18 | [`rest-of-a-record`](#rest-of-a-record) | `schema-open-second-argument` | [What a record or list of schemas leaves over is its rest, and `schema/open` takes a schema for it](#rest-of-a-record) |
 | 2026-11-18 | [`library-argument-checks`](#library-argument-checks) | `guard-then-decoder` | [A library function passes arguments of the right kinds through a guard compiled from its schemas, and runs the decoder only on the others](#library-argument-guards) |
-| 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `lattice-merge-option` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets) |
+| 2026-11-18 | [`merging-what-a-key-gets`](#merging-what-a-key-gets) | `any-aggregate-merge` | [A keyed relation can merge what a key gets: each merged column joins its candidates with a lattice aggregate, and facts are candidates too](#merging-what-a-key-gets), [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
 | 2026-11-18 | [`skill-eval-agent-folder`](#skill-eval-agent-folder) | `outside-repository` | [A skill eval's agent works outside the repository, and never sees a transcript](#skill-eval-outside-repository) |
 | 2026-11-18 | [`asking-what-would-hold`](#asking-what-would-hold) | `assuming-question` | [`assuming` asks a question of the database as it would be after some changes](#asking-what-would-hold) |
 | 2026-11-18 | [`schema-asks-about-another-value`](#schema-asks-about-another-value) | `only-smaller-values` | [A schema that asks about itself gets its least consistent answer, and asks again only about smaller values](#schema-asks-about-itself) |
@@ -188,6 +188,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`condition-truth`](#condition-truth) | `true-or-false` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`define-scope`](#define-scope) | `body` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`form-name-bindings`](#form-name-bindings) | `shadow-in-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
+| 2026-11-19 | [`aggregated-relation-candidates`](#aggregated-relation-candidates) | `merge-from-rules` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
+| 2026-11-19 | [`rule-retraction`](#rule-retraction) | `retract-the-form` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
 
 <a id="program-representation"></a>
 
@@ -3690,9 +3692,10 @@ Recorded 2026-11-18 in `history/notes/library-argument-guards.json`.
 
 ## merging-what-a-key-gets
 
-Now: `lattice-merge-option`.
+Now: `any-aggregate-merge`.
 
 - 2026-11-18 `merging-what-a-key-gets`: `lattice-merge-option` over `facts-for-every-aggregate`, `written-merge-function`, `merge-on-write`: "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`." (`merging-what-a-key-gets.json`)
+- 2026-11-19 `merging-what-a-key-gets`: `any-aggregate-merge` over `lattice-merge-option`, `written-merge-function`, `merge-on-write`, was `lattice-merge-option`: "A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion." (`one-relation-model.json`)
 
 <a id="merging-what-a-key-gets"></a>
 
@@ -3714,12 +3717,42 @@ Recorded 2026-11-18 in `history/notes/merging-what-a-key-gets.json`.
 
 **What it asserts, checked.**
 
-- Stated, not checked by running Lion: decided `merging-what-a-key-gets`: `lattice-merge-option`. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
+- Replaced by a later word: decided `merging-what-a-key-gets`: `lattice-merge-option`. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
 - Holds when Lion is run: rule `a-key-holds-the-join-of-its-candidates` holds. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values. A column the merge does not name must agree, as for any key."
 - Holds when Lion is run: `relation-merge-option` exists. "A keyed relation can declare `"merge"`: for columns outside the key, the lattice aggregate that joins the values a key gets, `aggregate/min`, `aggregate/max`, `aggregate/shortest`, or `aggregate/union`."
 - Holds when Lion is run: `merge-joins-facts-and-rules` is `join`. "Every row a key gets is then a candidate, from a fact or a rule alike, and the key holds one row whose merged columns join the candidates' values."
 - Holds when Lion is run: `merge-fact-retract` is `candidate-removed`. "A fact of such a relation never replaces another, and `retract` takes it back."
 - Holds when Lion is run: `keyed-aggregated-rows-differ` is `error`. "Two rows of a keyed aggregated relation that differ in a column that does not merge are now an error, as two rows rules give one key always were."
+
+<a id="one-relation-model"></a>
+
+### A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back
+
+Recorded 2026-11-19 in `history/notes/one-relation-model.json`.
+
+**Context.** A key meant different things by where rows came from: a fact replaced the fact with its key, two rule rows with one key were an error, a declared merge joined candidates, and rules that aggregate grouped matches by the other columns of their head. A relation that rules aggregated into could not have facts (`"total" is computed by aggregate rules, so it cannot have facts.`), one with facts could not take an aggregating rule, and a rule with a plain head beside an aggregating one failed (`Every rule for "total" must aggregate the same columns in the same way`). A merge took only lattice aggregates, since a fact is not a match to add up. And no rule or invariant could be taken back. Since rows carry weights, the engine counts every candidate of a row once, a fact or a rule's match, so an aggregate of a key's candidates no longer depends on the order or the source they come in.
+
+**Decision.** A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. Every rule that aggregates into a relation must still aggregate the same columns in the same way. A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again.
+
+**Consequences.** Two restrictions and their messages are gone, and the rule that every rule for an aggregated relation aggregates alike now concerns only rules that aggregate. A fact of a relation whose rules aggregate is one candidate, as a match is, so two equal facts are one fact, as two equal matches are one match. Whether a fact replaces the fact its key has is still the relation's declaration's to say, so what a fact form keeps never depends on the rules there are when it comes; the property that found this in a first version checks it in every order. `why not` leaves a relation's facts out of the ways a row could be derived, also where a merge reads them. Properties in `logic/tests/candidates.test.ts` check the candidates against a plain model in every order, with and without a declared merge, through a snapshot, and that taking a rule or invariant back leaves what never adding it gives. Measured against main, with the names change before it: 15,054 code lines where main has 14,438, of which this change adds 211, and 182 messages where the names change left 183. Every workload of `bun run scale` grows as it did, at most as the facts do; at 100,000 facts the times read 0.83 to 1.08 of main's while another process loaded the machine.
+
+**Alternatives considered.**
+
+- Keep facts out of relations that rules aggregate into. It made a relation's rules decide whether it can have facts, and the order rules and facts came in decide which one failed; the weights engine now counts each candidate, so nothing needs the restriction.
+- Make every key a function with a merge function, as egglog does, and unknowns its union-find. Lion already holds the pieces as keys, merges, and least-member classes; the engine's one model of weighted rows carries them, and a written merge function could not be checked to be order-independent.
+- Take a rule back by a name. Rules have no names; the form a snapshot writes already identifies a rule, as adding one twice shows.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `aggregated-relation-candidates`: `merge-from-rules`. "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in."
+- Holds when Lion is run: `aggregated-relation-facts` is `candidate`. "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in."
+- Holds when Lion is run: `aggregated-relation-plain-rule` is `candidate`. "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in."
+- Holds when Lion is run: rule `a-key-holds-the-join-of-its-candidates` holds. "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in."
+- Stated, not checked by running Lion: decided `merging-what-a-key-gets`: `any-aggregate-merge`. "A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion."
+- Holds when Lion is run: `merge-with-sum` is `sum`. "A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion."
+- Stated, not checked by running Lion: decided `rule-retraction`: `retract-the-form`. "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again."
+- Holds when Lion is run: `rule-removal` is `possible`. "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again."
+- Holds when Lion is run: `invariant-removal` is `possible`. "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again."
 
 <a id="skill-eval-agent-folder"></a>
 
@@ -4014,3 +4047,19 @@ Now: `body`.
 Now: `shadow-in-scope`.
 
 - 2026-11-19 `form-name-bindings`: `shadow-in-scope` over `refused`: "A parameter or a `define` can take a special form's name, and an array that starts with it is a call where the binding is in scope; a relation or schema still cannot, since its name is bound in every run of its database." (`names-by-scope.json`)
+
+<a id="aggregated-relation-candidates"></a>
+
+## aggregated-relation-candidates
+
+Now: `merge-from-rules`.
+
+- 2026-11-19 `aggregated-relation-candidates`: `merge-from-rules` over `facts-refused`: "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in." (`one-relation-model.json`)
+
+<a id="rule-retraction"></a>
+
+## rule-retraction
+
+Now: `retract-the-form`.
+
+- 2026-11-19 `rule-retraction`: `retract-the-form` over `impossible`, `by-name`: "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again." (`one-relation-model.json`)

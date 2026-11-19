@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, writtenRules } from "@/logic/database";
 import { saveDatabase } from "@/logic/snapshot";
 import {
   attempt,
@@ -157,7 +157,9 @@ describe("adding what the database already holds", () => {
             expect(added.ok).toBe(true);
           }
         }
-        expect(database.rules).toHaveLength(captured === written ? 3 : 4);
+        expect(writtenRules(database.rules)).toHaveLength(
+          captured === written ? 3 : 4
+        );
         expect(
           yield* attempt(["query", ["tag", "?x"], { order: "x" }], database)
         ).toEqual({ ok: true, value: [{ x: `?${variable}` }, { x: "a" }] });

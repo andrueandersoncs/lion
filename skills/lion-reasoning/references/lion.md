@@ -174,7 +174,7 @@ Use invariants for the model's integrity: the shape of a kind of observation, so
 - **No ordering of strings.** There is no "less than" for text; `"order"`, `aggregate/min`, and `aggregate/max` do sort it. Keep what you compare as numbers.
 - **A function takes the number of arguments it takes.** `number/add`, `number/multiply`, `number/min`, `number/max`, `string/concat`, and `array/concat` take any number; every other function fails on too many or too few.
 - **Functions run forward.** `["=", ["number/add", "?x", 1], 5]` does not solve for `?x`.
-- **Rules, relations, and invariants cannot be removed.** Edit the step that wrote them and replay.
+- **Change rules, relations, and invariants in the step that wrote them, and replay.** A relation cannot be removed, and a rule or invariant that `retract` takes back would come back with the next replay.
 - **Each run starts with a fresh environment.** A `define` lasts for one program, though a rule keeps the value a defined name had when the rule was written. A question cannot call a helper defined in a step; make what it needs a column a rule computes.
 
 ## Functions

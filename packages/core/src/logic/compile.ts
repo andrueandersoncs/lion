@@ -61,11 +61,17 @@ export interface CompiledRule {
   readonly equates?: true;
   /**
    * Set for the rule that reads a relation's facts as candidates of its
-   * merge, which the relation's declaration makes. A snapshot writes the
-   * declaration, and not this rule.
+   * merge, which the relation's declaration, or the rules that aggregate
+   * into it, make. A snapshot writes the declaration and the rules, and not
+   * this rule.
    */
   readonly given?: true;
   readonly head: Atom;
+  /**
+   * Set for a rule the rules that aggregate into a relation make: the rule
+   * that reads its facts as candidates.
+   */
+  readonly implied?: true;
   /**
    * Set for a rule whose head says `exists`. Such a rule adds every
    * relation call of its head at once, for each answer of its body, and
@@ -82,6 +88,11 @@ export interface CompiledRule {
   readonly key?: string;
   /** The rendered `rule` form. Alternatives of one `or` share it. */
   readonly source: unknown;
+  /**
+   * The rule as written, when the merge a relation's rules aggregate with
+   * made its head give a candidate of that merge.
+   */
+  readonly written?: CompiledRule;
 }
 
 /** How a rule whose head says `exists` invents values. */
@@ -749,7 +760,7 @@ export const questionPlans = (
 
 const NOTHING: ReadonlySet<string> = new Set();
 
-const aggregatesOf = (head: Atom) =>
+export const aggregatesOf = (head: Atom) =>
   head.args.flatMap((arg, position) =>
     arg instanceof DeferredCall && arg.aggregate !== undefined ? [position] : []
   );
@@ -759,11 +770,19 @@ const aggregatesOf = (head: Atom) =>
  * joins its values with its aggregate, as if the head said so. A head that
  * aggregates there already keeps what it says, and must say the same.
  */
-const merging = (head: Atom): Atom => {
-  const { merge } = head.relation;
-  if (merge === undefined) {
-    return head;
-  }
+const merging = (head: Atom): Atom =>
+  head.relation.merge === undefined
+    ? head
+    : withMerge(head, head.relation.merge);
+
+/**
+ * A head whose merged columns join their values with the merge's
+ * aggregates. A column that aggregates already keeps what it says.
+ */
+export const withMerge = (
+  head: Atom,
+  merge: readonly (readonly [number, string])[]
+): Atom => {
   const kinds = new Map(merge);
   return new Atom(
     head.relation,

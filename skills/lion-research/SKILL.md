@@ -58,7 +58,7 @@ research/<topic>/
   report.md       the written answer, every time, beside the model it came from
 ```
 
-`steps/` is the source and `model.json` is what it builds. Rules, schemas, and invariants cannot be removed from a model once added, so to change one you edit the step that wrote it and replay the steps:
+`steps/` is the source and `model.json` is what it builds. The steps say what the model holds: a schema cannot be removed from a model once added, and a rule or invariant that `retract` takes back would come back with the next replay, so to change one you edit the step that wrote it and replay the steps:
 
 ```bash
 node <this skill's folder>/scripts/replay.mjs

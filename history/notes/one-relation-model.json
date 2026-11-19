@@ -1,0 +1,120 @@
+{
+  "title": "A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back",
+  "context": "A key meant different things by where rows came from: a fact replaced the fact with its key, two rule rows with one key were an error, a declared merge joined candidates, and rules that aggregate grouped matches by the other columns of their head. A relation that rules aggregated into could not have facts (`\"total\" is computed by aggregate rules, so it cannot have facts.`), one with facts could not take an aggregating rule, and a rule with a plain head beside an aggregating one failed (`Every rule for \"total\" must aggregate the same columns in the same way`). A merge took only lattice aggregates, since a fact is not a match to add up. And no rule or invariant could be taken back. Since rows carry weights, the engine counts every candidate of a row once, a fact or a rule's match, so an aggregate of a key's candidates no longer depends on the order or the source they come in.",
+  "decision": "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. Every rule that aggregates into a relation must still aggregate the same columns in the same way. A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again.",
+  "consequences": "Two restrictions and their messages are gone, and the rule that every rule for an aggregated relation aggregates alike now concerns only rules that aggregate. A fact of a relation whose rules aggregate is one candidate, as a match is, so two equal facts are one fact, as two equal matches are one match. Whether a fact replaces the fact its key has is still the relation's declaration's to say, so what a fact form keeps never depends on the rules there are when it comes; the property that found this in a first version checks it in every order. `why not` leaves a relation's facts out of the ways a row could be derived, also where a merge reads them. Properties in `logic/tests/candidates.test.ts` check the candidates against a plain model in every order, with and without a declared merge, through a snapshot, and that taking a rule or invariant back leaves what never adding it gives. Measured against main, with the names change before it: 15,054 code lines where main has 14,438, of which this change adds 211, and 182 messages where the names change left 183. Every workload of `bun run scale` grows as it did, at most as the facts do; at 100,000 facts the times read 0.83 to 1.08 of main's while another process loaded the machine.",
+  "alternatives": [
+    {
+      "option": "Keep facts out of relations that rules aggregate into",
+      "rejected": "It made a relation's rules decide whether it can have facts, and the order rules and facts came in decide which one failed; the weights engine now counts each candidate, so nothing needs the restriction."
+    },
+    {
+      "option": "Make every key a function with a merge function, as egglog does, and unknowns its union-find",
+      "rejected": "Lion already holds the pieces as keys, merges, and least-member classes; the engine's one model of weighted rows carries them, and a written merge function could not be checked to be order-independent."
+    },
+    {
+      "option": "Take a rule back by a name",
+      "rejected": "Rules have no names; the form a snapshot writes already identifies a rule, as adding one twice shows."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in.",
+      "says": {
+        "decision": "aggregated-relation-candidates",
+        "chose": "merge-from-rules",
+        "over": ["facts-refused"],
+        "area": "logic",
+        "because": "the engine counts each candidate once, so facts and plain rules can feed an aggregated relation in any order"
+      }
+    },
+    {
+      "quote": "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in.",
+      "says": {
+        "behavior": "aggregated-relation-facts",
+        "is": "candidate",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in.",
+      "says": {
+        "behavior": "aggregated-relation-plain-rule",
+        "is": "candidate",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in.",
+      "says": {
+        "rule": "a-key-holds-the-join-of-its-candidates",
+        "holds": true,
+        "statement": "A relation that merges, by its declaration or by the rules that aggregate into it, holds one row per key, whose merged columns combine every candidate the key gets from facts and rules, and whose other columns must agree",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "merge-joins-facts-and-rules",
+            "is": "join"
+          },
+          {
+            "behavior": "aggregated-relation-facts",
+            "is": "candidate"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion.",
+      "says": {
+        "decision": "merging-what-a-key-gets",
+        "chose": "any-aggregate-merge",
+        "over": [
+          "lattice-merge-option",
+          "written-merge-function",
+          "merge-on-write"
+        ],
+        "area": "logic",
+        "because": "each candidate is counted once, a fact as a match, so every aggregate of a key's candidates is the same in any order"
+      }
+    },
+    {
+      "quote": "A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion.",
+      "says": {
+        "behavior": "merge-with-sum",
+        "is": "sum",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again.",
+      "says": {
+        "decision": "rule-retraction",
+        "chose": "retract-the-form",
+        "over": ["impossible", "by-name"],
+        "area": "logic",
+        "because": "the form a snapshot writes identifies a rule, and the engine derives again the relations whose rules change"
+      }
+    },
+    {
+      "quote": "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again.",
+      "says": {
+        "behavior": "rule-removal",
+        "is": "possible",
+        "area": "logic",
+        "was": "impossible"
+      }
+    },
+    {
+      "quote": "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again.",
+      "says": {
+        "behavior": "invariant-removal",
+        "is": "possible",
+        "area": "logic",
+        "was": "impossible"
+      }
+    }
+  ]
+}

@@ -7,7 +7,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect } from "effect";
 import { run } from "@/evaluation/evaluate";
-import { LogicDatabase } from "@/logic/database";
+import { LogicDatabase, writtenRules } from "@/logic/database";
 import { loadDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
 import { element, oneOf } from "./programs";
@@ -670,7 +670,7 @@ describe("a rule that asks a question", () => {
           "cannot go through recursion"
         );
         // The rule that closed the cycle was not added.
-        expect(database.rules).toHaveLength(1);
+        expect(writtenRules(database.rules)).toHaveLength(1);
         expect(
           yield* run(["query", [first, "?x"]], stdlib, { database })
         ).toEqual(first === "a" ? [{ x: 1 }] : []);
