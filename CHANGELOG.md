@@ -34,6 +34,11 @@
 - A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (`aggregated-relation-facts` is `candidate`, was `error`; `aggregated-relation-plain-rule` is `candidate`, was `error`)
 - A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again. (`invariant-removal` is `possible`, was `impossible`; `rule-removal` is `possible`, was `impossible`)
 - A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. (`merge-with-sum` is `sum`, was `error`)
+- No invariant refuses an assumed change, not even the one an assumed rule that says two values are the same holds as, which the same rule in the database does not hold either for an assumed fact. (`assuming-equality-rule-invariant` is `not-kept`)
+- In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. (`assuming-held-rule-outer-variables` is `bound`)
+- A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused. (`assuming-refused-change-database` is `unchanged`, was `rule-added`)
+- A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule. (`assuming-rule-change` is `possible`, was `error`; `assuming-rule-retraction` is `possible`, was `error`)
+- A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is. (`retract-rule-beside-facts-refused` is `no-change`, was `facts-removed`; `rule-asking-assuming-after-fact-change` is `up-to-date`, was `stale`)
 
 ### Fixed
 
@@ -58,6 +63,8 @@
 - A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (`aggregated-relation-candidates`: `merge-from-rules` over `facts-refused`)
 - A merge takes any aggregate, `aggregate/sum` and `aggregate/count` among them; only a lattice aggregate can go through recursion. (`merging-what-a-key-gets`: `any-aggregate-merge` over `lattice-merge-option`, `written-merge-function`, `merge-on-write`, was `lattice-merge-option`)
 - A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again. (`rule-retraction`: `retract-the-form` over `impossible`, `by-name`)
+- A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule. (`assuming-changes`: `fact-retract-rule` over `fact-retract-only`, `invariant-changes`)
+- In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. (`held-rule-variables`: `question-scope` over `held-rule-own`)
 
 ### Rules
 
@@ -162,7 +169,7 @@ Plain code is compiled to JavaScript functions and runs 9 to 25 times faster, an
 - Arguments the guard accepts go to the function as they are, and any others go through the decoder, so every error and every message is the decoder's, as before. (rule `library-argument-errors-are-the-decoders`)
 - A relation whose rules aggregate merges what each key gets with those aggregates, as one that declares a merge does: the other columns of the head are the key, and every fact of the relation and every rule with a plain head for it gives a candidate, whatever order they come in. (rule `a-key-holds-the-join-of-its-candidates`)
 - Each agent works in a folder of its own outside the repository, inside a folder that cannot be listed, and its prompts and transcripts are written straight to `out/skill-eval/<run>/`, which it never sees. (rule `skill-eval-isolated-runs`)
-- It is a question, as `find` is: in plain code it is asked right away, and in a rule, query, or `find` it is asked for each answer, with the values the answer bound in place. (rule `assuming-is-a-question`)
+- A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused. (rule `assuming-is-a-question`)
 - A run names the candidates it weighs with `weighed_in`, new or shared, and its page asks only about those and about its own prefixed ids, so another run's beliefs and candidates do not change what it says. (rule `research-pages-keep-to-their-run`)
 - A candidate that adds something Lion lacks, but needs a condition Lion lacks too, is `worth adopting in part`; one that adds nothing and needs such a condition `has nothing in Lion to work on`. Only `worth adopting` is ranked. (rule `research-verdict-in-part`)
 - A named schema being checked is known to every check its shape starts, through a predicate too. (rule `schema-asks-about-itself`)
@@ -256,7 +263,7 @@ The logic layer grows with its facts. What rules derive is kept and follows ever
 ### Rules
 
 - A database keeps what it derived when facts change, and follows the change through it (rule `derived-rows-follow-fact-changes`)
-- Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema. (rule `unfollowed-relations-derived-again`)
+- A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is. (rule `unfollowed-relations-derived-again`)
 - `AGENTS.md` and `CLAUDE.md` stay under 200 lines each. (rule `agent-instructions-under-200-lines`)
 - `guidelines/documentation.md` and `CLAUDE.md` state the documentation procedure to run after every change, in order: run the docs' programs, search every place that describes Lion for sentences the change made untrue, give each new feature its example, rebuild the website's docs, record the change with the claims that quote reworded sentences, and say what the first two steps found. The package README, both skills' references, and the website's guarantees still described derived rows as recomputed or kept only until a change, and now say that they follow changes. (rule `documentation-procedure`)
 - The documentation procedure no longer asks for every edit to be made in both files. (rule `edit-both-readmes` withdrawn)
@@ -1107,7 +1114,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 - Like every library function, each waits for a logic variable and refuses a call with another number of arguments. (rule `waiting-rule`)
 - Nothing is guessed at: a filter must be true or false, and the rows a rule derives and the answers a query gives must be data, JSON values and [unknowns](#existential-rules). (rule `nothing-is-guessed`)
 - Only functions marked pure waited for a logic variable (rule `pure-functions-wait` withdrawn)
-- When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own. (rule `question-variables-scoped`)
+- In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. (rule `question-variables-scoped`)
 - A rule cannot ask about a relation that depends on its own head. This is the rule against negation through recursion, and it now covers every question: a goal under `not`, a `find`, and a goal used as a value. (rule `stratified-negation` withdrawn)
 - The rule against negation through recursion now covers every question. (rule `stratified-questions`)
 - the changelog lists what changed since 0.5.0, each line checked by running the same program on both versions (rule `changelog-checked-by-running`)
@@ -1187,7 +1194,7 @@ Two rules now cover how plain code and the logic layer meet: whatever needs the 
 ### Rules
 
 - keep equivalent programs equivalent, such as a program and its snapshot or goal-directed and full evaluation (rule `equivalent-programs-equivalent`)
-- Every form that changes the database is all or nothing (rule `all-or-nothing-changes`)
+- A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is. (rule `all-or-nothing-changes`)
 - The fixes that made the standard library follow JSON each have a property written first and confirmed to fail (rule `bugs-become-properties`)
 - Describe each feature's semantics in the README, including what it does alongside the features it touches, and use it in an example in the docs (rule `document-feature-combinations`)
 - point out surprising behavior and fix it instead of building on it (rule `dont-build-on-surprises`)

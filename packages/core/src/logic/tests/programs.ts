@@ -93,6 +93,8 @@ export const INVARIANTS: readonly Form[] = [
   ],
   ["invariant", ["order", "?_", "open"], { assert: "some" }],
   ["invariant", ["path", "a", "d"], { assert: "none" }],
+  // An answer the rules must go on giving, which taking a rule back breaks.
+  ["invariant", ["path", "a", "?_"], { assert: "some" }],
   // Two alternatives, each a goal over facts.
   [
     "invariant",
@@ -187,7 +189,8 @@ export interface Scenario {
 
 /**
  * A setup, then invariants and changes in any order. Retracts mostly name
- * facts the setup added, so they can break "some" invariants.
+ * facts the setup added, so they can break "some" invariants, and some take
+ * back rules and invariants too.
  */
 export const scenario: Arbitrary.Arbitrary<Scenario> = Arbitrary.flatMap(
   Arbitrary.all({
@@ -196,12 +199,25 @@ export const scenario: Arbitrary.Arbitrary<Scenario> = Arbitrary.flatMap(
   }),
   ({ facts: given, rules }) => {
     const present = given.length > 0 ? element(given) : fact;
-    const retract = Arbitrary.map(
+    const named = (minLength: number) =>
       Arbitrary.array(oneOf(present, present, fact), {
-        minLength: 1,
+        minLength,
         maxLength: 2,
-      }),
-      (items): Form => ["retract", ...items]
+      });
+    // A retract takes back rules and invariants beside facts, in one change.
+    const retract = oneOf(
+      Arbitrary.map(named(1), (items): Form => ["retract", ...items]),
+      Arbitrary.map(named(1), (items): Form => ["retract", ...items]),
+      Arbitrary.map(
+        Arbitrary.all([
+          named(0),
+          Arbitrary.array(oneOf(element(RULES), element(INVARIANTS)), {
+            minLength: 1,
+            maxLength: 2,
+          }),
+        ]),
+        ([items, forms]): Form => ["retract", ...items, ...forms]
+      )
     );
     const step = oneOf(
       invariant,

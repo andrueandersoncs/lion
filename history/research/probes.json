@@ -21987,5 +21987,231 @@
       ],
       ["else", ["quote", "impossible"]]
     ]
+  },
+  {
+    "case": "assuming-rule-retraction",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x"]],
+      ["fact", ["a", 1]],
+      ["rule", ["b", "?x"], ["a", "?x"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              [
+                "assuming",
+                ["retract", ["rule", ["b", "?x"], ["a", "?x"]]],
+                ["find", "?x", ["b", "?x"]]
+              ],
+              ["quote", []]
+            ],
+            ["=", ["find", "?x", ["b", "?x"]], ["quote", [1]]]
+          ],
+          ["quote", "possible"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-rule-change",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x"]],
+      ["fact", ["a", 1]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            [
+              "=",
+              [
+                "assuming",
+                ["rule", ["b", "?x"], ["a", "?x"]],
+                ["find", "?x", ["b", "?x"]]
+              ],
+              ["quote", [1]]
+            ],
+            ["=", ["find", "?x", ["b", "?x"]], ["quote", []]]
+          ],
+          ["quote", "possible"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-refused-change-database",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x"]],
+      ["fact", ["a", 1]],
+      [
+        "define",
+        "accepted",
+        [
+          "schema/fits?",
+          0,
+          [
+            "lambda",
+            ["v"],
+            [
+              "begin",
+              ["assuming", ["fact", ["rule", ["b", "?x"], ["a", "?x"]]], true],
+              true
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        ["accepted", ["quote", "accepted"]],
+        [
+          ["=", ["find", "?x", ["b", "?x"]], ["quote", []]],
+          ["quote", "unchanged"]
+        ],
+        ["else", ["quote", "rule-added"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-held-rule-outer-variables",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "n", ["x"]],
+      ["relation", "e", ["from", "to"]],
+      ["relation", "q", ["x"]],
+      ["fact", ["n", 1], ["n", 2]],
+      [
+        "rule",
+        ["q", "?x"],
+        ["n", "?x"],
+        [
+          "assuming",
+          ["rule", ["e", "?x", "?y"], ["n", "?y"]],
+          ["e", "?x", "?x"]
+        ]
+      ],
+      [
+        "cond",
+        [
+          ["=", ["find", "?x", ["q", "?x"]], ["quote", [1, 2]]],
+          ["quote", "bound"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
+  },
+  {
+    "case": "retract-rule-beside-facts-refused",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "a", ["x"]],
+      ["relation", "b", ["x"]],
+      ["fact", ["a", 1], ["a", 2]],
+      ["rule", ["b", "?x"], ["a", "?x"]],
+      ["invariant", ["b", "?_"], { "assert": "some" }],
+      [
+        "define",
+        "accepted",
+        [
+          "schema/fits?",
+          0,
+          [
+            "lambda",
+            ["v"],
+            [
+              "begin",
+              ["retract", ["a", 2], ["rule", ["b", "?x"], ["a", "?x"]]],
+              true
+            ]
+          ]
+        ]
+      ],
+      [
+        "cond",
+        ["accepted", ["quote", "accepted"]],
+        [
+          ["=", ["find", "?x", ["a", "?x"]], ["quote", [1, 2]]],
+          ["quote", "no-change"]
+        ],
+        ["else", ["quote", "facts-removed"]]
+      ]
+    ]
+  },
+  {
+    "case": "rule-asking-assuming-after-fact-change",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "e", ["from", "to"]],
+      ["relation", "node", ["n"]],
+      ["relation", "pair", ["from", "to"]],
+      ["relation", "bridges", ["from", "to"]],
+      ["fact", ["node", "a"], ["pair", "a", "a"]],
+      [
+        "rule",
+        ["bridges", "?x", "?y"],
+        ["pair", "?x", "?y"],
+        ["assuming", ["fact", ["e", "?x", "?y"]], ["node", "?y"]]
+      ],
+      ["define", "before", ["find", "?x", ["bridges", "?x", "?_"]]],
+      ["retract", ["node", "a"]],
+      [
+        "cond",
+        [
+          [
+            "and",
+            ["=", "before", ["quote", ["a"]]],
+            ["=", ["find", "?x", ["bridges", "?x", "?_"]], ["quote", []]]
+          ],
+          ["quote", "up-to-date"]
+        ],
+        ["else", ["quote", "stale"]]
+      ]
+    ]
+  },
+  {
+    "case": "assuming-equality-rule-invariant",
+    "area": "logic",
+    "program": [
+      "begin",
+      ["relation", "email", ["person", "address"]],
+      ["fact", ["email", "ann", "a@x"], ["email", "ann", "b@x"]],
+      [
+        "cond",
+        [
+          [
+            "=",
+            [
+              "assuming",
+              [
+                "rule",
+                ["=", "?a", "?b"],
+                ["email", "?p", "?a"],
+                ["email", "?p", "?b"]
+              ],
+              ["find", "?a", ["email", "ann", "?a"]]
+            ],
+            ["quote", ["a@x", "b@x"]]
+          ],
+          ["quote", "not-kept"]
+        ],
+        ["else", ["quote", "other"]]
+      ]
+    ]
   }
 ]

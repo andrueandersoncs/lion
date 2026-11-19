@@ -708,20 +708,25 @@ const planQuestion = (question: LogicValue, outer: readonly string[]) => {
 
 /**
  * An `assuming` is asked of another database, so here it has nothing to
- * match: what its changes state must be known when it is asked, and the
- * questions of its expression must be ones that can be asked there, with
- * the variables the rule or query around it binds.
+ * match: the facts its changes state must be known when it is asked, and
+ * the questions of its expression must be ones that can be asked there,
+ * with the variables the rule or query around it binds. A rule it adds or
+ * takes back has variables of its own, and is checked when it is made.
  */
 const planAssuming = (
   question: LogicValue,
   outer: readonly string[]
 ): readonly Plan[] => {
   const bound = new Set(outer);
-  const changes = (question as LogicForm).parts.slice(0, -1);
+  const changes = (question as LogicForm).parts.slice(0, -1) as LogicForm[];
   checkValues(
     question,
     changes.flatMap((change) =>
-      (change as LogicForm).parts.flatMap((call) => (call as Atom).args)
+      change.form === "rule"
+        ? []
+        : change.parts.flatMap((part) =>
+            part instanceof Atom ? part.args : []
+          )
     ),
     bound,
     (names) =>

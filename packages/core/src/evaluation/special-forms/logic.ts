@@ -1,5 +1,5 @@
 import { Effect, Schema } from "effect";
-import { logicError } from "@/errors/evaluation";
+import { logicError, MalformedFormError } from "@/errors/evaluation";
 import {
   answer,
   database,
@@ -24,10 +24,10 @@ import {
 } from "@/evaluation/environment";
 import { compile, compileAll, evaluate } from "@/evaluation/evaluate";
 import { dataStrings, suspend } from "@/evaluation/special-forms/lambda";
-import { compileQuery, compileRule, equalityGoals } from "@/logic/compile";
+import { compileQuery } from "@/logic/compile";
 import {
   addInvariant,
-  addRules,
+  addRule,
   assertFacts,
   checkAssertion,
   declareRelation,
@@ -35,8 +35,7 @@ import {
   explainFact,
   queryDatabase,
   relationValue,
-  retractFacts,
-  retractRules,
+  retract,
   type SchemaDeclaration,
 } from "@/logic/database";
 import { makeSchema } from "@/logic/fit";
@@ -63,7 +62,6 @@ import {
   LogicForm,
   LogicValue,
   LogicVariable,
-  logicKey,
   type RelationInfo,
   render,
   replaceVariables,
@@ -77,6 +75,7 @@ import {
   type ExistsFormSchema,
   type FactFormSchema,
   type FindFormSchema,
+  fitsForm,
   type InFormSchema,
   type InvariantFormSchema,
   type NotFormSchema,
@@ -88,6 +87,7 @@ import {
   type SchemaFormSchema,
   type SomeFormSchema,
   type UnifyFormSchema,
+  USAGE,
   ValidIdentifierSchema,
   type WhyFormSchema,
 } from "@/schemas/evaluation";
@@ -388,18 +388,7 @@ export const evaluateRule = (
     const [headValue, ...bodyValues] = yield* writing(
       evaluateAll([head, ...body], part)
     );
-    const rules = yield* compileRule(headValue, bodyValues);
-    // A head that says two values are the same holds as an invariant too.
-    const invariants = yield* Effect.forEach(
-      equalityGoals(headValue, bodyValues),
-      (goal) =>
-        Effect.map(compileQuery(goal), (query) => ({
-          assert: "none" as const,
-          goal,
-          query,
-        }))
-    );
-    yield* addRules(yield* database, rules, invariants);
+    yield* addRule(yield* database, headValue, bodyValues);
     return ["rule", render(headValue), ...bodyValues.map(render)];
   });
 
@@ -413,31 +402,39 @@ export const evaluateFact = (
   });
 
 /**
- * The key of what a `rule` or `invariant` form written inside `retract`
- * would add: the rule a snapshot writes the same way, with the invariant a
- * rule that says two values are the same holds as, or the invariant. Its
- * parts are evaluated as the form would evaluate them, and nothing is
- * added.
+ * True for a `rule` or `invariant` form, where `retract` and `assuming`
+ * hold one rather than make it: one that no scope around it declares.
  */
-const keysOf = (form: readonly LionExpressionType[], part: Part) =>
+const isHeld = (environment: Environment) => (item: unknown) =>
+  Array.isArray(item) &&
+  (item[0] === "rule" || item[0] === "invariant") &&
+  !declares(environment, item[0]);
+
+/**
+ * A `rule` or `invariant` form that `retract` takes back or `assuming`
+ * makes, held as a logic form of its parts' values: they are evaluated as
+ * the form would evaluate them, and nothing is added.
+ */
+const heldForm = (form: readonly LionExpressionType[], part: Part) =>
   Effect.gen(function* () {
-    if (form[0] === "invariant") {
+    const name = form[0] as "rule" | "invariant";
+    if (!fitsForm(name, form)) {
+      return yield* new MalformedFormError({
+        expression: form,
+        form: name,
+        usage: USAGE[name],
+      });
+    }
+    if (name === "invariant") {
       const [__, goal, options] = form;
       const goalValue = yield* writing(part(goal as LionExpressionType));
       const assert = yield* parseInvariantOptions(options);
-      return { invariants: [logicKey([assert, goalValue])], rules: [] };
+      return new LogicForm("invariant", [goalValue, assert]);
     }
-    const [__, head, ...body] = form;
-    const [headValue, ...bodyValues] = yield* writing(
-      evaluateAll([head, ...body] as LionExpressionType[], part)
+    const parts = yield* writing(
+      evaluateAll(form.slice(1) as LionExpressionType[], part)
     );
-    const [rule] = yield* compileRule(headValue, bodyValues);
-    return {
-      invariants: equalityGoals(headValue, bodyValues).map((goal) =>
-        logicKey(["none", goal])
-      ),
-      rules: [rule?.key],
-    };
+    return new LogicForm("rule", parts);
   });
 
 /**
@@ -449,38 +446,17 @@ export const evaluateRetract = (
   part: Part = evaluate
 ) =>
   Effect.gen(function* () {
-    const environment = yield* LionEnvironmentService;
-    const isTaken = (item: LionExpressionType) =>
-      Array.isArray(item) &&
-      (item[0] === "rule" || item[0] === "invariant") &&
-      !declares(environment, item[0]);
-    const taken = parts.filter(isTaken) as LionExpressionType[][];
+    const isTaken = isHeld(yield* LionEnvironmentService);
     const values = yield* atoms(
       "retract",
       parts.filter((item) => !isTaken(item)),
       part
     );
-    const store = yield* database;
-    const rules = new Set<string>();
-    const invariants = new Set<string>();
-    for (const form of taken) {
-      const keys = yield* keysOf(form, part);
-      for (const key of keys.rules) {
-        if (key !== undefined) {
-          rules.add(key);
-        }
-      }
-      for (const key of keys.invariants) {
-        if (key !== undefined) {
-          invariants.add(key);
-        }
-      }
-    }
-    const removed =
-      values.length === 0 ? [] : yield* retractFacts(store, values);
-    const withdrawn =
-      taken.length === 0 ? [] : yield* retractRules(store, rules, invariants);
-    return [...removed, ...withdrawn];
+    const forms = yield* Effect.forEach(
+      parts.filter(isTaken) as LionExpressionType[][],
+      (form) => heldForm(form, part)
+    );
+    return yield* retract(yield* database, [...values, ...forms]);
   });
 
 /** ["query", goal, options?]; options are read as written, not evaluated. */
@@ -517,13 +493,54 @@ export const evaluateFind = (
   });
 
 /**
- * ["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]
- * is what the expression gives in the database as it would be after the
- * changes, made in order, each as its form would make it: keys, merges, and
- * invariants included. The database itself does not change. It is a
- * question, as a find is: outside of rules it is asked right away, and in a
- * rule, query, or find it is asked for each answer, with the variables the
- * rule has bound.
+ * A change of an `assuming`, held as a logic form of its parts' values: a
+ * `fact` form's relation calls, a `retract` form's relation calls and the
+ * `rule` and `invariant` forms it takes back, or a `rule` form's head and
+ * body. Nothing is changed yet.
+ */
+const changeOf = (change: unknown, part: Part) =>
+  Effect.gen(function* () {
+    const [form, ...items] = Array.isArray(change) ? change : [];
+    const notACall = (value: unknown) =>
+      logicError(
+        `assuming takes relation calls in its ${form} forms, but found ${show(value)}.`
+      );
+    if (form === "rule") {
+      return yield* heldForm(change as LionExpressionType[], part);
+    }
+    if (!(form === "fact" || form === "retract")) {
+      return yield* logicError(
+        `assuming takes fact, retract, and rule forms before its expression, but found ${show(change)}.`
+      );
+    }
+    // A rule or invariant form is held, never made: a `fact` cannot hold one.
+    const isTaken = isHeld(yield* LionEnvironmentService);
+    const values = yield* Effect.forEach(
+      items as LionExpressionType[],
+      (item): EvaluateResult => {
+        if (isTaken(item)) {
+          return form === "retract"
+            ? heldForm(item as LionExpressionType[], part)
+            : notACall(item);
+        }
+        return Effect.flatMap(writing(part(item)), (value) =>
+          value instanceof Atom ? Effect.succeed(value) : notACall(value)
+        );
+      }
+    );
+    return new LogicForm(form, values);
+  });
+
+/**
+ * ["assuming", change, ..., expression] is what the expression gives in
+ * the database as it would be after the changes, made in order, each as its
+ * form would make it: `["fact", goal, ...]` adds facts, `["retract", goal,
+ * ...]` takes back facts and the rules and invariants it names, and
+ * `["rule", head, goal, ...]` adds a rule, with keys, merges, and recursion
+ * included. The database itself does not change. It is a question, as a
+ * find is: outside of rules it is asked right away, and in a rule, query,
+ * or find it is asked for each answer, with the variables the rule has
+ * bound.
  */
 export const evaluateAssuming = (
   [_, ...parts]: typeof AssumingFormSchema.Type,
@@ -534,30 +551,14 @@ export const evaluateAssuming = (
     const changes = parts.slice(0, -1);
     if (expression === undefined || changes.length === 0) {
       return yield* logicError(
-        `assuming takes fact and retract forms, then the expression to evaluate as if they were made, as in ["assuming", ["fact", ["edge", "c", "d"]], ["path", "a", "d"]].`
+        `assuming takes fact, retract, and rule forms, then the expression to evaluate as if they were made, as in ["assuming", ["fact", ["edge", "c", "d"]], ["path", "a", "d"]].`
       );
     }
-    const held: LogicForm[] = [];
-    for (const change of changes) {
-      const [form, ...goals] = change as readonly unknown[];
-      if (!(form === "fact" || form === "retract")) {
-        return yield* logicError(
-          `assuming takes fact and retract forms before its expression, but found ${show(change)}.`
-        );
-      }
-      const values = yield* writing(
-        evaluateAll(goals as LionExpressionType[], part)
-      );
-      const wrong = values.find((value) => !(value instanceof Atom));
-      if (wrong !== undefined) {
-        return yield* logicError(
-          `assuming takes relation calls in its ${form} forms, but found ${show(wrong)}.`
-        );
-      }
-      held.push(new LogicForm(form, values));
-    }
+    const made = yield* Effect.forEach(changes, (change) =>
+      changeOf(change, part)
+    );
     const value = yield* writing(part(expression as LionExpressionType));
-    const question = new LogicForm("assuming", [...held, value]);
+    const question = new LogicForm("assuming", [...made, value]);
     return (yield* isWriting) ? question : yield* answer(question);
   });
 

@@ -2085,7 +2085,7 @@ bun run lion repl --host 0.0.0.0 --port 8080</code></pre></div>
 </div>
 
 <h2 id="ask-questions-ask-what-would-hold-after-a-change">Ask what would hold after a change</h2>
-<p><a href="#form-assuming"><code>assuming</code></a> asks a question of the database as it would be after some <code>fact</code> and <code>retract</code> forms, and leaves the database as it is. In a rule it is asked for each answer, so a rule can try a change for every candidate. Here each shift that, given to one more person, would cover every day with two people:</p>
+<p><a href="#form-assuming"><code>assuming</code></a> asks a question of the database as it would be after some <code>fact</code>, <code>retract</code>, and <code>rule</code> forms, and leaves the database as it is. In a rule it is asked for each answer, so a rule can try a change for every candidate. Here each shift that, given to one more person, would cover every day with two people:</p>
 <div class="playground" data-playground="What would hold">
   <div class="code-block playground-code">
     <pre><code data-highlight>["begin",
@@ -6068,11 +6068,11 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   </div>
 </div>
 <h2 id="form-assuming"><code>assuming</code></h2>
-<div class="code-block"><pre><code data-highlight>["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]</code></pre></div>
+<div class="code-block"><pre><code data-highlight>["assuming", change, ..., expression]</code></pre></div>
 <ul>
-  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a> or <a href="#form-retract"><code>retract</code></a> form of relation calls, made in order as that form would make it: a key replaces a row, and a merge takes a candidate. No <a href="#form-invariant">invariant</a> refuses the change: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
+  <li>Returns what <code>expression</code> gives in the database as it would be after the changes, and leaves the database as it is. Each change is a <a href="#form-fact"><code>fact</code></a>, <a href="#form-retract"><code>retract</code></a>, or <a href="#form-rule"><code>rule</code></a> form, made in order as that form would make it: a key replaces a row, a merge takes a candidate, a <code>rule</code> form adds its rule, and a <code>retract</code> takes back the rules and invariants it names as well as facts. No <a href="#form-invariant">invariant</a> refuses the change, not even the one an assumed rule that says two values are the same holds as: an invariant keeps the database, and the change is only assumed. So an invariant can ask with <code>assuming</code> without asking itself again.</li>
   <li>The expression is asked there: a goal is <code>true</code> or <code>false</code>, a <code>find</code> is what it finds, and any other expression is its value. As a goal of a rule or query, the expression must be a goal.</li>
-  <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. What a change states must be known then; every other variable of the expression is its own.</li>
+  <li>An <code>assuming</code> is a <a href="#logic-asking">question</a>: in plain code it is asked right away, and in a rule, query, or <code>find</code> it is asked for each answer, with the values the answer bound in place. The facts a change states must be known then; every other variable of the expression is its own. A rule a change adds or takes back has variables of its own too: those the answer bound take their values, and the rest are the held rule's.</li>
   <li>An inner <code>assuming</code> starts from the database the outer one assumed. A rule cannot ask, through one, about a relation that depends on the rule's own head.</li>
   <li>Each <code>assuming</code> derives what its expression needs in a database of its own, which shares the facts it does not change. Asked for each answer of a rule, it derives once per answer.</li>
 </ul>
@@ -6087,6 +6087,12 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
   ["invariant", ["road", "?_", "a"], {"assert": "none"}],
   {"with c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
    "without b to c": ["assuming", ["retract", ["road", "b", "c"]], ["reaches", "a", "c"]],
+   "if reaching went both ways": ["assuming",
+     ["rule", ["reaches", "?y", "?x"], ["reaches", "?x", "?y"]],
+     ["find", "?t", ["reaches", "c", "?t"]]],
+   "without the rule that goes on": ["assuming",
+     ["retract", ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]]],
+     ["find", "?t", ["reaches", "a", "?t"]]],
    "with c to a, which the invariant keeps out": ["assuming", ["fact", ["road", "c", "a"]], ["reaches", "c", "b"]],
    "as it is": ["find", "?t", ["reaches", "a", "?t"]]}]</code></pre>
   </div>
@@ -6095,6 +6101,8 @@ const env = { ...stdlib, ...makeTypeSafeBindings() };</code></pre></div>
     <pre class="playground-result"><code>{
   "with c to d": ["b","c","d"],
   "without b to c": false,
+  "if reaching went both ways": ["a","b"],
+  "without the rule that goes on": ["b"],
   "with c to a, which the invariant keeps out": true,
   "as it is": ["b","c"]
 }</code></pre>

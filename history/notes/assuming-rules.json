@@ -1,0 +1,175 @@
+{
+  "title": "`assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own",
+  "context": "Once `retract` took `rule` and `invariant` forms back, `assuming` still took only `fact` and `retract` forms of relation calls. `[\"assuming\", [\"retract\", [\"rule\", head, ...body]], expression]` made the rule form as a real `rule` form, which added the rule to the database, and then refused it: `assuming takes relation calls in its retract forms`. So a program could not ask what would hold without a rule, or with one more, and asking it changed the database. Two older surprises came up on the way. A `retract` that named facts and a rule took the facts away when taking the rule back broke an invariant, though its message said nothing changed. And a rule that asks `assuming` kept a row after a change to the facts its question reads: with `[\"rule\", [\"bridges\", \"?x\", \"?y\"], [\"pair\", \"?x\", \"?y\"], [\"assuming\", [\"fact\", [\"e\", \"?x\", \"?y\"]], [\"node\", \"?y\"]]]`, retracting `[\"node\", \"a\"]` left `[\"bridges\", \"a\", \"a\"]`, since following a change asks each question as it was before the change, and `assuming` asks the database as it is.",
+  "decision": "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `[\"assuming\", [\"rule\", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `[\"assuming\", [\"retract\", [\"rule\", head, ...body]], expression]` asks what would hold without the rule. A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused. No invariant refuses an assumed change, not even the one an assumed rule that says two values are the same holds as, which the same rule in the database does not hold either for an assumed fact. In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.",
+  "consequences": "The database makes every change with one function, which writes facts, gives the database rules and invariants, or both, and undoes all of it when an invariant breaks; `retract` is one function for facts, rules, and invariants, and an assumption makes its changes with the same functions the forms use, on a database of its own whose rules are its own. Properties in `logic/tests/assuming.test.ts` check an assumed retraction against a database that never had the rules, an assumed rule against one that has it, a rule that assumes against plain code with the answer's values in place, a snapshot, and a database that derives anew after changes to the facts, which is what found the stale row; another checks that an assumption never changes the database, and another that an assumed rule that says two values are the same gives what the same rule in the database gives an assumed fact. In `logic/tests/invariants.test.ts`, a retract of facts, rules, and invariants is checked against the change made without invariants, and an invariant that holds a function from the host that reads `q` on its own is checked against a plain model of what the function reads; that property catches the mutation `bun run mutate` had reported MISSED. The interop grid has two new rows, an assumed rule over `?x` and a rule taken back, each like plain code in all 17 places. Measured against the change before it: 15,207 code lines where it had 15,093, 1,727 functions where it had 1,713, and no new special form, library function, kind of error, or message; the grid has 979 cells like plain code where it had 947, and the same 3 exceptions. Over two runs of `bun run bench` every benchmark read 0.87 to 1.24 of the earlier time, and the two that read slowest, every path on a 150 chain and 300 rules added one form at a time, read 0.97 to 1.06 and 0.91 to 1.06 when run alone three times. Every workload of `bun run scale` grows at most as the facts do; retracting facts 100 per form, which a first version of `retract` slowed to 0.87 by working out rules it was not given, reads 0.96 to 0.99 at 100,000 facts. An `assuming` cannot hold `exists` in its changes, which a `fact` or `retract` form can on its own.",
+  "alternatives": [
+    {
+      "option": "Let `assuming` take `invariant` forms too",
+      "rejected": "No invariant refuses a change that is only assumed, so an assumed invariant would change nothing an expression gives; whether a goal would hold is `[\"assuming\", ..., [\"not\", goal]]`."
+    },
+    {
+      "option": "Make every variable of a held rule its own",
+      "rejected": "Every other question fixes the variables the rule around it binds, so a held rule could not depend on the answer, and the same rule asked in plain code with the answer's values in place would give something else."
+    },
+    {
+      "option": "Ask `assuming` about the database as it was while a change is followed",
+      "rejected": "The copy would need the rows every relation it reads had before the change, which a followed group holds only while it is followed; deriving the group again and comparing is the rule the engine already has for a rule that may read anything."
+    },
+    {
+      "option": "Keep the invariant an assumed rule that says two values are the same holds as",
+      "rejected": "The same rule in the database refuses no assumed fact, since an assumed database keeps no invariants, so where the rule stood would decide what an assumption refuses."
+    }
+  ],
+  "claims": [
+    {
+      "quote": "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `[\"assuming\", [\"rule\", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `[\"assuming\", [\"retract\", [\"rule\", head, ...body]], expression]` asks what would hold without the rule.",
+      "says": {
+        "decision": "assuming-changes",
+        "chose": "fact-retract-rule",
+        "over": ["fact-retract-only", "invariant-changes"],
+        "area": "logic",
+        "because": "the forms that change what the database holds and derives are the changes an assumption makes, each as it makes it on its own"
+      }
+    },
+    {
+      "quote": "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `[\"assuming\", [\"rule\", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `[\"assuming\", [\"retract\", [\"rule\", head, ...body]], expression]` asks what would hold without the rule.",
+      "says": {
+        "behavior": "assuming-rule-retraction",
+        "is": "possible",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `[\"assuming\", [\"rule\", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `[\"assuming\", [\"retract\", [\"rule\", head, ...body]], expression]` asks what would hold without the rule.",
+      "says": {
+        "behavior": "assuming-rule-change",
+        "is": "possible",
+        "area": "logic",
+        "was": "error"
+      }
+    },
+    {
+      "quote": "A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused.",
+      "says": {
+        "behavior": "assuming-refused-change-database",
+        "is": "unchanged",
+        "area": "logic",
+        "was": "rule-added"
+      }
+    },
+    {
+      "quote": "A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused.",
+      "says": {
+        "rule": "assuming-is-a-question",
+        "holds": true,
+        "statement": "assuming is a question: asked right away in plain code, and for each answer in a rule, query, or find, with the answer's values in place; the database does not change, also when the question is refused",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "assuming-refused-change-database",
+            "is": "unchanged"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "No invariant refuses an assumed change, not even the one an assumed rule that says two values are the same holds as, which the same rule in the database does not hold either for an assumed fact.",
+      "says": {
+        "behavior": "assuming-equality-rule-invariant",
+        "is": "not-kept",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question.",
+      "says": {
+        "decision": "held-rule-variables",
+        "chose": "question-scope",
+        "over": ["held-rule-own"],
+        "area": "logic",
+        "because": "every question fixes the variables the rule around it binds, so a held rule gives in a rule what it gives in plain code with the answer's values in place"
+      }
+    },
+    {
+      "quote": "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question.",
+      "says": {
+        "rule": "question-variables-scoped",
+        "holds": true,
+        "statement": "When a question is asked, the variables the rule or query around it has bound are fixed, and every other variable is the question's own, also in a rule an assumption holds",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "assuming-held-rule-outer-variables",
+            "is": "bound"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question.",
+      "says": {
+        "behavior": "assuming-held-rule-outer-variables",
+        "is": "bound",
+        "area": "logic"
+      }
+    },
+    {
+      "quote": "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.",
+      "says": {
+        "behavior": "retract-rule-beside-facts-refused",
+        "is": "no-change",
+        "area": "logic",
+        "was": "facts-removed"
+      }
+    },
+    {
+      "quote": "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.",
+      "says": {
+        "rule": "all-or-nothing-changes",
+        "holds": true,
+        "statement": "Every form that changes the logic database makes all of its changes or none, also a retract that takes back facts and rules together",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "retract-rule-beside-facts-refused",
+            "is": "no-change"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.",
+      "says": {
+        "behavior": "rule-asking-assuming-after-fact-change",
+        "is": "up-to-date",
+        "area": "logic",
+        "was": "stale"
+      }
+    },
+    {
+      "quote": "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.",
+      "says": {
+        "rule": "unfollowed-relations-derived-again",
+        "holds": true,
+        "statement": "A relation that cannot be followed through a change, one whose rule holds a function from the host that does not say it reads only its arguments or asks assuming, or one whose rule reads a changed relation through a schema, is derived again and compared with what it was, once something has read it since the last change, so the relations that read it are followed",
+        "area": "logic",
+        "predicts": [
+          {
+            "behavior": "rule-asking-assuming-after-fact-change",
+            "is": "up-to-date"
+          }
+        ]
+      }
+    },
+    {
+      "quote": "Measured against the change before it: 15,207 code lines where it had 15,093, 1,727 functions where it had 1,713, and no new special form, library function, kind of error, or message; the grid has 979 cells like plain code where it had 947, and the same 3 exceptions. Over two runs of `bun run bench` every benchmark read 0.87 to 1.24 of the earlier time, and the two that read slowest, every path on a 150 chain and 300 rules added one form at a time, read 0.97 to 1.06 and 0.91 to 1.06 when run alone three times. Every workload of `bun run scale` grows at most as the facts do; retracting facts 100 per form, which a first version of `retract` slowed to 0.87 by working out rules it was not given, reads 0.96 to 0.99 at 100,000 facts.",
+      "says": {
+        "measured": "core-code-lines-added",
+        "after": 114,
+        "area": "metrics"
+      }
+    }
+  ]
+}

@@ -488,8 +488,8 @@ export class Model {
   view: ((name: string) => Rows | undefined) | undefined;
   /**
    * Asks a question of the database as it would be after some changes: the
-   * `fact` and `retract` forms of an `assuming`, with their values, and its
-   * expression. The database that keeps this model sets it.
+   * `fact`, `retract`, and `rule` forms of an `assuming`, with their values,
+   * and its expression. The database that keeps this model sets it.
    */
   assume?: (
     changes: readonly LogicForm[],
@@ -670,9 +670,10 @@ export const term = (
 
 /**
  * What an `assuming` gives for an answer: its changes with the values of
- * their arguments, asked of the database as it would be after them, with
- * the variables the answer bound in place in its expression. Every other
- * variable of the expression is its own.
+ * the arguments of the facts they state, asked of the database as it would
+ * be after them, with the variables the answer bound in place in its
+ * expression and in the rules and invariants it holds. Every other variable
+ * of those is their own.
  */
 const assumed = (
   model: Model,
@@ -686,23 +687,29 @@ const assumed = (
         `${show(instantiate(question, vars))} needs a database to ask: assuming asks the database as it would be after its changes.`
       );
     }
-    const changes: LogicForm[] = [];
-    for (const change of question.parts.slice(0, -1) as LogicForm[]) {
-      const calls: Atom[] = [];
-      for (const call of change.parts as Atom[]) {
-        calls.push(
-          new Atom(
-            call.relation,
-            yield* Effect.forEach(call.args, (arg) => term(model, arg, vars))
+    const bound = (term: unknown) =>
+      replaceVariables(term, (variable) =>
+        vars.has(variable.name) ? vars.get(variable.name) : undefined
+      );
+    // A fact holds values; a rule or invariant holds goals.
+    const valued = (part: unknown) =>
+      part instanceof Atom
+        ? Effect.map(
+            Effect.forEach(part.args, (arg) => term(model, arg, vars)),
+            (args) => new Atom(part.relation, args)
           )
-        );
-      }
-      changes.push(new LogicForm(change.form, calls));
-    }
-    const expression = replaceVariables(question.parts.at(-1), (variable) =>
-      vars.has(variable.name) ? vars.get(variable.name) : undefined
+        : Effect.succeed(bound(part));
+    const changes = yield* Effect.forEach(
+      question.parts.slice(0, -1) as LogicForm[],
+      (change) =>
+        change.form === "rule"
+          ? Effect.succeed(bound(change) as LogicForm)
+          : Effect.map(
+              Effect.forEach(change.parts, valued),
+              (parts) => new LogicForm(change.form, parts)
+            )
     );
-    return yield* home.assume(changes, expression);
+    return yield* home.assume(changes, bound(question.parts.at(-1)));
   });
 
 /**

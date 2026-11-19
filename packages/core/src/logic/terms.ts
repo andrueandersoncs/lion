@@ -198,6 +198,8 @@ export type FormName =
   | "assuming"
   | "fact"
   | "retract"
+  | "rule"
+  | "invariant"
   | "exists"
   | "some"
   | "schema/fits?";
@@ -212,8 +214,11 @@ export type FormName =
  * - `["find", template, goal]`: the template's value for every match of
  *   the goal, as a sorted list.
  * - `["assuming", change, ..., expression]`: what the expression gives in
- *   the database as it would be after the changes, each a `fact` or
- *   `retract` form held as a logic form of its relation calls.
+ *   the database as it would be after the changes, each a `fact`, `retract`,
+ *   or `rule` form held as a logic form of its parts' values.
+ * - `["rule", head, goal, ...]` and `["invariant", goal, assert]`: a rule or
+ *   invariant held rather than added, as a change that `assuming` makes or
+ *   that a `retract` takes back.
  * - `["exists", names, goal]`: the goal holds for some values of the
  *   variables `names` lists, which are its own. Its parts are the names,
  *   without the `?`, and the goal.
@@ -784,7 +789,10 @@ export const write = (item: unknown, writer: Writer): unknown => {
     ];
   }
   if (item instanceof LogicForm) {
-    return [item.form, ...item.parts.map(inner)];
+    const [goal, assert] = item.parts;
+    return item.form === "invariant"
+      ? ["invariant", inner(goal), { assert }]
+      : [item.form, ...item.parts.map(inner)];
   }
   if (item instanceof Unknown) {
     // Its variables are its own, whatever values an answer gives others.

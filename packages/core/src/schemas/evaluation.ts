@@ -133,10 +133,12 @@ export const QueryFormSchema = Schema.Union([
 ]);
 // ["find", <template>, <goal>]
 export const FindFormSchema = form("find", Expression, Expression);
-// ["assuming", ["fact", <goal>, ...] or ["retract", <goal>, ...], ..., <expression>]
+// ["assuming", ["fact", <goal>, ...], ["retract", <goal>, ...], or
+// ["rule", <head>, <goal>, ...], ..., <expression>]
 const Change = Schema.Union([
-  formWithMore("fact", Expression),
-  formWithMore("retract", Expression),
+  FactFormSchema,
+  RetractFormSchema,
+  RuleFormSchema,
 ]);
 export const AssumingFormSchema = Schema.TupleWithRest(
   Schema.Tuple([Schema.Literal("assuming"), Change]),
@@ -215,7 +217,7 @@ export const USAGE: Record<SpecialFormName, string> = {
     'query takes a goal and maybe options, as in ["query", ["edge", "a", "?to"]].',
   find: 'find takes a template and a goal, as in ["find", "?to", ["edge", "a", "?to"]].',
   assuming:
-    'assuming takes one or more fact and retract forms, then an expression, as in ["assuming", ["fact", ["edge", "c", "d"]], ["find", "?t", ["edge", "c", "?t"]]].',
+    'assuming takes one or more fact, retract, and rule forms, then an expression, as in ["assuming", ["fact", ["edge", "c", "d"]], ["find", "?t", ["edge", "c", "?t"]]].',
   exists:
     'exists takes a list of variables and a goal, as in ["exists", ["?m"], ["mother", "ben", "?m"]].',
   some: 'some takes a variable and a goal, as in ["some", "?m", ["mother", "ben", "?m"]].',

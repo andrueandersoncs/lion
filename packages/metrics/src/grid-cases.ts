@@ -263,6 +263,32 @@ export const EXPRESSIONS: readonly Expression[] = [
     form: ["assuming", ["retract", ["small", X]], ["small", X]],
     boolean: true,
   },
+  // A rule held by assuming has variables of its own beside `?x`.
+  {
+    name: "assuming a rule",
+    form: [
+      "assuming",
+      ["rule", ["small", "?y"], ["link", X, "?y"]],
+      ["find", "?z", ["small", "?z"]],
+    ],
+  },
+  {
+    name: "goal assuming a rule taken back",
+    setup: [
+      ["relation", "big", ["x"]],
+      ["rule", ["big", "?y"], ["n", "?y"], ["number/greaterThan", "?y", 1]],
+      ["rule", ["big", "?y"], ["small", "?y"]],
+    ],
+    form: [
+      "assuming",
+      [
+        "retract",
+        ["rule", ["big", "?y"], ["n", "?y"], ["number/greaterThan", "?y", 1]],
+      ],
+      ["big", X],
+    ],
+    boolean: true,
+  },
   {
     name: "aggregate of a find",
     form: ["aggregate/count", ["find", "?y", ["link", X, "?y"]]],

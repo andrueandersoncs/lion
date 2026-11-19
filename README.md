@@ -386,7 +386,7 @@ Evaluates to `[{ "to": "b" }, { "to": "c" }]`.
 | `["query", goal]` | Returns one record per distinct answer, keyed by variable name without the `?`. A goal with no variables returns `[{}]` when it holds and `[]` when it does not. |
 | `["query", goal, options]` | Sorts and pages the answers, or asserts that there are some or none. See [Query options](#query-options). |
 | `["find", template, goal]` | Returns the template's value for every match of the goal, as a sorted list. See [Asking](#asking). |
-| `["assuming", ["fact", goal, ...], ["retract", goal, ...], ..., expression]` | What the expression gives in the database as it would be after the changes. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
+| `["assuming", change, ..., expression]` | What the expression gives in the database as it would be after the changes, each a `fact`, `retract`, or `rule` form. The database does not change. See [Asking what would hold](#asking-what-would-hold). |
 | `["why", goal]` | Explains a fact as a tree: the rules and facts that derived it, or, when it does not hold, each rule that could have given it and what stopped it. |
 | `["and", goal, ...]`, `["or", goal, ...]` | Combine goals. On booleans they are the boolean operators, and stop at the first argument that decides the result. |
 | `["not", goal]` | Holds when the goal has no match. The goal can be any goal, with variables of its own; a boolean is negated. |
@@ -521,7 +521,7 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
 
 #### Asking what would hold
 
-`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact` or `retract` form, made in order as that form would make it, with keys and merges; no invariant refuses it, since an invariant keeps the database and the change is only assumed. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
+`["assuming", change, ..., expression]` asks a question of the database as it would be after some changes, and leaves the database as it is. Each change is a `fact`, `retract`, or `rule` form, made in order as that form would make it, with keys and merges: a `rule` form adds its rule, and a `retract` takes back the rules and invariants it names as well as facts, as it does on its own. No invariant refuses a change, not even the one an assumed rule that says two values are the same holds as, since an invariant keeps the database and the change is only assumed. The expression gives its value from the database those changes leave: a goal is `true` or `false`, and a `find` is what it finds there.
 
 ```json
 ["begin",
@@ -538,14 +538,17 @@ Evaluates to `{ "in a rule": [{ "name": "ada", "children": ["ben", "cy"], "kind"
     ["assuming", ["fact", ["road", "?x", "?y"]], ["reaches", "a", "?y"]]],
   {"with a road from c to d": ["assuming", ["fact", ["road", "c", "d"]], ["find", "?t", ["reaches", "a", "?t"]]],
    "without the road from b to c": ["assuming", ["retract", ["road", "b", "c"]], ["find", "?t", ["reaches", "a", "?t"]]],
+   "without the rule that goes on": ["assuming",
+     ["retract", ["rule", ["reaches", "?x", "?z"], ["road", "?x", "?y"], ["reaches", "?y", "?z"]]],
+     ["find", "?t", ["reaches", "a", "?t"]]],
    "as it is": ["find", "?t", ["reaches", "a", "?t"]],
    "one road that would reach d": ["find", "?x", ["joins", "?x", "d"]]}]
 ```
 
-Evaluates to `{ "with a road from c to d": ["b", "c", "d"], "without the road from b to c": ["b"], "as it is": ["b", "c"], "one road that would reach d": ["a", "b", "c"] }`.
+Evaluates to `{ "with a road from c to d": ["b", "c", "d"], "without the road from b to c": ["b"], "without the rule that goes on": ["b"], "as it is": ["b", "c"], "one road that would reach d": ["a", "b", "c"] }`.
 
 - `assuming` is a question, as `find` is. In plain code it is asked right away. In a rule, query, or `find` it is asked for each answer, with the values the rule bound in place: `joins` above asks, for each pair of towns, whether a road between them would let `a` reach the second.
-- What a change states must be known when it is asked, so its variables are ones the rule around it binds. Every other variable of the expression is its own, as in any question.
+- What a change states must be known when it is asked, so the variables of its facts are ones the rule around it binds. Every other variable of the expression is its own, as in any question. A rule a change adds or takes back has variables of its own too: those the rule around it binds take their values, and every other one is the held rule's. So in a rule that binds `?x`, `["assuming", ["rule", ["reaches", "?x", "?t"], ["town", "?t"]], ...]` asks with `?x` reaching every town, and a rule to take back is written with names that rule does not bind.
 - As a goal, its expression must be a goal, and it holds when that goal holds after the changes. As a value it is whatever the expression gives, so `["=", "?n", ["assuming", ..., ["aggregate/count", ["find", ...]]]]` counts what would be there.
 - An invariant does not refuse a change that is only assumed. With `["invariant", ["shift", "?p", "sun"], {"assert": "none"}]`, adding `["fact", ["shift", "cy", "sun"]]` fails, while `["assuming", ["fact", ["shift", "cy", "sun"]], ["find", "?p", ["shift", "?p", "sun"]]]` is `["cy"]`. So an invariant can ask with `assuming` what a change would do, and holds of the same facts whatever order they and the invariant came in, without asking itself again. A change that fails for another reason, such as a relation call with the wrong number of arguments, fails the question in the same words. Assumptions nest, and an inner one starts from the database the outer one assumed.
 - Each `assuming` derives what its expression needs in a database of its own, which shares every fact it does not change. Asked for each answer of a rule, it costs one such derivation per answer. Hypothetical reasoning is known to cost more than reasoning over the facts: in Datalog, adding facts hypothetically raises the cost of a question from polynomial to polynomial space.
@@ -613,7 +616,9 @@ Evaluates to `{ "taken": [["rule", ["path", "?x", "?z"], ["path", "?x", "?y"], [
 
 - A form takes back the rule a snapshot would write the same way, so a rule written with a name bound to a value is the same as one written with the value. A form that names no rule the database holds takes nothing back.
 - Taking back a rule that says two values are the same takes back the invariant it holds as too.
+- Facts named beside a rule are taken back in the same change: when taking the rule back breaks an invariant, the facts stay too.
 - `retract` gives what it took back: each fact, and each rule or invariant form.
+- To ask what would hold without a rule and keep it, put the `retract` in [`assuming`](#asking-what-would-hold).
 
 ### Query options
 
@@ -942,7 +947,7 @@ Adding what the database already holds changes nothing: a fact that is already t
 
 Answers are computed bottom-up with semi-naive evaluation, one relation at a time as something reads it, goal-directed when a query has known arguments, and kept. What the database has already derived never changes an answer, only the order answers come in.
 
-A change to facts or rules is followed through what was derived, so it costs what it reaches and not what the database holds, and the database then answers as one that derived everything from the facts and rules as they now are. Rows that give each other cannot hold each other up, so retracting the fact a cycle of rules rests on takes the whole cycle away, and taking away the fact that made two unknowns one gives back the rows that held them apart. Two kinds of relation are derived again and compared instead of followed row by row: one whose rule holds a [function from the host](#host-functions-in-rules) that does not say it reads only its arguments, and one whose rule reads a changed relation through a schema instead of a relation goal. A [goal-directed query](#goal-directed-queries) keeps what it derived and follows changes too, for up to 32 different queries; past that they are answered again when asked. How the engine follows a change, with weights, levels, and stages, is in [`packages/core/src/logic/ENGINE.md`](packages/core/src/logic/ENGINE.md).
+A change to facts or rules is followed through what was derived, so it costs what it reaches and not what the database holds, and the database then answers as one that derived everything from the facts and rules as they now are. Rows that give each other cannot hold each other up, so retracting the fact a cycle of rules rests on takes the whole cycle away, and taking away the fact that made two unknowns one gives back the rows that held them apart. Two kinds of relation are derived again and compared instead of followed row by row: one whose rule holds a [function from the host](#host-functions-in-rules) that does not say it reads only its arguments, or asks [`assuming`](#asking-what-would-hold), which asks the database as it is and never as it was before the change, and one whose rule reads a changed relation through a schema instead of a relation goal. A [goal-directed query](#goal-directed-queries) keeps what it derived and follows changes too, for up to 32 different queries; past that they are answered again when asked. How the engine follows a change, with weights, levels, and stages, is in [`packages/core/src/logic/ENGINE.md`](packages/core/src/logic/ENGINE.md).
 
 Each `run` starts from an empty database; pass `{ database: new LogicDatabase() }` as the third argument to share relations, schemas, facts, rules, and invariants across runs. The database's relations and schemas are bound by name in every run that uses it, unless the environment binds the same name.
 

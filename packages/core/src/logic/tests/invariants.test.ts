@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Arbitrary, Effect, Schema } from "effect";
 import { analyze } from "@/analysis/analyze";
+import { run } from "@/evaluation/evaluate";
 import { LogicDatabase } from "@/logic/database";
 import { loadDatabase, saveDatabase } from "@/logic/snapshot";
 import { stdlib } from "@/modules";
@@ -9,9 +10,11 @@ import {
   change,
   edgeFact,
   element,
+  INVARIANTS,
   invariant,
   name,
   oneOf,
+  RULES,
   type Scenario,
   scenario,
   start,
@@ -27,13 +30,24 @@ const isInvariantForm = (form: unknown) =>
 const sameForm = (a: unknown, b: unknown) =>
   JSON.stringify(a) === JSON.stringify(b);
 
-/** "Adding these facts", "Retracting this fact", or "Adding this rule". */
-const describeChange = ([form, ...items]: Form) => {
-  const these = items.length === 1 ? "this fact" : "these facts";
+/** True for a `rule` or `invariant` form, which `retract` takes back. */
+const isProgramForm = (item: unknown) =>
+  Array.isArray(item) && (item[0] === "rule" || item[0] === "invariant");
+
+/**
+ * "Adding these facts", "Retracting this fact", or "Adding this rule"; a
+ * retract that takes back a rule or invariant is "Retracting this rule".
+ */
+const describeChange = ([form, ...items]: Form, takesBack: boolean) => {
+  const facts = items.filter((item) => !isProgramForm(item));
+  const these = facts.length === 1 ? "this fact" : "these facts";
   if (form === "fact") {
     return `Adding ${these}`;
   }
-  return form === "retract" ? `Retracting ${these}` : "Adding this rule";
+  if (form === "retract") {
+    return takesBack ? "Retracting this rule" : `Retracting ${these}`;
+  }
+  return "Adding this rule";
 };
 
 /** The message a failed query assertion becomes when an invariant fails it. */
@@ -51,13 +65,22 @@ interface Expected {
 
 /**
  * What a change must do, worked out without invariants: make the same change
- * on a copy of the database that has none, then ask each invariant as a
- * query assertion. The change is kept only if every assertion holds.
+ * on a copy of the database that has none, then ask each invariant that
+ * stays as a query assertion. The change is kept only if every assertion
+ * holds; a retract that takes back a rule or invariant takes back the facts
+ * it names in the same change, or nothing.
  */
 const expectChange = (before: readonly unknown[], form: Form) =>
   Effect.gen(function* () {
     const forms = before.slice(1);
     const invariants = forms.filter(isInvariantForm) as Form[];
+    const dropped =
+      form[0] === "retract"
+        ? invariants.filter((held) =>
+            form.slice(1).some((item) => sameForm(item, held))
+          )
+        : [];
+    const stays = invariants.filter((held) => !dropped.includes(held));
     const copy = yield* loadDatabase(
       ["begin", ...forms.filter((item) => !isInvariantForm(item))],
       stdlib
@@ -66,18 +89,26 @@ const expectChange = (before: readonly unknown[], form: Form) =>
     if (!outcome.ok) {
       return { after: before, outcome } satisfies Expected;
     }
-    for (const [, goal, options] of invariants) {
+    const takesBack =
+      dropped.length > 0 ||
+      (form[0] === "retract" &&
+        (outcome.value as readonly unknown[]).some(isProgramForm));
+    for (const [, goal, options] of stays) {
       const asked = yield* attempt(["query", goal, options], copy);
       if (!asked.ok) {
         const message = invariantMessage(
-          `${describeChange(form)} breaks an invariant, so nothing changed.`,
+          `${describeChange(form, takesBack)} breaks an invariant, so nothing changed.`,
           asked.message
         );
         return { after: before, outcome: { ok: false, message } } as Expected;
       }
     }
-    const after = [...(yield* saveDatabase(copy)), ...invariants];
-    return { after, outcome } satisfies Expected;
+    const after = [...(yield* saveDatabase(copy)), ...stays];
+    const value =
+      dropped.length > 0
+        ? [...(outcome.value as readonly unknown[]), ...dropped]
+        : outcome.value;
+    return { after, outcome: { ok: true, value } } satisfies Expected;
   });
 
 /**
@@ -364,5 +395,149 @@ describe("changes to the database", () => {
         });
         expect(yield* saveDatabase(database)).toEqual(before);
       })
+  );
+  /** Every row of the relations the rules derive, sorted. */
+  const LOOK = {
+    path: ["find", ["array/make", "?x", "?y"], ["path", "?x", "?y"]],
+    degree: ["find", ["array/make", "?n", "?k"], ["degree", "?n", "?k"]],
+    cancelled: ["find", "?i", ["cancelled", "?i"]],
+  };
+
+  /** Edges, rules, and invariants, and a retract of some of each. */
+  const mixed = Arbitrary.flatMap(
+    Arbitrary.all({
+      edges,
+      rules: Arbitrary.array(element(RULES), { minLength: 1, maxLength: 3 }),
+      invariants: Arbitrary.array(element(INVARIANTS), { maxLength: 3 }),
+    }),
+    (given) =>
+      Arbitrary.map(
+        Arbitrary.all([
+          Arbitrary.array(oneOf(element(given.edges), edgeFact), {
+            maxLength: 2,
+          }),
+          Arbitrary.array(
+            oneOf(
+              element(given.rules),
+              element(given.rules),
+              element(INVARIANTS)
+            ),
+            { minLength: 1, maxLength: 2 }
+          ),
+        ]),
+        ([facts, forms]) => ({
+          ...given,
+          form: ["retract", ...facts, ...forms] as Form,
+        })
+      )
+  );
+
+  it.effect.prop(
+    "are all or nothing: a retract of facts, rules, and invariants makes every change or none",
+    { mixed },
+    ({ mixed: { edges: given, rules, invariants, form } }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase();
+        yield* start(database, {
+          setup: [["fact", ...given], ...rules],
+          steps: [],
+        });
+        for (const each of invariants) {
+          yield* attempt(each, database);
+        }
+        const before = yield* saveDatabase(database);
+        // Rows derived before the change, which it must bring up to date.
+        yield* attempt(LOOK, database);
+        const expected = yield* expectChange(before, form);
+        expect(yield* attempt(form, database)).toEqual(expected.outcome);
+        const after = yield* saveDatabase(database);
+        expect(after).toEqual(expected.after);
+        expect(yield* attempt(LOOK, database)).toEqual(
+          yield* attempt(LOOK, yield* loadDatabase(after, stdlib))
+        );
+      }),
+    { timeout: 120_000, arbitrary: { runs: 300 } }
+  );
+});
+
+describe("an invariant that holds a function from the host", () => {
+  const member = element([0, 1, 2, 3]);
+  const step = Arbitrary.all([
+    element(["fact", "fact", "retract"] as const),
+    element(["p", "q"] as const),
+    member,
+  ]);
+
+  /**
+   * The standard library, and a function that reads `q` from the database
+   * on its own, so Lion cannot tell that what it gives depends on `q`.
+   */
+  const hosted = (database: LogicDatabase) => ({
+    ...stdlib,
+    "host/in-q?": (x: unknown) =>
+      Effect.map(
+        run(["find", "?v", ["q", "?v"]], stdlib, { database }),
+        (found) => (found as unknown[]).includes(x)
+      ),
+  });
+
+  it.effect.prop(
+    "is asked after every change, also one to a relation it names nowhere, as a plain model of what the function reads says",
+    {
+      steps: Arbitrary.array(step, { minLength: 1, maxLength: 10 }),
+      assert: element(["none", "some"] as const),
+      goalDirected: element([true, false]),
+    },
+    ({ steps, assert, goalDirected }) =>
+      Effect.gen(function* () {
+        const database = new LogicDatabase({ goalDirected });
+        const host = hosted(database);
+        const go = (program: unknown) => attempt(program, database, host);
+        // No p is in q, or some p is, with `q` read only by the function.
+        const holds = (p: ReadonlySet<number>, q: ReadonlySet<number>) =>
+          [...p].some((x) => q.has(x)) === (assert === "some");
+        let p = new Set<number>(assert === "some" ? [0] : []);
+        let q = new Set<number>(assert === "some" ? [0] : []);
+        yield* go([
+          "begin",
+          ["relation", "p", ["x"]],
+          ["relation", "q", ["x"]],
+          ...(assert === "some" ? [["fact", ["p", 0], ["q", 0]]] : []),
+        ]);
+        expect(
+          yield* go([
+            "invariant",
+            ["and", ["p", "?x"], ["host/in-q?", "?x"]],
+            { assert },
+          ])
+        ).toMatchObject({ ok: true });
+        for (const [form, relation, x] of steps) {
+          const next = {
+            p: new Set(p),
+            q: new Set(q),
+          };
+          if (form === "fact") {
+            next[relation].add(x);
+          } else {
+            next[relation].delete(x);
+          }
+          const outcome = yield* go([form, [relation, x]]);
+          expect(outcome.ok).toBe(holds(next.p, next.q));
+          if (outcome.ok) {
+            p = next.p;
+            q = next.q;
+          }
+          expect(
+            yield* go({
+              p: ["find", "?x", ["p", "?x"]],
+              q: ["find", "?x", ["q", "?x"]],
+            })
+          ).toEqual({
+            ok: true,
+            value: { p: [...p].sort(), q: [...q].sort() },
+          });
+        }
+      }),
+    { timeout: 120_000, arbitrary: { runs: 200 } }
   );
 });

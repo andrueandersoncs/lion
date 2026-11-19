@@ -2,7 +2,7 @@
 
 # Decisions
 
-Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 184 questions have been decided, 75 records explain them, and of what the records assert, 570 hold when Lion is run, 5 are broken, 328 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
+Why Lion is the way it is. Every decision is a question that Lion's commits and its decision records answered; a record adds the context, the alternatives, and what the decision asserts, and each assertion is checked against Lion as it is now. 186 questions have been decided, 76 records explain them, and of what the records assert, 584 hold when Lion is run, 5 are broken, 328 are stated but not checked by running Lion, and 22 were replaced by a later word. A decision is written as claims in `history/notes/`, and this page is written from them.
 
 | Decided | Question | Now | Record |
 | --- | --- | --- | --- |
@@ -190,6 +190,8 @@ Why Lion is the way it is. Every decision is a question that Lion's commits and 
 | 2026-11-19 | [`form-name-bindings`](#form-name-bindings) | `shadow-in-scope` | [A string means what the scopes it is written in declare, a define binds in its body, a binding can take a form's name, and a condition is true or false](#names-by-scope) |
 | 2026-11-19 | [`aggregated-relation-candidates`](#aggregated-relation-candidates) | `merge-from-rules` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
 | 2026-11-19 | [`rule-retraction`](#rule-retraction) | `retract-the-form` | [A relation is a key and how its candidates combine: rules that aggregate merge as a declared merge does, a merge takes any aggregate, and retract takes rules and invariants back](#one-relation-model) |
+| 2026-11-19 | [`assuming-changes`](#assuming-changes) | `fact-retract-rule` | [`assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own](#assuming-rules) |
+| 2026-11-19 | [`held-rule-variables`](#held-rule-variables) | `question-scope` | [`assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own](#assuming-rules) |
 
 <a id="program-representation"></a>
 
@@ -3175,7 +3177,7 @@ Recorded 2026-11-17 in `history/notes/every-change-is-followed.json`.
 - Stated, not checked by running Lion: `million-facts-refused-change-then-every-row-ms` is 230. "a fact an invariant refused costs 0.23 seconds instead of 2.7"
 - Stated, not checked by running Lion: `recursive-aggregate-after-fact-change` is `followed`. "An aggregate that recurses goes on from the row a group has"
 - Replaced by a later word: decided `rule-that-invents-on-change`: `follow-where-it-invents-alone`. "A rule that invents is followed where it invents alone, into a relation with no key"
-- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
+- Holds when Lion is run: rule `unfollowed-relations-derived-again` holds. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
 - Stated, not checked by running Lion: decided `unfollowable-relation-on-change`: `derive-again-and-compare-once-read`. "A relation that cannot be followed is derived again and compared with what it was, when something has read it since the last change; then the relations that read it are followed"
 - Stated, not checked by running Lion: decided `derived-rows-on-rule-change`: `derive-again-what-changed`. "A `rule` form derives again the relations whose rules changed and keeps the rows of every other"
 - Stated, not checked by running Lion: `derived-rows-after-rule-change` is `kept-where-rules-did-not-change`. "A `rule` form derives again the relations whose rules changed and keeps the rows of every other"
@@ -3224,7 +3226,7 @@ Recorded 2026-11-18 in `history/notes/follow-a-component-at-a-time.json`.
 - Replaced by a later word: decided `rule-that-invents-on-change`: `follow-a-component-at-a-time`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
 - Stated, not checked by running Lion: `keyed-invention-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
 - Stated, not checked by running Lion: `equality-rule-group-after-fact-change` is `followed`. "A group whose rules invent into a relation with a key or beside other rules, or make values one, is followed a component of values at a time"
-- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "A group whose rules join rows some other way is still derived again and compared."
+- Holds when Lion is run: rule `unfollowed-relations-derived-again` holds. "A group whose rules join rows some other way is still derived again and compared."
 
 <a id="rows-carry-weights"></a>
 
@@ -3259,7 +3261,7 @@ Recorded 2026-11-19 in `history/notes/rows-carry-weights.json`.
 - Stated, not checked by running Lion: `keyed-invention-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
 - Stated, not checked by running Lion: `equality-rule-group-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
 - Stated, not checked by running Lion: `invention-joined-otherwise-after-fact-change` is `followed`. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
-- Stated, not checked by running Lion: rule `unfollowed-relations-derived-again` holds. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
+- Holds when Lion is run: rule `unfollowed-relations-derived-again` holds. "Every group of relations is followed row by row, whatever its rules look like, except the two kinds whose reads are not known: one whose rule holds a function from the host, and one whose rule reads a changed relation through a schema."
 - Holds when Lion is run: `merged-unknowns-after-retract` is `apart-again`. "Two values a key or an equality rule makes one are a pair, which is a row with candidates too, and a row that holds a value its class no longer writes ends at the level the pair is held from, is kept beside the rows that hold, and gives the row it became a candidate."
 - Holds when Lion is run: `rule-head-sum-of-fractions` is `added-in-sort-order`. "A sum or a mean of numbers that are not all whole is added up in sort order."
 
@@ -4063,3 +4065,55 @@ Now: `merge-from-rules`.
 Now: `retract-the-form`.
 
 - 2026-11-19 `rule-retraction`: `retract-the-form` over `impossible`, `by-name`: "A `rule` or `invariant` form inside `retract`, written as it was added, takes that rule or invariant back, and the relations whose rules changed are derived again." (`one-relation-model.json`)
+
+<a id="assuming-changes"></a>
+
+## assuming-changes
+
+Now: `fact-retract-rule`.
+
+- 2026-11-19 `assuming-changes`: `fact-retract-rule` over `fact-retract-only`, `invariant-changes`: "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule." (`assuming-rules.json`)
+
+<a id="assuming-rules"></a>
+
+### `assuming` adds rules and takes rules and invariants back, as the forms it holds do on their own
+
+Recorded 2026-11-19 in `history/notes/assuming-rules.json`.
+
+**Context.** Once `retract` took `rule` and `invariant` forms back, `assuming` still took only `fact` and `retract` forms of relation calls. `["assuming", ["retract", ["rule", head, ...body]], expression]` made the rule form as a real `rule` form, which added the rule to the database, and then refused it: `assuming takes relation calls in its retract forms`. So a program could not ask what would hold without a rule, or with one more, and asking it changed the database. Two older surprises came up on the way. A `retract` that named facts and a rule took the facts away when taking the rule back broke an invariant, though its message said nothing changed. And a rule that asks `assuming` kept a row after a change to the facts its question reads: with `["rule", ["bridges", "?x", "?y"], ["pair", "?x", "?y"], ["assuming", ["fact", ["e", "?x", "?y"]], ["node", "?y"]]]`, retracting `["node", "a"]` left `["bridges", "a", "a"]`, since following a change asks each question as it was before the change, and `assuming` asks the database as it is.
+
+**Decision.** A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule. A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused. No invariant refuses an assumed change, not even the one an assumed rule that says two values are the same holds as, which the same rule in the database does not hold either for an assumed fact. In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question. A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is.
+
+**Consequences.** The database makes every change with one function, which writes facts, gives the database rules and invariants, or both, and undoes all of it when an invariant breaks; `retract` is one function for facts, rules, and invariants, and an assumption makes its changes with the same functions the forms use, on a database of its own whose rules are its own. Properties in `logic/tests/assuming.test.ts` check an assumed retraction against a database that never had the rules, an assumed rule against one that has it, a rule that assumes against plain code with the answer's values in place, a snapshot, and a database that derives anew after changes to the facts, which is what found the stale row; another checks that an assumption never changes the database, and another that an assumed rule that says two values are the same gives what the same rule in the database gives an assumed fact. In `logic/tests/invariants.test.ts`, a retract of facts, rules, and invariants is checked against the change made without invariants, and an invariant that holds a function from the host that reads `q` on its own is checked against a plain model of what the function reads; that property catches the mutation `bun run mutate` had reported MISSED. The interop grid has two new rows, an assumed rule over `?x` and a rule taken back, each like plain code in all 17 places. Measured against the change before it: 15,207 code lines where it had 15,093, 1,727 functions where it had 1,713, and no new special form, library function, kind of error, or message; the grid has 979 cells like plain code where it had 947, and the same 3 exceptions. Over two runs of `bun run bench` every benchmark read 0.87 to 1.24 of the earlier time, and the two that read slowest, every path on a 150 chain and 300 rules added one form at a time, read 0.97 to 1.06 and 0.91 to 1.06 when run alone three times. Every workload of `bun run scale` grows at most as the facts do; retracting facts 100 per form, which a first version of `retract` slowed to 0.87 by working out rules it was not given, reads 0.96 to 0.99 at 100,000 facts. An `assuming` cannot hold `exists` in its changes, which a `fact` or `retract` form can on its own.
+
+**Alternatives considered.**
+
+- Let `assuming` take `invariant` forms too. No invariant refuses a change that is only assumed, so an assumed invariant would change nothing an expression gives; whether a goal would hold is `["assuming", ..., ["not", goal]]`.
+- Make every variable of a held rule its own. Every other question fixes the variables the rule around it binds, so a held rule could not depend on the answer, and the same rule asked in plain code with the answer's values in place would give something else.
+- Ask `assuming` about the database as it was while a change is followed. The copy would need the rows every relation it reads had before the change, which a followed group holds only while it is followed; deriving the group again and comparing is the rule the engine already has for a rule that may read anything.
+- Keep the invariant an assumed rule that says two values are the same holds as. The same rule in the database refuses no assumed fact, since an assumed database keeps no invariants, so where the rule stood would decide what an assumption refuses.
+
+**What it asserts, checked.**
+
+- Stated, not checked by running Lion: decided `assuming-changes`: `fact-retract-rule`. "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule."
+- Holds when Lion is run: `retract-rule-beside-facts-refused` is `no-change`. "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is."
+- Holds when Lion is run: rule `all-or-nothing-changes` holds. "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is."
+- Holds when Lion is run: `rule-asking-assuming-after-fact-change` is `up-to-date`. "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is."
+- Holds when Lion is run: rule `unfollowed-relations-derived-again` holds. "A `retract` of facts and rules is one change, and a rule that asks `assuming` is derived again and compared after a change, as one that holds a function from the host is."
+- Stated, not checked by running Lion: `core-code-lines-added` is 114. "Measured against the change before it: 15,207 code lines where it had 15,093, 1,727 functions where it had 1,713, and no new special form, library function, kind of error, or message; the grid has 979 cells like plain code where it had 947, and the same 3 exceptions. Over two runs of `bun run bench` every benchmark read 0.87 to 1.24 of the earlier time, and the two that read slowest, every path on a 150 chain and 300 rules added one form at a time, read 0.97 to 1.06 and 0.91 to 1.06 when run alone three times. Every workload of `bun run scale` grows at most as the facts do; retracting facts 100 per form, which a first version of `retract` slowed to 0.87 by working out rules it was not given, reads 0.96 to 0.99 at 100,000 facts."
+- Holds when Lion is run: `assuming-rule-retraction` is `possible`. "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule."
+- Holds when Lion is run: `assuming-rule-change` is `possible`. "A change of `assuming` is a `fact`, `retract`, or `rule` form, made as that form makes it on its own: `["assuming", ["rule", head, ...body], expression]` adds the rule, and a `retract` takes back the rules and invariants it names as well as facts, so `["assuming", ["retract", ["rule", head, ...body]], expression]` asks what would hold without the rule."
+- Holds when Lion is run: `assuming-refused-change-database` is `unchanged`. "A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused."
+- Holds when Lion is run: rule `assuming-is-a-question` holds. "A rule or invariant form there is held, never made: its parts are evaluated as the form would evaluate them, and the database does not change, also when the question is refused."
+- Holds when Lion is run: `assuming-equality-rule-invariant` is `not-kept`. "No invariant refuses an assumed change, not even the one an assumed rule that says two values are the same holds as, which the same rule in the database does not hold either for an assumed fact."
+- Stated, not checked by running Lion: decided `held-rule-variables`: `question-scope`. "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question."
+- Holds when Lion is run: rule `question-variables-scoped` holds. "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question."
+- Holds when Lion is run: `assuming-held-rule-outer-variables` is `bound`. "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question."
+
+<a id="held-rule-variables"></a>
+
+## held-rule-variables
+
+Now: `question-scope`.
+
+- 2026-11-19 `held-rule-variables`: `question-scope` over `held-rule-own`: "In a rule, the variables of a held rule that the rule around it binds take the answer's values, and every other one is the held rule's own, as for every question." (`assuming-rules.json`)

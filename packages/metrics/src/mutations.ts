@@ -153,8 +153,8 @@ const SCALING: readonly Mutation[] = [
   {
     name: "a refused change to facts is not taken back",
     file: core("logic/database.ts"),
-    find: "    return changed ? () => undo(log ?? []) : undefined;",
-    replace: "    return changed ? () => undo([]) : undefined;",
+    find: "          undo(log ?? []);",
+    replace: "          undo([]);",
     tests: ["src/logic/tests/invariants.test.ts"],
   },
   {
@@ -644,9 +644,9 @@ export const MUTATIONS: readonly Mutation[] = [
   ),
   {
     name: "an equality rule is not kept as the invariant it stands for",
-    file: core("evaluation/special-forms/logic.ts"),
-    find: "    yield* addRules(yield* database, rules, invariants);",
-    replace: "    yield* addRules(yield* database, rules, []);",
+    file: core("logic/database.ts"),
+    find: "    yield* addRules(database, rules, invariants);",
+    replace: "    yield* addRules(database, rules, []);",
     tests: EXISTENTIAL_TESTS,
   },
   {
@@ -921,8 +921,44 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "assuming leaves out its changes",
     file: core("logic/database.ts"),
-    find: '        yield* change.form === "fact"\n          ? assertFacts(copy, calls(change))\n          : retractFacts(copy, calls(change));',
+    find: "        yield* makeChange(copy, change);",
     replace: "        yield* Effect.void;",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming makes a rule form written in a fact change",
+    file: core("evaluation/special-forms/logic.ts"),
+    find: "        if (isTaken(item)) {",
+    replace: '        if (form === "retract" && isTaken(item)) {',
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming keeps the invariant an assumed equality rule holds as",
+    file: core("logic/database.ts"),
+    find: "    return Effect.flatMap(compileRule(head, body), (rules) =>\n      addRules(database, rules)\n    );",
+    replace: "    return addRule(database, head, body);",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming adds and takes back rules in the database itself",
+    file: core("logic/database.ts"),
+    find: "        yield* makeChange(copy, change);",
+    replace:
+      '        yield* makeChange(change.form === "fact" ? copy : database, change);',
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "assuming in a rule makes a rule it holds without the values the rule bound",
+    file: core("logic/model.ts"),
+    find: "          ? Effect.succeed(bound(change) as LogicForm)",
+    replace: "          ? Effect.succeed(change)",
+    tests: ASSUMING_TESTS,
+  },
+  {
+    name: "a rule that asks assuming is followed through a change as other rules are",
+    file: core("logic/maintain.ts"),
+    find: "      termsOf(rule).some((term) => isOpaque(term) || assumes(term))",
+    replace: "      termsOf(rule).some((term) => isOpaque(term))",
     tests: ASSUMING_TESTS,
   },
   {
@@ -936,9 +972,8 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "assuming in a rule asks its expression without the values the rule bound",
     file: core("logic/model.ts"),
-    find: "    const expression = replaceVariables(question.parts.at(-1), (variable) =>",
-    replace:
-      "    const expression = replaceVariables(question.parts.at(-1), (variable) => undefined && ",
+    find: "    return yield* home.assume(changes, bound(question.parts.at(-1)));",
+    replace: "    return yield* home.assume(changes, question.parts.at(-1));",
     tests: ASSUMING_TESTS,
   },
   {
@@ -1503,16 +1538,30 @@ export const MUTATIONS: readonly Mutation[] = [
   {
     name: "retract leaves a rule in place",
     file: core("logic/database.ts"),
-    find: "    const kept = written.filter((rule) => !gone(rule.key, ruleKeys));",
-    replace: "    const kept = written;",
+    find: "      written.filter((rule) => !gone(rule.key, rules))",
+    replace: "      written",
     tests: [CANDIDATE_TESTS],
   },
   {
     name: "retract leaves an invariant in place",
     file: core("logic/database.ts"),
-    find: "      (invariant) => !gone(invariant.key, invariantKeys)",
-    replace: "      () => true",
+    find: "        (invariant) => !gone(invariant.key, invariants)",
+    replace: "        () => true",
     tests: [CANDIDATE_TESTS],
+  },
+  {
+    name: "retract takes back facts alone",
+    file: core("logic/database.ts"),
+    find: "    const forms = items.filter((item) => item instanceof LogicForm);",
+    replace: "    const forms = items.filter(() => false);",
+    tests: [CANDIDATE_TESTS, ...ASSUMING_TESTS],
+  },
+  {
+    name: "a retract of facts and rules keeps what was derived from the facts",
+    file: core("logic/database.ts"),
+    find: "            touched.size > 0\n              ? Effect.sync(() => touch(database))\n              : renew(database, before)",
+    replace: "            renew(database, before)",
+    tests: ["src/logic/tests/invariants.test.ts"],
   },
   {
     name: "a merge takes only lattice aggregates",

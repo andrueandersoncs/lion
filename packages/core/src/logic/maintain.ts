@@ -17,13 +17,15 @@
  * finds every such goal of a rule, with the body that finds the answers a
  * changed row could be part of.
  *
- * Two kinds of group cannot be followed: one with a rule that holds a
- * function from the host, which may read anything, and one with a rule that
- * reads a changed relation through something other than a relation goal,
- * such as a schema. Such a group is derived again and compared with what it
- * was, so the groups that read it are still followed, when something has
- * read it since the last change. Otherwise nobody is waiting for it: it is
- * forgotten, with the groups that read it, until something reads it.
+ * Two kinds of group cannot be followed: one that is blind, with a rule
+ * that holds a function from the host, which may read anything, or that
+ * asks `assuming`, which asks the database as it is now and never as it
+ * was before the change, and one with a rule that reads a changed relation
+ * through something other than a relation goal, such as a schema. Such a
+ * group is derived again and compared with what it was, so the groups that
+ * read it are still followed, when something has read it since the last
+ * change. Otherwise nobody is waiting for it: it is forgotten, with the
+ * groups that read it, until something reads it.
  */
 import { Effect } from "effect";
 import {
@@ -317,15 +319,23 @@ const deriveAgain = (pass: Pass, stratum: Stratum) =>
 
 const BLIND = new WeakMap<Stratum, boolean>();
 
+/** True for a term that asks `assuming`, however deep. */
+const assumes = (term: unknown): boolean =>
+  isForm(term, "assuming") ||
+  (term instanceof LogicValue && term.parts.some(assumes));
+
 /**
- * True for a group with a rule that holds a function from the host. What
- * such a function reads is not known, so the rule may read anything that
- * changed.
+ * True for a group with a rule that holds a function from the host, whose
+ * reads are not known, so the rule may read anything that changed, or that
+ * asks `assuming`, which asks a copy of the database as it is now. Neither
+ * can be asked what it gave before the change.
  */
 const isBlind = (stratum: Stratum) => {
   let blind = BLIND.get(stratum);
   if (blind === undefined) {
-    blind = stratum.rules.some((rule) => termsOf(rule).some(isOpaque));
+    blind = stratum.rules.some((rule) =>
+      termsOf(rule).some((term) => isOpaque(term) || assumes(term))
+    );
     BLIND.set(stratum, blind);
   }
   return blind;
